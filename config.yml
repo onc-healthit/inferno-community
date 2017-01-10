@@ -1,0 +1,9 @@
+---
+client_id:
+  cerner: 00000000-0000-0000-0000-000000000000
+  epic: 00000000-0000-0000-0000-000000000000
+  smart: 00000000-0000-0000-0000-000000000000
+scopes:
+  cerner: online_access launch openid profile patient/AllergyIntolerance.read patient/Appointment.read patient/Condition.read patient/Contract.read patient/Device.read patient/DiagnosticReport.read patient/Encounter.read patient/Immunization.read patient/MedicationOrder.read patient/MedicationStatement.read patient/Observation.read patient/Patient.read patient/Person.read patient/RelatedPerson.read
+  epic: launch openid profile patient/*.read
+  smart: launch openid profile patient/*.read
