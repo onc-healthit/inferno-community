@@ -60,6 +60,12 @@ get '/app' do
     patient_id = token_response['patient']
     scopes = token_response['scope']
 
+    # Begin outputting the response body
+    response.open
+    response.echo_hash('oauth2 redirect parameters',params)
+    response.echo_hash('token response',token_response)
+    response.start_table('Crucible Test Results',['Status','Description','Detail'])
+
     # Configure the FHIR Client
     client = FHIR::Client.new(session[:fhir_url])
     client.set_bearer_token(token)
@@ -68,8 +74,13 @@ get '/app' do
 
     # Get the patient demographics
     patient = client.read(FHIR::Patient, patient_id).resource
+    response.assert('Patient successfully retrieved.',patient.is_a?(FHIR::Patient),patient.xmlId)
+
     patient_details = patient.massageHash(patient,true).keep_if{|k,v| ['id','name','gender','birthDate'].include?(k)}
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
+
+    response.assert('Patient Name',patient_details['name'],patient_details['name'])
+    response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
 
     # Get the patient's conditions
     condition_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
@@ -79,21 +90,77 @@ get '/app' do
     medication_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active' } })
     puts "Medications: #{medication_reply.resource.entry.length}"
 
-    # Assemble the patient record
-    record = FHIR::Bundle.new
-    record.entry << bundle_entry(patient)
-    condition_reply.resource.entry.each do |entry|
-      record.entry << bundle_entry(entry.resource)
-    end
-    medication_reply.resource.entry.each do |entry|
-      record.entry << bundle_entry(entry.resource)
-    end
-    puts "Built the bundle..."
+    # Get the patient's allergies
+    # There should be at least one. No known allergies should have a negated entry.
+    # Include these codes as defined in http://snomed.info/sct
+    #   Code	     Display
+    #   160244002	No Known Allergies
+    #   429625007	No Known Food Allergies
+    #   409137002	No Known Drug Allergies
+    #   428607008	No Known Environmental Allergy
+    allergy_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+    puts "AllergyIntolerances: #{allergy_reply.resource.entry.length}"
 
-    response.open
-    response.echo_hash('params',params)
-    response.echo_hash('token response',token_response)
-    response.echo_hash('patient',patient_details)
+    # DAF -----------------------------
+#~    # AllergyIntolerance
+    # DiagnosticOrder
+    # DiagnosticReport
+    # Encounter
+    # FamilyMemberHistory
+    # Immunization
+    # Results (Observation)
+    # Medication
+    # MedicationStatement
+    # MedicationAdministration
+    # MedicationDispense
+#    # MedicationOrder
+#    # Patient
+#    # Condition
+    # Procedure
+    # SmokingStatus (Observation)
+    # VitalSigns (Observation)
+    # List
+    # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
+
+    # ARGONAUTS ----------------------
+    # No	CCDS Data Element	FHR Resource
+#    # (1)	Patient Name	             Patient
+#    # (2)	Sex	                        Patient
+    # (3)	Date of birth	              Patient
+    # (4)	Race	                       Patient
+    # (5)	Ethnicity	                  Patient
+    # (6)	Preferred language	       Patient
+    # (7)	Smoking status	           Observation
+    # (8)	Problems	                 Condition
+    # (9)	Medications	                Medication, MedicationStatement, MedicationOrder
+    # (10)	Medication allergies	    AllergyIntolerance
+    # (11)	Laboratory test(s)	      Observation, DiagnosticReport
+    # (12)	Laboratory value(s)/result(s)	Observation, DiagnosticReport
+    # (13)	Vital signs	             Observation
+    # (14)	(no longer required)	-
+    # (15)	Procedures	              Procedure
+    # (16)	Care team member(s)	     CarePlan
+    # (17)	Immunizations	           Immunization
+    # (18)	Unique device identifier(s) for a patient’s implantable device(s)	Device
+    # (19)	Assessment and plan of treatment	CarePlan
+    # (20)	Goals	                   Goal
+    # (21)	Health concerns	         Condition
+    # --------------------------------
+    # Date range search requirements are included in the Quick Start section for the following resources -
+    # Vital Signs, Laboratory Results, Goals, Procedures, and Assessment and Plan of Treatment.
+
+    # Assemble the patient record
+    # record = FHIR::Bundle.new
+    # record.entry << bundle_entry(patient)
+    # condition_reply.resource.entry.each do |entry|
+    #   record.entry << bundle_entry(entry.resource)
+    # end
+    # medication_reply.resource.entry.each do |entry|
+    #   record.entry << bundle_entry(entry.resource)
+    # end
+    # puts "Built the bundle..."
+
+    response.end_table
     body response.close
   end
 end

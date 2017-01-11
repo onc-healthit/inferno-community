@@ -4,6 +4,15 @@ module Crucible
 
       attr_accessor :body
       attr_accessor :alt
+      attr_accessor :pass
+      attr_accessor :fail
+      attr_accessor :skip
+
+      def initialize
+        @pass = 0
+        @fail = 0
+        @skip = 0
+      end
 
       def open
         @body = '<html>
@@ -13,10 +22,33 @@ module Crucible
             <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
             <style>
               table {
-                  border-collapse: collapse;
+                border-collapse: collapse;
               }
               table, td, th {
-                  border: 1px solid black;
+                border: 1px solid black;
+              }
+              span {
+                font-family: monospace;
+                font-weight: bold;
+              }
+              span.pass {
+                color: #008000;
+              }
+              span.skip {
+                color: #00FFFF;
+              }
+              span.fail {
+                color: #B22222;
+              }
+              .header img {
+                float: left;
+                width: 50px;
+                height: 50px;
+              }
+              .header h1 {
+                position: relative;
+                top: 10px;
+                left: 10px;
               }
             </style>
             <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -26,12 +58,17 @@ module Crucible
                 $( "#accordion" ).accordion({
                   collapsible: true,
                   heightStyle: "content",
-                  active: 3
+                  active: -1
                 });
               } );
             </script>
           </head>
-          <body><h1>Crucible SMART-on-FHIR DSTU2 App</h1><div id="accordion">'
+          <body>
+          <div class="header">
+            <img src="images/logo.png" alt="Crucible" />
+            <h1>Crucible SMART-on-FHIR App (DSTU2)</h1>
+          </div>
+          <div id="accordion">'
         self
       end
 
@@ -66,6 +103,18 @@ module Crucible
         end
         @body += '<tbody>'
         self
+      end
+
+      # Make an assertion
+      def assert(description,success,detail='')
+        if success
+          @pass += 1
+          image = '<span class="pass">PASS</span>'
+        else
+          @fail += 1
+          image = '<span class="fail">FAIL</span>'
+        end
+        add_table_row([ image, description, detail ])
       end
 
       # Add a table row to the open HTML Table
