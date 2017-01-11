@@ -6,7 +6,6 @@ require 'yaml'
 require 'sinatra'
 require 'fhir_client'
 require 'rest-client'
-require 'fhir_scorecard'
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file
@@ -14,10 +13,6 @@ end
 
 enable :sessions
 set :session_secret, SecureRandom.uuid
-
-puts "Loading terminology..."
-FHIR::Terminology.load_terminology
-puts "Finished loading terminology."
 
 # Root: redirect to /index
 get '/' do
@@ -68,47 +63,43 @@ get '/app' do
     client = FHIR::Client.new(session[:fhir_url])
     client.set_bearer_token(token)
     client.default_format = 'application/json+fhir'
+    client.default_format_bundle = 'application/json+fhir'
 
     # Get the patient demographics
     patient = client.read(FHIR::Patient, patient_id).resource
-    puts "Patient: #{patient.id} #{patient.name}"
-    patient_details = patient.to_hash.keep_if{|k,v| ['id','name','gender','birthDate'].include?(k)}
+    patient_details = patient.massageHash(patient,true).keep_if{|k,v| ['id','name','gender','birthDate'].include?(k)}
+    puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
     # Get the patient's conditions
     condition_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
     puts "Conditions: #{condition_reply.resource.entry.length}"
 
     # Get the patient's medications
-    medication_reply = client.search(FHIR::MedicationStatement, search: { parameters: { 'patient' => patient_id, 'status' => 'active' } })
+    medication_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active' } })
     puts "Medications: #{medication_reply.resource.entry.length}"
 
     # Assemble the patient record
     record = FHIR::Bundle.new
     record.entry << bundle_entry(patient)
-    condition_reply.resource.each do |resource|
-      record.entry << bundle_entry(resource)
+    condition_reply.resource.entry.each do |entry|
+      record.entry << bundle_entry(entry.resource)
     end
-    medication_reply.resource.each do |resource|
-      record.entry << bundle_entry(resource)
+    medication_reply.resource.entry.each do |entry|
+      record.entry << bundle_entry(entry.resource)
     end
     puts "Built the bundle..."
-
-    # Score the bundle
-    scorecard = FHIR::Scorecard.new
-    scorecard_report = scorecard.score(record.to_json)
 
     response.open
     response.echo_hash('params',params)
     response.echo_hash('token response',token_response)
     response.echo_hash('patient',patient_details)
-    response.echo_hash('scorecard',scorecard_report,['rubric','points','description'])
     body response.close
   end
 end
 
 # Helper method to wrap a resource in a Bundle.entry
 def bundle_entry(resource)
-  entry = FHIR::Bundle::Entry.new
+  entry = FHIR::Bundle::BundleEntryComponent.new
   entry.resource = resource
   entry
 end

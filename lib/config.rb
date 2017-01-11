@@ -28,7 +28,8 @@ module Crucible
       def self.get_auth_info(issuer)
         return {} unless issuer
         client = FHIR::Client.new(issuer)
-        client.default_json
+        client.default_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
+        client.default_format_bundle = FHIR::Formats::FeedFormat::FEED_JSON
         client.get_oauth2_metadata_from_conformance
       end
     end
