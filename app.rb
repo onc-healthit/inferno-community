@@ -137,10 +137,25 @@ end
 get '/config' do
   response = Crucible::App::Html.new
   response.open
-  response.start_table('Configuration',['Server','Client ID','Scopes'])
+  response.start_table('Configuration',['Server','Client ID','Scopes',''])
   Crucible::App::Config.get_config.each do |row|
-    response.add_table_row(row)
+    delete_button = "<form method=\"POST\" action=\"/config\"><input type=\"hidden\" name=\"delete\" value=\"#{row.first}\"><input type=\"submit\" value=\"Delete\"></form>"
+    response.add_table_row(row << delete_button)
   end
   response.end_table
+  fields = { 'Server' => '', 'Client ID' => '', 'Scopes' => 'launch openid profile patient/*.read'}
+  response.add_form('Add New Configuration','/config',fields)
   body response.close
+end
+
+post '/config' do
+  if params['delete']
+    puts "Deleting configuration: #{params['delete']}"
+    Crucible::App::Config.delete_client(params['delete'])
+  else
+    puts "Saving configuration: #{params}"
+    Crucible::App::Config.add_client(params['Server'],params['Client ID'],params['Scopes'])
+  end
+  puts "Configuration saved."
+  redirect '/config'
 end
