@@ -3,6 +3,7 @@ module Crucible
     class Html
 
       attr_accessor :body
+      attr_accessor :alt
 
       def open
         @body = '<html>
@@ -40,36 +41,54 @@ module Crucible
 
       # Output a Hash as an HTML Table
       def echo_hash(name,hash,headers=[])
-        content = "<h3>#{name}</h3><table class=\"pure-table\">"
-        if !headers.empty?
-          content += "<thead><tr>"
-          headers.each do |title|
-            content += "<th>#{title}</th>"
-          end
-          content += "</tr></thead>"
-        end
-        content += "<tbody>"
-        alt = true
+        start_table(name,headers)
+        @alt = true
         hash.each do |key,value|
-          if alt
-            content += "<tr class=\"pure-table-odd\"><td>#{key}</td>"
-          else
-            content += "<tr><td>#{key}</td>"
-          end
-          alt = !alt
           if value.is_a?(Hash)
-            value.each do |sk,sv|
-              content += "<td>#{sv}</td>"
-            end
-            content += "</tr>"
+            add_table_row(value.values.insert(0,key))
           else
-            content += "<td>#{value}</td></tr>"
+            add_table_row([key, value])
           end
         end
-        content += '</tbody></table>'
-        @body += content
+        end_table
         self
       end
+
+      # Start an HTML Table
+      def start_table(name,headers=[])
+        @body += "<h3>#{name}</h3><table class=\"pure-table\">"
+        if !headers.empty?
+          @body += '<thead><tr>'
+          headers.each do |title|
+            @body += "<th>#{title}</th>"
+          end
+          @body += '</tr></thead>'
+        end
+        @body += '<tbody>'
+        self
+      end
+
+      # Add a table row to the open HTML Table
+      def add_table_row(row=[])
+        if @alt
+          @body += "<tr class=\"pure-table-odd\">"
+        else
+          @body += '<tr>'
+        end
+        @alt = !@alt
+        row.each do |col|
+          @body += "<td>#{col}</td>"
+        end
+        @body += '</tr>'
+        self
+      end
+
+      # Close an HTML Table
+      def end_table
+        @body += '</tbody></table>'
+        self
+      end
+
     end
   end
 end

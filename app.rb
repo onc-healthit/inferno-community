@@ -25,6 +25,7 @@ get '/index' do
     '/index' => 'this page',
     '/app' => 'the app (also the redirect_uri after authz)',
     '/launch' => 'the launch url',
+    '/config' => 'configure client ID and scopes'
   }
   response = Crucible::App::Html.new
   body response.open.echo_hash('End Points',bullets).close
@@ -131,4 +132,15 @@ get '/launch' do
   response = Crucible::App::Html.new
   content = response.open.echo_hash('params',params).echo_hash('OAuth2 Metadata',auth_info).close
   redirect oauth2_auth_query[0..-2], content
+end
+
+get '/config' do
+  response = Crucible::App::Html.new
+  response.open
+  response.start_table('Configuration',['Server','Client ID','Scopes'])
+  Crucible::App::Config.get_config.each do |row|
+    response.add_table_row(row)
+  end
+  response.end_table
+  body response.close
 end

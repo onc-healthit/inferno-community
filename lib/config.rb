@@ -32,6 +32,37 @@ module Crucible
         client.default_format_bundle = FHIR::Formats::FeedFormat::FEED_JSON
         client.get_oauth2_metadata_from_conformance
       end
+
+      def self.get_config
+        rows = []
+        CONFIGURATION['client_id'].each do |client,client_id|
+          scopes = CONFIGURATION['scopes'][client]
+          rows << [ client, client_id, scopes ]
+        end
+        rows
+      end
+
+      # Add a client ID and scopes to the CONFIGURATION
+      def self.add_client(name,client_id,scopes)
+        CONFIGURATION['client_id'][name] = client_id
+        CONFIGURATION['scopes'][name] = scopes
+        save
+      end
+
+      # Delete a client ID and scopes from the CONFIGURATION
+      def self.delete_client(name)
+        CONFIGURATION['client_id'].delete(name)
+        CONFIGURATION['scopes'].delete(name)
+        save
+      end
+
+      # Save the current state of the CONFIGURATION to the config.yml file.
+      def self.save
+        File.open(File.join(File.dirname(File.absolute_path(__FILE__)),'..','config.yml'),'w:UTF-8') do |file|
+          file.write CONFIGURATION.to_yaml
+        end
+      end
+
     end
   end
 end
