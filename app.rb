@@ -113,32 +113,6 @@ get '/app' do
     detail = search_reply.resource.entry.first.to_fhir_json rescue nil
     response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
 
-    # Get the patient's conditions
-    puts 'Getting Conditions'
-    search_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
-    response.assert_search_results('Conditions',search_reply)
-
-    # Get the patient's medications
-    puts 'Getting MedicationOrders'
-    search_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
-    response.assert_search_results('MedicationOrders',search_reply)
-
-    puts 'Getting MedicationStatements'
-    search_reply = client.search(FHIR::MedicationStatement, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
-    response.assert_search_results('MedicationStatements',search_reply)
-
-    puts 'Getting MedicationDispense'
-    search_reply = client.search(FHIR::MedicationDispense, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('MedicationDispenses',search_reply)
-
-    puts 'Getting MedicationAdministration'
-    search_reply = client.search(FHIR::MedicationAdministration, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('MedicationAdministrations',search_reply)
-
-    puts 'Getting Immunizations'
-    search_reply = client.search(FHIR::Immunization, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('Immunizations',search_reply)
-
     # Get the patient's allergies
     # There should be at least one. No known allergies should have a negated entry.
     # Include these codes as defined in http://snomed.info/sct
@@ -159,18 +133,6 @@ get '/app' do
     rescue
       response.assert('No Known Allergies',false)
     end
-
-    puts 'Getting Procedures'
-    search_reply = client.search(FHIR::Procedure, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('Procedures',search_reply)
-
-    puts 'Getting Encounters'
-    search_reply = client.search(FHIR::Encounter, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('Encounters',search_reply)
-
-    puts 'Getting FamilyMemberHistory'
-    search_reply = client.search(FHIR::FamilyMemberHistory, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('FamilyMemberHistory',search_reply)
 
     # Vital Signs Searching
     # Vital Signs includes these codes as defined in http://loinc.org
@@ -197,14 +159,20 @@ get '/app' do
       response.assert_search_results("Vital Sign: #{display}",search_reply)
     end
 
-    puts 'Getting DiagnosticOrders'
-    search_reply = client.search(FHIR::DiagnosticOrder, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('DiagnosticOrders',search_reply)
-
-    puts 'Getting DiagnosticReports'
-    search_reply = client.search(FHIR::DiagnosticReport, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('DiagnosticReports',search_reply)
-
+    puts 'Checking for Supporting Resources'
+    supporting_resources = [
+      FHIR::Condition, FHIR::Immunization, FHIR::Encounter, FHIR::Procedure,
+      FHIR::MedicationOrder, FHIR::MedicationStatement, FHIR::MedicationDispense,
+      FHIR::MedicationAdministration, FHIR::DiagnosticOrder, FHIR::DiagnosticReport,
+      FHIR::FamilyMemberHistory, FHIR::Goal, FHIR::CarePlan,
+      FHIR::List, FHIR::Organization, FHIR::Location, FHIR::Practitioner,
+      FHIR::Substance, FHIR::RelatedPerson, FHIR::Specimen
+    ]
+    supporting_resources.each do |klass|
+      puts "Getting #{klass.name.demodulize}s"
+      search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
+      response.assert_search_results("#{klass.name.demodulize}s",search_reply)
+    end
 
     # DAF -----------------------------
 #    # AllergyIntolerance
@@ -225,7 +193,7 @@ get '/app' do
 #    # SmokingStatus (Observation)
 #    # VitalSigns (Observation)
     # List
-    # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
+#    # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
 
     # ARGONAUTS ----------------------
     # 	CCDS Data Element	         FHIR Resource
@@ -244,28 +212,26 @@ get '/app' do
 #    # (13)	Vital signs	             Observation
     # (14)	(no longer required)	-
 #    # (15)	Procedures	              Procedure
-    # (16)	Care team member(s)	     CarePlan
+#    # (16)	Care team member(s)	     CarePlan
 #    # (17)	Immunizations	           Immunization
     # (18)	Unique device identifier(s) for a patient’s implantable device(s)	Device
-    # (19)	Assessment and plan of treatment	CarePlan
-    # (20)	Goals	                   Goal
+#    # (19)	Assessment and plan of treatment	CarePlan
+#    # (20)	Goals	                   Goal
 #    # (21)	Health concerns	         Condition
     # --------------------------------
     # Date range search requirements are included in the Quick Start section for the following resources -
     # Vital Signs, Laboratory Results, Goals, Procedures, and Assessment and Plan of Treatment.
 
-    # Assemble the patient record
-    # record = FHIR::Bundle.new
-    # record.entry << bundle_entry(patient)
-    # condition_reply.resource.entry.each do |entry|
-    #   record.entry << bundle_entry(entry.resource)
-    # end
-    # search_reply.resource.entry.each do |entry|
-    #   record.entry << bundle_entry(entry.resource)
-    # end
-    # puts "Built the bundle..."
-
+    # Output a summary
+    total = response.pass + response.not_found + response.skip + response.fail
+    response.assert("#{((response.pass.to_f / total.to_f)*100.0).to_i}% (#{response.pass} of #{total})",true,'Total tests passed')
+    response.assert("#{((response.not_found.to_f / total.to_f)*100.0).to_i}% (#{response.not_found} of #{total})",:not_found,'Total tests "not found" or inconclusive')
+    response.assert("#{((response.skip.to_f / total.to_f)*100.0).to_i}% (#{response.skip} of #{total})",:skip,'Total tests skipped')
+    response.assert("#{((response.fail.to_f / total.to_f)*100.0).to_i}% (#{response.fail} of #{total})",false,'Total tests failed')
     response.end_table
+
+    # Output the time spent
+
     body response.close
   end
 end
