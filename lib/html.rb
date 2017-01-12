@@ -34,7 +34,7 @@ module Crucible
           <head>
             <title>Crucible SMART-on-FHIR DSTU2 App</title>
             <link rel=\"stylesheet\" href=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.css\">
-            <link rel=\"stylesheet\" href=\"//yui.yahooapis.com/pure/0.6.0/pure-min.css\">
+            <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
             <style>
               table {
                 border-collapse: collapse;
