@@ -84,7 +84,7 @@ module Crucible
               var scrollToBottom = function() {
                 window.scrollTo(0, document.body.scrollHeight);
               }
-              var intervalID = setInterval(scrollToBottom, 500);
+              var intervalID = setInterval(scrollToBottom, 200);
             </script>
           </head>
           <body>
