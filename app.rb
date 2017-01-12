@@ -109,31 +109,35 @@ get '/app' do
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
-    smoking_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-    detail = smoking_reply.resource.entry.first.to_fhir_json rescue nil
-    response.assert('Smoking Status',((smoking_reply.resource.entry.length >= 1) rescue false),detail)
+    search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    detail = search_reply.resource.entry.first.to_fhir_json rescue nil
+    response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
 
     # Get the patient's conditions
     puts 'Getting Conditions'
-    condition_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
-    response.assert_search_results('Conditions',condition_reply)
+    search_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
+    response.assert_search_results('Conditions',search_reply)
 
     # Get the patient's medications
     puts 'Getting MedicationOrders'
-    medication_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
-    response.assert_search_results('MedicationOrders',medication_reply)
+    search_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
+    response.assert_search_results('MedicationOrders',search_reply)
 
     puts 'Getting MedicationStatements'
-    medication_reply = client.search(FHIR::MedicationStatement, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
-    response.assert_search_results('MedicationStatements',medication_reply)
+    search_reply = client.search(FHIR::MedicationStatement, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
+    response.assert_search_results('MedicationStatements',search_reply)
 
     puts 'Getting MedicationDispense'
-    medication_reply = client.search(FHIR::MedicationDispense, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('MedicationDispenses',medication_reply)
+    search_reply = client.search(FHIR::MedicationDispense, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('MedicationDispenses',search_reply)
 
     puts 'Getting MedicationAdministration'
-    medication_reply = client.search(FHIR::MedicationAdministration, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('MedicationAdministrations',medication_reply)
+    search_reply = client.search(FHIR::MedicationAdministration, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('MedicationAdministrations',search_reply)
+
+    puts 'Getting Immunizations'
+    search_reply = client.search(FHIR::Immunization, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('Immunizations',search_reply)
 
     # Get the patient's allergies
     # There should be at least one. No known allergies should have a negated entry.
@@ -144,10 +148,10 @@ get '/app' do
     #   409137002	No Known Drug Allergies
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
-    allergy_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('AllergyIntolerances',allergy_reply)
+    search_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('AllergyIntolerances',search_reply)
     begin
-      if allergy_reply.resource.entry.length==0
+      if search_reply.resource.entry.length==0
         response.assert('No Known Allergies',false)
       else
         response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
@@ -157,17 +161,49 @@ get '/app' do
     end
 
     puts 'Getting Procedures'
-    medication_reply = client.search(FHIR::Procedure, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('Procedures',medication_reply)
+    search_reply = client.search(FHIR::Procedure, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('Procedures',search_reply)
 
+    puts 'Getting Encounters'
+    search_reply = client.search(FHIR::Encounter, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('Encounters',search_reply)
+
+    puts 'Getting FamilyMemberHistory'
+    search_reply = client.search(FHIR::FamilyMemberHistory, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('FamilyMemberHistory',search_reply)
+
+    # Vital Signs Searching
+    # Vital Signs includes these codes as defined in http://loinc.org
+    vital_signs = {
+      '9279-1' => 'Respiratory rate',
+      '8867-4' => 'Heart rate',
+      '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
+      '55284-4' => 'Blood pressure systolic and diastolic',
+      '8480-6' => 'Systolic blood pressure',
+      '8462-4' => 'Diastolic blood pressure',
+      '8310-5' => 'Body temperature',
+      '8302-2' => 'Body height',
+      '8306-3' => 'Body height --lying',
+      '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+      '3141-9' => 'Body weight Measured',
+      '39156-5' => 'Body mass index (BMI) [Ratio]',
+      '3140-1' => 'Body surface area Derived from formula',
+      '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+      '8478-0' => 'Mean blood pressure'
+    }
+    puts 'Getting Vital Signs / Observations'
+    vital_signs.each do |code,display|
+      search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      response.assert_search_results("Vital Sign: #{display}",search_reply)
+    end
 
     # DAF -----------------------------
 #    # AllergyIntolerance
     # DiagnosticOrder
     # DiagnosticReport
-    # Encounter
-    # FamilyMemberHistory
-    # Immunization
+#    # Encounter
+#    # FamilyMemberHistory
+#    # Immunization
     # Results (Observation)
     # Medication
 #    # MedicationStatement
@@ -176,9 +212,9 @@ get '/app' do
 #    # MedicationOrder
 #    # Patient
 #    # Condition
-    # Procedure
+#    # Procedure
 #    # SmokingStatus (Observation)
-    # VitalSigns (Observation)
+#    # VitalSigns (Observation)
     # List
     # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
 
@@ -196,11 +232,11 @@ get '/app' do
 #    # (10)	Medication allergies	    AllergyIntolerance
     # (11)	Laboratory test(s)	      Observation, DiagnosticReport
     # (12)	Laboratory value(s)/result(s)	Observation, DiagnosticReport
-    # (13)	Vital signs	             Observation
+#    # (13)	Vital signs	             Observation
     # (14)	(no longer required)	-
-    # (15)	Procedures	              Procedure
+#    # (15)	Procedures	              Procedure
     # (16)	Care team member(s)	     CarePlan
-    # (17)	Immunizations	           Immunization
+#    # (17)	Immunizations	           Immunization
     # (18)	Unique device identifier(s) for a patient’s implantable device(s)	Device
     # (19)	Assessment and plan of treatment	CarePlan
     # (20)	Goals	                   Goal
@@ -215,7 +251,7 @@ get '/app' do
     # condition_reply.resource.entry.each do |entry|
     #   record.entry << bundle_entry(entry.resource)
     # end
-    # medication_reply.resource.entry.each do |entry|
+    # search_reply.resource.entry.each do |entry|
     #   record.entry << bundle_entry(entry.resource)
     # end
     # puts "Built the bundle..."
