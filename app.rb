@@ -33,7 +33,8 @@ end
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL
 get '/app' do
-  response = Crucible::App::Html.new
+stream :keep_open do |out|
+  response = Crucible::App::Html.new(out)
   if params['error']
     if params['error_uri']
       redirect params['error_uri']
@@ -234,6 +235,7 @@ get '/app' do
 
     body response.close
   end
+end
 end
 
 # Helper method to wrap a resource in a Bundle.entry

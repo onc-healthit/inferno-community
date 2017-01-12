@@ -2,6 +2,7 @@ module Crucible
   module App
     class Html
 
+      attr_accessor :stream
       attr_accessor :body
       attr_accessor :alt
       attr_accessor :pass
@@ -9,15 +10,27 @@ module Crucible
       attr_accessor :fail
       attr_accessor :skip
 
-      def initialize
+      def initialize(stream=nil)
+        @stream = stream
+        @body = ''
         @pass = 0
         @not_found = 0
         @fail = 0
         @skip = 0
       end
 
+      # For a streaming IO
+      def output(string)
+        if @stream
+          @stream << string
+        else
+          @body += string
+        end
+      end
+
       def open
-        @body = '<html>
+        @body = ''
+        output '<html>
           <head>
             <title>Crucible SMART-on-FHIR DSTU2 App</title>
             <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.css">
@@ -78,7 +91,7 @@ module Crucible
       end
 
       def close
-        @body += '</div></body></html>'
+        output '</div></body></html>'
       end
 
       # Output a Hash as an HTML Table
@@ -98,15 +111,15 @@ module Crucible
 
       # Start an HTML Table
       def start_table(name,headers=[])
-        @body += "<h3>#{name}</h3><table class=\"pure-table\">"
+        output "<h3>#{name}</h3><table class=\"pure-table\">"
         if !headers.empty?
-          @body += '<thead><tr>'
+          output '<thead><tr>'
           headers.each do |title|
-            @body += "<th>#{title}</th>"
+            output "<th>#{title}</th>"
           end
-          @body += '</tr></thead>'
+          output '</tr></thead>'
         end
-        @body += '<tbody>'
+        output '<tbody>'
         self
       end
 
@@ -152,35 +165,35 @@ module Crucible
       # Add a table row to the open HTML Table
       def add_table_row(row=[])
         if @alt
-          @body += "<tr class=\"pure-table-odd\">"
+          output "<tr class=\"pure-table-odd\">"
         else
-          @body += '<tr>'
+          output '<tr>'
         end
         @alt = !@alt
         row.each do |col|
-          @body += "<td>#{col}</td>"
+          output "<td>#{col}</td>"
         end
-        @body += '</tr>'
+        output '</tr>'
         self
       end
 
       # Close an HTML Table
       def end_table
-        @body += '</tbody></table>'
+        output '</tbody></table>'
         self
       end
 
       # Add an HTML Form
       def add_form(name,action,fields=Hash.new(''))
-        @body += '</div><div>'
-        @body += "<form method=\"POST\" action=\"#{action}\">"
+        output '</div><div>'
+        output "<form method=\"POST\" action=\"#{action}\">"
         start_table(name)
         fields.each do |key, value|
           field = "<input type=\"text\" size=\"50\" name=\"#{key}\" value=\"#{value}\" required>"
           add_table_row([key,field])
         end
         end_table
-        @body += "<input type=\"submit\"></form>"
+        output "<input type=\"submit\"></form>"
         self
       end
 
