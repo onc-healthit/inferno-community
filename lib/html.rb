@@ -80,6 +80,12 @@ module Crucible
                 });
               } );
             </script>
+            <script>
+              var scrollToBottom = function() {
+                window.scrollTo(0, document.body.scrollHeight);
+              }
+              var intervalID = setInterval(scrollToBottom, 500);
+            </script>
           </head>
           <body>
           <div class="header">
@@ -91,7 +97,7 @@ module Crucible
       end
 
       def close
-        output '</div></body></html>'
+        output '</div><script>window.clearInterval(intervalID);</script></body></html>'
       end
 
       # Output a Hash as an HTML Table
