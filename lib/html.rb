@@ -40,7 +40,7 @@ module Crucible
                 background-color: #FFFF00;
               }
               span.skip {
-                color: #00FFFF;
+                color: #0000FF;
               }
               span.fail {
                 color: #B22222;
@@ -116,6 +116,9 @@ module Crucible
         if success==:not_found
           @not_found += 1
           status = '<span class="not_found">NOT FOUND</span>'
+        elsif success==:skip
+          @skip += 1
+          status = '<span class="skip">SKIPPED</span>'
         elsif success
           @pass += 1
           status = '<span class="pass">PASS</span>'
@@ -124,6 +127,26 @@ module Crucible
           status = '<span class="fail">FAIL</span>'
         end
         add_table_row([ status, description, detail ])
+      end
+
+      # Assert the search found items
+      def assert_search_results(name,reply)
+        begin
+          length = reply.resource.entry.length
+          detail = "Found #{length} #{name}."
+          if length == 0
+            status = :not_found
+          elsif length > 0
+            status = true
+          else
+            status = false
+            detail = "HTTP Status #{reply.code}&nbsp;#{reply.body}"
+          end
+        rescue
+          status = false
+          detail = "HTTP Status #{reply.code}&nbsp;#{reply.body}"
+        end
+        assert(name,status,detail)
       end
 
       # Add a table row to the open HTML Table

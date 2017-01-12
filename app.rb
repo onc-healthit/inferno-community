@@ -84,6 +84,7 @@ get '/app' do
     response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
     response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
     # US Extensions
+    puts 'Examining Patient for US-Core Extensions'
     extensions = {
       'Race' => 'http://hl7.org/fhir/StructureDefinition/us-core-race',
       'Ethnicity' => 'http://hl7.org/fhir/StructureDefinition/us-core-ethnicity',
@@ -94,14 +95,12 @@ get '/app' do
     required_extensions = ['Race','Ethnicity']
     extensions.each do |name,url|
       detail = nil
-      check = false
+      check = :not_found
       if patient_details['extension']
         detail = patient_details['extension'].find{|e| e['url']==url }
-        if required_extensions.include?(name)
-          check = !detail.nil?
-        else
-          check = :not_found
-        end
+        check = !detail.nil? if required_extensions.include?(name)
+      elsif required_extensions.include?(name)
+        check = false
       end
       response.assert("Patient #{name}", check, detail)
     end
@@ -109,17 +108,32 @@ get '/app' do
 
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
+    puts 'Getting Smoking Status'
     smoking_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
     detail = smoking_reply.resource.entry.first.to_fhir_json rescue nil
     response.assert('Smoking Status',((smoking_reply.resource.entry.length >= 1) rescue false),detail)
 
     # Get the patient's conditions
+    puts 'Getting Conditions'
     condition_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
-    puts "Conditions: #{condition_reply.resource.entry.length}"
+    response.assert_search_results('Conditions',condition_reply)
 
     # Get the patient's medications
-    medication_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active' } })
-    puts "Medications: #{medication_reply.resource.entry.length}"
+    puts 'Getting MedicationOrders'
+    medication_reply = client.search(FHIR::MedicationOrder, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
+    response.assert_search_results('MedicationOrders',medication_reply)
+
+    puts 'Getting MedicationStatements'
+    medication_reply = client.search(FHIR::MedicationStatement, search: { parameters: { 'patient' => patient_id, 'status' => 'active,completed' } })
+    response.assert_search_results('MedicationStatements',medication_reply)
+
+    puts 'Getting MedicationDispense'
+    medication_reply = client.search(FHIR::MedicationDispense, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('MedicationDispenses',medication_reply)
+
+    puts 'Getting MedicationAdministration'
+    medication_reply = client.search(FHIR::MedicationAdministration, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('MedicationAdministrations',medication_reply)
 
     # Get the patient's allergies
     # There should be at least one. No known allergies should have a negated entry.
@@ -129,11 +143,26 @@ get '/app' do
     #   429625007	No Known Food Allergies
     #   409137002	No Known Drug Allergies
     #   428607008	No Known Environmental Allergy
+    puts 'Getting AllergyIntolerances'
     allergy_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
-    puts "AllergyIntolerances: #{allergy_reply.resource.entry.length}"
+    response.assert_search_results('AllergyIntolerances',allergy_reply)
+    begin
+      if allergy_reply.resource.entry.length==0
+        response.assert('No Known Allergies',false)
+      else
+        response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
+      end
+    rescue
+      response.assert('No Known Allergies',false)
+    end
+
+    puts 'Getting Procedures'
+    medication_reply = client.search(FHIR::Procedure, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('Procedures',medication_reply)
+
 
     # DAF -----------------------------
-#~    # AllergyIntolerance
+#    # AllergyIntolerance
     # DiagnosticOrder
     # DiagnosticReport
     # Encounter
@@ -141,9 +170,9 @@ get '/app' do
     # Immunization
     # Results (Observation)
     # Medication
-    # MedicationStatement
-    # MedicationAdministration
-    # MedicationDispense
+#    # MedicationStatement
+#    # MedicationAdministration
+#    # MedicationDispense
 #    # MedicationOrder
 #    # Patient
 #    # Condition
@@ -162,9 +191,9 @@ get '/app' do
 #    # (5)	Ethnicity	                  Patient
 #    # (6)	Preferred language	       Patient
 #    # (7)	Smoking status	           Observation
-    # (8)	Problems	                 Condition
-    # (9)	Medications	                Medication, MedicationStatement, MedicationOrder
-    # (10)	Medication allergies	    AllergyIntolerance
+#    # (8)	Problems	                 Condition
+#    # (9)	Medications	                Medication, MedicationStatement, MedicationOrder
+#    # (10)	Medication allergies	    AllergyIntolerance
     # (11)	Laboratory test(s)	      Observation, DiagnosticReport
     # (12)	Laboratory value(s)/result(s)	Observation, DiagnosticReport
     # (13)	Vital signs	             Observation
