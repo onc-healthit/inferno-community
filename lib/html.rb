@@ -196,7 +196,7 @@ module Crucible
       # Add an HTML Form
       def add_form(name,action,fields=Hash.new(''))
         output '</div><div>'
-        output "<form method=\"POST\" action=\"#{action}\">"
+        output "<form method=\"POST\" action=\"#{base_url}#{action}\">"
         start_table(name)
         fields.each do |key, value|
           field = "<input type=\"text\" size=\"50\" name=\"#{key}\" value=\"#{value}\" required>"
