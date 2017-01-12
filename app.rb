@@ -1,6 +1,6 @@
 # You should never deactivate SSL Peer Verification
 # except in terrible development situations using invalid certificates:
-OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 require 'yaml'
 require 'sinatra'
@@ -39,10 +39,25 @@ stream :keep_open do |out|
     if params['error_uri']
       redirect params['error_uri']
     else
-      body response.open.echo_hash('Invalid Launch!',params).close
+      response.open.echo_hash('Invalid Launch!',params).close
     end
-  elsif params['state'] && params['state'] != session[:state]
-    body response.open.echo_hash('Invalid Launch State!',params).close
+  elsif params['state'] != session[:state]
+    params['Launch Error'] = 'The <span>state</span> parameter did not match the session <span>state</span> set at launch.
+                              <br/>&nbsp;<br/>
+                              Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
+    response.open.echo_hash('Invalid Launch State!',params).close
+  elsif params['state'].nil? || params['code'].nil? || session[:client_id].nil? || session[:token_url].nil? || session[:fhir_url].nil?
+    response.open
+    response.echo_hash('oauth2 redirect parameters',params)
+    response.echo_hash('session state',session)
+    response.start_table('Errors',['Status','Description','Detail'])
+    message = 'The <span>/app</span> endpoint requires <span>code</span> and <span>state</span> parameters.
+              <br/>&nbsp;<br/>
+              The session state should also have been set at <span>/launch</span> with <span>client_id</span>, <span>token_url</span>, and <span>fhir_url</span> information.
+              <br/>&nbsp;<br/>
+               Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
+    response.assert('OAuth2 Launch Parameters',false,message)
+    response.close
   else
     # Get the OAuth2 token
     puts "App Params: #{params}"
@@ -233,7 +248,7 @@ stream :keep_open do |out|
 
     # Output the time spent
 
-    body response.close
+    response.close
   end
 end
 end
@@ -247,31 +262,40 @@ end
 
 # This is the launch URI that redirects to an Authorization server
 get '/launch' do
-  client_id = Crucible::App::Config.get_client_id(params['iss'])
-  auth_info = Crucible::App::Config.get_auth_info(params['iss'])
-  session[:client_id] = client_id
-  session[:fhir_url] = params['iss']
-  session[:authorize_url] = auth_info[:authorize_url]
-  session[:token_url] = auth_info[:token_url]
-  puts "Launch Client ID: #{client_id}\nLaunch Auth Info: #{auth_info}\nLaunch Redirect: #{request.base_url}/app"
-  session[:state] = SecureRandom.uuid
-  oauth2_params = {
-    'response_type' => 'code',
-    'client_id' => client_id,
-    'redirect_uri' => "#{request.base_url}/app",
-    'scope' => Crucible::App::Config.get_scopes(params['iss']),
-    'launch' => params['launch'],
-    'state' => session[:state],
-    'aud' => params['iss']
-  }
-  oauth2_auth_query = "#{session[:authorize_url]}?"
-  oauth2_params.each do |key,value|
-    oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
+  if params && params['iss'] && params['launch']
+    client_id = Crucible::App::Config.get_client_id(params['iss'])
+    auth_info = Crucible::App::Config.get_auth_info(params['iss'])
+    session[:client_id] = client_id
+    session[:fhir_url] = params['iss']
+    session[:authorize_url] = auth_info[:authorize_url]
+    session[:token_url] = auth_info[:token_url]
+    puts "Launch Client ID: #{client_id}\nLaunch Auth Info: #{auth_info}\nLaunch Redirect: #{request.base_url}/app"
+    session[:state] = SecureRandom.uuid
+    oauth2_params = {
+      'response_type' => 'code',
+      'client_id' => client_id,
+      'redirect_uri' => "#{request.base_url}/app",
+      'scope' => Crucible::App::Config.get_scopes(params['iss']),
+      'launch' => params['launch'],
+      'state' => session[:state],
+      'aud' => params['iss']
+    }
+    oauth2_auth_query = "#{session[:authorize_url]}?"
+    oauth2_params.each do |key,value|
+      oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
+    end
+    puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
+    redirect oauth2_auth_query[0..-2]
+  else
+    response = Crucible::App::Html.new
+    response.open.echo_hash('params',params)
+    response.start_table('Errors',['Status','Description','Detail'])
+    message = 'The <span>/launch</span> endpoint requires <span>iss</span> and <span>launch</span> parameters.
+              <br/>&nbsp;<br/>
+               Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
+    response.assert('OAuth2 Launch Parameters',false,message)
+    body response.close
   end
-  puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
-  response = Crucible::App::Html.new
-  content = response.open.echo_hash('params',params).echo_hash('OAuth2 Metadata',auth_info).close
-  redirect oauth2_auth_query[0..-2], content
 end
 
 get '/config' do
