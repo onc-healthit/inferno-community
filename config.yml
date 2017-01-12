@@ -13,3 +13,4 @@ scopes:
   epic: launch openid profile patient/*.read
   smart: launch openid profile patient/*.read
   mitre: launch openid profile patient/*.read
+base_url: ''

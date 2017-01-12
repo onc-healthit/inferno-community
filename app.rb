@@ -22,13 +22,13 @@ end
 
 # The index displays the available endpoints
 get '/index' do
-  bullets = {
-    '/index' => 'this page',
-    '/app' => 'the app (also the redirect_uri after authz)',
-    '/launch' => 'the launch url',
-    '/config' => 'configure client ID and scopes'
-  }
   response = Crucible::App::Html.new
+  bullets = {
+    "#{response.base_url}/index" => 'this page',
+    "#{response.base_url}/app" => 'the app (also the redirect_uri after authz)',
+    "#{response.base_url}/launch" => 'the launch url',
+    "#{response.base_url}/config" => 'configure client ID and scopes'
+  }
   body response.open.echo_hash('End Points',bullets).close
 end
 

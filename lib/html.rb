@@ -30,11 +30,11 @@ module Crucible
 
       def open
         @body = ''
-        output '<html>
+        output "<html>
           <head>
             <title>Crucible SMART-on-FHIR DSTU2 App</title>
-            <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.css">
-            <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+            <link rel=\"stylesheet\" href=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.css\">
+            <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
             <style>
               table {
                 border-collapse: collapse;
@@ -69,13 +69,13 @@ module Crucible
                 left: 10px;
               }
             </style>
-            <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-            <script src="jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+            <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
+            <script src=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.js\"></script>
             <script>
               $( function() {
-                $( "#accordion" ).accordion({
+                $( \"#accordion\" ).accordion({
                   collapsible: true,
-                  heightStyle: "content",
+                  heightStyle: \"content\",
                   active: -1
                 });
               } );
@@ -88,15 +88,15 @@ module Crucible
             </script>
           </head>
           <body>
-          <div class="header">
-            <img src="images/logo.png" alt="Crucible" />
+          <div class=\"header\">
+            <img src=\"#{base_url}/images/logo.png\" alt=\"Crucible\" />
             <h1>Crucible SMART-on-FHIR App (DSTU2)</h1>
           </div>
           <div>
-            <p>Crucible SMART App is a <a href="http://smarthealthit.org/smart-on-fhir/" target="_blank">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
-            <p>These tests focus on <a href="http://hl7.org/fhir/DSTU2/index.html" target="_blank">FHIR DSTU2</a> and in particular the <a href="http://hl7.org/fhir/DSTU2/daf/daf.html" target="_blank">DAF Implementation Guide</a> and <a href="http://hl7.org/fhir/DSTU2/argonaut/argonaut.html" target="_blank">Argonauts</a> Use-Cases.</p>
+            <p>Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
+            <p>These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.</p>
           </div>
-          <div id="accordion">'
+          <div id=\"accordion\">"
         self
       end
 
@@ -205,6 +205,10 @@ module Crucible
         end_table
         output "<input type=\"submit\"></form>"
         self
+      end
+
+      def base_url
+        Crucible::App::Config::CONFIGURATION['base_url']
       end
 
     end
