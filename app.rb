@@ -29,7 +29,9 @@ get '/index' do
     "#{response.base_url}/launch" => 'the launch url',
     "#{response.base_url}/config" => 'configure client ID and scopes'
   }
-  body response.open.echo_hash('End Points',bullets).close
+  response.open.echo_hash('End Points',bullets)
+
+  body response.instructions.close
 end
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL
@@ -43,10 +45,15 @@ stream :keep_open do |out|
       response.open.echo_hash('Invalid Launch!',params).close
     end
   elsif params['state'] != session[:state]
-    params['Launch Error'] = 'The <span>state</span> parameter did not match the session <span>state</span> set at launch.
-                              <br/>&nbsp;<br/>
-                              Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
-    response.open.echo_hash('Invalid Launch State!',params).close
+    response.open
+    response.echo_hash('oauth2 redirect parameters',params)
+    response.echo_hash('session state',session)
+    response.start_table('Errors',['Status','Description','Detail'])
+    message = 'The <span>state</span> parameter did not match the session <span>state</span> set at launch.
+              <br/>&nbsp;<br/>
+              Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
+    response.assert('Invalid Launch State',false,message).end_table
+    response.instructions.close
   elsif params['state'].nil? || params['code'].nil? || session[:client_id].nil? || session[:token_url].nil? || session[:fhir_url].nil?
     response.open
     response.echo_hash('oauth2 redirect parameters',params)
@@ -57,8 +64,8 @@ stream :keep_open do |out|
               The session state should also have been set at <span>/launch</span> with <span>client_id</span>, <span>token_url</span>, and <span>fhir_url</span> information.
               <br/>&nbsp;<br/>
                Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
-    response.assert('OAuth2 Launch Parameters',false,message)
-    response.close
+    response.assert('OAuth2 Launch Parameters',false,message).end_table
+    response.instructions.close
   else
     start_time = Time.now
     # Get the OAuth2 token
@@ -253,6 +260,7 @@ stream :keep_open do |out|
     response.output "</div><div><br/><span>Tests completed in #{TimeDifference.between(start_time,end_time).humanize}.</span><br/>"
     response.close
   end
+  out.close
 end
 end
 
@@ -296,8 +304,8 @@ get '/launch' do
     message = 'The <span>/launch</span> endpoint requires <span>iss</span> and <span>launch</span> parameters.
               <br/>&nbsp;<br/>
                Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
-    response.assert('OAuth2 Launch Parameters',false,message)
-    body response.close
+    response.assert('OAuth2 Launch Parameters',false,message).end_table
+    body response.instructions.close
   end
 end
 

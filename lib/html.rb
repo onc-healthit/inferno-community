@@ -211,6 +211,59 @@ module Crucible
         Crucible::App::Config::CONFIGURATION['base_url']
       end
 
+      def instructions
+        output "</div><div>
+          <h2>Instructions</h2>
+          <h3>Configuring Client ID and Scopes (required)</h3>
+          <p>OAuth2 client IDs and scopes for different FHIR servers must be stored in the
+          <a href=\"/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
+          implementations.</p>
+
+          <p>Each entry under <code>client_id</code> and <code>scopes</code> should be a unique substring within
+          the FHIR server URL (for example, <code>cerner</code> or <code>epic</code>), with the value being the
+          associated client ID to use or OAuth2 scopes to request.</p>
+
+          <h3>Launching the App</h3>
+
+          <ul>
+          <li>Using Cerner Millenium
+
+          <ol>
+          <li>Create an account on <a href=\"https://code.cerner.com\">code.cerner.com</a></li>
+          <li>Register a \"New App\"
+
+          <ul>
+          <li>Launch URI: <code>http://projectcrucible.org/smart/launch</code></li>
+          <li>Redirect URI: <code>http://projectcrucible.org/smart/app</code></li>
+          <li>App Type: <code>Provider</code></li>
+          <li>FHIR Spec: <code>dstu2_patient</code></li>
+          <li>Authorized: <code>Yes</code></li>
+          <li>Scopes: <em>select all the Patient Scopes</em></li>
+          </ul></li>
+          <li>Select your App under \"My Apps\"</li>
+          <li>Follow the directions and \"Begin Testing\"</li>
+          </ol></li>
+
+          <li>Using Epic
+
+          <ol>
+          <li>Create an account on <a href=\"https://open.epic.com\">open.epic.com</a>.</li>
+          <li>Navigate to the <a href=\"https://open.epic.com/Launchpad/Oauth2Sso\">Launchpad</a>.</li>
+          <li>Enter the details:
+
+          <ul>
+          <li>Launch URL: <code>http://projectcrucible.org/smart/launch</code></li>
+          <li>Redirect URL: <code>http://projectcrucible.org/smart/app</code></li>
+          </ul></li>
+          <li>Click \"Launch App\"</li>
+          </ol></li>
+          </ul>
+
+          <p>Errors encountered during launch are probably associated with improper
+          configuration of the client ID and scopes.</p>"
+        self
+      end
+
     end
   end
 end
