@@ -216,7 +216,7 @@ module Crucible
           <h2>Instructions</h2>
           <h3>Configuring Client ID and Scopes (required)</h3>
           <p>OAuth2 client IDs and scopes for different FHIR servers must be stored in the
-          <a href=\"/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
+          <a href=\"#{base_url}/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
           implementations.</p>
 
           <p>Each entry under <code>client_id</code> and <code>scopes</code> should be a unique substring within
