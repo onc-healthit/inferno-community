@@ -92,6 +92,10 @@ module Crucible
             <img src="images/logo.png" alt="Crucible" />
             <h1>Crucible SMART-on-FHIR App (DSTU2)</h1>
           </div>
+          <div>
+            <p>Crucible SMART App is a <a href="http://smarthealthit.org/smart-on-fhir/" target="_blank">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
+            <p>These tests focus on <a href="http://hl7.org/fhir/DSTU2/index.html" target="_blank">FHIR DSTU2</a> and in particular the <a href="http://hl7.org/fhir/DSTU2/daf/daf.html" target="_blank">DAF Implementation Guide</a> and <a href="http://hl7.org/fhir/DSTU2/argonaut/argonaut.html" target="_blank">Argonauts</a> Use-Cases.</p>
+          </div>
           <div id="accordion">'
         self
       end

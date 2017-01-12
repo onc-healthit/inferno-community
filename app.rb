@@ -250,7 +250,7 @@ stream :keep_open do |out|
 
     # Output the time spent
     end_time = Time.now
-    response.output "<br/><span>Tests completed in #{TimeDifference.between(start_time,end_time).humanize}.</span><br/>"
+    response.output "</div><div><br/><span>Tests completed in #{TimeDifference.between(start_time,end_time).humanize}.</span><br/>"
     response.close
   end
 end
