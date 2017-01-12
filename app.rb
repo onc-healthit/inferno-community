@@ -74,7 +74,7 @@ stream :keep_open do |out|
     oauth2_params = {
       'grant_type' => 'authorization_code',
       'code' => params['code'],
-      'redirect_uri' => "#{request.base_url}/app",
+      'redirect_uri' => Crucible::App::Config::CONFIGURATION['redirect_url'],
       'client_id' => session[:client_id]
     }
     puts "Token Params: #{oauth2_params}"
@@ -280,12 +280,12 @@ get '/launch' do
     session[:fhir_url] = params['iss']
     session[:authorize_url] = auth_info[:authorize_url]
     session[:token_url] = auth_info[:token_url]
-    puts "Launch Client ID: #{client_id}\nLaunch Auth Info: #{auth_info}\nLaunch Redirect: #{request.base_url}/app"
+    puts "Launch Client ID: #{client_id}\nLaunch Auth Info: #{auth_info}\nLaunch Redirect: #{Crucible::App::Config::CONFIGURATION['redirect_url']}"
     session[:state] = SecureRandom.uuid
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => client_id,
-      'redirect_uri' => "#{request.base_url}/app",
+      'redirect_uri' => Crucible::App::Config::CONFIGURATION['redirect_url'],
       'scope' => Crucible::App::Config.get_scopes(params['iss']),
       'launch' => params['launch'],
       'state' => session[:state],
