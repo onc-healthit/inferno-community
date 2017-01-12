@@ -197,10 +197,19 @@ get '/app' do
       response.assert_search_results("Vital Sign: #{display}",search_reply)
     end
 
+    puts 'Getting DiagnosticOrders'
+    search_reply = client.search(FHIR::DiagnosticOrder, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('DiagnosticOrders',search_reply)
+
+    puts 'Getting DiagnosticReports'
+    search_reply = client.search(FHIR::DiagnosticReport, search: { parameters: { 'patient' => patient_id } })
+    response.assert_search_results('DiagnosticReports',search_reply)
+
+
     # DAF -----------------------------
 #    # AllergyIntolerance
-    # DiagnosticOrder
-    # DiagnosticReport
+#    # DiagnosticOrder
+#    # DiagnosticReport
 #    # Encounter
 #    # FamilyMemberHistory
 #    # Immunization
@@ -230,8 +239,8 @@ get '/app' do
 #    # (8)	Problems	                 Condition
 #    # (9)	Medications	                Medication, MedicationStatement, MedicationOrder
 #    # (10)	Medication allergies	    AllergyIntolerance
-    # (11)	Laboratory test(s)	      Observation, DiagnosticReport
-    # (12)	Laboratory value(s)/result(s)	Observation, DiagnosticReport
+#    # (11)	Laboratory test(s)	      Observation, DiagnosticReport
+#    # (12)	Laboratory value(s)/result(s)	Observation, DiagnosticReport
 #    # (13)	Vital signs	             Observation
     # (14)	(no longer required)	-
 #    # (15)	Procedures	              Procedure
@@ -240,7 +249,7 @@ get '/app' do
     # (18)	Unique device identifier(s) for a patient’s implantable device(s)	Device
     # (19)	Assessment and plan of treatment	CarePlan
     # (20)	Goals	                   Goal
-    # (21)	Health concerns	         Condition
+#    # (21)	Health concerns	         Condition
     # --------------------------------
     # Date range search requirements are included in the Quick Start section for the following resources -
     # Vital Signs, Laboratory Results, Goals, Procedures, and Assessment and Plan of Treatment.
