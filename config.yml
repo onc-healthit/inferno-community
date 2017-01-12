@@ -14,3 +14,4 @@ scopes:
   smart: launch openid profile patient/*.read
   mitre: launch openid profile patient/*.read
 base_url: ''
+redirect_url: 'https://projectcrucible.org/smart/app'

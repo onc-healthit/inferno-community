@@ -233,8 +233,8 @@ module Crucible
           <li>Register a \"New App\"
 
           <ul>
-          <li>Launch URI: <code>http://projectcrucible.org/smart/launch</code></li>
-          <li>Redirect URI: <code>http://projectcrucible.org/smart/app</code></li>
+          <li>Launch URI: <code>https://projectcrucible.org/smart/launch</code></li>
+          <li>Redirect URI: <code>https://projectcrucible.org/smart/app</code></li>
           <li>App Type: <code>Provider</code></li>
           <li>FHIR Spec: <code>dstu2_patient</code></li>
           <li>Authorized: <code>Yes</code></li>
@@ -252,8 +252,8 @@ module Crucible
           <li>Enter the details:
 
           <ul>
-          <li>Launch URL: <code>http://projectcrucible.org/smart/launch</code></li>
-          <li>Redirect URL: <code>http://projectcrucible.org/smart/app</code></li>
+          <li>Launch URL: <code>https://projectcrucible.org/smart/launch</code></li>
+          <li>Redirect URL: <code>https://projectcrucible.org/smart/app</code></li>
           </ul></li>
           <li>Click \"Launch App\"</li>
           </ol></li>
