@@ -6,6 +6,7 @@ require 'yaml'
 require 'sinatra'
 require 'fhir_client'
 require 'rest-client'
+require 'time_difference'
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file
@@ -59,6 +60,7 @@ stream :keep_open do |out|
     response.assert('OAuth2 Launch Parameters',false,message)
     response.close
   else
+    start_time = Time.now
     # Get the OAuth2 token
     puts "App Params: #{params}"
 
@@ -247,7 +249,8 @@ stream :keep_open do |out|
     response.end_table
 
     # Output the time spent
-
+    end_time = Time.now
+    response.output "<br/><span>Tests completed in #{TimeDifference.between(start_time,end_time).humanize}.</span><br/>"
     response.close
   end
 end
