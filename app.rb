@@ -1,6 +1,6 @@
 # You should never deactivate SSL Peer Verification
 # except in terrible development situations using invalid certificates:
-# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 require 'yaml'
 require 'sinatra'
@@ -19,7 +19,7 @@ get '/' do
   status, headers, body = call! env.merge("PATH_INFO" => '/index')
 end
 
-# The index  displays the available endpoints
+# The index displays the available endpoints
 get '/index' do
   bullets = {
     '/index' => 'this page',
@@ -76,11 +76,42 @@ get '/app' do
     patient = client.read(FHIR::Patient, patient_id).resource
     response.assert('Patient successfully retrieved.',patient.is_a?(FHIR::Patient),patient.xmlId)
 
-    patient_details = patient.massageHash(patient,true).keep_if{|k,v| ['id','name','gender','birthDate'].include?(k)}
+    patient_details = patient.massageHash(patient,true)
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
+    # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
     response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
+    response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
+    # US Extensions
+    extensions = {
+      'Race' => 'http://hl7.org/fhir/StructureDefinition/us-core-race',
+      'Ethnicity' => 'http://hl7.org/fhir/StructureDefinition/us-core-ethnicity',
+      'Religion' => 'http://hl7.org/fhir/StructureDefinition/us-core-religion',
+      'Mother\'s Maiden Name' => 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName',
+      'Birth Place' => 'http://hl7.org/fhir/StructureDefinition/birthPlace'
+    }
+    required_extensions = ['Race','Ethnicity']
+    extensions.each do |name,url|
+      detail = nil
+      check = false
+      if patient_details['extension']
+        detail = patient_details['extension'].find{|e| e['url']==url }
+        if required_extensions.include?(name)
+          check = !detail.nil?
+        else
+          check = :not_found
+        end
+      end
+      response.assert("Patient #{name}", check, detail)
+    end
+    response.assert('Patient Preferred Language',(patient_details['communication'] && patient_details['communication'].find{|c|c['language'] && c['preferred']}),patient_details['communication'])
+
+    # Get the patient's smoking status
+    # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
+    smoking_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    detail = smoking_reply.resource.entry.first.to_fhir_json rescue nil
+    response.assert('Smoking Status',((smoking_reply.resource.entry.length >= 1) rescue false),detail)
 
     # Get the patient's conditions
     condition_reply = client.search(FHIR::Condition, search: { parameters: { 'patient' => patient_id, 'clinicalstatus' => 'active' } })
@@ -117,20 +148,20 @@ get '/app' do
 #    # Patient
 #    # Condition
     # Procedure
-    # SmokingStatus (Observation)
+#    # SmokingStatus (Observation)
     # VitalSigns (Observation)
     # List
     # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
 
     # ARGONAUTS ----------------------
-    # No	CCDS Data Element	FHR Resource
+    # 	CCDS Data Element	         FHIR Resource
 #    # (1)	Patient Name	             Patient
 #    # (2)	Sex	                        Patient
-    # (3)	Date of birth	              Patient
-    # (4)	Race	                       Patient
-    # (5)	Ethnicity	                  Patient
-    # (6)	Preferred language	       Patient
-    # (7)	Smoking status	           Observation
+#    # (3)	Date of birth	              Patient
+#    # (4)	Race	                       Patient
+#    # (5)	Ethnicity	                  Patient
+#    # (6)	Preferred language	       Patient
+#    # (7)	Smoking status	           Observation
     # (8)	Problems	                 Condition
     # (9)	Medications	                Medication, MedicationStatement, MedicationOrder
     # (10)	Medication allergies	    AllergyIntolerance

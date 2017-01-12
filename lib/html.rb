@@ -5,11 +5,13 @@ module Crucible
       attr_accessor :body
       attr_accessor :alt
       attr_accessor :pass
+      attr_accessor :not_found
       attr_accessor :fail
       attr_accessor :skip
 
       def initialize
         @pass = 0
+        @not_found = 0
         @fail = 0
         @skip = 0
       end
@@ -33,6 +35,9 @@ module Crucible
               }
               span.pass {
                 color: #008000;
+              }
+              span.not_found {
+                background-color: #FFFF00;
               }
               span.skip {
                 color: #00FFFF;
@@ -106,15 +111,19 @@ module Crucible
       end
 
       # Make an assertion
-      def assert(description,success,detail='')
-        if success
+      def assert(description,success,detail='Not available')
+        detail = 'Not available' if detail.nil?
+        if success==:not_found
+          @not_found += 1
+          status = '<span class="not_found">NOT FOUND</span>'
+        elsif success
           @pass += 1
-          image = '<span class="pass">PASS</span>'
+          status = '<span class="pass">PASS</span>'
         else
           @fail += 1
-          image = '<span class="fail">FAIL</span>'
+          status = '<span class="fail">FAIL</span>'
         end
-        add_table_row([ image, description, detail ])
+        add_table_row([ status, description, detail ])
       end
 
       # Add a table row to the open HTML Table
