@@ -195,10 +195,11 @@ DEPENDENCIES
   fhir_client!
   fhir_model!
   oauth2
+  pry
   rest-client
   sinatra
   thin
   time_difference
 
 BUNDLED WITH
-   1.13.6
+   1.15.1

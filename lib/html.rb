@@ -33,42 +33,8 @@ module Crucible
         output "<html>
           <head>
             <title>Crucible SMART-on-FHIR DSTU2 App</title>
-            <link rel=\"stylesheet\" href=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.css\">
             <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
-            <style>
-              table {
-                border-collapse: collapse;
-              }
-              table, td, th {
-                border: 1px solid black;
-              }
-              span {
-                font-family: monospace;
-                font-weight: bold;
-              }
-              span.pass {
-                color: #008000;
-              }
-              span.not_found {
-                background-color: #FFFF00;
-              }
-              span.skip {
-                color: #0000FF;
-              }
-              span.fail {
-                color: #B22222;
-              }
-              .header img {
-                float: left;
-                width: 50px;
-                height: 50px;
-              }
-              .header h1 {
-                position: relative;
-                top: 10px;
-                left: 10px;
-              }
-            </style>
+            <link rel=\"stylesheet\" href=\"#{base_url}/css/font.css\">
             <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
             <script src=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.js\"></script>
             <script>
@@ -80,6 +46,98 @@ module Crucible
                 });
               } );
             </script>
+            <style>
+              html {
+                padding-left: 1%;
+              }
+              table {
+                border-collapse: collapse;
+                font-size: 14px;
+              }
+              th {
+                font-weight: bold;
+              }
+              tr {
+                background-color: #FFF;
+                color: #000;
+              }
+              p, ul, ol {
+                font-size: 14px;
+              }
+              span.pass {
+                color: #008000;
+              }
+              span.not_found {
+                color: #FF4500;
+              }
+              span.skip {
+                color: #0000FF;
+              }
+              span.fail {
+                color: #B22222;
+              }
+              .header {
+                margin-bottom: 20px;
+              }
+              .header img {
+                float: left;
+                width: 50px;
+                height: 50px;
+              }
+              .header h1 {
+                position: relative;
+                top: 10px;
+                left: 10px;
+              }
+              input {
+                margin-top: 10px;
+                margin-bottom: 10px;
+              }
+              input[type=button], input[type=submit], input[type=reset] {
+                background-color: #FFF;
+                color: #B74C18;
+                border: 1px solid #B74C18;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+                background-color: #B74C18;
+                color: #FFF;
+                border: 1px solid #B74C18;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              #accordion {
+                width: 99%;
+              }
+              #accordion .ui-accordion-header {
+                background-color: #FFF;
+                color: #4A6E98;
+                display: block;
+                font-size: 18px;
+                border: 1px solid #4A6E98;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              #accordion .ui-accordion-header:hover {
+                background-color: #4A6E98;
+                color: #FFF;
+                display: block;
+                font-size: 18px;
+                border: 1px solid #4A6E98;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              #accordion .ui-accordion-content {
+                background-color: #FFF;
+                color: #000;
+                font-size: 14px;
+              }
+            </style>
             <script>
               var scrollToBottom = function() {
                 window.scrollTo(0, document.body.scrollHeight);
@@ -101,7 +159,13 @@ module Crucible
       end
 
       def close
-        output '</div><script>window.clearInterval(intervalID);</script></body></html>'
+        output '</div>
+          <script>
+            window.clearInterval(intervalID);
+            window.scrollTo(0, 0);
+          </script>
+          </body>
+          </html>'
       end
 
       # Output a Hash as an HTML Table
@@ -174,12 +238,13 @@ module Crucible
 
       # Add a table row to the open HTML Table
       def add_table_row(row=[])
-        if @alt
-          output "<tr class=\"pure-table-odd\">"
-        else
-          output '<tr>'
-        end
-        @alt = !@alt
+        # if @alt
+        #   output "<tr class=\"pure-table-odd\">"
+        # else
+        #   output '<tr>'
+        # end
+        # @alt = !@alt
+        output '<tr>'
         row.each do |col|
           output "<td>#{col}</td>"
         end
@@ -214,7 +279,7 @@ module Crucible
       def instructions
         output "</div><div>
           <h2>Instructions</h2>
-          <h3>Configuring Client ID and Scopes (required)</h3>
+          <h4>Configuring Client ID and Scopes (required)</h4>
           <p>OAuth2 client IDs and scopes for different FHIR servers must be stored in the
           <a href=\"#{base_url}/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
           implementations.</p>
@@ -223,7 +288,7 @@ module Crucible
           the FHIR server URL (for example, <code>cerner</code> or <code>epic</code>), with the value being the
           associated client ID to use or OAuth2 scopes to request.</p>
 
-          <h3>Launching the App</h3>
+          <h4>Launching the App</h4>
 
           <ul>
           <li>Using Cerner Millenium

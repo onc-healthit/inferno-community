@@ -7,6 +7,7 @@ require 'sinatra'
 require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
+require 'pry'
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file
@@ -46,8 +47,8 @@ stream :keep_open do |out|
     end
   elsif params['state'] != session[:state]
     response.open
-    response.echo_hash('oauth2 redirect parameters',params)
-    response.echo_hash('session state',session)
+    response.echo_hash('OAuth2 Redirect Parameters',params)
+    response.echo_hash('Session State',session)
     response.start_table('Errors',['Status','Description','Detail'])
     message = 'The <span>state</span> parameter did not match the session <span>state</span> set at launch.
               <br/>&nbsp;<br/>
@@ -56,8 +57,8 @@ stream :keep_open do |out|
     response.instructions.close
   elsif params['state'].nil? || params['code'].nil? || session[:client_id].nil? || session[:token_url].nil? || session[:fhir_url].nil?
     response.open
-    response.echo_hash('oauth2 redirect parameters',params)
-    response.echo_hash('session state',session)
+    response.echo_hash('OAuth2 Redirect Parameters',params)
+    response.echo_hash('Session State',session)
     response.start_table('Errors',['Status','Description','Detail'])
     message = 'The <span>/app</span> endpoint requires <span>code</span> and <span>state</span> parameters.
               <br/>&nbsp;<br/>
@@ -87,8 +88,8 @@ stream :keep_open do |out|
 
     # Begin outputting the response body
     response.open
-    response.echo_hash('oauth2 redirect parameters',params)
-    response.echo_hash('token response',token_response)
+    response.echo_hash('OAuth2 Redirect Parameters',params)
+    response.echo_hash('Token Response',token_response)
     response.start_table('Crucible Test Results',['Status','Description','Detail'])
 
     # Configure the FHIR Client
@@ -249,15 +250,15 @@ stream :keep_open do |out|
 
     # Output a summary
     total = response.pass + response.not_found + response.skip + response.fail
-    response.assert("#{((response.pass.to_f / total.to_f)*100.0).to_i}% (#{response.pass} of #{total})",true,'Total tests passed')
-    response.assert("#{((response.not_found.to_f / total.to_f)*100.0).to_i}% (#{response.not_found} of #{total})",:not_found,'Total tests "not found" or inconclusive')
-    response.assert("#{((response.skip.to_f / total.to_f)*100.0).to_i}% (#{response.skip} of #{total})",:skip,'Total tests skipped')
-    response.assert("#{((response.fail.to_f / total.to_f)*100.0).to_i}% (#{response.fail} of #{total})",false,'Total tests failed')
+    response.assert("#{((response.pass.to_f / total.to_f)*100.0).round}% (#{response.pass} of #{total})",true,'Total tests passed')
+    response.assert("#{((response.not_found.to_f / total.to_f)*100.0).round}% (#{response.not_found} of #{total})",:not_found,'Total tests "not found" or inconclusive')
+    response.assert("#{((response.skip.to_f / total.to_f)*100.0).round}% (#{response.skip} of #{total})",:skip,'Total tests skipped')
+    response.assert("#{((response.fail.to_f / total.to_f)*100.0).round}% (#{response.fail} of #{total})",false,'Total tests failed')
     response.end_table
 
     # Output the time spent
     end_time = Time.now
-    response.output "</div><div><br/><span>Tests completed in #{TimeDifference.between(start_time,end_time).humanize}.</span><br/>"
+    response.output "</div><div><br/><p>Tests completed in #{TimeDifference.between(start_time,end_time).humanize}.</p><br/>"
     response.close
   end
   out.close
