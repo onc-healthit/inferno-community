@@ -49,8 +49,9 @@ module Crucible
             <style>
               html {
                 color: #333333;
-                width: 99%;
-                padding-left: 1%;
+              }
+              header {
+                margin-bottom: 30px;
               }
               h3 {
                 background-color: #FFF;
@@ -87,20 +88,6 @@ module Crucible
               }
               span.fail {
                 color: #B22222;
-              }
-              .header {
-                margin-top: 10px;
-                margin-bottom: 20px;
-              }
-              .header img {
-                float: left;
-                width: 50px;
-                height: 50px;
-              }
-              .header h1 {
-                position: relative;
-                top: 10px;
-                left: 10px;
               }
               input {
                 margin-top: 10px;
@@ -156,15 +143,42 @@ module Crucible
             </script>
           </head>
           <body>
-          <div class=\"header\">
-            <img src=\"#{base_url}/images/logo.png\" alt=\"Crucible\" />
-            <h1>Crucible SMART-on-FHIR App (DSTU2)</h1>
-          </div>
-          <div>
-            <p>Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
-            <p>These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.</p>
-          </div>
-          <div id=\"accordion\">"
+            <header>
+              <div class=\"container\">
+                <div class=\"navbar-header\">
+                  <button class=\"navbar-toggle collapsed\" type=\"button\" data-toggle=\"collapse\" data-target=\".bs-navbar-collapse\">
+                    <span class=\"sr-only\">Toggle navigation</span>
+                    <span class=\"icon-bar\"></span>
+                    <span class=\"icon-bar\"></span>
+                    <span class=\"icon-bar\"></span>
+                  </button>
+                  <a href=\"https://projectcrucible.org\" class=\"navbar-brand\">CRUCIBLE</a>
+                </div>
+                <nav class=\"collapse navbar-collapse\">
+                  <ul class=\"nav navbar-nav pull-right\">
+                    <li><a href=\"https://projectcrucible.org\" class=\"navButton\">Server Test</a></li>
+                    <li><a href=\"https://projectcrucible.org/scorecard\" class=\"navButton\">Scorecard</a></li>
+                    <li><a href=\"https://projectcrucible.org/testdata\" class=\"navButton\">Test Data</a></li>
+                    <li><a href=\"/\" class=\"navButton\">SMART on FHIR</a></li>
+                    <li><a href=\"https://beta.projectcrucible.org\" class=\"navButton\">DSTU2 Version</a></li>
+                    <li class=\"dropdown\">
+                      <a href=\"#\" class=\"navButton\" data-toggle=\"dropdown\" id=\"contact-drop\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Contact Us<span class=\"caret\"></span></a>
+                      <ul class=\"dropdown-menu\" aria-labelledby=\"contact-drop\">
+                        <li><a class=\"navButton\" href=\"mailto:fhir-testing-list@lists.mitre.org?subject=Crucible\">Email Us</a></li>
+                        <li><a class=\"navButton\" target=\"_blank\" href=\"https://chat.fhir.org/#narrow/stream/crucible\">FHIR Chat</a></li>
+                        <li><a class=\"navButton\" target=\"_blank\" href=\"https://github.com/fhir-crucible/crucible/issues\">Log an issue</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </header>
+            <h1>SMART-on-<span style=\"color: #B74C18\">FHIR</span></h1>
+            <div>
+              <p>Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
+              <p>These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.</p>
+            </div>
+            <div id=\"accordion\">"
         self
       end
 
