@@ -48,6 +48,7 @@ module Crucible
             </script>
             <style>
               html {
+                color: #333333;
                 width: 99%;
                 padding-left: 1%;
               }
@@ -192,11 +193,11 @@ module Crucible
       end
 
       # Start an HTML Table
-      def start_table(name,headers=[],inAccordion=true)
-        if inAccordion
-          output "<h3>#{name}</h3><table class=\"pure-table\">"
+      def start_table(name,headers=[],in_accordion=true)
+        if in_accordion
+          output "<h3>#{name}</h3><table class=\"pure-table pure-table-horizontal\">"
         else
-          output "<h2>#{name}</h2><table class=\"pure-table\">"
+          output "<h2>#{name}</h2><table class=\"pure-table pure-table-horizontal\">"
         end
         if !headers.empty?
           output '<thead><tr>'
