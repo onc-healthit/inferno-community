@@ -48,7 +48,18 @@ module Crucible
             </script>
             <style>
               html {
+                width: 99%;
                 padding-left: 1%;
+              }
+              h3 {
+                background-color: #FFF;
+                color: #4A6E98;
+                display: block;
+                font-size: 18px;
+                border: 1px solid #4A6E98;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
               }
               table {
                 border-collapse: collapse;
@@ -108,9 +119,6 @@ module Crucible
                 border-radius: 5px;
                 padding: 10px;
                 padding-bottom: 7px;
-              }
-              #accordion {
-                width: 99%;
               }
               #accordion .ui-accordion-header {
                 background-color: #FFF;
@@ -184,8 +192,12 @@ module Crucible
       end
 
       # Start an HTML Table
-      def start_table(name,headers=[])
-        output "<h3>#{name}</h3><table class=\"pure-table\">"
+      def start_table(name,headers=[],inAccordion=true)
+        if inAccordion
+          output "<h3>#{name}</h3><table class=\"pure-table\">"
+        else
+          output "<h2>#{name}</h2><table class=\"pure-table\">"
+        end
         if !headers.empty?
           output '<thead><tr>'
           headers.each do |title|
@@ -262,7 +274,7 @@ module Crucible
       def add_form(name,action,fields=Hash.new(''))
         output '</div><div>'
         output "<form method=\"POST\" action=\"#{base_url}#{action}\">"
-        start_table(name)
+        start_table(name,[],false)
         fields.each do |key, value|
           field = "<input type=\"text\" size=\"50\" name=\"#{key}\" value=\"#{value}\" required>"
           add_table_row([key,field])
