@@ -94,16 +94,16 @@ module Crucible
                 margin-bottom: 10px;
               }
               input[type=button], input[type=submit], input[type=reset] {
-                background-color: #FFF;
-                color: #B74C18;
+                background-color: #B74C18;
+                color: #FFF;
                 border: 1px solid #B74C18;
                 border-radius: 5px;
                 padding: 10px;
                 padding-bottom: 7px;
               }
               input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
-                background-color: #B74C18;
-                color: #FFF;
+                background-color: #FFF;
+                color: #B74C18;
                 border: 1px solid #B74C18;
                 border-radius: 5px;
                 padding: 10px;
