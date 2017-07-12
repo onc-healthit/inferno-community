@@ -89,6 +89,7 @@ module Crucible
                 color: #B22222;
               }
               .header {
+                margin-top: 10px;
                 margin-bottom: 20px;
               }
               .header img {
