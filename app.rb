@@ -7,7 +7,6 @@ require 'sinatra'
 require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
-require 'pry'
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file

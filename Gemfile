@@ -10,4 +10,3 @@ gem 'fhir_client', :git => 'https://github.com/fhir-crucible/fhir_client.git', :
 gem 'rest-client'
 # gem 'fhir_scorecard' # not compatible with DSTU2 models
 gem 'time_difference'
-gem 'pry'
