@@ -50,8 +50,15 @@ module Crucible
               html {
                 color: #333333;
               }
-              header {
-                margin-bottom: 30px;
+              .title {
+                padding-left: 15px;
+                padding-right: 15px;
+              }
+              .main {
+                width: 970px;
+                margin-top: 30px;
+                margin-left: auto;
+                margin-right: auto;
               }
               h3 {
                 background-color: #FFF;
@@ -63,9 +70,14 @@ module Crucible
                 padding: 10px;
                 padding-bottom: 7px;
               }
-              table {
+              table.data {
+                table-layout: fixed;
+                border-width: 2px;
+                border-style: solid;
+                border-color: rgb(221,221,221);
+                color: #333333;
                 border-collapse: collapse;
-                font-size: 14px;
+                font-size: 18px;
               }
               th {
                 font-weight: bold;
@@ -116,7 +128,7 @@ module Crucible
                 font-size: 18px;
                 border: 1px solid #4A6E98;
                 border-radius: 5px;
-                padding: 10px;
+                padding-top: 10px;
                 padding-bottom: 7px;
               }
               #accordion .ui-accordion-header:hover {
@@ -126,13 +138,13 @@ module Crucible
                 font-size: 18px;
                 border: 1px solid #4A6E98;
                 border-radius: 5px;
-                padding: 10px;
+                padding-top: 10px;
                 padding-bottom: 7px;
               }
               #accordion .ui-accordion-content {
                 background-color: #FFF;
                 color: #000;
-                font-size: 14px;
+                font-size: 18px;
               }
             </style>
             <script>
@@ -173,17 +185,23 @@ module Crucible
                 </nav>
               </div>
             </header>
-            <h1>SMART-on-<span style=\"color: #B74C18\">FHIR</span></h1>
-            <div class =\"well helper_text\">
-              <p>Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
-              <p>These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.</p>
-            </div>
+            <div class=\"main\">
+              <div class=\"title\">
+                <h1>SMART on <span style=\"color: #B74C18\">FHIR</span></h1>
+                <div class=\"well helper_text\">
+                  Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.
+                  <br>
+                  <br>
+                  These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.
+                </div>
+              </div>
             <div id=\"accordion\">"
         self
       end
 
       def close
         output '</div>
+          </div>
           <script>
             window.clearInterval(intervalID);
             window.scrollTo(0, 0);
@@ -210,9 +228,9 @@ module Crucible
       # Start an HTML Table
       def start_table(name,headers=[],in_accordion=true)
         if in_accordion
-          output "<h3>#{name}</h3><table class=\"pure-table pure-table-horizontal\">"
+          output "<h3>#{name}</h3><table class=\"pure-table pure-table-horizontal data\">"
         else
-          output "<h2>#{name}</h2><table class=\"pure-table pure-table-horizontal\">"
+          output "<h2>#{name}</h2><table class=\"pure-table pure-table-horizontal data\">"
         end
         if !headers.empty?
           output '<thead><tr>'
