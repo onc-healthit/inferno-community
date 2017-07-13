@@ -287,12 +287,6 @@ module Crucible
 
       # Add a table row to the open HTML Table
       def add_table_row(row=[])
-        # if @alt
-        #   output "<tr class=\"pure-table-odd\">"
-        # else
-        #   output '<tr>'
-        # end
-        # @alt = !@alt
         output '<tr>'
         row.each do |col|
           if !col.equal?(row.last)
