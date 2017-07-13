@@ -100,7 +100,7 @@ stream :keep_open do |out|
 
     # Get the patient demographics
     patient = client.read(FHIR::Patient, patient_id).resource
-    response.assert('Patient successfully retrieved.',patient.is_a?(FHIR::Patient),patient.xmlId)
+    response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.xmlId)
 
     patient_details = patient.massageHash(patient,true)
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
@@ -163,21 +163,21 @@ stream :keep_open do |out|
     # Vital Signs Searching
     # Vital Signs includes these codes as defined in http://loinc.org
     vital_signs = {
-      '9279-1' => 'Respiratory rate',
-      '8867-4' => 'Heart rate',
-      '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
-      '55284-4' => 'Blood pressure systolic and diastolic',
-      '8480-6' => 'Systolic blood pressure',
-      '8462-4' => 'Diastolic blood pressure',
-      '8310-5' => 'Body temperature',
-      '8302-2' => 'Body height',
-      '8306-3' => 'Body height --lying',
-      '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
-      '3141-9' => 'Body weight Measured',
-      '39156-5' => 'Body mass index (BMI) [Ratio]',
-      '3140-1' => 'Body surface area Derived from formula',
-      '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
-      '8478-0' => 'Mean blood pressure'
+      '9279-1' => 'Respiratory Rate',
+      '8867-4' => 'Heart Rate',
+      '2710-2' => 'Oxygen Saturation in Capillary Blood by Oximetry',
+      '55284-4' => 'Blood Pressure Systolic and Diastolic',
+      '8480-6' => 'Systolic Blood Pressure',
+      '8462-4' => 'Diastolic Blood Pressure',
+      '8310-5' => 'Body Temperature',
+      '8302-2' => 'Body Height',
+      '8306-3' => 'Body Height --Lying',
+      '8287-5' => 'Head Occipital-frontal Circumference by Tape Measure',
+      '3141-9' => 'Body Weight Measured',
+      '39156-5' => 'Body Mass Index (BMI) [Ratio]',
+      '3140-1' => 'Body Surface Area Derived from Formula',
+      '59408-5' => 'Oxygen Saturation in Arterial Blood by Pulse Oximetry',
+      '8478-0' => 'Mean Blood Pressure'
     }
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|

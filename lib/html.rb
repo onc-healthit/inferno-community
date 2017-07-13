@@ -86,6 +86,9 @@ module Crucible
                 background-color: #FFF;
                 color: #000;
               }
+              td.last {
+                word-break: break-all;
+              }
               p, ul, ol {
                 font-size: 14px;
               }
@@ -292,7 +295,11 @@ module Crucible
         # @alt = !@alt
         output '<tr>'
         row.each do |col|
-          output "<td>#{col}</td>"
+          if !col.equal?(row.last)
+            output "<td>#{col}</td>"
+          else
+            output "<td class=\"last\">#{col}</td>"
+          end
         end
         output '</tr>'
         self

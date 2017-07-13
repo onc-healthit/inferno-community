@@ -1,7 +1,7 @@
 ---
 client_id:
   cerner: 04db5cb1-70e6-4200-8e9e-e12476b882a1
-  epic: 6c12dff4-24e7-4475-a742-b08972c4ea27
+  epic: 00000000-0000-0000-0000-000000000000
   smart: 00000000-0000-0000-0000-000000000000
   mitre: test-test-test
 scopes:
@@ -14,4 +14,4 @@ scopes:
   smart: launch openid profile patient/*.read
   mitre: launch openid profile patient/*.read
 base_url: ''
-redirect_url: 'http://localhost:4567/app'
+redirect_url: 'https://projectcrucible.org/smart/app'
