@@ -60,6 +60,9 @@ module Crucible
                 margin-left: auto;
                 margin-right: auto;
               }
+              img.footer {
+                margin-top: 25px;
+              }
               h3 {
                 background-color: #FFF;
                 color: #4A6E98;
@@ -203,14 +206,31 @@ module Crucible
       end
 
       def close
-        output '</div>
+        output "</div>
           </div>
+          <footer class=\"footer\">
+            <div class=\"container\">
+              <nav class=\"navbar\">
+                <div class=\"container-fluid\">
+                  <div class=\"navbar-header\">
+                    <img class=\"footer\" src=\"#{base_url}/images/logo-muted.png\" alt=\"Crucible\">
+                  </div>
+                  <ul class=\"nav navbar-nav pull-right\">
+                    <li><a class=\"navButton\" href=\"http://www.mitre.org\" target=\"_blank\">The MITRE Corporation</a></li>
+                    <li><a class=\"navButton\" href=\"http://fhir.hl7.org/\" target=\"_blank\">HL7\'s FHIR</a></li>
+                    <li><a class=\"navButton\" href=\"http://www.cms.gov/Regulations-and-Guidance/Legislation/EHRIncentivePrograms\" target=\"_blank\">Meaningful Use</a></li>
+                    <li><a class=\"navButton\" href=\"https://github.com/fhir-crucible/\" target=\"_blank\"><i class=\"fa fa-lg fa-fw fa-github\"></i> Source</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div>
+          </footer>
           <script>
             window.clearInterval(intervalID);
             window.scrollTo(0, 0);
           </script>
           </body>
-          </html>'
+          </html>"
       end
 
       # Output a Hash as an HTML Table
