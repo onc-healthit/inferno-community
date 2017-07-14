@@ -1,9 +1,18 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 110d1df427c88a9c5568307ce62f24e17a4f9415
-  branch: dstu2
+  revision: 21f0ffe0e4a8e4fbc9b83adf2ada6873552c73df
+  branch: multiversion
   specs:
-    fhir_client (1.0.0)
+    fhir_client (3.0.1)
+      activesupport (>= 3)
+      addressable (>= 2.3)
+      fhir_dstu2_models
+      fhir_models (>= 3.0.0)
+      nokogiri
+      oauth2 (~> 1.1)
+      rack (>= 1.5)
+      rest-client (~> 2.0)
+      tilt (>= 1.1)
 
 GIT
   remote: https://github.com/fhir-crucible/fhir_dstu2_models
@@ -77,6 +86,16 @@ GEM
     eventmachine (1.2.1)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
+    fhir_dstu2_models (1.0.2)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.7)
+    fhir_models (3.0.1)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.6)
     globalid (0.3.7)
       activesupport (>= 4.1.0)
     http-cookie (1.0.3)
