@@ -33,42 +33,8 @@ module Crucible
         output "<html>
           <head>
             <title>Crucible SMART-on-FHIR DSTU2 App</title>
-            <link rel=\"stylesheet\" href=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.css\">
             <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
-            <style>
-              table {
-                border-collapse: collapse;
-              }
-              table, td, th {
-                border: 1px solid black;
-              }
-              span {
-                font-family: monospace;
-                font-weight: bold;
-              }
-              span.pass {
-                color: #008000;
-              }
-              span.not_found {
-                background-color: #FFFF00;
-              }
-              span.skip {
-                color: #0000FF;
-              }
-              span.fail {
-                color: #B22222;
-              }
-              .header img {
-                float: left;
-                width: 50px;
-                height: 50px;
-              }
-              .header h1 {
-                position: relative;
-                top: 10px;
-                left: 10px;
-              }
-            </style>
+            <link rel=\"stylesheet\" href=\"#{base_url}/css/font.css\">
             <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
             <script src=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.js\"></script>
             <script>
@@ -80,6 +46,113 @@ module Crucible
                 });
               } );
             </script>
+            <style>
+              html {
+                color: #333333;
+              }
+              .title {
+                padding-left: 15px;
+                padding-right: 15px;
+              }
+              .main {
+                width: 970px;
+                margin-top: 30px;
+                margin-left: auto;
+                margin-right: auto;
+              }
+              img.footer {
+                margin-top: 25px;
+              }
+              h3 {
+                background-color: #FFF;
+                color: #4A6E98;
+                display: block;
+                font-size: 18px;
+                border: 1px solid #4A6E98;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              table.data {
+                table-layout: fixed;
+                border-width: 2px;
+                border-style: solid;
+                border-color: rgb(221,221,221);
+                color: #333333;
+                border-collapse: collapse;
+                font-size: 18px;
+              }
+              th {
+                font-weight: bold;
+              }
+              tr {
+                background-color: #FFF;
+                color: #000;
+              }
+              td.last {
+                word-break: break-all;
+              }
+              p, ul, ol {
+                font-size: 14px;
+              }
+              span.pass {
+                color: #008000;
+              }
+              span.not_found {
+                color: #FF4500;
+              }
+              span.skip {
+                color: #0000FF;
+              }
+              span.fail {
+                color: #B22222;
+              }
+              input {
+                margin-top: 10px;
+                margin-bottom: 10px;
+              }
+              input[type=button], input[type=submit], input[type=reset] {
+                background-color: #B74C18;
+                color: #FFF;
+                border: 1px solid #B74C18;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+                background-color: #FFF;
+                color: #B74C18;
+                border: 1px solid #B74C18;
+                border-radius: 5px;
+                padding: 10px;
+                padding-bottom: 7px;
+              }
+              #accordion .ui-accordion-header {
+                background-color: #FFF;
+                color: #4A6E98;
+                display: block;
+                font-size: 18px;
+                border: 1px solid #4A6E98;
+                border-radius: 5px;
+                padding-top: 10px;
+                padding-bottom: 7px;
+              }
+              #accordion .ui-accordion-header:hover {
+                background-color: #4A6E98;
+                color: #FFF;
+                display: block;
+                font-size: 18px;
+                border: 1px solid #4A6E98;
+                border-radius: 5px;
+                padding-top: 10px;
+                padding-bottom: 7px;
+              }
+              #accordion .ui-accordion-content {
+                background-color: #FFF;
+                color: #000;
+                font-size: 18px;
+              }
+            </style>
             <script>
               var scrollToBottom = function() {
                 window.scrollTo(0, document.body.scrollHeight);
@@ -88,20 +161,76 @@ module Crucible
             </script>
           </head>
           <body>
-          <div class=\"header\">
-            <img src=\"#{base_url}/images/logo.png\" alt=\"Crucible\" />
-            <h1>Crucible SMART-on-FHIR App (DSTU2)</h1>
-          </div>
-          <div>
-            <p>Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.</p>
-            <p>These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.</p>
-          </div>
-          <div id=\"accordion\">"
+            <header>
+              <div class=\"container\">
+                <div class=\"navbar-header\">
+                  <button class=\"navbar-toggle collapsed\" type=\"button\" data-toggle=\"collapse\" data-target=\".bs-navbar-collapse\">
+                    <span class=\"sr-only\">Toggle navigation</span>
+                    <span class=\"icon-bar\"></span>
+                    <span class=\"icon-bar\"></span>
+                    <span class=\"icon-bar\"></span>
+                  </button>
+                  <a href=\"https://projectcrucible.org\" class=\"navbar-brand\">CRUCIBLE</a>
+                </div>
+                <nav class=\"collapse navbar-collapse\">
+                  <ul class=\"nav navbar-nav pull-right\">
+                    <li><a href=\"https://projectcrucible.org\" class=\"navButton\">Server Test</a></li>
+                    <li><a href=\"https://projectcrucible.org/scorecard\" class=\"navButton\">Scorecard</a></li>
+                    <li><a href=\"https://projectcrucible.org/testdata\" class=\"navButton\">Test Data</a></li>
+                    <li><a href=\"/\" class=\"navButton\">SMART on FHIR</a></li>
+                    <li><a href=\"https://beta.projectcrucible.org\" class=\"navButton\">DSTU2 Version</a></li>
+                    <li class=\"dropdown\">
+                      <a href=\"#\" class=\"navButton\" data-toggle=\"dropdown\" id=\"contact-drop\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Contact Us<span class=\"caret\"></span></a>
+                      <ul class=\"dropdown-menu\" aria-labelledby=\"contact-drop\">
+                        <li><a class=\"navButton\" href=\"mailto:fhir-testing-list@lists.mitre.org?subject=Crucible\">Email Us</a></li>
+                        <li><a class=\"navButton\" target=\"_blank\" href=\"https://chat.fhir.org/#narrow/stream/crucible\">FHIR Chat</a></li>
+                        <li><a class=\"navButton\" target=\"_blank\" href=\"https://github.com/fhir-crucible/crucible/issues\">Log an issue</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </header>
+            <div class=\"main\">
+              <div class=\"title\">
+                <h1>SMART on <span style=\"color: #B74C18\">FHIR</span></h1>
+                <div class=\"well helper_text\">
+                  Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.
+                  <br>
+                  <br>
+                  These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.
+                </div>
+              </div>
+            <div id=\"accordion\">"
         self
       end
 
       def close
-        output '</div><script>window.clearInterval(intervalID);</script></body></html>'
+        output "</div>
+          </div>
+          <footer class=\"footer\">
+            <div class=\"container\">
+              <nav class=\"navbar\">
+                <div class=\"container-fluid\">
+                  <div class=\"navbar-header\">
+                    <img class=\"footer\" src=\"#{base_url}/images/logo-muted.png\" alt=\"Crucible\">
+                  </div>
+                  <ul class=\"nav navbar-nav pull-right\">
+                    <li><a class=\"navButton\" href=\"http://www.mitre.org\" target=\"_blank\">The MITRE Corporation</a></li>
+                    <li><a class=\"navButton\" href=\"http://fhir.hl7.org/\" target=\"_blank\">HL7\'s FHIR</a></li>
+                    <li><a class=\"navButton\" href=\"http://www.cms.gov/Regulations-and-Guidance/Legislation/EHRIncentivePrograms\" target=\"_blank\">Meaningful Use</a></li>
+                    <li><a class=\"navButton\" href=\"https://github.com/fhir-crucible/\" target=\"_blank\"><i class=\"fa fa-lg fa-fw fa-github\"></i> Source</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div>
+          </footer>
+          <script>
+            window.clearInterval(intervalID);
+            window.scrollTo(0, 0);
+          </script>
+          </body>
+          </html>"
       end
 
       # Output a Hash as an HTML Table
@@ -120,8 +249,12 @@ module Crucible
       end
 
       # Start an HTML Table
-      def start_table(name,headers=[])
-        output "<h3>#{name}</h3><table class=\"pure-table\">"
+      def start_table(name,headers=[],in_accordion=true)
+        if in_accordion
+          output "<h3>#{name}</h3><table class=\"pure-table pure-table-horizontal data\">"
+        else
+          output "<h2>#{name}</h2><table class=\"pure-table pure-table-horizontal data\">"
+        end
         if !headers.empty?
           output '<thead><tr>'
           headers.each do |title|
@@ -174,14 +307,13 @@ module Crucible
 
       # Add a table row to the open HTML Table
       def add_table_row(row=[])
-        if @alt
-          output "<tr class=\"pure-table-odd\">"
-        else
-          output '<tr>'
-        end
-        @alt = !@alt
+        output '<tr>'
         row.each do |col|
-          output "<td>#{col}</td>"
+          if !col.equal?(row.last)
+            output "<td>#{col}</td>"
+          else
+            output "<td class=\"last\">#{col}</td>"
+          end
         end
         output '</tr>'
         self
@@ -197,7 +329,7 @@ module Crucible
       def add_form(name,action,fields=Hash.new(''))
         output '</div><div>'
         output "<form method=\"POST\" action=\"#{base_url}#{action}\">"
-        start_table(name)
+        start_table(name,[],false)
         fields.each do |key, value|
           field = "<input type=\"text\" size=\"50\" name=\"#{key}\" value=\"#{value}\" required>"
           add_table_row([key,field])
@@ -214,7 +346,7 @@ module Crucible
       def instructions
         output "</div><div>
           <h2>Instructions</h2>
-          <h3>Configuring Client ID and Scopes (required)</h3>
+          <h4>Configuring Client ID and Scopes (required)</h4>
           <p>OAuth2 client IDs and scopes for different FHIR servers must be stored in the
           <a href=\"#{base_url}/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
           implementations.</p>
@@ -223,7 +355,7 @@ module Crucible
           the FHIR server URL (for example, <code>cerner</code> or <code>epic</code>), with the value being the
           associated client ID to use or OAuth2 scopes to request.</p>
 
-          <h3>Launching the App</h3>
+          <h4>Launching the App</h4>
 
           <ul>
           <li>Using Cerner Millenium
