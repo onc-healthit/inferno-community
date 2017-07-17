@@ -94,18 +94,28 @@ stream :keep_open do |out|
 
     # Configure the FHIR Client
     client = FHIR::Client.new(session[:fhir_url])
+    version = client.detect_version
     client.set_bearer_token(token)
     client.default_json
 
     # Get the patient demographics
-    patient = client.read(FHIR::Patient, patient_id).resource
-    response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.id)
+    if version == :dstu2
+      patient = client.read(FHIR::DSTU2::Patient, patient_id).resource
+      response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::DSTU2::Patient),patient.id)
+    else
+      patient = client.read(FHIR::Patient, patient_id).resource
+      response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.id)
+    end
     patient_details = patient.massageHash(patient,true)
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
-    response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
+    if version == :dstu2
+      response.assert('Patient Gender',FHIR::DSTU2::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
+    else
+      response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
+    end
     response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
     # US Extensions
     puts 'Examining Patient for US-Core Extensions'
@@ -133,7 +143,11 @@ stream :keep_open do |out|
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
-    search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    if version == :dstu2
+      search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    else
+      search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    end
     detail = search_reply.resource.entry.first.to_fhir_json rescue nil
     response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
 
@@ -146,7 +160,11 @@ stream :keep_open do |out|
     #   409137002	No Known Drug Allergies
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
-    search_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+    if version == :dstu2
+      search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+    else
+      search_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+    end
     response.assert_search_results('AllergyIntolerances',search_reply)
     begin
       if search_reply.resource.entry.length==0
@@ -179,19 +197,34 @@ stream :keep_open do |out|
     }
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
-      search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      if version == :dstu2
+        search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      else
+        search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      end
       response.assert_search_results("Vital Sign: #{display}",search_reply)
     end
 
     puts 'Checking for Supporting Resources'
-    supporting_resources = [
-      FHIR::Condition, FHIR::Immunization, FHIR::Encounter, FHIR::Procedure,
-      FHIR::MedicationOrder, FHIR::MedicationStatement, FHIR::MedicationDispense,
-      FHIR::MedicationAdministration, FHIR::DiagnosticOrder, FHIR::DiagnosticReport,
-      FHIR::FamilyMemberHistory, FHIR::Goal, FHIR::CarePlan,
-      FHIR::List, FHIR::Organization, FHIR::Location, FHIR::Practitioner,
-      FHIR::Substance, FHIR::RelatedPerson, FHIR::Specimen
-    ]
+    if version == :dstu2
+      supporting_resources = [
+        FHIR::DSTU2::Condition, FHIR::DSTU2::Immunization, FHIR::DSTU2::Encounter, FHIR::DSTU2::Procedure,
+        FHIR::DSTU2::MedicationOrder, FHIR::DSTU2::MedicationStatement, FHIR::DSTU2::MedicationDispense,
+        FHIR::DSTU2::MedicationAdministration, FHIR::DSTU2::DiagnosticOrder, FHIR::DSTU2::DiagnosticReport,
+        FHIR::DSTU2::FamilyMemberHistory, FHIR::DSTU2::Goal, FHIR::DSTU2::CarePlan,
+        FHIR::DSTU2::List, FHIR::DSTU2::Organization, FHIR::DSTU2::Location, FHIR::DSTU2::Practitioner,
+        FHIR::DSTU2::Substance, FHIR::DSTU2::RelatedPerson, FHIR::DSTU2::Specimen
+      ]
+    else
+      supporting_resources = [
+        FHIR::Condition, FHIR::Immunization, FHIR::Encounter, FHIR::Procedure,
+        FHIR::MedicationOrder, FHIR::MedicationStatement, FHIR::MedicationDispense,
+        FHIR::MedicationAdministration, FHIR::DiagnosticOrder, FHIR::DiagnosticReport,
+        FHIR::FamilyMemberHistory, FHIR::Goal, FHIR::CarePlan,
+        FHIR::List, FHIR::Organization, FHIR::Location, FHIR::Practitioner,
+        FHIR::Substance, FHIR::RelatedPerson, FHIR::Specimen
+      ]
+    end
     supporting_resources.each do |klass|
       puts "Getting #{klass.name.demodulize}s"
       search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
