@@ -94,6 +94,7 @@ stream :keep_open do |out|
 
     # Configure the FHIR Client
     client = FHIR::Client.new(session[:fhir_url])
+    client.use_stu3
     version = client.detect_version
     client.set_bearer_token(token)
     client.default_json
@@ -106,16 +107,12 @@ stream :keep_open do |out|
       patient = client.read(FHIR::Patient, patient_id).resource
       response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.id)
     end
-    patient_details = patient.massageHash(patient,true)
+    patient_details = patient.to_hash
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
-    if version == :dstu2
-      response.assert('Patient Gender',FHIR::DSTU2::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
-    else
-      response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
-    end
+    response.assert('Patient Gender',patient_details['gender'],patient_details['gender'])
     response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
     # US Extensions
     puts 'Examining Patient for US-Core Extensions'
