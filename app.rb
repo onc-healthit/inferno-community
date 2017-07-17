@@ -94,7 +94,6 @@ stream :keep_open do |out|
 
     # Configure the FHIR Client
     client = FHIR::Client.new(session[:fhir_url])
-    client.use_dstu2
     version = client.detect_version
     client.set_bearer_token(token)
     client.default_json
