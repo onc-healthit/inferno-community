@@ -2,6 +2,8 @@
 client_id:
   cerner: 04db5cb1-70e6-4200-8e9e-e12476b882a1
   epic: 6c12dff4-24e7-4475-a742-b08972c4ea27
+  hspc: 7f872385-82bf-42cc-ac55-42d044235bbc
+  hspc2: 31ed51dd-dc4e-45d3-8002-4bfefdab5806
   smart: 00000000-0000-0000-0000-000000000000
   mitre: test-test-test
 scopes:
@@ -11,6 +13,8 @@ scopes:
     patient/MedicationStatement.read patient/Observation.read patient/Patient.read
     patient/Person.read patient/RelatedPerson.read
   epic: launch openid profile patient/*.read
+  hspc: launch patient/*.read openid profile
+  hspc2: launch patient/*.read openid profile
   smart: launch openid profile patient/*.read
   mitre: launch openid profile patient/*.read
 base_url: ''
