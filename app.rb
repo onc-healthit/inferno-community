@@ -7,6 +7,7 @@ require 'sinatra'
 require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
+require 'pry'
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file
@@ -94,13 +95,11 @@ stream :keep_open do |out|
     # Configure the FHIR Client
     client = FHIR::Client.new(session[:fhir_url])
     client.set_bearer_token(token)
-    client.default_format = 'application/json+fhir'
-    client.default_format_bundle = 'application/json+fhir'
+    client.default_json
 
     # Get the patient demographics
     patient = client.read(FHIR::Patient, patient_id).resource
-    response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.xmlId)
-
+    response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.id)
     patient_details = patient.massageHash(patient,true)
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
