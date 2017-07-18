@@ -102,7 +102,7 @@ stream :keep_open do |out|
     if version == :dstu2
       patient = client.read(FHIR::DSTU2::Patient, patient_id).resource
       response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::DSTU2::Patient),patient.id)
-    else
+    elsif version == :stu3
       patient = client.read(FHIR::Patient, patient_id).resource
       response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.id)
     end
@@ -141,7 +141,7 @@ stream :keep_open do |out|
     puts 'Getting Smoking Status'
     if version == :dstu2
       search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-    else
+    elsif version == :stu3
       search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
     end
     detail = search_reply.resource.entry.first.to_fhir_json rescue nil
@@ -158,7 +158,7 @@ stream :keep_open do |out|
     puts 'Getting AllergyIntolerances'
     if version == :dstu2
       search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
-    else
+    elsif version == :stu3
       search_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
     end
     response.assert_search_results('AllergyIntolerances',search_reply)
@@ -173,29 +173,48 @@ stream :keep_open do |out|
     end
 
     # Vital Signs Searching
-    # Vital Signs includes these codes as defined in http://loinc.org
-    vital_signs = {
-      '9279-1' => 'Respiratory rate',
-      '8867-4' => 'Heart rate',
-      '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
-      '55284-4' => 'Blood pressure systolic and diastolic',
-      '8480-6' => 'Systolic blood pressure',
-      '8462-4' => 'Diastolic blood pressure',
-      '8310-5' => 'Body temperature',
-      '8302-2' => 'Body height',
-      '8306-3' => 'Body height --lying',
-      '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
-      '3141-9' => 'Body weight Measured',
-      '39156-5' => 'Body mass index (BMI) [Ratio]',
-      '3140-1' => 'Body surface area Derived from formula',
-      '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
-      '8478-0' => 'Mean blood pressure'
-    }
+    if version == :dstu2
+      # Vital Signs includes these codes as defined in http://loinc.org
+      vital_signs = {
+        '9279-1' => 'Respiratory rate',
+        '8867-4' => 'Heart rate',
+        '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
+        '55284-4' => 'Blood pressure systolic and diastolic',
+        '8480-6' => 'Systolic blood pressure',
+        '8462-4' => 'Diastolic blood pressure',
+        '8310-5' => 'Body temperature',
+        '8302-2' => 'Body height',
+        '8306-3' => 'Body height --lying',
+        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+        '3141-9' => 'Body weight Measured',
+        '39156-5' => 'Body mass index (BMI) [Ratio]',
+        '3140-1' => 'Body surface area Derived from formula',
+        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+        '8478-0' => 'Mean blood pressure'
+      }
+    elsif version == :stu3
+      # Vital Signs includes these codes as defined in http://hl7.org/fhir/STU3/observation-vitalsigns.html
+      vital_signs = {
+        '85353-1' => 'Vital signs, weight, height, head circumference, oxygen saturation and BMI panel',
+        '9279-1' => 'Respiratory Rate',
+        '8867-4' => 'Heart rate',
+        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+        '8310-5' => 'Body temperature',
+        '8302-2' => 'Body height',
+        '8306-3' => 'Body height --lying',
+        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+        '29463-7' => 'Body weight',
+        '39156-5' => 'Body mass index (BMI) [Ratio]',
+        '85354-9' => 'Blood pressure systolic and diastolic',
+        '8480-6' => 'Systolic blood pressure',
+        '8462-4' => 'Diastolic blood pressure'
+      }
+    end
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
       if version == :dstu2
         search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
-      else
+      elsif version == :stu3
         search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
       end
       response.assert_search_results("Vital Sign: #{display}",search_reply)
@@ -211,7 +230,7 @@ stream :keep_open do |out|
         FHIR::DSTU2::List, FHIR::DSTU2::Organization, FHIR::DSTU2::Location, FHIR::DSTU2::Practitioner,
         FHIR::DSTU2::Substance, FHIR::DSTU2::RelatedPerson, FHIR::DSTU2::Specimen
       ]
-    else
+    elsif version == :stu3
       supporting_resources = [
         FHIR::Condition, FHIR::Immunization, FHIR::Encounter, FHIR::Procedure,
         FHIR::MedicationOrder, FHIR::MedicationStatement, FHIR::MedicationDispense,
