@@ -223,21 +223,18 @@ stream :keep_open do |out|
     puts 'Checking for Supporting Resources'
     if version == :dstu2
       supporting_resources = [
-        FHIR::DSTU2::Condition, FHIR::DSTU2::Immunization, FHIR::DSTU2::Encounter, FHIR::DSTU2::Procedure,
-        FHIR::DSTU2::MedicationOrder, FHIR::DSTU2::MedicationStatement, FHIR::DSTU2::MedicationDispense,
-        FHIR::DSTU2::MedicationAdministration, FHIR::DSTU2::DiagnosticOrder, FHIR::DSTU2::DiagnosticReport,
-        FHIR::DSTU2::FamilyMemberHistory, FHIR::DSTU2::Goal, FHIR::DSTU2::CarePlan,
-        FHIR::DSTU2::List, FHIR::DSTU2::Organization, FHIR::DSTU2::Location, FHIR::DSTU2::Practitioner,
-        FHIR::DSTU2::Substance, FHIR::DSTU2::RelatedPerson, FHIR::DSTU2::Specimen
+        FHIR::DSTU2::CarePlan, FHIR::DSTU2::Condition, FHIR::DSTU2::DiagnosticOrder,
+        FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Encounter,
+        FHIR::DSTU2::FamilyMemberHistory,FHIR::DSTU2::Goal, FHIR::DSTU2::Immunization,
+        FHIR::DSTU2::List, FHIR::DSTU2::Procedure, FHIR::DSTU2::MedicationAdministration,
+        FHIR::DSTU2::MedicationDispense,FHIR::DSTU2::MedicationOrder,
+        FHIR::DSTU2::MedicationStatement, FHIR::DSTU2::RelatedPerson
       ]
     elsif version == :stu3
       supporting_resources = [
-        FHIR::Condition, FHIR::Immunization, FHIR::Encounter, FHIR::Procedure,
-        FHIR::MedicationOrder, FHIR::MedicationStatement, FHIR::MedicationDispense,
-        FHIR::MedicationAdministration, FHIR::DiagnosticOrder, FHIR::DiagnosticReport,
-        FHIR::FamilyMemberHistory, FHIR::Goal, FHIR::CarePlan,
-        FHIR::List, FHIR::Organization, FHIR::Location, FHIR::Practitioner,
-        FHIR::Substance, FHIR::RelatedPerson, FHIR::Specimen
+        FHIR::CarePlan, FHIR::CareTeam, FHIR::Condition, FHIR::Device,
+        FHIR::DiagnosticReport, FHIR::Goal, FHIR::Immunization, FHIR::MedicationRequest,
+        FHIR::MedicationStatement, FHIR::Procedure, FHIR::RelatedPerson, FHIR::Specimen
       ]
     end
     supporting_resources.each do |klass|
@@ -246,7 +243,7 @@ stream :keep_open do |out|
       response.assert_search_results("#{klass.name.demodulize}s",search_reply)
     end
 
-    # DAF -----------------------------
+    # DAF (DSTU2)-----------------------------
 #    # AllergyIntolerance
 #    # DiagnosticOrder
 #    # DiagnosticReport
@@ -265,7 +262,29 @@ stream :keep_open do |out|
 #    # SmokingStatus (Observation)
 #    # VitalSigns (Observation)
     # List
-#    # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
+#    # Additional Resources: RelatedPerson, Specimen
+
+    # US Core (STU3)-----------------------------
+    # AllergyIntolerance
+    # CareTeam
+    # Condition
+    # Device
+    # DiagnosticReport
+    # Goal
+    # Immunization
+    # Location (can't search by patient)
+    # Medication (can't search by patient)
+    # MedicationRequest
+    # MedicationStatement
+    # Practitioner (can't search by patient)
+    # Procedure
+    # Results (Observation)
+    # SmokingStatus (Observation
+    # CarePlan
+    # Organization (can't search by patient)
+    # Patient
+    # VitalSigns (Observation)
+    # Additional Resources: RelatedPerson, Specimen
 
     # ARGONAUTS ----------------------
     # 	CCDS Data Element	         FHIR Resource
