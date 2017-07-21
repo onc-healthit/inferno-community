@@ -293,12 +293,14 @@ stream :keep_open do |out|
 
     puts 'Checking for Supporting Resources'
     supporting_resources.each do |klass|
-      if accessible_resources.include?(klass)
-        puts "Getting #{klass.name.demodulize}s"
-        search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
-        response.assert_search_results("#{klass.name.demodulize}s",search_reply)
-      else
-        response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+      unless ([FHIR::DSTU2::AllergyIntolerance, FHIR::AllergyIntolerance, FHIR::DSTU2::Observation, FHIR::Observation].include?(klass))
+        if accessible_resources.include?(klass)
+          puts "Getting #{klass.name.demodulize}s"
+          search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
+          response.assert_search_results("#{klass.name.demodulize}s",search_reply)
+        else
+          response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+        end
       end
     end
 
