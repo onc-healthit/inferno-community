@@ -218,8 +218,8 @@ stream :keep_open do |out|
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
     if version == :dstu2
+      search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
       if accessible_resources.include?(FHIR::DSTU2::AllergyIntolerance)
-        search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
         response.assert_search_results('AllergyIntolerances',search_reply)
         begin
           if search_reply.resource.entry.length==0
@@ -231,11 +231,19 @@ stream :keep_open do |out|
           response.assert('No Known Allergies',false)
         end
       else
-        response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+        begin
+          if search_reply.resource.entry.length > 0
+            response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
+          else
+            response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+          end
+        rescue
+          response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+        end
       end
     elsif version == :stu3
-      if accessible_resources.include?(FHIR::AllergyIntolerance)
-        search_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+      search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
+      if accessible_resources.include?(FHIR::DSTU2::AllergyIntolerance)
         response.assert_search_results('AllergyIntolerances',search_reply)
         begin
           if search_reply.resource.entry.length==0
@@ -247,7 +255,15 @@ stream :keep_open do |out|
           response.assert('No Known Allergies',false)
         end
       else
-        response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+        begin
+          if search_reply.resource.entry.length > 0
+            response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
+          else
+            response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+          end
+        rescue
+          response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+        end
       end
     end
 
