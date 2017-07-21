@@ -115,6 +115,7 @@ stream :keep_open do |out|
         FHIR::MedicationStatement, FHIR::Observation, FHIR::Procedure, FHIR::RelatedPerson, FHIR::Specimen
       ]
     end
+
     # Parse accessible resources from scopes
     accessible_resource_names = scopes.scan(/patient\/(.*?)\.read/)
     accessible_resources = []
@@ -293,13 +294,17 @@ stream :keep_open do |out|
 
     puts 'Checking for Supporting Resources'
     supporting_resources.each do |klass|
-      unless ([FHIR::DSTU2::AllergyIntolerance, FHIR::AllergyIntolerance, FHIR::DSTU2::Observation, FHIR::Observation].include?(klass))
+      unless [FHIR::DSTU2::AllergyIntolerance, FHIR::AllergyIntolerance, FHIR::DSTU2::Observation, FHIR::Observation].include?(klass)
+        puts "Getting #{klass.name.demodulize}s"
+        search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
         if accessible_resources.include?(klass)
-          puts "Getting #{klass.name.demodulize}s"
-          search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
           response.assert_search_results("#{klass.name.demodulize}s",search_reply)
         else
-          response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+          if search_reply.resource.entry.length > 0
+            response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
+          else
+            response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+          end
         end
       end
     end
