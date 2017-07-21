@@ -175,20 +175,36 @@ stream :keep_open do |out|
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
     if version == :dstu2
+      search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
       if accessible_resources.include?(FHIR::DSTU2::Observation)
-        search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
         detail = search_reply.resource.entry.first.to_fhir_json rescue nil
         response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
       else
-        response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+        begin
+          if (search_reply.resource.entry.length >= 1)
+            response.assert('Smoking Status',false,"Resource provided without required scopes.")
+          else
+            response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+          end
+        rescue
+          response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+        end
       end
     elsif version == :stu3
+      search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
       if accessible_resources.include?(FHIR::Observation)
-        search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
         detail = search_reply.resource.entry.first.to_fhir_json rescue nil
         response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
       else
-        response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+        begin
+          if (search_reply.resource.entry.length >= 1)
+            response.assert('Smoking Status',false,"Resource provided without required scopes.")
+          else
+            response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+          end
+        rescue
+          response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+        end
       end
     end
 
@@ -276,11 +292,15 @@ stream :keep_open do |out|
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
       if version == :dstu2
+        search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
         if accessible_resources.include?(FHIR::DSTU2::Observation)
-          search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
           response.assert_search_results("Vital Sign: #{display}",search_reply)
         else
-          response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
+          if search_reply.resource.entry.length > 0
+            response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
+          else
+            response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
+          end
         end
       elsif version == :stu3
         if accessible_resources.include?(FHIR::Observation)
