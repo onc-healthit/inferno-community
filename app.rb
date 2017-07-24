@@ -100,6 +100,7 @@ stream :keep_open do |out|
 
     # All supporting resources
     if version == :dstu2
+      klass_header = "FHIR::DSTU2::"
       supporting_resources = [
         FHIR::DSTU2::AllergyIntolerance, FHIR::DSTU2::CarePlan, FHIR::DSTU2::Condition,
         FHIR::DSTU2::DiagnosticOrder, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Encounter,
@@ -109,6 +110,7 @@ stream :keep_open do |out|
         FHIR::DSTU2::MedicationStatement, FHIR::DSTU2::Observation, FHIR::DSTU2::RelatedPerson
       ]
     elsif version == :stu3
+      klass_header = "FHIR::"
       supporting_resources = [
         FHIR::AllergyIntolerance, FHIR::CarePlan, FHIR::CareTeam, FHIR::Condition, FHIR::Device,
         FHIR::DiagnosticReport, FHIR::Goal, FHIR::Immunization, FHIR::MedicationRequest,
@@ -122,25 +124,14 @@ stream :keep_open do |out|
     if accessible_resource_names.include?(["*"])
       accessible_resources = supporting_resources.dup
     else
-      if version == :dstu2
-        accessible_resource_names.each do |w|
-          accessible_resources << Object.const_get("FHIR::DSTU2::#{w.first}")
-        end
-      elsif version == :stu3
-        accessible_resource_names.each do |w|
-          accessible_resources << Object.const_get("FHIR::#{w.first}")
-        end
+      accessible_resource_names.each do |w|
+        accessible_resources << Object.const_get("#{klass_header}#{w.first}")
       end
     end
 
     # Get the patient demographics
-    if version == :dstu2
-      patient = client.read(FHIR::DSTU2::Patient, patient_id).resource
-      response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::DSTU2::Patient),patient.id)
-    elsif version == :stu3
-      patient = client.read(FHIR::Patient, patient_id).resource
-      response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.id)
-    end
+    patient = client.read(Object.const_get("#{klass_header}Patient"), patient_id).resource
+    response.assert('Patient Successfully Retrieved',patient.is_a?(Object.const_get("#{klass_header}Patient")),patient.id)
     patient_details = patient.to_hash
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
@@ -174,37 +165,19 @@ stream :keep_open do |out|
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
-    if version == :dstu2
-      search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-      if accessible_resources.include?(FHIR::DSTU2::Observation)
-        detail = search_reply.resource.entry.first.to_fhir_json rescue nil
-        response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
-      else
-        begin
-          if (search_reply.resource.entry.length >= 1)
-            response.assert('Smoking Status',false,"Resource provided without required scopes.")
-          else
-            response.assert('Smoking Status',:skip,"Access not granted through scopes.")
-          end
-        rescue
+    search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
+      detail = search_reply.resource.entry.first.to_fhir_json rescue nil
+      response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
+    else
+      begin
+        if (search_reply.resource.entry.length >= 1)
+          response.assert('Smoking Status',false,"Resource provided without required scopes.")
+        else
           response.assert('Smoking Status',:skip,"Access not granted through scopes.")
         end
-      end
-    elsif version == :stu3
-      search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-      if accessible_resources.include?(FHIR::Observation)
-        detail = search_reply.resource.entry.first.to_fhir_json rescue nil
-        response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
-      else
-        begin
-          if (search_reply.resource.entry.length >= 1)
-            response.assert('Smoking Status',false,"Resource provided without required scopes.")
-          else
-            response.assert('Smoking Status',:skip,"Access not granted through scopes.")
-          end
-        rescue
-          response.assert('Smoking Status',:skip,"Access not granted through scopes.")
-        end
+      rescue
+        response.assert('Smoking Status',:skip,"Access not granted through scopes.")
       end
     end
 
@@ -217,53 +190,27 @@ stream :keep_open do |out|
     #   409137002	No Known Drug Allergies
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
-    if version == :dstu2
-      search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
-      if accessible_resources.include?(FHIR::DSTU2::AllergyIntolerance)
-        response.assert_search_results('AllergyIntolerances',search_reply)
-        begin
-          if search_reply.resource.entry.length==0
-            response.assert('No Known Allergies',false)
-          else
-            response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
-          end
-        rescue
+    search_reply = client.search(Object.const_get("#{klass_header}AllergyIntolerance"), search: { parameters: { 'patient' => patient_id } })
+    if accessible_resources.include?(Object.const_get("#{klass_header}AllergyIntolerance"))
+      response.assert_search_results('AllergyIntolerances',search_reply)
+      begin
+        if search_reply.resource.entry.length==0
           response.assert('No Known Allergies',false)
+        else
+          response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
         end
-      else
-        begin
-          if search_reply.resource.entry.length > 0
-            response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
-          else
-            response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-          end
-        rescue
-          response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-        end
+      rescue
+        response.assert('No Known Allergies',false)
       end
-    elsif version == :stu3
-      search_reply = client.search(FHIR::DSTU2::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
-      if accessible_resources.include?(FHIR::DSTU2::AllergyIntolerance)
-        response.assert_search_results('AllergyIntolerances',search_reply)
-        begin
-          if search_reply.resource.entry.length==0
-            response.assert('No Known Allergies',false)
-          else
-            response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
-          end
-        rescue
-          response.assert('No Known Allergies',false)
-        end
-      else
-        begin
-          if search_reply.resource.entry.length > 0
-            response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
-          else
-            response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-          end
-        rescue
+    else
+      begin
+        if search_reply.resource.entry.length > 0
+          response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
+        else
           response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
         end
+      rescue
+        response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
       end
     end
 
@@ -305,23 +252,15 @@ stream :keep_open do |out|
         '8462-4' => 'Diastolic blood pressure'
       }
     end
+
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
-      if version == :dstu2
-        search_reply = client.search(FHIR::DSTU2::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
-        if accessible_resources.include?(FHIR::DSTU2::Observation)
-          response.assert_search_results("Vital Sign: #{display}",search_reply)
-        else
-          if search_reply.resource.entry.length > 0
-            response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
-          else
-            response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
-          end
-        end
-      elsif version == :stu3
-        if accessible_resources.include?(FHIR::Observation)
-          search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
-          response.assert_search_results("Vital Sign: #{display}",search_reply)
+      search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
+        response.assert_search_results("Vital Sign: #{display}",search_reply)
+      else
+        if search_reply.resource.entry.length > 0
+          response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
         else
           response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
         end
@@ -330,7 +269,7 @@ stream :keep_open do |out|
 
     puts 'Checking for Supporting Resources'
     supporting_resources.each do |klass|
-      unless [FHIR::DSTU2::AllergyIntolerance, FHIR::AllergyIntolerance, FHIR::DSTU2::Observation, FHIR::Observation].include?(klass)
+      unless [Object.const_get("#{klass_header}AllergyIntolerance"), Object.const_get("#{klass_header}Observation")].include?(klass)
         puts "Getting #{klass.name.demodulize}s"
         search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
         if accessible_resources.include?(klass)
