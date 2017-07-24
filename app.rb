@@ -101,6 +101,7 @@ stream :keep_open do |out|
     # All supporting resources
     if version == :dstu2
       klass_header = "FHIR::DSTU2::"
+      conformance_klass = FHIR::DSTU2::Conformance
       supporting_resources = [
         FHIR::DSTU2::AllergyIntolerance, FHIR::DSTU2::CarePlan, FHIR::DSTU2::Condition,
         FHIR::DSTU2::DiagnosticOrder, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Encounter,
@@ -129,6 +130,7 @@ stream :keep_open do |out|
       }
     elsif version == :stu3
       klass_header = "FHIR::"
+      conformance_klass = FHIR::CapabilityStatement
       supporting_resources = [
         FHIR::AllergyIntolerance, FHIR::CarePlan, FHIR::CareTeam, FHIR::Condition, FHIR::Device,
         FHIR::DiagnosticReport, FHIR::Goal, FHIR::Immunization, FHIR::MedicationRequest,
@@ -168,6 +170,11 @@ stream :keep_open do |out|
     response.assert('Patient Successfully Retrieved',patient.is_a?(Object.const_get("#{klass_header}Patient")),patient.id)
     patient_details = patient.to_hash
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
+
+    # Get the conformance statement
+    statement = client.conformance_statement
+    response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass))
+    binding.pry
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
