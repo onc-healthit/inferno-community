@@ -109,6 +109,24 @@ stream :keep_open do |out|
         FHIR::DSTU2::MedicationDispense, FHIR::DSTU2::MedicationOrder,
         FHIR::DSTU2::MedicationStatement, FHIR::DSTU2::Observation, FHIR::DSTU2::RelatedPerson
       ]
+      # Vital Signs includes these codes as defined in http://loinc.org
+      vital_signs = {
+        '9279-1' => 'Respiratory rate',
+        '8867-4' => 'Heart rate',
+        '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
+        '55284-4' => 'Blood pressure systolic and diastolic',
+        '8480-6' => 'Systolic blood pressure',
+        '8462-4' => 'Diastolic blood pressure',
+        '8310-5' => 'Body temperature',
+        '8302-2' => 'Body height',
+        '8306-3' => 'Body height --lying',
+        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+        '3141-9' => 'Body weight Measured',
+        '39156-5' => 'Body mass index (BMI) [Ratio]',
+        '3140-1' => 'Body surface area Derived from formula',
+        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+        '8478-0' => 'Mean blood pressure'
+      }
     elsif version == :stu3
       klass_header = "FHIR::"
       supporting_resources = [
@@ -116,6 +134,22 @@ stream :keep_open do |out|
         FHIR::DiagnosticReport, FHIR::Goal, FHIR::Immunization, FHIR::MedicationRequest,
         FHIR::MedicationStatement, FHIR::Observation, FHIR::Procedure, FHIR::RelatedPerson, FHIR::Specimen
       ]
+      # Vital Signs includes these codes as defined in http://hl7.org/fhir/STU3/observation-vitalsigns.html
+      vital_signs = {
+        '85353-1' => 'Vital signs, weight, height, head circumference, oxygen saturation and BMI panel',
+        '9279-1' => 'Respiratory Rate',
+        '8867-4' => 'Heart rate',
+        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+        '8310-5' => 'Body temperature',
+        '8302-2' => 'Body height',
+        '8306-3' => 'Body height --lying',
+        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+        '29463-7' => 'Body weight',
+        '39156-5' => 'Body mass index (BMI) [Ratio]',
+        '85354-9' => 'Blood pressure systolic and diastolic',
+        '8480-6' => 'Systolic blood pressure',
+        '8462-4' => 'Diastolic blood pressure'
+      }
     end
 
     # Parse accessible resources from scopes
@@ -212,45 +246,6 @@ stream :keep_open do |out|
       rescue
         response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
       end
-    end
-
-    # Vital Signs Searching
-    if version == :dstu2
-      # Vital Signs includes these codes as defined in http://loinc.org
-      vital_signs = {
-        '9279-1' => 'Respiratory rate',
-        '8867-4' => 'Heart rate',
-        '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
-        '55284-4' => 'Blood pressure systolic and diastolic',
-        '8480-6' => 'Systolic blood pressure',
-        '8462-4' => 'Diastolic blood pressure',
-        '8310-5' => 'Body temperature',
-        '8302-2' => 'Body height',
-        '8306-3' => 'Body height --lying',
-        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
-        '3141-9' => 'Body weight Measured',
-        '39156-5' => 'Body mass index (BMI) [Ratio]',
-        '3140-1' => 'Body surface area Derived from formula',
-        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
-        '8478-0' => 'Mean blood pressure'
-      }
-    elsif version == :stu3
-      # Vital Signs includes these codes as defined in http://hl7.org/fhir/STU3/observation-vitalsigns.html
-      vital_signs = {
-        '85353-1' => 'Vital signs, weight, height, head circumference, oxygen saturation and BMI panel',
-        '9279-1' => 'Respiratory Rate',
-        '8867-4' => 'Heart rate',
-        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
-        '8310-5' => 'Body temperature',
-        '8302-2' => 'Body height',
-        '8306-3' => 'Body height --lying',
-        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
-        '29463-7' => 'Body weight',
-        '39156-5' => 'Body mass index (BMI) [Ratio]',
-        '85354-9' => 'Blood pressure systolic and diastolic',
-        '8480-6' => 'Systolic blood pressure',
-        '8462-4' => 'Diastolic blood pressure'
-      }
     end
 
     puts 'Getting Vital Signs / Observations'
