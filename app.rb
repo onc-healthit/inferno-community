@@ -175,6 +175,7 @@ stream :keep_open do |out|
     statement = client.conformance_statement
     response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass),statement.fhirVersion)
     statement_details = statement.to_hash
+    puts "FHIR Version: #{statement_details['fhirVersion']}"
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
@@ -247,12 +248,17 @@ stream :keep_open do |out|
       begin
         if search_reply.resource.entry.length > 0
           response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
+          response.assert('No Known Allergies',false,'Resource provided without required scopes.')
+
         else
           response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+          response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
         end
       rescue
         response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+        response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
       end
+      response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
     end
 
     puts 'Getting Vital Signs / Observations'
