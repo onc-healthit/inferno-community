@@ -173,7 +173,8 @@ stream :keep_open do |out|
 
     # Get the conformance statement
     statement = client.conformance_statement
-    response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass))
+    response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass),statement.fhirVersion)
+    statement_details = statement.to_hash
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
