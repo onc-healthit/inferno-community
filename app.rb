@@ -165,17 +165,26 @@ stream :keep_open do |out|
       end
     end
 
+    # Get the conformance statement
+    statement = client.conformance_statement
+    response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass),statement.fhirVersion)
+    statement_details = statement.to_hash
+
+    puts "FHIR Version: #{statement_details['fhirVersion']}"
+
+    # Get read capabilities
+    readable_resource_names = []
+    statement_details['rest'][0]['resource'].each do |r|
+      if r['interaction'].include?({"code"=>"read"})
+        readable_resource_names << "#{r['type']}"
+      end
+    end
+
     # Get the patient demographics
     patient = client.read(Object.const_get("#{klass_header}Patient"), patient_id).resource
     response.assert('Patient Successfully Retrieved',patient.is_a?(Object.const_get("#{klass_header}Patient")),patient.id)
     patient_details = patient.to_hash
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
-
-    # Get the conformance statement
-    statement = client.conformance_statement
-    response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass),statement.fhirVersion)
-    statement_details = statement.to_hash
-    puts "FHIR Version: #{statement_details['fhirVersion']}"
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
@@ -258,7 +267,6 @@ stream :keep_open do |out|
         response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
         response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
       end
-      response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
     end
 
     puts 'Getting Vital Signs / Observations'
