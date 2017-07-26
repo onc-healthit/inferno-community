@@ -85,6 +85,9 @@ stream :keep_open do |out|
     token = token_response['access_token']
     patient_id = token_response['patient']
     scopes = token_response['scope']
+    if scopes.nil?
+      scopes = Crucible::App::Config.get_scopes(session[:fhir_url])
+    end
 
     # Begin outputting the response body
     response.open
