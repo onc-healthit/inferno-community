@@ -155,6 +155,7 @@ stream :keep_open do |out|
     end
 
     # Parse accessible resources from scopes
+    binding.pry
     accessible_resource_names = scopes.scan(/patient\/(.*?)\.read/)
     accessible_resources = []
     if accessible_resource_names.include?(["*"])
@@ -216,20 +217,24 @@ stream :keep_open do |out|
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
-    search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-    if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
-      detail = search_reply.resource.entry.first.to_fhir_json rescue nil
-      response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
-    else
-      begin
-        if (search_reply.resource.entry.length >= 1)
-          response.assert('Smoking Status',false,"Resource provided without required scopes.")
-        else
+    if readable_resource_names.include?("Observation")
+      search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+      if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
+        detail = search_reply.resource.entry.first.to_fhir_json rescue nil
+        response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
+      else
+        begin
+          if (search_reply.resource.entry.length >= 1)
+            response.assert('Smoking Status',false,"Resource provided without required scopes.")
+          else
+            response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+          end
+        rescue
           response.assert('Smoking Status',:skip,"Access not granted through scopes.")
         end
-      rescue
-        response.assert('Smoking Status',:skip,"Access not granted through scopes.")
       end
+    else
+      response.assert('Smoking Status',:skip,"Conformance states that resource is not readable.")
     end
 
     # Get the patient's allergies
@@ -241,61 +246,70 @@ stream :keep_open do |out|
     #   409137002	No Known Drug Allergies
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
-    search_reply = client.search(Object.const_get("#{klass_header}AllergyIntolerance"), search: { parameters: { 'patient' => patient_id } })
-    if accessible_resources.include?(Object.const_get("#{klass_header}AllergyIntolerance"))
-      response.assert_search_results('AllergyIntolerances',search_reply)
-      begin
-        if search_reply.resource.entry.length==0
+    if readable_resource_names.include?("AllergyIntolerance")
+      search_reply = client.search(Object.const_get("#{klass_header}AllergyIntolerance"), search: { parameters: { 'patient' => patient_id } })
+      if accessible_resources.include?(Object.const_get("#{klass_header}AllergyIntolerance"))
+        response.assert_search_results('AllergyIntolerances',search_reply)
+        begin
+          if search_reply.resource.entry.length==0
+            response.assert('No Known Allergies',false)
+          else
+            response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
+          end
+        rescue
           response.assert('No Known Allergies',false)
-        else
-          response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
         end
-      rescue
-        response.assert('No Known Allergies',false)
+      else
+        begin
+          if search_reply.resource.entry.length > 0
+            response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
+
+          else
+            response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+          end
+        rescue
+          response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
+        end
       end
     else
-      begin
-        if search_reply.resource.entry.length > 0
-          response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
-          response.assert('No Known Allergies',false,'Resource provided without required scopes.')
-
-        else
-          response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-          response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
-        end
-      rescue
-        response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-        response.assert('No Known Allergies',:skip,'Access not granted through scopes.')
-      end
+      response.assert('AllergyIntolerances',:skip,"Conformance states that resource is not readable.")
     end
 
     puts 'Getting Vital Signs / Observations'
-    vital_signs.each do |code,display|
-      search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
-      if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
-        response.assert_search_results("Vital Sign: #{display}",search_reply)
-      else
-        if search_reply.resource.entry.length > 0
-          response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
+    if readable_resource_names.include?("Observation")
+      vital_signs.each do |code,display|
+        search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+        if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
+          response.assert_search_results("Vital Sign: #{display}",search_reply)
         else
-          response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
+          if search_reply.resource.entry.length > 0
+            response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
+          else
+            response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
+          end
         end
       end
+    else
+      response.assert('Vital Signs',:skip,"Conformance states that resource is not readable.")
     end
 
     puts 'Checking for Supporting Resources'
     supporting_resources.each do |klass|
       unless [Object.const_get("#{klass_header}AllergyIntolerance"), Object.const_get("#{klass_header}Observation")].include?(klass)
-        puts "Getting #{klass.name.demodulize}s"
-        search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
-        if accessible_resources.include?(klass)
-          response.assert_search_results("#{klass.name.demodulize}s",search_reply)
-        else
-          if search_reply.resource.entry.length > 0
-            response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
+        if readable_resource_names.include?(klass.name.demodulize)
+          puts "Getting #{klass.name.demodulize}s"
+          search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
+          if accessible_resources.include?(klass)
+            response.assert_search_results("#{klass.name.demodulize}s",search_reply)
           else
-            response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+            if search_reply.resource.entry.length > 0
+              response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
+            else
+              response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+            end
           end
+        else
+          response.assert("#{klass.name.demodulize}s",:skip,"Conformance states that resource is not readable.")
         end
       end
     end
