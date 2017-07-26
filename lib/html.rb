@@ -32,7 +32,7 @@ module Crucible
         @body = ''
         output "<html>
           <head>
-            <title>Crucible SMART-on-FHIR DSTU2 App</title>
+            <title>Crucible SMART-on-FHIR App</title>
             <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
             <link rel=\"stylesheet\" href=\"#{base_url}/css/font.css\">
             <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
