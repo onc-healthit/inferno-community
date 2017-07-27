@@ -281,8 +281,7 @@ stream :keep_open do |out|
       search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
       begin
         search_reply_length = search_reply.resource.entry.length
-        if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
-          # response.assert_search_results("Vital Sign: #{display}",search_reply)
+        if accessible_resources.include?(Object.const_get("#{klass_header}Observation")) # If resource is in scopes
           if search_reply_length == 0
             if readable_resource_names.include?("Observation")
               response.assert("Vital Sign: #{display}",:not_found)
@@ -292,13 +291,13 @@ stream :keep_open do |out|
           elsif search_reply_length > 0
             response.assert("Vital Sign: #{display}",true,"Found #{search_reply_length} Vital Sign: #{display}.")
           else
-            if readable_resource_names.include?(klass.name.demodulize)
+            if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
               response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
             else
               response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
             end
           end
-        else
+        else # If resource is not in scopes
           if search_reply_length > 0
             response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
           else
@@ -306,7 +305,7 @@ stream :keep_open do |out|
           end
         end
       rescue
-        if readable_resource_names.include?(klass.name.demodulize)
+        if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
           response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
         else
           response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
@@ -321,7 +320,7 @@ stream :keep_open do |out|
         search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
         begin
           search_reply_length = search_reply.resource.entry.length
-          if accessible_resources.include?(klass)
+          if accessible_resources.include?(klass) # If resource is in scopes
             if search_reply_length == 0
               if readable_resource_names.include?(klass.name.demodulize)
                 response.assert("#{klass.name.demodulize}s",:not_found)
@@ -331,13 +330,13 @@ stream :keep_open do |out|
             elsif search_reply_length > 0
               response.assert("#{klass.name.demodulize}s",true,"Found #{search_reply_length} #{klass.name.demodulize}.")
             else
-              if readable_resource_names.include?(klass.name.demodulize)
+              if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
                 response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
               else
                 response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
               end
             end
-          else
+          else # If resource is not in scopes
             if search_reply_length > 0
               response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
             else
@@ -345,7 +344,7 @@ stream :keep_open do |out|
             end
           end
         rescue
-          if readable_resource_names.include?(klass.name.demodulize)
+          if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
             response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
           else
             response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
