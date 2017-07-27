@@ -277,21 +277,41 @@ stream :keep_open do |out|
     end
 
     puts 'Getting Vital Signs / Observations'
-    if readable_resource_names.include?("Observation")
-      vital_signs.each do |code,display|
-        search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+    vital_signs.each do |code,display|
+      search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      begin
+        search_reply_length = search_reply.resource.entry.length
         if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
-          response.assert_search_results("Vital Sign: #{display}",search_reply)
+          # response.assert_search_results("Vital Sign: #{display}",search_reply)
+          if search_reply_length == 0
+            if readable_resource_names.include?("Observation")
+              response.assert("Vital Sign: #{display}",:not_found)
+            else
+              response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+            end
+          elsif search_reply_length > 0
+            response.assert("Vital Sign: #{display}",true,"Found #{search_reply_length} Vital Sign: #{display}.")
+          else
+            if readable_resource_names.include?(klass.name.demodulize)
+              response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+            else
+              response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+            end
+          end
         else
-          if search_reply.resource.entry.length > 0
+          if search_reply_length > 0
             response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
           else
             response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
           end
         end
+      rescue
+        if readable_resource_names.include?(klass.name.demodulize)
+          response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+        else
+          response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+        end
       end
-    else
-      response.assert('Vital Signs',:skip,"Read capability for resource not in conformance statement.")
     end
 
     puts 'Checking for Supporting Resources'
