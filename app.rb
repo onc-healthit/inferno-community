@@ -219,24 +219,38 @@ stream :keep_open do |out|
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
-    if readable_resource_names.include?("Observation")
-      search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-      if accessible_resources.include?(Object.const_get("#{klass_header}Observation"))
-        detail = search_reply.resource.entry.first.to_fhir_json rescue nil
-        response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
-      else
-        begin
-          if (search_reply.resource.entry.length >= 1)
-            response.assert('Smoking Status',false,"Resource provided without required scopes.")
+    search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    begin
+      search_reply_length = search_reply.resource.entry.length
+      if accessible_resources.include?(Object.const_get("#{klass_header}Observation")) # If resource is in scopes
+        if search_reply_length == 0
+          if readable_resource_names.include?("Observation")
+            response.assert("Smoking Status",:not_found)
           else
-            response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+            response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
           end
-        rescue
-          response.assert('Smoking Status',:skip,"Access not granted through scopes.")
+        elsif search_reply_length > 0
+          response.assert("Smoking Status",true,(search_reply.resource.entry.first.to_fhir_json rescue nil))
+        else
+          if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+            response.assert("Smoking Status",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
+          end
+        end
+      else # If resource is not in scopes
+        if search_reply_length > 0
+          response.assert("Smoking Status",false,"Resource provided without required scopes.")
+        else
+          response.assert("Smoking Status",:skip,"Access not granted through scopes.")
         end
       end
-    else
-      response.assert('Smoking Status',:skip,"Read capability for resource not in conformance statement.")
+    rescue
+      if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+        response.assert("Smoking Status",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+      else
+        response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
+      end
     end
 
     # Get the patient's allergies
@@ -291,7 +305,7 @@ stream :keep_open do |out|
           elsif search_reply_length > 0
             response.assert("Vital Sign: #{display}",true,"Found #{search_reply_length} Vital Sign: #{display}.")
           else
-            if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
+            if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
               response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
             else
               response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
@@ -305,7 +319,7 @@ stream :keep_open do |out|
           end
         end
       rescue
-        if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
+        if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
           response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
         else
           response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
