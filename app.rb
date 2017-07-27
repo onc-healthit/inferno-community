@@ -253,43 +253,6 @@ stream :keep_open do |out|
       end
     end
 
-    # Get the patient's allergies
-    # There should be at least one. No known allergies should have a negated entry.
-    # Include these codes as defined in http://snomed.info/sct
-    #   Code	     Display
-    #   160244002	No Known Allergies
-    #   429625007	No Known Food Allergies
-    #   409137002	No Known Drug Allergies
-    #   428607008	No Known Environmental Allergy
-    puts 'Getting AllergyIntolerances'
-    if readable_resource_names.include?("AllergyIntolerance")
-      search_reply = client.search(Object.const_get("#{klass_header}AllergyIntolerance"), search: { parameters: { 'patient' => patient_id } })
-      if accessible_resources.include?(Object.const_get("#{klass_header}AllergyIntolerance"))
-        response.assert_search_results('AllergyIntolerances',search_reply)
-        begin
-          if search_reply.resource.entry.length==0
-            response.assert('No Known Allergies',false)
-          else
-            response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
-          end
-        rescue
-          response.assert('No Known Allergies',false)
-        end
-      else
-        begin
-          if search_reply.resource.entry.length > 0
-            response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
-          else
-            response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-          end
-        rescue
-          response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
-        end
-      end
-    else
-      response.assert('AllergyIntolerances',:skip,"Read capability for resource not in conformance statement.")
-    end
-
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
       search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
@@ -329,7 +292,7 @@ stream :keep_open do |out|
 
     puts 'Checking for Supporting Resources'
     supporting_resources.each do |klass|
-      unless [Object.const_get("#{klass_header}AllergyIntolerance"), Object.const_get("#{klass_header}Observation")].include?(klass)
+      unless Object.const_get("#{klass_header}Observation") == klass # Do not test for Smoking Status or Vital Signs
         puts "Getting #{klass.name.demodulize}s"
         search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
         begin
