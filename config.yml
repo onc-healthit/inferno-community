@@ -1,9 +1,7 @@
 ---
 client_id:
   cerner: 04db5cb1-70e6-4200-8e9e-e12476b882a1
-  epic: 6c12dff4-24e7-4475-a742-b08972c4ea27
-  crucibledstu2: 7f872385-82bf-42cc-ac55-42d044235bbc #hspc
-  cruciblestu3: 31ed51dd-dc4e-45d3-8002-4bfefdab5806 #hspc
+  epic: 00000000-0000-0000-0000-000000000000
   smart: 00000000-0000-0000-0000-000000000000
   mitre: test-test-test
 scopes:
@@ -13,9 +11,7 @@ scopes:
     patient/MedicationStatement.read patient/Observation.read patient/Patient.read
     patient/Person.read patient/RelatedPerson.read
   epic: launch openid profile patient/*.read
-  crucibledstu2: launch patient/*.read openid profile #hspc
-  cruciblestu3: launch patient/*.read openid profile #hspc
   smart: launch openid profile patient/*.read
   mitre: launch openid profile patient/*.read
 base_url: ''
-redirect_url: 'http://localhost:4567/app'
+redirect_url: 'https://projectcrucible.org/smart/app'
