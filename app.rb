@@ -236,7 +236,7 @@ stream :keep_open do |out|
         end
       end
     else
-      response.assert('Smoking Status',:skip,"Conformance states that resource is not readable.")
+      response.assert('Smoking Status',:skip,"Read capability for resource not in conformance statement.")
     end
 
     # Get the patient's allergies
@@ -265,7 +265,6 @@ stream :keep_open do |out|
         begin
           if search_reply.resource.entry.length > 0
             response.assert('AllergyIntolerances',false,"Resource provided without required scopes.")
-
           else
             response.assert('AllergyIntolerances',:skip,"Access not granted through scopes.")
           end
@@ -274,7 +273,7 @@ stream :keep_open do |out|
         end
       end
     else
-      response.assert('AllergyIntolerances',:skip,"Conformance states that resource is not readable.")
+      response.assert('AllergyIntolerances',:skip,"Read capability for resource not in conformance statement.")
     end
 
     puts 'Getting Vital Signs / Observations'
@@ -292,26 +291,45 @@ stream :keep_open do |out|
         end
       end
     else
-      response.assert('Vital Signs',:skip,"Conformance states that resource is not readable.")
+      response.assert('Vital Signs',:skip,"Read capability for resource not in conformance statement.")
     end
 
     puts 'Checking for Supporting Resources'
     supporting_resources.each do |klass|
       unless [Object.const_get("#{klass_header}AllergyIntolerance"), Object.const_get("#{klass_header}Observation")].include?(klass)
-        if readable_resource_names.include?(klass.name.demodulize)
-          puts "Getting #{klass.name.demodulize}s"
-          search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
+        puts "Getting #{klass.name.demodulize}s"
+        search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
+        begin
+          search_reply_length = search_reply.resource.entry.length
           if accessible_resources.include?(klass)
-            response.assert_search_results("#{klass.name.demodulize}s",search_reply)
+            if search_reply_length == 0
+              if readable_resource_names.include?(klass.name.demodulize)
+                response.assert("#{klass.name.demodulize}s",:not_found)
+              else
+                response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+              end
+            elsif search_reply_length > 0
+              response.assert("#{klass.name.demodulize}s",true,"Found #{search_reply_length} #{klass.name.demodulize}.")
+            else
+              if readable_resource_names.include?(klass.name.demodulize)
+                response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+              else
+                response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+              end
+            end
           else
-            if search_reply.resource.entry.length > 0
+            if search_reply_length > 0
               response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
             else
               response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
             end
           end
-        else
-          response.assert("#{klass.name.demodulize}s",:skip,"Conformance states that resource is not readable.")
+        rescue
+          if readable_resource_names.include?(klass.name.demodulize)
+            response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+          end
         end
       end
     end
