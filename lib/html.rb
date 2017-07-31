@@ -37,6 +37,7 @@ module Crucible
             <link rel=\"stylesheet\" href=\"#{base_url}/css/font.css\">
             <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
             <script src=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.js\"></script>
+            <script src=\"#{base_url}/bootstrap/js/bootstrap.js\"></script>
             <script>
               $( function() {
                 $( \"#accordion\" ).accordion({
@@ -177,7 +178,7 @@ module Crucible
                     <li><a href=\"https://projectcrucible.org\" class=\"navButton\">Server Test</a></li>
                     <li><a href=\"https://projectcrucible.org/scorecard\" class=\"navButton\">Scorecard</a></li>
                     <li><a href=\"https://projectcrucible.org/testdata\" class=\"navButton\">Test Data</a></li>
-                    <li><a href=\"/\" class=\"navButton\">SMART on FHIR</a></li>
+                    <li><a href=\"https://projectcrucible.org/smart\" class=\"navButton\">SMART on FHIR</a></li>
                     <li><a href=\"https://beta.projectcrucible.org\" class=\"navButton\">DSTU2 Version</a></li>
                     <li class=\"dropdown\">
                       <a href=\"#\" class=\"navButton\" data-toggle=\"dropdown\" id=\"contact-drop\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Contact Us<span class=\"caret\"></span></a>
