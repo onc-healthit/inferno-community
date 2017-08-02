@@ -163,9 +163,7 @@ stream :keep_open do |out|
     if accessible_resource_names.include?(["*"])
       accessible_resources = supporting_resources.dup
     else
-      accessible_resource_names.each do |w|
-        accessible_resources << Object.const_get("#{klass_header}#{w.first}")
-      end
+      accessible_resources = accessible_resource_names.map {|w| Object.const_get("#{klass_header}#{w.first}")}
     end
 
     # Get the conformance statement
@@ -177,11 +175,9 @@ stream :keep_open do |out|
 
     # Get read capabilities
     readable_resource_names = []
-    statement_details['rest'][0]['resource'].each do |r|
-      if r['interaction'].include?({"code"=>"read"})
-        readable_resource_names << "#{r['type']}"
-      end
-    end
+    readable_resource_names = statement_details['rest'][0]['resource'].select {|r|
+      r['interaction'].include?({"code"=>"read"})
+    }.map {|n| n['type']}
 
     # Get the patient demographics
     patient = client.read(Object.const_get("#{klass_header}Patient"), patient_id).resource
@@ -220,8 +216,8 @@ stream :keep_open do |out|
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
     search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-    begin
-      search_reply_length = search_reply.resource.entry.length
+    search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+    unless search_reply_length.nil?
       if accessible_resources.include?(Object.const_get("#{klass_header}Observation")) # If resource is in scopes
         if search_reply_length == 0
           if readable_resource_names.include?("Observation")
@@ -245,7 +241,7 @@ stream :keep_open do |out|
           response.assert("Smoking Status",:skip,"Access not granted through scopes.")
         end
       end
-    rescue
+    else
       if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
         response.assert("Smoking Status",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
       else
@@ -263,8 +259,8 @@ stream :keep_open do |out|
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
     search_reply = client.search(Object.const_get("#{klass_header}AllergyIntolerance"), search: { parameters: { 'patient' => patient_id } })
-    begin
-      search_reply_length = search_reply.resource.entry.length
+    search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+    unless search_reply_length.nil?
       if accessible_resources.include?(Object.const_get("#{klass_header}AllergyIntolerance")) # If resource is in scopes
         if search_reply_length == 0
           if readable_resource_names.include?("AllergyIntolerance")
@@ -288,7 +284,7 @@ stream :keep_open do |out|
           response.assert("AllergyIntolerances",:skip,"Access not granted through scopes.")
         end
       end
-    rescue
+    else
       if readable_resource_names.include?("AllergyIntolerance") # If comformance claims read capability for resource
         response.assert("AllergyIntolerances",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
       else
@@ -299,8 +295,8 @@ stream :keep_open do |out|
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
       search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
-      begin
-        search_reply_length = search_reply.resource.entry.length
+      search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+      unless search_reply_length.nil?
         if accessible_resources.include?(Object.const_get("#{klass_header}Observation")) # If resource is in scopes
           if search_reply_length == 0
             if readable_resource_names.include?("Observation")
@@ -324,7 +320,7 @@ stream :keep_open do |out|
             response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
           end
         end
-      rescue
+      else
         if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
           response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
         else
@@ -338,8 +334,8 @@ stream :keep_open do |out|
       unless [Object.const_get("#{klass_header}AllergyIntolerance"), Object.const_get("#{klass_header}Observation")].include?(klass) # Do not test for AllergyIntolerance or Observation
         puts "Getting #{klass.name.demodulize}s"
         search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
-        begin
-          search_reply_length = search_reply.resource.entry.length
+        search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+        unless search_reply_length.nil?
           if accessible_resources.include?(klass) # If resource is in scopes
             if search_reply_length == 0
               if readable_resource_names.include?(klass.name.demodulize)
@@ -363,7 +359,7 @@ stream :keep_open do |out|
               response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
             end
           end
-        rescue
+        else
           if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
             response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
           else
