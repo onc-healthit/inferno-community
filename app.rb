@@ -158,7 +158,7 @@ stream :keep_open do |out|
     end
 
     # Parse accessible resources from scopes
-    accessible_resource_names = scopes.scan(/patient\/(.*?)\.read/)
+    accessible_resource_names = scopes.scan(/patient\/(.*?)\.[read|\*]/)
     accessible_resources = []
     if accessible_resource_names.include?(["*"])
       accessible_resources = supporting_resources.dup
