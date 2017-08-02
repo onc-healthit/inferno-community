@@ -32,7 +32,7 @@ module Crucible
         @body = ''
         output "<html>
           <head>
-            <title>Crucible SMART-on-FHIR DSTU2 App</title>
+            <title>Crucible SMART-on-FHIR App</title>
             <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
             <link rel=\"stylesheet\" href=\"#{base_url}/css/font.css\">
             <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
@@ -196,10 +196,13 @@ module Crucible
               <div class=\"title\">
                 <h1>SMART on <span style=\"color: #B74C18\">FHIR</span></h1>
                 <div class=\"well helper_text\">
-                  Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server.
+                  Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server. These tests are compatible with <a href=\"http://hl7.org/fhir/index.html\" target=\"_blank\">FHIR STU3</a> and <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a>.
                   <br>
                   <br>
-                  These tests focus on <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a> and in particular the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.
+                  STU3 testing focuses particularly on the <a href=\"http://hl7.org/fhir/us/core/index.html\" target=\"_blank\">US Core Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.
+                  <br>
+                  <br>
+                  DSTU2 testing focuses particularly on the <a href=\"http://hl7.org/fhir/DSTU2/daf/daf.html\" target=\"_blank\">DAF Implementation Guide</a> and <a href=\"http://hl7.org/fhir/DSTU2/argonaut/argonaut.html\" target=\"_blank\">Argonauts</a> Use-Cases.
                 </div>
               </div>
             <div id=\"accordion\">"

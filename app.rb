@@ -7,6 +7,7 @@ require 'sinatra'
 require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
+require 'pry'
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file
@@ -84,6 +85,9 @@ stream :keep_open do |out|
     token = token_response['access_token']
     patient_id = token_response['patient']
     scopes = token_response['scope']
+    if scopes.nil?
+      scopes = Crucible::App::Config.get_scopes(session[:fhir_url])
+    end
 
     # Begin outputting the response body
     response.open
@@ -93,20 +97,97 @@ stream :keep_open do |out|
 
     # Configure the FHIR Client
     client = FHIR::Client.new(session[:fhir_url])
+    version = client.detect_version
     client.set_bearer_token(token)
-    client.default_format = 'application/json+fhir'
-    client.default_format_bundle = 'application/json+fhir'
+    client.default_json
+
+    # All supporting resources
+    if version == :dstu2
+      klass_header = "FHIR::DSTU2::"
+      conformance_klass = FHIR::DSTU2::Conformance
+      supporting_resources = [
+        FHIR::DSTU2::AllergyIntolerance, FHIR::DSTU2::CarePlan, FHIR::DSTU2::Condition,
+        FHIR::DSTU2::DiagnosticOrder, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Encounter,
+        FHIR::DSTU2::FamilyMemberHistory, FHIR::DSTU2::Goal, FHIR::DSTU2::Immunization,
+        FHIR::DSTU2::List, FHIR::DSTU2::Procedure, FHIR::DSTU2::MedicationAdministration,
+        FHIR::DSTU2::MedicationDispense, FHIR::DSTU2::MedicationOrder,
+        FHIR::DSTU2::MedicationStatement, FHIR::DSTU2::Observation, FHIR::DSTU2::RelatedPerson
+      ]
+      # Vital Signs includes these codes as defined in http://loinc.org
+      vital_signs = {
+        '9279-1' => 'Respiratory rate',
+        '8867-4' => 'Heart rate',
+        '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
+        '55284-4' => 'Blood pressure systolic and diastolic',
+        '8480-6' => 'Systolic blood pressure',
+        '8462-4' => 'Diastolic blood pressure',
+        '8310-5' => 'Body temperature',
+        '8302-2' => 'Body height',
+        '8306-3' => 'Body height --lying',
+        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+        '3141-9' => 'Body weight Measured',
+        '39156-5' => 'Body mass index (BMI) [Ratio]',
+        '3140-1' => 'Body surface area Derived from formula',
+        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+        '8478-0' => 'Mean blood pressure'
+      }
+    elsif version == :stu3
+      klass_header = "FHIR::"
+      conformance_klass = FHIR::CapabilityStatement
+      supporting_resources = [
+        FHIR::AllergyIntolerance, FHIR::CarePlan, FHIR::CareTeam, FHIR::Condition, FHIR::Device,
+        FHIR::DiagnosticReport, FHIR::Goal, FHIR::Immunization, FHIR::MedicationRequest,
+        FHIR::MedicationStatement, FHIR::Observation, FHIR::Procedure, FHIR::RelatedPerson, FHIR::Specimen
+      ]
+      # Vital Signs includes these codes as defined in http://hl7.org/fhir/STU3/observation-vitalsigns.html
+      vital_signs = {
+        '85353-1' => 'Vital signs, weight, height, head circumference, oxygen saturation and BMI panel',
+        '9279-1' => 'Respiratory Rate',
+        '8867-4' => 'Heart rate',
+        '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
+        '8310-5' => 'Body temperature',
+        '8302-2' => 'Body height',
+        '8306-3' => 'Body height --lying',
+        '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
+        '29463-7' => 'Body weight',
+        '39156-5' => 'Body mass index (BMI) [Ratio]',
+        '85354-9' => 'Blood pressure systolic and diastolic',
+        '8480-6' => 'Systolic blood pressure',
+        '8462-4' => 'Diastolic blood pressure'
+      }
+    end
+
+    # Parse accessible resources from scopes
+    accessible_resource_names = scopes.scan(/patient\/(.*?)\.[read|\*]/)
+    accessible_resources = []
+    if accessible_resource_names.include?(["*"])
+      accessible_resources = supporting_resources.dup
+    else
+      accessible_resources = accessible_resource_names.map {|w| Object.const_get("#{klass_header}#{w.first}")}
+    end
+
+    # Get the conformance statement
+    statement = client.conformance_statement
+    response.assert('Conformance Successfully Retrieved',statement.is_a?(conformance_klass),statement.fhirVersion)
+    statement_details = statement.to_hash
+
+    puts "FHIR Version: #{statement_details['fhirVersion']}"
+
+    # Get read capabilities
+    readable_resource_names = []
+    readable_resource_names = statement_details['rest'][0]['resource'].select {|r|
+      r['interaction'].include?({"code"=>"read"})
+    }.map {|n| n['type']}
 
     # Get the patient demographics
-    patient = client.read(FHIR::Patient, patient_id).resource
-    response.assert('Patient Successfully Retrieved',patient.is_a?(FHIR::Patient),patient.xmlId)
-
-    patient_details = patient.massageHash(patient,true)
+    patient = client.read(Object.const_get("#{klass_header}Patient"), patient_id).resource
+    response.assert('Patient Successfully Retrieved',patient.is_a?(Object.const_get("#{klass_header}Patient")),patient.id)
+    patient_details = patient.to_hash
     puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
     # DAF/US-Core CCDS
     response.assert('Patient Name',patient_details['name'],patient_details['name'])
-    response.assert('Patient Gender',FHIR::Patient::VALID_CODES[:gender].include?(patient_details['gender']),patient_details['gender'])
+    response.assert('Patient Gender',patient_details['gender'],patient_details['gender'])
     response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
     # US Extensions
     puts 'Examining Patient for US-Core Extensions'
@@ -134,9 +215,39 @@ stream :keep_open do |out|
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
-    search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
-    detail = search_reply.resource.entry.first.to_fhir_json rescue nil
-    response.assert('Smoking Status',((search_reply.resource.entry.length >= 1) rescue false),detail)
+    search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => 'http://loinc.org|72166-2'}})
+    search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+    unless search_reply_length.nil?
+      if accessible_resources.include?(Object.const_get("#{klass_header}Observation")) # If resource is in scopes
+        if search_reply_length == 0
+          if readable_resource_names.include?("Observation")
+            response.assert("Smoking Status",:not_found)
+          else
+            response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
+          end
+        elsif search_reply_length > 0
+          response.assert("Smoking Status",true,(search_reply.resource.entry.first.to_fhir_json rescue nil))
+        else
+          if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+            response.assert("Smoking Status",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
+          end
+        end
+      else # If resource is not in scopes
+        if search_reply_length > 0
+          response.assert("Smoking Status",false,"Resource provided without required scopes.")
+        else
+          response.assert("Smoking Status",:skip,"Access not granted through scopes.")
+        end
+      end
+    else
+      if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+        response.assert("Smoking Status",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+      else
+        response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
+      end
+    end
 
     # Get the patient's allergies
     # There should be at least one. No known allergies should have a negated entry.
@@ -147,59 +258,118 @@ stream :keep_open do |out|
     #   409137002	No Known Drug Allergies
     #   428607008	No Known Environmental Allergy
     puts 'Getting AllergyIntolerances'
-    search_reply = client.search(FHIR::AllergyIntolerance, search: { parameters: { 'patient' => patient_id } })
-    response.assert_search_results('AllergyIntolerances',search_reply)
-    begin
-      if search_reply.resource.entry.length==0
-        response.assert('No Known Allergies',false)
-      else
-        response.assert('No Known Allergies',:skip,'Skipped because AllergyIntolerances were found.')
+    search_reply = client.search(Object.const_get("#{klass_header}AllergyIntolerance"), search: { parameters: { 'patient' => patient_id } })
+    search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+    unless search_reply_length.nil?
+      if accessible_resources.include?(Object.const_get("#{klass_header}AllergyIntolerance")) # If resource is in scopes
+        if search_reply_length == 0
+          if readable_resource_names.include?("AllergyIntolerance")
+            response.assert("AllergyIntolerances",false,"No Known Allergies.");
+          else
+            response.assert("AllergyIntolerances",:skip,"Read capability for resource not in conformance statement.")
+          end
+        elsif search_reply_length > 0
+          response.assert("AllergyIntolerances",true,"Found #{search_reply_length} AllergyIntolerance.")
+        else
+          if readable_resource_names.include?("AllergyIntolerance") # If comformance claims read capability for resource
+            response.assert("AllergyIntolerances",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            response.assert("AllergyIntolerances",:skip,"Read capability for resource not in conformance statement.")
+          end
+        end
+      else # If resource is not in scopes
+        if search_reply_length > 0
+          response.assert("AllergyIntolerances",false,"Resource provided without required scopes.")
+        else
+          response.assert("AllergyIntolerances",:skip,"Access not granted through scopes.")
+        end
       end
-    rescue
-      response.assert('No Known Allergies',false)
+    else
+      if readable_resource_names.include?("AllergyIntolerance") # If comformance claims read capability for resource
+        response.assert("AllergyIntolerances",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+      else
+        response.assert("AllergyIntolerances",:skip,"Read capability for resource not in conformance statement.")
+      end
     end
 
-    # Vital Signs Searching
-    # Vital Signs includes these codes as defined in http://loinc.org
-    vital_signs = {
-      '9279-1' => 'Respiratory rate',
-      '8867-4' => 'Heart rate',
-      '2710-2' => 'Oxygen saturation in Capillary blood by Oximetry',
-      '55284-4' => 'Blood pressure systolic and diastolic',
-      '8480-6' => 'Systolic blood pressure',
-      '8462-4' => 'Diastolic blood pressure',
-      '8310-5' => 'Body temperature',
-      '8302-2' => 'Body height',
-      '8306-3' => 'Body height --lying',
-      '8287-5' => 'Head Occipital-frontal circumference by Tape measure',
-      '3141-9' => 'Body weight Measured',
-      '39156-5' => 'Body mass index (BMI) [Ratio]',
-      '3140-1' => 'Body surface area Derived from formula',
-      '59408-5' => 'Oxygen saturation in Arterial blood by Pulse oximetry',
-      '8478-0' => 'Mean blood pressure'
-    }
     puts 'Getting Vital Signs / Observations'
     vital_signs.each do |code,display|
-      search_reply = client.search(FHIR::Observation, search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
-      response.assert_search_results("Vital Sign: #{display}",search_reply)
+      search_reply = client.search(Object.const_get("#{klass_header}Observation"), search: { parameters: { 'patient' => patient_id, 'code' => "http://loinc.org|#{code}" } })
+      search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+      unless search_reply_length.nil?
+        if accessible_resources.include?(Object.const_get("#{klass_header}Observation")) # If resource is in scopes
+          if search_reply_length == 0
+            if readable_resource_names.include?("Observation")
+              response.assert("Vital Sign: #{display}",:not_found)
+            else
+              response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+            end
+          elsif search_reply_length > 0
+            response.assert("Vital Sign: #{display}",true,"Found #{search_reply_length} Vital Sign: #{display}.")
+          else
+            if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+              response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+            else
+              response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+            end
+          end
+        else # If resource is not in scopes
+          if search_reply_length > 0
+            response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
+          else
+            response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
+          end
+        end
+      else
+        if readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+          response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+        else
+          response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+        end
+      end
     end
 
     puts 'Checking for Supporting Resources'
-    supporting_resources = [
-      FHIR::Condition, FHIR::Immunization, FHIR::Encounter, FHIR::Procedure,
-      FHIR::MedicationOrder, FHIR::MedicationStatement, FHIR::MedicationDispense,
-      FHIR::MedicationAdministration, FHIR::DiagnosticOrder, FHIR::DiagnosticReport,
-      FHIR::FamilyMemberHistory, FHIR::Goal, FHIR::CarePlan,
-      FHIR::List, FHIR::Organization, FHIR::Location, FHIR::Practitioner,
-      FHIR::Substance, FHIR::RelatedPerson, FHIR::Specimen
-    ]
     supporting_resources.each do |klass|
-      puts "Getting #{klass.name.demodulize}s"
-      search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
-      response.assert_search_results("#{klass.name.demodulize}s",search_reply)
+      unless [Object.const_get("#{klass_header}AllergyIntolerance"), Object.const_get("#{klass_header}Observation")].include?(klass) # Do not test for AllergyIntolerance or Observation
+        puts "Getting #{klass.name.demodulize}s"
+        search_reply = client.search(klass, search: { parameters: { 'patient' => patient_id } })
+        search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+        unless search_reply_length.nil?
+          if accessible_resources.include?(klass) # If resource is in scopes
+            if search_reply_length == 0
+              if readable_resource_names.include?(klass.name.demodulize)
+                response.assert("#{klass.name.demodulize}s",:not_found)
+              else
+                response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+              end
+            elsif search_reply_length > 0
+              response.assert("#{klass.name.demodulize}s",true,"Found #{search_reply_length} #{klass.name.demodulize}.")
+            else
+              if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
+                response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+              else
+                response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+              end
+            end
+          else # If resource is not in scopes
+            if search_reply_length > 0
+              response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
+            else
+              response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+            end
+          end
+        else
+          if readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
+            response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+          end
+        end
+      end
     end
 
-    # DAF -----------------------------
+    # DAF (DSTU2)-----------------------------
 #    # AllergyIntolerance
 #    # DiagnosticOrder
 #    # DiagnosticReport
@@ -218,7 +388,29 @@ stream :keep_open do |out|
 #    # SmokingStatus (Observation)
 #    # VitalSigns (Observation)
     # List
-#    # Supporting Resources: Organization, Location, Practitioner, Substance, RelatedPerson, Specimen
+#    # Additional Resources: RelatedPerson, Specimen
+
+    # US Core (STU3)-----------------------------
+    # AllergyIntolerance
+    # CareTeam
+    # Condition
+    # Device
+    # DiagnosticReport
+    # Goal
+    # Immunization
+    # Location (can't search by patient)
+    # Medication (can't search by patient)
+    # MedicationRequest
+    # MedicationStatement
+    # Practitioner (can't search by patient)
+    # Procedure
+    # Results (Observation)
+    # SmokingStatus (Observation
+    # CarePlan
+    # Organization (can't search by patient)
+    # Patient
+    # VitalSigns (Observation)
+    # Additional Resources: RelatedPerson, Specimen
 
     # ARGONAUTS ----------------------
     # 	CCDS Data Element	         FHIR Resource

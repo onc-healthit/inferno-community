@@ -1,58 +1,22 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: 110d1df427c88a9c5568307ce62f24e17a4f9415
-  branch: dstu2
+  revision: 21f0ffe0e4a8e4fbc9b83adf2ada6873552c73df
+  branch: multiversion
   specs:
-    fhir_client (1.0.0)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_dstu2_models
-  revision: 51c1b4ba96a1b67256f7752d1ebc82d67a72fcf1
-  branch: master
-  specs:
-    fhir_model (1.0.0)
-      bcp47
-      date_time_precision
-      mongoid
-      mongoid-history
-      moped
+    fhir_client (3.0.1)
+      activesupport (>= 3)
+      addressable (>= 2.3)
+      fhir_dstu2_models
+      fhir_models (>= 3.0.0)
       nokogiri
-      pry
-      rails (>= 4.0.0)
-      tilt
+      oauth2 (~> 1.1)
+      rack (>= 1.5)
+      rest-client (~> 2.0)
+      tilt (>= 1.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    actionmailer (4.2.7.1)
-      actionpack (= 4.2.7.1)
-      actionview (= 4.2.7.1)
-      activejob (= 4.2.7.1)
-      mail (~> 2.5, >= 2.5.4)
-      rails-dom-testing (~> 1.0, >= 1.0.5)
-    actionpack (4.2.7.1)
-      actionview (= 4.2.7.1)
-      activesupport (= 4.2.7.1)
-      rack (~> 1.6)
-      rack-test (~> 0.6.2)
-      rails-dom-testing (~> 1.0, >= 1.0.5)
-      rails-html-sanitizer (~> 1.0, >= 1.0.2)
-    actionview (4.2.7.1)
-      activesupport (= 4.2.7.1)
-      builder (~> 3.1)
-      erubis (~> 2.7.0)
-      rails-dom-testing (~> 1.0, >= 1.0.5)
-      rails-html-sanitizer (~> 1.0, >= 1.0.2)
-    activejob (4.2.7.1)
-      activesupport (= 4.2.7.1)
-      globalid (>= 0.3.0)
-    activemodel (4.2.7.1)
-      activesupport (= 4.2.7.1)
-      builder (~> 3.1)
-    activerecord (4.2.7.1)
-      activemodel (= 4.2.7.1)
-      activesupport (= 4.2.7.1)
-      arel (~> 6.0)
     activesupport (4.2.7.1)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
@@ -61,53 +25,35 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.0)
       public_suffix (~> 2.0, >= 2.0.2)
-    arel (6.0.4)
     bcp47 (0.3.3)
       i18n
-    bson (4.2.1)
-    builder (3.2.2)
     coderay (1.1.1)
-    concurrent-ruby (1.0.4)
     daemons (1.2.4)
     date_time_precision (0.8.1)
     domain_name (0.5.20161129)
       unf (>= 0.0.5, < 1.0.0)
-    easy_diff (1.0.0)
-    erubis (2.7.0)
     eventmachine (1.2.1)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
-    globalid (0.3.7)
-      activesupport (>= 4.1.0)
+    fhir_dstu2_models (1.0.2)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.7)
+    fhir_models (3.0.1)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 1.16, < 3)
+      nokogiri (>= 1.6)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (0.7.0)
     json (1.8.3)
     jwt (1.5.6)
-    loofah (2.0.3)
-      nokogiri (>= 1.5.9)
-    mail (2.6.4)
-      mime-types (>= 1.16, < 4)
     method_source (0.8.2)
     mime-types (2.99.3)
     mini_portile2 (2.1.0)
     minitest (5.10.1)
-    mongo (2.4.1)
-      bson (>= 4.2.1, < 5.0.0)
-    mongoid (5.1.6)
-      activemodel (~> 4.0)
-      mongo (~> 2.1)
-      origin (~> 2.2)
-      tzinfo (>= 0.3.37)
-    mongoid-compatibility (0.4.0)
-      activesupport
-      mongoid (>= 2.0)
-    mongoid-history (0.6.1)
-      activesupport
-      easy_diff
-      mongoid (>= 3.0)
-      mongoid-compatibility
-    moped (1.5.3)
     multi_json (1.12.1)
     multi_xml (0.6.0)
     multipart-post (2.0.0)
@@ -120,7 +66,6 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
-    origin (2.3.0)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -129,33 +74,6 @@ GEM
     rack (1.6.5)
     rack-protection (1.5.3)
       rack
-    rack-test (0.6.3)
-      rack (>= 1.0)
-    rails (4.2.7.1)
-      actionmailer (= 4.2.7.1)
-      actionpack (= 4.2.7.1)
-      actionview (= 4.2.7.1)
-      activejob (= 4.2.7.1)
-      activemodel (= 4.2.7.1)
-      activerecord (= 4.2.7.1)
-      activesupport (= 4.2.7.1)
-      bundler (>= 1.3.0, < 2.0)
-      railties (= 4.2.7.1)
-      sprockets-rails
-    rails-deprecated_sanitizer (1.0.3)
-      activesupport (>= 4.2.0.alpha)
-    rails-dom-testing (1.0.8)
-      activesupport (>= 4.2.0.beta, < 5.0)
-      nokogiri (~> 1.6)
-      rails-deprecated_sanitizer (>= 1.0.1)
-    rails-html-sanitizer (1.0.3)
-      loofah (~> 2.0)
-    railties (4.2.7.1)
-      actionpack (= 4.2.7.1)
-      activesupport (= 4.2.7.1)
-      rake (>= 0.8.7)
-      thor (>= 0.18.1, < 2.0)
-    rake (12.0.0)
     rest-client (2.0.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
@@ -165,18 +83,10 @@ GEM
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
     slop (3.6.0)
-    sprockets (3.7.1)
-      concurrent-ruby (~> 1.0)
-      rack (> 1, < 3)
-    sprockets-rails (3.2.0)
-      actionpack (>= 4.0)
-      activesupport (>= 4.0)
-      sprockets (>= 3.0.0)
     thin (1.7.0)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
       rack (>= 1, < 3)
-    thor (0.19.4)
     thread_safe (0.3.5)
     tilt (2.0.5)
     time_difference (0.5.0)
@@ -193,8 +103,8 @@ PLATFORMS
 DEPENDENCIES
   addressable
   fhir_client!
-  fhir_model!
   oauth2
+  pry
   rest-client
   sinatra
   thin
