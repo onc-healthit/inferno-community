@@ -1,3 +1,5 @@
+NOTE: This Crucible SMART App has been deprecated. All of its functionality has been moved into the main Rails application for Crucible.
+
 # Crucible SMART App
 Crucible SMART App is a [SMART-on-FHIR App](http://smarthealthit.org/smart-on-fhir/) that executes a series of tests against an HL7&reg; FHIR&reg; Server.
 
