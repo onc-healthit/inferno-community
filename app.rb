@@ -89,7 +89,8 @@ stream :keep_open do |out|
     response.echo_hash('Token Response',token_response)
 
     # Run all tests
-    Crucible::App::Test.run_tests(session[:fhir_url],token_response, response)
+    testing = Crucible::App::Test.new(session[:fhir_url], token_response, response)
+    testing.run
 
     # Output the time spent
     end_time = Time.now
