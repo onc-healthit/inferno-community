@@ -245,38 +245,44 @@ module Crucible
 
         puts 'Getting Vital Signs / Observations'
         @vital_signs.each do |code,display|
-          search_reply = @client.search(Object.const_get("#{@klass_header}Observation"), search: { parameters: { 'patient' => @patient_id, 'code' => "http://loinc.org|#{code}" } })
-          search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
-          unless search_reply_length.nil?
-            if @accessible_resources.include?(Object.const_get("#{@klass_header}Observation")) # If resource is in scopes
-              if search_reply_length == 0
-                if @readable_resource_names.include?("Observation")
-                  @response.assert("Vital Sign: #{display}",:not_found)
-                else
-                  @response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
-                end
-              elsif search_reply_length > 0
-                @response.assert("Vital Sign: #{display}",true,"Found #{search_reply_length} Vital Sign: #{display}.")
+          self.test_vital_sign(code, display)
+        end
+
+      end
+
+      def test_vital_sign(code, display)
+
+        search_reply = @client.search(Object.const_get("#{@klass_header}Observation"), search: { parameters: { 'patient' => @patient_id, 'code' => "http://loinc.org|#{code}" } })
+        search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+        unless search_reply_length.nil?
+          if @accessible_resources.include?(Object.const_get("#{@klass_header}Observation")) # If resource is in scopes
+            if search_reply_length == 0
+              if @readable_resource_names.include?("Observation")
+                @response.assert("Vital Sign: #{display}",:not_found)
               else
-                if @readable_resource_names.include?("Observation") # If comformance claims read capability for resource
-                  @response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
-                else
-                  @response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
-                end
+                @response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
               end
-            else # If resource is not in scopes
-              if search_reply_length > 0
-                @response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
-              else
-                @response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
-              end
-            end
-          else
-            if @readable_resource_names.include?("Observation") # If comformance claims read capability for resource
-              @response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+            elsif search_reply_length > 0
+              @response.assert("Vital Sign: #{display}",true,"Found #{search_reply_length} Vital Sign: #{display}.")
             else
-              @response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+              if @readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+                @response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+              else
+                @response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
+              end
             end
+          else # If resource is not in scopes
+            if search_reply_length > 0
+              @response.assert("Vital Sign: #{display}",false,"Resource provided without required scopes.")
+            else
+              @response.assert("Vital Sign: #{display}",:skip,"Access not granted through scopes.")
+            end
+          end
+        else
+          if @readable_resource_names.include?("Observation") # If comformance claims read capability for resource
+            @response.assert("Vital Sign: #{display}",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            @response.assert("Vital Sign: #{display}",:skip,"Read capability for resource not in conformance statement.")
           end
         end
 
@@ -285,43 +291,9 @@ module Crucible
       def run_supporting_resources
 
         puts 'Checking for Supporting Resources'
-        @supporting_resources.each do |klass|
-          unless [Object.const_get("#{@klass_header}AllergyIntolerance"), Object.const_get("#{@klass_header}Observation")].include?(klass) # Do not test for AllergyIntolerance or Observation
-            puts "Getting #{klass.name.demodulize}s"
-            search_reply = @client.search(klass, search: { parameters: { 'patient' => @patient_id } })
-            search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
-            unless search_reply_length.nil?
-              if @accessible_resources.include?(klass) # If resource is in scopes
-                if search_reply_length == 0
-                  if @readable_resource_names.include?(klass.name.demodulize)
-                    @response.assert("#{klass.name.demodulize}s",:not_found)
-                  else
-                    @response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
-                  end
-                elsif search_reply_length > 0
-                  @response.assert("#{klass.name.demodulize}s",true,"Found #{search_reply_length} #{klass.name.demodulize}.")
-                else
-                  if @readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
-                    @response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
-                  else
-                    @response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
-                  end
-                end
-              else # If resource is not in scopes
-                if search_reply_length > 0
-                  @response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
-                else
-                  @response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
-                end
-              end
-            else
-              if @readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
-                @response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
-              else
-                @response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
-              end
-            end
-          end
+        @supporting_resources.reject{|k| [Object.const_get("#{@klass_header}AllergyIntolerance"), Object.const_get("#{@klass_header}Observation")].include?(k)}.each do |klass| # Already tested AllergyIntolerance and Observation
+          puts "Getting #{klass.name.demodulize}s"
+          self.test_supporting_resource(klass)
         end
 
         # DAF (DSTU2)-----------------------------
@@ -393,6 +365,44 @@ module Crucible
         # --------------------------------
         # Date range search requirements are included in the Quick Start section for the following resources -
         # Vital Signs, Laboratory Results, Goals, Procedures, and Assessment and Plan of Treatment.
+
+      end
+
+      def test_supporting_resource(klass)
+
+        search_reply = @client.search(klass, search: { parameters: { 'patient' => @patient_id } })
+        search_reply_length = search_reply.try(:resource).try(:entry).try(:length)
+        unless search_reply_length.nil?
+          if @accessible_resources.include?(klass) # If resource is in scopes
+            if search_reply_length == 0
+              if @readable_resource_names.include?(klass.name.demodulize)
+                @response.assert("#{klass.name.demodulize}s",:not_found)
+              else
+                @response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+              end
+            elsif search_reply_length > 0
+              @response.assert("#{klass.name.demodulize}s",true,"Found #{search_reply_length} #{klass.name.demodulize}.")
+            else
+              if @readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
+                @response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+              else
+                @response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+              end
+            end
+          else # If resource is not in scopes
+            if search_reply_length > 0
+              @response.assert("#{klass.name.demodulize}s",false,"Resource provided without required scopes.")
+            else
+              @response.assert("#{klass.name.demodulize}s",:skip,"Access not granted through scopes.")
+            end
+          end
+        else
+          if @readable_resource_names.include?(klass.name.demodulize) # If comformance claims read capability for resource
+            @response.assert("#{klass.name.demodulize}s",false,"HTTP Status #{search_reply.code}&nbsp;#{search_reply.body}")
+          else
+            @response.assert("#{klass.name.demodulize}s",:skip,"Read capability for resource not in conformance statement.")
+          end
+        end
 
       end
 
