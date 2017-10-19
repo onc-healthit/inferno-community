@@ -116,7 +116,7 @@ module Crucible
 
       end
 
-      def run
+      def run_patient
 
         # Get the patient demographics
         patient = @client.read(Object.const_get("#{@klass_header}Patient"), @patient_id).resource
@@ -150,6 +150,10 @@ module Crucible
           @response.assert("Patient #{name}", check, detail)
         end
         @response.assert('Patient Preferred Language',(patient_details['communication'] && patient_details['communication'].find{|c|c['language'] && c['preferred']}),patient_details['communication'])
+
+      end
+
+      def run_smoking_status
 
         # Get the patient's smoking status
         # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
@@ -187,6 +191,10 @@ module Crucible
             @response.assert("Smoking Status",:skip,"Read capability for resource not in conformance statement.")
           end
         end
+
+      end
+
+      def run_allergyintolerance
 
         # Get the patient's allergies
         # There should be at least one. No known allergies should have a negated entry.
@@ -231,6 +239,10 @@ module Crucible
           end
         end
 
+      end
+
+      def run_vital_signs
+
         puts 'Getting Vital Signs / Observations'
         @vital_signs.each do |code,display|
           search_reply = @client.search(Object.const_get("#{@klass_header}Observation"), search: { parameters: { 'patient' => @patient_id, 'code' => "http://loinc.org|#{code}" } })
@@ -267,6 +279,10 @@ module Crucible
             end
           end
         end
+
+      end
+
+      def run_supporting_resources
 
         puts 'Checking for Supporting Resources'
         @supporting_resources.each do |klass|
@@ -378,6 +394,10 @@ module Crucible
         # Date range search requirements are included in the Quick Start section for the following resources -
         # Vital Signs, Laboratory Results, Goals, Procedures, and Assessment and Plan of Treatment.
 
+      end
+
+      def score
+
         # Output a summary
         total = @response.pass + @response.not_found + @response.skip + @response.fail
         @response.assert("#{((@response.pass.to_f / total.to_f)*100.0).round}% (#{@response.pass} of #{total})",true,'Total tests passed')
@@ -387,6 +407,7 @@ module Crucible
         @response.end_table
 
       end
+
     end
   end
 end

@@ -90,7 +90,12 @@ stream :keep_open do |out|
 
     # Run all tests
     testing = Crucible::App::Test.new(session[:fhir_url], token_response, response)
-    testing.run
+    testing.run_patient
+    testing.run_smoking_status
+    testing.run_allergyintolerance
+    testing.run_vital_signs
+    testing.run_supporting_resources
+    testing.score
 
     # Output the time spent
     end_time = Time.now
