@@ -1,7 +1,7 @@
 ---
 client_id:
-  epic: 6c12dff4-24e7-4475-a742-b08972c4ea27
-  cerner: 3ca28e17-c3fc-4b90-98a9-9e2d2480a6d0
+  epic: 00000000-0000-0000-0000-000000000000
+  cerner: 00000000-0000-0000-0000-000000000000
 scopes:
   epic: launch openid profile patient/*.read
   cerner: online_access launch openid profile patient/AllergyIntolerance.read patient/Appointment.read
