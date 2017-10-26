@@ -27,7 +27,8 @@ get '/index' do
   bullets = {
     "#{response.base_url}/index" => 'this page',
     "#{response.base_url}/app" => 'the app (also the redirect_uri after authz)',
-    "#{response.base_url}/launch" => 'the launch url',
+    "#{response.base_url}/launch_ehr" => 'the ehr launch url',
+    "#{response.base_url}/launch_sa" => 'the standalone launch url',
     "#{response.base_url}/config" => 'configure client ID and scopes'
   }
   response.open.echo_hash('End Points',bullets)
@@ -62,7 +63,7 @@ stream :keep_open do |out|
     response.start_table('Errors',['Status','Description','Detail'])
     message = 'The <span>/app</span> endpoint requires <span>code</span> and <span>state</span> parameters.
               <br/>&nbsp;<br/>
-              The session state should also have been set at <span>/launch</span> with <span>client_id</span>, <span>token_url</span>, and <span>fhir_url</span> information.
+              The session state should also have been set at <span>/launch_ehr</span> with <span>client_id</span>, <span>token_url</span>, and <span>fhir_url</span> information.
               <br/>&nbsp;<br/>
                Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
     response.assert('OAuth2 Launch Parameters',false,message).end_table
@@ -114,7 +115,7 @@ def bundle_entry(resource)
 end
 
 # This is the launch URI that redirects to an Authorization server
-get '/launch' do
+get '/launch_ehr' do
   if params && params['iss'] && params['launch']
     client_id = Crucible::App::Config.get_client_id(params['iss'])
     auth_info = Crucible::App::Config.get_auth_info(params['iss'])
@@ -143,12 +144,20 @@ get '/launch' do
     response = Crucible::App::Html.new
     response.open.echo_hash('params',params)
     response.start_table('Errors',['Status','Description','Detail'])
-    message = 'The <span>/launch</span> endpoint requires <span>iss</span> and <span>launch</span> parameters.
+    message = 'The <span>/launch_ehr</span> endpoint requires <span>iss</span> and <span>launch</span> parameters.
               <br/>&nbsp;<br/>
                Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
     response.assert('OAuth2 Launch Parameters',false,message).end_table
     body response.instructions.close
   end
+end
+
+get '/launch_sa' do
+  response = Crucible::App::Html.new
+  response.open
+  fields = { 'Endpoint URL' => '', 'Client ID' => ''}
+  response.add_form('Standalone Launch','/launch_sa',fields)
+  body response.close
 end
 
 get '/config' do

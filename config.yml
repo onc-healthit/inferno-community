@@ -1,6 +1,6 @@
 ---
 client_id:
-  epic: 00000000-0000-0000-0000-000000000000
+  epic: 6c12dff4-24e7-4475-a742-b08972c4ea27
   cerner: 00000000-0000-0000-0000-000000000000
 scopes:
   epic: launch openid profile patient/*.read
