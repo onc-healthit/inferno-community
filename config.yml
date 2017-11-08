@@ -10,6 +10,6 @@ scopes:
     patient/Encounter.read patient/Immunization.read patient/MedicationOrder.read
     patient/MedicationStatement.read patient/Observation.read patient/Patient.read
     patient/Person.read patient/RelatedPerson.read
-  smartstu3: launch/patient patient/*.* openid profile
+  smartstu3: launch patient/*.read openid profile
 base_url: ''
-redirect_url: http://localhost:4567/app
+redirect_url: 'https://projectcrucible.org/smart/app'
