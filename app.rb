@@ -1,5 +1,6 @@
 # You should never deactivate SSL Peer Verification
 # except in terrible development situations using invalid certificates:
+# require 'oauth2'
 # OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 require 'yaml'
@@ -38,15 +39,20 @@ end
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL
 get '/app' do
+if params['error']
+  if params['error_uri']
+    puts '#################################'
+    puts params['error_uri']
+    puts '#################################'
+    redirect params['error_uri']
+  else
+    response = Crucible::App::Html.new
+    response.open.echo_hash('Invalid Launch!',params).close
+  end
+end
 stream :keep_open do |out|
   response = Crucible::App::Html.new(out)
-  if params['error']
-    if params['error_uri']
-      redirect params['error_uri']
-    else
-      response.open.echo_hash('Invalid Launch!',params).close
-    end
-  elsif params['state'] != session[:state]
+  if params['state'] != session[:state]
     response.open
     response.echo_hash('OAuth2 Redirect Parameters',params)
     response.echo_hash('Session State',session)
