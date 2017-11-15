@@ -282,7 +282,7 @@ module Crucible
 
       def instructions
         output "</div><div>
-          <h2>Instructions</h2>
+          <h2>EHR Launch Instructions</h2>
           <h4>Configuring Client ID and Scopes (required)</h4>
           <p>OAuth2 client IDs and scopes for different FHIR servers must be stored in the
           <a href=\"#{base_url}/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
@@ -327,6 +327,32 @@ module Crucible
           <li>Click \"Launch App\"</li>
           </ol></li>
           </ul>
+
+          <p>Errors encountered during launch are probably associated with improper
+          configuration of the client ID and scopes.</p>"
+        self
+      end
+
+      def instructions_standalone
+        output "</div><div>
+          <h2>Standalone Launch Instructions</h2>
+          <p>The Crucible SMART App must be registered with a testing endpoint;
+          for example, the <a href=\"https://sandbox.smarthealthit.org/\">SMART Sandbox</a>.
+          The app must be registered with a redirect URL of \"#{base_url}/app\".</p>
+
+          <p>The 'Endpoint URL' field should contain the URL of the secured
+          FHIR server for testing. For the SMART Sandbox above,
+          this is \"https://sb-fhir-stu3.smarthealthit.org/smartstu3/data\".</p>
+
+          <p>The 'Client ID' field should contain the client ID of the SMART app
+          as provided upon registration. For the SMART Sandbox above, this can be
+          found by clicking on the app's icon, looking at the sidebar that appears,
+          and copying the client ID that is given in the sidebar.</p>
+
+          <p>The 'Scopes' field should contain the scopes which the SMART app
+          requests. This should be something like the sample scopes included in
+          the form below by default. Note that currently <code>launch/patient</code>
+          must be a requested scope, as this app requires a patient picker.</p>
 
           <p>Errors encountered during launch are probably associated with improper
           configuration of the client ID and scopes.</p>"

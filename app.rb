@@ -511,7 +511,8 @@ end
 get '/launch_sa' do
   response = Crucible::App::Html.new
   response.open
-  fields = { 'Endpoint URL' => '', 'Client ID' => '', 'Scopes' => ''}
+  response.instructions_standalone
+  fields = { 'Endpoint URL' => '', 'Client ID' => '', 'Scopes' => 'launch/patient patient/*.read openid profile'}
   response.add_form('Standalone Launch','/launch_sa',fields)
   body response.close
 end
