@@ -41,9 +41,6 @@ end
 get '/app' do
 if params['error']
   if params['error_uri']
-    puts '#################################'
-    puts params['error_uri']
-    puts '#################################'
     redirect params['error_uri']
   else
     response = Crucible::App::Html.new
