@@ -1,5 +1,6 @@
 # You should never deactivate SSL Peer Verification
 # except in terrible development situations using invalid certificates:
+# require 'oauth2'
 # OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 require 'yaml'
@@ -27,7 +28,8 @@ get '/index' do
   bullets = {
     "#{response.base_url}/index" => 'this page',
     "#{response.base_url}/app" => 'the app (also the redirect_uri after authz)',
-    "#{response.base_url}/launch" => 'the launch url',
+    "#{response.base_url}/launch_ehr" => 'the ehr launch url',
+    "#{response.base_url}/launch_sa" => 'the standalone launch url',
     "#{response.base_url}/config" => 'configure client ID and scopes'
   }
   response.open.echo_hash('End Points',bullets)
@@ -37,15 +39,17 @@ end
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL
 get '/app' do
+if params['error']
+  if params['error_uri']
+    redirect params['error_uri']
+  else
+    response = Crucible::App::Html.new
+    response.open.echo_hash('Invalid Launch!',params).close
+  end
+end
 stream :keep_open do |out|
   response = Crucible::App::Html.new(out)
-  if params['error']
-    if params['error_uri']
-      redirect params['error_uri']
-    else
-      response.open.echo_hash('Invalid Launch!',params).close
-    end
-  elsif params['state'] != session[:state]
+  if params['state'] != session[:state]
     response.open
     response.echo_hash('OAuth2 Redirect Parameters',params)
     response.echo_hash('Session State',session)
@@ -62,7 +66,7 @@ stream :keep_open do |out|
     response.start_table('Errors',['Status','Description','Detail'])
     message = 'The <span>/app</span> endpoint requires <span>code</span> and <span>state</span> parameters.
               <br/>&nbsp;<br/>
-              The session state should also have been set at <span>/launch</span> with <span>client_id</span>, <span>token_url</span>, and <span>fhir_url</span> information.
+              The session state should also have been set at <span>/launch_ehr</span> with <span>client_id</span>, <span>token_url</span>, and <span>fhir_url</span> information.
               <br/>&nbsp;<br/>
                Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
     response.assert('OAuth2 Launch Parameters',false,message).end_table
@@ -180,38 +184,48 @@ stream :keep_open do |out|
     }.map {|n| n['type']}
 
     # Get the patient demographics
-    patient = client.read(Object.const_get("#{klass_header}Patient"), patient_id).resource
-    response.assert('Patient Successfully Retrieved',patient.is_a?(Object.const_get("#{klass_header}Patient")),patient.id)
-    patient_details = patient.to_hash
-    puts "Patient: #{patient_details['id']} #{patient_details['name']}"
+    patient_read_response = client.read(Object.const_get("#{klass_header}Patient"), patient_id)
+    patient = patient_read_response.resource
+    is_patient = patient.is_a?(Object.const_get("#{klass_header}Patient"))
+    response.assert('Patient Successfully Retrieved',is_patient,"HTTP #{patient_read_response.code} Patient/#{patient_id}")
+    if is_patient
+      patient_details = patient.to_hash
+      puts "Patient: #{patient_details['id']} #{patient_details['name']}"
 
-    # DAF/US-Core CCDS
-    response.assert('Patient Name',patient_details['name'],patient_details['name'])
-    response.assert('Patient Gender',patient_details['gender'],patient_details['gender'])
-    response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
-    # US Extensions
-    puts 'Examining Patient for US-Core Extensions'
-    extensions = {
-      'Race' => 'http://hl7.org/fhir/StructureDefinition/us-core-race',
-      'Ethnicity' => 'http://hl7.org/fhir/StructureDefinition/us-core-ethnicity',
-      'Religion' => 'http://hl7.org/fhir/StructureDefinition/us-core-religion',
-      'Mother\'s Maiden Name' => 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName',
-      'Birth Place' => 'http://hl7.org/fhir/StructureDefinition/birthPlace'
-    }
-    required_extensions = ['Race','Ethnicity']
-    extensions.each do |name,url|
-      detail = nil
-      check = :not_found
-      if patient_details['extension']
-        detail = patient_details['extension'].find{|e| e['url']==url }
-        check = !detail.nil? if required_extensions.include?(name)
-      elsif required_extensions.include?(name)
-        check = false
+      # DAF/US-Core CCDS
+      response.assert('Patient Name',patient_details['name'],patient_details['name'])
+      response.assert('Patient Gender',patient_details['gender'],patient_details['gender'])
+      response.assert('Patient Date of Birth',patient_details['birthDate'],patient_details['birthDate'])
+      # US Extensions
+      puts 'Examining Patient for US-Core Extensions'
+      extensions = {
+        'Race' => 'http://hl7.org/fhir/StructureDefinition/us-core-race',
+        'Ethnicity' => 'http://hl7.org/fhir/StructureDefinition/us-core-ethnicity',
+        'Religion' => 'http://hl7.org/fhir/StructureDefinition/us-core-religion',
+        'Mother\'s Maiden Name' => 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName',
+        'Birth Place' => 'http://hl7.org/fhir/StructureDefinition/birthPlace'
+      }
+      required_extensions = ['Race','Ethnicity']
+      extensions.each do |name,url|
+        detail = nil
+        check = :not_found
+        if patient_details['extension']
+          detail = patient_details['extension'].find{|e| e['url']==url }
+          check = !detail.nil? if required_extensions.include?(name)
+        elsif required_extensions.include?(name)
+          check = false
+        end
+        response.assert("Patient #{name}", check, detail)
       end
-      response.assert("Patient #{name}", check, detail)
+      response.assert('Patient Preferred Language',(patient_details['communication'] && patient_details['communication'].find{|c|c['language'] && c['preferred']}),patient_details['communication'])
+    else
+      response.assert('Patient Name',:skip,'Unable to access patient demographics.')
+      response.assert('Patient Gender',:skip,'Unable to access patient demographics.')
+      response.assert('Patient Date of Birth',:skip,'Unable to access patient demographics.')
+      response.assert('Patient Race',:skip,'Unable to access patient demographics.')
+      response.assert('Patient Ethnicity',:skip,'Unable to access patient demographics.')
+      response.assert('Patient Preferred Language',:skip,'Unable to access patient demographics.')
     end
-    response.assert('Patient Preferred Language',(patient_details['communication'] && patient_details['communication'].find{|c|c['language'] && c['preferred']}),patient_details['communication'])
-
     # Get the patient's smoking status
     # {"coding":[{"system":"http://loinc.org","code":"72166-2"}]}
     puts 'Getting Smoking Status'
@@ -463,8 +477,8 @@ def bundle_entry(resource)
   entry
 end
 
-# This is the launch URI that redirects to an Authorization server
-get '/launch' do
+# This is the EHR launch URI that redirects to an Authorization server
+get '/launch_ehr' do
   if params && params['iss'] && params['launch']
     client_id = Crucible::App::Config.get_client_id(params['iss'])
     auth_info = Crucible::App::Config.get_auth_info(params['iss'])
@@ -493,7 +507,53 @@ get '/launch' do
     response = Crucible::App::Html.new
     response.open.echo_hash('params',params)
     response.start_table('Errors',['Status','Description','Detail'])
-    message = 'The <span>/launch</span> endpoint requires <span>iss</span> and <span>launch</span> parameters.
+    message = 'The <span>/launch_ehr</span> endpoint requires <span>iss</span> and <span>launch</span> parameters.
+              <br/>&nbsp;<br/>
+               Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
+    response.assert('OAuth2 Launch Parameters',false,message).end_table
+    body response.instructions.close
+  end
+end
+
+get '/launch_sa' do
+  response = Crucible::App::Html.new
+  response.open
+  response.instructions_standalone
+  fields = { 'Endpoint URL' => '', 'Client ID' => '', 'Scopes' => 'launch/patient patient/*.read openid profile'}
+  response.add_form('Standalone Launch','/launch_sa',fields)
+  body response.close
+end
+
+# This is the standalone launch URI that redirects to an Authorization server
+post '/launch_sa' do
+  if params && params['Endpoint URL'] && params['Client ID'] && params['Scopes']
+    client_id = params['Client ID']
+    auth_info = Crucible::App::Config.get_auth_info(params['Endpoint URL'])
+    session[:client_id] = client_id
+    session[:fhir_url] = params['Endpoint URL']
+    session[:authorize_url] = auth_info[:authorize_url]
+    session[:token_url] = auth_info[:token_url]
+    puts "Launch Client ID: #{client_id}\nLaunch Auth Info: #{auth_info}\nLaunch Redirect: #{Crucible::App::Config::CONFIGURATION['redirect_url']}"
+    session[:state] = SecureRandom.uuid
+    oauth2_params = {
+      'response_type' => 'code',
+      'client_id' => client_id,
+      'redirect_uri' => Crucible::App::Config::CONFIGURATION['redirect_url'],
+      'scope' => params['Scopes'],
+      'state' => session[:state],
+      'aud' => params['Endpoint URL']
+    }
+    oauth2_auth_query = "#{session[:authorize_url]}?"
+    oauth2_params.each do |key,value|
+      oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
+    end
+    puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
+    redirect oauth2_auth_query[0..-2]
+  else
+    response = Crucible::App::Html.new
+    response.open.echo_hash('params',params)
+    response.start_table('Errors',['Status','Description','Detail'])
+    message = 'The <span>/launch_sa</span> endpoint requires <span>Endpoint URL</span>, <span>Client ID</span>, and <span>Scopes</span> parameters.
               <br/>&nbsp;<br/>
                Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
     response.assert('OAuth2 Launch Parameters',false,message).end_table

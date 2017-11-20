@@ -1,17 +1,15 @@
 ---
 client_id:
-  cerner: 04db5cb1-70e6-4200-8e9e-e12476b882a1
-  epic: 00000000-0000-0000-0000-000000000000
-  smart: 00000000-0000-0000-0000-000000000000
-  mitre: test-test-test
+  epic: 6c12dff4-24e7-4475-a742-b08972c4ea27
+  cerner: 3ca28e17-c3fc-4b90-98a9-9e2d2480a6d0
+  smartstu3: c8fe5277-747e-4437-bddc-fde4c2c05656
 scopes:
+  epic: launch openid profile patient/*.read
   cerner: online_access launch openid profile patient/AllergyIntolerance.read patient/Appointment.read
-    patient/Condition.read patient/Contract.read patient/Device.read patient/DiagnosticReport.read
+    patient/Condition.read patient/Contract.read patient/Device.read patient DiagnosticReport.read
     patient/Encounter.read patient/Immunization.read patient/MedicationOrder.read
     patient/MedicationStatement.read patient/Observation.read patient/Patient.read
     patient/Person.read patient/RelatedPerson.read
-  epic: launch openid profile patient/*.read
-  smart: launch openid profile patient/*.read
-  mitre: launch openid profile patient/*.read
-base_url: ''
-redirect_url: 'https://projectcrucible.org/smart/app'
+  smartstu3: launch patient/*.read openid profile
+base_url: 'http://localhost:4567'
+redirect_url: 'http://localhost:4567/app'

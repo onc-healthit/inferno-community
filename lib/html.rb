@@ -34,7 +34,6 @@ module Crucible
           <head>
             <title>Crucible SMART-on-FHIR App</title>
             <link rel=\"stylesheet\" href=\"#{base_url}/css/pure-min.css\">
-            <link rel=\"stylesheet\" href=\"#{base_url}/css/font.css\">
             <script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>
             <script src=\"#{base_url}/jquery-ui-1.12.1.custom/jquery-ui.js\"></script>
             <script src=\"#{base_url}/bootstrap/js/bootstrap.js\"></script>
@@ -61,15 +60,12 @@ module Crucible
                 margin-left: auto;
                 margin-right: auto;
               }
-              img.footer {
-                margin-top: 25px;
-              }
               h3 {
                 background-color: #FFF;
-                color: #4A6E98;
+                color: #333333;
                 display: block;
                 font-size: 18px;
-                border: 1px solid #4A6E98;
+                border: 1px solid #333333;
                 border-radius: 5px;
                 padding: 10px;
                 padding-bottom: 7px;
@@ -112,38 +108,22 @@ module Crucible
                 margin-top: 10px;
                 margin-bottom: 10px;
               }
-              input[type=button], input[type=submit], input[type=reset] {
-                background-color: #B74C18;
-                color: #FFF;
-                border: 1px solid #B74C18;
-                border-radius: 5px;
-                padding: 10px;
-                padding-bottom: 7px;
-              }
-              input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
-                background-color: #FFF;
-                color: #B74C18;
-                border: 1px solid #B74C18;
-                border-radius: 5px;
-                padding: 10px;
-                padding-bottom: 7px;
-              }
               #accordion .ui-accordion-header {
                 background-color: #FFF;
-                color: #4A6E98;
+                color: #333333;
                 display: block;
                 font-size: 18px;
-                border: 1px solid #4A6E98;
+                border: 1px solid #333333;
                 border-radius: 5px;
                 padding-top: 10px;
                 padding-bottom: 7px;
               }
               #accordion .ui-accordion-header:hover {
-                background-color: #4A6E98;
+                background-color: #333333;
                 color: #FFF;
                 display: block;
                 font-size: 18px;
-                border: 1px solid #4A6E98;
+                border: 1px solid #333333;
                 border-radius: 5px;
                 padding-top: 10px;
                 padding-bottom: 7px;
@@ -162,39 +142,9 @@ module Crucible
             </script>
           </head>
           <body>
-            <header>
-              <div class=\"container\">
-                <div class=\"navbar-header\">
-                  <button class=\"navbar-toggle collapsed\" type=\"button\" data-toggle=\"collapse\" data-target=\".bs-navbar-collapse\">
-                    <span class=\"sr-only\">Toggle navigation</span>
-                    <span class=\"icon-bar\"></span>
-                    <span class=\"icon-bar\"></span>
-                    <span class=\"icon-bar\"></span>
-                  </button>
-                  <a href=\"https://projectcrucible.org\" class=\"navbar-brand\">CRUCIBLE</a>
-                </div>
-                <nav class=\"collapse navbar-collapse\">
-                  <ul class=\"nav navbar-nav pull-right\">
-                    <li><a href=\"https://projectcrucible.org\" class=\"navButton\">Server Test</a></li>
-                    <li><a href=\"https://projectcrucible.org/scorecard\" class=\"navButton\">Scorecard</a></li>
-                    <li><a href=\"https://projectcrucible.org/testdata\" class=\"navButton\">Test Data</a></li>
-                    <li><a href=\"https://projectcrucible.org/smart\" class=\"navButton\">SMART on FHIR</a></li>
-                    <li><a href=\"https://beta.projectcrucible.org\" class=\"navButton\">DSTU2 Version</a></li>
-                    <li class=\"dropdown\">
-                      <a href=\"#\" class=\"navButton\" data-toggle=\"dropdown\" id=\"contact-drop\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Contact Us<span class=\"caret\"></span></a>
-                      <ul class=\"dropdown-menu\" aria-labelledby=\"contact-drop\">
-                        <li><a class=\"navButton\" href=\"mailto:fhir-testing-list@lists.mitre.org?subject=Crucible\">Email Us</a></li>
-                        <li><a class=\"navButton\" target=\"_blank\" href=\"https://chat.fhir.org/#narrow/stream/crucible\">FHIR Chat</a></li>
-                        <li><a class=\"navButton\" target=\"_blank\" href=\"https://github.com/fhir-crucible/crucible/issues\">Log an issue</a></li>
-                      </ul>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </header>
             <div class=\"main\">
               <div class=\"title\">
-                <h1>SMART on <span style=\"color: #B74C18\">FHIR</span></h1>
+                <h1>SMART on FHIR</h1>
                 <div class=\"well helper_text\">
                   Crucible SMART App is a <a href=\"http://smarthealthit.org/smart-on-fhir/\" target=\"_blank\">SMART-on-FHIR App</a> that executes a series of tests against an HL7® FHIR® Server. These tests are compatible with <a href=\"http://hl7.org/fhir/index.html\" target=\"_blank\">FHIR STU3</a> and <a href=\"http://hl7.org/fhir/DSTU2/index.html\" target=\"_blank\">FHIR DSTU2</a>.
                   <br>
@@ -212,23 +162,6 @@ module Crucible
       def close
         output "</div>
           </div>
-          <footer class=\"footer\">
-            <div class=\"container\">
-              <nav class=\"navbar\">
-                <div class=\"container-fluid\">
-                  <div class=\"navbar-header\">
-                    <img class=\"footer\" src=\"#{base_url}/images/logo-muted.png\" alt=\"Crucible\">
-                  </div>
-                  <ul class=\"nav navbar-nav pull-right\">
-                    <li><a class=\"navButton\" href=\"http://www.mitre.org\" target=\"_blank\">The MITRE Corporation</a></li>
-                    <li><a class=\"navButton\" href=\"http://fhir.hl7.org/\" target=\"_blank\">HL7\'s FHIR</a></li>
-                    <li><a class=\"navButton\" href=\"http://www.cms.gov/Regulations-and-Guidance/Legislation/EHRIncentivePrograms\" target=\"_blank\">Meaningful Use</a></li>
-                    <li><a class=\"navButton\" href=\"https://github.com/fhir-crucible/\" target=\"_blank\"><i class=\"fa fa-lg fa-fw fa-github\"></i> Source</a></li>
-                  </ul>
-                </div>
-              </nav>
-            </div>
-          </footer>
           <script>
             window.clearInterval(intervalID);
             window.scrollTo(0, 0);
@@ -349,7 +282,7 @@ module Crucible
 
       def instructions
         output "</div><div>
-          <h2>Instructions</h2>
+          <h2>EHR Launch Instructions</h2>
           <h4>Configuring Client ID and Scopes (required)</h4>
           <p>OAuth2 client IDs and scopes for different FHIR servers must be stored in the
           <a href=\"#{base_url}/config\">/config</a> section, so the SMART app can be used with multiple FHIR server
@@ -394,6 +327,32 @@ module Crucible
           <li>Click \"Launch App\"</li>
           </ol></li>
           </ul>
+
+          <p>Errors encountered during launch are probably associated with improper
+          configuration of the client ID and scopes.</p>"
+        self
+      end
+
+      def instructions_standalone
+        output "</div><div>
+          <h2>Standalone Launch Instructions</h2>
+          <p>The Crucible SMART App must be registered with a testing endpoint;
+          for example, the <a href=\"https://sandbox.smarthealthit.org/\">SMART Sandbox</a>.
+          The app must be registered with a redirect URL of \"#{base_url}/app\".</p>
+
+          <p>The 'Endpoint URL' field should contain the URL of the secured
+          FHIR server for testing. For the SMART Sandbox above,
+          this is \"https://sb-fhir-stu3.smarthealthit.org/smartstu3/data\".</p>
+
+          <p>The 'Client ID' field should contain the client ID of the SMART app
+          as provided upon registration. For the SMART Sandbox above, this can be
+          found by clicking on the app's icon, looking at the sidebar that appears,
+          and copying the client ID that is given in the sidebar.</p>
+
+          <p>The 'Scopes' field should contain the scopes which the SMART app
+          requests. This should be something like the sample scopes included in
+          the form below by default. Note that currently <code>launch/patient</code>
+          must be a requested scope, as this app requires a patient picker.</p>
 
           <p>Errors encountered during launch are probably associated with improper
           configuration of the client ID and scopes.</p>"
