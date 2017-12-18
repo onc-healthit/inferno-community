@@ -1,0 +1,141 @@
+/* ------------------------- LAYOUT -------------------------------- */
+
+.main {
+  margin-top: 20px;
+}
+
+.footer {
+  margin-top: 10px;
+  border-top: 1px solid #aaa;
+  font-size: .8em;
+}
+
+.footer div {
+  padding-top: 10px;
+}
+
+/* ------------------------- MAIN -------------------------------- */
+
+.endpoint-label {
+  font-size: 1.1em;
+  font-weight: bold;
+
+}
+
+/* ------------------------- SCORECARD -------------------------------- */
+
+.jumbotron.scorecard-jumbotron {
+  padding: 20px;
+}
+
+.scorecard-title {
+  font-size: 1.8em;
+  border-bottom: 1px solid #666;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+
+.oi-print {
+  font-size: .6em;
+
+}
+.scorecard-title-details {
+  font-size: .5em;
+
+}
+
+.scorecard-table {
+  align: left;
+  text-align: left;
+  width: 100%;
+}
+
+.scorecard-row {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 15px;
+  margin-top: 15px;
+}
+
+.scorecard-score {
+  font-size: 22px;
+  color: white;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  padding-top: 5px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-right: 10px;
+  margin-top: 5px;
+}
+
+.scorecard-rubric {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.scorecard-name {
+  font-weight: bold;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.scorecard-out-of {
+  display: inline-block;
+  font-size: .8em;
+}
+
+.scorecard-details {
+  font-size: .8em;
+}
+
+.scorecard-message {
+  display:inline-block;
+  vertical-align: top;
+  width: 650px;
+  padding-top: 2px;
+  font-size: .9em;
+}
+
+.scorecard-action {
+  float: right;
+  padding-top: 3px;
+}
+
+.server-state {
+  margin-top: 10px;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  padding: 10px;
+  font-size: .8em;
+}
+
+.client-state {
+  margin-top: 10px;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  padding: 10px;
+  font-size: .8em;
+}
+
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 20px;
+}
+
+.client-state-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.client-state-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.client-not-authenticated {
+  color: red;
+
+}

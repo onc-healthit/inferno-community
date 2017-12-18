@@ -9,10 +9,29 @@ require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
 require 'pry'
+require 'dm-core'
+require 'dm-migrations'
+
+
+DataMapper.setup(:default, 'sqlite3:data.db')
 
 Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
   require file
 end
+
+class TestInstance
+  include DataMapper::Resource
+  property :id, String, key: true
+  property :url, String
+  property :name, String
+  property :created_at, DateTime
+end
+
+DataMapper.finalize
+
+# automatically create the post table
+TestInstance.auto_migrate!
+TestInstance.auto_upgrade!
 
 enable :sessions
 set :session_secret, SecureRandom.uuid
@@ -24,18 +43,43 @@ end
 
 # The index displays the available endpoints
 get '/index' do
-  response = Crucible::App::Html.new
-  bullets = {
-    "#{response.base_url}/index" => 'this page',
-    "#{response.base_url}/app" => 'the app (also the redirect_uri after authz)',
-    "#{response.base_url}/launch_ehr" => 'the ehr launch url',
-    "#{response.base_url}/launch_sa" => 'the standalone launch url',
-    "#{response.base_url}/config" => 'configure client ID and scopes'
-  }
-  response.open.echo_hash('End Points',bullets)
+  # response = Crucible::App::Html.new
+  # bullets = {
+  #   "#{response.base_url}/index" => 'this page',
+  #   "#{response.base_url}/app" => 'the app (also the redirect_uri after authz)',
+  #   "#{response.base_url}/launch_ehr" => 'the ehr launch url',
+  #   "#{response.base_url}/launch_sa" => 'the standalone launch url',
+  #   "#{response.base_url}/config" => 'configure client ID and scopes'
+  # }
+  # response.open.echo_hash('End Points',bullets)
 
-  body response.instructions.close
+  # body response.instructions.close
+
+  erb :index
 end
+
+get '/instance/:id/?' do
+  @instance = TestInstance.get(params[:id])
+  erb :details
+end
+
+get '/instance/:id/2/?' do
+  @instance = TestInstance.get(params[:id])
+  erb :details2
+end
+
+get '/instance/:id/3/?' do
+  @instance = TestInstance.get(params[:id])
+  erb :details3
+end
+
+post '/instance/?' do
+  id = SecureRandom.uuid
+  @instance = TestInstance.new(id: id, created_at: DateTime.now, url: params['fhir_server'], name: params['name'])
+  @instance.save   
+  redirect "/instance/#{id}/"
+end
+
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL
 get '/app' do

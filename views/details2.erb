@@ -1,0 +1,326 @@
+<div class="row">
+  <div class="col-4">
+    <div class="sticky">
+      <div class="server-state">
+        <%=@instance.url%>
+      </div>
+      <div class="client-state">
+        <div class="client-state-title">
+          Current Client Status: <span class="client-not-authenticated">Not Authorized</span>
+        </div>
+        The client is not yet registered with the OAuth2 server.
+        Please run the <strong>Dynamic Client Registration</strong> test sequence
+        to retrieve this information.
+
+        If the server does not support Dynamic Client Registration, click on 'Skip'
+        to retrieve the client endpoints to manually enter into the OAuth2 server.
+        <!-- <ul class="client&#45;state&#45;list"> -->
+          <!-- <li>Registration Method: Manual</li> -->
+          <!-- <li>Authenticated: No</li> -->
+          <!-- <li>Authentication Method: EHR Launch</li> -->
+          <!-- <li>OAuth2 Authentication Server: http://...../</li> -->
+          <!-- <li>Token Timeout: 12 Hours</li> -->
+          <!-- <li>Refresh Token: yes</li> -->
+          <!-- <li>Confidential Client?: no</li> -->
+          <!-- <li>PatientID: ...</li> -->
+          <!-- <li>Current Scopes: ...</li> -->
+        <!-- </ul> -->
+      </div>
+    </div>
+  </div>
+  <div class="col-8">
+
+    <!-- <div class="instructions"> -->
+    <!--   Instructions -->
+    <!-- </div> -->
+
+    <!-- <div class="jumbotron scorecard&#45;jumbotron"> -->
+    <!--   <p>Show the current status of the client here... (authorized, etc?)</p> -->
+    <!--   <ul> -->
+    <!--     <li>Client Instance Name: <%=@instance.name%></li> -->
+    <!--     <li>FHIR Endpoint: <%=@instance.url%></li> -->
+    <!--     <li>Registration Method: Manual</li> -->
+    <!--     <li>Authenticated: Yes</li> -->
+    <!--     <li>Authentication Method: EHR Launch</li> -->
+    <!--     <li>OAuth2 Authentication Server: http://...../</li> -->
+    <!--     <li>Token Timeout: 12 Hours</li> -->
+    <!--     <li>Refresh Token: yes</li> -->
+    <!--     <li>Confidential Client?: no</li> -->
+    <!--     <li>PatientID: ...</li> -->
+    <!--     <li>Current Scopes: ...</li> -->
+    <!--   </ul> -->
+    <!-- </div> -->
+    <!-- <h3>Next Tests</h3> -->
+    <!--  -->
+    <!-- <div class="scorecard&#45;table"> -->
+    <!--   <div class="scorecard&#45;row"> -->
+    <!--     <div class="scorecard&#45;score" style="background&#45;color: #FFF; border: 1px solid #666"> -->
+    <!--     </div> -->
+    <!--     <div class="scorecard&#45;rubric"> -->
+    <!--       <div class="scorecard&#45;name"> -->
+    <!--         Capability Statement -->
+    <!--       </div> -->
+    <!--       <div class="scorecard&#45;out&#45;of"> -->
+    <!--         10 out of 10 passed -->
+    <!--       </div> -->
+    <!--       <div class="scorecard&#45;out&#45;of"> -->
+    <!--         0 warnings -->
+    <!--       </div> -->
+    <!--     </div> -->
+    <!--     <div class="scorecard&#45;action"> -->
+    <!--       <button type="button" class="btn btn&#45;primary">Run</button> -->
+    <!--       <button type="button" class="btn btn&#45;primary">Skip</button> -->
+    <!--     </div> -->
+    <!--     <div class="scorecard&#45;message"> -->
+    <!--       Test that the FHIR server properly... -->
+    <!--       Test that the FHIR server properly... -->
+    <!--       Test that the FHIR server properly... -->
+    <!--       Test that the FHIR server properly... -->
+    <!--       Test that the FHIR server properly... -->
+    <!--     </div> -->
+    <!--   </div> -->
+    <!-- </div> -->
+    <!--  -->
+    <!-- <br> -->
+
+    <!-- <h3>Pending Tests</h3> -->
+        <!-- <div class="scorecard&#45;score" style="background&#45;color: #006837"> -->
+        <!--   <span class="oi oi&#45;check" title="person" aria&#45;hidden="true"></span> -->
+        <!-- </div> -->
+
+    <div class="row scorecard-title">
+      <div class="col-sm-9">
+        Test Sequences <span class="scorecard-title-details">(1 of 9 sequences successfully demonstrated)</span>
+      </div>
+      <div class="col-sm-3 text-right">
+        <span class="oi oi-print" title="Print" aria-hidden="true"></span>
+      </div>
+    </div>
+    <div class="scorecard-table">
+      <div class="scorecard-row">
+        <div class="scorecard-score" style="background-color: #006837">
+          <span class="oi oi-check" title="person" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Capability Statement
+          </div>
+          <div class="scorecard-out-of">
+            10 out of tests passed. 1 Warning.
+          </div>
+          <div class="scorecard-details">
+            The FHIR server properly exposes a capability statement with necessary information.
+          </div>
+        </div>
+        <div class="scorecard-action">
+          <button type="button" class="btn btn-primary">Rerun</button>
+          <button type="button" class="btn btn-primary">Details</button>
+        </div>
+      </div>
+
+      <div class="scorecard-row">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Dynamic Client Registration
+          </div>
+          <div class="scorecard-out-of">
+            10 Tests
+          </div>
+          <div class="scorecard-details">
+            The OAuth2 Server supports dynamic client registration.
+          </div>
+        </div>
+        <div class="scorecard-action">
+          <a href="2" role="button" class="btn btn-primary">Begin</a>
+          <a href="3" role="button" class="btn btn-primary">Skip</a>
+        </div>
+      </div>
+      <div class="scorecard-row">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Demonstrate at least one Launch Sequence
+            
+          </div>
+          <div class="scorecard-out-of">
+            0 of 4 passed
+          </div>
+          <div class="scorecard-out-of">
+            0 warnings
+          </div>
+          <div class="scorecard-details">
+            The server supports at least one of the following required launch sequences.
+          </div>
+        </div>
+      </div>
+      <div class="scorecard-row" style="padding-left: 50px">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Provider EHR Launch
+          </div>
+          <div class="scorecard-out-of">
+            10 out of 10 passed
+          </div>
+          <div class="scorecard-out-of">
+            0 warnings
+          </div>
+          <div class="scorecard-details">
+            The server supports launching the app via Provider EHR launch.
+          </div>
+        </div>
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+      </div>
+
+      <div class="scorecard-row" style="padding-left: 50px">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Provider Standalone Launch
+          </div>
+          <div class="scorecard-out-of">
+            10 out of 10 passed
+          </div>
+          <div class="scorecard-out-of">
+            0 warnings
+          </div>
+          <div class="scorecard-details">
+            The server supports launching the app via Provider standalone launch.
+          </div>
+        </div>
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+      </div>
+
+      <div class="scorecard-row" style="padding-left: 50px">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Patient EHR Launch
+          </div>
+          <div class="scorecard-out-of">
+            10 out of 10 passed
+          </div>
+          <div class="scorecard-out-of">
+            0 warnings
+          </div>
+          <div class="scorecard-details">
+            The server supports launching the app from a patient protal.
+          </div>
+        </div>
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+      </div>
+
+      <div class="scorecard-row" style="padding-left: 50px">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Patient Standalone Launch
+          </div>
+          <div class="scorecard-out-of">
+            10 out of 10 passed
+          </div>
+          <div class="scorecard-out-of">
+            0 warnings
+          </div>
+          <div class="scorecard-details">
+            The server supports launching the app via Patient standalone launch.
+          </div>
+        </div>
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+      </div>
+
+      <div class="scorecard-row">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Argonaut Data Query IG
+          </div>
+          <div class="scorecard-out-of">
+            10 Tests
+          </div>
+          <div class="scorecard-details">
+            The server supports exchanging data conforming to the Argonaut Data Query IG.
+          </div>
+        </div>
+        
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+
+      </div>
+
+      <div class="scorecard-row">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            OpenID Connect
+          </div>
+          <div class="scorecard-out-of">
+            10 Tests
+          </div>
+          <div class="scorecard-details">
+            The server supports user authorization using OpenID Connect.
+          </div>
+        </div>
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+      </div>
+
+      <div class="scorecard-row">
+        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <div class="scorecard-rubric">
+          <div class="scorecard-name">
+            Refresh Token
+          </div>
+          <div class="scorecard-out-of">
+            10 Tests
+          </div>
+          <div class="scorecard-details">
+            The server supports renewing authorization using refresh tokens.
+          </div>
+        </div>
+        <div class="scorecard-action" style="opacity:.3">
+          <button type="button" class="btn btn-primary" disabled>Begin</button>
+          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
