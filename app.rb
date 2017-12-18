@@ -13,25 +13,28 @@ require 'dm-core'
 require 'dm-migrations'
 
 
-DataMapper.setup(:default, 'sqlite3:data.db')
+DataMapper.setup(:default, 'sqlite3:data/data.db')
 
-Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),'lib','**','*.rb')).each do |file|
-  require file
+
+['lib', 'models'].each do |dir|
+  Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),dir, '**','*.rb')).each do |file|
+    require file
+  end
 end
 
-class TestInstance
-  include DataMapper::Resource
-  property :id, String, key: true
-  property :url, String
-  property :name, String
-  property :created_at, DateTime
-end
+#TODO clean up database stuff
 
 DataMapper.finalize
 
 # automatically create the post table
-TestInstance.auto_migrate!
-TestInstance.auto_upgrade!
+TestingInstance.auto_migrate!
+TestingInstance.auto_upgrade!
+
+SequenceResult.auto_migrate!
+SequenceResult.auto_upgrade!
+
+TestResult.auto_migrate!
+TestResult.auto_upgrade!
 
 enable :sessions
 set :session_secret, SecureRandom.uuid
@@ -59,27 +62,40 @@ get '/index' do
 end
 
 get '/instance/:id/?' do
-  @instance = TestInstance.get(params[:id])
+  @instance = TestingInstance.get(params[:id])
   erb :details
 end
 
 get '/instance/:id/2/?' do
-  @instance = TestInstance.get(params[:id])
+  @instance = TestingInstance.get(params[:id])
   erb :details2
 end
 
 get '/instance/:id/3/?' do
-  @instance = TestInstance.get(params[:id])
+  @instance = TestingInstance.get(params[:id])
   erb :details3
 end
 
 post '/instance/?' do
   id = SecureRandom.uuid
-  @instance = TestInstance.new(id: id, created_at: DateTime.now, url: params['fhir_server'], name: params['name'])
+  @instance = TestingInstance.new(id: id, created_at: DateTime.now, url: params['fhir_server'], name: params['name'])
   @instance.save   
   redirect "/instance/#{id}/"
 end
 
+post '/instance/:id/run_test/' do
+
+end
+
+get '/instance/:id/redirect/:key/' do
+
+
+end
+
+get '/instance/:id/launch/:key/' do
+
+
+end
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL
 get '/app' do
