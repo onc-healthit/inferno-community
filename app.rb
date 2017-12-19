@@ -88,7 +88,21 @@ end
 get '/instance/:id/conformance_test/?' do
   @instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(@instance.url)
-  binding.pry
+
+  # test that conformance is present and is DSTU2
+  if client.conformance_statement.nil?
+    conformance_present_result = TestResult.new(id: SecureRandom.uuid, result: 'fail')
+
+    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, result: 'skip')
+  else
+    conformance_present_result = TestResult.new(id: SecureRandom.uuid, result: 'pass')
+
+    if client.conformance_statement.is_a?(FHIR::DSTU2::Conformance)
+      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, result: 'pass')
+    else
+      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, result: 'fail')
+    end
+  end
 end
 
 get '/instance/:id/redirect/:key/' do

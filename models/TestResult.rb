@@ -5,4 +5,3 @@ class TestResult
 
   belongs_to :sequence_result
 end
-
