@@ -78,13 +78,17 @@ end
 
 post '/instance/?' do
   id = SecureRandom.uuid
-  @instance = TestingInstance.new(id: id, created_at: DateTime.now, url: params['fhir_server'], name: params['name'])
-  @instance.save   
+  url = params['fhir_server']
+  url = url.chomp('/') if url.end_with?('/')
+  @instance = TestingInstance.new(id: id, created_at: DateTime.now, url: url, name: params['name'])
+  @instance.save
   redirect "/instance/#{id}/"
 end
 
-post '/instance/:id/run_test/' do
-
+get '/instance/:id/conformance_test/?' do
+  @instance = TestingInstance.get(params[:id])
+  client = FHIR::Client.new(@instance.url)
+  binding.pry
 end
 
 get '/instance/:id/redirect/:key/' do
