@@ -85,24 +85,30 @@ post '/instance/?' do
   redirect "/instance/#{id}/"
 end
 
-get '/instance/:id/conformance_test/?' do
+get '/instance/:id/conformance_sequence/?' do
   @instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(@instance.url)
 
   # test that conformance is present and is DSTU2
   if client.conformance_statement.nil?
-    conformance_present_result = TestResult.new(id: SecureRandom.uuid, result: 'fail')
-
-    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, result: 'skip')
+    conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'fail')
+    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'skip')
   else
-    conformance_present_result = TestResult.new(id: SecureRandom.uuid, result: 'pass')
-
+    conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'pass')
     if client.conformance_statement.is_a?(FHIR::DSTU2::Conformance)
-      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, result: 'pass')
+      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'pass')
     else
-      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, result: 'fail')
+      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
     end
   end
+
+  # store TestResult in SequenceResult
+  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance")
+  conformance_sequence_result.test_results.push(conformance_present_result)
+  conformance_sequence_result.test_results.push(conformance_dstu2_result)
+
+  # store SequenceResult in TestingInstance
+  @instance.sequence_results.push(conformance_sequence_result)
 end
 
 get '/instance/:id/redirect/:key/' do
