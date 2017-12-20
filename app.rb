@@ -66,25 +66,39 @@ get '/instance/:id/?' do
   erb :details
 end
 
-get '/instance/:id/2/?' do
-  @instance = TestingInstance.get(params[:id])
-  erb :details2
-end
-
-get '/instance/:id/3/?' do
-  @instance = TestingInstance.get(params[:id])
-  erb :details3
-end
-
 post '/instance/?' do
   id = SecureRandom.uuid
-  @instance = TestingInstance.new(id: id, created_at: DateTime.now, url: params['fhir_server'], name: params['name'])
-  @instance.save   
+  url = params['fhir_server']
+  url = url.chomp('/') if url.end_with?('/')
+  @instance = TestingInstance.new(id: id, created_at: DateTime.now, url: url, name: params['name'])
+  @instance.save
   redirect "/instance/#{id}/"
 end
 
-post '/instance/:id/run_test/' do
+get '/instance/:id/conformance_sequence/?' do
+  @instance = TestingInstance.get(params[:id])
+  client = FHIR::Client.new(@instance.url)
 
+  # test that conformance is present and is DSTU2
+  if client.conformance_statement.nil?
+    conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'fail')
+    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'skip')
+  else
+    conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'pass')
+    if client.conformance_statement.is_a?(FHIR::DSTU2::Conformance)
+      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'pass')
+    else
+      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
+    end
+  end
+
+  # store TestResult in SequenceResult
+  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance", result: 'fail', passed_count: 0, failed_count: 2)
+  conformance_sequence_result.test_results.push(conformance_present_result)
+  conformance_sequence_result.test_results.push(conformance_dstu2_result)
+
+  # store SequenceResult in TestingInstance
+  @instance.sequence_results.push(conformance_sequence_result)
 end
 
 get '/instance/:id/redirect/:key/' do

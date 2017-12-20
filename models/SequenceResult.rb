@@ -1,6 +1,7 @@
 class SequenceResult
   include DataMapper::Resource
   property :id, Serial
+  property :name, String
   property :result, String #pass fail skip
   property :passed_count, Integer
   property :failed_count, Integer
@@ -8,4 +9,3 @@ class SequenceResult
   has n, :test_results
   belongs_to :testing_instance
 end
-
