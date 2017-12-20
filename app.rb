@@ -93,7 +93,7 @@ get '/instance/:id/conformance_sequence/?' do
   end
 
   # store TestResult in SequenceResult
-  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance")
+  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance", result: 'fail', passed_count: 0, failed_count: 2)
   conformance_sequence_result.test_results.push(conformance_present_result)
   conformance_sequence_result.test_results.push(conformance_dstu2_result)
 
