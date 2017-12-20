@@ -1,6 +1,6 @@
 class TestResult
   include DataMapper::Resource
-  property :id, Serial
+  property :id, String, key: true
   property :name, String
   property :result, String #pass fail
 

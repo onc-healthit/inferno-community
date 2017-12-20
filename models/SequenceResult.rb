@@ -1,6 +1,6 @@
 class SequenceResult
   include DataMapper::Resource
-  property :id, Serial
+  property :id, String, key: true
   property :name, String
   property :result, String #pass fail
   property :passed_count, Integer
