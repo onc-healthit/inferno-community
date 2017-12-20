@@ -82,7 +82,7 @@ get '/instance/:id/conformance_sequence/?' do
   # test that conformance is present and is DSTU2
   if client.conformance_statement.nil?
     conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'fail')
-    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'skip')
+    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
   else
     conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'pass')
     if client.conformance_statement.is_a?(FHIR::DSTU2::Conformance)
