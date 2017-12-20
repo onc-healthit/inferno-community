@@ -115,7 +115,6 @@ get '/instance/:id/conformance_sequence/?' do
   # store SequenceResult in TestingInstance
   @instance.sequence_results.push(conformance_sequence_result)
   @instance.save
-  binding.pry
 end
 
 get '/instance/:id/redirect/:key/' do
