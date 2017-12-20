@@ -66,16 +66,6 @@ get '/instance/:id/?' do
   erb :details
 end
 
-get '/instance/:id/2/?' do
-  @instance = TestingInstance.get(params[:id])
-  erb :details2
-end
-
-get '/instance/:id/3/?' do
-  @instance = TestingInstance.get(params[:id])
-  erb :details3
-end
-
 post '/instance/?' do
   id = SecureRandom.uuid
   url = params['fhir_server']
