@@ -3,6 +3,7 @@ class TestResult
   property :id, String, key: true
   property :name, String
   property :result, String #pass fail
+  property :warning, String
 
   belongs_to :request_response
   belongs_to :sequence_result
