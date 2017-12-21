@@ -82,34 +82,68 @@ get '/instance/:id/conformance_sequence/?' do
   @instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(@instance.url)
   conformance = client.conformance_statement
+  reply = client.reply
 
-  # test that conformance is present and is DSTU2
+  conformance_request_response = RequestResponse.new(id: SecureRandom.uuid, request_method: reply.request[:method].to_s, request_url: reply.request[:url], request_headers: reply.request[:headers], request_body: reply.request[:body], response_code: reply.response[:code], response_headers: reply.response[:headers], response_body: reply.response[:body])
+
+  # update TestingInstance with OAuth endpoint and FHIR format
+  @instance.update(oauth_endpoint: client.get_oauth2_metadata_from_conformance, fhir_format: conformance.format)
+
+  # test that conformance is present, is DSTU2, and supports JSON
   if conformance.nil?
     conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'fail')
     conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
+    conformance_json_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance JSON', result: 'fail')
   else
     conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'pass')
+
     if conformance.is_a?(FHIR::DSTU2::Conformance)
       conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'pass')
     else
       conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
     end
+
+    if conformance.format.to_s.downcase.include?('json')
+      conformance_json_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance JSON', result: 'pass')
+    else
+      conformance_json_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance JSON', result: 'fail')
+    end
   end
   conformance_present_result.save
   conformance_dstu2_result.save
-
-  reply = client.reply
-  conformance_request_response = RequestResponse.new(id: SecureRandom.uuid, request_method: reply.request[:method].to_s, request_url: reply.request[:url], request_headers: reply.request[:headers], request_body: reply.request[:body], response_code: reply.response[:code], response_headers: reply.response[:headers], response_body: reply.response[:body])
+  conformance_json_result.save
 
   # store TestResult in RequestResponse
   conformance_request_response.test_results.push(conformance_present_result)
   conformance_request_response.test_results.push(conformance_dstu2_result)
+  conformance_request_response.test_results.push(conformance_json_result)
   conformance_request_response.save
 
   # store TestResult in SequenceResult
-  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance", result: 'fail', passed_count: 0, failed_count: 2)
+  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance")
   conformance_sequence_result.test_results.push(conformance_present_result)
   conformance_sequence_result.test_results.push(conformance_dstu2_result)
+  conformance_sequence_result.test_results.push(conformance_json_result)
+
+  passed_count = 0
+  failed_count = 0
+  warning_count = 0
+  conformance_sequence_result.test_results.each do |test_result| # needs to be refactored when other sequences have tests
+    if test_result.result == 'pass'
+      passed_count += 1
+    elsif test_result.result == 'fail'
+      failed_count += 1
+    end
+
+    unless test_result.warning.nil?
+      warning_count += 1
+    end
+  end
+  result = (failed_count.zero?) ? 'pass' : 'fail'
+  conformance_sequence_result.passed_count = passed_count
+  conformance_sequence_result.failed_count = failed_count
+  conformance_sequence_result.warning_count = warning_count
+  conformance_sequence_result.result = result
   conformance_sequence_result.save
 
   # store SequenceResult in TestingInstance
