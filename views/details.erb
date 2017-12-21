@@ -8,10 +8,27 @@
         <div class="client-state-title">
           Current Client Status: <span class="client-not-authenticated">Not Authorized</span>
         </div>
-        The client does not yet have the necessary OAuth2
-        endpoint information to begin authorization.
-        Please run the <strong>Capability Statement</strong> test sequence
-        to retrieve this information.
+        <% if @instance.oauth_authorize_endpoint.nil? && @instance.oauth_token_endpoint.nil?%>
+          <p>
+          The client does not yet have the necessary OAuth2
+          endpoint information to begin authorization.
+          Please run the <strong>Capability Statement</strong> test sequence
+          to retrieve this information.
+          </p>
+        <% else %>
+          <p>
+            OAuth Authorize Endpoint: <%= @instance.oauth_authorize_endpoint %>
+            <br/>
+            OAuth Token Endpoint: <%= @instance.oauth_token_endpoint %>
+          </p>
+        <% end %>
+        <% if !@instance.dynamically_registered.nil? && !@instance.dynamically_registered && !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?%>
+          <p>
+          Launch URL: /instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
+          <br>
+          Redirect URL: /instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect
+          </p>
+        <% end %>
         <!-- <ul class="client&#45;state&#45;list"> -->
           <!-- <li>Registration Method: Manual</li> -->
           <!-- <li>Authenticated: No</li> -->
@@ -96,22 +113,44 @@
     </div>
     <div class="scorecard-table">
       <div class="scorecard-row">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
+        <% case @sequence_results['Conformance'].try(:result)
+          when nil %>
+            <div class="scorecard-score scorecard-score-pending">
+              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+            </div>
+        <% when 'pass' %>
+            <div class="scorecard-score scorecard-score-pass">
+              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+            </div>
+        <% when 'fail' %>
+            <div class="scorecard-score scorecard-score-fail">
+              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+            </div>
+        <% when 'skip' %>
+            <div class="scorecard-score scorecard-score-skip">
+              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+            </div>
+        <% end %>
         <div class="scorecard-rubric">
           <div class="scorecard-name">
             Capability Statement
           </div>
           <div class="scorecard-out-of">
-            10 tests
+            <% if @sequence_results['Conformance'].nil? %>
+              10 tests
+            <% else %>
+              <%= @sequence_results['Conformance'].passed_count %> Passed - 
+              <%= @sequence_results['Conformance'].failed_count %> Failed -
+              (<%= @sequence_results['Conformance'].warning_count %> Warning(s))
+              
+            <% end %>
           </div>
           <div class="scorecard-details">
             The FHIR server properly exposes a capability statement with necessary information.
           </div>
         </div>
         <div class="scorecard-action">
-          <a href="conformance_sequence" role="button" class="btn btn-primary">Begin</a>
+          <a href="conformance_sequence" role="button" class="btn btn-primary"><%if @instance.oauth_token_endpoint.nil? %>Begin<% else %>Rerun<% end %></a>
           <button type="submit" class="btn btn-primary">Skip</button>
         </div>
       </div>
@@ -131,9 +170,14 @@
             The OAuth2 Server supports dynamic client registration.
           </div>
         </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        <div class="scorecard-action" <%if @instance.oauth_token_endpoint.nil? %>style="opacity:.3"<% end %>>
+          <%if @instance.oauth_token_endpoint.nil? %>
+            <button type="button" class="btn btn-primary" disabled>Begin</button>
+            <button type="button" class="btn btn-primary" disabled>Skip</button>
+          <% else %>
+            <button type="button" class="btn btn-primary">Begin</button>
+            <a href="dynamic_registration_skipped" role="button" class="btn btn-primary">Skip</a>
+          <% end %>
         </div>
       </div>
       <div class="scorecard-row">
@@ -175,9 +219,14 @@
             The server supports launching the app via Provider EHR launch.
           </div>
         </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
+          <% if @instance.dynamically_registered.nil? %>
+            <button type="button" class="btn btn-primary" disabled>Begin</button>
+            <button type="button" class="btn btn-primary" disabled>Skip</button>
+          <% else %>
+            <button type="button" class="btn btn-primary">Begin</button>
+            <button type="button" class="btn btn-primary">Skip</button>
+          <% end %>
         </div>
       </div>
 
@@ -197,11 +246,19 @@
           </div>
           <div class="scorecard-details">
             The server supports launching the app via Provider standalone launch.
+            <% if !@instance.dynamically_registered.nil? %>
+            <form method="POST" action="launch_sa"><h2>Standalone Launch</h2><table class="pure-table pure-table-horizontal data"><tbody><tr><td>Endpoint URL</td><td class="last"><input type="text" size="50" name="Endpoint URL" value="" required></td></tr><tr><td>Client ID</td><td class="last"><input type="text" size="50" name="Client ID" value="" required></td></tr><tr><td>Scopes</td><td class="last"><input type="text" size="50" name="Scopes" value="launch/patient patient/*.read openid profile" required></td></tr></tbody></table><input type="submit"></form>
+          <% end %>
           </div>
         </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
+          <% if @instance.dynamically_registered.nil? %>
+            <button type="button" class="btn btn-primary" disabled>Begin</button>
+            <button type="button" class="btn btn-primary" disabled>Skip</button>
+          <% else %>
+            <button type="button" class="btn btn-primary">Begin</button>
+            <button type="button" class="btn btn-primary">Skip</button>
+          <% end %>
         </div>
       </div>
 
@@ -223,9 +280,14 @@
             The server supports launching the app from a patient protal.
           </div>
         </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
+          <% if @instance.dynamically_registered.nil? %>
+            <button type="button" class="btn btn-primary" disabled>Begin</button>
+            <button type="button" class="btn btn-primary" disabled>Skip</button>
+          <% else %>
+            <button type="button" class="btn btn-primary">Begin</button>
+            <button type="button" class="btn btn-primary">Skip</button>
+          <% end %>
         </div>
       </div>
 
@@ -247,9 +309,14 @@
             The server supports launching the app via Patient standalone launch.
           </div>
         </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
+        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
+          <% if @instance.dynamically_registered.nil? %>
+            <button type="button" class="btn btn-primary" disabled>Begin</button>
+            <button type="button" class="btn btn-primary" disabled>Skip</button>
+          <% else %>
+            <button type="button" class="btn btn-primary">Begin</button>
+            <button type="button" class="btn btn-primary">Skip</button>
+          <% end %>
         </div>
       </div>
 
