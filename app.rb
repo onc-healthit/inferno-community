@@ -66,6 +66,9 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
+
+  @sequence_results = @instance.sequence_results.reduce({}) { |hash, result| hash[result.name] = result; hash}
+
   erb :details
 end
 
@@ -87,7 +90,7 @@ get '/instance/:id/conformance_sequence/?' do
   conformance_request_response = RequestResponse.new(id: SecureRandom.uuid, request_method: reply.request[:method].to_s, request_url: reply.request[:url], request_headers: reply.request[:headers], request_body: reply.request[:body], response_code: reply.response[:code], response_headers: reply.response[:headers], response_body: reply.response[:body])
 
   # update TestingInstance with OAuth endpoint and FHIR format
-  @instance.update(oauth_endpoint: client.get_oauth2_metadata_from_conformance, fhir_format: conformance.format)
+  @instance.update(oauth_authorize_endpoint: client.get_oauth2_metadata_from_conformance[:authorize_url], oauth_token_endpoint: client.get_oauth2_metadata_from_conformance[:token_url], fhir_format: conformance.format)
 
   # test that conformance is present, is DSTU2, and supports JSON
   if conformance.nil?
@@ -149,15 +152,41 @@ get '/instance/:id/conformance_sequence/?' do
   # store SequenceResult in TestingInstance
   @instance.sequence_results.push(conformance_sequence_result)
   @instance.save
+
+
+  redirect "/instance/#{params[:id]}/"
+
 end
 
-get '/instance/:id/redirect/:key/' do
+get '/instance/:id/dynamic_registration_skipped/?' do
 
+  instance = TestingInstance.get(params[:id])
+
+  instance.dynamically_registered = false
+  instance.save
+
+  redirect "/instance/#{params[:id]}/"
 
 end
 
-get '/instance/:id/launch/:key/' do
+post '/instance/:id/launch_sa/?' do
 
+  binding.pry
+
+end
+
+get '/instance/:id/:key/launch/?' do
+
+  #get instance by id and client endpoint key
+  #do stufc
+
+  binding.pry
+
+end
+
+get '/instance/:id/:key/redirect/?' do
+
+  binding.pry
 
 end
 
