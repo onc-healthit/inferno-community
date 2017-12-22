@@ -139,10 +139,10 @@
             <% if @sequence_results['Conformance'].nil? %>
               10 tests
             <% else %>
-              <%= @sequence_results['Conformance'].passed_count %> Passed - 
+              <%= @sequence_results['Conformance'].passed_count %> Passed -
               <%= @sequence_results['Conformance'].failed_count %> Failed -
               (<%= @sequence_results['Conformance'].warning_count %> Warning(s))
-              
+
             <% end %>
           </div>
           <div class="scorecard-details">
@@ -247,7 +247,26 @@
           <div class="scorecard-details">
             The server supports launching the app via Provider standalone launch.
             <% if !@instance.dynamically_registered.nil? %>
-            <form method="POST" action="launch_sa"><h2>Standalone Launch</h2><table class="pure-table pure-table-horizontal data"><tbody><tr><td>Endpoint URL</td><td class="last"><input type="text" size="50" name="Endpoint URL" value="" required></td></tr><tr><td>Client ID</td><td class="last"><input type="text" size="50" name="Client ID" value="" required></td></tr><tr><td>Scopes</td><td class="last"><input type="text" size="50" name="Scopes" value="launch/patient patient/*.read openid profile" required></td></tr></tbody></table><input type="submit"></form>
+            <form method="POST" action="launch_sa">
+              <h2>Standalone Launch</h2>
+              <table class="pure-table pure-table-horizontal data">
+                <tbody>
+                  <tr>
+                    <td>Client ID</td>
+                    <td class="last">
+                      <input type="text" size="50" name="Client ID" value="" required>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Scopes</td>
+                    <td class="last">
+                      <input type="text" size="50" name="Scopes" value="launch/patient patient/*.read openid profile" required>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <input type="submit">
+            </form>
           <% end %>
           </div>
         </div>

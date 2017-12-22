@@ -3,6 +3,8 @@ class TestingInstance
   property :id, String, key: true
   property :url, String
   property :name, String
+  property :client_id, String
+  property :scopes, String
   property :oauth_authorize_endpoint, String
   property :oauth_token_endpoint, String
   property :fhir_format, String
