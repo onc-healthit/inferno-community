@@ -67,16 +67,16 @@ end
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
 
-  @sequence_results = @instance.sequence_results.reduce({}) { |hash, result| hash[result.name] = result; hash}
+  @sequence_results = @instance.sequence_results.reduce({}) { |hash, result| hash[result.name] = result if hash[result.name].nil? || hash[result.name].created_at < result.created_at; hash}
 
   erb :details
 end
 
 post '/instance/?' do
-  id = SecureRandom.uuid
+  id = SecureRandomBase62.generate
   url = params['fhir_server']
   url = url.chomp('/') if url.end_with?('/')
-  @instance = TestingInstance.new(id: id, created_at: DateTime.now, url: url, name: params['name'])
+  @instance = TestingInstance.new(id: id, url: url, name: params['name'])
   @instance.save
   redirect "/instance/#{id}/"
 end
@@ -158,10 +158,33 @@ get '/instance/:id/conformance_sequence/?' do
 
 end
 
-get '/instance/:id/dynamic_registration_skipped/?' do
+post '/instance/:id/conformance_sequence_skip/?' do
 
   instance = TestingInstance.get(params[:id])
 
+  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance", result: "skip")
+  conformance_sequence_result.save
+
+  instance.conformance_checked = false
+  instance.oauth_authorize_endpoint = params[:conformance_authorize_endpoint]
+  instance.oauth_token_endpoint = params[:conformance_token_endpoint]
+
+  instance.sequence_results.push(conformance_sequence_result)
+  instance.save
+
+  redirect "/instance/#{params[:id]}/"
+
+end
+
+post '/instance/:id/dynamic_registration_skip/?' do
+
+  instance = TestingInstance.get(params[:id])
+
+  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "DynamicRegistration", result: "skip")
+  conformance_sequence_result.save
+  instance.sequence_results.push(conformance_sequence_result)
+
+  instance.client_id = params[:client_id]
   instance.dynamically_registered = false
   instance.save
 
