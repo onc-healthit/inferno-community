@@ -4,6 +4,7 @@ class TestResult
   property :name, String
   property :result, String #pass fail
   property :warning, String
+  property :message, String
 
   belongs_to :request_response
   belongs_to :sequence_result

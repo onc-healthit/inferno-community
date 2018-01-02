@@ -81,81 +81,20 @@ post '/instance/?' do
   redirect "/instance/#{id}/"
 end
 
-get '/instance/:id/conformance_sequence/?' do
-  @instance = TestingInstance.get(params[:id])
-  client = FHIR::Client.new(@instance.url)
-  conformance = client.conformance_statement
-  reply = client.reply
+get '/instance/:id/sequence/:sequence_id/?' do
 
-  conformance_request_response = RequestResponse.new(id: SecureRandom.uuid, request_method: reply.request[:method].to_s, request_url: reply.request[:url], request_headers: reply.request[:headers], request_body: reply.request[:body], response_code: reply.response[:code], response_headers: reply.response[:headers], response_body: reply.response[:body])
+  instance = TestingInstance.get(params[:id])
+  client = FHIR::Client.new(instance.url)
 
-  # update TestingInstance with OAuth endpoint and FHIR format
-  @instance.update(oauth_authorize_endpoint: client.get_oauth2_metadata_from_conformance[:authorize_url], oauth_token_endpoint: client.get_oauth2_metadata_from_conformance[:token_url], fhir_format: conformance.format)
+  sequence = ConformanceSequence.new(instance, client)
+  sequence_result = sequence.start
 
-  # test that conformance is present, is DSTU2, and supports JSON
-  if conformance.nil?
-    conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'fail')
-    conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
-    conformance_json_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance JSON', result: 'fail')
-  else
-    conformance_present_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance Present', result: 'pass')
+  instance.sequence_results.push(sequence_result)
 
-    if conformance.is_a?(FHIR::DSTU2::Conformance)
-      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'pass')
-    else
-      conformance_dstu2_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance DSTU2', result: 'fail')
-    end
+  instance.save!
 
-    if conformance.format.to_s.downcase.include?('json')
-      conformance_json_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance JSON', result: 'pass')
-    else
-      conformance_json_result = TestResult.new(id: SecureRandom.uuid, name: 'Conformance JSON', result: 'fail')
-    end
-  end
-  conformance_present_result.save
-  conformance_dstu2_result.save
-  conformance_json_result.save
-
-  # store TestResult in RequestResponse
-  conformance_request_response.test_results.push(conformance_present_result)
-  conformance_request_response.test_results.push(conformance_dstu2_result)
-  conformance_request_response.test_results.push(conformance_json_result)
-  conformance_request_response.save
-
-  # store TestResult in SequenceResult
-  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance")
-  conformance_sequence_result.test_results.push(conformance_present_result)
-  conformance_sequence_result.test_results.push(conformance_dstu2_result)
-  conformance_sequence_result.test_results.push(conformance_json_result)
-
-  passed_count = 0
-  failed_count = 0
-  warning_count = 0
-  conformance_sequence_result.test_results.each do |test_result|
-    if test_result.result == 'pass'
-      passed_count += 1
-    elsif test_result.result == 'fail'
-      failed_count += 1
-    end
-
-    unless test_result.warning.nil?
-      warning_count += 1
-    end
-  end
-  result = (failed_count.zero?) ? 'pass' : 'fail'
-  conformance_sequence_result.passed_count = passed_count
-  conformance_sequence_result.failed_count = failed_count
-  conformance_sequence_result.warning_count = warning_count
-  conformance_sequence_result.result = result
-  conformance_sequence_result.save
-
-  # store SequenceResult in TestingInstance
-  @instance.sequence_results.push(conformance_sequence_result)
-  @instance.save
-
-
-  redirect "/instance/#{params[:id]}/"
-
+  redirect "/instance/#{params[:id]}/?finished=#{params[:sequence_id]}"
+  
 end
 
 post '/instance/:id/conformance_sequence_skip/?' do
@@ -194,40 +133,32 @@ end
 
 post '/instance/:id/launch_sa/?' do
 
+  #TODO, MOVE SOME OF THIS LOGIC INTO THE SEQUENCE
+  #BASICALLY, SET SOME INSTANCE VARS, RUN THE SEQUENCE, WHICH WILL EVENTUALLY REDIRECT AND 'WAIT', THEN CONTINUE
+
   @instance = TestingInstance.get(params[:id])
 
-  if params && params['Client ID'] && params['Scopes']
-    @instance.update(client_id: params['Client ID'], scopes: params['Scopes'])
-    client_id = params['Client ID']
-    session[:client_id] = @instance.client_id # TODO remove session, store everything in TestingInstance
-    session[:fhir_url] = @instance.url
-    session[:authorize_url] = @instance.oauth_authorize_endpoint
-    session[:token_url] = @instance.oauth_token_endpoint
-    session[:state] = SecureRandom.uuid
-    oauth2_params = {
-      'response_type' => 'code',
-      'client_id' => @instance.client_id,
-      'redirect_uri' => 'http://localhost:4567/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
-      'scope' => @instance.scopes,
-      'state' => session[:state],
-      'aud' => @instance.url
-    }
-    oauth2_auth_query = "#{session[:authorize_url]}?"
-    oauth2_params.each do |key,value|
-      oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
-    end
-    puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
-    redirect oauth2_auth_query[0..-2]
-  else
-    response = Crucible::App::Html.new
-    response.open.echo_hash('params',params)
-    response.start_table('Errors',['Status','Description','Detail'])
-    message = 'The <span>/launch_sa</span> endpoint requires <span>Endpoint URL</span>, <span>Client ID</span>, and <span>Scopes</span> parameters.
-              <br/>&nbsp;<br/>
-               Please read the <a href="http://docs.smarthealthit.org/authorization/">SMART "launch sequence"</a> for more information.'
-    response.assert('OAuth2 Launch Parameters',false,message).end_table
-    body response.instructions.close
+  @instance.update(scopes: params['scopes'])
+
+  session[:client_id] = @instance.client_id # TODO remove session, store everything in TestingInstance
+  session[:fhir_url] = @instance.url
+  session[:authorize_url] = @instance.oauth_authorize_endpoint
+  session[:token_url] = @instance.oauth_token_endpoint
+  session[:state] = SecureRandom.uuid
+  oauth2_params = {
+    'response_type' => 'code',
+    'client_id' => @instance.client_id,
+    'redirect_uri' => 'http://localhost:4567/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
+    'scope' => @instance.scopes,
+    'state' => session[:state],
+    'aud' => @instance.url
+  }
+  oauth2_auth_query = "#{session[:authorize_url]}?"
+  oauth2_params.each do |key,value|
+    oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
   end
+  puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
+  redirect oauth2_auth_query[0..-2]
 
 end
 
