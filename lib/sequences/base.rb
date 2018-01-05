@@ -1,3 +1,4 @@
+require_relative './assertions'
 class SequenceBase
 
   include Assertions
@@ -12,6 +13,8 @@ class SequenceBase
   WAIT = 'WAIT'
 
   @@test_index = 0
+  @@modal_before_run = []
+  @@buttonless = []
 
   def self.test_count
     self.new(nil,nil).test_count
@@ -60,6 +63,22 @@ class SequenceBase
     define_method 'display', -> () {description}
   end
 
+  def self.modal_before_run
+    @@modal_before_run << self.sequence_name
+  end
+
+  def self.modal_before_run?
+    @@modal_before_run.include?(self.sequence_name)
+  end
+
+  def self.buttonless
+    @@buttonless << self.sequence_name
+  end
+
+  def self.buttonless?
+    @@buttonless.include?(self.sequence_name)
+  end
+
   def self.test(name, url = nil, description = nil, &block)
     @@test_index += 1
 
@@ -98,12 +117,8 @@ class SequenceBase
       # result.id = "#{result.id}_#{result_id_suffix}" if respond_to? :result_id_suffix # add the resource to resource based tests to make ids unique
 
       result
-
     end
 
     define_method test_method, wrapped
-
   end
-
-
 end

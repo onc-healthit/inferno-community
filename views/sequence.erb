@@ -37,10 +37,18 @@
     </div>
   </div>
   <div class="scorecard-action">
-    <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-primary">
-    <% unless @sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %></a>
-    <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result == 'fail'%>
-      <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
+    <% unless sequence_class.buttonless? %>
+      <% if sequence_class.modal_before_run? %>
+        <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
+        <% unless @sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %>
+        </button>
+      <% else %>
+        <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-primary">
+        <% unless @sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %></a>
+      <% end %>
+      <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result == 'fail'%>
+        <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
+      <% end %>
     <% end %>
   </div>
 </div>

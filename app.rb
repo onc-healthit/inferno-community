@@ -15,18 +15,18 @@ require 'dm-migrations'
 
 DataMapper.setup(:default, 'sqlite3:data/data.db')
 
-
+require './lib/sequences/base'
 ['lib', 'models'].each do |dir|
   Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),dir, '**','*.rb')).each do |file|
-    require file
+    require file unless file=='base.rb'
   end
 end
 
 #TODO clean up database stuff
 
 DataMapper.finalize
-
-# automatically create the post table
+#
+# # automatically create the post table
 TestingInstance.auto_migrate!
 TestingInstance.auto_upgrade!
 
@@ -66,8 +66,8 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
-
-  @sequence_results = @instance.sequence_results.reduce({}) { |hash, result| hash[result.name] = result if hash[result.name].nil? || hash[result.name].created_at < result.created_at; hash}
+  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, ProviderStandaloneLaunchSequence, ArgonautSequence ]
+  @sequence_results = @instance.latest_results
 
   erb :details
 end
@@ -81,24 +81,32 @@ post '/instance/?' do
   redirect "/instance/#{id}/"
 end
 
-get '/instance/:id/Conformance/?' do
+get '/instance/:id/:sequence/' do
+  instance = TestingInstance.get(params[:id])
+  client = FHIR::Client.new(instance.url)
+  klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
+  if klass
+    sequence = klass.new(instance, client)
+    sequence_result = sequence.start
+    instance.sequence_results.push(sequence_result)
+    instance.save!
+  end
+  redirect "/instance/#{params[:id]}/?finished=#{params[:sequence_id]}"
+end
 
+get '/instance/:id/Conformance/?' do
   instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(instance.url)
 
   sequence = ConformanceSequence.new(instance, client)
   sequence_result = sequence.start
-
   instance.sequence_results.push(sequence_result)
-
   instance.save!
 
   redirect "/instance/#{params[:id]}/?finished=#{params[:sequence_id]}"
-
 end
 
 post '/instance/:id/ConformanceSkip/?' do
-
   instance = TestingInstance.get(params[:id])
 
   conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance", result: "skip")
@@ -109,14 +117,12 @@ post '/instance/:id/ConformanceSkip/?' do
   instance.oauth_token_endpoint = params[:conformance_token_endpoint]
 
   instance.sequence_results.push(conformance_sequence_result)
-  instance.save
+  instance.save!
 
   redirect "/instance/#{params[:id]}/"
-
 end
 
 post '/instance/:id/dynamic_registration_skip/?' do
-
   instance = TestingInstance.get(params[:id])
 
   sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "DynamicRegistration", result: "skip")
@@ -125,20 +131,18 @@ post '/instance/:id/dynamic_registration_skip/?' do
 
   instance.client_id = params[:client_id]
   instance.dynamically_registered = false
-  instance.save
+  instance.save!
 
   redirect "/instance/#{params[:id]}/"
-
 end
 
-post '/instance/:id/launch_sa/?' do
-
+post '/instance/:id/ProviderStandaloneLaunch/?' do
   #TODO, MOVE SOME OF THIS LOGIC INTO THE SEQUENCE
   #BASICALLY, SET SOME INSTANCE VARS, RUN THE SEQUENCE, WHICH WILL EVENTUALLY REDIRECT AND 'WAIT', THEN CONTINUE
 
   @instance = TestingInstance.get(params[:id])
-
   @instance.update(scopes: params['scopes'])
+  @instance.update(launch_type: 'ProviderStandaloneLaunch')
 
   session[:client_id] = @instance.client_id # TODO remove session, store everything in TestingInstance
   session[:fhir_url] = @instance.url
@@ -159,7 +163,6 @@ post '/instance/:id/launch_sa/?' do
   end
   puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
   redirect oauth2_auth_query[0..-2]
-
 end
 
 get '/instance/:id/:key/launch/?' do
@@ -177,9 +180,9 @@ get '/instance/:id/:key/redirect/?' do
 
   # test that launch is successful
   if params['error']
-    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: 'Launch Success', result: 'fail')
+    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail')
   else
-    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: 'Launch Success', result: 'pass')
+    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'pass')
   end
   launch_success_result.save
 
@@ -187,7 +190,7 @@ get '/instance/:id/:key/redirect/?' do
   launch_request_response.test_results.push(launch_success_result)
 
   # store TestResult in SequenceResult
-  launch_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Launch")
+  launch_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: @instance.launch_type)
   launch_sequence_result.test_results.push(launch_success_result)
 
   passed_count = 0
@@ -215,8 +218,12 @@ get '/instance/:id/:key/redirect/?' do
   @instance.sequence_results.push(launch_sequence_result)
   @instance.save
 
-  redirect "/instance/#{params[:id]}/"
+  sequence = LaunchSequence.new(@instance, nil)
+  sequence_result = sequence.start
+  @instance.sequence_results.push(sequence_result)
+  @instance.save!
 
+  redirect "/instance/#{params[:id]}/"
 end
 
 # This is the primary endpoint of the app and the OAuth2 redirect URL

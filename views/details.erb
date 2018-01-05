@@ -31,80 +31,10 @@
             Client ID: <%= @instance.client_id %>
           </p>
         <% end %>
-        <!-- <ul class="client&#45;state&#45;list"> -->
-          <!-- <li>Registration Method: Manual</li> -->
-          <!-- <li>Authenticated: No</li> -->
-          <!-- <li>Authentication Method: EHR Launch</li> -->
-          <!-- <li>OAuth2 Authentication Server: http://...../</li> -->
-          <!-- <li>Token Timeout: 12 Hours</li> -->
-          <!-- <li>Refresh Token: yes</li> -->
-          <!-- <li>Confidential Client?: no</li> -->
-          <!-- <li>PatientID: ...</li> -->
-          <!-- <li>Current Scopes: ...</li> -->
-        <!-- </ul> -->
       </div>
     </div>
   </div>
   <div class="col-8">
-
-    <!-- <div class="instructions"> -->
-    <!--   Instructions -->
-    <!-- </div> -->
-
-    <!-- <div class="jumbotron scorecard&#45;jumbotron"> -->
-    <!--   <p>Show the current status of the client here... (authorized, etc?)</p> -->
-    <!--   <ul> -->
-    <!--     <li>Client Instance Name: <%=@instance.name%></li> -->
-    <!--     <li>FHIR Endpoint: <%=@instance.url%></li> -->
-    <!--     <li>Registration Method: Manual</li> -->
-    <!--     <li>Authenticated: Yes</li> -->
-    <!--     <li>Authentication Method: EHR Launch</li> -->
-    <!--     <li>OAuth2 Authentication Server: http://...../</li> -->
-    <!--     <li>Token Timeout: 12 Hours</li> -->
-    <!--     <li>Refresh Token: yes</li> -->
-    <!--     <li>Confidential Client?: no</li> -->
-    <!--     <li>PatientID: ...</li> -->
-    <!--     <li>Current Scopes: ...</li> -->
-    <!--   </ul> -->
-    <!-- </div> -->
-    <!-- <h3>Next Tests</h3> -->
-    <!--  -->
-    <!-- <div class="scorecard&#45;table"> -->
-    <!--   <div class="scorecard&#45;row"> -->
-    <!--     <div class="scorecard&#45;score" style="background&#45;color: #FFF; border: 1px solid #666"> -->
-    <!--     </div> -->
-    <!--     <div class="scorecard&#45;rubric"> -->
-    <!--       <div class="scorecard&#45;name"> -->
-    <!--         Capability Statement -->
-    <!--       </div> -->
-    <!--       <div class="scorecard&#45;out&#45;of"> -->
-    <!--         10 out of 10 passed -->
-    <!--       </div> -->
-    <!--       <div class="scorecard&#45;out&#45;of"> -->
-    <!--         0 warnings -->
-    <!--       </div> -->
-    <!--     </div> -->
-    <!--     <div class="scorecard&#45;action"> -->
-    <!--       <button type="button" class="btn btn&#45;primary">Run</button> -->
-    <!--       <button type="button" class="btn btn&#45;primary">Skip</button> -->
-    <!--     </div> -->
-    <!--     <div class="scorecard&#45;message"> -->
-    <!--       Test that the FHIR server properly... -->
-    <!--       Test that the FHIR server properly... -->
-    <!--       Test that the FHIR server properly... -->
-    <!--       Test that the FHIR server properly... -->
-    <!--       Test that the FHIR server properly... -->
-    <!--     </div> -->
-    <!--   </div> -->
-    <!-- </div> -->
-    <!--  -->
-    <!-- <br> -->
-
-    <!-- <h3>Pending Tests</h3> -->
-        <!-- <div class="scorecard&#45;score" style="background&#45;color: #006837"> -->
-        <!--   <span class="oi oi&#45;check" title="person" aria&#45;hidden="true"></span> -->
-        <!-- </div> -->
-
     <div class="row scorecard-title">
       <div class="col-sm-9">
         Test Sequences <span class="scorecard-title-details">(<%= @sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.count %> sequences successfully demonstrated)</span>
@@ -114,280 +44,9 @@
       </div>
     </div>
     <div class="scorecard-table">
-        <%= erb(:sequence,{},{sequence_class: ConformanceSequence}) %>
-      <div class="scorecard-row">
-        <% case @sequence_results['DynamicRegistration'].try(:result)
-          when nil %>
-            <div class="scorecard-score scorecard-score-pending">
-              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-            </div>
-        <% when 'pass' %>
-            <div class="scorecard-score scorecard-score-pass">
-              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
-            </div>
-        <% when 'fail' %>
-            <div class="scorecard-score scorecard-score-fail">
-              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
-            </div>
-        <% when 'skip' %>
-            <div class="scorecard-score scorecard-score-skip">
-              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
-            </div>
-        <% end %>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Dynamic Client Registration
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-details">
-            The OAuth2 Server supports dynamic client registration.
-          </div>
-        </div>
-        <div class="scorecard-action" <%if @instance.oauth_token_endpoint.nil? %>style="opacity:.3"<% end %>>
-          <%if @instance.oauth_token_endpoint.nil? %>
-            <button type="button" class="btn btn-primary" disabled>Begin</button>
-            <button type="button" class="btn btn-primary" disabled>Skip</button>
-          <% else %>
-            <button type="button" class="btn btn-primary"><%if @instance.oauth_token_endpoint.nil? %>Begin<% else %>Rerun<% end %></button>
-            <% if @sequence_results['DynamicRegistration'].nil? || @sequence_results['DynamicRegistration'].result == 'fail'%>
-              <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#dynamicRegistrationSkipModal">Skip</button>
-            <% end %>
-          <% end %>
-        </div>
-      </div>
-      <div class="scorecard-row">
-        <% case @sequence_results['Launch'].try(:result)
-          when nil %>
-            <div class="scorecard-score scorecard-score-pending">
-              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-            </div>
-        <% when 'pass' %>
-            <div class="scorecard-score scorecard-score-pass">
-              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
-            </div>
-        <% when 'fail' %>
-            <div class="scorecard-score scorecard-score-fail">
-              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
-            </div>
-        <% when 'skip' %>
-            <div class="scorecard-score scorecard-score-skip">
-              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
-            </div>
-        <% end %>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Demonstrate at least one Launch Sequence
-          </div>
-          <div class="scorecard-out-of">
-            <%= @sequence_results['Launch'].try(:result).try(:passed_count) %> of 4 passed
-          </div>
-          <div class="scorecard-out-of">
-            <%= @sequence_results['Launch'].try(:result).try(:warning_count) %> warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports at least one of the following required launch sequences.
-          </div>
-        </div>
-      </div>
-
-      <div class="scorecard-row" style="padding-left: 50px">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Provider EHR Launch
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports launching the app via Provider EHR launch.
-          </div>
-        </div>
-        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
-          <% if @instance.dynamically_registered.nil? %>
-            <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <% else %>
-            <button type="button" class="btn btn-primary">Begin</button>
-          <% end %>
-        </div>
-      </div>
-
-      <div class="scorecard-row" style="padding-left: 50px">
-        <% case @sequence_results['Launch'].try(:result)
-          when nil %>
-            <div class="scorecard-score scorecard-score-pending">
-              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-            </div>
-        <% when 'pass' %>
-            <div class="scorecard-score scorecard-score-pass">
-              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
-            </div>
-        <% when 'fail' %>
-            <div class="scorecard-score scorecard-score-fail">
-              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
-            </div>
-        <% when 'skip' %>
-            <div class="scorecard-score scorecard-score-skip">
-              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
-            </div>
-        <% end %>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Provider Standalone Launch
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports launching the app via Provider standalone launch.
-          </div>
-        </div>
-        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
-          <% if @instance.dynamically_registered.nil? %>
-            <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <% else %>
-              <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#providerStandaloneLaunch">Begin</button>
-          <% end %>
-        </div>
-      </div>
-
-      <div class="scorecard-row" style="padding-left: 50px">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Patient EHR Launch
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports launching the app from a patient protal.
-          </div>
-        </div>
-        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
-          <% if @instance.dynamically_registered.nil? %>
-            <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <% else %>
-            <button type="button" class="btn btn-primary">Begin</button>
-          <% end %>
-        </div>
-      </div>
-
-      <div class="scorecard-row" style="padding-left: 50px">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Patient Standalone Launch
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports launching the app via Patient standalone launch.
-          </div>
-        </div>
-        <div class="scorecard-action" <% if @instance.dynamically_registered.nil? %>style="opacity:.3"<% end %>>
-          <% if @instance.dynamically_registered.nil? %>
-            <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <% else %>
-            <button type="button" class="btn btn-primary">Begin</button>
-          <% end %>
-        </div>
-      </div>
-
-      <div class="scorecard-row">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Argonaut Data Query IG
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports exchanging data conforming to the Argonaut Data Query IG.
-          </div>
-        </div>
-
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
-        </div>
-
-      </div>
-
-      <div class="scorecard-row">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            OpenID Connect
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports user authorization using OpenID Connect.
-          </div>
-        </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
-        </div>
-      </div>
-
-      <div class="scorecard-row">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Refresh Token
-          </div>
-          <div class="scorecard-out-of">
-            10 out of 10 passed
-          </div>
-          <div class="scorecard-out-of">
-            0 warnings
-          </div>
-          <div class="scorecard-details">
-            The server supports renewing authorization using refresh tokens.
-          </div>
-        </div>
-        <div class="scorecard-action" style="opacity:.3">
-          <button type="button" class="btn btn-primary" disabled>Begin</button>
-          <button type="button" class="btn btn-primary" disabled>Skip</button>
-        </div>
-      </div>
+      <% @sequences.each do |sequence_class| %>
+        <%= erb(:sequence,{},{sequence_class: sequence_class}) %>
+      <% end %>
     </div>
   </div>
 </div>
@@ -426,7 +85,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="dynamicRegistrationSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="DynamicRegistrationSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -458,7 +117,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="providerStandaloneLaunch" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="ProviderStandaloneLaunchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -467,7 +126,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form method="POST" action="launch_sa">
+      <form method="POST" action="ProviderStandaloneLaunch">
         <div class="modal-body">
           <p>
             Please provide the following information
