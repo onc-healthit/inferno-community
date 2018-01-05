@@ -27,6 +27,7 @@ class SequenceBase
   def initialize(instance, client)
     @client = client
     @instance = instance
+    @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
   end
 
   def start
