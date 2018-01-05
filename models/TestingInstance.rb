@@ -11,10 +11,12 @@ class TestingInstance
   property :oauth_authorize_endpoint, String
   property :oauth_token_endpoint, String
   property :fhir_format, String
-  property :client_id, String
 
   property :dynamically_registered, Boolean
   property :client_endpoint_key, String, default: proc { SecureRandomBase62.generate(32) }
+
+  property :token, String
+  property :patient_id, String
 
   property :created_at, DateTime, default: proc { DateTime.now }
 

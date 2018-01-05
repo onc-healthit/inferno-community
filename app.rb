@@ -183,6 +183,18 @@ get '/instance/:id/:key/redirect/?' do
     launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail')
   else
     launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'pass')
+    oauth2_params = {
+      'grant_type' => 'authorization_code',
+      'code' => params['code'],
+      'redirect_uri' => 'http://localhost:4567/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
+      'client_id' => @instance.client_id
+    }
+    token_response = RestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    token_response = JSON.parse(token_response.body)
+    token = token_response['access_token']
+    patient_id = token_response['patient']
+    scopes = token_response['scope']
+    @instance.update(token: token, patient_id: patient_id, scopes: scopes)
   end
   launch_success_result.save
 
