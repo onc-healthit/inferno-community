@@ -10,6 +10,7 @@ class TestingInstance
   property :conformance_checked, Boolean
   property :oauth_authorize_endpoint, String
   property :oauth_token_endpoint, String
+  property :oauth_register_endpoint, String
   property :fhir_format, String
 
   property :dynamically_registered, Boolean

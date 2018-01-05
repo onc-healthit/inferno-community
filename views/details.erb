@@ -20,6 +20,8 @@
             OAuth Authorize Endpoint: <%= @instance.oauth_authorize_endpoint %>
             <br/>
             OAuth Token Endpoint: <%= @instance.oauth_token_endpoint %>
+            <br/>
+            OAuth Registration Endpoint: <%= @instance.oauth_register_endpoint %>
           </p>
         <% end %>
         <% if !@instance.dynamically_registered.nil? && !@instance.dynamically_registered && !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?%>
@@ -79,6 +81,54 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="DynamicRegistrationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">OAuth 2.0 Dynamic Client Registration</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="DynamicRegistration">
+        <div class="modal-body">
+          <p>
+            Enter the dynamic registration details.
+          </p>
+          <div class="form-group">
+            <label for="dr_registration_url">Registration URL</label>
+            <input type="text" class="form-control" name="dr_registration_url" id="dr_registration_url" value="<%= @instance.oauth_register_endpoint %>">
+          </div>
+          <div class="form-group">
+            <label for="dr_client_name">Client Name</label>
+            <input type="text" class="form-control" name="dr_client_name" id="dr_client_name" value="Crucible SMART-on-FHIR Test App">
+          </div>
+          <div class="form-group">
+            <label for="dr_redirect_uri">Redirect URI</label>
+            <input readonly type="text" class="form-control" name="dr_redirect_uri" id="dr_redirect_uri" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+          </div>
+          <div class="form-group">
+            <label for="dr_token_endpoint_auth_method">Token Endpoint Authorization Method</label>
+            <input readonly type="text" class="form-control" name="dr_token_endpoint_auth_method" id="dr_token_endpoint_auth_method" value="none">
+          </div>
+          <div class="form-group">
+            <label for="dr_grant_types">Grant Types (comma-separated)</label>
+            <input type="text" class="form-control" name="dr_grant_types" id="dr_grant_types" value="authorization_code">
+          </div>
+          <div class="form-group">
+            <label for="dr_scope">Scopes</label>
+            <input type="text" class="form-control" name="dr_scope" id="dr_scope" value="launch launch/patient openid profile user/*.* patient/*.*">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Register</button>
+          </div>
         </div>
       </form>
     </div>
@@ -154,16 +204,14 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form method="POST" action="PatientStandaloneLaunch">
-        <div class="modal-body">
-          <p>
-            Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
-          </p>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          </div>
+      <div class="modal-body">
+        <p>
+          Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
