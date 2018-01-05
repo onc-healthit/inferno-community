@@ -1,4 +1,4 @@
-class ArgonautSequence < SequenceBase
+class ArgonautProfilesSequence < SequenceBase
 
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide.'
 
@@ -56,6 +56,11 @@ class ArgonautSequence < SequenceBase
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     assert !@patient_details['birthDate'].nil?, 'Expected Patient to have Patient.birthDate'
+  end
+
+  test 'foo' do
+
+    throw "TODO"
   end
 
 end

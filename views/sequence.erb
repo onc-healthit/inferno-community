@@ -12,6 +12,10 @@
       <div class="scorecard-score scorecard-score-fail">
         <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
       </div>
+  <% when 'error' %>
+      <div class="scorecard-score scorecard-score-error">
+        <span class="oi oi-x" title="Error" aria-hidden="true"></span>
+      </div>
   <% when 'skip' %>
       <div class="scorecard-score scorecard-score-skip">
         <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
@@ -29,6 +33,7 @@
       <% else %>
         <%= @sequence_results[sequence_class.sequence_name].passed_count %> Passed -
         <%= @sequence_results[sequence_class.sequence_name].failed_count %> Failed -
+        <%= @sequence_results[sequence_class.sequence_name].error_count %> Error(s) -
         <%= @sequence_results[sequence_class.sequence_name].warning_count %> Warning(s)
       <% end %>
     </div>

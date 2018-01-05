@@ -69,29 +69,37 @@
   margin-top: 5px;
 }
 
-.scorecard-score-pending { 
-  background-color: #fff; 
-  color: #666; 
+.scorecard-score-pending {
+  background-color: #fff;
+  color: #666;
   border: 2px solid #666;
 }
 
 .scorecard-score-fail {
-  background-color: #f00; 
-  color: #fff; 
+  background-color: #f00;
+  color: #fff;
+  border: 2px solid #fff;
+  padding-top: 3px;
+  padding: 3px 5px 8px 5px;
+}
+
+.scorecard-score-error {
+  background-color: #f0f;
+  color: #fff;
   border: 2px solid #fff;
   padding-top: 3px;
   padding: 3px 5px 8px 5px;
 }
 
 .scorecard-score-pass {
-  background-color: #228b22; 
-  color: #fff; 
+  background-color: #228b22;
+  color: #fff;
   border: 2px solid #fff;
 }
 
 .scorecard-score-skip {
-  background-color: #FF7F50; 
-  color: #FFF; 
+  background-color: #FF7F50;
+  color: #FFF;
   border: 2px solid #fff;
   padding: 3px 5px 8px 8px;
 }
