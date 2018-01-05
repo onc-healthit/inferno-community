@@ -107,61 +107,14 @@
 
     <div class="row scorecard-title">
       <div class="col-sm-9">
-        Test Sequences <span class="scorecard-title-details">(0 of 9 sequences successfully demonstrated)</span>
+        Test Sequences <span class="scorecard-title-details">(<%= @sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.count %> sequences successfully demonstrated)</span>
       </div>
       <div class="col-sm-3 text-right">
         <span class="oi oi-print" title="Print" aria-hidden="true"></span>
       </div>
     </div>
     <div class="scorecard-table">
-      <div class="scorecard-row">
-        <% case @sequence_results['Conformance'].try(:result)
-          when nil %>
-            <div class="scorecard-score scorecard-score-pending">
-              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-            </div>
-        <% when 'pass' %>
-            <div class="scorecard-score scorecard-score-pass">
-              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
-            </div>
-        <% when 'fail' %>
-            <div class="scorecard-score scorecard-score-fail">
-              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
-            </div>
-        <% when 'skip' %>
-            <div class="scorecard-score scorecard-score-skip">
-              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
-            </div>
-        <% end %>
-        <div class="scorecard-rubric">
-          <div class="scorecard-name">
-            Capability Statement
-          </div>
-          <div class="scorecard-out-of">
-            <% if @sequence_results['Conformance'].nil? %>
-              10 tests
-            <% elsif @sequence_results['Conformance'].result == 'skip'%>
-              Test skipped
-
-            <% else %>
-              <%= @sequence_results['Conformance'].passed_count %> Passed -
-              <%= @sequence_results['Conformance'].failed_count %> Failed -
-              (<%= @sequence_results['Conformance'].warning_count %> Warning(s))
-
-            <% end %>
-          </div>
-          <div class="scorecard-details">
-            The FHIR server properly exposes a capability statement with necessary information.
-          </div>
-        </div>
-        <div class="scorecard-action">
-          <a href="sequence/ConformanceSequence/" role="button" class="btn btn-primary"><%if @instance.oauth_token_endpoint.nil? %>Begin<% else %>Rerun<% end %></a>
-          <% if @sequence_results['Conformance'].nil? || @sequence_results['Conformance'].result == 'fail'%>
-            <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#conformanceSkipModal">Skip</button>
-          <% end %>
-        </div>
-      </div>
-
+        <%= erb(:sequence,{},{sequence_class: ConformanceSequence}) %>
       <div class="scorecard-row">
         <% case @sequence_results['DynamicRegistration'].try(:result)
           when nil %>
@@ -205,19 +158,33 @@
         </div>
       </div>
       <div class="scorecard-row">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
+        <% case @sequence_results['Launch'].try(:result)
+          when nil %>
+            <div class="scorecard-score scorecard-score-pending">
+              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+            </div>
+        <% when 'pass' %>
+            <div class="scorecard-score scorecard-score-pass">
+              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+            </div>
+        <% when 'fail' %>
+            <div class="scorecard-score scorecard-score-fail">
+              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+            </div>
+        <% when 'skip' %>
+            <div class="scorecard-score scorecard-score-skip">
+              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+            </div>
+        <% end %>
         <div class="scorecard-rubric">
           <div class="scorecard-name">
             Demonstrate at least one Launch Sequence
-
           </div>
           <div class="scorecard-out-of">
-            0 of 4 passed
+            <%= @sequence_results['Launch'].try(:result).try(:passed_count) %> of 4 passed
           </div>
           <div class="scorecard-out-of">
-            0 warnings
+            <%= @sequence_results['Launch'].try(:result).try(:warning_count) %> warnings
           </div>
           <div class="scorecard-details">
             The server supports at least one of the following required launch sequences.
@@ -253,9 +220,24 @@
       </div>
 
       <div class="scorecard-row" style="padding-left: 50px">
-        <div class="scorecard-score" style="background-color: #fff; color: #666; border: 2px solid #666">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-        </div>
+        <% case @sequence_results['Launch'].try(:result)
+          when nil %>
+            <div class="scorecard-score scorecard-score-pending">
+              <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+            </div>
+        <% when 'pass' %>
+            <div class="scorecard-score scorecard-score-pass">
+              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+            </div>
+        <% when 'fail' %>
+            <div class="scorecard-score scorecard-score-fail">
+              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+            </div>
+        <% when 'skip' %>
+            <div class="scorecard-score scorecard-score-skip">
+              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+            </div>
+        <% end %>
         <div class="scorecard-rubric">
           <div class="scorecard-name">
             Provider Standalone Launch
@@ -411,7 +393,7 @@
 </div>
 
 <!-- Modals -->
-<div class="modal fade" id="conformanceSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="ConformanceSequenceSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -420,16 +402,11 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form method="POST" action="conformance_sequence_skip">
+      <form method="POST" action="ConformanceSkip">
         <div class="modal-body">
           <p>
-            Description.
-            Description.
-            Description.
-            Description.
-            Description.
-            Description.
-            Description.
+            If you want to skip the Conformance sequence, then you are required
+            to manually supply authorization and token endpoints.
           </p>
             <div class="form-group">
               <label for="conformanceAuthorizeEndpoint">OAuth 2.0 Authorize Endpoint</label>
@@ -497,7 +474,7 @@
           </p>
           <div class="form-group">
             <label for="providerStandaloneLaunchScopes">Scopes</label>
-            <input type="text" class="form-control" name="scopes" id="providerStandaloneLaunchScopes">
+            <input type="text" class="form-control" name="scopes" id="providerStandaloneLaunchScopes" value="launch/patient patient/*.read openid profile">
           </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

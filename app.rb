@@ -81,7 +81,7 @@ post '/instance/?' do
   redirect "/instance/#{id}/"
 end
 
-get '/instance/:id/sequence/:sequence_id/?' do
+get '/instance/:id/Conformance/?' do
 
   instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(instance.url)
@@ -94,10 +94,10 @@ get '/instance/:id/sequence/:sequence_id/?' do
   instance.save!
 
   redirect "/instance/#{params[:id]}/?finished=#{params[:sequence_id]}"
-  
+
 end
 
-post '/instance/:id/conformance_sequence_skip/?' do
+post '/instance/:id/ConformanceSkip/?' do
 
   instance = TestingInstance.get(params[:id])
 
@@ -119,9 +119,9 @@ post '/instance/:id/dynamic_registration_skip/?' do
 
   instance = TestingInstance.get(params[:id])
 
-  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "DynamicRegistration", result: "skip")
-  conformance_sequence_result.save
-  instance.sequence_results.push(conformance_sequence_result)
+  sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "DynamicRegistration", result: "skip")
+  sequence_result.save
+  instance.sequence_results.push(sequence_result)
 
   instance.client_id = params[:client_id]
   instance.dynamically_registered = false
