@@ -24,6 +24,7 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
+    base62-rb (0.3.1)
     bcp47 (0.3.3)
       i18n
     bcrypt (3.1.11)
@@ -158,6 +159,7 @@ PLATFORMS
 
 DEPENDENCIES
   addressable
+  base62-rb
   data_mapper
   dm-sqlite-adapter
   fhir_client!
