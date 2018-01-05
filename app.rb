@@ -66,7 +66,7 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, ArgonautProfilesSequence ]
+  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
   @sequence_results = @instance.latest_results
 
   erb :details
