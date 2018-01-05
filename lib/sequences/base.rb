@@ -39,9 +39,11 @@ class SequenceBase
       case result.result
       when STATUS[:pass]
         sequence_result.passed_count += 1
-      when STATUS[:fail], STATUS[:error]
-        # binding.pry
+      when STATUS[:fail]
         sequence_result.failed_count += 1
+        sequence_result.result = result.result unless sequence_result.result == status[:error]
+      when STATUS[:error]
+        sequence_result.error_count += 1
         sequence_result.result = result.result
       when STATUS[:wait]
         sequence_result.result = STATUS[:wait]
