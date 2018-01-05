@@ -1,0 +1,46 @@
+<div class="scorecard-row">
+  <% case @sequence_results[sequence_class.sequence_name].try(:result)
+    when nil %>
+      <div class="scorecard-score scorecard-score-pending">
+        <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+      </div>
+  <% when 'pass' %>
+      <div class="scorecard-score scorecard-score-pass">
+        <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+      </div>
+  <% when 'fail' %>
+      <div class="scorecard-score scorecard-score-fail">
+        <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+      </div>
+  <% when 'skip' %>
+      <div class="scorecard-score scorecard-score-skip">
+        <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+      </div>
+  <% end %>
+  <div class="scorecard-rubric">
+    <div class="scorecard-name">
+      <%= sequence_class.sequence_name %>
+    </div>
+    <div class="scorecard-out-of">
+      <% if @sequence_results[sequence_class.sequence_name].nil? %>
+        <%= sequence_class.test_count %> tests
+      <% elsif @sequence_results[sequence_class.sequence_name].result == 'skip' %>
+        Test skipped
+      <% else %>
+        <%= @sequence_results[sequence_class.sequence_name].passed_count %> Passed -
+        <%= @sequence_results[sequence_class.sequence_name].failed_count %> Failed -
+        <%= @sequence_results[sequence_class.sequence_name].warning_count %> Warning(s)
+      <% end %>
+    </div>
+    <div class="scorecard-details">
+      <%= sequence_class.new(nil,nil).display %>
+    </div>
+  </div>
+  <div class="scorecard-action">
+    <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-primary">
+    <% unless @sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %></a>
+    <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result == 'fail'%>
+      <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
+    <% end %>
+  </div>
+</div>

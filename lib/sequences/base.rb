@@ -13,15 +13,20 @@ class SequenceBase
 
   @@test_index = 0
 
-  def initialize(instance, client)
+  def self.test_count
+    self.new(nil,nil).test_count
+  end
 
+  def test_count
+    self.methods.grep(/_test$/).length
+  end
+
+  def initialize(instance, client)
     @client = client
     @instance = instance
-
   end
 
   def start
-
     sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: sequence_name, result: STATUS[:pass])
     methods = self.methods.grep(/_test$/).sort
     methods.each_with_index do |test_method, index|
@@ -30,12 +35,10 @@ class SequenceBase
       case result.result
       when STATUS[:pass]
         sequence_result.passed_count += 1
-
       when STATUS[:fail], STATUS[:error]
-        binding.pry
+        # binding.pry
         sequence_result.failed_count += 1
         sequence_result.result = result.result
-
       when STATUS[:wait]
         sequence_result.result = STATUS[:wait]
         sequence_result.wait_index = index
@@ -46,15 +49,18 @@ class SequenceBase
   end
 
   def sequence_name
-    self.class.name.split('::').last.split('Sequence').first
+    self.class.sequence_name
+  end
+
+  def self.sequence_name
+    self.name.split('::').last.split('Sequence').first
   end
 
   def self.description(description)
-    define_method 'description', -> () {description}
+    define_method 'display', -> () {description}
   end
 
   def self.test(name, url = nil, description = nil, &block)
-
     @@test_index += 1
 
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
@@ -101,5 +107,3 @@ class SequenceBase
 
 
 end
-
-
