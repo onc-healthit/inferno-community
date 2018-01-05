@@ -24,9 +24,9 @@
         <% end %>
         <% if !@instance.dynamically_registered.nil? && !@instance.dynamically_registered && !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?%>
           <p>
-            Launch URL: /instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
+            Launch URL: <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
             <br>
-            Redirect URL: /instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect
+            Redirect URL: <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect
             <br>
             Client ID: <%= @instance.client_id %>
           </p>
@@ -100,8 +100,8 @@
             Please register your application with the following information:
           </p>
           <ul>
-            <li>Launch URL: /instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
-            <li>Redirect URL: /instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect
+            <li>Launch URL: <input type="text" size="50" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+            <li>Redirect URL: <input type="text" size="50" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
           </ul>
           <div class="form-group">
             <label for="dynamicRegistrationClientId">Enter Client Id</label>
@@ -117,27 +117,51 @@
   </div>
 </div>
 
-<div class="modal fade" id="ProviderStandaloneLaunchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="PatientStandaloneLaunchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Provider Standalone Launch</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Patient Standalone Launch</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form method="POST" action="ProviderStandaloneLaunch">
+      <form method="POST" action="PatientStandaloneLaunch">
         <div class="modal-body">
           <p>
-            Please provide the following information
+            Enter the desired authorization scopes. Ensure your app registration included these scopes.
           </p>
           <div class="form-group">
-            <label for="providerStandaloneLaunchScopes">Scopes</label>
-            <input type="text" class="form-control" name="scopes" id="providerStandaloneLaunchScopes" value="launch/patient patient/*.read openid profile">
+            <label for="patientStandaloneLaunchScopes">Scopes</label>
+            <input type="text" class="form-control" name="scopes" id="patientStandaloneLaunchScopes" value="launch/patient online_access openid patient/*.* profile">
           </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Run Standalone Launch</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Standalone Launch</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ProviderEHRLaunchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Provider EHR Launch</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="PatientStandaloneLaunch">
+        <div class="modal-body">
+          <p>
+            Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
+          </p>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
         </div>
       </form>
     </div>
