@@ -1,9 +1,8 @@
 class ProviderStandaloneLaunchSequence < SequenceBase
 
-  description 'Standalone Launch Sequence'
+  description 'Provider Standalone Launch Sequence'
+  modal_before_run
 
-  test 'test1' do
+  test 'Provider Standalone Launch' do
   end
-
 end
-
