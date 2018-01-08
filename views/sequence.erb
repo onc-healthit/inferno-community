@@ -14,7 +14,7 @@
       </div>
   <% when 'error' %>
       <div class="scorecard-score scorecard-score-error">
-        <span class="oi oi-x" title="Error" aria-hidden="true"></span>
+        !
       </div>
   <% when 'skip' %>
       <div class="scorecard-score scorecard-score-skip">
@@ -22,9 +22,9 @@
       </div>
   <% end %>
   <div class="scorecard-rubric">
-    <div class="scorecard-name">
+    <a class="scorecard-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
       <%= sequence_class.sequence_name %>
-    </div>
+    </a>
     <div class="scorecard-out-of">
       <% if @sequence_results[sequence_class.sequence_name].nil? %>
         <%= sequence_class.test_count %> tests
@@ -48,12 +48,23 @@
         <% unless @sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %>
         </button>
       <% else %>
-        <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-primary">
-        <% unless @sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %></a>
+        <% unless @sequence_results[sequence_class.sequence_name] %>
+          <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-primary">Begin</a>
+        <% else %>
+          <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-primary">Rerun</a>
+        <% end %>
       <% end %>
       <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result == 'fail'%>
         <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
       <% end %>
+      <% if !@sequence_results[sequence_class.sequence_name].nil? && @sequence_results[sequence_class.sequence_name].result != 'skip' %>
+        <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+          <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
+      <% end %>
     <% end %>
+    </a>
   </div>
+  <% unless @sequence_results[sequence_class.sequence_name].nil? %>
+    <%= erb(:result,{},{sequence_class: sequence_class, sequence_result: @sequence_results[sequence_class.sequence_name] }) %>
+  <% end %>
 </div>

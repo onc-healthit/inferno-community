@@ -7,10 +7,7 @@ class SequenceBase
     pass: 'pass',
     fail: 'fail',
     error: 'error',
-    wait: 'wait'
   }
-
-  WAIT = 'WAIT'
 
   @@test_index = 0
   @@modal_before_run = []
@@ -35,20 +32,16 @@ class SequenceBase
     methods = self.methods.grep(/_test$/).sort
     methods.each_with_index do |test_method, index|
       result = self.method(test_method).call()
-      sequence_result.test_results.push(result)
+      sequence_result.test_results << result
       case result.result
       when STATUS[:pass]
         sequence_result.passed_count += 1
       when STATUS[:fail]
         sequence_result.failed_count += 1
-        sequence_result.result = result.result unless sequence_result.result == status[:error]
+        sequence_result.result = result.result unless sequence_result.result == STATUS[:error]
       when STATUS[:error]
         sequence_result.error_count += 1
         sequence_result.result = result.result
-      when STATUS[:wait]
-        sequence_result.result = STATUS[:wait]
-        sequence_result.wait_index = index
-        break
       end
     end
     sequence_result
@@ -94,8 +87,6 @@ class SequenceBase
       begin
         t = instance_eval &block
 
-        result.result = STATUS[:wait] if !t.nil? && t == WAIT
-        # todo: check wait here
         # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
       rescue AssertionException => e
         result.result = STATUS[:fail]

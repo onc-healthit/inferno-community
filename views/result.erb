@@ -1,0 +1,34 @@
+<div class="result-details collapse" id="<%=sequence_class%>-details">
+  <ul>
+    <% sequence_result.test_results.each do |result, index| %>
+      <li>
+        <% case result.result
+          when 'pass' %>
+            <div class="result-details-icon result-details-icon-pass">
+              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+            </div>
+        <% when 'fail' %>
+            <div class="result-details-icon result-details-icon-fail">
+              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+            </div>
+        <% when 'error' %>
+            <div class="result-details-icon result-details-icon-error">
+              !
+            </div>
+        <% when 'skip' %>
+            <div class="result-details-icon result-details-icon-skip">
+              <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+            </div>
+        <% end %>
+        <%= result.name %>
+        <% if result.result == 'fail' || result.result == 'error' %>
+          <div class="result-details-message">
+            Failure Message: <%= result.message %>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+

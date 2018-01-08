@@ -13,7 +13,9 @@ require 'dm-core'
 require 'dm-migrations'
 
 
+DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, 'sqlite3:data/data.db')
+DataMapper::Model.raise_on_save_failure = true 
 
 require './lib/sequences/base'
 ['lib', 'models'].each do |dir|
@@ -28,16 +30,16 @@ DataMapper.finalize
 #
 # # automatically create the post table
 TestingInstance.auto_migrate!
-TestingInstance.auto_upgrade!
+# TestingInstance.auto_upgrade!
 
 SequenceResult.auto_migrate!
-SequenceResult.auto_upgrade!
+# SequenceResult.auto_upgrade!
 
 TestResult.auto_migrate!
-TestResult.auto_upgrade!
+# TestResult.auto_upgrade!
 
-RequestResponse.auto_migrate!
-RequestResponse.auto_upgrade!
+# RequestResponse.auto_migrate!
+# RequestResponse.auto_upgrade!
 
 enable :sessions
 set :session_secret, SecureRandom.uuid
@@ -126,12 +128,11 @@ post '/instance/:id/dynamic_registration_skip/?' do
   instance = TestingInstance.get(params[:id])
 
   sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "DynamicRegistration", result: "skip")
-  sequence_result.save
-  instance.sequence_results.push(sequence_result)
+  instance.sequence_results << sequence_result
 
   instance.client_id = params[:client_id]
   instance.dynamically_registered = false
-  instance.save!
+  instance.save
 
   redirect "/instance/#{params[:id]}/"
 end
@@ -198,7 +199,7 @@ get '/instance/:id/:key/redirect/?' do
 
   # test that launch is successful
   if params['error']
-    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail')
+    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail', message: ['error'])
   else
     launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'pass')
     oauth2_params = {
@@ -214,10 +215,9 @@ get '/instance/:id/:key/redirect/?' do
     scopes = token_response['scope']
     @instance.update(token: token, patient_id: patient_id, scopes: scopes)
   end
-  launch_success_result.save
 
-  launch_request_response = RequestResponse.new(id: SecureRandom.uuid) # TODO fill out RequestResponse
-  launch_request_response.test_results.push(launch_success_result)
+  # launch_request_response = RequestResponse.new(id: SecureRandom.uuid) # TODO fill out RequestResponse
+  # launch_request_response.test_results.push(launch_success_result)
 
   # store TestResult in SequenceResult
   launch_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: @instance.launch_type)
@@ -242,16 +242,16 @@ get '/instance/:id/:key/redirect/?' do
   launch_sequence_result.failed_count = failed_count
   launch_sequence_result.warning_count = warning_count
   launch_sequence_result.result = result
-  launch_sequence_result.save
 
   # store SequenceResult in TestingInstance
   @instance.sequence_results.push(launch_sequence_result)
+
   @instance.save
 
   sequence = LaunchSequence.new(@instance, nil)
   sequence_result = sequence.start
   @instance.sequence_results.push(sequence_result)
-  @instance.save!
+  @instance.save
 
   redirect "/instance/#{params[:id]}/"
 end

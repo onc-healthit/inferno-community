@@ -12,6 +12,7 @@ class ConformanceSequence < SequenceBase
   end
 
   test 'Conformance states proper JSON or XML support' do
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     json = @conformance.format.include?(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
     xml = @conformance.format.include?(FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2)
     assert (json || xml), "Conformance statement does not state support for either #{FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2} or #{FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2}."

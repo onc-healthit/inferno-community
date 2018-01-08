@@ -63,10 +63,9 @@
   height: 40px;
   text-align: center;
   padding-top: 5px;
-  border-radius: 5px;
+  border-radius: 20px;
   display: inline-block;
-  margin-right: 10px;
-  margin-top: 5px;
+  margin-right: 3px;
 }
 
 .scorecard-score-pending {
@@ -89,6 +88,7 @@
   border: 2px solid #fff;
   padding-top: 3px;
   padding: 3px 5px 8px 5px;
+  font-weight: bold;
 }
 
 .scorecard-score-pass {
@@ -107,6 +107,15 @@
 .scorecard-rubric {
   display: inline-block;
   vertical-align: top;
+}
+
+.scorecard-container {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.scorecard-collapse {
+  display: inline-block;
 }
 
 .scorecard-name {
@@ -172,5 +181,62 @@
 
 .client-not-authenticated {
   color: red;
+}
+
+.client-authenticated {
+  color: green;
+}
+
+.result-details {
+  margin-top: 5px;
+}
+
+.result-details ul {
+  margin-bottom: 0;
+}
+
+.result-details li {
+  list-style: none;
+  font-size: .8em;
+  padding: 5px 10px 5px;
+  border-top: 1px solid #efefef;
+}
+.result-details li:hover {
+  background-color: #efefef;
+  cursor: pointer;
+}
+
+.result-details-icon {
+  color: white;
+  text-align: center;
+  display: inline-block;
+  margin-right: 3px;
+}
+
+.result-details-icon-fail {
+  color: #f00;
+  padding-top: 3px;
+}
+
+.result-details-icon-error {
+  color: #f0f;
+  padding-top: 3px;
+  font-weight: bold;
+  width: 11px;
+}
+
+.result-details-icon-pass {
+  color: #228b22;
+}
+
+.result-details-icon-skip {
+  background-color: #FF7F50;
+  color: #FFF;
+}
+
+.result-details-message {
+  margin-left: 19px;
 
 }
+
+
