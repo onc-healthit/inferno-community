@@ -6,7 +6,11 @@
       </div>
       <div class="client-state">
         <div class="client-state-title">
-          Current Client Status: <span class="client-not-authenticated">Not Authorized</span>
+          <% if @instance.token.nil? %>
+            Current Client Status: <span class="client-not-authenticated">Not Authorized</span>
+          <% else %>
+            Current Client Status: <span class="client-authenticated">Authorized</span>
+          <% end %>
         </div>
         <% if @instance.oauth_authorize_endpoint.nil? && @instance.oauth_token_endpoint.nil?%>
           <p>
@@ -167,3 +171,4 @@
     </div>
   </div>
 </div>
+

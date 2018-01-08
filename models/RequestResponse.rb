@@ -9,5 +9,5 @@ class RequestResponse
   property :response_headers, String
   property :response_body, String
 
-  has n, :test_results
+  # has n, :test_result
 end
