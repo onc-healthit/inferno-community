@@ -28,4 +28,13 @@ class ConformanceSequence < SequenceBase
 
     @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url)
   end
+
+  test 'Conformance lists registration endpoint' do
+    security_info = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
+    registration_url = security_info.extension.find{|x| x.url == 'register'}
+    registration_url = registration_url.value if registration_url
+    assert (registration_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid registration url: '#{registration_url}'"
+
+    @instance.update(oauth_register_endpoint: registration_url)
+  end
 end

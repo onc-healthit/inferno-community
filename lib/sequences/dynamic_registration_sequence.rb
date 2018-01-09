@@ -1,9 +1,8 @@
 class DynamicRegistrationSequence < SequenceBase
 
-  description 'description'
+  description 'OAuth 2.0 Dynamic Client Registration Protocol'
+  modal_before_run
 
-  test 'test' do
+  test 'OAuth 2.0 Dynamic Client Registration Protocol' do
   end
-
 end
-

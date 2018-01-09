@@ -24,6 +24,8 @@
             OAuth Authorize Endpoint: <%= @instance.oauth_authorize_endpoint %>
             <br/>
             OAuth Token Endpoint: <%= @instance.oauth_token_endpoint %>
+            <br/>
+            OAuth Registration Endpoint: <%= @instance.oauth_register_endpoint %>
           </p>
         <% end %>
         <% if !@instance.dynamically_registered.nil? && !@instance.dynamically_registered && !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?%>
@@ -89,6 +91,58 @@
   </div>
 </div>
 
+<div class="modal fade" id="DynamicRegistrationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">OAuth 2.0 Dynamic Client Registration</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="DynamicRegistration">
+        <div class="modal-body">
+          <p>
+            Enter the dynamic registration details.
+          </p>
+          <div class="form-group">
+            <label for="registration_url">Registration URL</label>
+            <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= @instance.oauth_register_endpoint %>" required>
+          </div>
+          <div class="form-group">
+            <label for="client_name">Client Name</label>
+            <input type="text" class="form-control" name="client_name" id="client_name" value="Crucible SMART-on-FHIR Test App" required>
+          </div>
+          <div class="form-group">
+            <label for="initiate_login_uri">Launch URI</label>
+            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+          </div>
+          <div class="form-group">
+            <label for="redirect_uris">Redirect URI</label>
+            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+          </div>
+          <div class="form-group">
+            <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
+            <input readonly type="text" class="form-control" name="token_endpoint_auth_method" id="token_endpoint_auth_method" value="none">
+          </div>
+          <div class="form-group">
+            <label for="grant_types">Grant Types (comma-separated)</label>
+            <input type="text" class="form-control" name="grant_types" id="grant_types" value="authorization_code" required>
+          </div>
+          <div class="form-group">
+            <label for="scope">Scopes</label>
+            <input type="text" class="form-control" name="scope" id="scope" value="<%=@instance.scopes || DEFAULT_SCOPES %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Register</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="DynamicRegistrationSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -103,13 +157,29 @@
           <p>
             Please register your application with the following information:
           </p>
-          <ul>
-            <li>Launch URL: <input type="text" size="50" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
-            <li>Redirect URL: <input type="text" size="50" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
-          </ul>
+          <div class="form-group">
+            <label for="skip_launch">Launch URL</label>
+            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+          </div>
+          <div class="form-group">
+            <label for="skip_redirect">Redirect URL</label>
+            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+          </div>
+          <div class="form-group">
+            <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
+            <input readonly type="text" class="form-control" name="token_endpoint_auth_method" id="token_endpoint_auth_method" value="none">
+          </div>
+          <div class="form-group">
+            <label for="grant_types">Grant Type</label>
+            <input readonly type="text" class="form-control" name="grant_types" id="grant_types" value="authorization_code" required>
+          </div>
+          <div class="form-group">
+            <label for="scope">Scopes</label>
+            <input readonly type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
+          </div>
           <div class="form-group">
             <label for="dynamicRegistrationClientId">Enter Client Id</label>
-            <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId">
+            <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId" required>
           </div>
         </div>
         <div class="modal-footer">
@@ -137,7 +207,7 @@
           </p>
           <div class="form-group">
             <label for="patientStandaloneLaunchScopes">Scopes</label>
-            <input type="text" class="form-control" name="scopes" id="patientStandaloneLaunchScopes" value="launch/patient online_access openid patient/*.* profile">
+            <input type="text" class="form-control" name="scopes" id="patientStandaloneLaunchScopes" value="<%=@instance.scopes || DEFAULT_SCOPES %>" required>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -158,16 +228,14 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form method="POST" action="PatientStandaloneLaunch">
-        <div class="modal-body">
-          <p>
-            Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
-          </p>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          </div>
+      <div class="modal-body">
+        <p>
+          Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
