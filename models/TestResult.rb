@@ -6,6 +6,9 @@ class TestResult
   property :warning, String
   property :message, String
 
-  # belongs_to :request_response
+  property :url, String, length: 500
+  property :description, Text
+
+  has n, :request_responses, :through => Resource 
   belongs_to :sequence_result
 end

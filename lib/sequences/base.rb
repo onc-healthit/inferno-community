@@ -25,14 +25,32 @@ class SequenceBase
     @client = client
     @instance = instance
     @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
+    @client.monitor_requests unless @client.nil?
   end
 
   def start
     sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: sequence_name, result: STATUS[:pass])
     methods = self.methods.grep(/_test$/).sort
     methods.each_with_index do |test_method, index|
+      @client.requests = [] unless @client.nil?
       result = self.method(test_method).call()
+
+      unless @client.nil?
+        @client.requests.each do |req|
+          result.request_responses << RequestResponse.new(
+            id: SecureRandom.uuid,
+            request_method: req.request[:method],
+            request_url: req.request[:url],
+            request_headers: req.request[:headers].to_json,
+            request_body: req.request[:body],
+            response_code: req.response[:code],
+            response_headers: req.response[:headers].to_json,
+            response_body: req.response[:body])
+        end
+      end
+
       sequence_result.test_results << result
+
       case result.result
       when STATUS[:pass]
         sequence_result.passed_count += 1
@@ -83,7 +101,7 @@ class SequenceBase
     wrapped = -> () do
       @warnings, @links, @requires, @validates = [],[],[],[]
       result = ""
-      result = TestResult.new(id: SecureRandom.uuid, name: name, result: STATUS[:pass])
+      result = TestResult.new(id: SecureRandom.uuid, name: name, result: STATUS[:pass], url: url, description: description)
       begin
         t = instance_eval &block
 

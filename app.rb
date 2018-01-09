@@ -28,42 +28,20 @@ end
 #TODO clean up database stuff
 
 DataMapper.finalize
-#
-# # automatically create the post table
-TestingInstance.auto_migrate!
-# TestingInstance.auto_upgrade!
 
-SequenceResult.auto_migrate!
-# SequenceResult.auto_upgrade!
-
-TestResult.auto_migrate!
-# TestResult.auto_upgrade!
-
-# RequestResponse.auto_migrate!
-# RequestResponse.auto_upgrade!
+[TestingInstance, SequenceResult, TestResult, RequestResponse, RequestResponseTestResult].each do |model|
+  model.auto_migrate!
+  #model.auto_upgrade
+end
 
 enable :sessions
 set :session_secret, SecureRandom.uuid
 
-# Root: redirect to /index
 get '/' do
   status, headers, body = call! env.merge("PATH_INFO" => '/index')
 end
 
-# The index displays the available endpoints
 get '/index' do
-  # response = Crucible::App::Html.new
-  # bullets = {
-  #   "#{response.base_url}/index" => 'this page',
-  #   "#{response.base_url}/app" => 'the app (also the redirect_uri after authz)',
-  #   "#{response.base_url}/launch_ehr" => 'the ehr launch url',
-  #   "#{response.base_url}/launch_sa" => 'the standalone launch url',
-  #   "#{response.base_url}/config" => 'configure client ID and scopes'
-  # }
-  # response.open.echo_hash('End Points',bullets)
-
-  # body response.instructions.close
-
   erb :index
 end
 
@@ -82,6 +60,12 @@ post '/instance/?' do
   @instance = TestingInstance.new(id: id, url: url, name: params['name'])
   @instance.save
   redirect "/instance/#{id}/"
+end
+
+get '/instance/:id/test_result/:test_result_id/?' do
+  @test_result = TestResult.get(params[:test_result_id])
+  halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
+  erb :test_result_details, layout: false
 end
 
 get '/instance/:id/:sequence/' do
