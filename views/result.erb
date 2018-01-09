@@ -1,7 +1,7 @@
 <div class="result-details collapse" id="<%=sequence_class%>-details">
   <ul>
     <% sequence_result.test_results.each do |result, index| %>
-      <li>
+      <li data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
         <% case result.result
           when 'pass' %>
             <div class="result-details-icon result-details-icon-pass">

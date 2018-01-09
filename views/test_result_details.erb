@@ -1,0 +1,82 @@
+<div class="modal-header">
+  <h5 class="modal-title" id="exampleModalLabel">
+    Test Result: <%=@test_result.result.titleize %>
+  </h5>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="test-result-details">
+
+    <div class="test-result-details-title">
+      <% case @test_result.result
+          when 'pass' %>
+        <div class="result-details-icon result-details-icon-pass">
+          <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+        </div>
+      <% when 'fail' %>
+        <div class="result-details-icon result-details-icon-fail">
+          <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+        </div>
+      <% when 'error' %>
+        <div class="result-details-icon result-details-icon-error">
+          !
+        </div>
+      <% when 'skip' %>
+        <div class="result-details-icon result-details-icon-skip">
+          <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+        </div>
+      <% end %>
+      <%= @test_result.name %>
+    </div>
+
+    <% unless @test_result.message.nil? %>
+      <div class="test-result-details-message">
+        <span class="test-result-details-message-label">Message:</span> <%= @test_result.message %>
+      </div>
+    <% end %>
+
+    <% unless @test_result.url.nil? %>
+      <div class="test-result-details-url">
+        <span class="test-result-details-url-label">URL:</span> <a href="<%=@test_result.url%>" target="_blank"><%= @test_result.url %></a>
+      </div>
+    <% end %>
+
+    <% unless @test_result.description.nil? %>
+      <div class="test-result-details-description">
+        <span class="test-result-details-description-label">Description:</span> <%= @test_result.description %>
+      </div>
+    <% end %>
+
+    <div class="test-result-details-header"><%=@test_result.request_responses.count %> Requests</div>
+
+    <% @test_result.request_responses.each_with_index do |rr,index| %>
+    <div class="test-result-details-response">
+      <a class="test-result-details-response-header collapsed" data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
+        <%= rr.request_method.upcase %> -
+        <%= rr.request_url %> -
+        <%= rr.response_code %> -
+      </a>
+
+      <div class="collapse test-result-details-response-values" id="test-result-details-response-values-<%=index%>">
+
+        <div>Request</div>
+        <div>Headers</div>
+        <% JSON.parse(rr.request_headers).each do |header_name, header_value| %>
+          <strong><%=header_name%></strong>: <%=header_value%><br/>
+        <% end %>
+
+        <div>Response</div>
+        <div>Headers</div>
+        <% JSON.parse(rr.response_headers).each do |header_name, header_value| %>
+          <strong><%=header_name%></strong>: <%=header_value%><br/>
+        <% end %>
+        <div>Body</div>
+        <div>...</div>
+
+      </div>
+    </div>
+  <% end %>
+</div>
+

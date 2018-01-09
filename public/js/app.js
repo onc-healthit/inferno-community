@@ -13,7 +13,10 @@ $(function(){
   });
 
   $('.result-details li').on('click', function() {
-    alert('show test information; links to spec, exact wording, request & responses, warnings');
+    var url = '/instance/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
+    $("#testResultDetailsModal").find('.modal-content').load(url, function(){
+      $("#testResultDetailsModal").modal('show');
+    })
   })
 
 })
