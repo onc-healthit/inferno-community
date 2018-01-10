@@ -7,8 +7,9 @@ class SequenceResult
   property :failed_count, Integer, default: 0
   property :error_count, Integer, default: 0
   property :warning_count, Integer, default: 0
+  property :todo_count, Integer, default: 0
   property :created_at, DateTime, default: proc { DateTime.now }
 
-  has n, :test_results
+  has n, :test_results, order: [:created_at.asc]
   belongs_to :testing_instance
 end

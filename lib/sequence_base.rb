@@ -1,4 +1,4 @@
-require_relative './assertions'
+require_relative './utils/assertions'
 class SequenceBase
 
   include Assertions
@@ -7,11 +7,16 @@ class SequenceBase
     pass: 'pass',
     fail: 'fail',
     error: 'error',
+    todo: 'todo',
   }
+
+  TODO = :todo
 
   @@test_index = 0
   @@modal_before_run = []
   @@buttonless = []
+  @@child_test = []
+  @@preconditions = {}
 
   def self.test_count
     self.new(nil,nil).test_count
@@ -54,6 +59,8 @@ class SequenceBase
       case result.result
       when STATUS[:pass]
         sequence_result.passed_count += 1
+      when STATUS[:todo]
+        sequence_result.todo_count += 1
       when STATUS[:fail]
         sequence_result.failed_count += 1
         sequence_result.result = result.result unless sequence_result.result == STATUS[:error]
@@ -93,6 +100,33 @@ class SequenceBase
     @@buttonless.include?(self.sequence_name)
   end
 
+  def self.child_test
+    @@child_test << self.sequence_name
+  end
+
+  def self.child_test?
+    @@child_test.include?(self.sequence_name)
+  end
+
+  def self.preconditions(description, &block)
+    @@preconditions[self.sequence_name] = {
+      block: block,
+      description: description
+    }
+  end
+
+  def self.preconditions_description
+    @@preconditions[self.sequence_name] && @@preconditions[self.sequence_name][:description]
+  end
+
+  def self.preconditions_met_for?(instance)
+
+    return true unless @@preconditions.key?(self.sequence_name)
+
+    block = @@preconditions[self.sequence_name][:block]
+    self.new(instance,nil).instance_eval &block
+  end
+
   def self.test(name, url = nil, description = nil, &block)
     @@test_index += 1
 
@@ -104,6 +138,8 @@ class SequenceBase
       result = TestResult.new(id: SecureRandom.uuid, name: name, result: STATUS[:pass], url: url, description: description)
       begin
         t = instance_eval &block
+
+        result.result = STATUS[:todo] if t == TODO
 
         # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
       rescue AssertionException => e

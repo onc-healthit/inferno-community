@@ -8,6 +8,7 @@ class TestResult
 
   property :url, String, length: 500
   property :description, Text
+  property :created_at, DateTime, default: proc { DateTime.now }
 
   has n, :request_responses, :through => Resource 
   belongs_to :sequence_result
