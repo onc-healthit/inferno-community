@@ -19,7 +19,12 @@
             <div class="result-details-icon result-details-icon-skip">
               <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
             </div>
+        <% when 'todo' %>
+            <div class="result-details-icon result-details-icon-todo">
+              <span class="oi oi-minus" title="todo" aria-hidden="true"></span>
+            </div>
         <% end %>
+        <% if result.result == 'todo' %> TODO: <% end %>
         <%= result.name %>
         <% if result.result == 'fail' || result.result == 'error' %>
           <div class="result-details-message">

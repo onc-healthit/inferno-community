@@ -1,16 +1,21 @@
 /* ------------------------- LAYOUT -------------------------------- */
 
+.container {
+  max-width: 960px;
+}
+
 .main {
-  margin-top: 20px;
+  margin: 20px 0;
 }
 
 .footer {
-  margin-top: 10px;
-  border-top: 1px solid #aaa;
+  margin: 10px 0;
+  border-top: 1px solid #eee;
   font-size: .8em;
 }
 
-.footer div {
+.footer .container {
+  margin: auto;
   padding-top: 10px;
 }
 
@@ -32,7 +37,12 @@
   font-size: 1.8em;
   border-bottom: 1px solid #666;
   padding-bottom: 5px;
-  margin-bottom: 5px;
+  margin: 15px 0 5px;
+}
+
+.client-state-button {
+  float: right;
+  margin-top: 5px;
 }
 
 .oi-print {
@@ -54,6 +64,10 @@
   border-bottom: 1px solid #ddd;
   padding-bottom: 15px;
   margin-top: 15px;
+}
+
+.child-test {
+  padding-left: 40px;
 }
 
 .scorecard-score {
@@ -114,9 +128,26 @@
   vertical-align: top;
 }
 
+.scorecard-action-collapse {
+  display: inline-block;
+  width: 20px;
+}
+
 .scorecard-collapse {
   display: inline-block;
 }
+
+.scorecard-collapse .oi {
+  font-size: 1.1em;
+  vertical-align: middle;
+  color: #999;
+}
+
+.scorecard-action .btn {
+  margin-right: 5px;
+
+}
+
 
 .scorecard-name {
   font-weight: bold;
@@ -147,11 +178,26 @@
 }
 
 .server-state {
-  margin-top: 10px;
-  border: 1px solid #aaa;
-  border-radius: 3px;
-  padding: 10px;
-  font-size: .8em;
+  margin-bottom: 20px;
+  font-size: 2em;
+}
+
+.server-state-title {
+  margin-top: 20px;
+  font-size: 1.1em;
+}
+
+.details-server {
+  /* background-color: #fafafa; */
+}
+
+.details-server .container{
+  margin: auto;
+  /* border-bottom: 1px solid #999; */
+}
+
+.details-server .container .col{
+  padding: 0;
 }
 
 .client-state {
@@ -189,6 +235,8 @@
 
 .result-details {
   margin-top: 5px;
+  max-height: 300px;
+  overflow: scroll;
 }
 
 .result-details ul {
@@ -232,6 +280,10 @@
 .result-details-icon-skip {
   background-color: #FF7F50;
   color: #FFF;
+}
+
+.result-details-icon-todo {
+  color: #336699;
 }
 
 .result-details-message {

@@ -18,10 +18,10 @@ DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, 'sqlite3:data/data.db')
 DataMapper::Model.raise_on_save_failure = true 
 
-require './lib/sequences/base'
+require './lib/sequence_base'
 ['lib', 'models'].each do |dir|
   Dir.glob(File.join(File.dirname(File.absolute_path(__FILE__)),dir, '**','*.rb')).each do |file|
-    require file unless file=='base.rb'
+    require file
   end
 end
 
@@ -47,7 +47,7 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
+  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
   @sequence_results = @instance.latest_results
 
   erb :details
@@ -78,7 +78,7 @@ get '/instance/:id/:sequence/' do
     instance.sequence_results.push(sequence_result)
     instance.save!
   end
-  redirect "/instance/#{params[:id]}/?finished=#{params[:sequence_id]}"
+  redirect "/instance/#{params[:id]}/##{params[:sequence]}"
 end
 
 get '/instance/:id/Conformance/?' do
@@ -90,7 +90,7 @@ get '/instance/:id/Conformance/?' do
   instance.sequence_results.push(sequence_result)
   instance.save!
 
-  redirect "/instance/#{params[:id]}/?finished=#{params[:sequence_id]}"
+  redirect "/instance/#{params[:id]}/##{params[:sequence_id]}"
 end
 
 post '/instance/:id/ConformanceSkip/?' do
@@ -154,7 +154,7 @@ post '/instance/:id/DynamicRegistration' do
   end
   @instance.save!
 
-  redirect "/instance/#{redirect_id}/"
+  redirect "/instance/#{redirect_id}/#DynamicRegistration"
 end
 
 post '/instance/:id/dynamic_registration_skip/?' do
@@ -232,7 +232,7 @@ get '/instance/:id/:key/redirect/?' do
 
   # test that launch is successful
   if params['error']
-    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail', message: ['error'])
+    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail', message: params['error'])
   else
     launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'pass')
     oauth2_params = {
@@ -286,5 +286,5 @@ get '/instance/:id/:key/redirect/?' do
   @instance.sequence_results.push(sequence_result)
   @instance.save
 
-  redirect "/instance/#{params[:id]}/"
+  redirect "/instance/#{params[:id]}/##{@instance.launch_type}"
 end

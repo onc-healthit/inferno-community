@@ -6,10 +6,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="stylesheet" href="/css/styles.css">
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css">
+
+    <link rel="stylesheet" href="/css/styles.css">
   </head>
   <body>
     <nav class="navbar navbar-light bg-light">
@@ -18,21 +18,21 @@
         <!-- Navbar content -->
       </div>
     </nav>
-    <div class="container">
-
-      <div class="main">
-        <%= yield %>
-      </div>
-
-      <div class="footer row">
-        <div class="col-sm">
-          Copyright
-        </div>
-        <div class="col-sm text-center">
-          Contact
-        </div>
-        <div class="col-sm text-right">
-          Version
+    <%= yield %>
+    <div class="container-fluid footer">
+      <div class="row">
+        <div class="col">
+          <div class="container row">
+            <div class="col-sm">
+              Copyright
+            </div>
+            <div class="col-sm text-center">
+              Contact
+            </div>
+            <div class="col-sm text-right">
+              Version
+            </div>
+          </div>
         </div>
       </div>
     </div>
