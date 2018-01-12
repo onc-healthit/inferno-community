@@ -49,7 +49,7 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
+  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence, IntrospectionSequence  ]
   @sequence_results = @instance.latest_results
 
   erb :details
@@ -169,4 +169,30 @@ get '/instance/:id/:key/:endpoint/?' do
     redirect "/instance/#{params[:id]}/##{sequence_result.name}"
 
   end
+end
+
+post '/instance/:id/IntrospectionLaunch/?' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(scopes: params['scopes'])
+  @instance.update(launch_type: 'IntrospectionLaunch')
+
+  session[:client_id] = @instance.client_id
+  session[:fhir_url] = @instance.url
+  session[:authorize_url] = @instance.oauth_authorize_endpoint
+  session[:token_url] = @instance.oauth_token_endpoint
+  session[:state] = SecureRandom.uuid
+  oauth2_params = {
+    'response_type' => 'code',
+    'client_id' => @instance.client_id,
+    'redirect_uri' => request.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
+    'scope' => @instance.scopes,
+    'state' => session[:state],
+    'aud' => @instance.url
+  }
+  oauth2_auth_query = "#{session[:authorize_url]}?"
+  oauth2_params.each do |key,value|
+    oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
+  end
+  puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
+  redirect oauth2_auth_query[0..-2]
 end
