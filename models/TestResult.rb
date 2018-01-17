@@ -10,6 +10,9 @@ class TestResult
   property :description, Text
   property :created_at, DateTime, default: proc { DateTime.now }
 
+  property :wait_at_endpoint, String
+  property :redirect_to_url, String
+
   has n, :request_responses, :through => Resource 
   belongs_to :sequence_result
 end

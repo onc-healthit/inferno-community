@@ -34,4 +34,6 @@ $(function(){
 
   $('[data-toggle="tooltip"]').tooltip()
 
+  $('#WaitModal').modal('show');
+
 })

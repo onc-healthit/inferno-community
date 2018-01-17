@@ -30,8 +30,8 @@ end
 DataMapper.finalize
 
 [TestingInstance, SequenceResult, TestResult, RequestResponse, RequestResponseTestResult].each do |model|
-  model.auto_migrate!
-  #model.auto_upgrade
+  # model.auto_migrate!
+  model.auto_upgrade!
 end
 
 enable :sessions
@@ -57,7 +57,7 @@ post '/instance/?' do
   id = SecureRandomBase62.generate
   url = params['fhir_server']
   url = url.chomp('/') if url.end_with?('/')
-  @instance = TestingInstance.new(id: id, url: url, name: params['name'])
+  @instance = TestingInstance.new(id: id, url: url, name: params['name'], base_url: request.base_url)
   @instance.save
   redirect "/instance/#{id}/"
 end
@@ -77,6 +77,10 @@ get '/instance/:id/:sequence/' do
     sequence_result = sequence.start
     instance.sequence_results.push(sequence_result)
     instance.save!
+
+    if sequence_result.redirect_to_url
+      redirect sequence_result.redirect_to_url
+    end
   end
   redirect "/instance/#{params[:id]}/##{params[:sequence]}"
 end
@@ -196,8 +200,31 @@ post '/instance/:id/PatientStandaloneLaunch/?' do
   redirect oauth2_auth_query[0..-2]
 end
 
-get '/instance/:id/:key/launch/?' do
-  # Provider EHR Launch Endpoint
+get '/instance/:id/:key/:endpoint/?' do
+  @instance = TestingInstance.get(params[:id])
+
+  sequence_result = @instance.waiting_on_sequence
+  
+  if sequence_result.nil? || sequence_result.result != 'wait'
+    redirect "/instance/#{params[:id]}/?error=No sequence is currently waiting on launch."
+  else
+    klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(sequence_result.name)}
+    instance = TestingInstance.get(params[:id])
+    client = FHIR::Client.new(instance.url)
+    sequence = klass.new(instance, client, sequence_result)
+    sequence_result = sequence.resume(params)
+    sequence_result.save!
+
+    if sequence_result.redirect_to_url
+      redirect sequence_result.redirect_to_url
+    end
+
+    redirect "/instance/#{params[:id]}/##{sequence_result.name}"
+
+  end
+end
+
+get '/instance/:id/launch2/?' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(launch_type: 'ProviderEHRLaunch', scopes: 'launch online_access openid patient/*.* profile')
 
@@ -210,7 +237,7 @@ get '/instance/:id/:key/launch/?' do
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => @instance.client_id,
-      'redirect_uri' => request.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
+      'redirect_uri' => request.base_url + '/instance/' + @instance.id + '/redirect2', # TODO don't hard code base URL
       'scope' => @instance.scopes,
       'launch' => params['launch'],
       'state' => session[:state],

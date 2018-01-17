@@ -14,70 +14,70 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: name' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by family',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: family' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by given',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: given' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by identifier',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: identifier' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: gender' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: birthdate' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by name + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: name + gender' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by name + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: name + birthdate' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by family + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: family + gender' do
 
-    TODO
+    todo
   end
 
   test 'Patient search by given + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: given + gender' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -88,7 +88,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -99,56 +99,56 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: status' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + date' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category + status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + status' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + status + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -159,35 +159,35 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: clinicalstatus' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by patient + clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + clinicalstatus' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -198,7 +198,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -209,21 +209,21 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Goal search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -234,7 +234,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -245,56 +245,56 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: code' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + date' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -309,7 +309,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -320,7 +320,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -331,56 +331,56 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: code' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + date' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -391,21 +391,21 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Procedure search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + date' do
 
-    TODO
+    todo
   end
 
 end

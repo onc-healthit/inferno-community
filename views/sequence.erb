@@ -17,6 +17,10 @@
       <div class="scorecard-score scorecard-score-error">
         !
       </div>
+  <% when 'wait' %>
+      <div class="scorecard-score scorecard-score-wait">
+        <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+      </div>
   <% when 'skip' %>
       <div class="scorecard-score scorecard-score-skip">
         <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
