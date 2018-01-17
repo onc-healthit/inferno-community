@@ -125,7 +125,7 @@ module Assertions
   end
 
   def assert_bundle_response(response)
-    unless assertion_negated( response.resource.class == get_resource(:Bundle) )
+    unless assertion_negated( response.resource.class == FHIR::DSTU2::Bundle )
       # check what this is...
       found = response.resource
       begin
@@ -264,4 +264,3 @@ class SkipException < Exception
     FHIR.logger.info "SkipException: #{message}"
   end
 end
-
