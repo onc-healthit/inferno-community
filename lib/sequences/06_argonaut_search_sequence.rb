@@ -8,8 +8,8 @@ class ArgonautSearchSequence < SequenceBase
     !@instance.token.nil?
   end
 
-  def get_patient_by_param(params = {}, flag = true)
-    assert !params.empty?, "No params for patient"
+  def get_resource_by_params(klass, params = {}, flag = true)
+    assert !params.empty?, "No params for search"
     options = {
       :search => {
         :flag => flag,
@@ -17,11 +17,15 @@ class ArgonautSearchSequence < SequenceBase
         :parameters => params
       }
     }
-    reply = @client.search(FHIR::DSTU2::Patient, options)
+    reply = @client.search(klass, options)
     assert_response_ok(reply)
     assert_bundle_response(reply)
-    assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient.'
-    assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient.'
+
+    #TODO Implement basic validation of resources other than FHIR::DSTU2::Patient
+    if klass == FHIR::DSTU2::Patient
+      assert !reply.resource.get_by_id(@patient_id).nil?, 'Server returned nil patient'
+      assert reply.resource.get_by_id(@patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
+    end
   end
 
   # --------------------------------------------------
@@ -29,7 +33,7 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
 
   test 'Has Patient resource',
-          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html' do
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html' do
 
     patient_read_response = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
     assert_response_ok patient_read_response
@@ -37,6 +41,7 @@ class ArgonautSearchSequence < SequenceBase
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     @patient_details = @patient.to_hash
     assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+
   end
 
   test 'Patient search by name',
@@ -47,7 +52,7 @@ class ArgonautSearchSequence < SequenceBase
     assert family, "Patient family name not returned"
     given = @patient_details['name'][0]['given'][0]
     assert given, "Patient given name not returned"
-    get_patient_by_param(family: family, given: given)
+    get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given})
 
   end
 
@@ -57,7 +62,7 @@ class ArgonautSearchSequence < SequenceBase
 
     family = @patient_details['name'][0]['family'][0]
     assert family, "Patient family name not returned"
-    get_patient_by_param(family: family)
+    get_resource_by_params(FHIR::DSTU2::Patient, {family: family})
 
   end
 
@@ -67,7 +72,7 @@ class ArgonautSearchSequence < SequenceBase
 
     given = @patient_details['name'][0]['given'][0]
     assert given, "Patient given name not returned"
-    get_patient_by_param(given: given)
+    get_resource_by_params(FHIR::DSTU2::Patient, {given: given})
 
   end
 
@@ -77,7 +82,7 @@ class ArgonautSearchSequence < SequenceBase
 
     identifier = @patient_details['identifier'][0]['value']
     assert identifier, "Patient identifier not returned"
-    get_patient_by_param(identifier: identifier)
+    get_resource_by_params(FHIR::DSTU2::Patient, {identifier: identifier})
 
   end
 
@@ -87,7 +92,7 @@ class ArgonautSearchSequence < SequenceBase
 
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
-    get_patient_by_param(gender: gender)
+    get_resource_by_params(FHIR::DSTU2::Patient, {gender: gender})
 
   end
 
@@ -97,7 +102,7 @@ class ArgonautSearchSequence < SequenceBase
 
     birthdate = @patient_details['birthDate']
     assert birthdate, "Patient birthdate not returned"
-    get_patient_by_param(birthdate: birthdate)
+    get_resource_by_params(FHIR::DSTU2::Patient, {birthdate: birthdate})
 
   end
 
@@ -111,7 +116,7 @@ class ArgonautSearchSequence < SequenceBase
     assert given, "Patient given name not returned"
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
-    get_patient_by_param(family: family, given: given, gender: gender)
+    get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, gender: gender})
 
   end
 
@@ -125,7 +130,7 @@ class ArgonautSearchSequence < SequenceBase
     assert given, "Patient given name not returned"
     birthdate = @patient_details['birthDate']
     assert birthdate, "Patient birthDate not returned"
-    get_patient_by_param(family: family, given: given, birthdate: birthdate)
+    get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, birthdate: birthdate})
 
   end
 
@@ -137,7 +142,7 @@ class ArgonautSearchSequence < SequenceBase
     assert family, "Patient family name not returned"
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
-    get_patient_by_param(family: family, gender: gender)
+    get_resource_by_params(FHIR::DSTU2::Patient, {family: family, gender: gender})
 
   end
 
@@ -149,7 +154,7 @@ class ArgonautSearchSequence < SequenceBase
     assert given, "Patient given name not returned"
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
-    get_patient_by_param(given: given, gender: gender)
+    get_resource_by_params(FHIR::DSTU2::Patient, {given: given, gender: gender})
 
   end
 
@@ -161,7 +166,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+
   end
 
   # --------------------------------------------------
@@ -172,7 +178,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id})
+
   end
 
   test 'CarePlan search by category',
@@ -232,7 +239,9 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+
+
   end
 
   test 'Condition search by category',
@@ -271,7 +280,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
+
   end
 
   # --------------------------------------------------
@@ -282,7 +292,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
+
   end
 
   test 'Goal search by date',
@@ -307,7 +318,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+
   end
 
   # --------------------------------------------------
@@ -318,7 +330,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id})
+
   end
 
   test 'DiagnosticReport search by category',
@@ -382,7 +395,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
+
   end
 
   # --------------------------------------------------
@@ -393,7 +407,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
+
   end
 
   # --------------------------------------------------
@@ -404,7 +419,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id})
+
   end
 
   test 'Observation search by category',
@@ -464,7 +480,8 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    todo
+    get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
+
   end
 
   test 'Procedure search by date',
