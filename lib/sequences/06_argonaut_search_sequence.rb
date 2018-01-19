@@ -18,6 +18,7 @@ class ArgonautSearchSequence < SequenceBase
     reply = @client.search(FHIR::DSTU2::Patient, options)
     assert_response_ok(reply)
     assert_bundle_response(reply)
+    assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient.'
     assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient.'
   end
 
@@ -69,49 +70,75 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: identifier' do
 
-    TODO
+    identifier = @patient_details['identifier'][0]['value']
+    assert identifier, "Patient identifier not returned"
+    get_patient_by_param(identifier: identifier)
   end
 
   test 'Patient search by gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: gender' do
 
-    TODO
+    gender = @patient_details['gender']
+    assert gender, "Patient gender not returned"
+    get_patient_by_param(gender: gender)
   end
 
   test 'Patient search by birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: birthdate' do
 
-    TODO
+    birthdate = @patient_details['birthDate']
+    assert birthdate, "Patient birthdate not returned"
+    get_patient_by_param(birthdate: birthdate)
   end
 
   test 'Patient search by name + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: name + gender' do
 
-    TODO
+    family = @patient_details['name'][0]['family'][0]
+    assert family, "Patient family name not returned"
+    given = @patient_details['name'][0]['given'][0]
+    assert given, "Patient given name not returned"
+    gender = @patient_details['gender']
+    assert gender, "Patient gender not returned"
+    get_patient_by_param(family: family, given: given, gender: gender)
   end
 
   test 'Patient search by name + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: name + birthdate' do
 
-    TODO
+    family = @patient_details['name'][0]['family'][0]
+    assert family, "Patient family name not returned"
+    given = @patient_details['name'][0]['given'][0]
+    assert given, "Patient given name not returned"
+    birthdate = @patient_details['birthDate']
+    assert birthdate, "Patient birthDate not returned"
+    get_patient_by_param(family: family, given: given, birthdate: birthdate)
   end
 
   test 'Patient search by family + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: family + gender' do
 
-    TODO
+    family = @patient_details['name'][0]['family'][0]
+    assert family, "Patient family name not returned"
+    gender = @patient_details['gender']
+    assert gender, "Patient gender not returned"
+    get_patient_by_param(family: family, gender: gender)
   end
 
   test 'Patient search by given + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: given + gender' do
 
-    TODO
+    given = @patient_details['name'][0]['given'][0]
+    assert given, "Patient given name not returned"
+    gender = @patient_details['gender']
+    assert gender, "Patient gender not returned"
+    get_patient_by_param(given: given, gender: gender)
   end
 
   # --------------------------------------------------
