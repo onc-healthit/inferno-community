@@ -14,6 +14,6 @@ class SequenceResult
   property :warning_count, Integer, default: 0
   property :todo_count, Integer, default: 0
 
-  has n, :test_results, order: [:created_at.asc]
+  has n, :test_results, order: [:test_index.asc]
   belongs_to :testing_instance
 end

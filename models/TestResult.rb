@@ -8,11 +8,13 @@ class TestResult
 
   property :url, String, length: 500
   property :description, Text
+  property :test_index, Integer
   property :created_at, DateTime, default: proc { DateTime.now }
 
   property :wait_at_endpoint, String
   property :redirect_to_url, String
 
   has n, :request_responses, :through => Resource 
+  has n, :warnings
   belongs_to :sequence_result
 end

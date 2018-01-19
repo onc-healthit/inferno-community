@@ -296,6 +296,10 @@
   color: #336699;
 }
 
+.result-details-icon-warning {
+  color: #FFFF33;
+}
+
 .result-details-message {
   margin-left: 19px;
 

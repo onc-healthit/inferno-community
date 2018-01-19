@@ -230,7 +230,7 @@
           Waiting for redirect at: <br/><%=redirect_to %>
           </p>
           <div class="modal-footer">
-            <a href="<%=redirect_to%>" class="btn btn-secondary">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}/instance/#{@instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-secondary">Cancel Sequence</a>
           </div>
         </div>
       </div>

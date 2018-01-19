@@ -9,7 +9,7 @@ class SequenceBase
     fail: 'fail',
     error: 'error',
     todo: 'todo',
-    wait: 'wait'
+    wait: 'wait',
   }
 
   @@test_index = 0
@@ -32,12 +32,14 @@ class SequenceBase
     @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
     @client.monitor_requests unless @client.nil?
     @sequence_result = sequence_result
+    @warnings = []
   end
 
   def resume(params)
 
     @params = params
     @sequence_result.test_results.last.result = STATUS[:pass]
+    @sequence_result.result = STATUS[:pass]
     @sequence_result.wait_at_endpoint = nil
     @sequence_result.redirect_to_url = nil
 
@@ -74,6 +76,17 @@ class SequenceBase
 
       @sequence_result.test_results << result
 
+      if result.result == STATUS[:wait]
+        @sequence_result.redirect_to_url = result.redirect_to_url
+        @sequence_result.wait_at_endpoint = result.wait_at_endpoint
+        break
+      end
+    end
+
+    @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = 0
+    @sequence_result.result = STATUS[:pass]
+
+    @sequence_result.test_results.each do |result|
       case result.result
       when STATUS[:pass]
         @sequence_result.passed_count += 1
@@ -87,13 +100,9 @@ class SequenceBase
         @sequence_result.result = result.result
       when STATUS[:wait]
         @sequence_result.result = result.result
-        @sequence_result.redirect_to_url = result.redirect_to_url
-        @sequence_result.wait_at_endpoint = result.wait_at_endpoint
       end
-
-      break if result.result == STATUS[:wait]
-
     end
+
     @sequence_result
   end
 
@@ -155,11 +164,13 @@ class SequenceBase
   def self.test(name, url = nil, description = nil, &block)
     @@test_index += 1
 
+    test_index = @@test_index
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
     contents = block
+
     wrapped = -> () do
       @warnings, @links, @requires, @validates = [],[],[],[]
-      result = TestResult.new(id: SecureRandom.uuid, name: name, result: STATUS[:pass], url: url, description: description)
+      result = TestResult.new(id: SecureRandom.uuid, name: name, result: STATUS[:pass], url: url, description: description, test_index: test_index)
       begin
         instance_eval &block
 
@@ -192,7 +203,7 @@ class SequenceBase
         result.message = "Fatal Error: #{e.message}"
       end
       # result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
-      # result.warnings = @warnings unless @warnings.empty?
+      result.warnings = @warnings.map{ |w| Warning.new(message: w)} unless @warnings.empty?
       # result.requires = @requires unless @requires.empty?
       # result.validates = @validates unless @validates.empty?
       # result.links = @links unless @links.empty?
@@ -216,6 +227,14 @@ class SequenceBase
 
   def redirect(url, endpoint)
     raise RedirectException.new url, endpoint
+  end
+
+  def warning
+    begin
+      yield
+    rescue AssertionException => e
+      @warnings << e.message
+    end
   end
 end
 

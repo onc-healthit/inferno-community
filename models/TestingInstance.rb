@@ -27,7 +27,12 @@ class TestingInstance
   has n, :sequence_results
 
   def latest_results
-    self.sequence_results.reduce({}) { |hash, result| hash[result.name] = result if hash[result.name].nil? || hash[result.name].created_at < result.created_at; hash}
+    self.sequence_results.reduce({}) do |hash, result| 
+      if hash[result.name].nil? || hash[result.name].created_at < result.created_at
+        hash[result.name] = result 
+      end
+      hash
+    end
   end
 
   def waiting_on_sequence
