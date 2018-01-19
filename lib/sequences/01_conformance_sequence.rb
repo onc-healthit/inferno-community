@@ -37,4 +37,5 @@ class ConformanceSequence < SequenceBase
 
     @instance.update(oauth_register_endpoint: registration_url)
   end
+
 end

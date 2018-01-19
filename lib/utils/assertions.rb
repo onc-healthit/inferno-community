@@ -1,3 +1,5 @@
+require_relative 'assertions'
+
 module Assertions
 
   def assert(test, message="assertion failed, no message", data="")
@@ -247,20 +249,4 @@ module Assertions
     raise SkipException.new message
   end
 
-end
-
-class AssertionException < Exception
-  attr_accessor :data
-  def initialize(message, data=nil)
-    super(message)
-    FHIR.logger.error "AssertionException: #{message}"
-    @data = data
-  end
-end
-
-class SkipException < Exception
-  def initialize(message = '')
-    super(message)
-    FHIR.logger.info "SkipException: #{message}"
-  end
 end

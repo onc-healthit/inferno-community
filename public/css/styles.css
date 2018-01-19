@@ -111,6 +111,12 @@
   border: 2px solid #fff;
 }
 
+.scorecard-score-wait {
+  background-color: #336699;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
 .scorecard-score-skip {
   background-color: #FF7F50;
   color: #FFF;
@@ -284,6 +290,14 @@
 
 .result-details-icon-todo {
   color: #336699;
+}
+
+.result-details-icon-wait {
+  color: #336699;
+}
+
+.result-details-icon-warning {
+  color: #FFFF33;
 }
 
 .result-details-message {

@@ -46,6 +46,7 @@ class ArgonautSearchSequence < SequenceBase
     given = @patient_details['name'][0]['given'][0]
     assert given, "Patient given name not returned"
     get_patient_by_param(family: family, given: given)
+
   end
 
   test 'Patient search by family',
@@ -55,6 +56,7 @@ class ArgonautSearchSequence < SequenceBase
     family = @patient_details['name'][0]['family'][0]
     assert family, "Patient family name not returned"
     get_patient_by_param(family: family)
+
   end
 
   test 'Patient search by given',
@@ -64,6 +66,7 @@ class ArgonautSearchSequence < SequenceBase
     given = @patient_details['name'][0]['given'][0]
     assert given, "Patient given name not returned"
     get_patient_by_param(given: given)
+
   end
 
   test 'Patient search by identifier',
@@ -73,6 +76,7 @@ class ArgonautSearchSequence < SequenceBase
     identifier = @patient_details['identifier'][0]['value']
     assert identifier, "Patient identifier not returned"
     get_patient_by_param(identifier: identifier)
+
   end
 
   test 'Patient search by gender',
@@ -82,6 +86,7 @@ class ArgonautSearchSequence < SequenceBase
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
     get_patient_by_param(gender: gender)
+
   end
 
   test 'Patient search by birthdate',
@@ -91,6 +96,7 @@ class ArgonautSearchSequence < SequenceBase
     birthdate = @patient_details['birthDate']
     assert birthdate, "Patient birthdate not returned"
     get_patient_by_param(birthdate: birthdate)
+
   end
 
   test 'Patient search by name + gender',
@@ -104,6 +110,7 @@ class ArgonautSearchSequence < SequenceBase
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
     get_patient_by_param(family: family, given: given, gender: gender)
+
   end
 
   test 'Patient search by name + birthdate',
@@ -117,6 +124,7 @@ class ArgonautSearchSequence < SequenceBase
     birthdate = @patient_details['birthDate']
     assert birthdate, "Patient birthDate not returned"
     get_patient_by_param(family: family, given: given, birthdate: birthdate)
+
   end
 
   test 'Patient search by family + gender',
@@ -128,6 +136,7 @@ class ArgonautSearchSequence < SequenceBase
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
     get_patient_by_param(family: family, gender: gender)
+
   end
 
   test 'Patient search by given + gender',
@@ -139,6 +148,7 @@ class ArgonautSearchSequence < SequenceBase
     gender = @patient_details['gender']
     assert gender, "Patient gender not returned"
     get_patient_by_param(given: given, gender: gender)
+
   end
 
   # --------------------------------------------------
@@ -149,7 +159,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -160,56 +170,56 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: status' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + date' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category + status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + status' do
 
-    TODO
+    todo
   end
 
   test 'CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + status + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -220,35 +230,35 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: clinicalstatus' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by patient + clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + clinicalstatus' do
 
-    TODO
+    todo
   end
 
   test 'Condition search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -259,7 +269,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -270,21 +280,21 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Goal search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -295,7 +305,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -306,56 +316,56 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: code' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + date' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code' do
 
-    TODO
+    todo
   end
 
   test 'DiagnosticReport search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -370,7 +380,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -381,7 +391,7 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -392,56 +402,56 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: category' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: code' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + date' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code' do
 
-    TODO
+    todo
   end
 
   test 'Observation search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + category + code + date' do
 
-    TODO
+    todo
   end
 
   # --------------------------------------------------
@@ -452,21 +462,21 @@ class ArgonautSearchSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient' do
 
-    TODO
+    todo
   end
 
   test 'Procedure search by date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: date' do
 
-    TODO
+    todo
   end
 
   test 'Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'Supported Searches: patient + date' do
 
-    TODO
+    todo
   end
 
 end

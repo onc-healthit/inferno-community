@@ -29,9 +29,9 @@ end
 
 DataMapper.finalize
 
-[TestingInstance, SequenceResult, TestResult, RequestResponse, RequestResponseTestResult].each do |model|
-  model.auto_migrate!
-  #model.auto_upgrade
+[TestingInstance, SequenceResult, TestResult, Warning, RequestResponse, RequestResponseTestResult].each do |model|
+  # model.auto_migrate!
+  model.auto_upgrade!
 end
 
 enable :sessions
@@ -57,7 +57,7 @@ post '/instance/?' do
   id = SecureRandomBase62.generate
   url = params['fhir_server']
   url = url.chomp('/') if url.end_with?('/')
-  @instance = TestingInstance.new(id: id, url: url, name: params['name'])
+  @instance = TestingInstance.new(id: id, url: url, name: params['name'], base_url: request.base_url)
   @instance.save
   redirect "/instance/#{id}/"
 end
@@ -68,29 +68,35 @@ get '/instance/:id/test_result/:test_result_id/?' do
   erb :test_result_details, layout: false
 end
 
-get '/instance/:id/:sequence/' do
+get '/instance/:id/sequence_result/:sequence_result_id/cancel' do
+
+  @sequence_result = SequenceResult.get(params[:sequence_result_id])
+  halt 404 if @sequence_result.testing_instance.id != params[:id]
+
+  @sequence_result.result = 'cancel'
+  @sequence_result.save!
+
+  redirect "/instance/#{params[:id]}/##{@sequence_result.name}"
+
+end
+
+
+get '/instance/:id/:sequence/?' do
   instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(instance.url)
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
     sequence = klass.new(instance, client)
+
     sequence_result = sequence.start
     instance.sequence_results.push(sequence_result)
     instance.save!
+
+    if sequence_result.redirect_to_url
+      redirect sequence_result.redirect_to_url
+    end
   end
   redirect "/instance/#{params[:id]}/##{params[:sequence]}"
-end
-
-get '/instance/:id/Conformance/?' do
-  instance = TestingInstance.get(params[:id])
-  client = FHIR::Client.new(instance.url)
-
-  sequence = ConformanceSequence.new(instance, client)
-  sequence_result = sequence.start
-  instance.sequence_results.push(sequence_result)
-  instance.save!
-
-  redirect "/instance/#{params[:id]}/##{params[:sequence_id]}"
 end
 
 post '/instance/:id/ConformanceSkip/?' do
@@ -173,118 +179,29 @@ end
 post '/instance/:id/PatientStandaloneLaunch/?' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(scopes: params['scopes'])
-  @instance.update(launch_type: 'PatientStandaloneLaunch')
-
-  session[:client_id] = @instance.client_id
-  session[:fhir_url] = @instance.url
-  session[:authorize_url] = @instance.oauth_authorize_endpoint
-  session[:token_url] = @instance.oauth_token_endpoint
-  session[:state] = SecureRandom.uuid
-  oauth2_params = {
-    'response_type' => 'code',
-    'client_id' => @instance.client_id,
-    'redirect_uri' => request.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
-    'scope' => @instance.scopes,
-    'state' => session[:state],
-    'aud' => @instance.url
-  }
-  oauth2_auth_query = "#{session[:authorize_url]}?"
-  oauth2_params.each do |key,value|
-    oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
-  end
-  puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
-  redirect oauth2_auth_query[0..-2]
+  redirect "/instance/#{params[:id]}/PatientStandaloneLaunch/"
 end
 
-get '/instance/:id/:key/launch/?' do
-  # Provider EHR Launch Endpoint
-  @instance = TestingInstance.get(params[:id])
-  @instance.update(launch_type: 'ProviderEHRLaunch', scopes: 'launch online_access openid patient/*.* profile')
-
-  if params && params['iss'] && params['launch']
-    session[:client_id] = @instance.client_id
-    # session[:fhir_url] = params['iss']
-    session[:authorize_url] = @instance.oauth_authorize_endpoint
-    session[:token_url] = @instance.oauth_token_endpoint
-    session[:state] = SecureRandom.uuid
-    oauth2_params = {
-      'response_type' => 'code',
-      'client_id' => @instance.client_id,
-      'redirect_uri' => request.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
-      'scope' => @instance.scopes,
-      'launch' => params['launch'],
-      'state' => session[:state],
-      'aud' => params['iss']
-    }
-    oauth2_auth_query = "#{session[:authorize_url]}?"
-    oauth2_params.each do |key,value|
-      oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
-    end
-    puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
-    redirect oauth2_auth_query[0..-2]
-  else
-    redirect "/instance/#{params[:id]}/#{params[:key]}/redirect?error=EHR Launch requires iss and launch parameters."
-  end
-end
-
-get '/instance/:id/:key/redirect/?' do
+get '/instance/:id/:key/:endpoint/?' do
   @instance = TestingInstance.get(params[:id])
 
-  # test that launch is successful
-  if params['error']
-    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'fail', message: params['error'])
+  sequence_result = @instance.waiting_on_sequence
+  
+  if sequence_result.nil? || sequence_result.result != 'wait'
+    redirect "/instance/#{params[:id]}/?error=No sequence is currently waiting on launch."
   else
-    launch_success_result = TestResult.new(id: SecureRandom.uuid, name: @instance.launch_type, result: 'pass')
-    oauth2_params = {
-      'grant_type' => 'authorization_code',
-      'code' => params['code'],
-      'redirect_uri' => 'http://localhost:4567/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
-      'client_id' => @instance.client_id
-    }
-    token_response = RestClient.post(@instance.oauth_token_endpoint, oauth2_params)
-    token_response = JSON.parse(token_response.body)
-    token = token_response['access_token']
-    patient_id = token_response['patient']
-    scopes = token_response['scope']
-    @instance.update(token: token, patient_id: patient_id, scopes: scopes)
-  end
+    klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(sequence_result.name)}
+    instance = TestingInstance.get(params[:id])
+    client = FHIR::Client.new(instance.url)
+    sequence = klass.new(instance, client, sequence_result)
+    sequence_result = sequence.resume(params)
+    sequence_result.save!
 
-  # launch_request_response = RequestResponse.new(id: SecureRandom.uuid) # TODO fill out RequestResponse
-  # launch_request_response.test_results.push(launch_success_result)
-
-  # store TestResult in SequenceResult
-  launch_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: @instance.launch_type)
-  launch_sequence_result.test_results.push(launch_success_result)
-
-  passed_count = 0
-  failed_count = 0
-  warning_count = 0
-  launch_sequence_result.test_results.each do |test_result|
-    if test_result.result == 'pass'
-      passed_count += 1
-    elsif test_result.result == 'fail'
-      failed_count += 1
+    if sequence_result.redirect_to_url
+      redirect sequence_result.redirect_to_url
     end
 
-    unless test_result.warning.nil?
-      warning_count += 1
-    end
+    redirect "/instance/#{params[:id]}/##{sequence_result.name}"
+
   end
-  result = (failed_count.zero?) ? 'pass' : 'fail'
-  launch_sequence_result.passed_count = passed_count
-  launch_sequence_result.failed_count = failed_count
-  launch_sequence_result.warning_count = warning_count
-  launch_sequence_result.result = result
-
-  # store SequenceResult in TestingInstance
-  @instance.sequence_results.push(launch_sequence_result)
-
-  @instance.save
-
-  sequence = LaunchSequence.new(@instance, nil)
-  sequence_result = sequence.start
-  @instance.sequence_results.push(sequence_result)
-  @instance.save
-
-  redirect "/instance/#{params[:id]}/##{@instance.launch_type}"
 end

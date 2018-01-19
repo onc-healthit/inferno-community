@@ -13,9 +13,17 @@
       <div class="scorecard-score scorecard-score-fail">
         <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
       </div>
+  <% when 'cancel' %>
+      <div class="scorecard-score scorecard-score-fail">
+        <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+      </div>
   <% when 'error' %>
       <div class="scorecard-score scorecard-score-error">
         !
+      </div>
+  <% when 'wait' %>
+      <div class="scorecard-score scorecard-score-wait">
+        <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
       </div>
   <% when 'skip' %>
       <div class="scorecard-score scorecard-score-skip">
