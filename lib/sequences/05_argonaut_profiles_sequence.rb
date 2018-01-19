@@ -2,7 +2,7 @@ class ArgonautProfilesSequence < SequenceBase
 
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide.'
 
-  preconditions 'Client must be authorized.' do 
+  preconditions 'Client must be authorized.' do
     !@instance.token.nil?
   end
 
