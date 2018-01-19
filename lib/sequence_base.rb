@@ -4,7 +4,6 @@ class SequenceBase
   include Assertions
 
   STATUS = {
-    running: 'running',
     pass: 'pass',
     fail: 'fail',
     error: 'error',

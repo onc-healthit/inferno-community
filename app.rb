@@ -99,19 +99,6 @@ get '/instance/:id/:sequence/?' do
   redirect "/instance/#{params[:id]}/##{params[:sequence]}"
 end
 
-
-# get '/instance/:id/Conformance/?' do
-#   instance = TestingInstance.get(params[:id])
-#   client = FHIR::Client.new(instance.url)
-# 
-#   sequence = ConformanceSequence.new(instance, client)
-#   sequence_result = sequence.start
-#   instance.sequence_results.push(sequence_result)
-#   instance.save!
-# 
-#   redirect "/instance/#{params[:id]}/##{params[:sequence_id]}"
-# end
-
 post '/instance/:id/ConformanceSkip/?' do
   instance = TestingInstance.get(params[:id])
 
