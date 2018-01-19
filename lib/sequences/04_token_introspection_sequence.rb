@@ -8,7 +8,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   test 'Token introspection supported' do
 
-    TODO
+    todo
 
   end
 
