@@ -14,6 +14,9 @@ require 'dm-migrations'
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
 
+# SET TO FALSE TO KEEP DATABASE BETWEEN SERVER RESTARTS
+PURGE_DATABASE = true
+
 DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, 'sqlite3:data/data.db')
 DataMapper::Model.raise_on_save_failure = true 
@@ -29,9 +32,12 @@ end
 
 DataMapper.finalize
 
-[TestingInstance, SequenceResult, TestResult, Warning, RequestResponse, RequestResponseTestResult].each do |model|
-  # model.auto_migrate!
-  model.auto_upgrade!
+[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult].each do |model|
+  if PURGE_DATABASE
+    model.auto_migrate!
+  else
+    model.auto_upgrade!
+  end
 end
 
 enable :sessions
@@ -54,12 +60,11 @@ get '/instance/:id/?' do
 end
 
 post '/instance/?' do
-  id = SecureRandomBase62.generate
   url = params['fhir_server']
   url = url.chomp('/') if url.end_with?('/')
-  @instance = TestingInstance.new(id: id, url: url, name: params['name'], base_url: request.base_url)
-  @instance.save
-  redirect "/instance/#{id}/"
+  @instance = TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
+  @instance.save!
+  redirect "/instance/#{@instance.id}/"
 end
 
 get '/instance/:id/test_result/:test_result_id/?' do
@@ -102,7 +107,7 @@ end
 post '/instance/:id/ConformanceSkip/?' do
   instance = TestingInstance.get(params[:id])
 
-  conformance_sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "Conformance", result: "skip")
+  conformance_sequence_result = SequenceResult.new(name: "Conformance", result: "skip")
   conformance_sequence_result.save
 
   instance.conformance_checked = false
@@ -137,7 +142,7 @@ post '/instance/:id/DynamicRegistration' do
     # }
     puts "DynamicRegistration Error:\n#{registration_response}"
     @instance.update(dynamically_registered: false)
-    sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: 'DynamicRegistration', result: 'fail')
+    sequence_result = SequenceResult.new(name: 'DynamicRegistration', result: 'fail')
     @instance.sequence_results.push(sequence_result)
   else
     # {
@@ -166,7 +171,7 @@ end
 post '/instance/:id/dynamic_registration_skip/?' do
   instance = TestingInstance.get(params[:id])
 
-  sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: "DynamicRegistration", result: "skip")
+  sequence_result = SequenceResult.new(name: "DynamicRegistration", result: "skip")
   instance.sequence_results << sequence_result
 
   instance.client_id = params[:client_id]

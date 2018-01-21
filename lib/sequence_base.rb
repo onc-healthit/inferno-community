@@ -31,7 +31,7 @@ class SequenceBase
     @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
     @client.monitor_requests unless @client.nil?
     @sequence_result = sequence_result
-    @warnings = []
+    @test_warnings = []
   end
 
   def resume(params)
@@ -47,7 +47,7 @@ class SequenceBase
 
   def start
     if @sequence_result.nil?
-      @sequence_result = SequenceResult.new(id: SecureRandom.uuid, name: sequence_name, result: STATUS[:pass])
+      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass])
     end
 
     start_at = @sequence_result.test_results.length
@@ -62,7 +62,6 @@ class SequenceBase
       unless @client.nil?
         @client.requests.each do |req|
           result.request_responses << RequestResponse.new(
-            id: SecureRandom.uuid,
             request_method: req.request[:method],
             request_url: req.request[:url],
             request_headers: req.request[:headers].to_json,
@@ -168,8 +167,8 @@ class SequenceBase
     contents = block
 
     wrapped = -> () do
-      @warnings, @links, @requires, @validates = [],[],[],[]
-      result = TestResult.new(id: SecureRandom.uuid, name: name, result: STATUS[:pass], url: url, description: description, test_index: test_index)
+      @test_warnings, @links, @requires, @validates = [],[],[],[]
+      result = TestResult.new(name: name, result: STATUS[:pass], url: url, description: description, test_index: test_index)
       begin
         instance_eval &block
 
@@ -202,7 +201,7 @@ class SequenceBase
         result.message = "Fatal Error: #{e.message}"
       end
       # result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
-      result.warnings = @warnings.map{ |w| Warning.new(message: w)} unless @warnings.empty?
+      result.test_warnings = @test_warnings.map{ |w| TestWarning.new(message: w)} unless @test_warnings.empty?
       # result.requires = @requires unless @requires.empty?
       # result.validates = @validates unless @validates.empty?
       # result.links = @links unless @links.empty?
@@ -232,7 +231,7 @@ class SequenceBase
     begin
       yield
     rescue AssertionException => e
-      @warnings << e.message
+      @test_warnings << e.message
     end
   end
 end

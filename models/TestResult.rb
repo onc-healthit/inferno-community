@@ -1,10 +1,9 @@
 class TestResult
   include DataMapper::Resource
-  property :id, String, key: true
+  property :id, String, key: true, default: proc { SecureRandom.uuid}
   property :name, String
   property :result, String
-  property :warning, String
-  property :message, String
+  property :message, String, length: 500
 
   property :url, String, length: 500
   property :description, Text
@@ -15,6 +14,6 @@ class TestResult
   property :redirect_to_url, String
 
   has n, :request_responses, :through => Resource 
-  has n, :warnings
+  has n, :test_warnings
   belongs_to :sequence_result
 end

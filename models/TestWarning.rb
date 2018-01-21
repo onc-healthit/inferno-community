@@ -1,6 +1,6 @@
-class Warning
+class TestWarning
   include DataMapper::Resource
-  property :id, Serial
+  property :id, String, key: true, default: proc { SecureRandom.uuid}
   property :message, String, length: 500
 
   belongs_to :test_result
