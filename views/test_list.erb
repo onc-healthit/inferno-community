@@ -1,7 +1,7 @@
 <div class="result-details collapse" id="<%=sequence_class%>-details">
   <ul>
-    <% sequence_result.test_results.each do |result, index| %>
-      <li data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
+    <% sequence_result && sequence_result.test_results.each do |result, index| %>
+      <li class="result-details-clickable" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
         <% case result.result
           when 'pass' %>
             <div class="result-details-icon result-details-icon-pass">
@@ -43,7 +43,16 @@
         <% end %>
       </li>
     <% end %>
+    <% start_at = 0%>
+    <% start_at = sequence_result.test_results.length unless sequence_result.nil? %>
+    <% sequence_class.tests[start_at..-1].each do |test, index| %>
+      <li>
+        <div class="result-details-icon result-details-icon-pending">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <%= test[:name] %>
+      </li>
+    <% end %>
   </ul>
 </div>
-
 

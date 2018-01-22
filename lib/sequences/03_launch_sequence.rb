@@ -1,5 +1,6 @@
 class LaunchSequence < SequenceBase
 
+  title 'Demonstrate at least one Launch Sequence'
   description 'Demonstrate at least one Launch Sequence'
   buttonless
 

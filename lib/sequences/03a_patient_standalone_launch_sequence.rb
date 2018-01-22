@@ -1,6 +1,7 @@
 class PatientStandaloneLaunchSequence < SequenceBase
 
-  description 'Patient Standalone Launch Sequence'
+  title 'Patient Standalone Launch Sequence'
+  description 'Demonstrate Patient Standalone Launch Sequence'
   modal_before_run
   child_test
 
@@ -41,9 +42,12 @@ class PatientStandaloneLaunchSequence < SequenceBase
       'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
       'client_id' => @instance.client_id
     }
+    binding.pry
 
     # wrap in a rescue and do manual asserts?
     @token_response = RestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+
+    binding.pry
 
   end
 

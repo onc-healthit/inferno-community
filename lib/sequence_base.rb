@@ -12,10 +12,15 @@ class SequenceBase
   }
 
   @@test_index = 0
+
+  @@preconditions = {}
+  @@titles = {}
+  @@descriptions = {}
+  @@test_metadata = {}
+
   @@modal_before_run = []
   @@buttonless = []
   @@child_test = []
-  @@preconditions = {}
 
   def self.test_count
     self.new(nil,nil).test_count
@@ -30,6 +35,7 @@ class SequenceBase
     @instance = instance
     @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
     @client.monitor_requests unless @client.nil?
+    RestClient.monitor_requests
     @sequence_result = sequence_result
     @test_warnings = []
   end
@@ -112,8 +118,18 @@ class SequenceBase
     self.name.split('::').last.split('Sequence').first
   end
 
-  def self.description(description)
-    define_method 'display', -> () {description}
+  def self.title(title = nil)
+    @@titles[self.sequence_name] = title unless title.nil?
+    @@titles[self.sequence_name] || self.sequence_name
+  end
+
+  def self.description(description = nil)
+    @@descriptions[self.sequence_name] = description unless description.nil?
+    @@descriptions[self.sequence_name]
+  end
+
+  def self.tests
+    @@test_metadata[self.sequence_name]
   end
 
   def self.modal_before_run
@@ -165,6 +181,9 @@ class SequenceBase
     test_index = @@test_index
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
     contents = block
+
+    @@test_metadata[self.sequence_name] ||= [] 
+    @@test_metadata[self.sequence_name] << { name: name, url: url, description: description }
 
     wrapped = -> () do
       @test_warnings, @links, @requires, @validates = [],[],[],[]

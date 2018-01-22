@@ -1,5 +1,7 @@
 class ProviderEHRLaunchSequence < SequenceBase
 
+  title 'Provider EHR Launch Sequence'
+
   description 'Provider EHR Launch Sequence'
   # modal_before_run
   child_test

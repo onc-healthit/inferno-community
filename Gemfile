@@ -10,6 +10,7 @@ gem 'rest-client'
 # gem 'fhir_scorecard' # not compatible with DSTU2 models
 gem 'time_difference'
 gem 'pry'
+gem 'rb-readline'
 gem 'data_mapper'
 gem 'dm-sqlite-adapter'
 gem 'base62-rb'

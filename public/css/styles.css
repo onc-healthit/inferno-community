@@ -255,7 +255,7 @@
   padding: 5px 10px 5px;
   border-top: 1px solid #efefef;
 }
-.result-details li:hover {
+li.result-details-clickable:hover {
   background-color: #efefef;
   cursor: pointer;
 }
@@ -265,6 +265,10 @@
   text-align: center;
   display: inline-block;
   margin-right: 3px;
+}
+
+.result-details-icon-pending {
+  color: #000;
 }
 
 .result-details-icon-fail {

@@ -129,6 +129,7 @@ GEM
     rack (2.0.3)
     rack-protection (2.0.0)
       rack
+    rb-readline (0.5.5)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
@@ -165,6 +166,7 @@ DEPENDENCIES
   fhir_client!
   oauth2
   pry
+  rb-readline
   rest-client
   sinatra
   thin

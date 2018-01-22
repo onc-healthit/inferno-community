@@ -1,6 +1,9 @@
 class DynamicRegistrationSequence < SequenceBase
 
+  title 'Dynamic Registration'
+
   description 'OAuth 2.0 Dynamic Client Registration Protocol'
+
   modal_before_run
 
   preconditions 'OAuth endpoints are necessary.' do 

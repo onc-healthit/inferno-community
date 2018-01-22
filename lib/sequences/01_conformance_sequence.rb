@@ -1,5 +1,7 @@
 class ConformanceSequence < SequenceBase
 
+  title 'Conformance Statement'
+
   description 'The FHIR server properly exposes a capability statement with necessary information.'
 
   test 'Responds to metadata endpoint with DSTU2 Conformance resource',
@@ -19,6 +21,7 @@ class ConformanceSequence < SequenceBase
   end
 
   test 'Conformance lists valid OAuth 2.0 endpoints' do
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     oauth_metadata = @client.get_oauth2_metadata_from_conformance
     assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
     authorize_url = oauth_metadata[:authorize_url]
@@ -30,6 +33,8 @@ class ConformanceSequence < SequenceBase
   end
 
   test 'Conformance lists registration endpoint' do
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+    assert !@conformance.try(:rest).try(:first).try(:security).try(:extension).nil?, 'No security extension present in conformance statement.'
     security_info = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
     registration_url = security_info.extension.find{|x| x.url == 'register'}
     registration_url = registration_url.value if registration_url
