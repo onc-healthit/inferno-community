@@ -9,6 +9,7 @@ class SequenceBase
     error: 'error',
     todo: 'todo',
     wait: 'wait',
+    skip: 'skip'
   }
 
   @@test_index = 0
@@ -239,13 +240,14 @@ class SequenceBase
         result.wait_at_endpoint = e.endpoint
         result.redirect_to_url = e.url
 
-      # rescue SkipException => e
-      #   result.update(STATUS[:skip], "Skipped: #{e.message}", '')
+      rescue SkipException => e
+        result.result = STATUS[:skip]
+        result.message = e.message
+
       rescue => e
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end
-      # result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
       result.test_warnings = @test_warnings.map{ |w| TestWarning.new(message: w)} unless @test_warnings.empty?
       # result.requires = @requires unless @requires.empty?
       # result.validates = @validates unless @validates.empty?
@@ -262,6 +264,10 @@ class SequenceBase
 
   def todo(message = "")
     raise TodoException.new message
+  end
+
+  def skip(message = "")
+    raise SkipException.new message
   end
 
   def wait_at_endpoint(endpoint)
