@@ -25,14 +25,10 @@
       <div class="scorecard-score scorecard-score-wait">
         <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
       </div>
-  <% when 'skip' %>
-      <div class="scorecard-score scorecard-score-skip">
-        <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
-      </div>
   <% end %>
   <div class="scorecard-rubric">
     <a class="scorecard-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
-      <%= sequence_class.sequence_name %>
+      <%= sequence_class.title %>
     </a>
     <div class="scorecard-out-of">
       <% if @sequence_results[sequence_class.sequence_name].nil? %>
@@ -44,6 +40,9 @@
         <%= @sequence_results[sequence_class.sequence_name].failed_count %> Failed -
         <%= @sequence_results[sequence_class.sequence_name].error_count %> Error(s) -
         <%= @sequence_results[sequence_class.sequence_name].warning_count %> Warning(s)
+        <% if @sequence_results[sequence_class.sequence_name].skip_count > 0 %> -
+          <%= @sequence_results[sequence_class.sequence_name].skip_count %> Skips(s)
+        <% end %>
         <% if @sequence_results[sequence_class.sequence_name].todo_count > 0 %> -
           <%= @sequence_results[sequence_class.sequence_name].todo_count %> Todo(s)
         <% end %>
@@ -51,7 +50,7 @@
       <% end %>
     </div>
     <div class="scorecard-details">
-      <%= sequence_class.new(nil,nil).display %>
+      <%= sequence_class.description %>
     </div>
   </div>
   <div class="scorecard-action">
@@ -71,19 +70,17 @@
         <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result == 'fail'%>
           <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
         <% end %>
-        <div class="scorecard-action-collapse">
-          <% if !@sequence_results[sequence_class.sequence_name].nil? && @sequence_results[sequence_class.sequence_name].result != 'skip' %>
-            <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
-              <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
-           </a>
-          <% end %>
-        </div>
       <% end %>
     <% else %>
       <%= sequence_class.preconditions_description %>
     <% end %>
+    <div class="scorecard-action-collapse">
+      <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result != 'skip' %>
+        <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+          <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
+       </a>
+     <% end %>
+    </div>
   </div>
-  <% unless @sequence_results[sequence_class.sequence_name].nil? %>
-    <%= erb(:result,{},{sequence_class: sequence_class, sequence_result: @sequence_results[sequence_class.sequence_name] }) %>
-  <% end %>
+  <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: @sequence_results[sequence_class.sequence_name] }) %>
 </div>

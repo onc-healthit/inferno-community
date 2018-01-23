@@ -12,6 +12,7 @@ class SequenceResult
   property :error_count, Integer, default: 0
   property :warning_count, Integer, default: 0
   property :todo_count, Integer, default: 0
+  property :skip_count, Integer, default: 0
 
   property :created_at, DateTime, default: proc { DateTime.now }
 

@@ -1,5 +1,7 @@
 class ArgonautSearchSequence < SequenceBase
 
+  title 'Argonaut Search'
+
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide Server.'
 
   preconditions 'Client must be authorized.' do

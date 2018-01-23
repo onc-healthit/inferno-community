@@ -9,13 +9,19 @@ class SequenceBase
     error: 'error',
     todo: 'todo',
     wait: 'wait',
+    skip: 'skip'
   }
 
   @@test_index = 0
+
+  @@preconditions = {}
+  @@titles = {}
+  @@descriptions = {}
+  @@test_metadata = {}
+
   @@modal_before_run = []
   @@buttonless = []
   @@child_test = []
-  @@preconditions = {}
 
   def self.test_count
     self.new(nil,nil).test_count
@@ -34,10 +40,22 @@ class SequenceBase
     @test_warnings = []
   end
 
-  def resume(params)
+  def resume(request = nil, headers = nil)
 
-    @params = params
+    @params = request.params
+
     @sequence_result.test_results.last.result = STATUS[:pass]
+
+    unless request.nil?
+      @sequence_result.test_results.last.request_responses << RequestResponse.new(
+        direction: 'inbound',
+        request_method: request.request_method.downcase,
+        request_url: request.url,
+        request_headers: headers.to_json,
+        request_body: request.body.read
+      )
+    end
+
     @sequence_result.result = STATUS[:pass]
     @sequence_result.wait_at_endpoint = nil
     @sequence_result.redirect_to_url = nil
@@ -57,11 +75,13 @@ class SequenceBase
     methods.each_with_index do |test_method, index|
       next if index < start_at
       @client.requests = [] unless @client.nil?
+      LoggedRestClient.clear_log
       result = self.method(test_method).call()
 
       unless @client.nil?
         @client.requests.each do |req|
           result.request_responses << RequestResponse.new(
+            direction: 'outbound',
             request_method: req.request[:method],
             request_url: req.request[:url],
             request_headers: req.request[:headers].to_json,
@@ -72,6 +92,19 @@ class SequenceBase
         end
       end
 
+      LoggedRestClient.requests.each do |req|
+        result.request_responses << RequestResponse.new(
+          direction: req[:direction],
+          request_method: req[:request][:method].to_s,
+          request_url: req[:request][:url],
+          request_headers: req[:request][:headers].to_json,
+          request_body: req[:request][:body],
+          response_code: req[:response][:code],
+          response_headers: req[:response][:headers].to_json,
+          response_body: req[:response][:body])
+      end
+
+
       @sequence_result.test_results << result
 
       if result.result == STATUS[:wait]
@@ -81,7 +114,7 @@ class SequenceBase
       end
     end
 
-    @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = 0
+    @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = @sequence_result.skip_count = 0
     @sequence_result.result = STATUS[:pass]
 
     @sequence_result.test_results.each do |result|
@@ -96,6 +129,8 @@ class SequenceBase
       when STATUS[:error]
         @sequence_result.error_count += 1
         @sequence_result.result = result.result
+      when STATUS[:skip]
+        @sequence_result.skip_count += 1
       when STATUS[:wait]
         @sequence_result.result = result.result
       end
@@ -112,8 +147,18 @@ class SequenceBase
     self.name.split('::').last.split('Sequence').first
   end
 
-  def self.description(description)
-    define_method 'display', -> () {description}
+  def self.title(title = nil)
+    @@titles[self.sequence_name] = title unless title.nil?
+    @@titles[self.sequence_name] || self.sequence_name
+  end
+
+  def self.description(description = nil)
+    @@descriptions[self.sequence_name] = description unless description.nil?
+    @@descriptions[self.sequence_name]
+  end
+
+  def self.tests
+    @@test_metadata[self.sequence_name]
   end
 
   def self.modal_before_run
@@ -166,6 +211,9 @@ class SequenceBase
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
     contents = block
 
+    @@test_metadata[self.sequence_name] ||= [] 
+    @@test_metadata[self.sequence_name] << { name: name, url: url, description: description }
+
     wrapped = -> () do
       @test_warnings, @links, @requires, @validates = [],[],[],[]
       result = TestResult.new(name: name, result: STATUS[:pass], url: url, description: description, test_index: test_index)
@@ -194,13 +242,14 @@ class SequenceBase
         result.wait_at_endpoint = e.endpoint
         result.redirect_to_url = e.url
 
-      # rescue SkipException => e
-      #   result.update(STATUS[:skip], "Skipped: #{e.message}", '')
+      rescue SkipException => e
+        result.result = STATUS[:skip]
+        result.message = e.message
+
       rescue => e
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end
-      # result.update(STATUS[:skip], "Skipped because setup failed.", "-") if @setup_failed
       result.test_warnings = @test_warnings.map{ |w| TestWarning.new(message: w)} unless @test_warnings.empty?
       # result.requires = @requires unless @requires.empty?
       # result.validates = @validates unless @validates.empty?
@@ -217,6 +266,10 @@ class SequenceBase
 
   def todo(message = "")
     raise TodoException.new message
+  end
+
+  def skip(message = "")
+    raise SkipException.new message
   end
 
   def wait_at_endpoint(endpoint)

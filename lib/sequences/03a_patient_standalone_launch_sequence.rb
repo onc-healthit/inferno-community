@@ -1,6 +1,7 @@
 class PatientStandaloneLaunchSequence < SequenceBase
 
-  description 'Patient Standalone Launch Sequence'
+  title 'Patient Standalone Launch Sequence'
+  description 'Demonstrate Patient Standalone Launch Sequence'
   modal_before_run
   child_test
 
@@ -43,7 +44,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     }
 
     # wrap in a rescue and do manual asserts?
-    @token_response = RestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
 
   end
 
