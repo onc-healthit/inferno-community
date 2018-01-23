@@ -34,6 +34,18 @@
             </div>
         <% end %>
 
+        <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
+            <div class="result-details-icon result-details-icon-requests">
+              <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
+            </div>
+        <% end %>
+
+        <% unless result.request_responses.find{ |f| f.direction == 'inbound'}.nil? %>
+            <div class="result-details-icon result-details-icon-requests">
+              <span class="oi oi-arrow-thick-left" title="inbound requests" aria-hidden="true"></span>
+            </div>
+        <% end %>
+
         <% if result.result == 'todo' %> TODO: <% end %>
         <%= result.name %>
         <% if result.result == 'fail' || result.result == 'error' %>

@@ -35,15 +35,26 @@ class SequenceBase
     @instance = instance
     @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
     @client.monitor_requests unless @client.nil?
-    RestClient.monitor_requests
     @sequence_result = sequence_result
     @test_warnings = []
   end
 
-  def resume(params)
+  def resume(request = nil, headers = nil)
 
-    @params = params
+    @params = request.params
+
     @sequence_result.test_results.last.result = STATUS[:pass]
+
+    unless request.nil?
+      @sequence_result.test_results.last.request_responses << RequestResponse.new(
+        direction: 'inbound',
+        request_method: request.request_method.downcase,
+        request_url: request.url,
+        request_headers: headers.to_json,
+        request_body: request.body.read
+      )
+    end
+
     @sequence_result.result = STATUS[:pass]
     @sequence_result.wait_at_endpoint = nil
     @sequence_result.redirect_to_url = nil
@@ -63,11 +74,13 @@ class SequenceBase
     methods.each_with_index do |test_method, index|
       next if index < start_at
       @client.requests = [] unless @client.nil?
+      LoggedRestClient.clear_log
       result = self.method(test_method).call()
 
       unless @client.nil?
         @client.requests.each do |req|
           result.request_responses << RequestResponse.new(
+            direction: 'outbound',
             request_method: req.request[:method],
             request_url: req.request[:url],
             request_headers: req.request[:headers].to_json,
@@ -77,6 +90,19 @@ class SequenceBase
             response_body: req.response[:body])
         end
       end
+
+      LoggedRestClient.requests.each do |req|
+        result.request_responses << RequestResponse.new(
+          direction: req[:direction],
+          request_method: req[:request][:method].to_s,
+          request_url: req[:request][:url],
+          request_headers: req[:request][:headers].to_json,
+          request_body: req[:request][:body],
+          response_code: req[:response][:code],
+          response_headers: req[:response][:headers].to_json,
+          response_body: req[:response][:body])
+      end
+
 
       @sequence_result.test_results << result
 

@@ -164,7 +164,6 @@ DEPENDENCIES
   data_mapper
   dm-sqlite-adapter
   fhir_client!
-  oauth2
   pry
   rb-readline
   rest-client

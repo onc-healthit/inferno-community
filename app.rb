@@ -1,8 +1,3 @@
-# You should never deactivate SSL Peer Verification
-# except in terrible development situations using invalid certificates:
-# require 'oauth2'
-# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
-
 require 'yaml'
 require 'sinatra'
 require 'fhir_client'
@@ -11,6 +6,10 @@ require 'time_difference'
 require 'pry'
 require 'dm-core'
 require 'dm-migrations'
+
+# You should never deactivate SSL Peer Verification
+# except in terrible development situations using invalid certificates:
+# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
 
@@ -39,9 +38,6 @@ DataMapper.finalize
     model.auto_upgrade!
   end
 end
-
-enable :sessions
-set :session_secret, SecureRandom.uuid
 
 get '/' do
   status, headers, body = call! env.merge("PATH_INFO" => '/index')
@@ -131,7 +127,8 @@ post '/instance/:id/DynamicRegistration' do
   params['redirect_uris'] = [params['redirect_uris']]
   params['grant_types'] = params['grant_types'].split(',')
   headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
-  registration_response = RestClient.post(registration_url, params.to_json, headers)
+  LoggedRestClient.clear_log
+  registration_response = LoggedRestClient.post(registration_url, params.to_json, headers)
   registration_response = JSON.parse(registration_response.body)
 
   if registration_response['error'] || registration_response['error_description']
@@ -197,9 +194,10 @@ get '/instance/:id/:key/:endpoint/?' do
   else
     klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(sequence_result.name)}
     instance = TestingInstance.get(params[:id])
+
     client = FHIR::Client.new(instance.url)
     sequence = klass.new(instance, client, sequence_result)
-    sequence_result = sequence.resume(params)
+    sequence_result = sequence.resume(request, headers)
     sequence_result.save!
 
     if sequence_result.redirect_to_url

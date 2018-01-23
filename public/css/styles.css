@@ -304,6 +304,10 @@ li.result-details-clickable:hover {
   color: #FFFF33;
 }
 
+.result-details-icon-requests {
+  color: #336699;
+}
+
 .result-details-message {
   margin-left: 19px;
 

@@ -18,10 +18,12 @@ $(function(){
   });
 
   $('.result-details li').on('click', function() {
-    var url = '/instance/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
-    $("#testResultDetailsModal").find('.modal-content').load(url, function(){
-      $("#testResultDetailsModal").modal('show');
-    })
+    if($(this).data('testingInstanceId') && $(this).data('testResultId')){
+      var url = '/instance/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
+      $("#testResultDetailsModal").find('.modal-content').load(url, function(){
+        $("#testResultDetailsModal").modal('show');
+      })
+    }
   })
 
   $(":input[type=text][readonly='readonly']").on('click', function(){
