@@ -44,6 +44,9 @@
         <%= @sequence_results[sequence_class.sequence_name].failed_count %> Failed -
         <%= @sequence_results[sequence_class.sequence_name].error_count %> Error(s) -
         <%= @sequence_results[sequence_class.sequence_name].warning_count %> Warning(s)
+        <% if @sequence_results[sequence_class.sequence_name].skip_count > 0 %> -
+          <%= @sequence_results[sequence_class.sequence_name].skip_count %> Skips(s)
+        <% end %>
         <% if @sequence_results[sequence_class.sequence_name].todo_count > 0 %> -
           <%= @sequence_results[sequence_class.sequence_name].todo_count %> Todo(s)
         <% end %>

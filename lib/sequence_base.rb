@@ -114,7 +114,7 @@ class SequenceBase
       end
     end
 
-    @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = 0
+    @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = @sequence_result.skip_count = 0
     @sequence_result.result = STATUS[:pass]
 
     @sequence_result.test_results.each do |result|
@@ -128,6 +128,9 @@ class SequenceBase
         @sequence_result.result = result.result unless @sequence_result.result == STATUS[:error]
       when STATUS[:error]
         @sequence_result.error_count += 1
+        @sequence_result.result = result.result
+      when STATUS[:skip]
+        @sequence_result.skip_count += 1
         @sequence_result.result = result.result
       when STATUS[:wait]
         @sequence_result.result = result.result
