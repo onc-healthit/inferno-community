@@ -131,7 +131,6 @@ class SequenceBase
         @sequence_result.result = result.result
       when STATUS[:skip]
         @sequence_result.skip_count += 1
-        @sequence_result.result = result.result
       when STATUS[:wait]
         @sequence_result.result = result.result
       end
