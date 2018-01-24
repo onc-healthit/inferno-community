@@ -56,6 +56,23 @@ class TokenIntrospectionSequence < SequenceBase
     extra_scopes = (actual_scopes - expected_scopes)
     assert extra_scopes.empty?, "Introspection response included additional scopes: #{extra_scopes}"
     
-  end 
+  end
+  
+  test 'Token expiration',
+          '',
+          'The token should have a lifetime of at least 60 minutes' do
+  
+    expiration = Time.at(@introspection_response['exp']).to_datetime
+    token_retrieved_at = @instance.token_retrieved_at
+    now = DateTime.now
+
+    max_token_seconds = 60 * 60 # one hour expiration?
+    clock_slip = 5 # a few seconds of clock skew allowed
+
+    assert (expiration - token_retrieved_at) < max_token_seconds, "Token does not have adequate lifetime of at least #{max_token_seconds} seconds"
+    
+    assert (now + Rational(clock_slip, (24 * 60 * 60))) < expiration, "Token has expired"
+            
+  end
 
 end
