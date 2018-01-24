@@ -2,6 +2,12 @@ Stickyfill.add(document.querySelectorAll('.sticky'));
 
 $(function(){
 
+  $('.scorecard-row').on('click', function(e) {
+    if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
+      $(this).find('.collapse').collapse('toggle');
+    }
+  });
+
   $('.scorecard-row').on('show.bs.collapse', function() {
     $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
   });

@@ -64,6 +64,7 @@
   border-bottom: 1px solid #ddd;
   padding-bottom: 15px;
   margin-top: 15px;
+  cursor: pointer;
 }
 
 .child-test {
