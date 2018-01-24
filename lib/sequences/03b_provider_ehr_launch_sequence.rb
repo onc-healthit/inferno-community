@@ -79,7 +79,9 @@ class ProviderEHRLaunchSequence < SequenceBase
     token = @token_response['access_token']
     patient_id = @token_response['patient']
     scopes = @token_response['scope']
-    @instance.update(token: token, patient_id: patient_id, scopes: scopes)
+    token_retrieved_at = DateTime.now
+    
+    @instance.update(token: token, patient_id: patient_id, scopes: scopes, token_retrieved_at: token_retrieved_at)
 
   end
 

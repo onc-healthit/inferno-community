@@ -22,6 +22,7 @@ class TestingInstance
 
   property :token, String
   property :patient_id, String
+  property :token_retrieved_at, DateTime
 
   property :created_at, DateTime, default: proc { DateTime.now }
   
