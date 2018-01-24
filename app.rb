@@ -49,7 +49,7 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence, IntrospectionSequence  ]
+  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
   @sequence_results = @instance.latest_results
 
   erb :details
@@ -171,28 +171,15 @@ get '/instance/:id/:key/:endpoint/?' do
   end
 end
 
-post '/instance/:id/IntrospectionLaunch/?' do
+post '/instance/:id/TokenIntrospection' do
   @instance = TestingInstance.get(params[:id])
-  @instance.update(scopes: params['scopes'])
-  @instance.update(launch_type: 'IntrospectionLaunch')
+  @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
+  @instance.update(resource_id: params['resource_id'])
+  @instance.update(resource_secret: params['resource_secret'])
 
-  session[:client_id] = @instance.client_id
-  session[:fhir_url] = @instance.url
-  session[:authorize_url] = @instance.oauth_authorize_endpoint
-  session[:token_url] = @instance.oauth_token_endpoint
-  session[:state] = SecureRandom.uuid
-  oauth2_params = {
-    'response_type' => 'code',
-    'client_id' => @instance.client_id,
-    'redirect_uri' => request.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect', # TODO don't hard code base URL
-    'scope' => @instance.scopes,
-    'state' => session[:state],
-    'aud' => @instance.url
-  }
-  oauth2_auth_query = "#{session[:authorize_url]}?"
-  oauth2_params.each do |key,value|
-    oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
-  end
-  puts "Launch Authz Query: #{oauth2_auth_query[0..-2]}"
-  redirect oauth2_auth_query[0..-2]
+  # copy over the access token to a different place in case it's not the same
+  @instance.update(introspect_token: params['access_token'])
+  
+  redirect "/instance/#{params[:id]}/TokenIntrospection/"
+
 end
