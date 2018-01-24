@@ -8,20 +8,36 @@ class ArgonautSearchSequence < SequenceBase
     !@instance.token.nil?
   end
 
-  def get_patient_by_param(params = {}, flag = true)
-    assert !params.empty?, "No params for patient"
+  def get_resource_by_params(klass, params = {})
+    assert !params.empty?, "No params for search"
     options = {
       :search => {
-        :flag => flag,
+        :flag => false,
         :compartment => nil,
         :parameters => params
       }
     }
-    reply = @client.search(FHIR::DSTU2::Patient, options)
+    reply = @client.search(klass, options)
+  end
+
+  def validate_resource_by_params(klass, reply)
     assert_response_ok(reply)
     assert_bundle_response(reply)
-    assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient.'
-    assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient.'
+
+    if klass == FHIR::DSTU2::Patient
+      assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
+      assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
+    elsif [FHIR::DSTU2::CarePlan, FHIR::DSTU2::Goal, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Observation, FHIR::DSTU2::Procedure].include?(klass)
+      assert reply.resource.entry.length > 0, 'No resources of this type were returned'
+      reply.resource.entry.each do |entry|
+        assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
+      end
+    else
+      assert reply.resource.entry.length > 0, 'No resources of this type were returned'
+      reply.resource.entry.each do |entry|
+        assert (entry.resource.patient && entry.resource.patient.reference.include?(@instance.patient_id)), "Patient on resource does not match patient requested"
+      end
+    end
   end
 
   # --------------------------------------------------
@@ -29,127 +45,73 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
 
   test 'Has Patient resource',
-          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html' do
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A server is capable of returning a patient using GET [base]/Patient/[id]' do
 
     patient_read_response = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
     assert_response_ok patient_read_response
     @patient = patient_read_response.resource
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
-    @patient_details = @patient.to_hash
+    @patient_hash = @patient.to_hash
     assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
-  end
-
-  test 'Patient search by name',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: name' do
-
-    family = @patient_details['name'][0]['family'][0]
-    assert family, "Patient family name not returned"
-    given = @patient_details['name'][0]['given'][0]
-    assert given, "Patient given name not returned"
-    get_patient_by_param(family: family, given: given)
-
-  end
-
-  test 'Patient search by family',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: family' do
-
-    family = @patient_details['name'][0]['family'][0]
-    assert family, "Patient family name not returned"
-    get_patient_by_param(family: family)
-
-  end
-
-  test 'Patient search by given',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: given' do
-
-    given = @patient_details['name'][0]['given'][0]
-    assert given, "Patient given name not returned"
-    get_patient_by_param(given: given)
 
   end
 
   test 'Patient search by identifier',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: identifier' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier' do
 
-    identifier = @patient_details['identifier'][0]['value']
+    assert !(@patient_hash.nil? || @patient_hash.empty?), 'No Patient resource available'
+    identifier = @patient_hash['identifier'][0]['value']
     assert identifier, "Patient identifier not returned"
-    get_patient_by_param(identifier: identifier)
-
-  end
-
-  test 'Patient search by gender',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: gender' do
-
-    gender = @patient_details['gender']
-    assert gender, "Patient gender not returned"
-    get_patient_by_param(gender: gender)
-
-  end
-
-  test 'Patient search by birthdate',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: birthdate' do
-
-    birthdate = @patient_details['birthDate']
-    assert birthdate, "Patient birthdate not returned"
-    get_patient_by_param(birthdate: birthdate)
+    reply = get_resource_by_params(FHIR::DSTU2::Patient, {identifier: identifier})
+    validate_resource_by_params(FHIR::DSTU2::Patient, reply)
 
   end
 
   test 'Patient search by name + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: name + gender' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate' do
 
-    family = @patient_details['name'][0]['family'][0]
+    assert !(@patient_hash.nil? || @patient_hash.empty?), 'No Patient resource available'
+    family = @patient_hash['name'][0]['family'][0]
     assert family, "Patient family name not returned"
-    given = @patient_details['name'][0]['given'][0]
+    given = @patient_hash['name'][0]['given'][0]
     assert given, "Patient given name not returned"
-    gender = @patient_details['gender']
+    gender = @patient_hash['gender']
     assert gender, "Patient gender not returned"
-    get_patient_by_param(family: family, given: given, gender: gender)
+    reply = get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, gender: gender})
+    validate_resource_by_params(FHIR::DSTU2::Patient, reply)
 
   end
 
   test 'Patient search by name + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: name + birthdate' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate' do
 
-    family = @patient_details['name'][0]['family'][0]
+    assert !(@patient_hash.nil? || @patient_hash.empty?), 'No Patient resource available'
+    family = @patient_hash['name'][0]['family'][0]
     assert family, "Patient family name not returned"
-    given = @patient_details['name'][0]['given'][0]
+    given = @patient_hash['name'][0]['given'][0]
     assert given, "Patient given name not returned"
-    birthdate = @patient_details['birthDate']
+    birthdate = @patient_hash['birthDate']
     assert birthdate, "Patient birthDate not returned"
-    get_patient_by_param(family: family, given: given, birthdate: birthdate)
+    reply = get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, birthdate: birthdate})
+    validate_resource_by_params(FHIR::DSTU2::Patient, reply)
 
   end
 
-  test 'Patient search by family + gender',
+  test 'Patient search by gender + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: family + gender' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate' do
 
-    family = @patient_details['name'][0]['family'][0]
-    assert family, "Patient family name not returned"
-    gender = @patient_details['gender']
+    assert !(@patient_hash.nil? || @patient_hash.empty?), 'No Patient resource available'
+    gender = @patient_hash['gender']
     assert gender, "Patient gender not returned"
-    get_patient_by_param(family: family, gender: gender)
-
-  end
-
-  test 'Patient search by given + gender',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: given + gender' do
-
-    given = @patient_details['name'][0]['given'][0]
-    assert given, "Patient given name not returned"
-    gender = @patient_details['gender']
-    assert gender, "Patient gender not returned"
-    get_patient_by_param(given: given, gender: gender)
+    birthdate = @patient_hash['birthDate']
+    assert birthdate, "Patient birthDate not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Patient, {gender: gender, birthdate: birthdate})
+    validate_resource_by_params(FHIR::DSTU2::Patient, reply)
 
   end
 
@@ -159,69 +121,66 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'AllergyIntolerance search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning a patient’s allergies using GET /AllergyIntolerance?patient=[id]' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+    @allergyintolerance_hash = reply.resource.entry[0].to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::AllergyIntolerance, reply)
+
   end
 
   # --------------------------------------------------
   # CarePlan Search
   # --------------------------------------------------
 
-  test 'CarePlan search by patient',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
-
-    todo
-  end
-
-  test 'CarePlan search by category',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: category' do
-
-    todo
-  end
-
-  test 'CarePlan search by status',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: status' do
-
-    todo
-  end
-
-  test 'CarePlan search by date',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: date' do
-
-    todo
-  end
-
   test 'CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category' do
+          'A server is capable of returning all of a patient’s Assessment and Plan of Treatment information using GET /CarePlan?patient=[id]&category=assess-plan' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan"})
+    @careplan_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+
   end
 
   test 'CarePlan search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + date' do
+          'A server SHOULD be capable of returning a patient’s Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&date=[date]' do
 
-    todo
+    warning {
+      assert !(@careplan_hash.nil? || @careplan_hash.empty?), 'No CarePlan resource available'
+      date = @careplan_hash['period']['end']
+      assert date, "CarePlan period end not returned"
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", date: date})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
   test 'CarePlan search by patient + category + status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + status' do
+          'A server SHOULD be capable returning all of a patient’s active Assessment and Plan of Treatment information using GET /CarePlan?patient=[id]&category=assess-plan&status=active' do
 
-    todo
+    warning {
+      assert !(@careplan_hash.nil? || @careplan_hash.empty?), 'No CarePlan resource available'
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active"})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
   test 'CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + status + date' do
+          'A server SHOULD be capable returning a patient’s active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]' do
 
-    todo
+    warning {
+      assert !(@careplan_hash.nil? || @careplan_hash.empty?), 'No CarePlan resource available'
+      date = @careplan_hash['period']['end']
+      assert date, "CarePlan period end not returned"
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
   # --------------------------------------------------
@@ -230,37 +189,72 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning a patient’s conditions list using GET/Condition?patient=[id]' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+    @condition_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Condition, reply)
+
   end
 
-  test 'Condition search by category',
+  test 'Condition search by patient + active clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: category' do
+          'A server SHOULD be capable returning all of a patient’s active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
 
-    todo
+    warning {
+      assert !(@condition_hash.nil? || @condition_hash.empty?), 'No Condition resource available'
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, clinicalstatus: "active"})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
-  test 'Condition search by clinicalstatus',
+  test 'Condition search by patient + recurrance clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: clinicalstatus' do
+          'A server SHOULD be capable returning all of a patient’s active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
 
-    todo
+    warning {
+      assert !(@condition_hash.nil? || @condition_hash.empty?), 'No Condition resource available'
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, clinicalstatus: "recurrance"})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
-  test 'Condition search by patient + clinicalstatus',
+  test 'Condition search by patient + remission clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + clinicalstatus' do
+          'A server SHOULD be capable returning all of a patient’s active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
 
-    todo
+    warning {
+      assert !(@condition_hash.nil? || @condition_hash.empty?), 'No Condition resource available'
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, clinicalstatus: "remission"})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
-  test 'Condition search by patient + category',
+  test 'Condition search by patient + problem category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category' do
+          'A server SHOULD be capable returning all of a patient’s problems or all of patient’s health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
 
-    todo
+    warning {
+      assert !(@condition_hash.nil? || @condition_hash.empty?), 'No Condition resource available'
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "problem"})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
+  end
+
+  test 'Condition search by patient + health-concern category',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A server SHOULD be capable returning all of a patient’s problems or all of patient’s health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
+
+    warning {
+      assert !(@condition_hash.nil? || @condition_hash.empty?), 'No Condition resource available'
+      reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "health-concern"})
+      validate_resource_by_params(FHIR::DSTU2::CarePlan, reply)
+    }
+
   end
 
   # --------------------------------------------------
@@ -269,9 +263,12 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Device search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning all Unique device identifier(s)(UDI) for a patient’s implanted device(s) using GET /Device?patient=[id]' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
+    @device_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Device, reply)
+
   end
 
   # --------------------------------------------------
@@ -280,23 +277,24 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Goal search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning all of a patient’s goals using GET [base]/Goal?patient=[id]' do
 
-    todo
-  end
+    reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
+    @goal_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Goal, reply)
 
-  test 'Goal search by date',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: date' do
-
-    todo
   end
 
   test 'Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + date' do
+          'A server is capable of returning all of all of a patient’s goals over a specified time period using GET [base]/Goal?patient=[id]&date=[date]{&date=[date]}' do
 
-    todo
+    assert !(@goal_hash.nil? || @goal_hash.empty?), 'No Goal resource available'
+    date = @goal_hash['statusDate']
+    assert date, "Goal statusDate not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id, date: date})
+    validate_resource_by_params(FHIR::DSTU2::Goal, reply)
+
   end
 
   # --------------------------------------------------
@@ -305,74 +303,67 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A client has connected to a server and fetched all immunizations for a patient using GET /Immunization?patient=[id]' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+    @immunization_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Immunization, reply)
+
   end
 
   # --------------------------------------------------
   # DiagnosticReport Search
   # --------------------------------------------------
 
-  test 'DiagnosticReport search by patient',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
-
-    todo
-  end
-
-  test 'DiagnosticReport search by category',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: category' do
-
-    todo
-  end
-
-  test 'DiagnosticReport search by code',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: code' do
-
-    todo
-  end
-
-  test 'DiagnosticReport search by date',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: date' do
-
-    todo
-  end
-
   test 'DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category' do
+          'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category using GET [base]/DiagnosticReport?patient=[id]&category=LAB' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
+    @diagnosticreport_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::DiagnosticReport, reply)
+
   end
 
   test 'DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + date' do
+          'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category code and date range using GET [base]/DiagnosticReport?patient=[id]&category=LAB&date=[date]{&date=[date]}' do
 
-    todo
+    assert !(@diagnosticreport_hash.nil? || @diagnosticreport_hash.empty?), 'No DiagnosticReport resource available'
+    date = @diagnosticreport_hash['effectiveDateTime']
+    assert date, "DiagnosticReport effectiveDateTime not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", date: date})
+    validate_resource_by_params(FHIR::DSTU2::DiagnosticReport, reply)
+
   end
 
   test 'DiagnosticReport search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + code' do
+          'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category and code using GET [base]/DiagnosticReport?patient=[id]&category=LAB&code=[LOINC]' do
 
-    todo
+    assert !(@diagnosticreport_hash.nil? || @diagnosticreport_hash.empty?), 'No DiagnosticReport resource available'
+    code = @diagnosticreport_hash['code']['coding'][0]['code']
+    assert code, "DiagnosticReport code not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code})
+    validate_resource_by_params(FHIR::DSTU2::DiagnosticReport, reply)
+
   end
 
   test 'DiagnosticReport search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + code + date' do
+          'A server SHOULD be capable of returning all of a patient’s laboratory diagnostic reports queried by category and one or more codes and date range using GET [base]/DiagnosticReport?patient=[id]&category=LAB&code=[LOINC1{,LOINC2,LOINC3,…}]&date=[date]{&date=[date]}' do
 
-    todo
+    warning {
+      assert !(@diagnosticreport_hash.nil? || @diagnosticreport_hash.empty?), 'No DiagnosticReport resource available'
+      code = @diagnosticreport_hash['code']['coding'][0]['code']
+      assert code, "DiagnosticReport code not returned"
+      date = @diagnosticreport_hash['effectiveDateTime']
+      assert date, "DiagnosticReport effectiveDateTime not returned"
+      reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code, date: date})
+      validate_resource_by_params(FHIR::DSTU2::DiagnosticReport, reply)
+    }
+
   end
-
-  # --------------------------------------------------
-  # Medication Search
-  # --------------------------------------------------
 
   # --------------------------------------------------
   # MedicationStatement Search
@@ -380,9 +371,12 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'MedicationStatement search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationStatement?patient=[id] 2. GET /MedicationStatement?patient=[id]&_include=MedicationStatement:medication' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
+    @medicationstatement_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::MedicationStatement, reply)
+
   end
 
   # --------------------------------------------------
@@ -391,69 +385,120 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'MedicationOrder search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationOrder?patient=[id] 2. GET /MedicationOrder?patient=[id]&_include=MedicationOrder:medication' do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
+    @medicationorder_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::MedicationOrder, reply)
+
   end
 
   # --------------------------------------------------
   # Observation Search
   # --------------------------------------------------
 
-  test 'Observation search by patient',
+  test 'Observation Results search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          "A server is capable of returning all of a patient's laboratory results queried by category using GET [base]/Observation?patient=[id]&category=laboratory" do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
+    @observationresults_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Observation, reply)
+
   end
 
-  test 'Observation search by category',
+  test 'Observation Results search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: category' do
+          "A server is capable of returning all of a patient's laboratory results queried by category code and date range usingGET [base]/Observation?patient=[id]&category=laboratory&date=[date]{&date=[date]}" do
 
-    todo
+    assert !(@observationresults_hash.nil? || @observationresults_hash.empty?), 'No Observation resource available'
+    date = @observationresults_hash['effectiveDateTime']
+    assert date, "Observation effectiveDateTime not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", date: date})
+
   end
 
-  test 'Observation search by code',
+  test 'Observation Results search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: code' do
+          "A server is capable of returning all of a patient's laboratory results queried by category and code using GET [base]/Observation?patient=[id]&category=laboratory&code=[LOINC]" do
 
-    todo
+    assert !(@observationresults_hash.nil? || @observationresults_hash.empty?), 'No Observation resource available'
+    code = @observationresults_hash['code']['coding'][0]['code']
+    assert code, "Observation code not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code})
+
   end
 
-  test 'Observation search by date',
+  test 'Observation Results search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: date' do
+          "A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range using GET [base]/Observation?patient=[id]&category=laboratory&code=[LOINC1{,LOINC2,LOINC3,...}]&date=[date]{&date=[date]}" do
 
-    todo
+    warning {
+      assert !(@observationresults_hash.nil? || @observationresults_hash.empty?), 'No Observation resource available'
+      code = @observationresults_hash['code']['coding'][0]['code']
+      assert code, "Observation code not returned"
+      date = @observationresults_hash['effectiveDateTime']
+      assert date, "Observation effectiveDateTime not returned"
+      reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code, date: date})
+    }
+
   end
 
-  test 'Observation search by patient + category',
+  test 'Smoking Status search by patient + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category' do
+          "A server is capable of returning a a patient’s smoking status using GET [base]/Observation?patient=[id]&code=72166-2" do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
+    @smokingstatus_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Observation, reply)
+
   end
 
-  test 'Observation search by patient + category + date',
+  test 'Vital Signs search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + date' do
+          "A server is capable of returning all of a patient’s vital signs that it supports using GET [base]/Observation?patient=[id]&category=vital-signs" do
 
-    todo
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
+    @vitalsigns_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Observation, reply)
+
   end
 
-  test 'Observation search by patient + category + code',
+  test 'Vital Signs search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + code' do
+          "A server is capable of returning all of a patient’s vital signs queried by date range using GET [base]/Observation?patient=[id]&category=vital-signs&date=[date]{&date=[date]}" do
 
-    todo
+    assert !(@vitalsigns_hash.nil? || @vitalsigns_hash.empty?), 'No Observation resource available'
+    date = @vitalsigns_hash['effectiveDateTime']
+    assert date, "Observation effectiveDateTime not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", date: date})
+
   end
 
-  test 'Observation search by patient + category + code + date',
+  test 'Vital Signs search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + category + code + date' do
+          "A server is capable of returning any of a patient’s vital signs queried by one or more of the codes listed below using GET [base]/Observation?patient=[id]&code[vital sign LOINC{,LOINC2,LOINC3,…}]" do
 
-    todo
+    assert !(@vitalsigns_hash.nil? || @vitalsigns_hash.empty?), 'No Observation resource available'
+    code = @vitalsigns_hash['code']['coding'][0]['code']
+    assert code, "Observation code not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", code: code})
+
+  end
+
+  test 'Vital Signs search by patient + category + code + date',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          "A server SHOULD be capable of returning any of a patient’s vital signs queried by one or more of the codes listed below and date range using GET [base]/Observation?patient=[id]&code=[LOINC{,LOINC2…}]vital-signs&date=[date]{&date=[date]}" do
+
+    warning {
+      assert !(@vitalsigns_hash.nil? || @vitalsigns_hash.empty?), 'No Observation resource available'
+      code = @vitalsigns_hash['code']['coding'][0]['code']
+      assert code, "Observation code not returned"
+      date = @vitalsigns_hash['effectiveDateTime']
+      assert date, "Observation effectiveDateTime not returned"
+      reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", code: code, date: date})
+    }
+
   end
 
   # --------------------------------------------------
@@ -462,23 +507,23 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Procedure search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient' do
+          'A server is capable of returning a patient’s procedures using GET/Procedure?patient=[id]' do
 
-    todo
-  end
+    reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
+    @procedure_hash = reply.resource.entry[0].resource.to_hash rescue []
+    validate_resource_by_params(FHIR::DSTU2::Procedure, reply)
 
-  test 'Procedure search by date',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: date' do
-
-    todo
   end
 
   test 'Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'Supported Searches: patient + date' do
+          'A server is capable of returning all of all of a patient’s procedures over a specified time period using GET /Procedure?patient=[id]&date=[date]{&date=[date]}' do
 
-    todo
+    assert !(@procedure_hash.nil? || @procedure_hash.empty?), 'No Procedure resource available'
+    date = @procedure_hash['performedDateTime']
+    assert date, "Procedure performedDateTime not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id, date: date})
+    validate_resource_by_params(FHIR::DSTU2::Procedure, reply)
   end
 
 end
