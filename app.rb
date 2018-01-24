@@ -85,6 +85,8 @@ end
 get '/instance/:id/:sequence/?' do
   instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(instance.url)
+  client.use_dstu2
+  client.default_json
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
     sequence = klass.new(instance, client)
@@ -196,6 +198,8 @@ get '/instance/:id/:key/:endpoint/?' do
     instance = TestingInstance.get(params[:id])
 
     client = FHIR::Client.new(instance.url)
+    client.use_dstu2
+    client.default_json
     sequence = klass.new(instance, client, sequence_result)
     sequence_result = sequence.resume(request, headers)
     sequence_result.save!
