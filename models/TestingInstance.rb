@@ -6,6 +6,7 @@ class TestingInstance
   property :client_id, String
   property :base_url, String
 
+  property :client_name, String
   property :scopes, String
   property :launch_type, String
   property :state, String
