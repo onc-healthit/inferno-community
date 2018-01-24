@@ -249,4 +249,10 @@ module Assertions
     raise SkipException.new message
   end
 
+  def skip_unless(test, message = '')
+    unless test
+      raise SkipException.new message
+    end
+  end
+
 end
