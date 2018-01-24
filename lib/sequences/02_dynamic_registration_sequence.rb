@@ -18,7 +18,7 @@ class DynamicRegistrationSequence < SequenceBase
     params = {
       'client_name' => @instance.client_name,
       'initiate_login_uri' => "#{@instance.base_url}/instance/#{@instance.id} /#{@instance.client_endpoint_key}/launch",
-      'redirect_uris' => ["#{@instance.base_url}/instance/#{@instance.id} /#{@instance.client_endpoint_key}/launch"],
+      'redirect_uris' => ["#{@instance.base_url}/instance/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
       'token_endpoint_auth_method' => 'none',
       'grant_types' => ['authorization_code'],
       'scope' => @instance.scopes,
@@ -32,7 +32,7 @@ class DynamicRegistrationSequence < SequenceBase
     end
 
     # check to make sure that values are the same as what what submitted
-    @instance.update(client_id: registration_response['client_id'], dynamically_registered: true, scopes: )
+    @instance.update(client_id: registration_response['client_id'], dynamically_registered: true, scopes: registration_response['scope'])
   end
 end
 

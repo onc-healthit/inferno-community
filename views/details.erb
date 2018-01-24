@@ -95,14 +95,6 @@
             <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
-            <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
-            <input readonly type="text" class="form-control" name="token_endpoint_auth_method" id="token_endpoint_auth_method" value="none">
-          </div>
-          <div class="form-group">
-            <label for="grant_types">Grant Types (comma-separated)</label>
-            <input type="text" class="form-control" name="grant_types" id="grant_types" value="authorization_code" required>
-          </div>
-          <div class="form-group">
             <label for="scope">Scopes</label>
             <input type="text" class="form-control" name="scope" id="scope" value="<%=@instance.scopes || DEFAULT_SCOPES %>" required>
           </div>
