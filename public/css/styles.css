@@ -10,7 +10,7 @@
 
 .footer {
   margin: 10px 0;
-  border-top: 1px solid #eee;
+  /* border-top: 1px solid #eee; */
   font-size: .8em;
 }
 
@@ -243,7 +243,7 @@
 .result-details {
   margin-top: 5px;
   max-height: 300px;
-  overflow: scroll;
+  overflow-y: scroll;
   cursor: default;
 }
 
