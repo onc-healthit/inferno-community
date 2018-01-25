@@ -244,6 +244,7 @@
   margin-top: 5px;
   max-height: 300px;
   overflow: scroll;
+  cursor: default;
 }
 
 .result-details ul {
