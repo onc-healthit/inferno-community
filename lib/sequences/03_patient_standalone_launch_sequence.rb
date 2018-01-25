@@ -1,48 +1,24 @@
-class ProviderEHRLaunchSequence < SequenceBase
+class PatientStandaloneLaunchSequence < SequenceBase
 
-  title 'Provider EHR Launch Sequence'
-
-  description 'Provider EHR Launch Sequence'
-  # modal_before_run
-  child_test
+  title 'Patient Standalone Launch Sequence'
+  description 'Demonstrate Patient Standalone Launch Sequence'
+  modal_before_run
 
   preconditions 'Client must be registered.' do 
     !@instance.client_id.nil?
   end
 
-  test 'Launch url successfully hit' do
-    wait_at_endpoint 'launch'
-  end
-
-  test 'iss supplied and is valid' do
-    assert !@params['iss'].nil?, 'Expecting "iss" as a querystring parameter.'
-
-    warning {
-      assert @params['iss'] == @instance.url, "'iss' param [#{@params['iss']}] does not match url of testing instance [#{@instance.url}]"
-    }
-  end
-
-  test 'Launch params provided and is valid' do
-    assert !@params['launch'].nil?, 'Expecting "launch" as a querystring parameter.'
-    # check that launch is of the right form
-  end
-
   test 'Client successfully redirected back to redirect url' do 
 
-    # construct querystring to oauth and redirect after
     @instance.state = SecureRandom.uuid
-
-    #TODO: FIGUREOUT SCOPES
-    scopes = 'launch openid patient/*.* profile'
 
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => @instance.client_id,
       'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
-      'scope' => scopes,
-      'launch' => @params['launch'],
+      'scope' => @instance.scopes,
       'state' => @instance.state,
-      'aud' => @params['iss']
+      'aud' => @instance.url
     }
 
     oauth2_auth_query = @instance.oauth_authorize_endpoint + "?"

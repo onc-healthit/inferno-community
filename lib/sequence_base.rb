@@ -21,7 +21,6 @@ class SequenceBase
 
   @@modal_before_run = []
   @@buttonless = []
-  @@child_test = []
 
   def self.test_count
     self.new(nil,nil).test_count
@@ -175,14 +174,6 @@ class SequenceBase
 
   def self.buttonless?
     @@buttonless.include?(self.sequence_name)
-  end
-
-  def self.child_test
-    @@child_test << self.sequence_name
-  end
-
-  def self.child_test?
-    @@child_test.include?(self.sequence_name)
   end
 
   def self.preconditions(description, &block)
