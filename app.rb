@@ -170,3 +170,16 @@ get '/instance/:id/:key/:endpoint/?' do
 
   end
 end
+
+post '/instance/:id/TokenIntrospection' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
+  @instance.update(resource_id: params['resource_id'])
+  @instance.update(resource_secret: params['resource_secret'])
+
+  # copy over the access token to a different place in case it's not the same
+  @instance.update(introspect_token: params['access_token'])
+  
+  redirect "/instance/#{params[:id]}/TokenIntrospection/"
+
+end
