@@ -39,6 +39,12 @@ DataMapper.finalize
   end
 end
 
+helpers do
+  def request_headers
+    env.inject({}){|acc, (k,v)| acc[$1.downcase] = v if k =~ /^http_(.*)/i; acc}
+  end
+end
+
 get '/' do
   status, headers, body = call! env.merge("PATH_INFO" => '/index')
 end
@@ -49,7 +55,7 @@ end
 
 get '/instance/:id/?' do
   @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, LaunchSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
+  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
   @sequence_results = @instance.latest_results
 
   erb :details
@@ -159,7 +165,7 @@ get '/instance/:id/:key/:endpoint/?' do
     client.use_dstu2
     client.default_json
     sequence = klass.new(instance, client, sequence_result)
-    sequence_result = sequence.resume(request, headers)
+    sequence_result = sequence.resume(request, request_headers)
     sequence_result.save!
 
     if sequence_result.redirect_to_url

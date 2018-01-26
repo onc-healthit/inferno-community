@@ -47,8 +47,6 @@
       </div>
     <% end %>
 
-
-
     <% unless @test_result.description.nil? %>
       <div class="test-result-details-description">
         <span class="test-result-details-description-label">Description:</span> <%= @test_result.description %>
@@ -60,28 +58,45 @@
     <% @test_result.request_responses.each_with_index do |rr,index| %>
     <div class="test-result-details-response">
       <a class="test-result-details-response-header collapsed" data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
-        <%= rr.direction %> - 
-        <%= rr.request_method.upcase %> -
-        <%= rr.request_url %> -
-        <%= rr.response_code %> -
+        <% if rr.direction == 'outbound' %>
+          <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
+        <% else %>
+          <span class="oi oi-arrow-thick-left" title="inbound requests" aria-hidden="true"></span>
+        <% end %>
+        &nbsp;
+        <%= rr.request_method.upcase %> &nbsp;
+        <%= rr.response_code %> &nbsp;
+        <%= rr.request_url %>
       </a>
 
       <div class="collapse test-result-details-response-values" id="test-result-details-response-values-<%=index%>">
 
-        <div>Request</div>
-        <div>Headers</div>
+        <div class="test-result-details-header">Request</div>
+        <div class="test-result-details-subheader">Headers</div>
+        <ul>
         <% JSON.parse(rr.request_headers).each do |header_name, header_value| %>
-          <strong><%=header_name%></strong>: <%=header_value%><br/>
+          <li><strong><%=header_name%></strong>: <code><%=header_value%></code><br/></li>
+        <% end %>
+        </ul>
+        <% unless rr.request_payload.nil? %>
+          <div class="test-result-details-subheader">Payload</div>
+          <div><pre><code><%=rr.request_payload%></code></pre></div>
         <% end %>
 
         <% if rr.direction == 'outbound' %>
-          <div>Response</div>
-          <div>Headers</div>
-          <% JSON.parse(rr.response_headers).each do |header_name, header_value| %>
-            <strong><%=header_name%></strong>: <%=header_value%><br/>
+
+          <div class="test-result-details-header">Response</div>
+          <div class="test-result-details-subheader">Headers</div>
+          <ul>
+            <% JSON.parse(rr.response_headers).each do |header_name, header_value| %>
+              <li><strong><%=header_name%></strong>: <code><%=header_value%></code></li>
+            <% end %>
+          </ul>
+          <% unless rr.response_body.nil? %>
+            <div class="test-result-details-subheader">Body</div>
+            <div><pre><code><%=rr.response_body%></code></pre></div>
           <% end %>
-          <div>Body</div>
-          <div>...</div>
+
         <% end %>
 
 

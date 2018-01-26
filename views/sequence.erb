@@ -1,4 +1,4 @@
-<div class="scorecard-row<% if sequence_class.child_test?%> child-test<% end %>">
+<div class="scorecard-row">
   <a name="<%=sequence_class.sequence_name%>"></a>
   <% case @sequence_results[sequence_class.sequence_name].try(:result)
     when nil %>
@@ -24,6 +24,10 @@
   <% when 'wait' %>
       <div class="scorecard-score scorecard-score-wait">
         <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+      </div>
+  <% when 'skip' %>
+      <div class="scorecard-score scorecard-score-skip">
+          <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
       </div>
   <% end %>
   <div class="scorecard-rubric">
@@ -75,11 +79,9 @@
       <%= sequence_class.preconditions_description %>
     <% end %>
     <div class="scorecard-action-collapse">
-      <% if @sequence_results[sequence_class.sequence_name].nil? || @sequence_results[sequence_class.sequence_name].result != 'skip' %>
-        <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
-          <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
-       </a>
-     <% end %>
+      <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+        <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
+     </a>
     </div>
   </div>
   <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: @sequence_results[sequence_class.sequence_name] }) %>

@@ -1,6 +1,25 @@
 Stickyfill.add(document.querySelectorAll('.sticky'));
 
+
+
 $(function(){
+
+  function indent(value) {
+    var firstCharacter = value.charAt(0)
+    if(['{','['].indexOf(firstCharacter) >= 0){
+      return vkbeautify.json(value, 2);
+    } else if(firstCharacter == '<'){
+      return vkbeautify.xml(value, 2)
+    }else{
+      return value;
+    }
+  }
+
+  $('.scorecard-row').on('click', function(e) {
+    if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
+      $(this).find('.collapse').collapse('toggle');
+    }
+  });
 
   $('.scorecard-row').on('show.bs.collapse', function() {
     $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
@@ -20,7 +39,20 @@ $(function(){
   $('.result-details li').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
       var url = '/instance/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
-      $("#testResultDetailsModal").find('.modal-content').load(url, function(){
+      $("#testResultDetailsModal").find('.modal-content').load(url, function(value){
+        $(this).find("pre>code").each(function(el){
+          let $el = $(this)
+          let content = $el.html()
+          try{
+            if(content && content.length > 0){
+              content = indent($el.html())
+            }
+          } catch (ex) {
+            console.log('Error indenting: ' + ex)
+          }
+          $el.html(content)
+        });
+
         $("#testResultDetailsModal").modal('show');
       })
     }
@@ -38,4 +70,4 @@ $(function(){
 
   $('#WaitModal').modal('show');
 
-})
+}); 

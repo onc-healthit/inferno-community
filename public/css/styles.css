@@ -10,7 +10,7 @@
 
 .footer {
   margin: 10px 0;
-  border-top: 1px solid #eee;
+  /* border-top: 1px solid #eee; */
   font-size: .8em;
 }
 
@@ -64,6 +64,7 @@
   border-bottom: 1px solid #ddd;
   padding-bottom: 15px;
   margin-top: 15px;
+  cursor: pointer;
 }
 
 .child-test {
@@ -242,7 +243,8 @@
 .result-details {
   margin-top: 5px;
   max-height: 300px;
-  overflow: scroll;
+  overflow-y: scroll;
+  cursor: default;
 }
 
 .result-details ul {
@@ -326,20 +328,36 @@ li.result-details-clickable:hover {
 
 .test-result-details-header {
   font-weight: bold;
-  margin: 5px 0;
+  margin: 20px 0 5px;
+  font-size: 1.2em;
+}
+
+.test-result-details-subheader {
+  font-weight: bold;
+  margin: 10px 0 5px 5px;
+  font-size: 1.1em;
 }
 
 .test-result-details-response {
-  padding: 10px;
+  border: 1px solid #ccc;
+  font-size: .9em;
 }
 
 .test-result-details-response-header {
   font-weight: bold;
-  padding: 5px;
+  padding: 10px;
   cursor: pointer;
+  background-color: #eee;
+  display: block;
 }
 .test-result-details-response-values{
   margin-left: 10px;
+}
+.test-result-details-response-values ul{
+  list-style: none;
+  padding-left: 20px;
+  overflow-x: scroll;
+
 }
 
 .test-result-details-message-label {
