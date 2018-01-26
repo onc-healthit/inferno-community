@@ -19,14 +19,13 @@ class LoggedRestClient
     @@requests << {direction: :outbound, request: request, response: reply}
   end
 
-  # CURRENTLY ONLY DOES POST BECAUSE THAT IS ALL WE CURRENTLY USE
   def post(url, payload, headers = {}) 
     reply = RestClient.post(url, payload, headers)
     request = {
       method: :post,
       url: url,
       headers: headers,
-      payload: payload
+      payload: payload.to_json
     }
     self.record_response(request, reply)
     return reply

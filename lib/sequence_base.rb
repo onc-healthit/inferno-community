@@ -51,7 +51,7 @@ class SequenceBase
         request_method: request.request_method.downcase,
         request_url: request.url,
         request_headers: headers.to_json,
-        request_body: request.body.read
+        request_payload: request.body.read
       )
     end
 
@@ -84,7 +84,7 @@ class SequenceBase
             request_method: req.request[:method],
             request_url: req.request[:url],
             request_headers: req.request[:headers].to_json,
-            request_body: req.request[:body],
+            request_payload: req.request[:payload],
             response_code: req.response[:code],
             response_headers: req.response[:headers].to_json,
             response_body: req.response[:body])
@@ -97,7 +97,7 @@ class SequenceBase
           request_method: req[:request][:method].to_s,
           request_url: req[:request][:url],
           request_headers: req[:request][:headers].to_json,
-          request_body: req[:request][:body],
+          request_payload: req[:request][:payload].to_json,
           response_code: req[:response][:code],
           response_headers: req[:response][:headers].to_json,
           response_body: req[:response][:body])
