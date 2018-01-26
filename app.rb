@@ -95,23 +95,34 @@ end
 
 
 get '/smart/:id/:sequence/?' do
-  instance = TestingInstance.get(params[:id])
-  client = FHIR::Client.new(instance.url)
+  @instance = TestingInstance.get(params[:id])
+  @tests_running = true
+  client = FHIR::Client.new(@instance.url)
   client.use_dstu2
   client.default_json
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
-    sequence = klass.new(instance, client)
-
-    sequence_result = sequence.start
-    instance.sequence_results.push(sequence_result)
-    instance.save!
-
-    if sequence_result.redirect_to_url
-      redirect sequence_result.redirect_to_url
+    sequence = klass.new(@instance, client)
+    stream do |out|
+      out << erb(:details)
+      out << 'Running tests'
+      sequence_result = sequence.start do |result|
+        out << '.' #result.result
+      end
+      @instance.sequence_results.push(sequence_result)
+      @instance.save!
+      if sequence_result.redirect_to_url
+        puts "redirect to #{sequence_result.redirect_to_url}"
+        out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+      else 
+        out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
+      end
     end
+
+  else 
+   redirect "/smart/#{params[:id]}/##{params[:sequence]}"
   end
-  redirect "/smart/#{params[:id]}/##{params[:sequence]}"
+
 end
 
 post '/smart/:id/ConformanceSkip/?' do
@@ -171,14 +182,20 @@ get '/smart/:id/:key/:endpoint/?' do
     client.use_dstu2
     client.default_json
     sequence = klass.new(instance, client, sequence_result)
-    sequence_result = sequence.resume(request, request_headers)
-    sequence_result.save!
-
-    if sequence_result.redirect_to_url
-      redirect sequence_result.redirect_to_url
+    stream do |out|
+      out << 'Running tests'
+      sequence_result = sequence.resume(request, headers) do |result|
+        out << '.' #result.result
+      end
+      instance.sequence_results.push(sequence_result)
+      instance.save!
+      if sequence_result.redirect_to_url
+        # redirect sequence_result.redirect_to_url
+        out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+      else 
+        out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
+      end
     end
-
-    redirect "/smart/#{params[:id]}/##{sequence_result.name}"
 
   end
 end

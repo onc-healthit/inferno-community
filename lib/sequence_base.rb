@@ -39,7 +39,7 @@ class SequenceBase
     @test_warnings = []
   end
 
-  def resume(request = nil, headers = nil)
+  def resume(request = nil, headers = nil, &block)
 
     @params = request.params
 
@@ -59,7 +59,9 @@ class SequenceBase
     @sequence_result.wait_at_endpoint = nil
     @sequence_result.redirect_to_url = nil
 
-    start
+    @sequence_result.save!
+
+    start(&block)
   end
 
   def start
@@ -103,6 +105,7 @@ class SequenceBase
           response_body: req[:response][:body])
       end
 
+      yield result if block_given?
 
       @sequence_result.test_results << result
 
