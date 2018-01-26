@@ -15,7 +15,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => @instance.client_id,
-      'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
       'scope' => @instance.scopes,
       'state' => @instance.state,
       'aud' => @instance.url
@@ -38,7 +38,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     oauth2_params = {
       'grant_type' => 'authorization_code',
       'code' => @params['code'],
-      'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
       'client_id' => @instance.client_id
     }
 

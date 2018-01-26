@@ -88,11 +88,11 @@
           </div>
           <div class="form-group">
             <label for="initiate_login_uri">Launch URI</label>
-            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%>/smart/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
             <label for="redirect_uris">Redirect URI</label>
-            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/smart/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
@@ -124,11 +124,11 @@
           </p>
           <div class="form-group">
             <label for="skip_launch">Launch URL</label>
-            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%>/smart/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
             <label for="skip_redirect">Redirect URL</label>
-            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%>/smart/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
             <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
@@ -195,7 +195,7 @@
       </div>
       <div class="modal-body">
         <p>
-          Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
+          Waiting for EHR launch at <%=request.base_url%>/smart/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
         </p>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -207,7 +207,7 @@
 
 <% waiting_on_sequence = @instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
-  <% redirect_to = "#{request.base_url}/instance/#{@instance.id}/#{@instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
+  <% redirect_to = "#{request.base_url}/smart/#{@instance.id}/#{@instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
   <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
@@ -222,7 +222,7 @@
           Waiting for redirect at: <br/><%=redirect_to %>
           </p>
           <div class="modal-footer">
-            <a href="<%= "#{request.base_url}/instance/#{@instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-secondary">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}/smart/#{@instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-secondary">Cancel Sequence</a>
           </div>
         </div>
       </div>

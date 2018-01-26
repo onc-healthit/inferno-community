@@ -17,8 +17,8 @@ class DynamicRegistrationSequence < SequenceBase
 
     params = {
       'client_name' => @instance.client_name,
-      'initiate_login_uri' => "#{@instance.base_url}/instance/#{@instance.id} /#{@instance.client_endpoint_key}/launch",
-      'redirect_uris' => ["#{@instance.base_url}/instance/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
+      'initiate_login_uri' => "#{@instance.base_url}/smart/#{@instance.id} /#{@instance.client_endpoint_key}/launch",
+      'redirect_uris' => ["#{@instance.base_url}/smart/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
       'token_endpoint_auth_method' => 'none',
       'grant_types' => ['authorization_code'],
       'scope' => @instance.scopes,
@@ -67,13 +67,13 @@ end
   #   #   "client_id_issued_at"=>1515443975,
   #   #   "registration_access_token"=> "eyJraWQiOiJyc2ExIiwiYW ... W8nZ5w",
   #   #   "registration_client_uri"=>"https://sb-auth.smarthealthit.org/register/91690316-d398-451d-8dd0-f00235f9c0f6",
-  #   #   "redirect_uris"=>["http://localhost:4567/instance/7YXIwijXt7l/7BPXU/redirect"],
+  #   #   "redirect_uris"=>["http://localhost:4567/smart/7YXIwijXt7l/7BPXU/redirect"],
   #   #   "client_name"=>"TestApp",
   #   #   "token_endpoint_auth_method"=>"none",
   #   #   "scope"=>"launch launch/patient openid user/*.* patient/*.* profile",
   #   #   "grant_types"=>["authorization_code"],
   #   #   "response_types"=>["code"],
-  #   #   "initiate_login_uri"=>"http://localhost:4567/instance/7YXIwijXt7l/7BPXU/launch"
+  #   #   "initiate_login_uri"=>"http://localhost:4567/smart/7YXIwijXt7l/7BPXU/launch"
   #   # }
   #   puts "DynamicRegistration Success. Client ID: #{registration_response['client_id']}"
   #   @instance.update(client_id: registration_response['client_id'], dynamically_registered: true)
