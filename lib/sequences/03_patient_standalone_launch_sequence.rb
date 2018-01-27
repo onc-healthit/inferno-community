@@ -57,6 +57,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     scopes = @token_response['scope']
     token_retrieved_at = DateTime.now
     
+    @instance.save!
     @instance.update(token: token, patient_id: patient_id, scopes: scopes, token_retrieved_at: token_retrieved_at)
 
   end

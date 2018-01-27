@@ -39,6 +39,15 @@ DataMapper.finalize
   end
 end
 
+SEQUENCES = [ ConformanceSequence, 
+              DynamicRegistrationSequence, 
+              PatientStandaloneLaunchSequence, 
+              ProviderEHRLaunchSequence, 
+              TokenIntrospectionSequence, 
+              ArgonautProfilesSequence, 
+              ArgonautSearchSequence 
+            ]
+
 helpers do
   def request_headers
     env.inject({}){|acc, (k,v)| acc[$1.downcase] = v if k =~ /^http_(.*)/i; acc}
@@ -60,11 +69,10 @@ get '/smart/static/*' do
 end
 
 get '/smart/:id/?' do
-  @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
-  @sequence_results = @instance.latest_results
+  instance = TestingInstance.get(params[:id])
+  sequence_results = instance.latest_results
 
-  erb :details
+  erb :details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: sequence_results}
 end
 
 post '/smart/?' do
@@ -95,24 +103,26 @@ end
 
 
 get '/smart/:id/:sequence/?' do
-  @instance = TestingInstance.get(params[:id])
-  @tests_running = true
-  client = FHIR::Client.new(@instance.url)
+  instance = TestingInstance.get(params[:id])
+  client = FHIR::Client.new(instance.url)
   client.use_dstu2
   client.default_json
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
-    sequence = klass.new(@instance, client)
+    sequence = klass.new(instance, client)
     stream do |out|
-      out << erb(:details)
-      out << 'Running tests'
+      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << "<script>$('#WaitModal').modal('hide')</script>"
+      out << "<script>$('#testsRunningModal').modal('show')</script>"
+      count = 0
       sequence_result = sequence.start do |result|
-        out << '.' #result.result
+        count = count + 1
+        out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
       end
-      @instance.sequence_results.push(sequence_result)
-      @instance.save!
+      instance.sequence_results.push(sequence_result)
+      instance.save!
       if sequence_result.redirect_to_url
-        puts "redirect to #{sequence_result.redirect_to_url}"
+        out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
         out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
       else 
         out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
@@ -156,7 +166,7 @@ post '/smart/:id/dynamic_registration_skip/?' do
 
   instance.client_id = params[:client_id]
   instance.dynamically_registered = false
-  instance.save
+  instance.save!
 
   redirect "/smart/#{params[:id]}/"
 end
@@ -168,35 +178,38 @@ post '/smart/:id/PatientStandaloneLaunch/?' do
 end
 
 get '/smart/:id/:key/:endpoint/?' do
-  @instance = TestingInstance.get(params[:id])
+  instance = TestingInstance.get(params[:id])
 
-  sequence_result = @instance.waiting_on_sequence
-  
+  sequence_result = instance.waiting_on_sequence
+
   if sequence_result.nil? || sequence_result.result != 'wait'
     redirect "/smart/#{params[:id]}/?error=No sequence is currently waiting on launch."
   else
     klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(sequence_result.name)}
-    instance = TestingInstance.get(params[:id])
 
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
     sequence = klass.new(instance, client, sequence_result)
     stream do |out|
-      out << 'Running tests'
+      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << "<script>$('#WaitModal').modal('hide')</script>"
+      out << "<script>$('#testsRunningModal').modal('show')</script>"
+      count = sequence_result.test_results.length
       sequence_result = sequence.resume(request, headers) do |result|
-        out << '.' #result.result
+        count = count + 1
+        out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
+        instance.save!
       end
       instance.sequence_results.push(sequence_result)
       instance.save!
       if sequence_result.redirect_to_url
-        # redirect sequence_result.redirect_to_url
+        out << "<script>$('#testsRunningModal').find('modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
         out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
       else 
         out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
       end
     end
-
   end
 end
 

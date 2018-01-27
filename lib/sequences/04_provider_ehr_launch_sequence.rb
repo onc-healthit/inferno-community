@@ -80,6 +80,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     scopes = @token_response['scope']
     token_retrieved_at = DateTime.now
     
+    @instance.save! #investigate why this is dirty
     @instance.update(token: token, patient_id: patient_id, scopes: scopes, token_retrieved_at: token_retrieved_at)
 
   end
