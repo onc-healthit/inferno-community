@@ -154,7 +154,7 @@ class ArgonautProfilesSequence < SequenceBase
 
   test "Medication resources associated with Patient conform to Argonaut profiles",
           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html' do
-    test_resources_against_profile('DiagnosticReport')
+    test_resources_against_profile('Medication')
   end
 
   test "MedicationOrder resources associated with Patient conform to Argonaut profiles",
