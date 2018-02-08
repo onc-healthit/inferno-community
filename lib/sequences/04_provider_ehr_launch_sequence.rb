@@ -3,7 +3,7 @@ class ProviderEHRLaunchSequence < SequenceBase
   title 'Provider EHR Launch Sequence'
 
   description 'Provider EHR Launch Sequence'
-  # modal_before_run
+  modal_before_run
 
   preconditions 'Client must be registered.' do 
     !@instance.client_id.nil?

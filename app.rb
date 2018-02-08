@@ -13,7 +13,7 @@ require 'dm-migrations'
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
 
-# SET TO FALSE TO KEEP DATABASE BETWEEN SERVER RESTARTS
+# set to false to keep database between server restarts
 PURGE_DATABASE = true
 
 DataMapper::Logger.new($stdout, :debug)
@@ -95,6 +95,23 @@ get '/smart/:id/sequence_result/:sequence_result_id/cancel' do
   halt 404 if @sequence_result.testing_instance.id != params[:id]
 
   @sequence_result.result = 'cancel'
+  cancel_message = 'Test cancelled by user.'
+
+  if @sequence_result.test_results.length > 0
+    last_result = @sequence_result.test_results.last
+    last_result.result = 'cancel'
+    last_result.message = cancel_message
+  end
+
+  sequence = SequenceBase.subclasses.find{|x| x.to_s.start_with?(@sequence_result.name)}
+
+  current_test_count = @sequence_result.test_results.length
+
+  sequence.tests.each_with_index do |test, index|
+    next if index < current_test_count
+    @sequence_result.test_results << TestResult.new(name: test[:name], result: 'cancel', url: test[:url], description: test[:description], test_index: test[:test_index], message: cancel_message)
+  end
+
   @sequence_result.save!
 
   redirect "/smart/#{params[:id]}/##{@sequence_result.name}"
@@ -165,6 +182,7 @@ post '/smart/:id/dynamic_registration_skip/?' do
   instance.sequence_results << sequence_result
 
   instance.client_id = params[:client_id]
+  instance.scopes = params[:scope]
   instance.dynamically_registered = false
   instance.save!
 
@@ -175,6 +193,12 @@ post '/smart/:id/PatientStandaloneLaunch/?' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(scopes: params['scopes'])
   redirect "/smart/#{params[:id]}/PatientStandaloneLaunch/"
+end
+
+post '/smart/:id/ProviderEHRLaunch/?' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(scopes: params['scopes'])
+  redirect "/smart/#{params[:id]}/ProviderEHRLaunch/"
 end
 
 get '/smart/:id/:key/:endpoint/?' do

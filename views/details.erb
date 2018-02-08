@@ -140,7 +140,7 @@
           </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
-            <input readonly type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
+            <input type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
           </div>
           <div class="form-group">
             <label for="dynamicRegistrationClientId">Enter Client Id</label>
@@ -193,13 +193,21 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        <p>
-          Waiting for EHR launch at <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch
-        </p>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <form method="POST" action="ProviderEHRLaunch">
+        <div class="modal-body">
+          <p>
+            Enter the desired authorization scopes. Ensure your app registration included these scopes.
+          </p>
+          <div class="form-group">
+            <label for="patientStandaloneLaunchScopes">Scopes</label>
+            <input type="text" class="form-control" name="scopes" id="providerEHRLaunchScopes" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run EHR Launch</button>
+          </div>
         </div>
+      </form>
       </div>
     </div>
   </div>
@@ -208,21 +216,19 @@
 <% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
   <% redirect_to = "#{request.base_url}/smart/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
-  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true">
+  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true" data-backdrop="static">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Waiting for Server Redirect</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+            <h5 class="modal-title" id="exampleModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL</h5>
         </div>
         <div class="modal-body">
           <p>
-          Waiting for redirect at: <br/><%=redirect_to %>
+          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL: <br/><%=redirect_to %>
           </p>
           <div class="modal-footer">
-            <a href="<%= "#{request.base_url}/smart/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-secondary">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}/smart/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
+            <a href="<%= "#{request.base_url}/smart/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
           </div>
         </div>
       </div>
@@ -240,7 +246,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <%= erb(:state, {}, {instance: instance}) %>
+        <%= erb(:state_status, {}, {instance: instance}) %>
       </div>
     </div>
   </div>
