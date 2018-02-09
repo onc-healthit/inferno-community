@@ -1,91 +1,28 @@
 
 <div class="container">
   <div class="main">
-  <p>
-    This application creates SMART on FHIR test clients that exercise the range of requirements of a SMART on FHIR
-    server.  To begin, enter the URL of your FHIR server below.  This will create a unique SMART on FHIR client app endpoint
-    and will walk the user through a sequence of tests.
-  </p>
-  <p>
-    Provide further instructions here.
-  </p>
+    <p>
+      This application creates test clients that exercise the range of requirements of a <a href="https://smarthealthit.org/">SMART on FHIR</a> 
+      server. These tests focus on the <a href="http://www.hl7.org/fhir/smart-app-launch/">SMART App Launch Framework</a>,
+      <a href="http://hl7.org/fhir/DSTU2/argonaut/argonaut.html">Argonaut</a> Implementation Guides,
+      and <a href="http://hl7.org/fhir/DSTU2/index.html">FHIR DSTU2</a>.
+    </p>
 
-  <form method="POST" action="/instance/">
+    <p>
+      To begin, enter the URL of your FHIR server below.  This will create a unique SMART on FHIR client app endpoint
+      and will walk the user through a sequence of tests.
+    </p>
 
-    <div class="form-group">
-      <label for="fhir_server" class="endpoint-label">FHIR Server Endpoint</label>
-      <div class="input-group">
-        <input type="url" class="form-control" name="fhir_server" placeholder="http://" aria-label="Create App">
-        <span class="input-group-btn">
-          <button class="btn btn-secondary" type="submit">Begin</button>
-        </span>
+    <form method="POST" action="/smart/">
+      <div class="form-group">
+        <label for="fhir_server" class="endpoint-label">FHIR Server Endpoint</label>
+        <div class="input-group">
+          <input type="url" class="form-control" name="fhir_server" placeholder="http://" aria-label="Create App">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" type="submit">Begin</button>
+          </span>
+        </div>
       </div>
-    </div>
-    <!-- <div class="form&#45;group"> -->
-    <!--   <label for="fhir_server">FHIR Server Endpoint</label> -->
-    <!--   <input type="url" class="form&#45;control" id="fhir_server" name="fhir_server" value="http://"> -->
-    <!-- </div> -->
-  </form>
-
-  <!-- <h2>Existing Test Instances</h2>  -->
-  <!-- (only available on private installations) -->
-  <!-- <div> -->
-  <!--     <ul> -->
-  <!--         <li>Smart on FHIR Test App 1</li> -->
-  <!--         <li>Smart on FHIR Test App 2</li> -->
-  <!--  -->
-  <!--     </ul> -->
-  <!-- </div> -->
-
-
-  <!-- <h2>Create New Test App Instance</h2> -->
-  <!-- <form method="POST" action="/instance/"> -->
-  <!--   <div class="form&#45;group"> -->
-  <!--     <label for="fhir_server">FHIR Server Endpoint</label> -->
-  <!--     <input type="url" class="form&#45;control" id="fhir_server" name="fhir_server" value="http://"> -->
-  <!--   </div> -->
-  <!--   <div class="form&#45;group"> -->
-  <!--     <label for="fhir_server">Test Instance Name</label> -->
-  <!--     <input type="text" class="form&#45;control" id="fhir_server" name="name" value="SMART on FHIR Test App 3"> -->
-  <!--   </div> -->
-  <!--   <label>Server Supported Features</label> -->
-  <!--  -->
-  <!--   <div class="form&#45;group"> -->
-  <!--     <div class="form&#45;check"> -->
-  <!--       <label class="form&#45;check&#45;label"> -->
-  <!--         <input class="form&#45;check&#45;input" type="checkbox" value="" checked="checked"> -->
-  <!--         SMART on FHIR Standalone Launch Sequence -->
-  <!--       </label> -->
-  <!--     </div> -->
-  <!--     <div class="form&#45;check"> -->
-  <!--       <label class="form&#45;check&#45;label"> -->
-  <!--         <input class="form&#45;check&#45;input" type="checkbox" value="" checked="checked"> -->
-  <!--         SMART on FHIR EHR Launch Sequence -->
-  <!--       </label> -->
-  <!--     </div> -->
-  <!--     <div class="form&#45;check"> -->
-  <!--       <label class="form&#45;check&#45;label"> -->
-  <!--         <input class="form&#45;check&#45;input" type="checkbox" value="" checked="checked"> -->
-  <!--         OpenID Dynamic Client Registration -->
-  <!--       </label> -->
-  <!--     </div> -->
-  <!--     <div class="form&#45;check"> -->
-  <!--       <label class="form&#45;check&#45;label"> -->
-  <!--         <input class="form&#45;check&#45;input" type="checkbox" value="" checked="checked"> -->
-  <!--         OpenID Connect Authentication -->
-  <!--       </label> -->
-  <!--     </div> -->
-  <!--     <div class="form&#45;check"> -->
-  <!--       <label class="form&#45;check&#45;label"> -->
-  <!--         <input class="form&#45;check&#45;input" type="checkbox" value="" checked="checked"> -->
-  <!--         Argonaut Query IQ -->
-  <!--       </label> -->
-  <!--     </div> -->
-  <!--   </div> -->
-  <!--   <div class="alert alert&#45;danger" role="alert"> -->
-  <!--     This is not a recommended configuration. -->
-  <!--   </div> -->
-  <!--   <button type="submit" class="btn btn&#45;primary">Create Instance</button> -->
-
+    </form>
   </div>
 </div>

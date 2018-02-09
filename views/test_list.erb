@@ -11,6 +11,10 @@
             <div class="result-details-icon result-details-icon-fail">
               <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
             </div>
+        <% when 'cancel' %>
+            <div class="result-details-icon result-details-icon-cancel">
+              <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+            </div>
         <% when 'error' %>
             <div class="result-details-icon result-details-icon-error">
               !
@@ -56,7 +60,7 @@
       </li>
     <% end %>
     <% start_at = 0%>
-    <% start_at = sequence_result.test_results.length unless sequence_result.nil? %>
+    <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
     <% sequence_class.tests[start_at..-1].each do |test, index| %>
       <li>
         <div class="result-details-icon result-details-icon-pending">

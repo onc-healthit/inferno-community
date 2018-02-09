@@ -22,9 +22,9 @@
   <% end %>
   <% if !instance.dynamically_registered.nil? && !instance.dynamically_registered && !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil?%>
     <p>
-      Launch URL: <%=request.base_url%>/instance/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch
+      Launch URL: <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch
       <br>
-      Redirect URL: <%=request.base_url%>/instance/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect
+      Redirect URL: <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect
       <br>
       Client ID: <%= instance.client_id %>
     </p>

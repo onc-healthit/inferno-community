@@ -15,13 +15,21 @@ class PatientStandaloneLaunchSequence < SequenceBase
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => @instance.client_id,
-      'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
       'scope' => @instance.scopes,
       'state' => @instance.state,
       'aud' => @instance.url
     }
 
-    oauth2_auth_query = @instance.oauth_authorize_endpoint + "?"
+    oauth2_auth_query = @instance.oauth_authorize_endpoint
+
+    if @instance.oauth_authorize_endpoint.include? '?'
+      oauth2_auth_query += "&"
+    else
+      oauth2_auth_query += "?"
+    end
+
+
     oauth2_params.each do |key,value|
       oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
     end
@@ -38,11 +46,10 @@ class PatientStandaloneLaunchSequence < SequenceBase
     oauth2_params = {
       'grant_type' => 'authorization_code',
       'code' => @params['code'],
-      'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
       'client_id' => @instance.client_id
     }
 
-    # wrap in a rescue and do manual asserts?
     @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
 
   end
@@ -54,9 +61,10 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
     token = @token_response['access_token']
     patient_id = @token_response['patient']
-    scopes = @token_response['scope']
+    scopes = @token_response['scope'] || @instance.scopes
     token_retrieved_at = DateTime.now
     
+    @instance.save!
     @instance.update(token: token, patient_id: patient_id, scopes: scopes, token_retrieved_at: token_retrieved_at)
 
   end

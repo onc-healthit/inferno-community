@@ -18,4 +18,5 @@ class SequenceResult
 
   has n, :test_results, order: [:test_index.asc]
   belongs_to :testing_instance
+
 end
