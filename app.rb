@@ -7,7 +7,7 @@ require 'pry'
 require 'dm-core'
 require 'dm-migrations'
 
-# You should never deactivate SSL Peer Verificationg
+# You should never deactivate SSL Peer Verification
 # except in terrible development situations using invalid certificates:
 # OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
