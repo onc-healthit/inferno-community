@@ -59,6 +59,20 @@ class ArgonautSearchSequence < SequenceBase
 
   end
 
+  test 'Patient search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Patient search does not work without proper authorization' do
+
+    assert !(@patient_hash.nil? || @patient_hash.empty?), 'No Patient resource available'
+    identifier = @patient_hash['identifier'][0]['value'] rescue nil
+    assert identifier, "Patient identifier not returned"
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Patient, {identifier: identifier})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'Patient search by identifier',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier' do
@@ -121,6 +135,17 @@ class ArgonautSearchSequence < SequenceBase
   # AllergyIntolerance Search
   # --------------------------------------------------
 
+  test 'AllergyIntolerance search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'An AllergyIntolerance search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'AllergyIntolerance search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s allergies using GET /AllergyIntolerance?patient=[id]' do
@@ -134,6 +159,17 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
   # CarePlan Search
   # --------------------------------------------------
+
+  test 'CarePlan search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A CarePlan search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan"})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
@@ -189,6 +225,17 @@ class ArgonautSearchSequence < SequenceBase
   # Condition Search
   # --------------------------------------------------
 
+  test 'Condition search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Condition search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s conditions list using GET/Condition?patient=[id]' do
@@ -239,6 +286,17 @@ class ArgonautSearchSequence < SequenceBase
   # Device Search
   # --------------------------------------------------
 
+  test 'Device search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Device search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'Device search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all Unique device identifier(s)(UDI) for a patient’s implanted device(s) using GET /Device?patient=[id]' do
@@ -252,6 +310,17 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
   # Goal Search
   # --------------------------------------------------
+
+  test 'Goal search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Goal search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'Goal search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
@@ -279,6 +348,17 @@ class ArgonautSearchSequence < SequenceBase
   # Immunization Search
   # --------------------------------------------------
 
+  test 'Immunization search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'An Immunization search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A client has connected to a server and fetched all immunizations for a patient using GET /Immunization?patient=[id]' do
@@ -292,6 +372,17 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
   # DiagnosticReport Search
   # --------------------------------------------------
+
+  test 'DiagnosticReport search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A DiagnosticReport search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
@@ -347,6 +438,17 @@ class ArgonautSearchSequence < SequenceBase
   # MedicationStatement Search
   # --------------------------------------------------
 
+  test 'MedicationStatement search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'An MedicationStatement search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'MedicationStatement search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationStatement?patient=[id] 2. GET /MedicationStatement?patient=[id]&_include=MedicationStatement:medication' do
@@ -361,6 +463,17 @@ class ArgonautSearchSequence < SequenceBase
   # MedicationOrder Search
   # --------------------------------------------------
 
+  test 'MedicationOrder search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'An MedicationOrder search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'MedicationOrder search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationOrder?patient=[id] 2. GET /MedicationOrder?patient=[id]&_include=MedicationOrder:medication' do
@@ -374,6 +487,17 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
   # Observation Search
   # --------------------------------------------------
+
+  test 'Observation Results search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'An Observation Results search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'Observation Results search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
@@ -425,6 +549,17 @@ class ArgonautSearchSequence < SequenceBase
 
   end
 
+  test 'Smoking Status search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Smoking Status search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
+
   test 'Smoking Status search by patient + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a a patient’s smoking status using GET [base]/Observation?patient=[id]&code=72166-2" do
@@ -432,6 +567,17 @@ class ArgonautSearchSequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
     @smokingstatus_hash = reply.resource.entry[0].resource.to_hash rescue []
     validate_reply(FHIR::DSTU2::Observation, reply)
+
+  end
+
+  test 'Vital Signs search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Vital Signs search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
 
   end
 
@@ -488,6 +634,17 @@ class ArgonautSearchSequence < SequenceBase
   # --------------------------------------------------
   # Procedure Search
   # --------------------------------------------------
+
+  test 'Procedure search without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A Procedure search does not work without proper authorization' do
+
+    @client.set_no_auth
+    reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'Procedure search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',

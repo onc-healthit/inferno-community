@@ -19,7 +19,6 @@ class ArgonautProfilesSequence < SequenceBase
     assert_response_ok patient_read_response
     @patient = patient_read_response.resource
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
-    @patient_details = @patient.to_hash
     assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
   end
 
@@ -28,6 +27,24 @@ class ArgonautProfilesSequence < SequenceBase
     profile = ValidationUtil.guess_profile(@patient)
     errors = profile.validate_resource(@patient)
     assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
+  end
+
+  test 'Patient has address',
+          'Additional Patient resource requirement' do
+
+    assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
+    assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+    telecom = @patient.try(:address).try(:first)
+    assert telecom, 'Patient address not returned'
+  end
+
+  test 'Patient has telecom',
+          'Additional Patient resource requirement' do
+
+    assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
+    assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+    telecom = @patient.try(:telecom).try(:first)
+    assert telecom, 'Patient telecom not returned'
   end
 
   test 'Patient supports $everything operation', '' do
