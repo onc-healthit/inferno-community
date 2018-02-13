@@ -5,6 +5,10 @@ task :default do
   Rake::Task['test'].invoke
 end
 
+Dir['lib/tasks/*.rake'].sort.each do |ext|
+  load ext
+end
+
 Rake::TestTask.new(:default) do |t|
   t.libs << "test"
   t.pattern = 'test/**/*_test.rb'
