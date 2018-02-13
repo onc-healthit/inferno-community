@@ -10,18 +10,18 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
   def setup
-    instance = TestingInstance.new(url: 'http://www.example.com', 
+    @instance = TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Crucible Smart App',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
                                    oauth_register_endpoint: 'http://oauth_reg.example.com/register',
                                    scopes: 'launch openid patient/*.* profile'
                                    )
-    instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
-    client = FHIR::Client.new(instance.url)
+    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
+    client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = DynamicRegistrationSequence.new(instance, client)
+    @sequence = DynamicRegistrationSequence.new(@instance, client)
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 
@@ -29,7 +29,7 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
     WebMock.reset!
     headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
 
-    stub_request(:post, "http://oauth_reg.example.com/register").
+    stub_request(:post, @instance.oauth_register_endpoint).
       with(headers: headers).
       to_return(status: 200, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
 

@@ -7,7 +7,7 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
                       'Content-Type'=>'application/json+fhir;charset=UTF-8'
                      }
 
-  RESPONSE_HEADERS = {"content-type"=>"application/json+fhir;charset=UTF-8"}
+  RESPONSE_HEADERS = {'content-type'=>'application/json+fhir;charset=UTF-8'}
 
   def setup
     instance = TestingInstance.new(url: 'http://www.example.com')
