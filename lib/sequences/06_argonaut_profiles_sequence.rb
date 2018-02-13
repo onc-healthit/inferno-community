@@ -30,21 +30,23 @@ class ArgonautProfilesSequence < SequenceBase
   end
 
   test 'Patient has address',
+          nil,
           'Additional Patient resource requirement' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
-    telecom = @patient.try(:address).try(:first)
-    assert telecom, 'Patient address not returned'
+    address = @patient.try(:address).try(:first)
+    assert !address.nil?, 'Patient address not returned'
   end
 
   test 'Patient has telecom',
+          nil,
           'Additional Patient resource requirement' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
     telecom = @patient.try(:telecom).try(:first)
-    assert telecom, 'Patient telecom not returned'
+    assert !telecom.nil?, 'Patient telecom not returned'
   end
 
   test 'Patient supports $everything operation', '' do

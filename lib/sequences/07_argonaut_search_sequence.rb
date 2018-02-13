@@ -64,7 +64,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     identifier = @patient.try(:identifier).try(:first).try(:value)
-    assert identifier, "Patient identifier not returned"
+    assert !identifier.nil?, "Patient identifier not returned"
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {identifier: identifier})
     @client.set_bearer_token(@instance.token)
@@ -78,7 +78,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     identifier = @patient.try(:identifier).try(:first).try(:value)
-    assert identifier, "Patient identifier not returned"
+    assert !identifier.nil?, "Patient identifier not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {identifier: identifier})
     validate_reply(FHIR::DSTU2::Patient, reply)
 
@@ -90,11 +90,11 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     family = @patient.try(:name).try(:first).try(:family).try(:first)
-    assert family, "Patient family name not returned"
+    assert !family.nil?, "Patient family name not returned"
     given = @patient.try(:name).try(:first).try(:given).try(:first)
-    assert given, "Patient given name not returned"
+    assert !given.nil?, "Patient given name not returned"
     gender = @patient.try(:gender)
-    assert gender, "Patient gender not returned"
+    assert !gender.nil?, "Patient gender not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, gender: gender})
     validate_reply(FHIR::DSTU2::Patient, reply)
 
@@ -106,11 +106,11 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     family = @patient.try(:name).try(:first).try(:family).try(:first)
-    assert family, "Patient family name not returned"
+    assert !family.nil?, "Patient family name not returned"
     given = @patient.try(:name).try(:first).try(:given).try(:first)
-    assert given, "Patient given name not returned"
+    assert !given.nil?, "Patient given name not returned"
     birthdate = @patient.try(:birthDate)
-    assert birthdate, "Patient birthDate not returned"
+    assert !birthdate.nil?, "Patient birthDate not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, birthdate: birthdate})
     validate_reply(FHIR::DSTU2::Patient, reply)
 
@@ -122,9 +122,9 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     gender = @patient.try(:gender)
-    assert gender, "Patient gender not returned"
+    assert !gender.nil?, "Patient gender not returned"
     birthdate = @patient.try(:birthDate)
-    assert birthdate, "Patient birthDate not returned"
+    assert !birthdate.nil?, "Patient birthDate not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {gender: gender, birthdate: birthdate})
     validate_reply(FHIR::DSTU2::Patient, reply)
 
@@ -186,7 +186,7 @@ class ArgonautSearchSequence < SequenceBase
     warning {
       assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
       date = @careplan.try(:period).try(:end)
-      assert date, "CarePlan period end not returned"
+      assert !date.nil?, "CarePlan period end not returned"
       reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", date: date})
       validate_reply(FHIR::DSTU2::CarePlan, reply)
     }
@@ -211,7 +211,7 @@ class ArgonautSearchSequence < SequenceBase
     warning {
       assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
       date = @careplan.try(:period).try(:end)
-      assert date, "CarePlan period end not returned"
+      assert !date.nil?, "CarePlan period end not returned"
       reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date})
       validate_reply(FHIR::DSTU2::CarePlan, reply)
     }
@@ -330,7 +330,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@goal.nil?, 'Expected valid DSTU2 Goal resource to be present'
     date = @goal.try(:statusDate)
-    assert date, "Goal statusDate not returned"
+    assert !date.nil?, "Goal statusDate not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id, date: date})
     validate_reply(FHIR::DSTU2::Goal, reply)
 
@@ -391,7 +391,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
     date = @diagnosticreport.try(:effectiveDateTime)
-    assert date, "DiagnosticReport effectiveDateTime not returned"
+    assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", date: date})
     validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
 
@@ -403,7 +403,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
     code = @diagnosticreport.try(:code).try(:text)
-    assert code, "DiagnosticReport code not returned"
+    assert !code.nil?, "DiagnosticReport code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code})
     validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
 
@@ -416,9 +416,9 @@ class ArgonautSearchSequence < SequenceBase
     warning {
       assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
       code = @diagnosticreport.try(:code).try(:text)
-      assert code, "DiagnosticReport code not returned"
+      assert !code.nil?, "DiagnosticReport code not returned"
       date = @diagnosticreport.try(:effectiveDateTime)
-      assert date, "DiagnosticReport effectiveDateTime not returned"
+      assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
       reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code, date: date})
       validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
     }
@@ -504,7 +504,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
     date = @observationresults.try(:effectiveDateTime)
-    assert date, "Observation effectiveDateTime not returned"
+    assert !date.nil?, "Observation effectiveDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", date: date})
     validate_reply(FHIR::DSTU2::Observation, reply)
 
@@ -516,7 +516,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
     code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
-    assert code, "Observation code not returned"
+    assert !code.nil?, "Observation code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code})
     validate_reply(FHIR::DSTU2::Observation, reply)
 
@@ -529,9 +529,9 @@ class ArgonautSearchSequence < SequenceBase
     warning {
       assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
       code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
-      assert code, "Observation code not returned"
+      assert !code.nil?, "Observation code not returned"
       date = @observationresults.try(:effectiveDateTime)
-      assert date, "Observation effectiveDateTime not returned"
+      assert !date.nil?, "Observation effectiveDateTime not returned"
       reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code, date: date})
       validate_reply(FHIR::DSTU2::Observation, reply)
     }
@@ -585,7 +585,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
     date = @vitalsigns.try(:effectiveDateTime)
-    assert date, "Observation effectiveDateTime not returned"
+    assert !date.nil?, "Observation effectiveDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", date: date})
     validate_reply(FHIR::DSTU2::Observation, reply)
 
@@ -597,7 +597,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
     code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
-    assert code, "Observation code not returned"
+    assert !code.nil?, "Observation code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", code: code})
     validate_reply(FHIR::DSTU2::Observation, reply)
 
@@ -610,9 +610,9 @@ class ArgonautSearchSequence < SequenceBase
     warning {
       assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
       code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
-      assert code, "Observation code not returned"
+      assert !code.nil?, "Observation code not returned"
       date = @vitalsigns.try(:effectiveDateTime)
-      assert date, "Observation effectiveDateTime not returned"
+      assert !date.nil?, "Observation effectiveDateTime not returned"
       reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", code: code, date: date})
       validate_reply(FHIR::DSTU2::Observation, reply)
     }
@@ -650,7 +650,7 @@ class ArgonautSearchSequence < SequenceBase
 
     assert !@procedure.nil?, 'Expected valid DSTU2 Procedure resource to be present'
     date = @procedure.try(:performedDateTime)
-    assert date, "Procedure performedDateTime not returned"
+    assert !date.nil?, "Procedure performedDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id, date: date})
     validate_reply(FHIR::DSTU2::Procedure, reply)
 
