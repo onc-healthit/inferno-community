@@ -13,12 +13,13 @@ require 'dm-migrations'
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
 
-# SET TO FALSE TO KEEP DATABASE BETWEEN SERVER RESTARTS
+# set to false to keep database between server restarts
 PURGE_DATABASE = true
 
-DataMapper::Logger.new($stdout, :debug)
-DataMapper.setup(:default, 'sqlite3:data/data.db')
+DataMapper::Logger.new($stdout, :debug) if settings.environment == :development
 DataMapper::Model.raise_on_save_failure = true 
+
+DataMapper.setup(:default, "sqlite3:data/#{settings.environment.to_s}_data.db")
 
 require './lib/sequence_base'
 ['lib', 'models'].each do |dir|
@@ -32,12 +33,21 @@ end
 DataMapper.finalize
 
 [TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult].each do |model|
-  if PURGE_DATABASE
+  if PURGE_DATABASE || settings.environment == :test
     model.auto_migrate!
   else
     model.auto_upgrade!
   end
 end
+
+SEQUENCES = [ ConformanceSequence, 
+              DynamicRegistrationSequence, 
+              PatientStandaloneLaunchSequence, 
+              ProviderEHRLaunchSequence, 
+              TokenIntrospectionSequence, 
+              ArgonautProfilesSequence, 
+              ArgonautSearchSequence 
+            ]
 
 helpers do
   def request_headers
@@ -46,49 +56,69 @@ helpers do
 end
 
 get '/' do
-  status, headers, body = call! env.merge("PATH_INFO" => '/index')
+  status, headers, body = call! env.merge("PATH_INFO" => '/smart/')
 end
 
-get '/index' do
+get '/smart/?' do
   erb :index
 end
 
-get '/instance/:id/?' do
-  @instance = TestingInstance.get(params[:id])
-  @sequences = [ ConformanceSequence, DynamicRegistrationSequence, PatientStandaloneLaunchSequence, ProviderEHRLaunchSequence, TokenIntrospectionSequence, ArgonautProfilesSequence, ArgonautSearchSequence ]
-  @sequence_results = @instance.latest_results
-
-  erb :details
+get '/smart/static/*' do
+  status, headers, body = call! env.merge("PATH_INFO" => '/' + params['splat'].first)
 end
 
-post '/instance/?' do
+get '/smart/:id/?' do
+  instance = TestingInstance.get(params[:id])
+  halt 404 if instance.nil?
+  sequence_results = instance.latest_results
+  erb :details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: sequence_results, error_code: params[:error]}
+end
+
+post '/smart/?' do
   url = params['fhir_server']
   url = url.chomp('/') if url.end_with?('/')
   @instance = TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
   @instance.save!
-  redirect "/instance/#{@instance.id}/"
+  redirect "/smart/#{@instance.id}/"
 end
 
-get '/instance/:id/test_result/:test_result_id/?' do
+get '/smart/:id/test_result/:test_result_id/?' do
   @test_result = TestResult.get(params[:test_result_id])
   halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
   erb :test_result_details, layout: false
 end
 
-get '/instance/:id/sequence_result/:sequence_result_id/cancel' do
+get '/smart/:id/sequence_result/:sequence_result_id/cancel' do
 
   @sequence_result = SequenceResult.get(params[:sequence_result_id])
   halt 404 if @sequence_result.testing_instance.id != params[:id]
 
   @sequence_result.result = 'cancel'
+  cancel_message = 'Test cancelled by user.'
+
+  if @sequence_result.test_results.length > 0
+    last_result = @sequence_result.test_results.last
+    last_result.result = 'cancel'
+    last_result.message = cancel_message
+  end
+
+  sequence = SequenceBase.subclasses.find{|x| x.to_s.start_with?(@sequence_result.name)}
+
+  current_test_count = @sequence_result.test_results.length
+
+  sequence.tests.each_with_index do |test, index|
+    next if index < current_test_count
+    @sequence_result.test_results << TestResult.new(name: test[:name], result: 'cancel', url: test[:url], description: test[:description], test_index: test[:test_index], message: cancel_message)
+  end
+
   @sequence_result.save!
 
-  redirect "/instance/#{params[:id]}/##{@sequence_result.name}"
+  redirect "/smart/#{params[:id]}/##{@sequence_result.name}"
 
 end
 
 
-get '/instance/:id/:sequence/?' do
+get '/smart/:id/:sequence/?' do
   instance = TestingInstance.get(params[:id])
   client = FHIR::Client.new(instance.url)
   client.use_dstu2
@@ -96,19 +126,31 @@ get '/instance/:id/:sequence/?' do
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
     sequence = klass.new(instance, client)
-
-    sequence_result = sequence.start
-    instance.sequence_results.push(sequence_result)
-    instance.save!
-
-    if sequence_result.redirect_to_url
-      redirect sequence_result.redirect_to_url
+    stream do |out|
+      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << "<script>$('#WaitModal').modal('hide')</script>"
+      out << "<script>$('#testsRunningModal').modal('show')</script>"
+      count = 0
+      sequence_result = sequence.start do |result|
+        count = count + 1
+        out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
+      end
+      sequence_result.save!
+      if sequence_result.redirect_to_url
+        out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
+        out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+      else 
+        out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
+      end
     end
+
+  else 
+   redirect "/smart/#{params[:id]}/##{params[:sequence]}"
   end
-  redirect "/instance/#{params[:id]}/##{params[:sequence]}"
+
 end
 
-post '/instance/:id/ConformanceSkip/?' do
+post '/smart/:id/ConformanceSkip/?' do
   instance = TestingInstance.get(params[:id])
 
   conformance_sequence_result = SequenceResult.new(name: "Conformance", result: "skip")
@@ -121,63 +163,80 @@ post '/instance/:id/ConformanceSkip/?' do
   instance.sequence_results.push(conformance_sequence_result)
   instance.save!
 
-  redirect "/instance/#{params[:id]}/"
+  redirect "/smart/#{params[:id]}/"
 end
 
-post '/instance/:id/DynamicRegistration' do
+post '/smart/:id/DynamicRegistration' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(dynamically_registered: false, oauth_register_endpoint: params['registration_url'], scopes: params['scope'], client_name: params['client_name'])
 
-  redirect "/instance/#{@instance.id}/DynamicRegistration/"
+  redirect "/smart/#{@instance.id}/DynamicRegistration/"
 end
 
-post '/instance/:id/dynamic_registration_skip/?' do
+post '/smart/:id/dynamic_registration_skip/?' do
   instance = TestingInstance.get(params[:id])
 
   sequence_result = SequenceResult.new(name: "DynamicRegistration", result: "skip")
   instance.sequence_results << sequence_result
 
   instance.client_id = params[:client_id]
+  instance.scopes = params[:scope]
   instance.dynamically_registered = false
-  instance.save
+  instance.save!
 
-  redirect "/instance/#{params[:id]}/"
+  redirect "/smart/#{params[:id]}/"
 end
 
-post '/instance/:id/PatientStandaloneLaunch/?' do
+post '/smart/:id/PatientStandaloneLaunch/?' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(scopes: params['scopes'])
-  redirect "/instance/#{params[:id]}/PatientStandaloneLaunch/"
+  redirect "/smart/#{params[:id]}/PatientStandaloneLaunch/"
 end
 
-get '/instance/:id/:key/:endpoint/?' do
+post '/smart/:id/ProviderEHRLaunch/?' do
   @instance = TestingInstance.get(params[:id])
+  @instance.update(scopes: params['scopes'])
+  redirect "/smart/#{params[:id]}/ProviderEHRLaunch/"
+end
 
-  sequence_result = @instance.waiting_on_sequence
-  
+get '/smart/:id/:key/:endpoint/?' do
+  instance = TestingInstance.get(params[:id])
+  halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && ['launch','redirect'].include?(params[:endpoint])
+
+  sequence_result = instance.waiting_on_sequence
+
   if sequence_result.nil? || sequence_result.result != 'wait'
-    redirect "/instance/#{params[:id]}/?error=No sequence is currently waiting on launch."
+    redirect "/smart/#{params[:id]}/?error=no_#{params[:endpoint]}"
   else
     klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(sequence_result.name)}
-    instance = TestingInstance.get(params[:id])
 
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
     sequence = klass.new(instance, client, sequence_result)
-    sequence_result = sequence.resume(request, request_headers)
-    sequence_result.save!
-
-    if sequence_result.redirect_to_url
-      redirect sequence_result.redirect_to_url
+    stream do |out|
+      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << "<script>$('#WaitModal').modal('hide')</script>"
+      out << "<script>$('#testsRunningModal').modal('show')</script>"
+      count = sequence_result.test_results.length
+      sequence_result = sequence.resume(request, headers, request.params) do |result|
+        count = count + 1
+        out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
+        instance.save!
+      end
+      instance.sequence_results.push(sequence_result)
+      instance.save!
+      if sequence_result.redirect_to_url
+        out << "<script>$('#testsRunningModal').find('modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
+        out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+      else 
+        out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
+      end
     end
-
-    redirect "/instance/#{params[:id]}/##{sequence_result.name}"
-
   end
 end
 
-post '/instance/:id/TokenIntrospection' do
+post '/smart/:id/TokenIntrospection' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
   @instance.update(resource_id: params['resource_id'])
@@ -186,6 +245,6 @@ post '/instance/:id/TokenIntrospection' do
   # copy over the access token to a different place in case it's not the same
   @instance.update(introspect_token: params['access_token'])
   
-  redirect "/instance/#{params[:id]}/TokenIntrospection/"
+  redirect "/smart/#{params[:id]}/TokenIntrospection/"
 
 end

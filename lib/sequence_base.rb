@@ -39,9 +39,9 @@ class SequenceBase
     @test_warnings = []
   end
 
-  def resume(request = nil, headers = nil)
+  def resume(request = nil, headers = nil, params = nil, &block)
 
-    @params = request.params
+    @params = params unless params.nil?
 
     @sequence_result.test_results.last.result = STATUS[:pass]
 
@@ -59,16 +59,17 @@ class SequenceBase
     @sequence_result.wait_at_endpoint = nil
     @sequence_result.redirect_to_url = nil
 
-    start
+    @sequence_result.save!
+
+    start(&block)
   end
 
   def start
     if @sequence_result.nil?
-      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass])
+      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance)
     end
 
     start_at = @sequence_result.test_results.length
-    puts "STARTING AT #{start_at}"
 
     methods = self.methods.grep(/_test$/).sort
     methods.each_with_index do |test_method, index|
@@ -103,6 +104,7 @@ class SequenceBase
           response_body: req[:response][:body])
       end
 
+      yield result if block_given?
 
       @sequence_result.test_results << result
 
@@ -203,7 +205,7 @@ class SequenceBase
     contents = block
 
     @@test_metadata[self.sequence_name] ||= [] 
-    @@test_metadata[self.sequence_name] << { name: name, url: url, description: description }
+    @@test_metadata[self.sequence_name] << { name: name, url: url, description: description, test_index: test_index}
 
     wrapped = -> () do
       @test_warnings, @links, @requires, @validates = [],[],[],[]
@@ -238,17 +240,11 @@ class SequenceBase
         result.message = e.message
 
       rescue => e
+        # binding.pry
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end
       result.test_warnings = @test_warnings.map{ |w| TestWarning.new(message: w)} unless @test_warnings.empty?
-      # result.requires = @requires unless @requires.empty?
-      # result.validates = @validates unless @validates.empty?
-      # result.links = @links unless @links.empty?
-      # result.id = key
-      # result.code = contents.source
-      # result.id = "#{result.id}_#{result_id_suffix}" if respond_to? :result_id_suffix # add the resource to resource based tests to make ids unique
-
       result
     end
 

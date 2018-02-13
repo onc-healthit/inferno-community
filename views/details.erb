@@ -5,8 +5,19 @@
         <div class="col">
           <div class="server-state-title">FHIR Resource Server</div>
           <div class="server-state">
-            <%=@instance.url%>
+            <%=instance.url%>
           </div>
+          <% unless locals[:error_code].nil? %>
+            <div class="alert alert-danger" role="alert">
+              <% if error_code == 'no_launch' %>
+                The launch URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
+                before initiating an EHR launch from the server.
+              <% elsif error_code == 'no_redirect' %>
+                The redirect URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
+                before visiting this redirect url.
+              <% end %>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>
@@ -19,11 +30,11 @@
       <button type="button" class="btn btn-outline-secondary btn-sm client-state-button" data-toggle="modal" data-target="#stateModal">
         Client State
       </button>
-      Test Sequences <span class="scorecard-title-details">(<%= @sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.count %> sequences successfully demonstrated)</span>
+      Test Sequences <span class="scorecard-title-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.count %> sequences successfully demonstrated)</span>
     </div>
     <div class="scorecard-table">
-      <% @sequences.each do |sequence_class| %>
-        <%= erb(:sequence,{},{sequence_class: sequence_class}) %>
+      <% sequences.each do |sequence_class| %>
+        <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
       <% end %>
     </div>
   </div>
@@ -80,7 +91,7 @@
           </p>
           <div class="form-group">
             <label for="registration_url">Registration URL</label>
-            <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= @instance.oauth_register_endpoint %>" required>
+            <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= instance.oauth_register_endpoint %>" required>
           </div>
           <div class="form-group">
             <label for="client_name">Client Name</label>
@@ -88,15 +99,15 @@
           </div>
           <div class="form-group">
             <label for="initiate_login_uri">Launch URI</label>
-            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
             <label for="redirect_uris">Redirect URI</label>
-            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
-            <input type="text" class="form-control" name="scope" id="scope" value="<%=@instance.scopes || DEFAULT_SCOPES %>" required>
+            <input type="text" class="form-control" name="scope" id="scope" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -124,11 +135,11 @@
           </p>
           <div class="form-group">
             <label for="skip_launch">Launch URL</label>
-            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch">
+            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
             <label for="skip_redirect">Redirect URL</label>
-            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/redirect">
+            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
             <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
@@ -140,7 +151,7 @@
           </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
-            <input readonly type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
+            <input type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
           </div>
           <div class="form-group">
             <label for="dynamicRegistrationClientId">Enter Client Id</label>
@@ -172,7 +183,7 @@
           </p>
           <div class="form-group">
             <label for="patientStandaloneLaunchScopes">Scopes</label>
-            <input type="text" class="form-control" name="scopes" id="patientStandaloneLaunchScopes" value="<%=@instance.scopes || DEFAULT_SCOPES %>" required>
+            <input type="text" class="form-control" name="scopes" id="patientStandaloneLaunchScopes" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -193,36 +204,42 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        <p>
-          Waiting for EHR launch at <%=request.base_url%>/instance/<%=@instance.id%>/<%=@instance.client_endpoint_key%>/launch
-        </p>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <form method="POST" action="ProviderEHRLaunch">
+        <div class="modal-body">
+          <p>
+            Enter the desired authorization scopes. Ensure your app registration included these scopes.
+          </p>
+          <div class="form-group">
+            <label for="patientStandaloneLaunchScopes">Scopes</label>
+            <input type="text" class="form-control" name="scopes" id="providerEHRLaunchScopes" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run EHR Launch</button>
+          </div>
         </div>
+      </form>
       </div>
     </div>
   </div>
 </div>
 
-<% waiting_on_sequence = @instance.waiting_on_sequence %>
+<% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
-  <% redirect_to = "#{request.base_url}/instance/#{@instance.id}/#{@instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
-  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true">
+  <% redirect_to = "#{request.base_url}/smart/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
+  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true" data-backdrop="static">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Waiting for Server Redirect</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+            <h5 class="modal-title" id="exampleModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL</h5>
         </div>
         <div class="modal-body">
           <p>
-          Waiting for redirect at: <br/><%=redirect_to %>
+          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL: <br/><%=redirect_to %>
           </p>
           <div class="modal-footer">
-            <a href="<%= "#{request.base_url}/instance/#{@instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-secondary">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}/smart/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
+            <a href="<%= "#{request.base_url}/smart/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
           </div>
         </div>
       </div>
@@ -240,7 +257,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <%= erb(:state, {}, {instance: @instance}) %>
+        <%= erb(:state_status, {}, {instance: instance}) %>
       </div>
     </div>
   </div>
@@ -269,24 +286,42 @@
           </p>
           <div class="form-group">
             <label for="access_token">Access Token</label>
-            <input type="text" class="form-control" name="access_token" id="access_token" value="<%= @instance.token %>" required>
+            <input type="text" class="form-control" name="access_token" id="access_token" value="<%= instance.token %>" required>
           </div>
           <div class="form-group">
             <label for="oauth_introspection_endpoint">Introspection URL</label>
-            <input type="text" class="form-control" name="oauth_introspection_endpoint" id="oauth_introspection_endpoint" value="<%= @instance.oauth_introspection_endpoint %>" required>
+            <input type="text" class="form-control" name="oauth_introspection_endpoint" id="oauth_introspection_endpoint" value="<%= instance.oauth_introspection_endpoint %>" required>
           </div>
           <div class="form-group">
             <label for="client_name">Resource ID (defaults to client ID but may be different)</label>
-            <input type="text" class="form-control" name="resource_id" id="resource_id" value="<%= !@instance.resource_id.nil? ? @instance.resource_id : @instance.client_id %>" required>
+            <input type="text" class="form-control" name="resource_id" id="resource_id" value="<%= !instance.resource_id.nil? ? instance.resource_id : instance.client_id %>" required>
           </div>
           <div class="form-group">
             <label for="client_name">Resource Secret (defaults to client secret but may be different)</label>
-            <input type="text" class="form-control" name="resource_secret" id="resource_secret" value="<%= @instance.resource_secret %>" required>
+            <input type="text" class="form-control" name="resource_secret" id="resource_secret" value="<%= instance.resource_secret %>" required>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Run Introspection Test</button>
           </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Tests Running</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="TokenIntrospection">
+        <div class="modal-body">
+          Tests are currently running <span class="number-complete"></span>
         </div>
       </form>
     </div>

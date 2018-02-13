@@ -3,7 +3,7 @@ class ProviderEHRLaunchSequence < SequenceBase
   title 'Provider EHR Launch Sequence'
 
   description 'Provider EHR Launch Sequence'
-  # modal_before_run
+  modal_before_run
 
   preconditions 'Client must be registered.' do 
     !@instance.client_id.nil?
@@ -31,14 +31,11 @@ class ProviderEHRLaunchSequence < SequenceBase
     # construct querystring to oauth and redirect after
     @instance.state = SecureRandom.uuid
 
-    #TODO: FIGUREOUT SCOPES
-    scopes = 'launch openid patient/*.* profile'
-
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => @instance.client_id,
-      'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
-      'scope' => scopes,
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'scope' => @instance.scopes,
       'launch' => @params['launch'],
       'state' => @instance.state,
       'aud' => @params['iss']
@@ -61,7 +58,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     oauth2_params = {
       'grant_type' => 'authorization_code',
       'code' => @params['code'],
-      'redirect_uri' => @instance.base_url + '/instance/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
       'client_id' => @instance.client_id
     }
 
@@ -80,6 +77,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     scopes = @token_response['scope']
     token_retrieved_at = DateTime.now
     
+    @instance.save! #investigate why this is dirty
     @instance.update(token: token, patient_id: patient_id, scopes: scopes, token_retrieved_at: token_retrieved_at)
 
   end

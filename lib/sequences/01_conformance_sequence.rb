@@ -13,11 +13,9 @@ class ConformanceSequence < SequenceBase
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
   end
 
-  test 'Conformance states proper JSON or XML support' do
+  test 'Conformance states json support' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-    json = @conformance.format.include?(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
-    xml = @conformance.format.include?(FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2)
-    assert (json || xml), "Conformance statement does not state support for either #{FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2} or #{FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2}."
+    assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
   end
 
   test 'Conformance lists valid OAuth 2.0 endpoints' do
@@ -29,18 +27,42 @@ class ConformanceSequence < SequenceBase
     assert (authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{authorize_url}'"
     assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
 
-    @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url)
+    registration_url = nil
+
+    warning {
+      security_info = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
+      registration_url = security_info.extension.find{|x| x.url == 'register'}
+      registration_url = registration_url.value if registration_url
+      assert !registration_url.blank?,  'No dynamic registration endpoint in conformance.'
+      assert (registration_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid registration url: '#{registration_url}'"
+    }
+
+    @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
   end
 
-  test 'Conformance lists registration endpoint' do
+  test 'Conformance statement lists core capabilities' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-    assert !@conformance.try(:rest).try(:first).try(:security).try(:extension).nil?, 'No security extension present in conformance statement.'
-    security_info = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
-    registration_url = security_info.extension.find{|x| x.url == 'register'}
-    registration_url = registration_url.value if registration_url
-    assert (registration_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid registration url: '#{registration_url}'"
 
-    @instance.update(oauth_register_endpoint: registration_url)
+    required_capabilities = ['launch-ehr',
+      'launch-standalone',
+      'client-public',
+      'client-confidential-symmetric',
+      'sso-openid-connect',
+      'context-ehr-patient',
+      'context-standalone-patient',
+      'context-standalone-encounter',
+      'permission-offline',
+      'permission-patient',
+      'permission-user'
+    ]
+
+    warning {
+      capabilities = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
+      assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
+      available_capabilities = capabilities.map{ |v| v['valueCode']}
+      missing_capabilities = (required_capabilities - available_capabilities)
+      assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
+    }
   end
 
 end
