@@ -31,14 +31,11 @@ class ProviderEHRLaunchSequence < SequenceBase
     # construct querystring to oauth and redirect after
     @instance.state = SecureRandom.uuid
 
-    #TODO: FIGUREOUT SCOPES
-    scopes = 'launch openid patient/*.* profile'
-
     oauth2_params = {
       'response_type' => 'code',
       'client_id' => @instance.client_id,
       'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
-      'scope' => scopes,
+      'scope' => @instance.scopes,
       'launch' => @params['launch'],
       'state' => @instance.state,
       'aud' => @params['iss']

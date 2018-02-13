@@ -1,0 +1,10 @@
+language: ruby
+cache: bundler
+sudo: required
+rvm:
+  - 2.2.9
+notifications:
+  email:
+    recipients:
+      - fhir-testing-list@lists.mitre.org
+    on_failure: change

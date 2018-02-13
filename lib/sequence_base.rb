@@ -39,9 +39,9 @@ class SequenceBase
     @test_warnings = []
   end
 
-  def resume(request = nil, headers = nil, &block)
+  def resume(request = nil, headers = nil, params = nil, &block)
 
-    @params = request.params
+    @params = params unless params.nil?
 
     @sequence_result.test_results.last.result = STATUS[:pass]
 
@@ -66,7 +66,7 @@ class SequenceBase
 
   def start
     if @sequence_result.nil?
-      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass])
+      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance)
     end
 
     start_at = @sequence_result.test_results.length

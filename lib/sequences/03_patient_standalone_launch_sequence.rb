@@ -29,7 +29,6 @@ class PatientStandaloneLaunchSequence < SequenceBase
       oauth2_auth_query += "?"
     end
 
-
     oauth2_params.each do |key,value|
       oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
     end

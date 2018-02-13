@@ -16,9 +16,10 @@ DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* pa
 # set to false to keep database between server restarts
 PURGE_DATABASE = true
 
-DataMapper::Logger.new($stdout, :debug)
-DataMapper.setup(:default, 'sqlite3:data/data.db')
+DataMapper::Logger.new($stdout, :debug) if settings.environment == :development
 DataMapper::Model.raise_on_save_failure = true 
+
+DataMapper.setup(:default, "sqlite3:data/#{settings.environment.to_s}_data.db")
 
 require './lib/sequence_base'
 ['lib', 'models'].each do |dir|
@@ -32,7 +33,7 @@ end
 DataMapper.finalize
 
 [TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult].each do |model|
-  if PURGE_DATABASE
+  if PURGE_DATABASE || settings.environment == :test
     model.auto_migrate!
   else
     model.auto_upgrade!
@@ -63,16 +64,14 @@ get '/smart/?' do
 end
 
 get '/smart/static/*' do
-
   status, headers, body = call! env.merge("PATH_INFO" => '/' + params['splat'].first)
-
 end
 
 get '/smart/:id/?' do
   instance = TestingInstance.get(params[:id])
+  halt 404 if instance.nil?
   sequence_results = instance.latest_results
-
-  erb :details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: sequence_results}
+  erb :details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: sequence_results, error_code: params[:error]}
 end
 
 post '/smart/?' do
@@ -136,8 +135,7 @@ get '/smart/:id/:sequence/?' do
         count = count + 1
         out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
       end
-      instance.sequence_results.push(sequence_result)
-      instance.save!
+      sequence_result.save!
       if sequence_result.redirect_to_url
         out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
         out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
@@ -203,11 +201,12 @@ end
 
 get '/smart/:id/:key/:endpoint/?' do
   instance = TestingInstance.get(params[:id])
+  halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && ['launch','redirect'].include?(params[:endpoint])
 
   sequence_result = instance.waiting_on_sequence
 
   if sequence_result.nil? || sequence_result.result != 'wait'
-    redirect "/smart/#{params[:id]}/?error=No sequence is currently waiting on launch."
+    redirect "/smart/#{params[:id]}/?error=no_#{params[:endpoint]}"
   else
     klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(sequence_result.name)}
 
@@ -220,7 +219,7 @@ get '/smart/:id/:key/:endpoint/?' do
       out << "<script>$('#WaitModal').modal('hide')</script>"
       out << "<script>$('#testsRunningModal').modal('show')</script>"
       count = sequence_result.test_results.length
-      sequence_result = sequence.resume(request, headers) do |result|
+      sequence_result = sequence.resume(request, headers, request.params) do |result|
         count = count + 1
         out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
         instance.save!

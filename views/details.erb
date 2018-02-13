@@ -7,6 +7,17 @@
           <div class="server-state">
             <%=instance.url%>
           </div>
+          <% unless locals[:error_code].nil? %>
+            <div class="alert alert-danger" role="alert">
+              <% if error_code == 'no_launch' %>
+                The launch URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
+                before initiating an EHR launch from the server.
+              <% elsif error_code == 'no_redirect' %>
+                The redirect URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
+                before visiting this redirect url.
+              <% end %>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>
