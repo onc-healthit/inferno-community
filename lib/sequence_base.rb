@@ -287,7 +287,7 @@ class SequenceBase
         ProviderEHRLaunchSequence, 
         TokenIntrospectionSequence, 
         ArgonautProfilesSequence, 
-        ArgonautSearchSequence,
+        ArgonautDataQuerySequence,
         AdditionalResourcesSequence]
   end
 
