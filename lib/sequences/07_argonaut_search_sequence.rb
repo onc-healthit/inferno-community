@@ -206,7 +206,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning a patient’s active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]' do
+          'A server SHOULD be capable returning a patients active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]' do
 
     warning {
       assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
@@ -235,7 +235,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient’s conditions list using GET/Condition?patient=[id]' do
+          'A server is capable of returning a patients conditions list using GET/Condition?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
     validate_reply(FHIR::DSTU2::Condition, reply)
@@ -244,7 +244,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient + clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
+          'A server SHOULD be capable returning all of a patients active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
@@ -255,7 +255,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient + problem category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s problems or all of patient’s health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
+          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "problem"})
@@ -266,7 +266,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient + health-concern category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s problems or all of patient’s health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
+          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "health-concern"})

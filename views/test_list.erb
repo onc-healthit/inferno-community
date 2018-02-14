@@ -52,6 +52,7 @@
 
         <% if result.result == 'todo' %> TODO: <% end %>
         <%= result.name %>
+        <% unless result.required %> (optional) <% end %>
         <% if result.result == 'fail' || result.result == 'error' %>
           <div class="result-details-message">
             Failure Message: <%= result.message %>
