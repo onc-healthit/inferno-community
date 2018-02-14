@@ -8,7 +8,7 @@ require 'dm-core'
 require 'dm-migrations'
 
 # You should never deactivate SSL Peer Verification
-# except in terrible development situations using invalid certificates:
+# except in development situations using invalid certificates:
 # OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
@@ -40,15 +40,6 @@ DataMapper.finalize
   end
 end
 
-SEQUENCES = [ ConformanceSequence, 
-              DynamicRegistrationSequence, 
-              PatientStandaloneLaunchSequence, 
-              ProviderEHRLaunchSequence, 
-              TokenIntrospectionSequence, 
-              ArgonautProfilesSequence, 
-              ArgonautSearchSequence 
-            ]
-
 helpers do
   def request_headers
     env.inject({}){|acc, (k,v)| acc[$1.downcase] = v if k =~ /^http_(.*)/i; acc}
@@ -71,7 +62,7 @@ get '/smart/:id/?' do
   instance = TestingInstance.get(params[:id])
   halt 404 if instance.nil?
   sequence_results = instance.latest_results
-  erb :details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: sequence_results, error_code: params[:error]}
+  erb :details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: sequence_results, error_code: params[:error]}
 end
 
 post '/smart/?' do
@@ -127,7 +118,7 @@ get '/smart/:id/:sequence/?' do
   if klass
     sequence = klass.new(instance, client)
     stream do |out|
-      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
       out << "<script>$('#testsRunningModal').modal('show')</script>"
       count = 0
@@ -215,7 +206,7 @@ get '/smart/:id/:key/:endpoint/?' do
     client.default_json
     sequence = klass.new(instance, client, sequence_result)
     stream do |out|
-      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
       out << "<script>$('#testsRunningModal').modal('show')</script>"
       count = sequence_result.test_results.length

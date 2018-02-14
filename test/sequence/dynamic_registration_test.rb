@@ -14,7 +14,7 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
                                    client_name: 'Crucible Smart App',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
-                                   oauth_register_endpoint: 'http://oauth_reg.example.com/register',
+                                   oauth_register_endpoint: 'https://oauth_reg.example.com/register',
                                    scopes: 'launch openid patient/*.* profile'
                                    )
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
@@ -31,11 +31,14 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
 
     stub_request(:post, @instance.oauth_register_endpoint).
       with(headers: headers).
-      to_return(status: 200, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
+      to_return(status: 201, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
+
+    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+
+    assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'
-    assert sequence_result.test_results.all?{|r| r.result == 'pass'}, 'All tests should pass'
     assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 

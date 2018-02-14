@@ -29,6 +29,7 @@
         </div>
       <% end %>
       <%= @test_result.name %>
+      <% unless @test_result.required %> (optional) <% end %>
     </div>
 
     <% unless @test_result.message.nil? %>

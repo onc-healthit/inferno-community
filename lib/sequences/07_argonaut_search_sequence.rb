@@ -1,6 +1,6 @@
-class ArgonautSearchSequence < SequenceBase
+class ArgonautDataQuerySequence < SequenceBase
 
-  title 'Argonaut Search'
+  title 'Argonaut Data Query'
 
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide Server.'
 
@@ -46,15 +46,23 @@ class ArgonautSearchSequence < SequenceBase
   # Patient Search
   # --------------------------------------------------
 
-  test 'Has Patient resource',
+  test 'Patient read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient using GET [base]/Patient/[id]' do
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
     patient_read_response = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
     assert_response_ok patient_read_response
     @patient = patient_read_response.resource
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+
+  end
+
+  test 'Patient history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
 
   end
 
@@ -154,6 +162,23 @@ class ArgonautSearchSequence < SequenceBase
 
   end
 
+  test 'AllergyIntolerance read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'AllergyIntolerance history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
+
   # --------------------------------------------------
   # CarePlan Search
   # --------------------------------------------------
@@ -206,7 +231,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning a patient’s active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]' do
+          'A server SHOULD be capable returning a patients active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]' do
 
     warning {
       assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
@@ -217,6 +242,23 @@ class ArgonautSearchSequence < SequenceBase
     }
 
   end
+
+  test 'CarePlan read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'CarePlan history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
 
   # --------------------------------------------------
   # Condition Search
@@ -235,7 +277,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient’s conditions list using GET/Condition?patient=[id]' do
+          'A server is capable of returning a patients conditions list using GET/Condition?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
     validate_reply(FHIR::DSTU2::Condition, reply)
@@ -244,7 +286,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient + clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
+          'A server SHOULD be capable returning all of a patients active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission' do
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
@@ -255,7 +297,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient + problem category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s problems or all of patient’s health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
+          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "problem"})
@@ -266,7 +308,7 @@ class ArgonautSearchSequence < SequenceBase
 
   test 'Condition search by patient + health-concern category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s problems or all of patient’s health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
+          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]' do
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "health-concern"})
@@ -274,6 +316,23 @@ class ArgonautSearchSequence < SequenceBase
     }
 
   end
+
+  test 'Condition read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'Condition history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
 
   # --------------------------------------------------
   # Device Search
@@ -298,6 +357,23 @@ class ArgonautSearchSequence < SequenceBase
     validate_reply(FHIR::DSTU2::Device, reply)
 
   end
+
+  test 'Device read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'Device history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
 
   # --------------------------------------------------
   # Goal Search
@@ -336,6 +412,23 @@ class ArgonautSearchSequence < SequenceBase
 
   end
 
+  test 'Goal read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'Goal history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
+
   # --------------------------------------------------
   # Immunization Search
   # --------------------------------------------------
@@ -359,6 +452,23 @@ class ArgonautSearchSequence < SequenceBase
     validate_reply(FHIR::DSTU2::Immunization, reply)
 
   end
+
+  test 'Immunization read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'Immunization history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
 
   # --------------------------------------------------
   # DiagnosticReport Search
@@ -425,6 +535,22 @@ class ArgonautSearchSequence < SequenceBase
 
   end
 
+  test 'DiagnosticReport read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'DiagnosticReport history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
   # --------------------------------------------------
   # MedicationStatement Search
   # --------------------------------------------------
@@ -449,6 +575,23 @@ class ArgonautSearchSequence < SequenceBase
 
   end
 
+  test 'MedicationStatement read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'MedicationStatement history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
+
   # --------------------------------------------------
   # MedicationOrder Search
   # --------------------------------------------------
@@ -472,6 +615,23 @@ class ArgonautSearchSequence < SequenceBase
     validate_reply(FHIR::DSTU2::MedicationOrder, reply)
 
   end
+
+  test 'MedicationOrder read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'MedicationOrder history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
 
   # --------------------------------------------------
   # Observation Search
@@ -546,6 +706,22 @@ class ArgonautSearchSequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
     @client.set_bearer_token(@instance.token)
     assert_response_unauthorized reply
+
+  end
+
+  test 'Observation read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'Observation history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
 
   end
 
@@ -653,6 +829,22 @@ class ArgonautSearchSequence < SequenceBase
     assert !date.nil?, "Procedure performedDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id, date: date})
     validate_reply(FHIR::DSTU2::Procedure, reply)
+
+  end
+
+  test 'Procedure read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    todo
+
+  end
+
+  test 'Procedure history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
 
   end
 

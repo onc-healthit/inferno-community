@@ -45,13 +45,15 @@ class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
     assert sequence_result.redirect_to_url.start_with? @instance.oauth_authorize_endpoint, 'The sequence should be redirecting to the authorize url'
     assert sequence_result.wait_at_endpoint == 'redirect', 'The sequence should be waiting at a redirect url'
 
-    redirect_params = {"code"=>"5N01E0", "state"=>"7c39b192-d2e4-47ba-a23e-d2735b560c38"}
+    redirect_params = {'code'=>'5N01E0', 'state'=>@instance.state}
 
     sequence_result = @sequence.resume(nil, nil, redirect_params)
-    
+
+    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'
-    assert sequence_result.test_results.all?{|r| r.result == 'pass'}, 'All tests should pass'
     assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
+
   end
 
 end

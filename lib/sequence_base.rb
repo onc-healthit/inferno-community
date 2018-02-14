@@ -22,14 +22,6 @@ class SequenceBase
   @@modal_before_run = []
   @@buttonless = []
 
-  def self.test_count
-    self.new(nil,nil).test_count
-  end
-
-  def test_count
-    self.methods.grep(/_test$/).length
-  end
-
   def initialize(instance, client, sequence_result = nil)
     @client = client
     @instance = instance
@@ -140,6 +132,15 @@ class SequenceBase
     @sequence_result
   end
 
+  def self.test_count
+    self.new(nil,nil).test_count
+  end
+
+  def test_count
+    self.methods.grep(/_test$/).length
+  end
+
+
   def sequence_name
     self.class.sequence_name
   end
@@ -197,33 +198,36 @@ class SequenceBase
     self.new(instance,nil).instance_eval &block
   end
 
-  def self.test(name, url = nil, description = nil, &block)
+  def self.test(name, url = nil, description = nil, required = :required, &block)
+
     @@test_index += 1
+
+    is_required = (required != :optional)
 
     test_index = @@test_index
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
     contents = block
 
     @@test_metadata[self.sequence_name] ||= [] 
-    @@test_metadata[self.sequence_name] << { name: name, url: url, description: description, test_index: test_index}
+    @@test_metadata[self.sequence_name] << { name: name, url: url, description: description, test_index: test_index, required: is_required}
 
     wrapped = -> () do
       @test_warnings, @links, @requires, @validates = [],[],[],[]
-      result = TestResult.new(name: name, result: STATUS[:pass], url: url, description: description, test_index: test_index)
+      result = TestResult.new(name: name, result: STATUS[:pass], url: url, description: description, test_index: test_index, required: is_required)
       begin
-        instance_eval &block
 
-        # result.update(t.status, t.message, t.data) if !t.nil? && t.is_a?(Crucible::Tests::TestResult)
-      rescue AssertionException => e
-        result.result = STATUS[:fail]
-        result.message = e.message
+      instance_eval &block
+
+      rescue AssertionException, ClientException => e
+        if required == :optional
+          @test_warnings << e.message
+        else
+          result.result = STATUS[:fail]
+          result.message = e.message
+        end
 
       rescue TodoException => e
         result.result = STATUS[:todo]
-        result.message = e.message
-
-      rescue ClientException => e
-        result.result = STATUS[:fail]
         result.message = e.message
 
       rescue WaitException => e
@@ -240,7 +244,6 @@ class SequenceBase
         result.message = e.message
 
       rescue => e
-        # binding.pry
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end
@@ -274,5 +277,19 @@ class SequenceBase
       @test_warnings << e.message
     end
   end
+
+  # This is intended to be called on SequenceBase
+  # There is a test to ensure that this doesn't fall out of date
+  def self.ordered_sequences
+    [ ConformanceSequence, 
+        DynamicRegistrationSequence, 
+        PatientStandaloneLaunchSequence, 
+        ProviderEHRLaunchSequence, 
+        TokenIntrospectionSequence, 
+        ArgonautProfilesSequence, 
+        ArgonautDataQuerySequence,
+        AdditionalResourcesSequence]
+  end
+
 end
 
