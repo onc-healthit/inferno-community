@@ -3,7 +3,7 @@ require File.expand_path '../../test_helper.rb', __FILE__
 class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
 
   def setup
-    @instance = TestingInstance.new(url: 'http://www.example.com', 
+    @instance = TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Crucible Smart App',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
@@ -26,7 +26,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
 
     stub_request(:post, @instance.oauth_token_endpoint).
       with(headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
-      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8'})
+      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma:'no-cache'})
 
     sequence_result = @sequence.start
 
@@ -37,7 +37,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
     redirect_params = {'code' => '5N01E0', 'state' => @instance.state}
 
     sequence_result = @sequence.resume(nil, nil, redirect_params)
-    
+
     failures = sequence_result.test_results.select{|r| r.result != 'pass'}
     assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'

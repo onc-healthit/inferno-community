@@ -2,15 +2,15 @@ require File.expand_path '../../test_helper.rb', __FILE__
 
 class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
 
-  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir', 
-                      'Accept-Charset'=>'UTF-8', 
+  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
+                      'Accept-Charset'=>'UTF-8',
                       'Content-Type'=>'application/json+fhir;charset=UTF-8'
                      }
 
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
   def setup
-    @instance = TestingInstance.new(url: 'http://www.example.com', 
+    @instance = TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Crucible Smart App',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
@@ -32,7 +32,7 @@ class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
 
     stub_request(:post, @instance.oauth_token_endpoint).
       with(headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
-      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8'})
+      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma:'no-cache'})
 
     sequence_result = @sequence.start
 
