@@ -158,6 +158,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patient’s allergies using GET /AllergyIntolerance?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+    @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_reply(FHIR::DSTU2::AllergyIntolerance, reply)
 
   end
@@ -166,7 +167,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@allergyintolerance.nil?, 'Expected valid DSTU2 AllergyIntolerance resource to be present'
+    id = @allergyintolerance.try(:id)
+    assert !id.nil?, "AllergyIntolerance id not returned"
+    allergyintolerance_read_response = @client.read(FHIR::DSTU2::AllergyIntolerance, id)
+    assert_response_ok allergyintolerance_read_response
+    assert !allergyintolerance_read_response.resource.nil?, 'Expected valid DSTU2 AllergyIntolerance resource to be present'
+    assert allergyintolerance_read_response.resource.is_a?(FHIR::DSTU2::AllergyIntolerance), 'Expected resource to be valid DSTU2 AllergyIntolerance'
 
   end
 
@@ -247,7 +254,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
+    id = @careplan.try(:id)
+    assert !id.nil?, "CarePlan id not returned"
+    read_response = @client.read(FHIR::DSTU2::CarePlan, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::CarePlan), 'Expected resource to be valid DSTU2 CarePlan'
 
   end
 
@@ -280,6 +293,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patients conditions list using GET/Condition?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+    @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_reply(FHIR::DSTU2::Condition, reply)
 
   end
@@ -321,7 +335,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@condition.nil?, 'Expected valid DSTU2 Condition resource to be present'
+    id = @condition.try(:id)
+    assert !id.nil?, "Condition id not returned"
+    read_response = @client.read(FHIR::DSTU2::Condition, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 Condition resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::Condition), 'Expected resource to be valid DSTU2 Condition'
 
   end
 
@@ -354,6 +374,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning all Unique device identifier(s)(UDI) for a patient’s implanted device(s) using GET /Device?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
+    @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_reply(FHIR::DSTU2::Device, reply)
 
   end
@@ -362,7 +383,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@device.nil?, 'Expected valid DSTU2 Device resource to be present'
+    id = @device.try(:id)
+    assert !id.nil?, "Device id not returned"
+    read_response = @client.read(FHIR::DSTU2::Device, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 Device resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::Device), 'Expected resource to be valid DSTU2 Device'
 
   end
 
@@ -416,7 +443,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@goal.nil?, 'Expected valid DSTU2 Goal resource to be present'
+    id = @goal.try(:id)
+    assert !id.nil?, "Goal id not returned"
+    read_response = @client.read(FHIR::DSTU2::Goal, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 Goal resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::Goal), 'Expected resource to be valid DSTU2 Goal'
 
   end
 
@@ -449,6 +482,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'A client has connected to a server and fetched all immunizations for a patient using GET /Immunization?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+    @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_reply(FHIR::DSTU2::Immunization, reply)
 
   end
@@ -457,7 +491,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@immunization.nil?, 'Expected valid DSTU2 Immunization resource to be present'
+    id = @immunization.try(:id)
+    assert !id.nil?, "Immunization id not returned"
+    read_response = @client.read(FHIR::DSTU2::Immunization, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 Immunization resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::Immunization), 'Expected resource to be valid DSTU2 Immunization'
 
   end
 
@@ -539,7 +579,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
+    id = @diagnosticreport.try(:id)
+    assert !id.nil?, "DiagnosticReport id not returned"
+    read_response = @client.read(FHIR::DSTU2::DiagnosticReport, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::DiagnosticReport), 'Expected resource to be valid DSTU2 DiagnosticReport'
 
   end
 
@@ -571,6 +617,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationStatement?patient=[id] 2. GET /MedicationStatement?patient=[id]&_include=MedicationStatement:medication' do
 
     reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
+    @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_reply(FHIR::DSTU2::MedicationStatement, reply)
 
   end
@@ -579,7 +626,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@medicationstatement.nil?, 'Expected valid DSTU2 MedicationStatement resource to be present'
+    id = @medicationstatement.try(:id)
+    assert !id.nil?, "MedicationStatement id not returned"
+    read_response = @client.read(FHIR::DSTU2::MedicationStatement, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 MedicationStatement resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::MedicationStatement), 'Expected resource to be valid DSTU2 MedicationStatement'
 
   end
 
@@ -612,6 +665,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationOrder?patient=[id] 2. GET /MedicationOrder?patient=[id]&_include=MedicationOrder:medication' do
 
     reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
+    @medicationorder = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_reply(FHIR::DSTU2::MedicationOrder, reply)
 
   end
@@ -620,7 +674,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@medicationorder.nil?, 'Expected valid DSTU2 MedicationOrder resource to be present'
+    id = @medicationorder.try(:id)
+    assert !id.nil?, "MedicationOrder id not returned"
+    read_response = @client.read(FHIR::DSTU2::MedicationOrder, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 MedicationOrder resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::MedicationOrder), 'Expected resource to be valid DSTU2 MedicationOrder'
 
   end
 
@@ -709,22 +769,6 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Observation read resource supported',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
-
-    todo
-
-  end
-
-  test 'Observation history and vread resource supported',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
-
-    todo
-
-  end
-
   test 'Smoking Status search by patient + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a a patient’s smoking status using GET [base]/Observation?patient=[id]&code=72166-2" do
@@ -795,6 +839,28 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
+  test 'Observation read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
+    id = @observationresults.try(:id)
+    assert !id.nil?, "Observation id not returned"
+    read_response = @client.read(FHIR::DSTU2::Observation, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 Observation resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::Observation), 'Expected resource to be valid DSTU2 Observation'
+
+  end
+
+  test 'Observation history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
+
+  end
+
   # --------------------------------------------------
   # Procedure Search
   # --------------------------------------------------
@@ -836,7 +902,13 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    assert !@procedure.nil?, 'Expected valid DSTU2 Procedure resource to be present'
+    id = @procedure.try(:id)
+    assert !id.nil?, "Procedure id not returned"
+    read_response = @client.read(FHIR::DSTU2::Procedure, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, 'Expected valid DSTU2 Procedure resource to be present'
+    assert read_response.resource.is_a?(FHIR::DSTU2::Procedure), 'Expected resource to be valid DSTU2 Procedure'
 
   end
 
