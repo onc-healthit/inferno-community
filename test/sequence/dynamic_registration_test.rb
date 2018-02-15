@@ -25,15 +25,26 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 
+  def validate_register_payload(req)
+    body = JSON.parse(req.body)
+
+    required_fields = ['client_name', 'initiate_login_uri', 'redirect_uris', 'token_endpoint_auth_method', 'grant_types', 'scope'].all? {|k| body.has_key?(k)}
+    all_uris = [body['initiate_login_uri'], body['redirect_uris']].flatten.all?{|uri| valid_uri?(uri)}
+
+    required_fields && all_uris
+  end
+
   def test_all_pass
     WebMock.reset!
     headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
 
-    stub_request(:post, @instance.oauth_register_endpoint).
-      with(headers: headers).
+    stub_register = stub_request(:post, @instance.oauth_register_endpoint).
+      with(headers: headers){|req| validate_register_payload(req)}.
       to_return(status: 201, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
+
+    assert_requested(stub_register)
 
     failures = sequence_result.test_results.select{|r| r.result != 'pass'}
 
