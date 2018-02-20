@@ -20,7 +20,7 @@ class ArgonautDataQuerySequence < SequenceBase
     @client.search(klass, options)
   end
 
-  def validate_reply(klass, reply)
+  def validate_search_reply(klass, reply)
     assert_response_ok(reply)
     assert_bundle_response(reply)
 
@@ -40,6 +40,16 @@ class ArgonautDataQuerySequence < SequenceBase
         assert (entry.resource.patient && entry.resource.patient.reference.include?(@instance.patient_id)), "Patient on resource does not match patient requested"
       end
     end
+  end
+
+  def validate_read_reply(resource, klass)
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+    id = resource.try(:id)
+    assert !id.nil?, "#{klass} id not returned"
+    read_response = @client.read(klass, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
+    assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
   end
 
   # --------------------------------------------------
@@ -88,7 +98,7 @@ class ArgonautDataQuerySequence < SequenceBase
     identifier = @patient.try(:identifier).try(:first).try(:value)
     assert !identifier.nil?, "Patient identifier not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {identifier: identifier})
-    validate_reply(FHIR::DSTU2::Patient, reply)
+    validate_search_reply(FHIR::DSTU2::Patient, reply)
 
   end
 
@@ -104,7 +114,7 @@ class ArgonautDataQuerySequence < SequenceBase
     gender = @patient.try(:gender)
     assert !gender.nil?, "Patient gender not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, gender: gender})
-    validate_reply(FHIR::DSTU2::Patient, reply)
+    validate_search_reply(FHIR::DSTU2::Patient, reply)
 
   end
 
@@ -120,7 +130,7 @@ class ArgonautDataQuerySequence < SequenceBase
     birthdate = @patient.try(:birthDate)
     assert !birthdate.nil?, "Patient birthDate not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {family: family, given: given, birthdate: birthdate})
-    validate_reply(FHIR::DSTU2::Patient, reply)
+    validate_search_reply(FHIR::DSTU2::Patient, reply)
 
   end
 
@@ -134,7 +144,7 @@ class ArgonautDataQuerySequence < SequenceBase
     birthdate = @patient.try(:birthDate)
     assert !birthdate.nil?, "Patient birthDate not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Patient, {gender: gender, birthdate: birthdate})
-    validate_reply(FHIR::DSTU2::Patient, reply)
+    validate_search_reply(FHIR::DSTU2::Patient, reply)
 
   end
 
@@ -158,7 +168,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patient’s allergies using GET /AllergyIntolerance?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
-    validate_reply(FHIR::DSTU2::AllergyIntolerance, reply)
+    @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
+    validate_search_reply(FHIR::DSTU2::AllergyIntolerance, reply)
 
   end
 
@@ -166,7 +177,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
 
@@ -200,7 +211,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan"})
     @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
-    validate_reply(FHIR::DSTU2::CarePlan, reply)
+    validate_search_reply(FHIR::DSTU2::CarePlan, reply)
 
   end
 
@@ -213,7 +224,7 @@ class ArgonautDataQuerySequence < SequenceBase
       date = @careplan.try(:period).try(:end)
       assert !date.nil?, "CarePlan period end not returned"
       reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", date: date})
-      validate_reply(FHIR::DSTU2::CarePlan, reply)
+      validate_search_reply(FHIR::DSTU2::CarePlan, reply)
     }
 
   end
@@ -224,7 +235,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active"})
-      validate_reply(FHIR::DSTU2::CarePlan, reply)
+      validate_search_reply(FHIR::DSTU2::CarePlan, reply)
     }
 
   end
@@ -238,7 +249,7 @@ class ArgonautDataQuerySequence < SequenceBase
       date = @careplan.try(:period).try(:end)
       assert !date.nil?, "CarePlan period end not returned"
       reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date})
-      validate_reply(FHIR::DSTU2::CarePlan, reply)
+      validate_search_reply(FHIR::DSTU2::CarePlan, reply)
     }
 
   end
@@ -247,7 +258,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@careplan, FHIR::DSTU2::CarePlan)
 
   end
 
@@ -280,7 +291,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patients conditions list using GET/Condition?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
-    validate_reply(FHIR::DSTU2::Condition, reply)
+    @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
+    validate_search_reply(FHIR::DSTU2::Condition, reply)
 
   end
 
@@ -290,7 +302,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
-      validate_reply(FHIR::DSTU2::Condition, reply)
+      validate_search_reply(FHIR::DSTU2::Condition, reply)
     }
 
   end
@@ -301,7 +313,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "problem"})
-      validate_reply(FHIR::DSTU2::Condition, reply)
+      validate_search_reply(FHIR::DSTU2::Condition, reply)
     }
 
   end
@@ -312,7 +324,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     warning {
       reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "health-concern"})
-      validate_reply(FHIR::DSTU2::Condition, reply)
+      validate_search_reply(FHIR::DSTU2::Condition, reply)
     }
 
   end
@@ -321,7 +333,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@condition, FHIR::DSTU2::Condition)
 
   end
 
@@ -354,7 +366,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning all Unique device identifier(s)(UDI) for a patient’s implanted device(s) using GET /Device?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
-    validate_reply(FHIR::DSTU2::Device, reply)
+    @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
+    validate_search_reply(FHIR::DSTU2::Device, reply)
 
   end
 
@@ -362,7 +375,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@device, FHIR::DSTU2::Device)
 
   end
 
@@ -396,7 +409,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
     @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
-    validate_reply(FHIR::DSTU2::Goal, reply)
+    validate_search_reply(FHIR::DSTU2::Goal, reply)
 
   end
 
@@ -408,7 +421,7 @@ class ArgonautDataQuerySequence < SequenceBase
     date = @goal.try(:statusDate)
     assert !date.nil?, "Goal statusDate not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id, date: date})
-    validate_reply(FHIR::DSTU2::Goal, reply)
+    validate_search_reply(FHIR::DSTU2::Goal, reply)
 
   end
 
@@ -416,7 +429,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@goal, FHIR::DSTU2::Goal)
 
   end
 
@@ -449,7 +462,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A client has connected to a server and fetched all immunizations for a patient using GET /Immunization?patient=[id]' do
 
     reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
-    validate_reply(FHIR::DSTU2::Immunization, reply)
+    @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
+    validate_search_reply(FHIR::DSTU2::Immunization, reply)
 
   end
 
@@ -457,7 +471,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@immunization, FHIR::DSTU2::Immunization)
 
   end
 
@@ -491,7 +505,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
     @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
-    validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
+    validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
 
   end
 
@@ -503,7 +517,7 @@ class ArgonautDataQuerySequence < SequenceBase
     date = @diagnosticreport.try(:effectiveDateTime)
     assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", date: date})
-    validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
+    validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
 
   end
 
@@ -515,7 +529,7 @@ class ArgonautDataQuerySequence < SequenceBase
     code = @diagnosticreport.try(:code).try(:text)
     assert !code.nil?, "DiagnosticReport code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code})
-    validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
+    validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
 
   end
 
@@ -530,7 +544,7 @@ class ArgonautDataQuerySequence < SequenceBase
       date = @diagnosticreport.try(:effectiveDateTime)
       assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
       reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code, date: date})
-      validate_reply(FHIR::DSTU2::DiagnosticReport, reply)
+      validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
     }
 
   end
@@ -539,7 +553,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
   end
 
@@ -571,7 +585,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationStatement?patient=[id] 2. GET /MedicationStatement?patient=[id]&_include=MedicationStatement:medication' do
 
     reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
-    validate_reply(FHIR::DSTU2::MedicationStatement, reply)
+    @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
+    validate_search_reply(FHIR::DSTU2::MedicationStatement, reply)
 
   end
 
@@ -579,7 +594,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
 
   end
 
@@ -612,7 +627,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationOrder?patient=[id] 2. GET /MedicationOrder?patient=[id]&_include=MedicationOrder:medication' do
 
     reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
-    validate_reply(FHIR::DSTU2::MedicationOrder, reply)
+    @medicationorder = reply.try(:resource).try(:entry).try(:first).try(:resource)
+    validate_search_reply(FHIR::DSTU2::MedicationOrder, reply)
 
   end
 
@@ -620,7 +636,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
   end
 
@@ -654,7 +670,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
     @observationresults = reply.try(:resource).try(:entry).try(:first).try(:resource)
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -666,7 +682,7 @@ class ArgonautDataQuerySequence < SequenceBase
     date = @observationresults.try(:effectiveDateTime)
     assert !date.nil?, "Observation effectiveDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", date: date})
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -678,7 +694,7 @@ class ArgonautDataQuerySequence < SequenceBase
     code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
     assert !code.nil?, "Observation code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code})
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -693,7 +709,7 @@ class ArgonautDataQuerySequence < SequenceBase
       date = @observationresults.try(:effectiveDateTime)
       assert !date.nil?, "Observation effectiveDateTime not returned"
       reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code, date: date})
-      validate_reply(FHIR::DSTU2::Observation, reply)
+      validate_search_reply(FHIR::DSTU2::Observation, reply)
     }
 
   end
@@ -709,28 +725,12 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Observation read resource supported',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
-
-    todo
-
-  end
-
-  test 'Observation history and vread resource supported',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
-
-    todo
-
-  end
-
   test 'Smoking Status search by patient + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a a patient’s smoking status using GET [base]/Observation?patient=[id]&code=72166-2" do
 
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -751,7 +751,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
     @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -763,7 +763,7 @@ class ArgonautDataQuerySequence < SequenceBase
     date = @vitalsigns.try(:effectiveDateTime)
     assert !date.nil?, "Observation effectiveDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", date: date})
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -775,7 +775,7 @@ class ArgonautDataQuerySequence < SequenceBase
     code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
     assert !code.nil?, "Observation code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", code: code})
-    validate_reply(FHIR::DSTU2::Observation, reply)
+    validate_search_reply(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -790,8 +790,24 @@ class ArgonautDataQuerySequence < SequenceBase
       date = @vitalsigns.try(:effectiveDateTime)
       assert !date.nil?, "Observation effectiveDateTime not returned"
       reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs", code: code, date: date})
-      validate_reply(FHIR::DSTU2::Observation, reply)
+      validate_search_reply(FHIR::DSTU2::Observation, reply)
     }
+
+  end
+
+  test 'Observation read resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    validate_read_reply(@observationresults, FHIR::DSTU2::Observation)
+
+  end
+
+  test 'Observation history and vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+
+    todo
 
   end
 
@@ -816,7 +832,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
     @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
-    validate_reply(FHIR::DSTU2::Procedure, reply)
+    validate_search_reply(FHIR::DSTU2::Procedure, reply)
 
   end
 
@@ -828,7 +844,7 @@ class ArgonautDataQuerySequence < SequenceBase
     date = @procedure.try(:performedDateTime)
     assert !date.nil?, "Procedure performedDateTime not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id, date: date})
-    validate_reply(FHIR::DSTU2::Procedure, reply)
+    validate_search_reply(FHIR::DSTU2::Procedure, reply)
 
   end
 
@@ -836,7 +852,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
-    todo
+    validate_read_reply(@procedure, FHIR::DSTU2::Procedure)
 
   end
 
