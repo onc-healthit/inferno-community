@@ -5,10 +5,6 @@ require File.expand_path '../../test_helper.rb', __FILE__
 
 class SequenceValidationTest < MiniTest::Unit::TestCase
 
-  def valid_url?(url)
-    !(url =~ /\A#{URI::regexp(['http', 'https'])}\z/).nil?
-  end
-
   def setup
     @sequences = SequenceBase.subclasses
   end
@@ -30,7 +26,7 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
 
     test_list.select!{ |test| !excluded_tests.include?(test[:name])}
 
-    incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? || test[:description].nil? || !valid_url?(test[:url])}
+    incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? || test[:description].nil? || !valid_uri?(test[:url])}
 
     assert incomplete_metadata_tests.empty?, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
       "First: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:sequence]}: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:name]}"

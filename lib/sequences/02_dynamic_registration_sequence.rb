@@ -28,7 +28,7 @@ class DynamicRegistrationSequence < SequenceBase
 
     params = {
       'client_name' => @instance.client_name,
-      'initiate_login_uri' => "#{@instance.base_url}/smart/#{@instance.id} /#{@instance.client_endpoint_key}/launch",
+      'initiate_login_uri' => "#{@instance.base_url}/smart/#{@instance.id}/#{@instance.client_endpoint_key}/launch",
       'redirect_uris' => ["#{@instance.base_url}/smart/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
       'token_endpoint_auth_method' => 'none',
       'grant_types' => ['authorization_code'],
