@@ -43,7 +43,7 @@ class ArgonautDataQuerySequence < SequenceBase
   end
 
   def validate_read_reply(resource, klass)
-    assert !resource.nil?, "Expected valid #{klass} resource to be present"
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
     id = resource.try(:id)
     assert !id.nil?, "#{klass} id not returned"
     read_response = @client.read(klass, id)
