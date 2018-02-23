@@ -1,0 +1,28 @@
+
+<div class="container">
+  <div class="main">
+    <p>
+      This application creates test clients that exercise the range of requirements of a <a href="https://smarthealthit.org/">SMART on FHIR</a> 
+      server. These tests focus on the <a href="http://www.hl7.org/fhir/smart-app-launch/">SMART App Launch Framework</a>,
+      <a href="http://hl7.org/fhir/DSTU2/argonaut/argonaut.html">Argonaut</a> Implementation Guides,
+      and <a href="http://hl7.org/fhir/DSTU2/index.html">FHIR DSTU2</a>.
+    </p>
+
+    <p>
+      To begin, enter the URL of your FHIR server below.  This will create a unique SMART on FHIR client app endpoint
+      and will walk the user through a sequence of tests.
+    </p>
+
+    <form method="POST" action="/smart/">
+      <div class="form-group">
+        <label for="fhir_server" class="endpoint-label">FHIR Server Endpoint</label>
+        <div class="input-group">
+          <input type="url" class="form-control" name="fhir_server" placeholder="http://" aria-label="Create App">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" type="submit">Begin</button>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

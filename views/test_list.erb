@@ -1,0 +1,75 @@
+<div class="result-details collapse" id="<%=sequence_class%>-details">
+  <ul>
+    <% sequence_result && sequence_result.test_results.each do |result, index| %>
+      <li class="result-details-clickable" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
+        <% case result.result
+          when 'pass' %>
+            <div class="result-details-icon result-details-icon-pass">
+              <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+            </div>
+        <% when 'fail' %>
+            <div class="result-details-icon result-details-icon-fail">
+              <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+            </div>
+        <% when 'cancel' %>
+            <div class="result-details-icon result-details-icon-cancel">
+              <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+            </div>
+        <% when 'error' %>
+            <div class="result-details-icon result-details-icon-error">
+              !
+            </div>
+        <% when 'skip' %>
+            <div class="result-details-icon result-details-icon-skip">
+              <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
+            </div>
+        <% when 'wait' %>
+            <div class="result-details-icon result-details-icon-wait">
+              <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+            </div>
+        <% when 'todo' %>
+            <div class="result-details-icon result-details-icon-todo">
+              <span class="oi oi-minus" title="todo" aria-hidden="true"></span>
+            </div>
+        <% end %>
+        <% if result.test_warnings.length > 0 %>
+            <div class="result-details-icon result-details-icon-warning">
+              <span class="oi oi-warning" title="todo" aria-hidden="true"></span>
+            </div>
+        <% end %>
+
+        <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
+            <div class="result-details-icon result-details-icon-requests">
+              <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
+            </div>
+        <% end %>
+
+        <% unless result.request_responses.find{ |f| f.direction == 'inbound'}.nil? %>
+            <div class="result-details-icon result-details-icon-requests">
+              <span class="oi oi-arrow-thick-left" title="inbound requests" aria-hidden="true"></span>
+            </div>
+        <% end %>
+
+        <% if result.result == 'todo' %> TODO: <% end %>
+        <%= result.name %>
+        <% unless result.required %> (optional) <% end %>
+        <% if result.result == 'fail' || result.result == 'error' %>
+          <div class="result-details-message">
+            Failure Message: <%= result.message %>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+    <% start_at = 0%>
+    <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
+    <% sequence_class.tests[start_at..-1].each do |test, index| %>
+      <li>
+        <div class="result-details-icon result-details-icon-pending">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+        <%= test[:name] %>
+      </li>
+    <% end %>
+  </ul>
+</div>
+

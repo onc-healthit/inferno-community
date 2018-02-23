@@ -1,0 +1,32 @@
+<div class="client-state">
+  <div class="client-state-title">
+    <% if instance.token.nil? %>
+      Current Client Status: <span class="client-not-authenticated">Not Authorized</span>
+    <% else %>
+      Current Client Status: <span class="client-authenticated">Authorized</span>
+    <% end %>
+  </div>
+  <% if instance.oauth_authorize_endpoint.nil? && instance.oauth_token_endpoint.nil?%>
+    <p>
+    The client does not yet have the necessary OAuth1
+    endpoint information to begin authorization.
+    Please run the <strong>Capability Statement</strong> test sequence
+    to retrieve this information.
+    </p>
+  <% else %>
+    <p>
+      OAuth Authorize Endpoint: <%= instance.oauth_authorize_endpoint %><br/>
+      OAuth Token Endpoint: <%= instance.oauth_token_endpoint %><br/>
+      OAuth Registration Endpoint: <%= instance.oauth_register_endpoint %>
+    </p>
+  <% end %>
+  <% if !instance.dynamically_registered.nil? && !instance.dynamically_registered && !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil?%>
+    <p>
+      Launch URL: <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch
+      <br>
+      Redirect URL: <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect
+      <br>
+      Client ID: <%= instance.client_id %>
+    </p>
+  <% end %>
+</div>

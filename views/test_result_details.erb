@@ -1,0 +1,108 @@
+<div class="modal-header">
+  <h5 class="modal-title" id="exampleModalLabel">
+    Test Result: <%=@test_result.result.titleize %>
+  </h5>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="test-result-details">
+
+    <div class="test-result-details-title">
+      <% case @test_result.result
+          when 'pass' %>
+        <div class="result-details-icon result-details-icon-pass">
+          <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+        </div>
+      <% when 'fail' %>
+        <div class="result-details-icon result-details-icon-fail">
+          <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+        </div>
+      <% when 'error' %>
+        <div class="result-details-icon result-details-icon-error">
+          !
+        </div>
+      <% when 'skip' %>
+        <div class="result-details-icon result-details-icon-skip">
+          <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+        </div>
+      <% end %>
+      <%= @test_result.name %>
+      <% unless @test_result.required %> (optional) <% end %>
+    </div>
+
+    <% unless @test_result.message.nil? %>
+      <div class="test-result-details-message">
+        <span class="test-result-details-message-label">Message:</span> <%= @test_result.message %>
+      </div>
+    <% end %>
+
+    <% unless @test_result.test_warnings.empty? %>
+      <div class="test-result-details-warnings">
+        <% @test_result.test_warnings.each do |w| %>
+          <div>
+          warning: <%= w.message %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% unless @test_result.description.nil? %>
+      <div class="test-result-details-description">
+        <span class="test-result-details-description-label">Description:</span> <%= @test_result.description %>
+      </div>
+    <% end %>
+
+    <div class="test-result-details-header"><%=@test_result.request_responses.count %> Requests</div>
+
+    <% @test_result.request_responses.each_with_index do |rr,index| %>
+    <div class="test-result-details-response">
+      <a class="test-result-details-response-header collapsed" data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
+        <% if rr.direction == 'outbound' %>
+          <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
+        <% else %>
+          <span class="oi oi-arrow-thick-left" title="inbound requests" aria-hidden="true"></span>
+        <% end %>
+        &nbsp;
+        <%= rr.request_method.upcase %> &nbsp;
+        <%= rr.response_code %> &nbsp;
+        <%= rr.request_url %>
+      </a>
+
+      <div class="collapse test-result-details-response-values" id="test-result-details-response-values-<%=index%>">
+
+        <div class="test-result-details-header">Request</div>
+        <div class="test-result-details-subheader">Headers</div>
+        <ul>
+        <% JSON.parse(rr.request_headers).each do |header_name, header_value| %>
+          <li><strong><%=header_name%></strong>: <code><%=header_value%></code><br/></li>
+        <% end %>
+        </ul>
+        <% unless rr.request_payload.nil? %>
+          <div class="test-result-details-subheader">Payload</div>
+          <div><pre><code><%=rr.request_payload%></code></pre></div>
+        <% end %>
+
+        <% if rr.direction == 'outbound' %>
+
+          <div class="test-result-details-header">Response</div>
+          <div class="test-result-details-subheader">Headers</div>
+          <ul>
+            <% JSON.parse(rr.response_headers).each do |header_name, header_value| %>
+              <li><strong><%=header_name%></strong>: <code><%=header_value%></code></li>
+            <% end %>
+          </ul>
+          <% unless rr.response_body.nil? %>
+            <div class="test-result-details-subheader">Body</div>
+            <div><pre><code><%=rr.response_body%></code></pre></div>
+          <% end %>
+
+        <% end %>
+
+
+      </div>
+    </div>
+  <% end %>
+</div>
+

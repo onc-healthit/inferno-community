@@ -1,0 +1,90 @@
+<div class="scorecard-row">
+  <div class="scorecard-main">
+    <a name="<%=sequence_class.sequence_name%>"></a>
+    <% case sequence_results[sequence_class.sequence_name].try(:result)
+      when nil %>
+        <div class="scorecard-score scorecard-score-pending">
+          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        </div>
+    <% when 'pass' %>
+        <div class="scorecard-score scorecard-score-pass">
+          <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+        </div>
+    <% when 'fail' %>
+        <div class="scorecard-score scorecard-score-fail">
+          <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+        </div>
+    <% when 'cancel' %>
+        <div class="scorecard-score scorecard-score-fail">
+          <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+        </div>
+    <% when 'error' %>
+        <div class="scorecard-score scorecard-score-error">
+          !
+        </div>
+    <% when 'wait' %>
+        <div class="scorecard-score scorecard-score-wait">
+          <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+        </div>
+    <% when 'skip' %>
+        <div class="scorecard-score scorecard-score-skip">
+            <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+        </div>
+    <% end %>
+    <div class="scorecard-rubric">
+      <a class="scorecard-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+        <%= sequence_class.title %>
+      </a>
+      <div class="scorecard-out-of">
+        <% if sequence_results[sequence_class.sequence_name].nil? %>
+          <%= sequence_class.test_count %> tests
+        <% elsif sequence_results[sequence_class.sequence_name].result == 'skip' %>
+          Test skipped
+        <% else %>
+          <%= sequence_results[sequence_class.sequence_name].passed_count %> Passed -
+          <%= sequence_results[sequence_class.sequence_name].failed_count %> Failed -
+          <%= sequence_results[sequence_class.sequence_name].error_count %> Error(s) -
+          <%= sequence_results[sequence_class.sequence_name].warning_count %> Warning(s)
+          <% if sequence_results[sequence_class.sequence_name].skip_count > 0 %> -
+            <%= sequence_results[sequence_class.sequence_name].skip_count %> Skips(s)
+          <% end %>
+          <% if sequence_results[sequence_class.sequence_name].todo_count > 0 %> -
+            <%= sequence_results[sequence_class.sequence_name].todo_count %> Todo(s)
+          <% end %>
+
+        <% end %>
+      </div>
+      <div class="scorecard-details">
+        <%= sequence_class.description %>
+      </div>
+    </div>
+    <div class="scorecard-action">
+      <% if sequence_class.preconditions_met_for? instance %>
+        <% unless sequence_class.buttonless?%>
+          <% if sequence_class.modal_before_run? %>
+            <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
+                <% unless sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %>
+            </button>
+          <% else %>
+            <% unless sequence_results[sequence_class.sequence_name] %>
+              <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-secondary btn-sm">Begin</a>
+            <% else %>
+              <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-secondary btn-sm">Rerun</a>
+            <% end %>
+          <% end %>
+          <% if sequence_results[sequence_class.sequence_name].nil? || sequence_results[sequence_class.sequence_name].result == 'fail'%>
+            <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= sequence_class.preconditions_description %>
+      <% end %>
+      <div class="scorecard-action-collapse">
+        <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+          <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
+</div>
