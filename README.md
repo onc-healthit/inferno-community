@@ -18,7 +18,7 @@ Enter the endpoint of the DSTU2 FHIR server to test into the application.
 
 Several test sequences will be displayed on screen. The user will be given the option to begin or skip these test sequences, and the results of running these tests will be displayed after a sequence runs. Certain later test sequences can only be run after information is collected from earlier sequences, or after skipping an earlier test sequence and manually providing the application with this information.
 
-###Example
+### Example
 
 For the purpose of example, testing of the DSTU2 FHIR server of the [SMART Sandbox](https://sandbox.smarthealthit.org/smartdstu2) will be described.
 
