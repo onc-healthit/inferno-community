@@ -1,66 +1,34 @@
-NOTE: This Crucible SMART App has been deprecated. All of its functionality has been moved into the main Rails application for Crucible.
+# Crucible SMART on FHIR Test App
 
-# Crucible SMART App
-Crucible SMART App is a [SMART-on-FHIR App](http://smarthealthit.org/smart-on-fhir/) that executes a series of tests against an HL7&reg; FHIR&reg; Server.
-
-These tests focus on [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html) and in particular the [DAF Implementation Guide](http://hl7.org/fhir/DSTU2/daf/daf.html) and [Argonauts](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Use-Cases.
+This application creates test clients that exercise the range of requirements of a [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These tests focus on the [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ## Setup
+
+To run the Crucible SMART on FHIR Test App locally on your machine, follow the steps below.
 ```
 git clone https://github.com/fhir-crucible/crucible_smart_app.git
 bundle install
 bundle exec ruby app.rb
 ```
+By default, the application will be listening on localhost:4567.
 
-### Configuring Client ID and Scopes (required)
-OAuth2 client IDs and scopes for different FHIR servers can be stored in the
-`config.yml` file, so the deployed app can be used with multiple FHIR server
-implementations.
+## Usage
 
-Each entry under `client_id` and `scopes` should be a unique substring within
-the FHIR server URL (for example, `cerner` or `epic`), with the value being the
-associated client ID to use or OAuth2 scopes to request.
+Enter the endpoint of the DSTU2 FHIR server to test into the application.
 
-### Configuring Terminology (optional)
-The app can optionally use terminology data. To configure the
-terminology data, follow these [instructions](https://github.com/fhir-crucible/fhir_scorecard#optional-terminology-support).
+Several test sequences will be displayed on screen. The user will be given the option to begin or skip these test sequences, and the results of running these tests will be displayed after a sequence runs. Certain later test sequences can only be run after information is collected from earlier sequences, or after skipping an earlier test sequence and manually providing the application with this information.
 
-### Deploying to AWS Elastic Beanstalk (optional)
-Install the AWS Elastic Beanstalk Command Line Interface.
-For example, on Mac OS X:
-```
-brew install awsebcli
-```
-Build and deploy the app:
-```
-bundle install
-eb init
-eb create crucible-smart-app-dev --sample
-eb deploy
-```
+###Example
 
-### Launching the App
-- Using Cerner Millenium
-  1. Create an account on [code.cerner.com](https://code.cerner.com)
-  - Register a "New App"
-    - Launch URI: `[deployed endpoint]/launch`
-    - Redirect URI: `[deployed endpoint]/app`
-    - App Type: `Provider`
-    - FHIR Spec: `dstu2_patient`
-    - Authorized: `Yes`
-    - Scopes: _select all the Patient Scopes_
-  - Select your App under "My Apps"
-  - Follow the directions and "Begin Testing"
-- Using Epic
-  1. Create an account on [open.epic.com](https://open.epic.com).
-  - Navigate to the [Launchpad](https://open.epic.com/Launchpad/Oauth2Sso).
-  - Enter the details:
-    - Launch URL: `[deployed endpoint]/launch`
-    - Redirect URL: `[deployed endpoint]/app`
-  - Click "Launch App"
+For the purpose of example, testing of the DSTU2 FHIR server of the [SMART Sandbox](https://sandbox.smarthealthit.org/smartdstu2) will be described.
 
-Errors encountered during launch are probably associated with improper
-configuration of the client ID and scopes.
+Beginning the Conformance Statement Sequence will provide the application with the OAuth endpoints necessary to run the Dynamic Registration Sequence.
+
+The Dynamic Registration Sequence can be run by entering the correct registration URL, client name, and scopes necessary. Default values will already be provided. If this sequence is skipped, the user is required to manually enter their client ID. In the case of the SMART Sandbox, this client ID will be provided upon registering an application. The launch URL and redirect URL necessary to register an app will be provided upon trying to skip dynamic registration.
+
+After registering the application with the server, the user can run the Standalone Launch Sequence and/or the EHR Launch Sequence. The Standalone Launch Sequence can be initiated from the application and the user will be redirected back to the application after the necessary steps are followed. The EHR Launch Sequence will require the user to launch the application from the EHR, which, for the SMART Sandbox, can be done from within the registered app details. Note: Because of the nature of the SMART Sandbox, it is not possible to run the EHR Launch Sequence against it if the app was dynamically registered.
+
+After at least one successful launch, the remaining test sequences can be run. Any sequence can be rerun after completion.
 
 ## License
 
