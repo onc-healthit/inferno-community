@@ -1,8 +1,8 @@
 # Crucible SMART on FHIR Test App
 
-This application creates test clients that exercise the range of requirements of a [SMART on FHIR]
-(http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the [SMART App Launch Framework]
-(http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html)
+This application creates test clients that exercise the range of requirements of a 
+[SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the 
+[SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html)
 Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ## System Requirements
@@ -19,6 +19,7 @@ listed above and enter the following in a terminal prompt:
 ```sh
 # MacOS or Linux
 git clone https://github.com/fhir-crucible/crucible_smart_app.git
+cd crucible_smart_app
 bundle install
 bundle exec ruby app.rb
 ```
@@ -27,10 +28,11 @@ bundle exec ruby app.rb
 
 ## Remote Deployment
 
-The *Crucible SMART on FHIR Test App* can also be remotely deployed onto a server to test many different
-instances of the FHIR Servers.
+The *Crucible SMART on FHIR Test App* can also be deployed onto a server to test many different
+instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
+be saved for future reference or shared.
 
-* [Deployment Instructions](deployment-configuration.md)
+* Deployment Instructions (TBD)
 
 ## Unit Tests
 
@@ -73,6 +75,20 @@ by the FHIR server and related authorization services.  This sequence will gathe
 5) After registering the application with the server, the user can run the Standalone Launch Sequence and/or the EHR Launch Sequence. The Standalone Launch Sequence can be initiated from the application and the user will be redirected back to the application after the necessary steps are followed. The EHR Launch Sequence will require the user to launch the application from the EHR, which, for the SMART Sandbox, can be done from within the registered app details. Note: Because of the nature of the SMART Sandbox, it is not possible to run the EHR Launch Sequence against it if the app was dynamically registered.
 
 6) After at least one successful launch, the remaining test sequences can be run. Any sequence can be rerun after completion.
+
+## Inspecting and Exporting Tests
+
+Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
+viewed directly [in this repository](https://github.com/fhir-crucible/crucible_smart_app/tree/master/lib/sequences).
+
+Tests contain metadata that provide additional details and traceability to standards.  The tests and related metadata
+can be exported into CSV format and saved into a file named `testlist.csv` in MacOS and Linux with the following command:
+
+```
+bundle exec rake tests_to_csv > testlist.csv
+
+```
+
 
 ## License
 
