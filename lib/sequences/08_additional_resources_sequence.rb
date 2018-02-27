@@ -154,15 +154,15 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by actor',
+  test 'Provenance search by agent',
           'https://www.hl7.org/fhir/DSTU2/provenance.html',
           'Additional Provenance resource requirement',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
     actor = @provenance.try(:agent).try(:first).try(:actor)
-    assert !actor.nil?, "Provenance actor not returned"
-    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {actor: actor})
+    assert !actor.nil?, "Provenance agent actor not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {agent: actor})
     validate_search_reply(FHIR::DSTU2::Provenance, reply)
 
   end
