@@ -208,7 +208,7 @@ class SequenceBase
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
     contents = block
 
-    @@test_metadata[self.sequence_name] ||= [] 
+    @@test_metadata[self.sequence_name] ||= []
     @@test_metadata[self.sequence_name] << { name: name, url: url, description: description, test_index: test_index, required: is_required}
 
     wrapped = -> () do
@@ -278,18 +278,61 @@ class SequenceBase
     end
   end
 
+  def get_resource_by_params(klass, params = {})
+    assert !params.empty?, "No params for search"
+    options = {
+      :search => {
+        :flag => false,
+        :compartment => nil,
+        :parameters => params
+      }
+    }
+    @client.search(klass, options)
+  end
+
+  def validate_search_reply(klass, reply)
+    assert_response_ok(reply)
+    assert_bundle_response(reply)
+
+    entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
+
+    assert entries.length > 0, 'No resources of this type were returned'
+
+    if klass == FHIR::DSTU2::Patient
+      assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
+      assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
+    elsif [FHIR::DSTU2::CarePlan, FHIR::DSTU2::Goal, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Observation, FHIR::DSTU2::Procedure, FHIR::DSTU2::DocumentReference].include?(klass)
+      entries.each do |entry|
+        assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
+      end
+    else
+      entries.each do |entry|
+        assert (entry.resource.patient && entry.resource.patient.reference.include?(@instance.patient_id)), "Patient on resource does not match patient requested"
+      end
+    end
+  end
+
+  def validate_read_reply(resource, klass)
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+    id = resource.try(:id)
+    assert !id.nil?, "#{klass} id not returned"
+    read_response = @client.read(klass, id)
+    assert_response_ok read_response
+    assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
+    assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
+  end 
+
   # This is intended to be called on SequenceBase
   # There is a test to ensure that this doesn't fall out of date
   def self.ordered_sequences
-    [ ConformanceSequence, 
-        DynamicRegistrationSequence, 
-        PatientStandaloneLaunchSequence, 
-        ProviderEHRLaunchSequence, 
-        TokenIntrospectionSequence, 
-        ArgonautProfilesSequence, 
+    [ ConformanceSequence,
+        DynamicRegistrationSequence,
+        PatientStandaloneLaunchSequence,
+        ProviderEHRLaunchSequence,
+        TokenIntrospectionSequence,
+        ArgonautProfilesSequence,
         ArgonautDataQuerySequence,
         AdditionalResourcesSequence]
   end
 
 end
-

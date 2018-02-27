@@ -173,7 +173,7 @@ class ArgonautProfilesSequence < SequenceBase
 
   test 'Goal resources associated with Patient conform to Argonaut profiles',
           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-goal.html',
-          'DocumentReference resources associated with Patient conform to Argonaut profiles' do
+          'Goal resources associated with Patient conform to Argonaut profiles' do
     test_resources_against_profile('Goal')
   end
 
