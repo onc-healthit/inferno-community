@@ -32,6 +32,18 @@
       <% unless @test_result.required %> (optional) <% end %>
     </div>
 
+    <% unless @test_result.description.nil? %>
+      <div class="test-result-details-description">
+        <%= @test_result.description %>
+        <a class="test-result-details-url"target="_blank" href="<%= @test_result.url %>"><%= @test_result.url %></a>
+      </div>
+    <% end %>
+
+    <% unless @test_result.url.nil? %>
+      <div class="test-result-details-url">
+      </div>
+    <% end %>
+
     <% unless @test_result.message.nil? %>
       <div class="test-result-details-message">
         <span class="test-result-details-message-label">Message:</span> <%= @test_result.message %>
@@ -41,20 +53,14 @@
     <% unless @test_result.test_warnings.empty? %>
       <div class="test-result-details-warnings">
         <% @test_result.test_warnings.each do |w| %>
-          <div>
-          warning: <%= w.message %>
+          <div class="test-result-details-warning">
+            <span class="oi oi-warning" title="Warning" aria-hidden="true"></span> <%= w.message %>
           </div>
         <% end %>
       </div>
     <% end %>
 
-    <% unless @test_result.description.nil? %>
-      <div class="test-result-details-description">
-        <span class="test-result-details-description-label">Description:</span> <%= @test_result.description %>
-      </div>
-    <% end %>
-
-    <div class="test-result-details-header"><%=@test_result.request_responses.count %> Requests</div>
+    <div class="test-result-details-header"><%=@test_result.request_responses.count %> Request<% if @test_result.request_responses.count != 1 %>s<% end %></div>
 
     <% @test_result.request_responses.each_with_index do |rr,index| %>
     <div class="test-result-details-response">

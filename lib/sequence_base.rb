@@ -20,7 +20,7 @@ class SequenceBase
   @@test_metadata = {}
 
   @@modal_before_run = []
-  @@buttonless = []
+  @@optional = []
 
   def initialize(instance, client, sequence_result = nil)
     @client = client
@@ -171,12 +171,12 @@ class SequenceBase
     @@modal_before_run.include?(self.sequence_name)
   end
 
-  def self.buttonless
-    @@buttonless << self.sequence_name
+  def self.optional
+    @@optional << self.sequence_name
   end
 
-  def self.buttonless?
-    @@buttonless.include?(self.sequence_name)
+  def self.optional?
+    @@optional.include?(self.sequence_name)
   end
 
   def self.preconditions(description, &block)
@@ -244,6 +244,7 @@ class SequenceBase
         result.message = e.message
 
       rescue => e
+        # binding.pry
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end

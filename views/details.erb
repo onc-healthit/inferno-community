@@ -26,16 +26,19 @@
 
 <div class="container">
   <div class="main">
-    <div class="scorecard-title">
+    <div class="sequence-header">
       <button type="button" class="btn btn-outline-secondary btn-sm client-state-button" data-toggle="modal" data-target="#stateModal">
         Client State
       </button>
-      Test Sequences <span class="scorecard-title-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.count %> sequences successfully demonstrated)</span>
+
+      Test Sequences <span class="sequence-header-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.reject(&:optional?).count %> required sequences successfully demonstrated)</span>
     </div>
-    <div class="scorecard-table">
+    <div class="sequence-table">
       <% sequences.each do |sequence_class| %>
         <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
       <% end %>
+
+      <%= erb(:total_score,{},{instance: instance}) %>
     </div>
   </div>
 </div>
@@ -224,6 +227,31 @@
   </div>
 </div>
 
+<div class="modal fade" id="TokenIntrospectionSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Skip Token Introspection Test</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="TokenIntrospectionSkip">
+        <div class="modal-body">
+          <p>
+            By skipping the OAuth 2.0 Token Introspection test, you are confirming that the user is
+            authorized for at least three months.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Manually Confirm Authorization Period</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
   <% redirect_to = "#{request.base_url}/smart/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
@@ -303,6 +331,61 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Run Introspection Test</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ArgonautDataQueryModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Argonaut Query Server</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="ArgonautDataQuery">
+        <div class="modal-body">
+          <p>
+          This sequence will perform queries in accordance with the Argonaut Data Query Server Guide. 
+          </p>
+          <div class="form-group">
+            <label for="registration_url">Patient ID</label>
+            <input type="text" class="form-control" name="patient_id" id="patient_id" value="<%= instance.patient_id %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Tests</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Argonaut Data Profiles</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="ArgonautProfiles">
+        <div class="modal-body">
+          <p>
+          This sequence will perform queries in accordance with the Argonaut Data Query Server Guide. 
+          </p>
+          <div class="form-group">
+            <label for="registration_url">Patient ID</label>
+            <input type="text" class="form-control" name="patient_id" id="patient_id" value="<%= instance.patient_id %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Tests</button>
           </div>
         </div>
       </form>

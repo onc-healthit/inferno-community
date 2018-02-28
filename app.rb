@@ -32,7 +32,7 @@ end
 
 DataMapper.finalize
 
-[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult].each do |model|
+[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource].each do |model|
   if PURGE_DATABASE || settings.environment == :test
     model.auto_migrate!
   else
@@ -164,6 +164,20 @@ post '/smart/:id/DynamicRegistration' do
   redirect "/smart/#{@instance.id}/DynamicRegistration/"
 end
 
+post '/smart/:id/ArgonautDataQuery' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(patient_id: params['patient_id'])
+
+  redirect "/smart/#{@instance.id}/ArgonautDataQuery/"
+end
+
+post '/smart/:id/ArgonautProfiles' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(patient_id: params['patient_id'])
+
+  redirect "/smart/#{@instance.id}/ArgonautProfiles/"
+end
+
 post '/smart/:id/dynamic_registration_skip/?' do
   instance = TestingInstance.get(params[:id])
 
@@ -188,6 +202,17 @@ post '/smart/:id/ProviderEHRLaunch/?' do
   @instance = TestingInstance.get(params[:id])
   @instance.update(scopes: params['scopes'])
   redirect "/smart/#{params[:id]}/ProviderEHRLaunch/"
+end
+
+post '/smart/:id/TokenIntrospectionSkip/?' do
+  instance = TestingInstance.get(params[:id])
+
+  sequence_result = SequenceResult.new(name: "TokenIntrospection", result: "skip")
+  instance.sequence_results << sequence_result
+
+  instance.save!
+
+  redirect "/smart/#{params[:id]}/"
 end
 
 get '/smart/:id/:key/:endpoint/?' do

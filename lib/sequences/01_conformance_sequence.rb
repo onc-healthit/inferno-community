@@ -22,7 +22,7 @@ class ConformanceSequence < SequenceBase
 
   test 'Conformance lists OAuth 2.0 authorize and token endpoints',
          'http://www.hl7.org/fhir/smart-app-launch/capability-statement/',
-         'If a server requires SMART on FHIR authorization for access, its metadata must support automated dicovery of OAuth2 endpoints' do
+         'If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     oauth_metadata = @client.get_oauth2_metadata_from_conformance
     assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
@@ -78,9 +78,43 @@ class ConformanceSequence < SequenceBase
     'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
     'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
 
-     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+    resources = ['Patient', 
+                 'AllergyIntolerance',
+                 'CarePlan',
+                 'DocumentReference',
+                 'Goal',
+                 'DiagnosticReport',
+                 'Medication',
+                 'MedicationStatement',
+                 'MedicationOrder',
+                 'Observation',
+                 'Procedure']
 
-     #todo
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+
+    supported_resources = @conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}.values
+
+    @instance.supported_resources.each(&:destroy)
+    @instance.save!
+
+    patient_read_supported = false
+    supported_resources.each do |resource|
+
+      read_supported = resource.interaction.any?{|i| i.code == 'read'}
+
+      SupportedResource.create({
+        resource_type: resource.type,
+        testing_instance_id: @instance.id,
+        read_supported: read_supported,
+        vread_supported: resource.interaction.any?{|i| i.code == 'vread'},
+        history_supported: resource.interaction.any?{|i| i.code == 'history-instance'}
+      })
+
+      patient_read_supported = read_supported if resource.type == 'Patient'
+    end
+
+    assert patient_read_supported, 'Patient resource with read interaction is not listed in conformance statement.'
+
   end
 
 end
