@@ -2,6 +2,8 @@ class ArgonautDataQuerySequence < SequenceBase
 
   title 'Argonaut Data Query'
 
+  modal_before_run
+
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide Server.'
 
   preconditions 'Client must be authorized.' do

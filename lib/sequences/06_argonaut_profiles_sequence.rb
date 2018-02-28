@@ -2,6 +2,8 @@ class ArgonautProfilesSequence < SequenceBase
 
   title 'Argonaut Data Profiles'
 
+  modal_before_run
+
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide.'
 
   preconditions 'Client must be authorized.' do
@@ -27,6 +29,8 @@ class ArgonautProfilesSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server returns valid FHIR Patient resources according to the Data Access Framework (DAF) Patient Profile (http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html)' do
 
+    assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
+    assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
     profile = ValidationUtil.guess_profile(@patient)
     errors = profile.validate_resource(@patient)
     assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"

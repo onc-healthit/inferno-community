@@ -169,10 +169,10 @@
 }
 
 .sequence-score-skip {
-  background-color: #FF7F50;
+  /* background-color: #FF7F50; */
   color: #FFF;
+  background-color: #228b22;
   border: 2px solid #fff;
-  padding: 3px 5px 8px 8px;
 }
 
 .sequence-title {
