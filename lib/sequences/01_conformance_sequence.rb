@@ -90,6 +90,7 @@ class ConformanceSequence < SequenceBase
                  'Observation',
                  'Procedure']
 
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
 
     supported_resources = @conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}.values
 
