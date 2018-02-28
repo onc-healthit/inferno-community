@@ -244,6 +244,7 @@ class SequenceBase
         result.message = e.message
 
       rescue => e
+        binding.pry
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end
@@ -295,7 +296,6 @@ class SequenceBase
     assert_bundle_response(reply)
 
     entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
-
     assert entries.length > 0, 'No resources of this type were returned'
 
     if klass == FHIR::DSTU2::Patient
@@ -320,7 +320,32 @@ class SequenceBase
     assert_response_ok read_response
     assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
     assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
-  end 
+  end
+
+  def validate_history_reply(resource, klass)
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+    id = resource.try(:id)
+    assert !id.nil?, "#{klass} id not returned"
+    history_response = @client.resource_instance_history(klass, id)
+    assert_response_ok history_response
+    assert_bundle_response history_response
+    entries = history_response.resource.entry.select{ |entry| entry.resource.class == klass }
+    assert entries.length > 0, 'No resources of this type were returned'
+  end
+
+  def validate_vread_reply(resource, klass)
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+    id = resource.try(:id)
+    assert !id.nil?, "#{klass} id not returned"
+    version_id = resource.try(:meta).try(:versionId)
+    assert !version_id.nil?, "#{klass} version_id not returned"
+    binding.pry
+    vread_response = @client.vread(klass, id, version_id)
+    binding.pry
+    assert_response_ok vread_response
+    assert !vread_response.resource.nil?, "Expected valid #{klass} resource to be present"
+    assert vread_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
+  end
 
   # This is intended to be called on SequenceBase
   # There is a test to ensure that this doesn't fall out of date

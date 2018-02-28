@@ -80,6 +80,24 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
+  test 'Composition history resource supported',
+          'https://www.hl7.org/fhir/DSTU2/composition.html',
+          'Additional Composition resource requirement',
+          :optional do
+
+    validate_history_reply(@composition, FHIR::DSTU2::Composition)
+
+  end
+
+  test 'Composition vread resource supported',
+          'https://www.hl7.org/fhir/DSTU2/composition.html',
+          'Additional Composition resource requirement',
+          :optional do
+
+    validate_vread_reply(@composition, FHIR::DSTU2::Composition)
+
+  end
+
   test 'Composition resource contains section text',
           '',
           'Additional Composition resource requirement' do
@@ -173,6 +191,24 @@ class AdditionalResourcesSequence < SequenceBase
           :optional do
 
     validate_read_reply(@provenance, FHIR::DSTU2::Provenance)
+
+  end
+
+  test 'Provenance history resource supported',
+          'https://www.hl7.org/fhir/DSTU2/provenance.html',
+          'Additional Provenance resource requirement',
+          :optional do
+
+    validate_history_reply(@provenance, FHIR::DSTU2::Provenance)
+
+  end
+
+  test 'Provenance vread resource supported',
+          'https://www.hl7.org/fhir/DSTU2/provenance.html',
+          'Additional Provenance resource requirement',
+          :optional do
+
+    validate_vread_reply(@provenance, FHIR::DSTU2::Provenance)
 
   end
 
