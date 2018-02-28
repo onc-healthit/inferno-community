@@ -1,41 +1,44 @@
-<div class="scorecard-row">
-  <div class="scorecard-main">
+<div class="sequence-row">
+  <div class="sequence-main">
     <a name="<%=sequence_class.sequence_name%>"></a>
     <% case sequence_results[sequence_class.sequence_name].try(:result)
       when nil %>
-        <div class="scorecard-score scorecard-score-pending">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+        <div class="sequence-score sequence-score-pending">
+          &nbsp;
         </div>
     <% when 'pass' %>
-        <div class="scorecard-score scorecard-score-pass">
+        <div class="sequence-score sequence-score-pass">
           <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
         </div>
     <% when 'fail' %>
-        <div class="scorecard-score scorecard-score-fail">
+        <div class="sequence-score sequence-score-fail">
           <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
         </div>
     <% when 'cancel' %>
-        <div class="scorecard-score scorecard-score-fail">
+        <div class="sequence-score sequence-score-fail">
           <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
         </div>
     <% when 'error' %>
-        <div class="scorecard-score scorecard-score-error">
+        <div class="sequence-score sequence-score-error">
           !
         </div>
     <% when 'wait' %>
-        <div class="scorecard-score scorecard-score-wait">
+        <div class="sequence-score sequence-score-wait">
           <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
         </div>
     <% when 'skip' %>
-        <div class="scorecard-score scorecard-score-skip">
-            <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
+        <div class="sequence-score sequence-score-skip">
+            <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
         </div>
     <% end %>
-    <div class="scorecard-rubric">
-      <a class="scorecard-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+    <div class="sequence-title">
+      <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
         <%= sequence_class.title %>
+        <% if sequence_class.optional? %>
+          (Optional)
+        <% end %>
       </a>
-      <div class="scorecard-out-of">
+      <div class="sequence-out-of">
         <% if sequence_results[sequence_class.sequence_name].nil? %>
           <%= sequence_class.test_count %> tests
         <% elsif sequence_results[sequence_class.sequence_name].result == 'skip' %>
@@ -54,33 +57,31 @@
 
         <% end %>
       </div>
-      <div class="scorecard-details">
+      <div class="sequence-details">
         <%= sequence_class.description %>
       </div>
     </div>
-    <div class="scorecard-action">
+    <div class="sequence-action">
       <% if sequence_class.preconditions_met_for? instance %>
-        <% unless sequence_class.buttonless?%>
-          <% if sequence_class.modal_before_run? %>
-            <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
-                <% unless sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %>
-            </button>
+        <% if sequence_class.modal_before_run? %>
+          <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
+              <% unless sequence_results[sequence_class.sequence_name] %>Begin<% else %>Rerun<% end %>
+          </button>
+        <% else %>
+          <% unless sequence_results[sequence_class.sequence_name] %>
+            <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-secondary btn-sm">Begin</a>
           <% else %>
-            <% unless sequence_results[sequence_class.sequence_name] %>
-              <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-secondary btn-sm">Begin</a>
-            <% else %>
-              <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-secondary btn-sm">Rerun</a>
-            <% end %>
-          <% end %>
-          <% if sequence_results[sequence_class.sequence_name].nil? || sequence_results[sequence_class.sequence_name].result == 'fail'%>
-            <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
+            <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-secondary btn-sm">Rerun</a>
           <% end %>
         <% end %>
+        <% if sequence_class.optional? && (sequence_results[sequence_class.sequence_name].nil? || sequence_results[sequence_class.sequence_name].result == 'fail') %>
+          <button type="submit" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">Skip</button>
+        <% end %>
       <% else %>
-        <%= sequence_class.preconditions_description %>
+        <span><%= sequence_class.preconditions_description %></span>
       <% end %>
-      <div class="scorecard-action-collapse">
-        <a class="scorecard-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+      <div class="sequence-action-collapse">
+        <a class="sequence-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
           <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Results" aria-hidden="true"></span>
         </a>
       </div>

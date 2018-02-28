@@ -26,16 +26,19 @@
 
 <div class="container">
   <div class="main">
-    <div class="scorecard-title">
+    <div class="sequence-header">
       <button type="button" class="btn btn-outline-secondary btn-sm client-state-button" data-toggle="modal" data-target="#stateModal">
         Client State
       </button>
-      Test Sequences <span class="scorecard-title-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.count %> sequences successfully demonstrated)</span>
+
+      Test Sequences <span class="sequence-header-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.reject(&:optional?).count %> required sequences successfully demonstrated)</span>
     </div>
-    <div class="scorecard-table">
+    <div class="sequence-table">
       <% sequences.each do |sequence_class| %>
         <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
       <% end %>
+
+      <%= erb(:total_score,{},{instance: instance}) %>
     </div>
   </div>
 </div>

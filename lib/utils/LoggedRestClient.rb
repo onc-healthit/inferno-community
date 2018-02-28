@@ -48,7 +48,7 @@ class LoggedRestClient
       method: :post,
       url: url,
       headers: headers,
-      payload: payload
+      payload: payload.to_json
     }
     self.record_response(request, reply)
     return reply

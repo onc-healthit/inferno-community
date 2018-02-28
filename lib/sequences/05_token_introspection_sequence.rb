@@ -3,6 +3,8 @@ class TokenIntrospectionSequence < SequenceBase
   title 'OAuth 2.0 Token Introspection'
 
   description 'Access tokens can be introspected at the authorization server'
+
+  optional
   
   modal_before_run
 

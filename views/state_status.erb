@@ -6,6 +6,17 @@
       Current Client Status: <span class="client-authenticated">Authorized</span>
     <% end %>
   </div>
+  <% if instance.supported_resources.count %>
+    <% instance.supported_resources.each do |resource| %>
+      <%= resource.resource_type %>(
+      <% if resource.read_supported %> read, <% end %>
+      <% if resource.vread_supported %> vread, <% end %>
+      <% if resource.history_supported %> history, <% end %>
+      <% if resource.scope_supported %> authorized <% end %>
+      ),
+    <% end %>
+
+  <% end %>
   <% if instance.oauth_authorize_endpoint.nil? && instance.oauth_token_endpoint.nil?%>
     <p>
     The client does not yet have the necessary OAuth1
@@ -29,4 +40,5 @@
       Client ID: <%= instance.client_id %>
     </p>
   <% end %>
+
 </div>

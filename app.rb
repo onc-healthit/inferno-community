@@ -32,7 +32,7 @@ end
 
 DataMapper.finalize
 
-[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult].each do |model|
+[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource].each do |model|
   if PURGE_DATABASE || settings.environment == :test
     model.auto_migrate!
   else
