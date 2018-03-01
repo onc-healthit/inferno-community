@@ -2,7 +2,7 @@ class TokenIntrospectionSequence < SequenceBase
  
   title 'OAuth 2.0 Token Introspection'
 
-  description 'Access tokens can be introspected at the authorization server'
+  description 'Verify token properties using token introspection at the authorization server'
 
   optional
   

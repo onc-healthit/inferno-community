@@ -62,7 +62,6 @@
 
 .client-state-button {
   float: right;
-  margin-top: 5px;
 }
 
 .oi-print {
@@ -250,32 +249,37 @@
 
 /* ------------------------- CLIENT STATE POPOP -------------------------------- */
 
-.client-state {
-  margin-top: 10px;
-  border: 1px solid #aaa;
-  border-radius: 3px;
-  padding: 10px;
-  font-size: .8em;
+.client-state h4{
+  font-size: 1.3em;
+  margin: 30px 0 20px;
 }
 
-.client-state-list {
-  padding-left: 0;
-  list-style: none;
-}
-
-.client-state-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.client-not-authenticated {
-  color: red;
-}
-
-.client-authenticated {
-  color: green;
-}
+/* .client-state { */
+/*   margin-top: 10px; */
+/*   border: 1px solid #aaa; */
+/*   border-radius: 3px; */
+/*   padding: 10px; */
+/*   font-size: .8em; */
+/* } */
+/*  */
+/* .client-state-list { */
+/*   padding-left: 0; */
+/*   list-style: none; */
+/* } */
+/*  */
+/* .client-state-title { */
+/*   font-size: 1.2em; */
+/*   font-weight: bold; */
+/*   margin-bottom: 5px; */
+/* } */
+/*  */
+/* .client-not-authenticated { */
+/*   color: red; */
+/* } */
+/*  */
+/* .client-authenticated { */
+/*   color: green; */
+/* } */
 
 /* ------------------------- INLINE TEST RESULTS -------------------------------- */
 
