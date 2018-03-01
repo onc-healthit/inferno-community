@@ -78,6 +78,7 @@ class ConformanceSequence < SequenceBase
     'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
     'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
 
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     resources = ['Patient', 
                  'AllergyIntolerance',
                  'CarePlan',
@@ -107,6 +108,7 @@ class ConformanceSequence < SequenceBase
         testing_instance_id: @instance.id,
         read_supported: read_supported,
         vread_supported: resource.interaction.any?{|i| i.code == 'vread'},
+        # search_supported: resource.interaction.any?{|i| i.code == 'search-instance'},
         history_supported: resource.interaction.any?{|i| i.code == 'history-instance'}
       })
 

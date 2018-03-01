@@ -1,6 +1,5 @@
-# require 'simplecov'
-# SimpleCov.start
-# WebMock.disable_net_connect!(allow: %w{codeclimate.com})
+require 'simplecov'
+SimpleCov.start
 
 ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'

@@ -15,3 +15,5 @@ gem 'base62-rb'
 gem 'rake'
 gem 'webmock'
 gem 'rack-test'
+
+gem 'simplecov', require: false, group: :test
