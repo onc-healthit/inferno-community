@@ -64,7 +64,7 @@
     <div class="sequence-action">
       <% if sequence_class.preconditions_met_for? instance %>
         <% if sequence_class.optional? %>
-            <span title="Manually perform this test" data-toggle="tooltip">
+            <span title="Manually perform/verify this test" data-toggle="tooltip">
               <button type="submit" class="btn btn-outline-info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">
                 <span class="oi oi-eye" title="Manual"></span>
                 Manual
@@ -73,17 +73,17 @@
         <% end %>
         <% if sequence_class.modal_before_run? %>
           <span title="Execute Test" data-toggle="tooltip">
-                <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
-                  <button type="submit" class="btn btn-outline-info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
-                    <span class="oi oi-action-undo" title="Execute Test"></span>
-                    Rerun
-                  </button>
-                <% else %>
-                  <button type="submit" class="btn btn-info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
-                    <span class="oi oi-media-play" title="Execute Test"></span>
-                    Begin
-                  </button>
-                <% end %>
+            <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
+              <button type="submit" class="btn btn-outline-info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
+                <span class="oi oi-action-undo" title="Execute Test"></span>
+                Rerun
+              </button>
+            <% else %>
+                <button type="submit" class="btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
+                <span class="oi oi-media-play" title="Execute Test"></span>
+                Begin
+              </button>
+            <% end %>
           </span>
         <% else %>
           <span title="Execute Test" data-toggle="tooltip">

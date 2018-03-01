@@ -27,8 +27,9 @@
 <div class="container">
   <div class="main">
     <div class="sequence-header">
-      <button type="button" class="btn btn-outline-secondary btn-sm client-state-button" data-toggle="modal" data-target="#stateModal">
-        Client State
+      <button type="button" class="btn btn-outline-secondary client-state-button" data-toggle="modal" data-target="#stateModal">
+        <span class="oi oi-wrench" title="Config" aria-hidden="true"></span>
+        Instance State
       </button>
 
       Test Sequences <span class="sequence-header-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.reject(&:optional?).count %> required sequences successfully demonstrated)</span>
