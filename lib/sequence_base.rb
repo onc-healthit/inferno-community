@@ -291,12 +291,26 @@ class SequenceBase
     @client.search(klass, options)
   end
 
+  def check_sort_order(entries)
+    relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
+    relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
+
+    relevant_entries.each_cons(2) do |left, right|
+      if !left.versionId.nil? && !right.versionId.nil?
+        assert (left.versionId > right.versionId), 'Result contains entries in the wrong order.'
+      elsif !left.lastUpdated.nil? && !right.lastUpdated.nil?
+        assert (left.lastUpdated >= right.lastUpdated), 'Result contains entries in the wrong order.'
+      else
+        raise AssertionException.new 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
+      end
+    end
+  end
+
   def validate_search_reply(klass, reply)
     assert_response_ok(reply)
     assert_bundle_response(reply)
 
     entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
-
     assert entries.length > 0, 'No resources of this type were returned'
 
     if klass == FHIR::DSTU2::Patient
@@ -321,7 +335,33 @@ class SequenceBase
     assert_response_ok read_response
     assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
     assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
-  end 
+  end
+
+  def validate_history_reply(resource, klass)
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+    id = resource.try(:id)
+    assert !id.nil?, "#{klass} id not returned"
+    history_response = @client.resource_instance_history(klass, id)
+    assert_response_ok history_response
+    assert_bundle_response history_response
+    assert_equal "history", history_response.try(:resource).try(:type)
+    entries = history_response.try(:resource).try(:entry)
+    assert entries, 'No bundle entries returned'
+    assert entries.try(:length) > 0, 'No resources of this type were returned'
+    check_sort_order entries
+  end
+
+  def validate_vread_reply(resource, klass)
+    assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+    id = resource.try(:id)
+    assert !id.nil?, "#{klass} id not returned"
+    version_id = resource.try(:meta).try(:versionId)
+    assert !version_id.nil?, "#{klass} version_id not returned"
+    vread_response = @client.vread(klass, id, version_id)
+    assert_response_ok vread_response
+    assert !vread_response.resource.nil?, "Expected valid #{klass} resource to be present"
+    assert vread_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
+  end
 
   # This is intended to be called on SequenceBase
   # There is a test to ensure that this doesn't fall out of date

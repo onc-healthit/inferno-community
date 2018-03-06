@@ -26,14 +26,6 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Patient history and vread resource supported',
-          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
-
-    todo
-
-  end
-
   test 'Patient search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Patient search does not work without proper authorization' do
@@ -106,6 +98,24 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
+  test 'Patient history resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_history_reply(@patient, FHIR::DSTU2::Patient)
+
+  end
+
+  test 'Patient vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@patient, FHIR::DSTU2::Patient)
+
+  end
+
   # --------------------------------------------------
   # AllergyIntolerance Search
   # --------------------------------------------------
@@ -139,11 +149,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'AllergyIntolerance history and vread resource supported',
+  test 'AllergyIntolerance history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
+
+  end
+
+  test 'AllergyIntolerance vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
 
@@ -217,11 +237,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'CarePlan history and vread resource supported',
+  test 'CarePlan history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@careplan, FHIR::DSTU2::CarePlan)
+
+  end
+
+  test 'CarePlan vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@careplan, FHIR::DSTU2::CarePlan)
 
   end
 
@@ -289,11 +319,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Condition history and vread resource supported',
+  test 'Condition history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@condition, FHIR::DSTU2::Condition)
+
+  end
+
+  test 'Condition vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@condition, FHIR::DSTU2::Condition)
 
   end
 
@@ -331,11 +371,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Device history and vread resource supported',
+  test 'Device history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@device, FHIR::DSTU2::Device)
+
+  end
+
+  test 'Device vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@device, FHIR::DSTU2::Device)
 
   end
 
@@ -414,11 +464,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DocumentReference history and vread resource supported',
+  test 'DocumentReference history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@documentreference, FHIR::DSTU2::DocumentReference)
+
+  end
+
+  test 'DocumentReference vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@documentreference, FHIR::DSTU2::DocumentReference)
 
   end
 
@@ -468,11 +528,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Goal history and vread resource supported',
+  test 'Goal history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@goal, FHIR::DSTU2::Goal)
+
+  end
+
+  test 'Goal vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@goal, FHIR::DSTU2::Goal)
 
   end
 
@@ -510,11 +580,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Immunization history and vread resource supported',
+  test 'Immunization history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@immunization, FHIR::DSTU2::Immunization)
+
+  end
+
+  test 'Immunization vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@immunization, FHIR::DSTU2::Immunization)
 
   end
 
@@ -591,11 +671,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DiagnosticReport history and vread resource supported',
+  test 'DiagnosticReport history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
+
+  end
+
+  test 'DiagnosticReport vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
   end
 
@@ -632,11 +722,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationStatement history and vread resource supported',
+  test 'MedicationStatement history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
+
+  end
+
+  test 'MedicationStatement vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
 
   end
 
@@ -674,11 +774,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationOrder history and vread resource supported',
+  test 'MedicationOrder history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
+
+  end
+
+  test 'MedicationOrder vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
   end
 
@@ -835,13 +945,24 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Observation history and vread resource supported',
+  test 'Observation history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@observationresults, FHIR::DSTU2::Observation)
 
   end
+
+  test 'Observation vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@observationresults, FHIR::DSTU2::Observation)
+
+  end
+
 
   # --------------------------------------------------
   # Procedure Search
@@ -888,11 +1009,21 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Procedure history and vread resource supported',
+  test 'Procedure history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support. ' do
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
 
-    todo
+    validate_history_reply(@procedure, FHIR::DSTU2::Procedure)
+
+  end
+
+  test 'Procedure vread resource supported',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
+          :optional do
+
+    validate_vread_reply(@procedure, FHIR::DSTU2::Procedure)
 
   end
 
