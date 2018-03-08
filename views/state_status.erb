@@ -13,13 +13,15 @@
     <% if instance.supported_resources.count %>
       <ul>
       <% instance.supported_resources.each do |resource| %>
-        <li><%= resource.resource_type %> [
-            <% if resource.read_supported %> read, <% end %>
-            <% if resource.vread_supported %> vread, <% end %>
-            <% if resource.history_supported %> history, <% end %>
-            <% if resource.scope_supported %> authorized <% end %>
-            ]
+        <% if resource.supported %>
+          <li><%= resource.resource_type %> [
+              <% if resource.read_supported %> read, <% end %>
+              <% if resource.vread_supported %> vread, <% end %>
+              <% if resource.history_supported %> history, <% end %>
+              <% if resource.scope_supported %> authorized <% end %>
+              ]
           <% end %>
+        <% end %>
 
       </ul>
       <% end %>

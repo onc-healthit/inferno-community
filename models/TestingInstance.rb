@@ -21,7 +21,6 @@ class TestingInstance
   property :client_endpoint_key, String, default: proc { SecureRandomBase62.generate(32) }
 
   property :token, String
-  property :patient_id, String
   property :token_retrieved_at, DateTime
 
   property :created_at, DateTime, default: proc { DateTime.now }
@@ -32,7 +31,8 @@ class TestingInstance
   property :introspect_token, String
 
   has n, :sequence_results
-  has n, :supported_resources
+  has n, :supported_resources, order: [:index.asc]
+  has n, :resource_references
 
   def latest_results
     self.sequence_results.reduce({}) do |hash, result| 
@@ -61,6 +61,10 @@ class TestingInstance
       return 'fail'
     end
 
+  end
+
+  def patient_id
+    self.resource_references.select{|ref| ref.resource_type == 'patient'}.first.try(:resource_id)
   end
 
 end

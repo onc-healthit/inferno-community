@@ -32,7 +32,7 @@ end
 
 DataMapper.finalize
 
-[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource].each do |model|
+[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource, ResourceReference].each do |model|
   if PURGE_DATABASE || settings.environment == :test
     model.auto_migrate!
   else
@@ -165,15 +165,27 @@ post '/smart/:id/DynamicRegistration' do
 end
 
 post '/smart/:id/ArgonautDataQuery' do
-  @instance = TestingInstance.get(params[:id])
-  @instance.update(patient_id: params['patient_id'])
+  instance = TestingInstance.get(params[:id])
+  halt 404 if instance.nil?
 
-  redirect "/smart/#{@instance.id}/ArgonautDataQuery/"
+  instance.resource_references.select{|ref| ref.resource_type == 'patient'}.each(&:destroy)
+  params['patient_id'].split(",").map(&:strip).each do |patient_id| 
+    instance.resource_references << ResourceReference.new({resource_type: 'patient', resource_id: patient_id})
+  end
+
+  instance.save
+
+  redirect "/smart/#{instance.id}/ArgonautDataQuery/"
 end
 
 post '/smart/:id/ArgonautProfiles' do
-  @instance = TestingInstance.get(params[:id])
-  @instance.update(patient_id: params['patient_id'])
+
+  instance = TestingInstance.get(params[:id])
+  halt 404 if instance.nil?
+  params['patient_id'].split(",").map(&:strip).each do |patient_id| 
+    instance.resource_references << ResourceReference.new({resource_type: 'patient', resource_id: patient_id})
+  end
+  instance.save
 
   redirect "/smart/#{@instance.id}/ArgonautProfiles/"
 end

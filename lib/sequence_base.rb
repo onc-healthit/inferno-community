@@ -371,8 +371,8 @@ class SequenceBase
         PatientStandaloneLaunchSequence,
         ProviderEHRLaunchSequence,
         TokenIntrospectionSequence,
-        ArgonautProfilesSequence,
         ArgonautDataQuerySequence,
+        ArgonautProfilesSequence,
         AdditionalResourcesSequence]
   end
 

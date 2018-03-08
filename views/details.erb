@@ -354,6 +354,28 @@
           This sequence will perform queries in accordance with the Argonaut Data Query Server Guide. 
           </p>
           <div class="form-group">
+            <label for="registration_url">Supported Resources</label>
+            <div class="form-row">
+              <% instance.supported_resources.in_groups(3) do |group| %>
+                <div class="col">
+                  <% group.each do |resource| %>
+                  <div class="form-check">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           id="resource_supported_<%=resource.resource_type %>" 
+                           name="resource_supported_<%=resource.resource_type %>" 
+                           <% if resource.supported %>checked<%end%>
+                           disabled>
+                    <label class="form-check-label" for="resource_supported_<%=resource.resource_type %>">
+                      <%= resource.resource_type %>
+                    </label>
+                  </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <div class="form-group">
             <label for="registration_url">Patient ID</label>
             <input type="text" class="form-control" name="patient_id" id="patient_id" value="<%= instance.patient_id %>" required>
           </div>

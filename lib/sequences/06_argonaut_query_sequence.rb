@@ -13,6 +13,17 @@ class ArgonautDataQuerySequence < SequenceBase
   # --------------------------------------------------
   # Patient Search
   # --------------------------------------------------
+  #
+  test 'Patient read without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A patient read does not work without authorization' do
+
+    @client.set_no_auth
+    reply = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'Patient read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
