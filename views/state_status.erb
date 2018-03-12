@@ -1,32 +1,98 @@
 <div class="client-state">
-  <div class="client-state-title">
-    <% if instance.token.nil? %>
-      Current Client Status: <span class="client-not-authenticated">Not Authorized</span>
-    <% else %>
-      Current Client Status: <span class="client-authenticated">Authorized</span>
-    <% end %>
+  <form>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">FHIR URI</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.url %>" disabled>
+      </div>
+    </div>
+
+    <h4>Conformance Statement Resource Support</h4>
+
+    <% if instance.supported_resources.count %>
+      <ul>
+      <% instance.supported_resources.each do |resource| %>
+        <li><%= resource.resource_type %> [
+            <% if resource.read_supported %> read, <% end %>
+            <% if resource.vread_supported %> vread, <% end %>
+            <% if resource.history_supported %> history, <% end %>
+            <% if resource.scope_supported %> authorized <% end %>
+            ]
+          <% end %>
+
+      </ul>
+      <% end %>
+
+    <h4>OAuth Server Endpoints</h4>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">OAuth Auth</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.oauth_authorize_endpoint %>" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">OAuth Token</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.oauth_token_endpoint %>" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">OAuth Reg</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.oauth_register_endpoint %>" disabled>
+      </div>
+    </div>
+
+    <h4>Client OAuth Endpoints</h4>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Launch URI</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Redir URI</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect" disabled>
+      </div>
+    </div>
+
+
+    <h4>OAuth Client Data</h4>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Scopes</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.scopes %>" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Client ID</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.client_id %>" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Client State</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.state %>" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Bearer Token</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.token %>" disabled>
+      </div>
+    </div>
+
+
   </div>
-  <% if instance.oauth_authorize_endpoint.nil? && instance.oauth_token_endpoint.nil?%>
-    <p>
-    The client does not yet have the necessary OAuth1
-    endpoint information to begin authorization.
-    Please run the <strong>Capability Statement</strong> test sequence
-    to retrieve this information.
-    </p>
-  <% else %>
-    <p>
-      OAuth Authorize Endpoint: <%= instance.oauth_authorize_endpoint %><br/>
-      OAuth Token Endpoint: <%= instance.oauth_token_endpoint %><br/>
-      OAuth Registration Endpoint: <%= instance.oauth_register_endpoint %>
-    </p>
-  <% end %>
-  <% if !instance.dynamically_registered.nil? && !instance.dynamically_registered && !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil?%>
-    <p>
-      Launch URL: <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch
-      <br>
-      Redirect URL: <%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect
-      <br>
-      Client ID: <%= instance.client_id %>
-    </p>
-  <% end %>
-</div>

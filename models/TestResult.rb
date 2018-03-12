@@ -4,6 +4,7 @@ class TestResult
   property :name, String
   property :result, String
   property :message, String, length: 500
+  property :required, Boolean, default: true
 
   property :url, String, length: 500
   property :description, Text

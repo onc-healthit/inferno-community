@@ -32,6 +32,7 @@ class TestingInstance
   property :introspect_token, String
 
   has n, :sequence_results
+  has n, :supported_resources
 
   def latest_results
     self.sequence_results.reduce({}) do |hash, result| 
@@ -45,4 +46,21 @@ class TestingInstance
   def waiting_on_sequence
     self.sequence_results.first(result: 'wait')
   end
+
+  def final_result
+
+    required_sequences = SequenceBase.subclasses.reject(&:optional?)
+
+    all_passed = required_sequences.all? do |sequence|
+      self.latest_results[sequence.name].try(:result) == 'pass'
+    end
+
+    if all_passed
+      return 'pass'
+    else
+      return 'fail'
+    end
+
+  end
+
 end

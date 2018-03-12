@@ -2,15 +2,15 @@ require File.expand_path '../../test_helper.rb', __FILE__
 
 class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
 
-  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir', 
-                      'Accept-Charset'=>'UTF-8', 
+  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
+                      'Accept-Charset'=>'UTF-8',
                       'Content-Type'=>'application/json+fhir;charset=UTF-8'
                      }
 
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
   def setup
-    @instance = TestingInstance.new(url: 'http://www.example.com', 
+    @instance = TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Crucible Smart App',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
@@ -32,7 +32,7 @@ class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
 
     stub_request(:post, @instance.oauth_token_endpoint).
       with(headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
-      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8'})
+      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma:'no-cache'})
 
     sequence_result = @sequence.start
 
@@ -45,13 +45,15 @@ class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
     assert sequence_result.redirect_to_url.start_with? @instance.oauth_authorize_endpoint, 'The sequence should be redirecting to the authorize url'
     assert sequence_result.wait_at_endpoint == 'redirect', 'The sequence should be waiting at a redirect url'
 
-    redirect_params = {"code"=>"5N01E0", "state"=>"7c39b192-d2e4-47ba-a23e-d2735b560c38"}
+    redirect_params = {'code'=>'5N01E0', 'state'=>@instance.state}
 
     sequence_result = @sequence.resume(nil, nil, redirect_params)
-    
+
+    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'
-    assert sequence_result.test_results.all?{|r| r.result == 'pass'}, 'All tests should pass'
     assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
+
   end
 
 end

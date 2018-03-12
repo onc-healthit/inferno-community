@@ -1,0 +1,44 @@
+<div class="sequence-row sequence-row-total">
+  <div class="sequence-main">
+    <a name="total-score"></a>
+    <% case instance.final_result
+      when nil %>
+        <div class="sequence-score sequence-score-pending">
+          &nbsp;
+        </div>
+    <% when 'pass' %>
+        <div class="sequence-score sequence-score-pass">
+          <span class="oi oi-check" title="Pass" aria-hidden="true"></span>
+        </div>
+    <% when 'fail' %>
+        <div class="sequence-score sequence-score-fail">
+          <span class="oi oi-x" title="Fail" aria-hidden="true"></span>
+        </div>
+    <% when 'cancel' %>
+        <div class="sequence-score sequence-score-fail">
+          <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+        </div>
+    <% when 'error' %>
+        <div class="sequence-score sequence-score-error">
+          !
+        </div>
+    <% when 'wait' %>
+        <div class="sequence-score sequence-score-wait">
+          <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+        </div>
+    <% when 'skip' %>
+        <div class="sequence-score sequence-score-skip">
+            <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
+        </div>
+    <% end %>
+    <div class="sequence-title">
+      <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#TotalScore-details">
+        <% if instance.final_result == 'fail' %>
+          Fail: Not all required sequences have passed
+        <% else %>
+          Pass: All required sequences have passed
+        <% end %>
+      </a>
+    </div>
+  </div>
+</div>

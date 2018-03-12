@@ -1,6 +1,5 @@
-# require 'simplecov'
-# SimpleCov.start
-# WebMock.disable_net_connect!(allow: %w{codeclimate.com})
+require 'simplecov'
+SimpleCov.start
 
 ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
@@ -17,4 +16,8 @@ end
 def save_fixture(file_name, content)
    root = File.dirname(File.absolute_path(__FILE__))
    File.write(File.join(root, 'fixtures', file.to_s), content)
+end
+
+def valid_uri?(uri)
+  !(uri =~ /\A#{URI::regexp(['http', 'https'])}\z/).nil?
 end

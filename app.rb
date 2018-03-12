@@ -8,7 +8,7 @@ require 'dm-core'
 require 'dm-migrations'
 
 # You should never deactivate SSL Peer Verification
-# except in terrible development situations using invalid certificates:
+# except in development situations using invalid certificates:
 # OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
@@ -32,22 +32,13 @@ end
 
 DataMapper.finalize
 
-[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult].each do |model|
+[TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource].each do |model|
   if PURGE_DATABASE || settings.environment == :test
     model.auto_migrate!
   else
     model.auto_upgrade!
   end
 end
-
-SEQUENCES = [ ConformanceSequence, 
-              DynamicRegistrationSequence, 
-              PatientStandaloneLaunchSequence, 
-              ProviderEHRLaunchSequence, 
-              TokenIntrospectionSequence, 
-              ArgonautProfilesSequence, 
-              ArgonautSearchSequence 
-            ]
 
 helpers do
   def request_headers
@@ -71,7 +62,7 @@ get '/smart/:id/?' do
   instance = TestingInstance.get(params[:id])
   halt 404 if instance.nil?
   sequence_results = instance.latest_results
-  erb :details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: sequence_results, error_code: params[:error]}
+  erb :details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: sequence_results, error_code: params[:error]}
 end
 
 post '/smart/?' do
@@ -127,7 +118,7 @@ get '/smart/:id/:sequence/?' do
   if klass
     sequence = klass.new(instance, client)
     stream do |out|
-      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
       out << "<script>$('#testsRunningModal').modal('show')</script>"
       count = 0
@@ -173,6 +164,20 @@ post '/smart/:id/DynamicRegistration' do
   redirect "/smart/#{@instance.id}/DynamicRegistration/"
 end
 
+post '/smart/:id/ArgonautDataQuery' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(patient_id: params['patient_id'])
+
+  redirect "/smart/#{@instance.id}/ArgonautDataQuery/"
+end
+
+post '/smart/:id/ArgonautProfiles' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(patient_id: params['patient_id'])
+
+  redirect "/smart/#{@instance.id}/ArgonautProfiles/"
+end
+
 post '/smart/:id/dynamic_registration_skip/?' do
   instance = TestingInstance.get(params[:id])
 
@@ -199,6 +204,17 @@ post '/smart/:id/ProviderEHRLaunch/?' do
   redirect "/smart/#{params[:id]}/ProviderEHRLaunch/"
 end
 
+post '/smart/:id/TokenIntrospectionSkip/?' do
+  instance = TestingInstance.get(params[:id])
+
+  sequence_result = SequenceResult.new(name: "TokenIntrospection", result: "skip")
+  instance.sequence_results << sequence_result
+
+  instance.save!
+
+  redirect "/smart/#{params[:id]}/"
+end
+
 get '/smart/:id/:key/:endpoint/?' do
   instance = TestingInstance.get(params[:id])
   halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && ['launch','redirect'].include?(params[:endpoint])
@@ -215,7 +231,7 @@ get '/smart/:id/:key/:endpoint/?' do
     client.default_json
     sequence = klass.new(instance, client, sequence_result)
     stream do |out|
-      out << erb(:details, {}, {instance: instance, sequences: SEQUENCES, sequence_results: instance.latest_results, tests_running: true})
+      out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
       out << "<script>$('#testsRunningModal').modal('show')</script>"
       count = sequence_result.test_results.length

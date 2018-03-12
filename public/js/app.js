@@ -15,17 +15,17 @@ $(function(){
     }
   }
 
-  $('.scorecard-main').on('click', function(e) {
+  $('.sequence-main').on('click', function(e) {
     if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
       $(this).parent().find('.collapse').collapse('toggle');
     }
   });
 
-  $('.scorecard-main').on('show.bs.collapse', function() {
+  $('.sequence-row').on('show.bs.collapse', function() {
     $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
   });
 
-  $('.scorecard-main').on('hide.bs.collapse', function() {
+  $('.sequence-row').on('hide.bs.collapse', function() {
     $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
   });
 

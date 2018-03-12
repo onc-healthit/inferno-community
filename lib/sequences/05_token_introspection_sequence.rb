@@ -2,7 +2,9 @@ class TokenIntrospectionSequence < SequenceBase
  
   title 'OAuth 2.0 Token Introspection'
 
-  description 'Access tokens can be introspected at the authorization server'
+  description 'Verify token properties using token introspection at the authorization server'
+
+  optional
   
   modal_before_run
 
@@ -42,18 +44,18 @@ class TokenIntrospectionSequence < SequenceBase
 
   test 'Scopes match',
           'https://tools.ietf.org/html/rfc7662',
-          'The scopes we received alongside the token match those from the introspection response' do
+          'The scopes we received alongside the token match those from the introspection response',
+          :optional do
 
     expected_scopes = @instance.scopes.split(' ')
     actual_scopes = @introspection_response['scope'].split(' ')
     
     FHIR.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"
     
-    warning {
-      missing_scopes = (expected_scopes - actual_scopes)
-      assert missing_scopes.empty?, "Introspection response did not include expected scopes: #{missing_scopes}"
-    }
+    missing_scopes = (expected_scopes - actual_scopes)
+    assert missing_scopes.empty?, "Introspection response did not include expected scopes: #{missing_scopes}"
     extra_scopes = (actual_scopes - expected_scopes)
+
     assert extra_scopes.empty?, "Introspection response included additional scopes: #{extra_scopes}"
     
   end

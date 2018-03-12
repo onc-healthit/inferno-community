@@ -52,9 +52,10 @@
 
         <% if result.result == 'todo' %> TODO: <% end %>
         <%= result.name %>
-        <% if result.result == 'fail' || result.result == 'error' %>
+        <% unless result.required %> (optional) <% end %>
+        <% unless result.message.nil? %>
           <div class="result-details-message">
-            Failure Message: <%= result.message %>
+            Details: <%= result.message %>
           </div>
         <% end %>
       </li>

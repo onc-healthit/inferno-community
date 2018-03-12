@@ -20,6 +20,7 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
   end
 
   def test_all_pass
+    WebMock.reset!
     stub_request(:get, "http://www.example.com/metadata").
       with(headers: REQUEST_HEADERS).
       to_return(status: 200, body: @conformance.to_json, headers: RESPONSE_HEADERS)
@@ -37,7 +38,8 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
 
     sequence_result = @sequence.start
     assert sequence_result.result == 'fail'
-    assert sequence_result.test_results.all?{|r| r.result == 'fail'}
+    assert sequence_result.test_results.select{|r| !r.required}.length == 1
+    assert sequence_result.test_results.all?{|r| r.result == 'fail' || !r.required}
   end
 
 end

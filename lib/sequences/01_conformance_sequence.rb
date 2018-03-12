@@ -2,23 +2,27 @@ class ConformanceSequence < SequenceBase
 
   title 'Conformance Statement'
 
-  description 'The FHIR server properly exposes a capability statement with necessary information.'
+  description 'The FHIR server exposes a Conformance Statement with the necessary information.'
 
   test 'Responds to metadata endpoint with DSTU2 Conformance resource',
-          'https://documentationlocation',
-          'Exact Language' do
+          'https://www.hl7.org/fhir/DSTU2/http.html',
+          'Servers SHALL provide a conformance statement that specifies which interactions and resources are supported.' do
 
     @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
     assert_response_ok @client.reply
-    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
   end
 
-  test 'Conformance states json support' do
+  test 'Conformance states json support',
+         'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+         'The Argonaut Data Query Server SHALL: Support json resource formats for all Argonaut Data Query interactions.' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
   end
 
-  test 'Conformance lists valid OAuth 2.0 endpoints' do
+  test 'Conformance lists OAuth 2.0 authorize and token endpoints',
+         'http://www.hl7.org/fhir/smart-app-launch/capability-statement/',
+         'If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     oauth_metadata = @client.get_oauth2_metadata_from_conformance
     assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
@@ -35,13 +39,19 @@ class ConformanceSequence < SequenceBase
       registration_url = registration_url.value if registration_url
       assert !registration_url.blank?,  'No dynamic registration endpoint in conformance.'
       assert (registration_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid registration url: '#{registration_url}'"
+
+      manage_url = security_info.extension.find{|x| x.url == 'manage'}
+      manage_url = manage_url.value if manage_url
+      assert !manage_url.blank?,  'No user-facing authorization management workflow entry point for this FHIR server.'
     }
 
     @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
   end
 
-  test 'Conformance statement lists core capabilities' do
-    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+  test 'Conformance statement lists core capabilities',
+    'http://www.hl7.org/fhir/smart-app-launch/conformance/',
+    'A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities',
+    :optional do
 
     required_capabilities = ['launch-ehr',
       'launch-standalone',
@@ -56,13 +66,57 @@ class ConformanceSequence < SequenceBase
       'permission-user'
     ]
 
-    warning {
-      capabilities = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
-      assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
-      available_capabilities = capabilities.map{ |v| v['valueCode']}
-      missing_capabilities = (required_capabilities - available_capabilities)
-      assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
-    }
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+    capabilities = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
+    assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
+    available_capabilities = capabilities.map{ |v| v['valueCode']}
+    missing_capabilities = (required_capabilities - available_capabilities)
+    assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
+  end
+
+  test 'Conformance lists supported Argonaut profiles, as well as supported operatations and search parameters', 
+    'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+    'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
+
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+    resources = ['Patient', 
+                 'AllergyIntolerance',
+                 'CarePlan',
+                 'DocumentReference',
+                 'Goal',
+                 'DiagnosticReport',
+                 'Medication',
+                 'MedicationStatement',
+                 'MedicationOrder',
+                 'Observation',
+                 'Procedure']
+
+    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+
+    supported_resources = @conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}.values
+
+    @instance.supported_resources.each(&:destroy)
+    @instance.save!
+
+    patient_read_supported = false
+    supported_resources.each do |resource|
+
+      read_supported = resource.interaction.any?{|i| i.code == 'read'}
+
+      SupportedResource.create({
+        resource_type: resource.type,
+        testing_instance_id: @instance.id,
+        read_supported: read_supported,
+        vread_supported: resource.interaction.any?{|i| i.code == 'vread'},
+        # search_supported: resource.interaction.any?{|i| i.code == 'search-instance'},
+        history_supported: resource.interaction.any?{|i| i.code == 'history-instance'}
+      })
+
+      patient_read_supported = read_supported if resource.type == 'Patient'
+    end
+
+    assert patient_read_supported, 'Patient resource with read interaction is not listed in conformance statement.'
+
   end
 
 end
