@@ -104,7 +104,7 @@ class ArgonautProfilesSequence < SequenceBase
         next unless p.url == specified_profile
       end
       if p
-        
+        @profiles_encountered << p.url
         @profiles_encountered.uniq!
         errors = p.validate_resource(resource)
         unless errors.empty?
