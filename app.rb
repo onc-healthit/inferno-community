@@ -168,9 +168,9 @@ post '/smart/:id/ArgonautDataQuery' do
   instance = TestingInstance.get(params[:id])
   halt 404 if instance.nil?
 
-  instance.resource_references.select{|ref| ref.resource_type == 'patient'}.each(&:destroy)
+  instance.resource_references.select{|ref| ref.resource_type == 'Patient'}.each(&:destroy)
   params['patient_id'].split(",").map(&:strip).each do |patient_id| 
-    instance.resource_references << ResourceReference.new({resource_type: 'patient', resource_id: patient_id})
+    instance.resource_references << ResourceReference.new({resource_type: 'Patient', resource_id: patient_id})
   end
 
   instance.save
@@ -182,12 +182,8 @@ post '/smart/:id/ArgonautProfiles' do
 
   instance = TestingInstance.get(params[:id])
   halt 404 if instance.nil?
-  params['patient_id'].split(",").map(&:strip).each do |patient_id| 
-    instance.resource_references << ResourceReference.new({resource_type: 'patient', resource_id: patient_id})
-  end
-  instance.save
 
-  redirect "/smart/#{@instance.id}/ArgonautProfiles/"
+  redirect "/smart/#{instance.id}/ArgonautProfiles/"
 end
 
 post '/smart/:id/dynamic_registration_skip/?' do

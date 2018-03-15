@@ -6,8 +6,8 @@ class ArgonautProfilesSequence < SequenceBase
 
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide.'
 
-  preconditions 'Client must be authorized.' do
-    !@instance.token.nil?
+  preconditions 'Argonaut Query Sequence must first be completed.' do
+    !@instance.token.nil? && @instance.latest_results.has_key?('ArgonautDataQuery')
   end
 
   # --------------------------------------------------
@@ -18,7 +18,11 @@ class ArgonautProfilesSequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient using GET [base]/Patient/[id].' do
 
-    patient_read_response = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
+    patient_id = @instance.resource_references.select{|r| r.resource_type === 'Patient' }.first.try(:resource_id)
+
+    assert !patient_id.nil?, 'A patient id must be available'
+
+    patient_read_response = @client.read(FHIR::DSTU2::Patient, patient_id)
     assert_response_ok patient_read_response
     @patient = patient_read_response.resource
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
@@ -56,65 +60,55 @@ class ArgonautProfilesSequence < SequenceBase
     assert !telecom.nil?, 'Patient telecom not returned'
   end
 
-  test 'Patient supports $everything operation', '', 'DISCUSSION REQUIRED', :optional do
-    everything_response = @client.fetch_patient_record(@instance.patient_id)
-    skip_unless [200, 201].include?(everything_response.code)
-    @everything = everything_response.resource
-    assert !@everything.nil?, 'Expected valid DSTU2 Bundle resource on $everything request'
-    assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
-  end
+  # test 'Resources in the Patient $everything results conform to Argonaut profiles',
+  #         'http://www.fhir.org/guides/argonaut/r2/profiles.html', 'DISCUSSION REQUIRED', :optional do
 
-  test 'Resources in the Patient $everything results conform to Argonaut profiles',
-          'http://www.fhir.org/guides/argonaut/r2/profiles.html', 'DISCUSSION REQUIRED', :optional do
+  #   skip_unless !@everything.nil?, 'Expected valid DSTU2 Bundle to be present as a result of $everything request'
+  #   assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
 
-    skip_unless !@everything.nil?, 'Expected valid DSTU2 Bundle to be present as a result of $everything request'
-    assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
-
-    all_errors = []
-    @everything.entry.each do |entry|
-      p = ValidationUtil.guess_profile(entry.resource)
-      if p
-        errors = p.validate_resource(entry.resource)
-        all_errors.concat(errors)
-      else
-        errors = entry.resource.validate
-        all_errors.concat(errors.values)
-      end
-    end
-    assert(all_errors.empty?, all_errors.join("<br/>\n"))
-  end
+  #   all_errors = []
+  #   @everything.entry.each do |entry|
+  #     p = ValidationUtil.guess_profile(entry.resource)
+  #     if p
+  #       errors = p.validate_resource(entry.resource)
+  #       all_errors.concat(errors)
+  #     else
+  #       errors = entry.resource.validate
+  #       all_errors.concat(errors.values)
+  #     end
+  #   end
+  #   assert(all_errors.empty?, all_errors.join("<br/>\n"))
+  # end
 
   attr_accessor :profiles_encountered
   attr_accessor :profiles_failed
 
-  def test_resources_against_profile(resourceType, specified_profile=nil)
+  def test_resources_against_profile(resource_type, specified_profile=nil)
     @profiles_encountered = [] unless @profiles_encountered
     @profiles_failed = {} unless @profiles_failed
-    options = {
-      :search => {
-        :flag => false,
-        :compartment => nil,
-        :parameters => { patient: @instance.patient_id }
-      }
-    }
-    search_reply = @client.search("FHIR::DSTU2::#{resourceType}".constantize, options)
-    assert_response_ok search_reply
-    bundle = search_reply.resource
-    assert !bundle.nil?, "Expected valid DSTU2 Bundle to be present as a result of #{resourceType} search request"
-    assert bundle.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
-    skip("Skip profile validation since no #{resourceType} resources found for Patient.") if bundle.entry.empty?
 
     all_errors = []
-    bundle.entry.each do |entry|
-      p = ValidationUtil.guess_profile(entry.resource)
+
+    resources = @instance.resource_references.select{|r| r.resource_type == resource_type}
+    skip("Skip profile validation since no #{resource_type} resources found for Patient.") if resources.empty?
+
+    @instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).each do |resource_id|
+
+      resource_response = @client.read("FHIR::DSTU2::#{resource_type}", resource_id)
+      assert_response_ok resource_response
+      resource = resource_response.resource
+      assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize), "Expected resource to be of type #{resource_type}"
+
+      p = ValidationUtil.guess_profile(resource)
       if specified_profile
         next unless p.url == specified_profile
       end
       if p
-        @profiles_encountered << p.url
+        
         @profiles_encountered.uniq!
-        errors = p.validate_resource(entry.resource)
+        errors = p.validate_resource(resource)
         unless errors.empty?
+          errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
           @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
           @profiles_failed[p.url].concat(errors)
         end

@@ -64,7 +64,7 @@ class TestingInstance
   end
 
   def patient_id
-    self.resource_references.select{|ref| ref.resource_type == 'patient'}.first.try(:resource_id)
+    self.resource_references.select{|ref| ref.resource_type == 'Patient'}.first.try(:resource_id)
   end
 
 end

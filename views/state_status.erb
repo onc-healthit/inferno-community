@@ -96,5 +96,16 @@
       </div>
     </div>
 
+    <% if instance.resource_references.count > 0 %>
+      <h4>Authorized Resources</h4>
+      <%instance.resource_references.map(&:resource_type).uniq.each do |resource_type| %>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label"><%=resource_type %></label>
+          <div class="col-sm-10">
+            <texatarea readonly class="form-control" rows=3><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
 
   </div>
