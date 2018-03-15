@@ -91,8 +91,13 @@ class ProviderEHRLaunchSequence < SequenceBase
 
     token_retrieved_at = DateTime.now
 
+
+    @instance.resource_references.each(&:destroy)
+    @instance.resource_references << ResourceReference.new({resource_type: 'Patient', resource_id: @token_response_body['patient']}) if @token_response_body.key?('patient')
+
     @instance.save!
-    @instance.update(token: @token_response_body['access_token'], patient_id: @token_response_body['patient'], token_retrieved_at: token_retrieved_at)
+
+    @instance.update(token: @token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
 
     [:cache_control, :pragma].each do |key|
       assert @token_response_headers.has_key?(key), "Token response headers did not contain #{key} as required"
