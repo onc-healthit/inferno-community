@@ -16,16 +16,8 @@ class DynamicRegistrationSequence < SequenceBase
     'https://tools.ietf.org/html/rfc7591',
     'The client registration endpoint MUST be protected by a transport-layer security' do
 
-    assert @instance.oauth_register_endpoint.start_with?('https'), 'Client registration endpoint not secured.'
-
     assert_tls_conformance instance.uri
 
-    tlsTester = TlsTester.new({uri:@instance.url})
-    assert tlsTester.verifyEnsureTLSv1_2
-    assert tlsTester.verfiyDenySSLv3
-    assert tlsTester.verfiyDenyTLSv1_1
-    assert tlsTester.verifyDenyTLSv1
-    #TODO: Add in tests for cipher suites?
   end
 
 
