@@ -13,6 +13,17 @@ class ArgonautDataQuerySequence < SequenceBase
   # --------------------------------------------------
   # Patient Search
   # --------------------------------------------------
+  #
+  test 'Patient read without authorization',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A patient read does not work without authorization' do
+
+    @client.set_no_auth
+    reply = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
+    @client.set_bearer_token(@instance.token)
+    assert_response_unauthorized reply
+
+  end
 
   test 'Patient read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
@@ -116,6 +127,15 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
+  # test 'Patient supports $everything operation', '', 'DISCUSSION REQUIRED', :optional do
+  #   everything_response = @client.fetch_patient_record(@instance.patient_id)
+  #   skip_unless [200, 201].include?(everything_response.code)
+  #   @everything = everything_response.resource
+  #   assert !@everything.nil?, 'Expected valid DSTU2 Bundle resource on $everything request'
+  #   assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
+  # end
+
+
   # --------------------------------------------------
   # AllergyIntolerance Search
   # --------------------------------------------------
@@ -138,6 +158,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
     @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::AllergyIntolerance, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::AllergyIntolerance, reply)
 
   end
 
@@ -190,6 +211,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan"})
     @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::CarePlan, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::CarePlan, reply)
 
   end
 
@@ -278,6 +300,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
     @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Condition, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Condition, reply)
 
   end
 
@@ -360,6 +383,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
     @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Device, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Device, reply)
 
   end
 
@@ -412,6 +436,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, {patient: @instance.patient_id})
     @documentreference = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::DocumentReference, reply)
 
   end
 
@@ -505,6 +530,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
     @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Goal, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Goal, reply)
 
   end
 
@@ -569,6 +595,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
     @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Immunization, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Immunization, reply)
 
   end
 
@@ -711,6 +738,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
     @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::MedicationStatement, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::MedicationStatement, reply)
 
   end
 
@@ -763,6 +791,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
     @medicationorder = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::MedicationOrder, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::MedicationOrder, reply)
 
   end
 
@@ -815,6 +844,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
     @observationresults = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Observation, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -874,6 +904,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
     validate_search_reply(FHIR::DSTU2::Observation, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -895,6 +926,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
     @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Observation, reply)
+    save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
 
   end
 
@@ -976,6 +1008,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
     assert_response_unauthorized reply
+    save_resource_ids_in_bundle(FHIR::DSTU2::Procedure, reply)
 
   end
 

@@ -442,4 +442,8 @@ li.result-details-clickable:hover {
   font-weight: bold;
 }
 
+/* ------------------------- TEST RESULT POPUP -------------------------------- */
 
+.modal-body .form-row {
+  margin: 0 20px;
+}
