@@ -131,43 +131,60 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by patient + entitytype',
+  test 'Provenance search by patient + target',
           'https://www.hl7.org/fhir/DSTU2/provenance.html',
           'Additional Provenance resource requirement',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
-    entitytype = @provenance.try(:entity).try(:first).try(:type)
-    assert !entitytype.nil?, "Provenance entitytype not returned"
-    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, entitytype: entitytype})
+    target = @provenance.try(:target)
+    assert !target.nil?, "Provenance target not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, target: target})
     validate_search_reply(FHIR::DSTU2::Provenance, reply)
 
   end
 
-  test 'Provenance search by patient + start',
+  test 'Provenance search by patient + start + end',
           'https://www.hl7.org/fhir/DSTU2/provenance.html',
           'Additional Provenance resource requirement',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
-    start = @provenance.try(:period).try(:start)
-    assert !start.nil?, "Provenance period start not returned"
-    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, start: start})
+    periodStart = @provenance.try(:period).try(:start)
+    assert !periodStart.nil?, "Provenance period start not returned"
+    periodEnd = @provenance.try(:period).try(:end)
+    assert !periodEnd.nil?, "Provenance period end not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, start: periodStart, end: periodEnd})
     validate_search_reply(FHIR::DSTU2::Provenance, reply)
 
   end
 
-  test 'Provenance search by patient + entitytype + start',
+  test 'Provenance search by patient + target + start + end',
           'https://www.hl7.org/fhir/DSTU2/provenance.html',
           'Additional Provenance resource requirement',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
-    entitytype = @provenance.try(:entity).try(:first).try(:type)
-    assert !entitytype.nil?, "Provenance entitytype not returned"
-    start = @provenance.try(:period).try(:start)
-    assert !start.nil?, "Provenance period start not returned"
-    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, entitytype: entitytype, start: start})
+    target = @provenance.try(:target)
+    assert !target.nil?, "Provenance target not returned"
+    periodStart = @provenance.try(:period).try(:start)
+    assert !periodStart.nil?, "Provenance period start not returned"
+    periodEnd = @provenance.try(:period).try(:end)
+    assert !periodEnd.nil?, "Provenance period end not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, target: target, start: periodStart, end: periodEnd})
+    validate_search_reply(FHIR::DSTU2::Provenance, reply)
+
+  end
+
+  test 'Provenance search by userid',
+          'https://www.hl7.org/fhir/DSTU2/provenance.html',
+          'Additional Provenance resource requirement',
+          :optional do
+
+    assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+    userid = @provenance.try(:agent).try(:first).try(:userId)
+    assert !userid.nil?, "Provenance agent userId not returned"
+    reply = get_resource_by_params(FHIR::DSTU2::Provenance, {userid: userid})
     validate_search_reply(FHIR::DSTU2::Provenance, reply)
 
   end
