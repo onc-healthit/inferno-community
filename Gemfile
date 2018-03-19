@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'thin'
 gem 'sinatra'
+gem 'sinatra-contrib'
 gem 'addressable'
 gem 'fhir_client'
 # gem 'fhir_client', :path => '../fhir_client'
