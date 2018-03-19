@@ -114,6 +114,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Patient, [:history])
+
     validate_history_reply(@patient, FHIR::DSTU2::Patient)
 
   end
@@ -122,6 +124,9 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+
+    skip_if_not_supported(:Patient, [:vread])
 
     validate_vread_reply(@patient, FHIR::DSTU2::Patient)
 
@@ -144,6 +149,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An AllergyIntolerance search does not work without proper authorization' do
 
+    skip_if_not_supported(:AllergyIntolerance, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -154,6 +161,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'AllergyIntolerance search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s allergies using GET /AllergyIntolerance?patient=[id]' do
+
+    skip_if_not_supported(:AllergyIntolerance, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
     @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -166,6 +175,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:AllergyIntolerance, [:search, :read])
     validate_read_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
@@ -175,6 +185,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:AllergyIntolerance, [:history])
     validate_history_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
@@ -183,6 +194,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:AllergyIntolerance, [:vread])
 
     validate_vread_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
@@ -197,6 +210,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A CarePlan search does not work without proper authorization' do
 
+    skip_if_not_supported(:CarePlan, [:search, :read])
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan"})
     @client.set_bearer_token(@instance.token)
@@ -207,6 +221,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of a patient’s Assessment and Plan of Treatment information using GET /CarePlan?patient=[id]&category=assess-plan' do
+
+    skip_if_not_supported(:CarePlan, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan"})
     @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -219,6 +235,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable of returning a patient’s Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&date=[date]',
           :optional do
+
+    skip_if_not_supported(:CarePlan, [:search, :read])
 
     assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
     date = @careplan.try(:period).try(:end)
@@ -233,6 +251,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server SHOULD be capable returning all of a patient’s active Assessment and Plan of Treatment information using GET /CarePlan?patient=[id]&category=assess-plan&status=active',
           :optional do
 
+    skip_if_not_supported(:CarePlan, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active"})
     validate_search_reply(FHIR::DSTU2::CarePlan, reply)
 
@@ -242,6 +262,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable returning a patients active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]',
           :optional do
+
+    skip_if_not_supported(:CarePlan, [:search, :read])
 
     assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
     date = @careplan.try(:period).try(:end)
@@ -254,6 +276,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'CarePlan read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+          
+    skip_if_not_supported(:CarePlan, [:search, :read])
 
     validate_read_reply(@careplan, FHIR::DSTU2::CarePlan)
 
@@ -264,6 +288,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:CarePlan, [:history])
+
     validate_history_reply(@careplan, FHIR::DSTU2::CarePlan)
 
   end
@@ -272,6 +298,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:CarePlan, [:vread])
 
     validate_vread_reply(@careplan, FHIR::DSTU2::CarePlan)
 
@@ -286,6 +314,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Condition search does not work without proper authorization' do
 
+    skip_if_not_supported(:Condition, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -296,6 +326,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patients conditions list using GET/Condition?patient=[id]' do
+
+    skip_if_not_supported(:Condition, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
     @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -309,6 +341,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server SHOULD be capable returning all of a patients active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission',
           :optional do
 
+    skip_if_not_supported(:Condition, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
     validate_search_reply(FHIR::DSTU2::Condition, reply)
 
@@ -318,6 +352,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]',
           :optional do
+
+    skip_if_not_supported(:Condition, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "problem"})
     validate_search_reply(FHIR::DSTU2::Condition, reply)
@@ -329,6 +365,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]',
           :optional do
 
+    skip_if_not_supported(:Condition, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "health-concern"})
     validate_search_reply(FHIR::DSTU2::Condition, reply)
 
@@ -337,6 +375,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Condition read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+
+    skip_if_not_supported(:Condition, [:search, :read])
 
     validate_read_reply(@condition, FHIR::DSTU2::Condition)
 
@@ -347,6 +387,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Condition, [:history])
+
     validate_history_reply(@condition, FHIR::DSTU2::Condition)
 
   end
@@ -355,6 +397,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:Condition, [:vread])
 
     validate_vread_reply(@condition, FHIR::DSTU2::Condition)
 
@@ -369,6 +413,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Device search does not work without proper authorization' do
 
+    skip_if_not_supported(:Device, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -379,6 +425,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Device search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all Unique device identifier(s)(UDI) for a patient’s implanted device(s) using GET /Device?patient=[id]' do
+
+    skip_if_not_supported(:Device, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::Device, {patient: @instance.patient_id})
     @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -391,6 +439,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:Device, [:search, :read])
+
     validate_read_reply(@device, FHIR::DSTU2::Device)
 
   end
@@ -400,6 +450,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Device, [:history])
+
     validate_history_reply(@device, FHIR::DSTU2::Device)
 
   end
@@ -408,6 +460,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:Device, [:vread])
 
     validate_vread_reply(@device, FHIR::DSTU2::Device)
 
@@ -422,6 +476,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A DocumentReference search does not work without proper authorization' do
 
+    skip_if_not_supported(:DocumentReference, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -432,6 +488,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'DocumentReference search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, a server SHALL be capable of returning at least the most recent CCD document references and MAY provide most recent references to other document types for a patient using:GET [base]/DocumentReference/$docref?patient=[id]' do
+
+    skip_if_not_supported(:DocumentReference, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, {patient: @instance.patient_id})
     @documentreference = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -444,6 +502,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date using:GET [base]/DocumentReference/$docref?patient=[id]{&type=[type]}{&period=[date]}',
           :optional do
+
+    skip_if_not_supported(:DocumentReference, [:search, :read])
 
     assert !@documentreference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
     type = @documentreference.try(:type)
@@ -458,6 +518,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date using:GET [base]/DocumentReference/$docref?patient=[id]{&type=[type]}{&period=[date]}',
           :optional do
 
+    skip_if_not_supported(:DocumentReference, [:search, :read])
+
     assert !@documentreference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
     period = @documentreference.try(:context).try(:period)
     assert !type.nil?, "DocumentReference period not returned"
@@ -470,6 +532,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date using:GET [base]/DocumentReference/$docref?patient=[id]{&type=[type]}{&period=[date]}',
           :optional do
+
+    skip_if_not_supported(:DocumentReference, [:search, :read])
 
     assert !@documentreference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
     type = @documentreference.try(:type)
@@ -485,6 +549,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:DocumentReference, [:search, :read])
+
     validate_read_reply(@documentreference, FHIR::DSTU2::DocumentReference)
 
   end
@@ -494,6 +560,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:DocumentReference, [:history])
+
     validate_history_reply(@documentreference, FHIR::DSTU2::DocumentReference)
 
   end
@@ -502,6 +570,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:DocumentReference, [:vread])
 
     validate_vread_reply(@documentreference, FHIR::DSTU2::DocumentReference)
 
@@ -516,6 +586,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Goal search does not work without proper authorization' do
 
+    skip_if_not_supported(:Goal, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -527,6 +599,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of a patient’s goals using GET [base]/Goal?patient=[id]' do
 
+    skip_if_not_supported(:Goal, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id})
     @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Goal, reply)
@@ -537,6 +611,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of all of a patient’s goals over a specified time period using GET [base]/Goal?patient=[id]&date=[date]{&date=[date]}' do
+
+    skip_if_not_supported(:Goal, [:search, :read])
 
     assert !@goal.nil?, 'Expected valid DSTU2 Goal resource to be present'
     date = @goal.try(:statusDate)
@@ -550,6 +626,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:Goal, [:search, :read])
+
     validate_read_reply(@goal, FHIR::DSTU2::Goal)
 
   end
@@ -559,6 +637,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Goal, [:history])
+
     validate_history_reply(@goal, FHIR::DSTU2::Goal)
 
   end
@@ -567,6 +647,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:Goal, [:vread])
 
     validate_vread_reply(@goal, FHIR::DSTU2::Goal)
 
@@ -581,6 +663,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An Immunization search does not work without proper authorization' do
 
+    skip_if_not_supported(:Immunization, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -591,6 +675,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A client has connected to a server and fetched all immunizations for a patient using GET /Immunization?patient=[id]' do
+
+    skip_if_not_supported(:Immunization, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
     @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -603,6 +689,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:Immunization, [:search, :read])
+
     validate_read_reply(@immunization, FHIR::DSTU2::Immunization)
 
   end
@@ -612,6 +700,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Immunization, [:history])
+
     validate_history_reply(@immunization, FHIR::DSTU2::Immunization)
 
   end
@@ -620,6 +710,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:Immunization, [:vread])
 
     validate_vread_reply(@immunization, FHIR::DSTU2::Immunization)
 
@@ -634,6 +726,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A DiagnosticReport search does not work without proper authorization' do
 
+    skip_if_not_supported(:DiagnosticReport, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
     @client.set_bearer_token(@instance.token)
@@ -645,6 +739,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category using GET [base]/DiagnosticReport?patient=[id]&category=LAB' do
 
+    skip_if_not_supported(:DiagnosticReport, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
     @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
@@ -654,6 +750,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category code and date range using GET [base]/DiagnosticReport?patient=[id]&category=LAB&date=[date]{&date=[date]}' do
+
+    skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
     date = @diagnosticreport.try(:effectiveDateTime)
@@ -667,6 +765,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category and code using GET [base]/DiagnosticReport?patient=[id]&category=LAB&code=[LOINC]' do
 
+    skip_if_not_supported(:DiagnosticReport, [:search, :read])
+
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
     code = @diagnosticreport.try(:code).try(:text)
     assert !code.nil?, "DiagnosticReport code not returned"
@@ -679,6 +779,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable of returning all of a patient’s laboratory diagnostic reports queried by category and one or more codes and date range using GET [base]/DiagnosticReport?patient=[id]&category=LAB&code=[LOINC1{,LOINC2,LOINC3,…}]&date=[date]{&date=[date]}',
           :optional do
+
+    skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
     code = @diagnosticreport.try(:code).try(:text)
@@ -694,6 +796,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:DiagnosticReport, [:search, :read])
+
     validate_read_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
   end
@@ -703,6 +807,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:DiagnosticReport, [:history])
+
     validate_history_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
   end
@@ -711,6 +817,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:DiagnosticReport, [:vread])
 
     validate_vread_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
@@ -724,6 +832,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An MedicationStatement search does not work without proper authorization' do
 
+    skip_if_not_supported(:MedicationStatement, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -734,6 +844,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'MedicationStatement search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationStatement?patient=[id] 2. GET /MedicationStatement?patient=[id]&_include=MedicationStatement:medication' do
+
+    skip_if_not_supported(:MedicationStatement, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
     @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -746,6 +858,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:MedicationStatement, [:search, :read])
+
     validate_read_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
 
   end
@@ -755,6 +869,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:MedicationStatement, [:history])
+
     validate_history_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
 
   end
@@ -763,6 +879,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:MedicationStatement, [:vread])
 
     validate_vread_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
 
@@ -777,6 +895,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An MedicationOrder search does not work without proper authorization' do
 
+    skip_if_not_supported(:MedicationOrder, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -787,6 +907,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'MedicationOrder search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationOrder?patient=[id] 2. GET /MedicationOrder?patient=[id]&_include=MedicationOrder:medication' do
+
+    skip_if_not_supported(:MedicationOrder, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
     @medicationorder = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -799,6 +921,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:MedicationOrder, [:search, :read])
+
     validate_read_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
   end
@@ -808,6 +932,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:MedicatoinOrder, [:history])
+
     validate_history_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
   end
@@ -816,6 +942,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:MedicatoinOrder, [:vread])
 
     validate_vread_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
@@ -830,6 +958,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An Observation Results search does not work without proper authorization' do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
     @client.set_bearer_token(@instance.token)
@@ -841,6 +971,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory results queried by category using GET [base]/Observation?patient=[id]&category=laboratory" do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
     @observationresults = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Observation, reply)
@@ -851,6 +983,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Observation Results search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory results queried by category code and date range usingGET [base]/Observation?patient=[id]&category=laboratory&date=[date]{&date=[date]}" do
+
+    skip_if_not_supported(:Observation, [:search, :read])
 
     assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
     date = @observationresults.try(:effectiveDateTime)
@@ -864,6 +998,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory results queried by category and code using GET [base]/Observation?patient=[id]&category=laboratory&code=[LOINC]" do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
     code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
     assert !code.nil?, "Observation code not returned"
@@ -876,6 +1012,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range using GET [base]/Observation?patient=[id]&category=laboratory&code=[LOINC1{,LOINC2,LOINC3,...}]&date=[date]{&date=[date]}",
           :optional do
+
+    skip_if_not_supported(:Observation, [:search, :read])
 
     assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
     code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
@@ -891,6 +1029,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Smoking Status search does not work without proper authorization' do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
     @client.set_bearer_token(@instance.token)
@@ -902,6 +1042,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a a patient’s smoking status using GET [base]/Observation?patient=[id]&code=72166-2" do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
     validate_search_reply(FHIR::DSTU2::Observation, reply)
     save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
@@ -911,6 +1053,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Vital Signs search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Vital Signs search does not work without proper authorization' do
+
+    skip_if_not_supported(:Observation, [:search, :read])
 
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
@@ -923,6 +1067,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient’s vital signs that it supports using GET [base]/Observation?patient=[id]&category=vital-signs" do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
     @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Observation, reply)
@@ -933,6 +1079,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Vital Signs search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient’s vital signs queried by date range using GET [base]/Observation?patient=[id]&category=vital-signs&date=[date]{&date=[date]}" do
+
+    skip_if_not_supported(:Observation, [:search, :read])
 
     assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
     date = @vitalsigns.try(:effectiveDateTime)
@@ -946,6 +1094,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning any of a patient’s vital signs queried by one or more of the codes listed below using GET [base]/Observation?patient=[id]&code[vital sign LOINC{,LOINC2,LOINC3,…}]" do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
     code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
     assert !code.nil?, "Observation code not returned"
@@ -958,6 +1108,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning any of a patient’s vital signs queried by one or more of the codes listed below and date range using GET [base]/Observation?patient=[id]&code=[LOINC{,LOINC2…}]vital-signs&date=[date]{&date=[date]}",
           :optional do
+
+    skip_if_not_supported(:Observation, [:search, :read])
 
     assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
     code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
@@ -973,6 +1125,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:Observation, [:search, :read])
+
     validate_read_reply(@observationresults, FHIR::DSTU2::Observation)
 
   end
@@ -982,6 +1136,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Observation, [:history])
+
     validate_history_reply(@observationresults, FHIR::DSTU2::Observation)
 
   end
@@ -990,6 +1146,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:Observation, [:vread])
 
     validate_vread_reply(@observationresults, FHIR::DSTU2::Observation)
 
@@ -1004,6 +1162,9 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Procedure search does not work without proper authorization' do
 
+
+    skip_if_not_supported(:Procedure, [:search, :read])
+
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
     @client.set_bearer_token(@instance.token)
@@ -1016,6 +1177,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patient’s procedures using GET/Procedure?patient=[id]' do
 
+    skip_if_not_supported(:Procedure, [:search, :read])
+
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
     @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Procedure, reply)
@@ -1025,6 +1188,8 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning all of all of a patient’s procedures over a specified time period using GET /Procedure?patient=[id]&date=[date]{&date=[date]}' do
+
+    skip_if_not_supported(:Procedure, [:search, :read])
 
     assert !@procedure.nil?, 'Expected valid DSTU2 Procedure resource to be present'
     date = @procedure.try(:performedDateTime)
@@ -1038,6 +1203,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
+    skip_if_not_supported(:Procedure, [:search, :read])
+
     validate_read_reply(@procedure, FHIR::DSTU2::Procedure)
 
   end
@@ -1046,6 +1213,8 @@ class ArgonautDataQuerySequence < SequenceBase
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
+
+    skip_if_not_supported(:Procedure, [:history])
 
     validate_history_reply(@procedure, FHIR::DSTU2::Procedure)
 
@@ -1056,8 +1225,16 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
+    skip_if_not_supported(:Procedure, [:vread])
+
     validate_vread_reply(@procedure, FHIR::DSTU2::Procedure)
 
+  end
+
+  def skip_if_not_supported(resource, methods)
+
+    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
+    
   end
 
 end
