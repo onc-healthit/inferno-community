@@ -1,0 +1,6 @@
+# Useful during development to purge the database on each reload
+purge_database_on_reload: false
+
+# Disable peer SSL veriication.
+# You should never deactivate SSL Peer Verification except in development situations using invalid certificates.
+disable_verify_peer: false

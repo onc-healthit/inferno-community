@@ -1,5 +1,6 @@
 require 'yaml'
 require 'sinatra'
+require 'sinatra/config_file'
 require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
@@ -7,14 +8,11 @@ require 'pry'
 require 'dm-core'
 require 'dm-migrations'
 
-# You should never deactivate SSL Peer Verification
-# except in development situations using invalid certificates:
-# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+config_file './config.yml'
+
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE if settings.disable_verify_peer
 
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
-
-# set to false to keep database between server restarts
-PURGE_DATABASE = true
 
 DataMapper::Logger.new($stdout, :debug) if settings.environment == :development
 DataMapper::Model.raise_on_save_failure = true 
@@ -33,7 +31,7 @@ end
 DataMapper.finalize
 
 [TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource, ResourceReference].each do |model|
-  if PURGE_DATABASE || settings.environment == :test
+  if settings.purge_database_on_reload || settings.environment == :test
     model.auto_migrate!
   else
     model.auto_upgrade!
