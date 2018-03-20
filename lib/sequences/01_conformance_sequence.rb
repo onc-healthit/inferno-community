@@ -67,9 +67,9 @@ class ConformanceSequence < SequenceBase
     ]
 
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-    capabilities = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
+    capabilities = @conformance.rest.first.security.extension.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
     assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
-    available_capabilities = capabilities.map{ |v| v['valueCode']}
+    available_capabilities = capabilities.map{ |v| v.valueCode}
     missing_capabilities = (required_capabilities - available_capabilities)
     assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
   end

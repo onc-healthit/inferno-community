@@ -325,6 +325,11 @@ li.result-details-clickable:hover {
   padding-top: 3px;
 }
 
+.result-details-icon-fail-optional {
+  color: #999;
+  padding-top: 3px;
+}
+
 .result-details-icon-cancel {
   color: #f00;
   padding-top: 3px;
@@ -355,10 +360,12 @@ li.result-details-clickable:hover {
 
 .result-details-icon-warning {
   color: #FF9500;
+  float: right;
 }
 
 .result-details-icon-requests {
   color: #336699;
+  float: right;
 }
 
 .result-details-message {

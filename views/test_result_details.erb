@@ -28,8 +28,8 @@
           <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
         </div>
       <% end %>
+      <% unless @test_result.required %> [OPTIONAL] <% end %>
       <%= @test_result.name %>
-      <% unless @test_result.required %> (optional) <% end %>
     </div>
 
     <% unless @test_result.description.nil? %>
