@@ -79,48 +79,14 @@ class ConformanceSequence < SequenceBase
     'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
 
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-    resources = ['Patient', 
-                 'AllergyIntolerance',
-                 'CarePlan',
-                 'DocumentReference',
-                 'Goal',
-                 'DiagnosticReport',
-                 'Medication',
-                 'MedicationStatement',
-                 'MedicationOrder',
-                 'Observation',
-                 'Procedure']
 
-    assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-
-    supported_resources = @conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}
-
-    @instance.supported_resources.each(&:destroy)
-    @instance.save!
-
-    patient_read_supported = false
-
-    resources.each_with_index do |resource_name, index|
-
-      resource = supported_resources[resource_name]
-
-      read_supported = resource && resource.interaction && resource.interaction.any?{|i| i.code == 'read'}
-
-      SupportedResource.create({
-        resource_type: resource_name,
-        index: index,
-        testing_instance_id: @instance.id,
-        supported: !resource.nil?,
-        read_supported: read_supported,
-        vread_supported: resource && resource.interaction && resource.interaction.any?{|i| i.code == 'vread'},
-        search_supported: resource && resource.interaction && resource.interaction.any?{|i| i.code == 'search-type'},
-        history_supported: resource && resource.interaction && resource.interaction.any?{|i| i.code == 'history-instance'}
-      })
-
-      patient_read_supported = read_supported if resource_name == 'Patient'
+    begin
+      @instance.save_supported_resources(@conformance)
+    rescue => e 
+      assert false, 'Conformance could be parsed.'
     end
 
-    assert patient_read_supported, 'Patient resource with read interaction is not listed in conformance statement.'
+    assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in conformance statement.'
 
   end
 
