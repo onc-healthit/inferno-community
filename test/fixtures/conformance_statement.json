@@ -37,7 +37,50 @@
                 "valueUri": "https://sb-auth.smarthealthit.org/register"
               }
             ]
+          } , {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "launch-ehr"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "launch-standalone"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "client-public"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "client-confidential-symmetric"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "sso-openid-connect"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "context-banner"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "context-style"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "context-ehr-patient"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "context-ehr-encounter"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "context-standalone-patient"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "context-standalone-encounter"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "permission-offline"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "permission-patient"
+          }, {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities",
+            "valueCode": "permission-user"
           }
+
         ],
         "service": [
           {

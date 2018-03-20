@@ -117,11 +117,15 @@ class SequenceBase
       when STATUS[:todo]
         @sequence_result.todo_count += 1
       when STATUS[:fail]
-        @sequence_result.failed_count += 1
-        @sequence_result.result = result.result unless @sequence_result.result == STATUS[:error]
+        if result.required
+          @sequence_result.failed_count += 1
+          @sequence_result.result = result.result if @sequence_result.result != STATUS[:error]
+        end
       when STATUS[:error]
-        @sequence_result.error_count += 1
-        @sequence_result.result = result.result
+        if result.required
+          @sequence_result.error_count += 1
+          @sequence_result.result = result.result
+        end 
       when STATUS[:skip]
         @sequence_result.skip_count += 1
       when STATUS[:wait]
@@ -219,12 +223,8 @@ class SequenceBase
       instance_eval &block
 
       rescue AssertionException, ClientException => e
-        if required == :optional
-          @test_warnings << e.message
-        else
-          result.result = STATUS[:fail]
-          result.message = e.message
-        end
+        result.result = STATUS[:fail]
+        result.message = e.message
 
       rescue TodoException => e
         result.result = STATUS[:todo]
