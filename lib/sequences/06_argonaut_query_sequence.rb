@@ -276,7 +276,7 @@ class ArgonautDataQuerySequence < SequenceBase
   test 'CarePlan read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
-          
+
     skip_if_not_supported(:CarePlan, [:search, :read])
 
     validate_read_reply(@careplan, FHIR::DSTU2::CarePlan)
@@ -932,7 +932,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
-    skip_if_not_supported(:MedicatoinOrder, [:history])
+    skip_if_not_supported(:MedicationOrder, [:history])
 
     validate_history_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
@@ -943,7 +943,7 @@ class ArgonautDataQuerySequence < SequenceBase
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
 
-    skip_if_not_supported(:MedicatoinOrder, [:vread])
+    skip_if_not_supported(:MedicationOrder, [:vread])
 
     validate_vread_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
 
@@ -1234,7 +1234,7 @@ class ArgonautDataQuerySequence < SequenceBase
   def skip_if_not_supported(resource, methods)
 
     skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-    
+
   end
 
 end

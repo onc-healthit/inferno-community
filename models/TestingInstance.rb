@@ -24,7 +24,7 @@ class TestingInstance
   property :token_retrieved_at, DateTime
 
   property :created_at, DateTime, default: proc { DateTime.now }
-  
+
   property :oauth_introspection_endpoint, String
   property :resource_id, String
   property :resource_secret, String
@@ -35,9 +35,9 @@ class TestingInstance
   has n, :resource_references
 
   def latest_results
-    self.sequence_results.reduce({}) do |hash, result| 
+    self.sequence_results.reduce({}) do |hash, result|
       if hash[result.name].nil? || hash[result.name].created_at < result.created_at
-        hash[result.name] = result 
+        hash[result.name] = result
       end
       hash
     end
@@ -66,15 +66,18 @@ class TestingInstance
   def patient_id
     self.resource_references.select{|ref| ref.resource_type == 'Patient'}.first.try(:resource_id)
   end
-  
+
   def save_supported_resources(conformance)
 
-    resources = ['Patient', 
+    resources = ['Patient',
                  'AllergyIntolerance',
                  'CarePlan',
+                 'Condition',
+                 'Device',
                  'DocumentReference',
                  'Goal',
                  'DiagnosticReport',
+                 'Immunization',
                  'Medication',
                  'MedicationStatement',
                  'MedicationOrder',
@@ -113,7 +116,7 @@ class TestingInstance
     resource_support = self.supported_resources.find {|r| r.resource_type == resource.to_s}
     return false if resource_support.nil? || !resource_support.supported
 
-    methods.all? do |method| 
+    methods.all? do |method|
       case method
       when :read
         resource_support.read_supported
