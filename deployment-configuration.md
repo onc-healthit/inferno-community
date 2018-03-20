@@ -18,6 +18,7 @@ and Unicorn on Ubuntu 16.
 
 2. Setup the crucible_smart_app
 
+
     sudo apt-get update
     sudo apt-get install git ruby-bundler ruby-dev
     sudo apt-get install sqlite3 libsqlite3-dev
