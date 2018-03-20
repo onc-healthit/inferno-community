@@ -16,16 +16,16 @@ and Unicorn on Ubuntu 16.
     sudo apache2ctl stop
     sudo apt-get remove apache2
 
-2. Setup the crucible_smart_app
+2. Setup the crucible_smart_app.
 
 
-    sudo apt-get update
-    sudo apt-get install git ruby-bundler ruby-dev
-    sudo apt-get install sqlite3 libsqlite3-dev
-    sudo apt-get install build-essential patch zlib1g-dev liblzma-dev
-    git clone https://github.com/fhir-crucible/crucible_smart_app.git
-    cd  crucible_smart_app
-    bundle install
+     sudo apt-get update
+     sudo apt-get install git ruby-bundler ruby-dev
+     sudo apt-get install sqlite3 libsqlite3-dev
+     sudo apt-get install build-essential patch zlib1g-dev liblzma-dev
+     git clone https://github.com/fhir-crucible/crucible_smart_app.git
+     cd  crucible_smart_app
+     bundle install
 
 
 3. Install Nginx
