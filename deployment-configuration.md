@@ -13,10 +13,14 @@ and Unicorn on Ubuntu 16.
 
 1. Remove Apache2 if already installed. 
 
+
     sudo apache2ctl stop
     sudo apt-get remove apache2
 
+
 2. Setup the crucible_smart_app.
+
+Issue the following commands to setup the crucible smart app.
 
 
      sudo apt-get update
@@ -30,9 +34,14 @@ and Unicorn on Ubuntu 16.
 
 3. Install Nginx
 
+Install NGINX with apt-get
+
+
     sudo apt-get install nginx
 
 4. Install Unicorn
+
+Innstall unicorn with gem
 
     sudo gem install unicorn
 
