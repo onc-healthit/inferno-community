@@ -1,6 +1,6 @@
 class TestingInstance
   include DataMapper::Resource
-  property :id, String, key: true, default: proc { SecureRandomBase62.generate(32) }
+  property :id, String, key: true, default: proc { SecureRandomBase62.generate(64) }
   property :url, String
   property :name, String
   property :client_id, String

@@ -1,5 +1,15 @@
 /* ------------------------- LAYOUT -------------------------------- */
 
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 80px;
+  min-width: 900px;
+}
+
 .container {
   max-width: 960px;
 }
@@ -8,23 +18,33 @@
   margin: 20px 0;
 }
 
+@media screen and (min-width: 1100px){
+  .main-details {
+    margin-left: -65px;
+  }
+}
+
 .footer {
-  margin: 10px 0;
-  /* border-top: 1px solid #eee; */
-  font-size: .8em;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px; /* Set the fixed height of the footer here */
+  line-height: 60px; /* Vertically center the text there */
+  background-color: #fafbfc;
 }
 
 .footer .container {
   margin: auto;
-  padding-top: 10px;
 }
 
-.sticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 20px;
-}
+.navbar-brand {
 
+  padding-left: 15px;
+}
+.row-no-padding > [class*="col-"] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
 
 /* ------------------------- MAIN -------------------------------- */
 
@@ -37,7 +57,8 @@
 /* ------------------------- DETAILS -------------------------------- */
 
 .details-server {
-  /* background-color: #fafafa; */
+  background-color: #fafbfc;
+  border-bottom: 1px solid #ccc;
 }
 
 .details-server .container{
@@ -49,35 +70,76 @@
   padding: 0;
 }
 
+.alert strong {
+  padding: .25rem .5rem;
+  font-size: .875rem;
+  border: 1px solid #0c5460;
+  border-radius: .2rem;
+  line-height: 1.5;
+  font-weight: normal;
+
+}
+
 
 /* ------------------------- SEQUENCE -------------------------------- */
 
 .sequence-header {
   font-size: 1.8em;
-  border-bottom: 1px solid #666;
   padding-bottom: 5px;
-  margin: 15px 0 0px;
+  margin: 15px 0 10px;
+}
 
+@media screen and (min-width: 1100px){
+  .main>div:not(.sequence-table) {
+    margin-left: 65px;
+  }
 }
 
 .client-state-button {
-  float: right;
+  margin: 32px 0 0 8px;
 }
 
-.oi-print {
-  font-size: .6em;
-
+.client-state-button button {
+  font-size: .8em;
+  color: #000;
 }
+
+.client-state-button a {
+  font-size: .8em;
+  color: #000;
+}
+
+@media screen and (max-width: 960px){
+  #client-status-button-text {
+    display: none
+  }
+}
+
 .sequence-header-details {
-  font-size: .5em;
+  float: right;
+  margin-top: 10px;
+  font-size: .7em;
+}
 
+.sequence-header-details-big {
+  font-size: 1.2em;
+}
+
+.details-pass-true {
+  color: #28a745;
+}
+
+.details-pass-false {
+  color: #cb2431;
 }
 
 .sequence-table {
   align: left;
   text-align: left;
   width: 100%;
+  border-top: 1px solid #999;
 }
+
 
 .sequence-row {
   border-bottom: 1px solid #ddd;
@@ -135,11 +197,11 @@
 
 .sequence-score-pending {
   /* background-color: #efefef; */
-  border: 4px solid #efefef;
+  border: 4px solid #aaa;
 }
 
 .sequence-score-fail {
-  background-color: #f00;
+  background-color: #cb2431;
   color: #fff;
   border: 2px solid #fff;
   padding-top: 3px;
@@ -156,7 +218,7 @@
 }
 
 .sequence-score-pass {
-  background-color: #228b22;
+  background-color: #28a745;
   color: #fff;
   border: 2px solid #fff;
 }
@@ -170,7 +232,7 @@
 .sequence-score-skip {
   /* background-color: #FF7F50; */
   color: #FFF;
-  background-color: #228b22;
+  background-color: #28a745;
   border: 2px solid #fff;
 }
 
@@ -238,13 +300,16 @@
 }
 
 .server-state {
-  margin-bottom: 20px;
-  font-size: 2em;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+  overflow:hidden;
+  text-overflow: ellipsis;
 }
 
 .server-state-title {
   margin-top: 20px;
-  font-size: 1.1em;
+  font-size: 1.0em;
 }
 
 /* ------------------------- CLIENT STATE POPOP -------------------------------- */
@@ -321,7 +386,7 @@ li.result-details-clickable:hover {
 }
 
 .result-details-icon-fail {
-  color: #f00;
+  color: #cb2431;
   padding-top: 3px;
 }
 
@@ -331,7 +396,7 @@ li.result-details-clickable:hover {
 }
 
 .result-details-icon-cancel {
-  color: #f00;
+  color: #cb2431;
   padding-top: 3px;
 }
 
@@ -343,7 +408,7 @@ li.result-details-clickable:hover {
 }
 
 .result-details-icon-pass {
-  color: #228b22;
+  color: #28a745;
 }
 
 .result-details-icon-skip {
@@ -432,6 +497,9 @@ li.result-details-clickable:hover {
   cursor: pointer;
   background-color: #eee;
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .test-result-details-response-values{

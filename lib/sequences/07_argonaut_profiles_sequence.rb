@@ -6,7 +6,7 @@ class ArgonautProfilesSequence < SequenceBase
 
   description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide.'
 
-  preconditions 'Argonaut Query Sequence must first be completed.' do
+  preconditions 'Argonaut Query Sequence must be completed.' do
     !@instance.token.nil? && @instance.latest_results.has_key?('ArgonautDataQuery')
   end
 

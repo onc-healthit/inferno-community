@@ -1,23 +1,32 @@
 <div class="container-fluid details-server">
   <div class="row">
     <div class="col">
-      <div class="container row">
-        <div class="col">
+      <div class="container row row-no-padding">
+        <div class="col-9">
           <div class="server-state-title">FHIR Resource Server</div>
-          <div class="server-state">
+          <div class="server-state" data-toggle="tooltip" title="<%=instance.url%>">
             <%=instance.url%>
           </div>
-          <% unless locals[:error_code].nil? %>
-            <div class="alert alert-danger" role="alert">
-              <% if error_code == 'no_launch' %>
-                The launch URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
-                before initiating an EHR launch from the server.
-              <% elsif error_code == 'no_redirect' %>
-                The redirect URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
-                before visiting this redirect url.
-              <% end %>
-            </div>
-          <% end %>
+        </div>
+        <div class="col-3">
+
+          <!--- not yet implemented -->
+          <div style="display:none" class="client-state-button float-right" data-toggle="tooltip" title="Print Results.">
+            <a href="<%=instance.base_url%>/smart/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
+          </div>
+
+          <div class="client-state-button float-right" data-toggle="tooltip" title="Save link to this test instance.">
+            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+              <span class="oi oi-link-intact" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="client-state-button float-right" data-toggle="tooltip" title="View status of client">
+            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+              <span class="oi oi-list" aria-hidden="true"></span>
+              <span id="client-status-button-text">Client Status</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -25,14 +34,73 @@
 </div>
 
 <div class="container">
-  <div class="main">
-    <div class="sequence-header">
-      <button type="button" class="btn btn-outline-secondary client-state-button" data-toggle="modal" data-target="#stateModal">
-        <span class="oi oi-wrench" title="Config" aria-hidden="true"></span>
-        Instance State
-      </button>
+  <div class="main main-details">
+    <% unless locals[:error_code].nil? %>
+      <div class="alert alert-danger" role="alert">
+        <% if error_code == 'no_launch' %>
+          The launch URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
+          before initiating an EHR launch from the server.
+        <% elsif error_code == 'no_redirect' %>
+          The redirect URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
+          before visiting this redirect url.
+        <% end %>
+      </div>
+    <% end %>
+    <% if sequence_results.size == 0 %>
+      <div class="alert alert-info" role="alert">
+        <p>
+        You have created a new testing session at <a class="alert-link" href="<%=instance.base_url%>/smart/<%=instance.id%>"><%=instance.base_url%>/smart/<%=instance.id%>/</a>.
+        Please take note of this URL if you would like to share the results or return to the results of these tests in the future.
+        </p>
+        <p>
+        Start testing by clicking on the <strong><span class="oi oi-media-play"></span> Begin</strong> button next to the
+        Conformance Statement sequence below. This sequence queries the metadata endpoint of the FHIR server for supported features and
+        security configuration information. This information will inform the testing client how to access the necessary endpoints
+        for subsequent tests.
+      </div>
+    <% end %>
+    <% if instance.sequence_results.count == 1 %>
+      <div class="alert alert-info" role="alert">
+        <% if !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil? && instance.sequence_results.all?{|s| s.name == 'Conformance'} %>
+         <p>
+           The Conformance Statement sequence was able to extract the OAuth 2.0 endpoints from the conformance statement the FHIR server.
+           You can inspect exactly what was tested by clicking on individual tests within the sequence.  Those tests that have a
+           <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
+           responses, can show exactly what was communicated between the client and the server.
+         </p>
+         <p>
+           You can click on the <strong><span class="oi oi-list"></span> Client Status</strong> button above to see more details about what
+           was extracted from the conformance statement that will be used in subsequent tests.  Click on the
+           <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Note that only the most recent
+           test results are saved within a sequence.
+         </p>
+         <p>
+         For more information about usage of this application, please visit the
+         <a href="https://github.com/fhir-crucible/crucible_smart_app" class="alert-link" target="_blank">documentation.</a>
+         </p>
+       <% else %>
+         <p>
+         The Conformance Statement sequence was unable to extract the required fields from the metadata endpoint of this FHIR server.
+         You can inspect what happened by clicking on individual tests within the sequence.  Those tests that have a
+         <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
+         responses, may help identify what occured to cause these tests to fail.
+         </p>
+         <p>
+         You can click on the <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Only the most recent
+         test results are saved within a sequence.
+         </p>
 
-      Test Sequences <span class="sequence-header-details">(<%= sequence_results.values.map(&:result).count("pass") %> of <%= SequenceBase.subclasses.reject(&:optional?).count %> required sequences successfully demonstrated)</span>
+      <% end %>
+      </div>
+   <% end %>
+    <div class="sequence-header">
+      Test Sequences
+      <span class="sequence-header-details">
+        <% details_pass = sequence_results.values.map(&:result).count("pass") == SequenceBase.subclasses.reject(&:optional?).count %>
+        <span class="sequence-header-details-big details-pass-<%=details_pass%>"><%= sequence_results.values.select(&:required).map(&:result).count("pass") %></span> of
+        <span class="sequence-header-details-big details-pass-<%=details_pass%>"><%= SequenceBase.subclasses.reject(&:optional?).count %></span>
+        required sequences passed
+      </span>
     </div>
     <div class="sequence-table">
       <% sequences.each do |sequence_class| %>
@@ -264,8 +332,9 @@
         </div>
         <div class="modal-body">
           <p>
-          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL: <br/><%=redirect_to %>
+          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL:
           </p>
+          <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
           <div class="modal-footer">
             <a href="<%= "#{request.base_url}/smart/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
             <a href="<%= "#{request.base_url}/smart/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
@@ -351,7 +420,7 @@
       <form method="POST" action="ArgonautDataQuery">
         <div class="modal-body">
           <p>
-          This sequence will perform queries in accordance with the Argonaut Data Query Server Guide. 
+          This sequence will perform queries in accordance with the Argonaut Data Query Server Guide.
           </p>
           <div class="form-group">
             <label for="registration_url">Supported Resources</label>
@@ -361,10 +430,10 @@
                   <% group.each do |resource| %>
                     <% next if resource.nil? %>
                     <div class="form-check">
-                      <input class="form-check-input" 
-                             type="checkbox" 
-                             id="resource_supported_<%=resource.resource_type %>" 
-                             name="resource_supported_<%=resource.resource_type %>" 
+                      <input class="form-check-input"
+                             type="checkbox"
+                             id="resource_supported_<%=resource.resource_type %>"
+                             name="resource_supported_<%=resource.resource_type %>"
                              <% if resource.supported %>checked<%end%>
                              disabled>
                       <label class="form-check-label" for="resource_supported_<%=resource.resource_type %>">
@@ -421,6 +490,65 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Argonaut Data Profiles</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="ArgonautProfiles">
+        <div class="modal-body">
+          <p>
+          This sequence will check the following resources returned by the Argonaut Query Sequence against 
+          the relevant Argonaut profile.
+          </p>
+          <% if instance.resource_references.count > 0 %>
+            <!-- <h4>Authorized Resources</h4> -->
+            <%instance.resource_references.map(&:resource_type).uniq.each do |resource_type| %>
+              <div class="form-group row">
+                <label class="col-sm-3 col-form-label"><%=resource_type %></label>
+                <div class="col-sm-9">
+                  <texatarea class="form-control" rows=3 readonly><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Tests</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Bookmark or Share Results</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          The results recorded during this testing session can be accessed at the following URI.
+          Please save this URI if you would like to revisit these results, as this secret URI will not be published.
+          </p>
+          <input type="text" class="form-control" value="<%=instance.base_url%>/smart/<%=instance.id%>/" readonly="readonly">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

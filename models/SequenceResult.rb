@@ -13,6 +13,8 @@ class SequenceResult
   property :todo_count, Integer, default: 0
   property :skip_count, Integer, default: 0
 
+  property :required, Boolean, default: true
+
   property :created_at, DateTime, default: proc { DateTime.now }
 
   has n, :test_results, order: [:test_index.asc]
