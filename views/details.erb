@@ -64,12 +64,12 @@
         <% if !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil? && instance.sequence_results.all?{|s| s.name == 'Conformance'} %>
          <p>
            The Conformance Statement sequence was able to extract the OAuth 2.0 endpoints from the conformance statement the FHIR server.
-           You can inspect exactly what was tested by clicking on individual tests within the sequence.  Those tests that have a
+           You can inspect what was tested by clicking on individual tests within the sequence.  Those tests that have a
            <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
-           responses, can show exactly what was communicated between the client and the server.
+           responses, can show what was communicated between the client and the server.
          </p>
          <p>
-           You can click on the <strong><span class="oi oi-list"></span> Client Status</strong> button above to see more details about what
+           Click on the <strong><span class="oi oi-list"></span> Client Status</strong> button above to see more details about what
            was extracted from the conformance statement that will be used in subsequent tests.  Click on the
            <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Note that only the most recent
            test results are saved within a sequence.
