@@ -208,14 +208,19 @@ end
 
 post '/smart/:id/PatientStandaloneLaunch/?' do
   @instance = TestingInstance.get(params[:id])
-  @instance.update(scopes: params['scopes'])
+  @instance.update(scopes: params['scopes'], id_token: nil)
   redirect "/smart/#{params[:id]}/PatientStandaloneLaunch/"
 end
 
 post '/smart/:id/ProviderEHRLaunch/?' do
   @instance = TestingInstance.get(params[:id])
-  @instance.update(scopes: params['scopes'])
+  @instance.update(scopes: params['scopes'], id_token: nil)
   redirect "/smart/#{params[:id]}/ProviderEHRLaunch/"
+end
+
+post '/smart/:id/OpenIDConnect/?' do
+  @instance = TestingInstance.get(params[:id])
+  redirect "/smart/#{params[:id]}/OpenIDConnect/"
 end
 
 post '/smart/:id/TokenIntrospectionSkip/?' do

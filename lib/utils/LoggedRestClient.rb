@@ -33,7 +33,7 @@ class LoggedRestClient
   end
 
   def self.get(url, headers={}, &block)
-    reply = RestClient.get(url, nil, headers, &block)
+    reply = RestClient.get(url, headers, &block)
     request = {
       method: :get,
       url: url,
