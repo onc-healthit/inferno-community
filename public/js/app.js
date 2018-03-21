@@ -1,7 +1,3 @@
-Stickyfill.add(document.querySelectorAll('.sticky'));
-
-
-
 $(function(){
 
   function indent(value) {

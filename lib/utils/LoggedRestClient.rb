@@ -1,5 +1,5 @@
 class LoggedRestClient
-  
+
   @@requests = []
 
   def self.clear_log
@@ -16,10 +16,11 @@ class LoggedRestClient
       headers: response.headers,
       body: response.body
     }
+    request[:payload] = JSON.parse(request[:payload]) rescue nil
     @@requests << {direction: :outbound, request: request, response: reply}
   end
 
-  def post(url, payload, headers = {}) 
+  def post(url, payload, headers = {})
     reply = RestClient.post(url, payload, headers)
     request = {
       method: :post,
@@ -110,5 +111,5 @@ class LoggedRestClient
     self.record_response(request, reply)
     return reply
   end
-  
+
 end

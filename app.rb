@@ -15,7 +15,7 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE if settings.disable_verify
 DEFAULT_SCOPES = 'launch launch/patient online_access openid profile user/*.* patient/*.*'
 
 DataMapper::Logger.new($stdout, :debug) if settings.environment == :development
-DataMapper::Model.raise_on_save_failure = true 
+DataMapper::Model.raise_on_save_failure = true
 
 DataMapper.setup(:default, "sqlite3:data/#{settings.environment.to_s}_data.db")
 
@@ -25,6 +25,8 @@ require './lib/sequence_base'
     require file
   end
 end
+
+require './lib/version'
 
 #TODO clean up database stuff
 
@@ -41,6 +43,12 @@ end
 helpers do
   def request_headers
     env.inject({}){|acc, (k,v)| acc[$1.downcase] = v if k =~ /^http_(.*)/i; acc}
+  end
+  def version
+    VERSION
+  end
+  def app_name
+    settings.app_name
   end
 end
 
@@ -126,14 +134,14 @@ get '/smart/:id/:sequence/?' do
       end
       sequence_result.save!
       if sequence_result.redirect_to_url
-        out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
+        out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{sequence_result.redirect_to_url}</textarea>');</script>"
         out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
-      else 
+      else
         out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
       end
     end
 
-  else 
+  else
    redirect "/smart/#{params[:id]}/##{params[:sequence]}"
   end
 
@@ -167,7 +175,7 @@ post '/smart/:id/ArgonautDataQuery' do
   halt 404 if instance.nil?
 
   instance.resource_references.select{|ref| ref.resource_type == 'Patient'}.each(&:destroy)
-  params['patient_id'].split(",").map(&:strip).each do |patient_id| 
+  params['patient_id'].split(",").map(&:strip).each do |patient_id|
     instance.resource_references << ResourceReference.new({resource_type: 'Patient', resource_id: patient_id})
   end
 
@@ -249,9 +257,9 @@ get '/smart/:id/:key/:endpoint/?' do
       instance.sequence_results.push(sequence_result)
       instance.save!
       if sequence_result.redirect_to_url
-        out << "<script>$('#testsRunningModal').find('modal-body').html('Redirecting to #{sequence_result.redirect_to_url}');</script>"
+        out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{sequence_result.redirect_to_url}</textarea>');</script>"
         out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
-      else 
+      else
         out << "<script> window.location = '/smart/#{params[:id]}/##{params[:sequence]}'</script>"
       end
     end
@@ -266,7 +274,7 @@ post '/smart/:id/TokenIntrospection' do
 
   # copy over the access token to a different place in case it's not the same
   @instance.update(introspect_token: params['access_token'])
-  
+
   redirect "/smart/#{params[:id]}/TokenIntrospection/"
 
 end

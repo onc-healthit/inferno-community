@@ -64,7 +64,7 @@
 
     <% @test_result.request_responses.each_with_index do |rr,index| %>
     <div class="test-result-details-response">
-      <a class="test-result-details-response-header collapsed" data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
+      <a class="test-result-details-response-header collapsed" title="<%=rr.request_url%>"data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
         <% if rr.direction == 'outbound' %>
           <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
         <% else %>

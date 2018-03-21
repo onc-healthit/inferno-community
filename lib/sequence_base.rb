@@ -58,7 +58,7 @@ class SequenceBase
 
   def start
     if @sequence_result.nil?
-      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance)
+      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance, required: !optional?)
     end
 
     start_at = @sequence_result.test_results.length
@@ -125,7 +125,7 @@ class SequenceBase
         if result.required
           @sequence_result.error_count += 1
           @sequence_result.result = result.result
-        end 
+        end
       when STATUS[:skip]
         @sequence_result.skip_count += 1
       when STATUS[:wait]
@@ -173,6 +173,10 @@ class SequenceBase
 
   def self.modal_before_run?
     @@modal_before_run.include?(self.sequence_name)
+  end
+
+  def optional?
+    self.class.optional?
   end
 
   def self.optional
@@ -326,7 +330,7 @@ class SequenceBase
       end
     end
   end
-  
+
   def save_resource_ids_in_bundle(klass, reply)
 
     return if reply.try(:resource).try(:entry).nil?
