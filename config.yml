@@ -1,3 +1,9 @@
+# Name of app
+app_name: Inferno - SMART on FHIR Testing
+
+# Show or hide tutorials
+show_tutorial: true
+
 # Useful during development to purge the database on each reload
 purge_database_on_reload: false
 

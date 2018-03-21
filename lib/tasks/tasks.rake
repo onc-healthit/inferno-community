@@ -21,6 +21,8 @@ task :tests_to_csv do
   end.flatten
 
   csv_out = CSV.generate do |csv|
+    csv << ['Version', VERSION, 'Generated', Time.now]
+    csv << ['', '', '', '', '']
     csv << ['Sequence', 'Name', 'Required', 'Description', 'Url']
     flat_tests.each do |test|
       csv <<  [ test[:sequence], test[:name], test[:required], test[:description], test[:url] ]

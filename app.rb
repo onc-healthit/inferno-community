@@ -30,8 +30,6 @@ end
 
 require './lib/version'
 
-#TODO clean up database stuff
-
 DataMapper.finalize
 
 [TestingInstance, SequenceResult, TestResult, TestWarning, RequestResponse, RequestResponseTestResult, SupportedResource, ResourceReference].each do |model|
@@ -60,6 +58,8 @@ helpers do
   end
   def tls_testing_supported?
     TlsTester.testing_supported?
+  def show_tutorial
+    settings.show_tutorial
   end
 end
 

@@ -13,6 +13,8 @@ class SequenceResult
   property :todo_count, Integer, default: 0
   property :skip_count, Integer, default: 0
 
+  property :app_version, String
+
   property :required, Boolean, default: true
 
   property :created_at, DateTime, default: proc { DateTime.now }
