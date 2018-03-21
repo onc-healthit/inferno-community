@@ -63,11 +63,11 @@
         <% end %>
 
         <% if result.result == 'todo' %> TODO: <% end %>
-        <% unless result.required %> [ OPTIONAL ] <% end %>
+        <% unless result.required %> OPTIONAL |  <% end %>
         <%= result.name %>
         <% unless result.message.nil? %>
           <div class="result-details-message">
-              Details: <%= result.message %>  
+              Details: <%= result.message %>
               <% unless result.required %> <br/>This optional test is not required for conformance. <% end %>
           </div>
         <% end %>
@@ -80,6 +80,7 @@
         <div class="result-details-icon result-details-icon-pending">
           <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
         </div>
+        <% unless test[:required] %> OPTIONAL |  <% end %>
         <%= test[:name] %>
       </li>
     <% end %>
