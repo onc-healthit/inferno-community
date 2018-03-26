@@ -239,8 +239,8 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:CarePlan, [:search, :read])
 
     assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
-    date = @careplan.try(:period).try(:end)
-    assert !date.nil?, "CarePlan period end not returned"
+    date = @careplan.try(:period).try(:start)
+    assert !date.nil?, "CarePlan period not returned"
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", date: date})
     validate_search_reply(FHIR::DSTU2::CarePlan, reply)
 
@@ -266,8 +266,8 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:CarePlan, [:search, :read])
 
     assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
-    date = @careplan.try(:period).try(:end)
-    assert !date.nil?, "CarePlan period end not returned"
+    date = @careplan.try(:period).try(:start)
+    assert !date.nil?, "CarePlan period not returned"
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date})
     validate_search_reply(FHIR::DSTU2::CarePlan, reply)
 
@@ -506,7 +506,7 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:DocumentReference, [:search, :read])
 
     assert !@documentreference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
-    type = @documentreference.try(:type)
+    type = @documentreference.try(:type).try(:coding).try(:first).try(:code)
     assert !type.nil?, "DocumentReference type not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, {patient: @instance.patient_id, type: type})
     validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
@@ -521,8 +521,8 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:DocumentReference, [:search, :read])
 
     assert !@documentreference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
-    period = @documentreference.try(:context).try(:period)
-    assert !type.nil?, "DocumentReference period not returned"
+    period = @documentreference.try(:context).try(:period).try(:start)
+    assert !period.nil?, "DocumentReference period not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, {patient: @instance.patient_id, period: period})
     validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
 
@@ -536,10 +536,10 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:DocumentReference, [:search, :read])
 
     assert !@documentreference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
-    type = @documentreference.try(:type)
+    type = @documentreference.try(:type).try(:coding).try(:first).try(:code)
     assert !type.nil?, "DocumentReference type not returned"
-    period = @documentreference.try(:context).try(:period)
-    assert !type.nil?, "DocumentReference period not returned"
+    period = @documentreference.try(:context).try(:period).try(:start)
+    assert !period.nil?, "DocumentReference period not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, {patient: @instance.patient_id, type: type, period: period})
     validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
 
@@ -615,8 +615,8 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:Goal, [:search, :read])
 
     assert !@goal.nil?, 'Expected valid DSTU2 Goal resource to be present'
-    date = @goal.try(:statusDate)
-    assert !date.nil?, "Goal statusDate not returned"
+    date = @goal.try(:statusDate) || @goal.try(:targetDate) || @goal.try(:startDate)
+    assert !date.nil?, "Goal statusDate, targetDate, nor startDate returned"
     reply = get_resource_by_params(FHIR::DSTU2::Goal, {patient: @instance.patient_id, date: date})
     validate_search_reply(FHIR::DSTU2::Goal, reply)
 
@@ -768,7 +768,7 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
-    code = @diagnosticreport.try(:code).try(:text)
+    code = @diagnosticreport.try(:code).try(:coding).try(:first).try(:code)
     assert !code.nil?, "DiagnosticReport code not returned"
     reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB", code: code})
     validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
@@ -783,7 +783,7 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
     assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
-    code = @diagnosticreport.try(:code).try(:text)
+    code = @diagnosticreport.try(:code).try(:coding).try(:first).try(:code)
     assert !code.nil?, "DiagnosticReport code not returned"
     date = @diagnosticreport.try(:effectiveDateTime)
     assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
@@ -1046,6 +1046,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
     validate_search_reply(FHIR::DSTU2::Observation, reply)
+    # TODO check for 72166-2
     save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
 
   end
@@ -1072,6 +1073,7 @@ class ArgonautDataQuerySequence < SequenceBase
     reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
     @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::Observation, reply)
+    # TODO check for `vital-signs` category
     save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
 
   end
@@ -1192,8 +1194,8 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:Procedure, [:search, :read])
 
     assert !@procedure.nil?, 'Expected valid DSTU2 Procedure resource to be present'
-    date = @procedure.try(:performedDateTime)
-    assert !date.nil?, "Procedure performedDateTime not returned"
+    date = @procedure.try(:performedDateTime) || @procedure.try(:performedPeriod).try(:start)
+    assert !date.nil?, "Procedure performedDateTime or performedPeriod not returned"
     reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id, date: date})
     validate_search_reply(FHIR::DSTU2::Procedure, reply)
 
