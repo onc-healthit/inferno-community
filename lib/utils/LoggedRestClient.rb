@@ -33,7 +33,16 @@ class LoggedRestClient
   end
 
   def self.get(url, headers={}, &block)
-    reply = RestClient.get(url, headers, &block)
+    begin
+      reply = RestClient.get(url, headers, &block)
+    rescue => e
+      unless e.response
+        # Re-raise the client error if there's no response.
+        raise # Re-raise the same error we caught.
+      end
+      reply = e.response if e.response
+    end
+
     request = {
       method: :get,
       url: url,
@@ -44,7 +53,16 @@ class LoggedRestClient
   end
 
   def self.post(url, payload, headers={}, &block)
-    reply = RestClient.post(url, payload, headers, &block)
+    begin
+      reply = RestClient.post(url, payload, headers, &block)
+    rescue => e
+      unless e.response
+        # Re-raise the client error if there's no response.
+        raise # Re-raise the same error we caught.
+      end
+      reply = e.response if e.response
+    end
+
     request = {
       method: :post,
       url: url,

@@ -11,9 +11,10 @@ class OpenIDConnectSequence < SequenceBase
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     '1. Examine the ID token for its issuer property' do
 
-    @decoded_token = JWT.decode(@instance.id_token, @public_key, false, { algorithm: @alg }).reduce({}, :merge)
-    assert !@decoded_token.nil?, 'id_token could not be parsed as JWT'
-    @issuer = @decoded_token['iss']
+    @decoded_payload, @decoded_header = JWT.decode(@instance.id_token, nil, false)
+    assert !@decoded_payload.nil?, 'Missing id_token payload'
+    assert !@decoded_header.nil?, 'Missing id_token header'
+    @issuer = @decoded_payload['iss']
     assert !@issuer.nil?, 'id_token did not contain iss as required'
 
   end
@@ -43,12 +44,9 @@ class OpenIDConnectSequence < SequenceBase
     assert_response_ok(@jwk_response)
     @jwk_response_headers = @jwk_response.headers
     @jwk_response_body = JSON.parse(@jwk_response.body)
-    assert @jwk_response_body.has_key?('keys') && @jwk_response_body['keys'].length > 0, 'JWK response does not have keys as required'
-    key_info = @jwk_response_body['keys'][0]
-    assert key_info.has_key?('n'), "JWK response does not have public key as required"
-    @public_key = key_info['n']
-    assert key_info.has_key?('alg'), "JWK response does not have alg as required"
-    @alg = key_info['alg']
+    @jwk_set = JSON::JWK::Set.new(@jwk_response_body)
+    assert !@jwk_set.nil?, 'JWK set not present'
+    assert @jwk_set.length > 0, 'JWK set is empty'
 
   end
 
@@ -56,13 +54,47 @@ class OpenIDConnectSequence < SequenceBase
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     '4. Validate the token’s signature against the public key from step #3' do
 
-    assert !@issuer.nil?, 'no issuer available'
-    assert !@public_key.nil?, 'no public key available'
-    assert !@alg.nil?, 'no decryption algorithm available'
-    @validated_token = JWT.decode(@instance.id_token, @public_key, false, { algorithm: @alg }).reduce({}, :merge)
-    assert !@validated_token.nil?, 'id_token signature was not properly validated'
-    assert @validated_token['iss'].chomp('/') == @issuer.chomp('/'), 'id_token iss does not match issuer claim'
-    assert @validated_token['alg'] == @alg, 'id_token alg does not match JWK alg'
+    assert !@jwk_set.nil?, 'JWK set not present'
+    assert @jwk_set.length > 0, 'JWK set is empty'
+
+    begin
+      jwt = JSON::JWT.decode(@instance.id_token, @jwk_set)
+    rescue => e # Show validation error as failure
+      assert false, e.message
+    end
+
+    assert !jwt.nil?, 'JWT could not be properly decoded'
+
+  end
+
+  test 'ID token claims validated.',
+    'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation',
+    'Validate the ID token claims' do
+
+    leeway = 30 # 30 seconds clock slip allowed
+
+    begin
+      decoder = JWT::Decode.new(@instance.id_token, nil, true,
+        {
+          leeway: leeway,
+          aud: @instance.client_id,
+          verify_aud: true,
+          verify_iat: true,
+          verify_expiration: true,
+          verify_not_before: true
+          # If we gain information about iss or sub, this information
+          # should go here, as below
+          # iss: 'foo', #issuer goes here
+          # verify_iss: true
+          #sub: subject goes here
+          #verify_sub: true
+        }
+      )
+      decoder.decode_segments
+      decoder.verify
+    rescue => e # Show validation error as failure
+      assert false, e.message
+    end
 
   end
 
@@ -70,8 +102,9 @@ class OpenIDConnectSequence < SequenceBase
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     '5. Extract the profile claim and treat it as the URL of a FHIR resource' do
 
-    assert !@decoded_token.nil?, 'id_token was not properly parsed as JWT'
-    assert @decoded_token['profile'] =~ URI::regexp, 'id_token profile is not a valid URL'
+    assert !@decoded_payload.nil?, 'no id_token payload available'
+    assert !@decoded_header.nil?, 'no id_token header available'
+    assert @decoded_payload['profile'] =~ URI::regexp, 'id_token profile is not a valid URL'
 
   end
 

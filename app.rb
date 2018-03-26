@@ -7,6 +7,8 @@ require 'time_difference'
 require 'pry'
 require 'dm-core'
 require 'dm-migrations'
+require 'jwt'
+require 'json/jwt'
 
 config_file './config.yml'
 
