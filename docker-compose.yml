@@ -1,0 +1,9 @@
+version: '3'
+services:
+  server:
+    image: ruby:latest
+    volumes:
+     - .:/server/
+    command: bundle exec ruby app.rb
+    working_dir: /server
+
