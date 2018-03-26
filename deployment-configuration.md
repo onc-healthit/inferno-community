@@ -3,6 +3,24 @@ Deployment Configuration
 
 This document decribes how to install the software on various platforms.
 
+Run on Amazon Web Services EC2 using an Amazon Machine Image (AMI)
+==================================================================
+
+
+The latest AMI ID is `ami-d0a778ad`.
+
+After your instance is loaded, the application will be acceisable on port 80 (the standard port for HTTP).
+Use the following link to jumpstart your deployment:
+
+
+https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-d0a778ad
+
+
+A `t2.micro` sized instance should be sufficient  for sites expecting a low about of traffic.
+An AWS account is required to use AMI version. If you wish to run it locally, you can use Docker,
+or a number of other configuration options described below.
+
+
 
 Ubuntu 16.04 With Nginx and Unicorn Installation (Preferred Method)
 ===================================================================
@@ -210,7 +228,14 @@ That's it!
 Local Windows Configuration
 ===========================
 
+Use Docker to run the application on Windows.
+
 
 Docker Configuration
 ====================
 
+1. Install Docker for Windows.
+2. Download the crucuble_smart_app to your local computer on a directory of your choice.
+3. Open a terminal Window and navigate to the crucuble_smart_app folder.
+4. Run the command `docker-compose up` to configure and run the contrainer.
+5. Navigate to http://localhost:4567 to find the running application.
