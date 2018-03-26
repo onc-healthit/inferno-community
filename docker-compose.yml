@@ -1,12 +1,17 @@
 version: '3'
 services:
-  server:
+  # the main ruby server
+  ruby_server:
+    # build the image from ./Dockerfile (this installs the dependencies into the image)
     build:
       context: ./
+    # map the project directory into the running container
     volumes:
-     - .:/server/
-    command: bundle exec ruby app.rb
-    working_dir: /server
+      - .:/crucible_fhir_app/
+    # expose the internal application to direct HTTP requests
     ports:
       - "4567:4567"
-
+    # run the application
+    working_dir: /crucible_fhir_app
+    command: bundle exec ruby app.rb
+  

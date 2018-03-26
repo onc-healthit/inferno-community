@@ -1,8 +1,5 @@
-from ruby:2.5
+FROM ruby:2.5
 
-# Install gems
-ENV APP_HOME /server-build
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
-COPY Gemfile* $APP_HOME/
+# Install gems into a temporary directory
+COPY Gemfile* ./
 RUN bundle install
