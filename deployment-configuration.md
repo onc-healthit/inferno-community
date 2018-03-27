@@ -238,4 +238,6 @@ Docker Configuration
 2. Download the crucuble_smart_app to your local computer on a directory of your choice.
 3. Open a terminal Window and navigate to the crucuble_smart_app folder.
 4. Run the command `docker-compose up` to configure and run the contrainer.
-5. Navigate to http://localhost:4567 to find the running application.
+5. Navigate to http://localhost:8080 to find the running application.
+
+Note: If you run into issues in the above instructions, you _may_ need to `docker-compose up -- build` to rebuild the containers.
