@@ -17,6 +17,9 @@ class DynamicRegistrationSequence < SequenceBase
     'The client registration endpoint MUST be protected by a transport-layer security' do
 
     assert @instance.oauth_register_endpoint.start_with?('https'), 'Client registration endpoint not secured.'
+
+    assert_tls_conformance instance.uri
+
     tlsTester = TlsTester.new({uri:@instance.url})
     assert tlsTester.verifyEnsureTLSv1_2
     assert tlsTester.verfiyDenySSLv3

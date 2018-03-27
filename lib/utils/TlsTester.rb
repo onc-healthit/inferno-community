@@ -25,21 +25,6 @@ class TlsTester
     end
   end
 
-=begin
-  def initialize(host, port, acceptedProtocols)
-    @host = host
-    @port = port
-    @acceptedProtocols = acceptedProtocols
-  end
-
-  def initialize(uriString, acceptedProtocols)
-    uri = URI(uriString)
-    @host = uri.host
-    @port = uri.port
-    @acceptedProtocols = acceptedProtocols
-  end
-=end
-
   def verifyEnsureProtocol(ssl_version)
 
     sslClient, tcpSocket = getConnection(ssl_version)
