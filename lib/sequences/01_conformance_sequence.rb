@@ -28,7 +28,9 @@ class ConformanceSequence < SequenceBase
     assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
     authorize_url = oauth_metadata[:authorize_url]
     token_url = oauth_metadata[:token_url]
+    assert !authorize_url.blank?, 'No authorize URI provided in conformance statement.'
     assert (authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{authorize_url}'"
+    assert !token_url.blank?, 'No token URI provided in conformance statement.'
     assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
 
     registration_url = nil
@@ -67,7 +69,9 @@ class ConformanceSequence < SequenceBase
     ]
 
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-    capabilities = @conformance.rest.first.security.extension.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
+    extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
+    assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
+    capabilities = extensions.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
     assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
     available_capabilities = capabilities.map{ |v| v.valueCode}
     missing_capabilities = (required_capabilities - available_capabilities)
