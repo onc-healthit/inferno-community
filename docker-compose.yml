@@ -20,7 +20,7 @@ services:
     volumes:
       - ./deployment-files/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "8100:80"
+      - "8080:80"
     command: [nginx, '-g', 'daemon off;']
     links:
       - ruby_server:ruby_server
