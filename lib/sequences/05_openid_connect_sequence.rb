@@ -120,7 +120,8 @@ class OpenIDConnectSequence < SequenceBase
 
     assert !@decoded_payload.nil?, 'no id_token payload available'
     assert !@decoded_header.nil?, 'no id_token header available'
-    assert @decoded_payload['profile'] =~ URI::regexp, 'id_token profile is not a valid URL'
+    assert !@decoded_payload['profile'].nil?, 'no id_token profile claim'
+    assert @decoded_payload['profile'] =~ URI::regexp, "id_token profile claim #{@decoded_payload['profile']} is not a valid URL"
 
   end
 
