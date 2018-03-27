@@ -19,12 +19,13 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
       nbf: Time.now,
       iat: Time.now,
       aud: client_id,
-      sub: SecureRandom.uuid
+      sub: SecureRandom.uuid,
+      profile: 'https://www.example.com/profile_url/'
     )
 
     jwk = @key_pair.to_jwk({kid: 'internal_testing', alg: 'RS256'})
     id_token.header[:kid] = jwk[:kid]
-    id_token.sign(@key_pair, jwk['alg'])
+    id_token = id_token.sign(@key_pair, jwk['alg'])
 
     @instance = TestingInstance.new(url: 'https://www.example.com/testing',
                                    client_name: 'Crucible Smart App',
@@ -52,7 +53,7 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
       to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
 
     stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri']).
-      to_return(status: 200, body: @public_key.to_jwk.to_json, headers: RESPONSE_HEADERS)
+      to_return(status: 200, body: @public_key.to_jwk({kid: 'internal_testing', alg: 'RS256'}).to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
 
