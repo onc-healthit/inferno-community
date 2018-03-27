@@ -2,16 +2,11 @@ require File.expand_path '../../test_helper.rb', __FILE__
 
 class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
 
-  REQUEST_HEADERS = { 'Accept'=>'application/json',
-                      'Accept-Charset'=>'UTF-8',
-                      'Content-Type'=>'application/json;charset=UTF-8'
-                     }
-
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
   def setup
-    @key_pair = load_json_fixture(:key_pair)
-    @public_key = load_json_fixture(:public_key)
+    @key_pair = OpenSSL::PKey::RSA.new(2048)
+    @public_key = @key_pair.public_key
     @openid_configuration = load_json_fixture(:openid_configuration)
 
     #binding.pry
@@ -27,7 +22,9 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
       sub: SecureRandom.uuid
     )
 
-    id_token.sign(JSON::JWK.new(@key_pair).to_key, @key_pair['alg'])
+    jwk = @key_pair.to_jwk({kid: 'internal_testing', alg: 'RS256'})
+    id_token.header[:kid] = jwk[:kid]
+    id_token.sign(@key_pair, jwk['alg'])
 
     @instance = TestingInstance.new(url: 'https://www.example.com/testing',
                                    client_name: 'Crucible Smart App',
@@ -36,7 +33,7 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
                                    client_id: client_id,
                                    oauth_authorize_endpoint: @openid_configuration['authorization_endpoint'],
                                    oauth_token_endpoint: @openid_configuration['token_endpoint'],
-                                   scopes: @openid_configuration['scopes'].join(" "),
+                                   scopes: @openid_configuration['scopes_supported'].join(" "),
                                    id_token: id_token.to_s
                                    )
 
@@ -52,12 +49,10 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
 
     openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
     stub_openid_register = stub_request(:get, openid_configuration_url).
-      with(headers: REQUEST_HEADERS).
-      to_return(status: 200, body: @openid_configuration, headers: RESPONSE_HEADERS)
+      to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
 
     stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri']).
-      with(headers: REQUEST_HEADERS).
-      to_return(status: 200, body: @public_key, headers: RESPONSE_HEADERS)
+      to_return(status: 200, body: @public_key.to_jwk.to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
 
