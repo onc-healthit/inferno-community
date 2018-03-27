@@ -50,6 +50,12 @@ helpers do
   def app_name
     settings.app_name
   end
+  def valid_json?(json)
+    JSON.parse(json)
+    return true
+  rescue JSON::ParserError => e
+    return false
+  end
 end
 
 get '/' do

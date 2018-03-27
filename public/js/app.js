@@ -1,12 +1,14 @@
 $(function(){
 
   function indent(value) {
-    var firstCharacter = value.charAt(0)
-    if(['{','['].indexOf(firstCharacter) >= 0){
-      return vkbeautify.json(value, 2);
-    } else if(firstCharacter == '<'){
-      return vkbeautify.xml(value, 2)
-    }else{
+    var firstCharacter = value.trim().charAt(0)
+    try{
+      if(['{','['].indexOf(firstCharacter) >= 0){
+        return JSON.stringify(JSON.parse(value),null,2);
+      } else {
+        return value;
+      }
+    } catch (e) {
       return value;
     }
   }
