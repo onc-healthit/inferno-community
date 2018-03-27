@@ -11,7 +11,23 @@ class OpenIDConnectSequence < SequenceBase
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     '1. Examine the ID token for its issuer property' do
 
-    @decoded_payload, @decoded_header = JWT.decode(@instance.id_token, nil, false)
+    begin
+      @decoded_payload, @decoded_header = JWT.decode(@instance.id_token, nil, false,
+        # Overriding default options to parse without verification
+        {
+          verify_expiration: false,
+          verify_not_before: false,
+          verify_iss: false,
+          verify_iat: false,
+          verify_jti: false,
+          verify_aud: false,
+          verify_sub: false
+        }
+      )
+    rescue => e # Show parse error as failure
+      assert false, e.message
+    end
+
     assert !@decoded_payload.nil?, 'Missing id_token payload'
     assert !@decoded_header.nil?, 'Missing id_token header'
     @issuer = @decoded_payload['iss']
@@ -74,7 +90,7 @@ class OpenIDConnectSequence < SequenceBase
     leeway = 30 # 30 seconds clock slip allowed
 
     begin
-      decoder = JWT::Decode.new(@instance.id_token, nil, true,
+      decoder = JWT::Decode.new(@instance.id_token, nil, false,
         {
           leeway: leeway,
           aud: @instance.client_id,
