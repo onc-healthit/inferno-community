@@ -1,6 +1,6 @@
 class OpenIDConnectSequence < SequenceBase
 
-  title 'OpenID Connect Sequence'
+  title 'OpenID Connect'
   description 'Verify OpenID Connect functionality of server.'
 
   preconditions 'Client must have ID token.' do
