@@ -16,5 +16,6 @@ gem 'base62-rb'
 gem 'rake'
 gem 'webmock'
 gem 'rack-test'
+gem 'json-jwt'
 
 gem 'simplecov', require: false, group: :test

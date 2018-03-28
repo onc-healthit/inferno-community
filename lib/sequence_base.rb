@@ -387,6 +387,7 @@ class SequenceBase
         DynamicRegistrationSequence,
         PatientStandaloneLaunchSequence,
         ProviderEHRLaunchSequence,
+        OpenIDConnectSequence,
         TokenIntrospectionSequence,
         ArgonautDataQuerySequence,
         ArgonautProfilesSequence,
