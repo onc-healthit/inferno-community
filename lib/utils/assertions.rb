@@ -254,6 +254,10 @@ module Assertions
   def assert_tls_conformance(uri)
     tlsTester = TlsTester.new({uri:uri})
 
+    unless uri.downcase.start_with?('https')
+      raise AssertionException.new "URI is not HTTPS: #{uri}"
+    end
+
     begin
       passed, msg = tlsTester.verifyEnsureTLSv1_2
       unless passed

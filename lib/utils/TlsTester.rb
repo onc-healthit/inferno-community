@@ -18,11 +18,6 @@ class TlsTester
       @host = uri.host
       @port = uri.port
     end
-    if params[:acceptedProtocols].nil?
-      @acceptedProtocols = [:TLSv1_2]
-    else
-      @acceptedProtocols = params[:acceptedProtocols]
-    end
   end
 
   def verifyEnsureProtocol(ssl_version)
@@ -38,17 +33,14 @@ class TlsTester
       # send the message up with false
       return FALSE, "Caught SSL Error: #{sslError.message}"
     end
-
+    return_message = "Allowed connection with #{sslClient.ssl_version}"
     sslClient.close
     tcpSocket.close
-    if sslClient.ssl_version == ssl_version
-      return TRUE, "ssl_version in use: #{sslClient.ssl_version}"
-    else
-      return FALSE, "Connection made with incorrect ssl_version. Specified: #{ssl_version}, connected with #{sslClient.ssl_version}"
-    end
+
+    return TRUE, return_message
   end
 
-  def verifyDenyProtocol(ssl_version)
+  def verifyDenyProtocol(ssl_version, readable_version)
 
     sslClient, tcpSocket = getConnection(ssl_version)
 
@@ -56,31 +48,37 @@ class TlsTester
     begin
       sslClient.connect
     rescue OpenSSL::SSL::SSLError => sslError
+      # Correctly denied the connection
       sslClient.close
       tcpSocket.close
-      return TRUE, "Connection correctly denied with #{ssl_version}"
+      return TRUE, "Correctly denied connection with #{readable_version}"
     end
-    if sslClient.ssl_version != ssl_version and @acceptedProtocols.include? sslClient.ssl_version
-      return TRUE, "Connection established with an accepted SSL protocol: #{sslClient.ssl_version}"
-    else
-      return FALSE, "Connection incorrectly made with ssl_version: #{sslClient.ssl_version}"
-    end
+    return_message = "Allowed connection with #{sslClient.ssl_version}"
+    sslClient.close
+    tcpSocket.close
+    return FALSE, return_message
   end
 
   def verifyEnsureTLSv1_2
-    return verifyEnsureProtocol(:TLSv1_2)
+    #return verifyEnsureProtocol(:TLSv1_2)
+    return verifyEnsureProtocol(OpenSSL::SSL::TLS1_2_VERSION)
   end
 
   def verifyDenyTLSv1()
-    return verifyDenyProtocol(:TLSv1)
+    return verifyDenyProtocol(OpenSSL::SSL::TLS1_VERSION, "TLSv1.0")
   end
 
   def verfiyDenySSLv3()
-    return verifyDenyProtocol(:SSLv3)
+    return verifyDenyProtocol(OpenSSL::SSL::SSL3_VERSION, "SSLv3.0")
   end
 
+  # Ruby and/or OpenSSL won't let us set a max version of SSL2_VERSION
+  #def verfiyDenySSLv2()
+  #  return TRUE # verifyDenyProtocol(OpenSSL::SSL::SSL2_VERSION)
+  #end
+
   def verfiyDenyTLSv1_1()
-    return verifyDenyProtocol(:TLSv1_1)
+    return verifyDenyProtocol(OpenSSL::SSL::TLS1_1_VERSION, "TLSv1.1")
   end
 
   private
@@ -90,8 +88,10 @@ class TlsTester
 
     # set up the SSL context
     sslCtx = OpenSSL::SSL::SSLContext.new
-    sslCtx.set_params({ssl_version: ssl_version, verify_mode: OpenSSL::SSL::VERIFY_PEER})
-
+    sslCtx.set_params({verify_mode: OpenSSL::SSL::VERIFY_PEER})
+    #sslCtx.set_params.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    sslCtx.max_version = ssl_version
+    sslCtx.min_version = ssl_version
     # set up the SSL client
     sslClient = OpenSSL::SSL::SSLSocket.new(tcpSocket, sslCtx)
     sslClient.hostname = @host

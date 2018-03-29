@@ -15,9 +15,7 @@ class DynamicRegistrationSequence < SequenceBase
   test 'Client registration endpoint secured by a transport-layer security.',
     'https://tools.ietf.org/html/rfc7591',
     'The client registration endpoint MUST be protected by a transport-layer security' do
-
-    assert_tls_conformance instance.uri
-
+    assert_tls_conformance @instance.oauth_register_endpoint
   end
 
 
