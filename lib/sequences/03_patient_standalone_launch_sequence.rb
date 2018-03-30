@@ -1,14 +1,14 @@
 class PatientStandaloneLaunchSequence < SequenceBase
 
   title 'Patient Standalone Launch Sequence'
-  description 'Demonstrate Patient Standalone Launch Sequence'
+  description 'Demonstrate the Patient Standalone Launch Sequence.'
   modal_before_run
 
-  preconditions 'Client must be registered.' do
+  preconditions 'Client must be registered' do
     !@instance.client_id.nil?
   end
 
-  test 'OAuth authorize endpoint secured by transport layer security.',
+  test 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
@@ -49,16 +49,16 @@ class PatientStandaloneLaunchSequence < SequenceBase
     redirect oauth2_auth_query[0..-2], 'redirect'
   end
 
-  test 'Client app received code parameter and correct state paramater from OAuth server at redirect uri.',
+  test 'Client app received code parameter and correct state paramater from OAuth server at redirect uri',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Code and state are required querystring parameters.  State must be the exact value received from the client.'  do
+    'Code and state are required querystring parameters. State must be the exact value received from the client.'  do
 
     assert @params['error'].nil?, "Error returned from authorization server:  code #{@params['error']}, description: #{@params['error_description']}"
     assert @params['state'] == @instance.state, "OAuth server state querystring parameter (#{@params['state']}) did not match state from app #{@instance.state}"
     assert !@params['code'].nil?, "Expected code to be submitted in request"
   end
 
-  test 'OAuth token exchange endpoint secured by transport layer security.',
+  test 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
@@ -69,9 +69,9 @@ class PatientStandaloneLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth Token exchange endpoint responds to POST using content type application/x-www-form-urlencoded.',
+  test 'OAuth Token exchange endpoint responds to POST using content type application/x-www-form-urlencoded',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server’s token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749' do
+    "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
     oauth2_params = {
       'grant_type' => 'authorization_code',
@@ -84,7 +84,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
   end
 
-  test 'Data returned from token exchange contains required information encoded in JSON.',
+  test 'Data returned from token exchange contains required information encoded in JSON',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
     'The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\

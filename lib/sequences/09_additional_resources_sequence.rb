@@ -2,15 +2,15 @@ class AdditionalResourcesSequence < SequenceBase
 
   title 'Additional Resources'
 
-  description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide Server.'
+  description 'Verify additional resource requirements.'
 
-  preconditions 'Client must be authorized.' do
+  preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
   test 'Composition search without authorization',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement' do
+          '',
+          'Additional Composition resource requirement.' do
 
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id})
@@ -20,8 +20,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition search by patient',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id})
@@ -31,8 +31,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition search by patient + type',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
@@ -44,8 +44,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition search by patient + period',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
@@ -58,8 +58,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition search by patient + type + period',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
@@ -74,8 +74,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition read resource supported',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     validate_read_reply(@composition, FHIR::DSTU2::Composition)
@@ -83,8 +83,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition history resource supported',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     validate_history_reply(@composition, FHIR::DSTU2::Composition)
@@ -92,8 +92,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Composition vread resource supported',
-          'https://www.hl7.org/fhir/DSTU2/composition.html',
-          'Additional Composition resource requirement',
+          '',
+          'Additional Composition resource requirement.',
           :optional do
 
     validate_vread_reply(@composition, FHIR::DSTU2::Composition)
@@ -102,7 +102,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   test 'Composition resource contains section text',
           '',
-          'Additional Composition resource requirement' do
+          'Additional Composition resource requirement.' do
 
     assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
     assert @composition.is_a?(FHIR::DSTU2::Composition), 'Expected resource to be valid DSTU2 Composition'
@@ -112,8 +112,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search without authorization',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement' do
+          '',
+          'Additional Provenance resource requirement.' do
 
     @client.set_no_auth
     reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id})
@@ -123,8 +123,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search by patient',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id})
@@ -134,8 +134,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search by patient + target',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
@@ -148,8 +148,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search by patient + start + end',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
@@ -163,8 +163,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search by patient + target + start + end',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
@@ -181,8 +181,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search by userid',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
@@ -194,8 +194,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance search by agent',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
@@ -208,8 +208,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
   
   test 'Provenance read resource supported',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     validate_read_reply(@provenance, FHIR::DSTU2::Provenance)
@@ -217,8 +217,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance history resource supported',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     validate_history_reply(@provenance, FHIR::DSTU2::Provenance)
@@ -226,8 +226,8 @@ class AdditionalResourcesSequence < SequenceBase
   end
 
   test 'Provenance vread resource supported',
-          'https://www.hl7.org/fhir/DSTU2/provenance.html',
-          'Additional Provenance resource requirement',
+          '',
+          'Additional Provenance resource requirement.',
           :optional do
 
     validate_vread_reply(@provenance, FHIR::DSTU2::Provenance)

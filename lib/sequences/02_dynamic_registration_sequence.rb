@@ -2,19 +2,19 @@ class DynamicRegistrationSequence < SequenceBase
 
   title 'Dynamic Registration'
 
-  description 'OAuth 2.0 Dynamic Client Registration Protocol'
+  description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
 
   optional
 
   modal_before_run
 
-  preconditions 'OAuth endpoints are necessary.' do
+  preconditions 'OAuth endpoints are necessary' do
     !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?
   end
 
   test 'Client registration endpoint secured by transport layer security.',
     'https://tools.ietf.org/html/rfc7591',
-    'The client registration endpoint MUST be protected by a transport layer security' do
+    'The client registration endpoint MUST be protected by a transport layer security.' do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_register_endpoint
@@ -25,7 +25,7 @@ class DynamicRegistrationSequence < SequenceBase
 
   test 'Client registration endpoint accepts POST messages',
     'https://tools.ietf.org/html/rfc7591',
-    'The client registration endpoint MUST accept HTTP POST messages. with request parameters encoded in the entity body using the "application/json" format' do
+    'The client registration endpoint MUST accept HTTP POST messages with request parameters encoded in the entity body using the "application/json" format.' do
     # params['redirect_uris'] = [params['redirect_uris']]
     # params['grant_types'] = params['grant_types'].split(',')
     headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -44,7 +44,7 @@ class DynamicRegistrationSequence < SequenceBase
 
   end
 
-  test 'Registration endpoint does not respond with an error.',
+  test 'Registration endpoint does not respond with an error',
     'https://tools.ietf.org/html/rfc7591',
     'When an OAuth 2.0 error condition occurs, such as the client presenting an invalid initial access token, the authorization server returns an error response appropriate to the OAuth 2.0 token type.' do
 
@@ -53,7 +53,7 @@ class DynamicRegistrationSequence < SequenceBase
 
   end
 
-  test 'Registration endpoint responds with HTTP 201 and body contains JSON with required fields.',
+  test 'Registration endpoint responds with HTTP 201 and body contains JSON with required fields',
     'https://tools.ietf.org/html/rfc7591',
     'The server responds with an HTTP 201 Created status code and a body of type "application/json" with content as described in Section 3.2.1.' do
 

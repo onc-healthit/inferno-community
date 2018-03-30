@@ -2,10 +2,10 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   title 'Provider EHR Launch Sequence'
 
-  description 'Provider EHR Launch Sequence'
+  description 'Demonstrate the Provider EHR Launch Sequence.'
   modal_before_run
 
-  preconditions 'Client must be registered.' do
+  preconditions 'Client must be registered' do
     !@instance.client_id.nil?
   end
 
@@ -18,7 +18,7 @@ class ProviderEHRLaunchSequence < SequenceBase
   test 'EHR provided iss and launch parameter to the launch uri via the client browser querystring',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The EHR is required to provide a reference to the EHR FHIR endpoint in the iss queystring parameter, and an '\
-      'opaque identifier for the launch in the launch querystring parameter'  do
+      'opaque identifier for the launch in the launch querystring parameter.'  do
 
     assert !@params['iss'].nil?, 'Expecting "iss" as a querystring parameter.'
     assert !@params['launch'].nil?, 'Expecting "launch" as a querystring parameter.'
@@ -29,7 +29,7 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   end
 
-  test 'OAuth authorize endpoint secured by transport layer security.',
+  test 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
@@ -65,16 +65,16 @@ class ProviderEHRLaunchSequence < SequenceBase
     redirect oauth2_auth_query[0..-2], 'redirect'
   end
 
-  test 'Client app received code parameter and correct state paramater from OAuth server at redirect uri.',
+  test 'Client app received code parameter and correct state paramater from OAuth server at redirect uri',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Code and state are required querystring parameters.  State must be the exact value received from the client.'  do
+    'Code and state are required querystring parameters. State must be the exact value received from the client.'  do
 
     assert @params['error'].nil?, "Error returned from authorization server:  code #{@params['error']}, description: #{@params['error_description']}"
     assert @params['state'] == @instance.state, "OAuth server state querystring parameter (#{@params['state']}) did not match state from app #{@instance.state}"
     assert !@params['code'].nil?, "Expected code to be submitted in request"
   end
 
-  test 'OAuth token exchange endpoint secured by transport layer security.',
+  test 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
@@ -85,9 +85,9 @@ class ProviderEHRLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth Token exchange endpoint responds to POST using content type application/x-www-form-urlencoded.',
+  test 'OAuth Token exchange endpoint responds to POST using content type application/x-www-form-urlencoded',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server’s token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749' do
+    "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
     oauth2_params = {
       'grant_type' => 'authorization_code',

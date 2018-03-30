@@ -2,9 +2,9 @@ class ConformanceSequence < SequenceBase
 
   title 'Conformance Statement'
 
-  description 'The FHIR server exposes a Conformance Statement with the necessary information.'
+  description 'Verify that the FHIR server exposes a Conformance Statement with the necessary information.'
 
-  test 'FHIR server secured by transport layer security.',
+  test 'FHIR server secured by transport layer security',
     'https://www.hl7.org/fhir/security.html',
     'All exchange of production data should be secured with TLS/SSL.' do
 
@@ -33,7 +33,7 @@ class ConformanceSequence < SequenceBase
 
   test 'Conformance Statement provides OAuth 2.0 endpoints',
          'http://www.hl7.org/fhir/smart-app-launch/capability-statement/',
-         'If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints' do
+         'If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints.' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     oauth_metadata = @client.get_oauth2_metadata_from_conformance
     assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
@@ -63,7 +63,7 @@ class ConformanceSequence < SequenceBase
 
   test 'Conformance statement provides SMART on FHIR core capabilities',
     'http://www.hl7.org/fhir/smart-app-launch/conformance/',
-    'A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities',
+    'A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.',
     :optional do
 
     required_capabilities = ['launch-ehr',
@@ -89,7 +89,7 @@ class ConformanceSequence < SequenceBase
     assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
   end
 
-  test 'Conformance lists supported Argonaut profiles, as well as supported operatations and search parameters',
+  test 'Conformance lists supported Argonaut profiles, as well as supported operations and search parameters',
     'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
     'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
 

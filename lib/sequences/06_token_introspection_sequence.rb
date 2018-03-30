@@ -2,19 +2,19 @@ class TokenIntrospectionSequence < SequenceBase
 
   title 'OAuth 2.0 Token Introspection'
 
-  description 'Verify token properties using token introspection at the authorization server'
+  description 'Verify token properties using token introspection at the authorization server.'
 
   optional
 
   modal_before_run
 
-  preconditions 'Client must be authorized.' do
+  preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
-  test 'OAuth token introspection endpoint secured by transport layer security.',
+  test 'OAuth token introspection endpoint secured by transport layer security',
     'https://tools.ietf.org/html/rfc7662',
-    'The server MUST support Transport Layer Security (TLS) 1.2' do
+    'The server MUST support Transport Layer Security (TLS) 1.2.' do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_introspection_endpoint
@@ -26,7 +26,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   test 'Call token introspection endpoint',
           'https://tools.ietf.org/html/rfc7662',
-          'A resource server is capable of calling the introspection endpoint' do
+          'A resource server is capable of calling the introspection endpoint.' do
 
     headers = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }
 
@@ -51,7 +51,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   test 'Access token is active',
           'https://tools.ietf.org/html/rfc7662',
-          'A current access token is listed as "active"' do
+          'A current access token is listed as active.' do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -62,7 +62,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   test 'Scopes match',
           'https://tools.ietf.org/html/rfc7662',
-          'The scopes we received alongside the token match those from the introspection response',
+          'The scopes we received alongside the token match those from the introspection response.',
           :optional do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'
@@ -81,9 +81,10 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
+  # TODO verify timeout requirements
   test 'Token expiration',
           '',
-          'The token should have a lifetime of at least 60 minutes' do
+          'The token should have a lifetime of at least 60 minutes.' do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'
 
