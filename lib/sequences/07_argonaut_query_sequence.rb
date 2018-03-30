@@ -4,9 +4,9 @@ class ArgonautDataQuerySequence < SequenceBase
 
   modal_before_run
 
-  description 'The FHIR server properly follows the Argonaut Data Query Implementation Guide Server.'
+  description 'Verify that the FHIR server follows the Argonaut Data Query Implementation Guide Server.'
 
-  preconditions 'Client must be authorized.' do
+  preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
@@ -16,7 +16,7 @@ class ArgonautDataQuerySequence < SequenceBase
   #
   test 'Patient read without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A patient read does not work without authorization' do
+          'A patient read does not work without authorization.' do
 
     @client.set_no_auth
     reply = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
@@ -39,7 +39,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Patient search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Patient search does not work without proper authorization' do
+          'A Patient search does not work without proper authorization.' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     identifier = @patient.try(:identifier).try(:first).try(:value)
@@ -53,7 +53,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Patient search by identifier',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     identifier = @patient.try(:identifier).try(:first).try(:value)
@@ -65,7 +65,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Patient search by name + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     family = @patient.try(:name).try(:first).try(:family).try(:first)
@@ -81,7 +81,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Patient search by name + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     family = @patient.try(:name).try(:first).try(:family).try(:first)
@@ -97,7 +97,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Patient search by gender + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate' do
+          'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
     assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
     gender = @patient.try(:gender)
@@ -147,7 +147,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'AllergyIntolerance search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'An AllergyIntolerance search does not work without proper authorization' do
+          'An AllergyIntolerance search does not work without proper authorization.' do
 
     skip_if_not_supported(:AllergyIntolerance, [:search, :read])
 
@@ -160,7 +160,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'AllergyIntolerance search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient’s allergies using GET /AllergyIntolerance?patient=[id]' do
+          "A server is capable of returning a patient's allergies." do
 
     skip_if_not_supported(:AllergyIntolerance, [:search, :read])
 
@@ -208,7 +208,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'CarePlan search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A CarePlan search does not work without proper authorization' do
+          'A CarePlan search does not work without proper authorization.' do
 
     skip_if_not_supported(:CarePlan, [:search, :read])
     @client.set_no_auth
@@ -220,7 +220,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of a patient’s Assessment and Plan of Treatment information using GET /CarePlan?patient=[id]&category=assess-plan' do
+          "A server is capable of returning all of a patient's Assessment and Plan of Treatment information." do
 
     skip_if_not_supported(:CarePlan, [:search, :read])
 
@@ -233,7 +233,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'CarePlan search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable of returning a patient’s Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&date=[date]',
+          "A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.",
           :optional do
 
     skip_if_not_supported(:CarePlan, [:search, :read])
@@ -248,7 +248,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'CarePlan search by patient + category + status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patient’s active Assessment and Plan of Treatment information using GET /CarePlan?patient=[id]&category=assess-plan&status=active',
+          "A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.",
           :optional do
 
     skip_if_not_supported(:CarePlan, [:search, :read])
@@ -260,7 +260,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning a patients active Assessment and Plan of Treatment information over a specified time period using GET /CarePlan?patient=[id]&category=assess-plan&status=active&date=[date]',
+          "A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.",
           :optional do
 
     skip_if_not_supported(:CarePlan, [:search, :read])
@@ -312,7 +312,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Condition search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Condition search does not work without proper authorization' do
+          'A Condition search does not work without proper authorization.' do
 
     skip_if_not_supported(:Condition, [:search, :read])
 
@@ -325,7 +325,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patients conditions list using GET/Condition?patient=[id]' do
+          'A server is capable of returning a patients conditions list.' do
 
     skip_if_not_supported(:Condition, [:search, :read])
 
@@ -338,7 +338,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Condition search by patient + clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patients active problems and health concerns using ‘GET /Condition?patient=[id]&clinicalstatus=active,recurrance,remission',
+          'A server SHOULD be capable returning all of a patients active problems and health concerns.',
           :optional do
 
     skip_if_not_supported(:Condition, [:search, :read])
@@ -350,7 +350,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Condition search by patient + problem category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]',
+          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns.',
           :optional do
 
     skip_if_not_supported(:Condition, [:search, :read])
@@ -362,7 +362,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Condition search by patient + health-concern category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns using ‘GET /Condition?patient=[id]&category=[problem|health-concern]',
+          'A server SHOULD be capable returning all of a patients problems or all of patients health concerns.',
           :optional do
 
     skip_if_not_supported(:Condition, [:search, :read])
@@ -411,7 +411,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Device search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Device search does not work without proper authorization' do
+          'A Device search does not work without proper authorization.' do
 
     skip_if_not_supported(:Device, [:search, :read])
 
@@ -424,7 +424,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Device search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all Unique device identifier(s)(UDI) for a patient’s implanted device(s) using GET /Device?patient=[id]' do
+          "A server is capable of returning all Unique device identifier(s)(UDI) for a patient's implanted device(s)." do
 
     skip_if_not_supported(:Device, [:search, :read])
 
@@ -474,7 +474,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DocumentReference search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A DocumentReference search does not work without proper authorization' do
+          'A DocumentReference search does not work without proper authorization.' do
 
     skip_if_not_supported(:DocumentReference, [:search, :read])
 
@@ -487,7 +487,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DocumentReference search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'If supporting a direct query, a server SHALL be capable of returning at least the most recent CCD document references and MAY provide most recent references to other document types for a patient using:GET [base]/DocumentReference/$docref?patient=[id]' do
+          'If supporting a direct query, a server SHALL be capable of returning at least the most recent CCD document references and MAY provide most recent references to other document types for a patient.]' do
 
     skip_if_not_supported(:DocumentReference, [:search, :read])
 
@@ -500,7 +500,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DocumentReference search by patient + type',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date using:GET [base]/DocumentReference/$docref?patient=[id]{&type=[type]}{&period=[date]}',
+          'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date.',
           :optional do
 
     skip_if_not_supported(:DocumentReference, [:search, :read])
@@ -515,7 +515,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DocumentReference search by patient + period',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date using:GET [base]/DocumentReference/$docref?patient=[id]{&type=[type]}{&period=[date]}',
+          'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date.',
           :optional do
 
     skip_if_not_supported(:DocumentReference, [:search, :read])
@@ -530,7 +530,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DocumentReference search by patient + type + period',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date using:GET [base]/DocumentReference/$docref?patient=[id]{&type=[type]}{&period=[date]}',
+          'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date.',
           :optional do
 
     skip_if_not_supported(:DocumentReference, [:search, :read])
@@ -584,7 +584,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Goal search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Goal search does not work without proper authorization' do
+          'A Goal search does not work without proper authorization.' do
 
     skip_if_not_supported(:Goal, [:search, :read])
 
@@ -597,7 +597,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Goal search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of a patient’s goals using GET [base]/Goal?patient=[id]' do
+          "A server is capable of returning all of a patient's goals." do
 
     skip_if_not_supported(:Goal, [:search, :read])
 
@@ -610,7 +610,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of all of a patient’s goals over a specified time period using GET [base]/Goal?patient=[id]&date=[date]{&date=[date]}' do
+          "A server is capable of returning all of all of a patient's goals over a specified time period." do
 
     skip_if_not_supported(:Goal, [:search, :read])
 
@@ -661,7 +661,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Immunization search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'An Immunization search does not work without proper authorization' do
+          'An Immunization search does not work without proper authorization.' do
 
     skip_if_not_supported(:Immunization, [:search, :read])
 
@@ -674,7 +674,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A client has connected to a server and fetched all immunizations for a patient using GET /Immunization?patient=[id]' do
+          'A client has connected to a server and fetched all immunizations for a patient.' do
 
     skip_if_not_supported(:Immunization, [:search, :read])
 
@@ -724,7 +724,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DiagnosticReport search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A DiagnosticReport search does not work without proper authorization' do
+          'A DiagnosticReport search does not work without proper authorization.' do
 
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
@@ -737,7 +737,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category using GET [base]/DiagnosticReport?patient=[id]&category=LAB' do
+          "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category." do
 
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
@@ -749,7 +749,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category code and date range using GET [base]/DiagnosticReport?patient=[id]&category=LAB&date=[date]{&date=[date]}' do
+          "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range." do
 
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
@@ -763,7 +763,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DiagnosticReport search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of a patient’s laboratory diagnostic reports queried by category and code using GET [base]/DiagnosticReport?patient=[id]&category=LAB&code=[LOINC]' do
+          "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code." do
 
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
@@ -777,7 +777,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'DiagnosticReport search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server SHOULD be capable of returning all of a patient’s laboratory diagnostic reports queried by category and one or more codes and date range using GET [base]/DiagnosticReport?patient=[id]&category=LAB&code=[LOINC1{,LOINC2,LOINC3,…}]&date=[date]{&date=[date]}',
+          "A server SHOULD be capable of returning all of a patient's laboratory diagnostic reports queried by category and one or more codes and date range.",
           :optional do
 
     skip_if_not_supported(:DiagnosticReport, [:search, :read])
@@ -830,7 +830,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'MedicationStatement search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'An MedicationStatement search does not work without proper authorization' do
+          'An MedicationStatement search does not work without proper authorization.' do
 
     skip_if_not_supported(:MedicationStatement, [:search, :read])
 
@@ -843,7 +843,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'MedicationStatement search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationStatement?patient=[id] 2. GET /MedicationStatement?patient=[id]&_include=MedicationStatement:medication' do
+          "A server is capable of returning a patient's medications." do
 
     skip_if_not_supported(:MedicationStatement, [:search, :read])
 
@@ -893,7 +893,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'MedicationOrder search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'An MedicationOrder search does not work without proper authorization' do
+          'An MedicationOrder search does not work without proper authorization.' do
 
     skip_if_not_supported(:MedicationOrder, [:search, :read])
 
@@ -906,7 +906,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'MedicationOrder search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient’s medications using one of or both 1. GET /MedicationOrder?patient=[id] 2. GET /MedicationOrder?patient=[id]&_include=MedicationOrder:medication' do
+          "A server is capable of returning a patient's medications." do
 
     skip_if_not_supported(:MedicationOrder, [:search, :read])
 
@@ -956,7 +956,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Observation Results search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'An Observation Results search does not work without proper authorization' do
+          'An Observation Results search does not work without proper authorization.' do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -969,7 +969,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Observation Results search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning all of a patient's laboratory results queried by category using GET [base]/Observation?patient=[id]&category=laboratory" do
+          "A server is capable of returning all of a patient's laboratory results queried by category." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -982,7 +982,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Observation Results search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning all of a patient's laboratory results queried by category code and date range usingGET [base]/Observation?patient=[id]&category=laboratory&date=[date]{&date=[date]}" do
+          "A server is capable of returning all of a patient's laboratory results queried by category code and date range." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -996,7 +996,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Observation Results search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning all of a patient's laboratory results queried by category and code using GET [base]/Observation?patient=[id]&category=laboratory&code=[LOINC]" do
+          "A server is capable of returning all of a patient's laboratory results queried by category and code." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1010,7 +1010,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Observation Results search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range using GET [base]/Observation?patient=[id]&category=laboratory&code=[LOINC1{,LOINC2,LOINC3,...}]&date=[date]{&date=[date]}",
+          "A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range.",
           :optional do
 
     skip_if_not_supported(:Observation, [:search, :read])
@@ -1027,7 +1027,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Smoking Status search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Smoking Status search does not work without proper authorization' do
+          'A Smoking Status search does not work without proper authorization.' do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1040,7 +1040,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Smoking Status search by patient + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning a a patient’s smoking status using GET [base]/Observation?patient=[id]&code=72166-2" do
+          "A server is capable of returning a patient's smoking status." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1052,7 +1052,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Vital Signs search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Vital Signs search does not work without proper authorization' do
+          'A Vital Signs search does not work without proper authorization.' do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1065,7 +1065,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Vital Signs search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning all of a patient’s vital signs that it supports using GET [base]/Observation?patient=[id]&category=vital-signs" do
+          "A server is capable of returning all of a patient's vital signs that it supports." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1078,7 +1078,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Vital Signs search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning all of a patient’s vital signs queried by date range using GET [base]/Observation?patient=[id]&category=vital-signs&date=[date]{&date=[date]}" do
+          "A server is capable of returning all of a patient's vital signs queried by date range." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1092,7 +1092,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Vital Signs search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server is capable of returning any of a patient’s vital signs queried by one or more of the codes listed below using GET [base]/Observation?patient=[id]&code[vital sign LOINC{,LOINC2,LOINC3,…}]" do
+          "A server is capable of returning any of a patient's vital signs queried by one or more of the specified codes." do
 
     skip_if_not_supported(:Observation, [:search, :read])
 
@@ -1106,7 +1106,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Vital Signs search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          "A server SHOULD be capable of returning any of a patient’s vital signs queried by one or more of the codes listed below and date range using GET [base]/Observation?patient=[id]&code=[LOINC{,LOINC2…}]vital-signs&date=[date]{&date=[date]}",
+          "A server SHOULD be capable of returning any of a patient's vital signs queried by one or more of the codes listed below and date range.",
           :optional do
 
     skip_if_not_supported(:Observation, [:search, :read])
@@ -1160,7 +1160,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Procedure search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A Procedure search does not work without proper authorization' do
+          'A Procedure search does not work without proper authorization.' do
 
 
     skip_if_not_supported(:Procedure, [:search, :read])
@@ -1175,7 +1175,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Procedure search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning a patient’s procedures using GET/Procedure?patient=[id]' do
+          "A server is capable of returning a patient's procedures." do
 
     skip_if_not_supported(:Procedure, [:search, :read])
 
@@ -1187,7 +1187,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test 'Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-          'A server is capable of returning all of all of a patient’s procedures over a specified time period using GET /Procedure?patient=[id]&date=[date]{&date=[date]}' do
+          "A server is capable of returning all of all of a patient's procedures over a specified time period." do
 
     skip_if_not_supported(:Procedure, [:search, :read])
 

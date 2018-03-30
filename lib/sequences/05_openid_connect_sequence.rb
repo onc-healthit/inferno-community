@@ -3,13 +3,13 @@ class OpenIDConnectSequence < SequenceBase
   title 'OpenID Connect'
   description 'Verify OpenID Connect functionality of server.'
 
-  preconditions 'Client must have ID token.' do
+  preconditions 'Client must have ID token' do
     !@instance.id_token.nil?
   end
 
-  test 'ID token has issuer property.',
+  test 'ID token has issuer property',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-    '1. Examine the ID token for its issuer property' do
+    'Examine the ID token for its issuer property.' do
 
     begin
       @decoded_payload, @decoded_header = JWT.decode(@instance.id_token, nil, false,
@@ -35,9 +35,9 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'OpenID configuration response properly returned.',
+  test 'OpenID configuration response properly returned',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-    '2. Perform a GET {issuer}/.well-known/openid-configuration' do
+    'Perform a GET {issuer}/.well-known/openid-configuration.' do
 
     assert !@issuer.nil?, 'no issuer available'
     @issuer = @issuer.chomp('/')
@@ -49,9 +49,9 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'JSON Web Key information properly returned.',
+  test 'JSON Web Key information properly returned',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-    '3. Fetch the server’s JSON Web Key by following the “jwks_uri” property' do
+    'Fetch the JSON Web Key of the server by following the "jwks_uri" property.' do
 
     assert !@openid_configuration_response_body.nil?, 'no openid-configuration response body available'
     jwks_uri = @openid_configuration_response_body['jwks_uri']
@@ -66,9 +66,9 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token signature validated.',
+  test 'ID token signature validated',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-    '4. Validate the token’s signature against the public key from step #3' do
+    "Validate the token's signature against the public key." do
 
     assert !@jwk_set.nil?, 'JWK set not present'
     assert @jwk_set.length > 0, 'JWK set is empty'
@@ -83,9 +83,9 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token claims validated.',
+  test 'ID token claims validated',
     'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation',
-    'Validate the ID token claims' do
+    'Validate the ID token claims.' do
 
     leeway = 30 # 30 seconds clock slip allowed
 
@@ -114,9 +114,9 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token has profile claim as resource URL.',
+  test 'ID token has profile claim as resource URL',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-    '5. Extract the profile claim and treat it as the URL of a FHIR resource' do
+    'Extract the profile claim and treat it as the URL of a FHIR resource.' do
 
     assert !@decoded_payload.nil?, 'no id_token payload available'
     assert !@decoded_header.nil?, 'no id_token header available'
