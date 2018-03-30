@@ -246,7 +246,6 @@ post '/smart/:id/TokenIntrospectionSkip/?' do
 end
 
 post '/smart/:id/TokenIntrospection/?' do
-  binding.pry
   @instance = TestingInstance.get(params[:id])
   @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
   @instance.update(resource_id: params['resource_id'])
