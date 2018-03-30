@@ -320,7 +320,11 @@ class SequenceBase
     if klass == FHIR::DSTU2::Patient
       assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
       assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
-    elsif [FHIR::DSTU2::CarePlan, FHIR::DSTU2::Goal, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Observation, FHIR::DSTU2::Procedure, FHIR::DSTU2::DocumentReference].include?(klass)
+    elsif klass == FHIR::DSTU2::Provenance
+      entries.each do |entry|
+        assert (entry.resource.target && entry.resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
+      end
+    elsif [FHIR::DSTU2::CarePlan, FHIR::DSTU2::Goal, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Observation, FHIR::DSTU2::Procedure, FHIR::DSTU2::DocumentReference, FHIR::DSTU2::Composition].include?(klass)
       entries.each do |entry|
         assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
       end

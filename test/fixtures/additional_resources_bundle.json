@@ -1,0 +1,269 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Composition",
+        "id": "example",
+        "text": {
+          "status": "generated",
+          "div": "<div>\n\t\t\t<p>Consultation note for Henry Levin the 7th</p>\n\t\t\t<p>Managed by Good Health Clinic</p>\n\t\t</div>"
+        },
+        "identifier": {
+          "system": "http://healthintersections.com.au/test",
+          "value": "1"
+        },
+        "date": "2012-01-04T09:10:14Z",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11488-4",
+              "display": "Consult note"
+            }
+          ]
+        },
+        "class": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "LP173421-1",
+              "display": "Report"
+            }
+          ]
+        },
+        "title": "Consultation Note",
+        "status": "final",
+        "confidentiality": "N",
+        "subject": {
+          "reference": "Patient/bar",
+          "display": "Henry Levin the 7th"
+        },
+        "author": [
+          {
+            "reference": "Practitioner/xcda-author",
+            "display": "Harold Hippocrates, MD"
+          }
+        ],
+        "attester": [
+          {
+            "mode": [
+              "legal"
+            ],
+            "time": "2012-01-04T09:10:14Z",
+            "party": {
+              "reference": "Practitioner/xcda-author",
+              "display": "Harold Hippocrates, MD"
+            }
+          }
+        ],
+        "custodian": {
+          "reference": "Organization/2.16.840.1.113883.19.5",
+          "display": "Good Health Clinic"
+        },
+        "event": [
+          {
+            "code": [
+              {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/v3/ActCode",
+                    "code": "HEALTHREC",
+                    "display": "health record"
+                  }
+                ]
+              }
+            ],
+            "period": {
+              "start": "2010-07-18",
+              "end": "2012-11-12"
+            },
+            "detail": [
+              {
+                "reference": "Observation/example"
+              }
+            ]
+          }
+        ],
+        "encounter": {
+          "reference": "Encounter/xcda"
+        },
+        "section": [
+          {
+            "title": "History of present illness",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "11348-0",
+                  "display": "History of past illness Narrative"
+                }
+              ]
+            },
+            "text": {
+              "status": "generated",
+              "div": "<div>\n\t\t\t\t<table>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<b>Code</b>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<b>Date</b>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<b>Type</b>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<b>BodySite</b>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<b>Severity</b>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td>Stroke</td>\n\t\t\t\t\t\t<td>2010-07-18</td>\n\t\t\t\t\t\t<td>Diagnosis</td>\n\t\t\t\t\t\t<td/>\n\t\t\t\t\t\t<td/>\n\t\t\t\t\t</tr>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td>Burnt Ear</td>\n\t\t\t\t\t\t<td>2012-05-24</td>\n\t\t\t\t\t\t<td>Diagnosis</td>\n\t\t\t\t\t\t<td>Left Ear</td>\n\t\t\t\t\t\t<td/>\n\t\t\t\t\t</tr>\n\t\t\t\t\t<tr>\n\t\t\t\t\t\t<td>Asthma</td>\n\t\t\t\t\t\t<td>2012-11-12</td>\n\t\t\t\t\t\t<td>Finding</td>\n\t\t\t\t\t\t<td/>\n\t\t\t\t\t\t<td>Mild</td>\n\t\t\t\t\t</tr>\n\t\t\t\t</table>\n\t\t\t</div>"
+            },
+            "mode": "snapshot",
+            "orderedBy": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/list-order",
+                  "code": "event-date",
+                  "display": "Sorted by Event Date"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "Condition/stroke"
+              },
+              {
+                "reference": "Condition/example"
+              },
+              {
+                "reference": "Condition/example2"
+              }
+            ]
+          },
+          {
+            "title": "History of family member diseases",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "10157-6",
+                  "display": "History of family member diseases Narrative"
+                }
+              ]
+            },
+            "text": {
+              "status": "generated",
+              "div": "<div>\n\t\t\t<p>History of family member diseases - not available</p>\n\t\t\t</div>"
+            },
+            "mode": "snapshot",
+            "emptyReason": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/list-empty-reason",
+                  "code": "withheld",
+                  "display": "Information Withheld"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "example",
+        "text": {
+          "status": "generated",
+          "div": "<div>procedure record authored on 27-June 2015 by Harold Hippocrates, MD Content extracted from Referral received 26-June</div>"
+        },
+        "target": [
+          {
+            "reference": "Patient/bar"
+          },
+          {
+            "fhir_comments": [
+              "  \n    where possible, provenance targets should be version specific,\n    so that there is no ambiguity about which version of the \n    record this relates to\n   "
+            ],
+            "reference": "Procedure/example/_history/1"
+          }
+        ],
+        "period": {
+          "start": "2015-06-27",
+          "end": "2015-07-04"
+        },
+        "recorded": "2015-06-27T08:39:24+10:00",
+        "reason": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "3457005",
+                "display": "Referral"
+              }
+            ],
+            "text": "Accepting a referral"
+          }
+        ],
+        "location": {
+          "reference": "Location/1"
+        },
+        "policy": [
+          "http://acme.com/fhir/Consent/25"
+        ],
+        "agent": [
+          {
+            "fhir_comments": [
+              "  author = Harold Hippocrates  "
+            ],
+            "role": {
+              "system": "http://hl7.org/fhir/provenance-participant-role",
+              "code": "author"
+            },
+            "actor": {
+              "reference": "Practitioner/xcda-author"
+            },
+            "userId": {
+              "fhir_comments": [
+                "  very often, the user won't have a known system - these aren't available \n      for security system log ons. But where you can define it, you should  "
+              ],
+              "system": "http://acme.com/fhir/users/sso",
+              "value": "hhd"
+            },
+            "relatedAgent": [
+              {
+                "type": {
+                  "text": "used"
+                },
+                "target": "#a1"
+              }
+            ]
+          },
+          {
+            "id": "a1",
+            "fhir_comments": [
+              "  device = software Harold used  "
+            ],
+            "role": {
+              "system": "http://hl7.org/fhir/v3/ParticipationType",
+              "code": "DEV"
+            },
+            "actor": {
+              "reference": "Device/software"
+            }
+          }
+        ],
+        "entity": [
+          {
+            "fhir_comments": [
+              "  information extract from a CCDA referral document  "
+            ],
+            "role": "source",
+            "type": {
+              "fhir_comments": [
+                "  this code is extracted from the CDA source document  "
+              ],
+              "system": "http://loinc.org",
+              "code": "57133-1",
+              "display": "Referral note"
+            },
+            "reference": "DocumentReference/90f55916-9d15-4b8f-87a9-2d7ade8670c8",
+            "_reference": {
+              "fhir_comments": [
+                "  \n      the document is in an XDS repository. \n      as a source, we're going to give an MHD \n      reference. (easier than XDS.b call with parameters!)\n\n      Note that though this is a URI, so that you can reference\n      outside FHIR, you can also put a standard FHIR reference \n      here as well\n     "
+              ]
+            },
+            "display": "CDA Document in XDS repository"
+          }
+        ]
+      }
+    }
+  ]
+}
