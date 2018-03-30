@@ -7,7 +7,7 @@ Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ## System Requirements
 
-* [Ruby 2.2+](https://www.ruby-lang.org/en/)
+* [Ruby 2.5+](https://www.ruby-lang.org/en/)
 * [Ruby Bundler](http://bundler.io/)
 * [SQLite](https://www.sqlite.org/)
 
@@ -32,7 +32,7 @@ The *Crucible SMART on FHIR Test App* can also be deployed onto a server to test
 instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
 be saved for future reference or shared.
 
-* Deployment Instructions (TBD)
+* Please see the file `deployment-configuration.md` for details.
 
 ## Unit Tests
 

@@ -17,7 +17,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = PatientStandaloneLaunchSequence.new(@instance, client)
+    @sequence = PatientStandaloneLaunchSequence.new(@instance, client, true)
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
   end
 
@@ -38,7 +38,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
 
     sequence_result = @sequence.resume(nil, nil, redirect_params)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
     assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'
     assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'

@@ -2,8 +2,8 @@ require File.expand_path '../../test_helper.rb', __FILE__
 
 class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
 
-  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir', 
-                      'Accept-Charset'=>'UTF-8', 
+  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
+                      'Accept-Charset'=>'UTF-8',
                       'Content-Type'=>'application/json+fhir;charset=UTF-8'
                      }
 
@@ -21,7 +21,7 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = DynamicRegistrationSequence.new(@instance, client)
+    @sequence = DynamicRegistrationSequence.new(@instance, client, true)
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 
@@ -46,7 +46,7 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
 
     assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'

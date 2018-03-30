@@ -7,6 +7,8 @@ require 'time_difference'
 require 'pry'
 require 'dm-core'
 require 'dm-migrations'
+require 'jwt'
+require 'json/jwt'
 
 config_file './config.yml'
 
@@ -49,6 +51,15 @@ helpers do
   end
   def app_name
     settings.app_name
+  end
+  def valid_json?(json)
+    JSON.parse(json)
+    return true
+  rescue JSON::ParserError => e
+    return false
+  end
+  def tls_testing_supported?
+    TlsTester.testing_supported?
   end
 end
 
@@ -122,7 +133,7 @@ get '/smart/:id/:sequence/?' do
   client.default_json
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
-    sequence = klass.new(instance, client)
+    sequence = klass.new(instance, client, settings.disable_tls_tests)
     stream do |out|
       out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
@@ -208,14 +219,19 @@ end
 
 post '/smart/:id/PatientStandaloneLaunch/?' do
   @instance = TestingInstance.get(params[:id])
-  @instance.update(scopes: params['scopes'])
+  @instance.update(scopes: params['scopes'], id_token: nil)
   redirect "/smart/#{params[:id]}/PatientStandaloneLaunch/"
 end
 
 post '/smart/:id/ProviderEHRLaunch/?' do
   @instance = TestingInstance.get(params[:id])
-  @instance.update(scopes: params['scopes'])
+  @instance.update(scopes: params['scopes'], id_token: nil)
   redirect "/smart/#{params[:id]}/ProviderEHRLaunch/"
+end
+
+post '/smart/:id/OpenIDConnect/?' do
+  @instance = TestingInstance.get(params[:id])
+  redirect "/smart/#{params[:id]}/OpenIDConnect/"
 end
 
 post '/smart/:id/TokenIntrospectionSkip/?' do
@@ -227,6 +243,19 @@ post '/smart/:id/TokenIntrospectionSkip/?' do
   instance.save!
 
   redirect "/smart/#{params[:id]}/"
+end
+
+post '/smart/:id/TokenIntrospection/?' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
+  @instance.update(resource_id: params['resource_id'])
+  @instance.update(resource_secret: params['resource_secret'])
+
+  # copy over the access token to a different place in case it's not the same
+  @instance.update(introspect_token: params['access_token'])
+
+  redirect "/smart/#{params[:id]}/TokenIntrospection/"
+
 end
 
 get '/smart/:id/:key/:endpoint/?' do
@@ -243,7 +272,7 @@ get '/smart/:id/:key/:endpoint/?' do
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
-    sequence = klass.new(instance, client, sequence_result)
+    sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
     stream do |out|
       out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
@@ -264,17 +293,4 @@ get '/smart/:id/:key/:endpoint/?' do
       end
     end
   end
-end
-
-post '/smart/:id/TokenIntrospection' do
-  @instance = TestingInstance.get(params[:id])
-  @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
-  @instance.update(resource_id: params['resource_id'])
-  @instance.update(resource_secret: params['resource_secret'])
-
-  # copy over the access token to a different place in case it's not the same
-  @instance.update(introspect_token: params['access_token'])
-
-  redirect "/smart/#{params[:id]}/TokenIntrospection/"
-
 end

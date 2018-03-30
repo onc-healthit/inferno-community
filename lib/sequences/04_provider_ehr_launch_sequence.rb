@@ -29,6 +29,17 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   end
 
+  test 'OAuth authorize endpoint secured by transport layer security.',
+    'http://www.hl7.org/fhir/smart-app-launch/',
+    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+
+    skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+    assert_tls_1_2 @instance.oauth_authorize_endpoint
+    warning {
+      assert_deny_previous_tls @instance.oauth_authorize_endpoint
+    }
+  end
+
   test 'Client browser redirected from OAuth server to app redirect uri',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Client browser redirected from OAuth server to redirect uri of client app as described in SMART authorization sequence.'  do
@@ -61,6 +72,17 @@ class ProviderEHRLaunchSequence < SequenceBase
     assert @params['error'].nil?, "Error returned from authorization server:  code #{@params['error']}, description: #{@params['error_description']}"
     assert @params['state'] == @instance.state, "OAuth server state querystring parameter (#{@params['state']}) did not match state from app #{@instance.state}"
     assert !@params['code'].nil?, "Expected code to be submitted in request"
+  end
+
+  test 'OAuth token exchange endpoint secured by transport layer security.',
+    'http://www.hl7.org/fhir/smart-app-launch/',
+    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+
+    skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+    assert_tls_1_2 @instance.oauth_token_endpoint
+    warning {
+      assert_deny_previous_tls @instance.oauth_token_endpoint
+    }
   end
 
   test 'OAuth Token exchange endpoint responds to POST using content type application/x-www-form-urlencoded.',
@@ -127,6 +149,11 @@ class ProviderEHRLaunchSequence < SequenceBase
 
     @instance.save!
     @instance.update(scopes: scopes)
+
+    if @token_response_body.has_key?('id_token')
+      @instance.save!
+      @instance.update(id_token: @token_response_body['id_token'])
+    end
 
   end
 

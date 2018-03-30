@@ -469,43 +469,7 @@
       <form method="POST" action="ArgonautProfiles">
         <div class="modal-body">
           <p>
-          This sequence will check the following resources returned by the Argonaut Query Sequence against 
-          the relevant Argonaut profile.
-          </p>
-          <% if instance.resource_references.count > 0 %>
-            <!-- <h4>Authorized Resources</h4> -->
-            <%instance.resource_references.map(&:resource_type).uniq.each do |resource_type| %>
-              <div class="form-group row">
-                <label class="col-sm-3 col-form-label"><%=resource_type %></label>
-                <div class="col-sm-9">
-                  <texatarea class="form-control" rows=3 readonly><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
-                </div>
-              </div>
-            <% end %>
-          <% end %>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Run Tests</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Argonaut Data Profiles</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="ArgonautProfiles">
-        <div class="modal-body">
-          <p>
-          This sequence will check the following resources returned by the Argonaut Query Sequence against 
+          This sequence will check the following resources returned by the Argonaut Query Sequence against
           the relevant Argonaut profile.
           </p>
           <% if instance.resource_references.count > 0 %>

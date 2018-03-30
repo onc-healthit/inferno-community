@@ -22,12 +22,13 @@ class SequenceBase
   @@modal_before_run = []
   @@optional = []
 
-  def initialize(instance, client, sequence_result = nil)
+  def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
     @client = client
     @instance = instance
     @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
     @client.monitor_requests unless @client.nil?
     @sequence_result = sequence_result
+    @disable_tls_tests = disable_tls_tests
     @test_warnings = []
   end
 
@@ -387,6 +388,7 @@ class SequenceBase
         DynamicRegistrationSequence,
         PatientStandaloneLaunchSequence,
         ProviderEHRLaunchSequence,
+        OpenIDConnectSequence,
         TokenIntrospectionSequence,
         ArgonautDataQuerySequence,
         ArgonautProfilesSequence,

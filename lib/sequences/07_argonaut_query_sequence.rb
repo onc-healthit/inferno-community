@@ -239,6 +239,7 @@ class ArgonautDataQuerySequence < SequenceBase
     skip_if_not_supported(:CarePlan, [:search, :read])
 
     assert !@careplan.nil?, 'Expected valid DSTU2 CarePlan resource to be present'
+
     date = @careplan.try(:period).try(:start)
     assert !date.nil?, "CarePlan period not returned"
     reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "assess-plan", date: date})

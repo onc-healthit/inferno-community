@@ -4,7 +4,18 @@ class ConformanceSequence < SequenceBase
 
   description 'The FHIR server exposes a Conformance Statement with the necessary information.'
 
-  test 'Responds to metadata endpoint with DSTU2 Conformance resource',
+  test 'FHIR server secured by transport layer security.',
+    'https://www.hl7.org/fhir/security.html',
+    'All exchange of production data should be secured with TLS/SSL.' do
+
+    skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+    assert_tls_1_2 @instance.url
+    warning {
+      assert_deny_previous_tls @instance.url
+    }
+  end
+
+  test 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance resource',
           'https://www.hl7.org/fhir/DSTU2/http.html',
           'Servers SHALL provide a conformance statement that specifies which interactions and resources are supported.' do
 
@@ -28,7 +39,9 @@ class ConformanceSequence < SequenceBase
     assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
     authorize_url = oauth_metadata[:authorize_url]
     token_url = oauth_metadata[:token_url]
+    assert !authorize_url.blank?, 'No authorize URI provided in conformance statement.'
     assert (authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{authorize_url}'"
+    assert !token_url.blank?, 'No token URI provided in conformance statement.'
     assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
 
     registration_url = nil
@@ -67,7 +80,9 @@ class ConformanceSequence < SequenceBase
     ]
 
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-    capabilities = @conformance.rest.first.security.extension.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
+    extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
+    assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
+    capabilities = extensions.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
     assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
     available_capabilities = capabilities.map{ |v| v.valueCode}
     missing_capabilities = (required_capabilities - available_capabilities)
