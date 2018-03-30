@@ -7,7 +7,7 @@ Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ## System Requirements
 
-* [Ruby 2.2+](https://www.ruby-lang.org/en/)
+* [Ruby 2.5+](https://www.ruby-lang.org/en/)
 * [Ruby Bundler](http://bundler.io/)
 * [SQLite](https://www.sqlite.org/)
 

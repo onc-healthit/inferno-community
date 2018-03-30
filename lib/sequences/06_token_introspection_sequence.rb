@@ -12,6 +12,18 @@ class TokenIntrospectionSequence < SequenceBase
     !@instance.token.nil?
   end
 
+  test 'OAuth token introspection endpoint secured by transport layer security.',
+    'https://tools.ietf.org/html/rfc7662',
+    'The server MUST support Transport Layer Security (TLS) 1.2' do
+
+    skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+    assert_tls_1_2 @instance.oauth_introspection_endpoint
+    warning {
+      assert_deny_previous_tls @instance.oauth_introspection_endpoint
+    }
+  end
+
+
   test 'Call token introspection endpoint',
           'https://tools.ietf.org/html/rfc7662',
           'A resource server is capable of calling the introspection endpoint' do
@@ -25,6 +37,7 @@ class TokenIntrospectionSequence < SequenceBase
     }
 
     @introspection_response = LoggedRestClient.post(@instance.oauth_introspection_endpoint, params, headers)
+
     assert !@introspection_response.nil?, 'No introspection response'
     assert_response_ok(@introspection_response)
     @introspection_response_body = JSON.parse(@introspection_response.body)
@@ -43,6 +56,7 @@ class TokenIntrospectionSequence < SequenceBase
     assert !@introspection_response_body.nil?, 'No introspection response body'
 
     active = @introspection_response_body['active']
+
     assert active, 'Token is not active, try the test again with a valid token'
   end
 
@@ -55,6 +69,7 @@ class TokenIntrospectionSequence < SequenceBase
 
     expected_scopes = @instance.scopes.split(' ')
     actual_scopes = @introspection_response_body['scope'].split(' ')
+
 
     FHIR.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"
 
@@ -73,6 +88,7 @@ class TokenIntrospectionSequence < SequenceBase
     assert !@introspection_response_body.nil?, 'No introspection response body'
 
     expiration = Time.at(@introspection_response_body['exp']).to_datetime
+
     token_retrieved_at = @instance.token_retrieved_at
     now = DateTime.now
 
