@@ -59,7 +59,7 @@ class SequenceBase
 
   def start
     if @sequence_result.nil?
-      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance, required: !optional?)
+      @sequence_result = SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance, required: !optional?, app_version: VERSION)
     end
 
     start_at = @sequence_result.test_results.length
