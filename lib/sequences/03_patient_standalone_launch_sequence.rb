@@ -10,7 +10,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
   test 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_authorize_endpoint
@@ -19,9 +19,9 @@ class PatientStandaloneLaunchSequence < SequenceBase
     }
   end
 
-  test 'Client browser redirected from OAuth server to app redirect uri',
+  test 'OAuth server redirects client browser to app redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Client browser redirected from OAuth server to redirect uri of client app as described in SMART authorization sequence.'  do
+    'Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.'  do
 
     @instance.state = SecureRandom.uuid
 
@@ -49,7 +49,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     redirect oauth2_auth_query[0..-2], 'redirect'
   end
 
-  test 'Client app received code parameter and correct state paramater from OAuth server at redirect uri',
+  test 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Code and state are required querystring parameters. State must be the exact value received from the client.'  do
 
@@ -60,7 +60,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
   test 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_token_endpoint
@@ -113,8 +113,8 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
   test 'Data returned from token exchange contains required information encoded in JSON',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
-    'The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\
+    'The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
+    'The EHR authorization server shall return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\
     'access_token, token_type, and scope are required. access_token must be Bearer.' do
 
     @token_response_headers = @token_response.headers
