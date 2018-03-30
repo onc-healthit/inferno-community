@@ -245,6 +245,19 @@ post '/smart/:id/TokenIntrospectionSkip/?' do
   redirect "/smart/#{params[:id]}/"
 end
 
+post '/smart/:id/TokenIntrospection/?' do
+  @instance = TestingInstance.get(params[:id])
+  @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
+  @instance.update(resource_id: params['resource_id'])
+  @instance.update(resource_secret: params['resource_secret'])
+
+  # copy over the access token to a different place in case it's not the same
+  @instance.update(introspect_token: params['access_token'])
+
+  redirect "/smart/#{params[:id]}/TokenIntrospection/"
+
+end
+
 get '/smart/:id/:key/:endpoint/?' do
   instance = TestingInstance.get(params[:id])
   halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && ['launch','redirect'].include?(params[:endpoint])
@@ -280,17 +293,4 @@ get '/smart/:id/:key/:endpoint/?' do
       end
     end
   end
-end
-
-post '/smart/:id/TokenIntrospection' do
-  @instance = TestingInstance.get(params[:id])
-  @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
-  @instance.update(resource_id: params['resource_id'])
-  @instance.update(resource_secret: params['resource_secret'])
-
-  # copy over the access token to a different place in case it's not the same
-  @instance.update(introspect_token: params['access_token'])
-
-  redirect "/smart/#{params[:id]}/TokenIntrospection/"
-
 end

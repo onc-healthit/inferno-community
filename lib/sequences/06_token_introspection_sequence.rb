@@ -37,7 +37,11 @@ class TokenIntrospectionSequence < SequenceBase
     }
 
     @introspection_response = LoggedRestClient.post(@instance.oauth_introspection_endpoint, params, headers)
-    @introspection_response = JSON.parse(@introspection_response.body)
+
+    assert !@introspection_response.nil?, 'No introspection response'
+    assert_response_ok(@introspection_response)
+    @introspection_response_body = JSON.parse(@introspection_response.body)
+    assert !@introspection_response_body.nil?, 'No introspection response body'
 
     FHIR.logger.debug "Introspection response: #{@introspection_response}"
 
@@ -49,7 +53,9 @@ class TokenIntrospectionSequence < SequenceBase
           'https://tools.ietf.org/html/rfc7662',
           'A current access token is listed as "active"' do
 
-    active = @introspection_response['active']
+    assert !@introspection_response_body.nil?, 'No introspection response body'
+
+    active = @introspection_response_body['active']
 
     assert active, 'Token is not active, try the test again with a valid token'
   end
@@ -59,8 +65,11 @@ class TokenIntrospectionSequence < SequenceBase
           'The scopes we received alongside the token match those from the introspection response',
           :optional do
 
+    assert !@introspection_response_body.nil?, 'No introspection response body'
+
     expected_scopes = @instance.scopes.split(' ')
-    actual_scopes = @introspection_response['scope'].split(' ')
+    actual_scopes = @introspection_response_body['scope'].split(' ')
+
 
     FHIR.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"
 
@@ -76,7 +85,10 @@ class TokenIntrospectionSequence < SequenceBase
           '',
           'The token should have a lifetime of at least 60 minutes' do
 
-    expiration = Time.at(@introspection_response['exp']).to_datetime
+    assert !@introspection_response_body.nil?, 'No introspection response body'
+
+    expiration = Time.at(@introspection_response_body['exp']).to_datetime
+
     token_retrieved_at = @instance.token_retrieved_at
     now = DateTime.now
 
