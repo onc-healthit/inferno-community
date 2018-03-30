@@ -20,6 +20,10 @@ class TlsTester
     end
   end
 
+  def self.testing_supported?
+    !(defined? OpenSSL::SSL::TLS1_2_VERSION).nil?
+  end
+
   def verifyEnsureProtocol(ssl_version)
 
     sslClient, tcpSocket = getConnection(ssl_version)

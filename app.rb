@@ -58,6 +58,9 @@ helpers do
   rescue JSON::ParserError => e
     return false
   end
+  def tls_testing_supported?
+    TlsTester.testing_supported?
+  end
 end
 
 get '/' do
