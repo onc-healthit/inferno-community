@@ -268,6 +268,12 @@ class SequenceBase
     raise SkipException.new message
   end
 
+  def skip_unless(test, message = '')
+    unless test
+      raise SkipException.new message
+    end
+  end
+
   def wait_at_endpoint(endpoint)
     raise WaitException.new endpoint
   end
