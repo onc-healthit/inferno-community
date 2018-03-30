@@ -251,7 +251,7 @@ module Assertions
     if @negated then !expression else expression end
   end
 
-  def assert_tls_conformance(uri)
+  def assert_tls_1_2(uri)
     tlsTester = TlsTester.new({uri:uri})
 
     unless uri.downcase.start_with?('https')
@@ -263,6 +263,17 @@ module Assertions
       unless passed
         raise AssertionException.new msg
       end
+    rescue SocketError => e
+      raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", e
+    rescue => e
+      raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}"
+    end
+  end
+
+  def assert_deny_previous_tls(uri)
+    tlsTester = TlsTester.new({uri:uri})
+
+    begin
       passed, msg = tlsTester.verfiyDenySSLv3
       unless passed
         raise AssertionException.new msg

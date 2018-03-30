@@ -47,7 +47,7 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = OpenIDConnectSequence.new(@instance, client)
+    @sequence = OpenIDConnectSequence.new(@instance, client, true)
   end
 
   def test_all_pass

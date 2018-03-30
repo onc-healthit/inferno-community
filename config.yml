@@ -1,10 +1,13 @@
 # Useful during development to purge the database on each reload
 purge_database_on_reload: false
 
-# Disable peer SSL veriication.
-# You should never deactivate SSL Peer Verification except in development situations using invalid certificates.
+# Disable peer SSL verification for environments that use SSL inspection
 disable_verify_peer: false
 
 app_name: Inferno - SMART on FHIR Testing
+
 # When running in a docker containerr, we have to listen to other than just 'localhost' which is the default
 bind: '0.0.0.0'
+
+# Skip TLS tests
+disable_tls_tests: false

@@ -130,7 +130,7 @@ get '/smart/:id/:sequence/?' do
   client.default_json
   klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
   if klass
-    sequence = klass.new(instance, client)
+    sequence = klass.new(instance, client, settings.disable_tls_tests)
     stream do |out|
       out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"
@@ -256,7 +256,7 @@ get '/smart/:id/:key/:endpoint/?' do
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
-    sequence = klass.new(instance, client, sequence_result)
+    sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
     stream do |out|
       out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
       out << "<script>$('#WaitModal').modal('hide')</script>"

@@ -53,7 +53,7 @@ class TlsTester
       tcpSocket.close
       return TRUE, "Correctly denied connection with #{readable_version}"
     end
-    return_message = "Allowed connection with #{sslClient.ssl_version}"
+    return_message = "Should not allow connections with #{sslClient.ssl_version}"
     sslClient.close
     tcpSocket.close
     return FALSE, return_message
