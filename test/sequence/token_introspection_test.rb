@@ -24,7 +24,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = TokenIntrospectionSequence.new(@instance, client)
+    @sequence = TokenIntrospectionSequence.new(@instance, client, true)
   end
 
   def test_all_pass
@@ -48,7 +48,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
 
     assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass.'
@@ -72,7 +72,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
     assert_requested(stub_register)
 
     assert sequence_result.result == 'fail', 'Sequence should fail.'
-    assert sequence_result.test_results.all?{|r| r.result == 'fail' }, 'All tests should fail.'
+    assert sequence_result.test_results.all?{|r| r.result == 'fail' || r.result == 'skip'}, 'All tests should fail.'
   end
 
   def test_inactive
@@ -96,7 +96,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
 
     # 1 test depends on active being true
     assert failures.length == 1, 'One test should fail.'
@@ -124,7 +124,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
     warnings = sequence_result.test_results.select{|r| !r.test_warnings.empty?}
 
     # 1 optional test depends on correct scopes
@@ -153,7 +153,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
     warnings = sequence_result.test_results.select{|r| !r.test_warnings.empty?}
 
     # 1 optional test depends on correct scopes
@@ -182,7 +182,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass'}
+    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
 
     # 1 test depends on expiration being at least 60 minutes
     assert failures.length == 1, 'One test should fail.'
