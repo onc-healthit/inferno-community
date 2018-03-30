@@ -138,6 +138,11 @@ class PatientStandaloneLaunchSequence < SequenceBase
       @instance.update(id_token: @token_response_body['id_token'])
     end
 
+    if @token_response_body.has_key?('refresh_token')
+      @instance.save!
+      @instance.update(refresh_token: @token_response_body['refresh_token'])
+    end
+
   end
 
 end

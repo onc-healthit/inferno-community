@@ -400,6 +400,7 @@ class SequenceBase
         ProviderEHRLaunchSequence,
         OpenIDConnectSequence,
         TokenIntrospectionSequence,
+        TokenRefreshSequence,
         ArgonautDataQuerySequence,
         ArgonautProfilesSequence,
         AdditionalResourcesSequence]

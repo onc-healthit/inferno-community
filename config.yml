@@ -11,3 +11,6 @@ bind: '0.0.0.0'
 
 # Skip TLS tests
 disable_tls_tests: false
+
+# Default scopes
+default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
