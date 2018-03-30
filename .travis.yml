@@ -10,3 +10,4 @@ notifications:
     recipients:
       - fhir-testing-list@lists.mitre.org
     on_failure: change
+before_install: gem install bundler

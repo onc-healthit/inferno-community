@@ -251,6 +251,48 @@ module Assertions
     if @negated then !expression else expression end
   end
 
+  def assert_tls_1_2(uri)
+    tlsTester = TlsTester.new({uri:uri})
+
+    unless uri.downcase.start_with?('https')
+      raise AssertionException.new "URI is not HTTPS: #{uri}"
+    end
+
+    begin
+      passed, msg = tlsTester.verifyEnsureTLSv1_2
+      unless passed
+        raise AssertionException.new msg
+      end
+    rescue SocketError => e
+      raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", e
+    rescue => e
+      raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}"
+    end
+  end
+
+  def assert_deny_previous_tls(uri)
+    tlsTester = TlsTester.new({uri:uri})
+
+    begin
+      passed, msg = tlsTester.verfiyDenySSLv3
+      unless passed
+        raise AssertionException.new msg
+      end
+      passed, msg = tlsTester.verfiyDenyTLSv1_1
+      unless passed
+        raise AssertionException.new msg
+      end
+      passed, msg = tlsTester.verifyDenyTLSv1
+      unless passed
+        raise AssertionException.new msg
+      end
+    rescue SocketError => e
+      raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", e
+    rescue => e
+      raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}"
+    end
+  end
+
   def skip(message = '')
     raise SkipException.new message
   end

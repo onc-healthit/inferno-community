@@ -2,8 +2,8 @@ require File.expand_path '../../test_helper.rb', __FILE__
 
 class ConformanceSequenceTest < MiniTest::Unit::TestCase
 
-  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir', 
-                      'Accept-Charset'=>'UTF-8', 
+  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
+                      'Accept-Charset'=>'UTF-8',
                       'Content-Type'=>'application/json+fhir;charset=UTF-8'
                      }
 
@@ -15,7 +15,7 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = ConformanceSequence.new(instance, client)
+    @sequence = ConformanceSequence.new(instance, client, true)
     @conformance = load_json_fixture(:conformance_statement)
   end
 
@@ -27,7 +27,7 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
 
     sequence_result = @sequence.start
     assert sequence_result.result == 'pass', 'The sequence should be marked as pass.'
-    assert sequence_result.test_results.all?{|r| r.result == 'pass'}, 'All tests should pass'
+    assert sequence_result.test_results.all?{|r| r.result == 'pass' || r.result == 'skip'}, 'All tests should pass'
     # assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 
@@ -39,7 +39,7 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
     sequence_result = @sequence.start
     assert sequence_result.result == 'fail'
     assert sequence_result.test_results.select{|r| !r.required}.length == 1
-    assert sequence_result.test_results.all?{|r| r.result == 'fail' || !r.required}
+    assert sequence_result.test_results.all?{|r| r.result == 'fail' || r.result == 'skip' || !r.required}
   end
 
 end

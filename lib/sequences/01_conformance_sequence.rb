@@ -4,7 +4,18 @@ class ConformanceSequence < SequenceBase
 
   description 'The FHIR server exposes a Conformance Statement with the necessary information.'
 
-  test 'Responds to metadata endpoint with DSTU2 Conformance resource',
+  test 'FHIR server secured by transport layer security.',
+    'https://www.hl7.org/fhir/security.html',
+    'All exchange of production data should be secured with TLS/SSL.' do
+
+    skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+    assert_tls_1_2 @instance.url
+    warning {
+      assert_deny_previous_tls @instance.url
+    }
+  end
+
+  test 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance resource',
           'https://www.hl7.org/fhir/DSTU2/http.html',
           'Servers SHALL provide a conformance statement that specifies which interactions and resources are supported.' do
 
