@@ -9,13 +9,13 @@ class ProviderEHRLaunchSequence < SequenceBase
     !@instance.client_id.nil?
   end
 
-  test 'Client browser sent to launch uri from EHR server',
+  test 'EHR server redirects client browser to app launch URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Client browser sent from EHR server to launch uri of client app as described in SMART EHR Launch Sequence.'  do
+    'Client browser sent from EHR server to launch URI of client app as described in SMART EHR Launch Sequence.'  do
     wait_at_endpoint 'launch'
   end
 
-  test 'EHR provided iss and launch parameter to the launch uri via the client browser querystring',
+  test 'EHR provides iss and launch parameter to the launch URI via the client browser querystring',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The EHR is required to provide a reference to the EHR FHIR endpoint in the iss queystring parameter, and an '\
       'opaque identifier for the launch in the launch querystring parameter.'  do
@@ -40,9 +40,9 @@ class ProviderEHRLaunchSequence < SequenceBase
     }
   end
 
-  test 'Client browser redirected from OAuth server to app redirect uri',
+  test 'OAuth server redirects client browser to app redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Client browser redirected from OAuth server to redirect uri of client app as described in SMART authorization sequence.'  do
+    'Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.'  do
 
     # construct querystring to oauth and redirect after
     @instance.state = SecureRandom.uuid
@@ -65,7 +65,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     redirect oauth2_auth_query[0..-2], 'redirect'
   end
 
-  test 'Client app received code parameter and correct state paramater from OAuth server at redirect uri',
+  test 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Code and state are required querystring parameters. State must be the exact value received from the client.'  do
 
@@ -85,7 +85,34 @@ class ProviderEHRLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth Token exchange endpoint responds to POST using content type application/x-www-form-urlencoded',
+  test 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID',
+    'https://tools.ietf.org/html/rfc6749',
+    'If the request failed verification or is invalid, the authorization server returns an error response.' do
+
+    oauth2_params = {
+      'grant_type' => 'authorization_code',
+      'code' => 'INVALID_CODE',
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'client_id' => @instance.client_id
+    }
+
+    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    assert_response_unauthorized token_response
+
+    oauth2_params = {
+      'grant_type' => 'authorization_code',
+      'code' => @params['code'],
+      'redirect_uri' => @instance.base_url + '/smart/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+      'client_id' => 'INVALID_CLIENT_ID'
+    }
+
+    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    assert_response_unauthorized token_response
+
+  end
+
+
+  test 'OAuth token exchange request succeeds when supplied correct information',
     'http://www.hl7.org/fhir/smart-app-launch/',
     "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
@@ -97,6 +124,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     }
 
     @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    assert_response_ok(@token_response)
 
   end
 

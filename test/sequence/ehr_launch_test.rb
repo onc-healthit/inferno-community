@@ -34,6 +34,11 @@ class EHRLaunchSequenceTest < MiniTest::Unit::TestCase
       with(headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
       to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma:'no-cache'})
 
+    stub_request(:post, @instance.oauth_token_endpoint).
+      with(body: /INVALID_/,headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
+      to_return(status: 401)
+
+
     sequence_result = @sequence.start
 
     assert sequence_result.result == 'wait', 'The sequence should be in a wait state.'
