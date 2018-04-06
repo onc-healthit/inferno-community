@@ -83,7 +83,7 @@ You can now test this is working by pointing your browser
 
 Note: If you need to stop Unicorn use the following command.
 
-    cat tmp/pids/unicorn.pid | xargs kill -Q
+    cat tmp/pids/unicorn.pid | xargs kill -QUIT
 
 8. Configure Nginix to proxy to Unicorn
 
