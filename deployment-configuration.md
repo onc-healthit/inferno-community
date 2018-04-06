@@ -6,6 +6,7 @@ This document decribes how to install the software on various platforms.
 Run on Amazon Web Services EC2 using an Amazon Machine Image (AMI)
 ==================================================================
 
+An AWS account is required to use AMI version. If you wish to run it locally, you can use Docker, or a number of other configuration options described below.
 
 The latest AMI ID is `ami-d0a778ad`.
 
@@ -17,8 +18,10 @@ https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard
 
 
 A `t2.micro` sized instance should be sufficient  for sites expecting a low about of traffic.
-An AWS account is required to use AMI version. If you wish to run it locally, you can use Docker,
-or a number of other configuration options described below.
+
+
+
+It is important to open port `80` and port `22` if you need to gain shell access to the server.
 
 
 
@@ -28,7 +31,7 @@ Ubuntu 16.04 With Nginx and Unicorn Installation (Preferred Method)
 This section details how to configure the crucible_smart_app using Nginx 
 and Unicorn on Ubuntu 16.
 
-1. Remove Apache2 if already installed. 
+1. Remove Apache2 if already installed.
 
 
     sudo apache2ctl stop
@@ -37,7 +40,20 @@ and Unicorn on Ubuntu 16.
 
 2. Setup the crucible_smart_app.
 
-Issue the following commands to setup the crucible smart app.
+To use all features, install Ruby 2.5. Enter the following commands in your terminal.
+
+
+    sudo apt-get install libgdbm-dev libncurses5-dev automake libtool bison libffi-dev
+    gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+    curl -sSL https://get.rvm.io | bash -s stable
+    source ~/.rvm/scripts/rvm
+    rvm install 2.5.0
+    rvm use 2.5.0 --default
+    ruby -v
+    gem install bundle
+
+
+Now, issue the following commands to setup the crucible smart app.
 
 
      sudo apt-get update
