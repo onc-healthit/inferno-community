@@ -8,13 +8,13 @@ Run on Amazon Web Services EC2 using an Amazon Machine Image (AMI)
 
 An AWS account is required to use AMI version. If you wish to run it locally, you can use Docker, or a number of other configuration options described below.
 
-The latest AMI ID is `ami-d0a778ad`.
+The latest AMI ID is `ami-833d94fe`.
 
 After your instance is loaded, the application will be acceisable on port 80 (the standard port for HTTP).
 Use the following link to jumpstart your deployment:
 
 
-https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-d0a778ad
+https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-833d94fe
 
 
 A `t2.micro` sized instance should be sufficient  for sites expecting a low about of traffic.
