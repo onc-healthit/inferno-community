@@ -39,7 +39,11 @@ and Unicorn on Ubuntu 16.
 
 2. Setup the crucible_smart_app.
 
-To use all features, install Ruby 2.5. Enter the following commands in your terminal.
+TLS connection testing requires Ruby 2.5 or greater. To check to see what version of ruby is installed, type in the following command:
+
+ruby --version
+
+If you are not running version Ruby 2.5, you can install it using Ruby Version Manager (rvm) by issuing the following commands.
 
 
     sudo apt-get install libgdbm-dev libncurses5-dev automake libtool bison libffi-dev
