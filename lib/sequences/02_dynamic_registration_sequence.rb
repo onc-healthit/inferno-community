@@ -12,7 +12,7 @@ class DynamicRegistrationSequence < SequenceBase
     !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?
   end
 
-  test 'Client registration endpoint secured by transport layer security.',
+  test 'Client registration endpoint secured by transport layer security',
     'https://tools.ietf.org/html/rfc7591',
     'The client registration endpoint MUST be protected by a transport layer security.' do
 

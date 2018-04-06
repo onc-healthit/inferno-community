@@ -24,7 +24,7 @@ class TokenIntrospectionSequence < SequenceBase
   end
 
 
-  test 'Call token introspection endpoint',
+  test 'Token introspection endpoint responds properly to introspection request',
           'https://tools.ietf.org/html/rfc7662',
           'A resource server is capable of calling the introspection endpoint.' do
 
@@ -49,7 +49,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
-  test 'Access token is active',
+  test 'Token introspection response confirms that Access token is active',
           'https://tools.ietf.org/html/rfc7662',
           'A current access token is listed as active.' do
 
@@ -60,7 +60,7 @@ class TokenIntrospectionSequence < SequenceBase
     assert active, 'Token is not active, try the test again with a valid token'
   end
 
-  test 'Scopes match',
+  test 'Scopes returned by token introspection request match expected scopes',
           'https://tools.ietf.org/html/rfc7662',
           'The scopes we received alongside the token match those from the introspection response.',
           :optional do
@@ -82,8 +82,8 @@ class TokenIntrospectionSequence < SequenceBase
   end
 
   # TODO verify timeout requirements
-  test 'Token expiration',
-          '',
+  test 'Token introspection response confirms token has appropriate lifetime',
+          'https://tools.ietf.org/html/rfc7662',
           'The token should have a lifetime of at least 60 minutes.' do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'

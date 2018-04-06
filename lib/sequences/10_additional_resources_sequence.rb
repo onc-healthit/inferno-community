@@ -2,13 +2,13 @@ class AdditionalResourcesSequence < SequenceBase
 
   title 'Additional Resources'
 
-  description 'Verify additional resource requirements.'
+  description 'Verify additional non-Argonaut resource requirements.'
 
   preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
-  test 'Composition search without authorization',
+  test 'Server rejects Composition search without authorization',
           '',
           'Additional Composition resource requirement.' do
 
@@ -19,7 +19,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition search by patient',
+  test 'Server returns expected results from Composition search by patient',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -30,7 +30,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition search by patient + type',
+  test 'Server returns expected results from Composition search by patient + type',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -43,7 +43,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition search by patient + period',
+  test 'Server returns expected results from Composition search by patient + period',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -57,7 +57,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition search by patient + type + period',
+  test 'Server returns expected results from Composition search by patient + type + period',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -111,7 +111,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search without authorization',
+  test 'Server rejects Provenance search without authorization',
           '',
           'Additional Provenance resource requirement.' do
 
@@ -122,7 +122,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by patient',
+  test 'Server returns expected results from Provenance search by patient',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -133,7 +133,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by patient + target',
+  test 'Server returns expected results from Provenance search by patient + target',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -147,7 +147,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by patient + start + end',
+  test 'Server returns expected results from Provenance search by patient + start + end',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -162,7 +162,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by patient + target + start + end',
+  test 'Server returns expected results from Provenance search by patient + target + start + end',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -180,7 +180,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by userid',
+  test 'Server returns expected results from Provenance search by userid',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -193,7 +193,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance search by agent',
+  test 'Server returns expected results from Provenance search by agent',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -206,7 +206,7 @@ class AdditionalResourcesSequence < SequenceBase
     validate_search_reply(FHIR::DSTU2::Provenance, reply)
 
   end
-  
+
   test 'Provenance read resource supported',
           '',
           'Additional Provenance resource requirement.',

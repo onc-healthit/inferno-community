@@ -15,18 +15,18 @@ class ConformanceSequence < SequenceBase
     }
   end
 
-  test 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance resource',
+  test 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance Statement resource',
           'https://www.hl7.org/fhir/DSTU2/http.html',
-          'Servers SHALL provide a conformance statement that specifies which interactions and resources are supported.' do
+          'Servers shall provide a conformance statement that specifies which interactions and resources are supported.' do
 
     @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
     assert_response_ok @client.reply
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
   end
 
-  test 'Conformance states JSON support',
+  test 'Conformance Statement states JSON support',
          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-         'The Argonaut Data Query Server SHALL: Support json resource formats for all Argonaut Data Query interactions.' do
+         'The Argonaut Data Query Server shall support JSON resource format for all Argonaut Data Query interactions.' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
   end
@@ -61,7 +61,7 @@ class ConformanceSequence < SequenceBase
     @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
   end
 
-  test 'Conformance statement provides SMART on FHIR core capabilities',
+  test 'Conformance Statement describes SMART on FHIR core capabilities',
     'http://www.hl7.org/fhir/smart-app-launch/conformance/',
     'A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.',
     :optional do
@@ -89,7 +89,7 @@ class ConformanceSequence < SequenceBase
     assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
   end
 
-  test 'Conformance lists supported Argonaut profiles, as well as supported operations and search parameters',
+  test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters',
     'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
     'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
 
@@ -98,7 +98,7 @@ class ConformanceSequence < SequenceBase
     begin
       @instance.save_supported_resources(@conformance)
     rescue => e
-      assert false, 'Conformance could be parsed.'
+      assert false, 'Conformance Statement could not be parsed.'
     end
 
     assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in conformance statement.'
