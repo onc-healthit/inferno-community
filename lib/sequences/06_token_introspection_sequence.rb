@@ -83,7 +83,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   # TODO verify timeout requirements
   test 'Token introspection response confirms token has appropriate lifetime',
-          '',
+          'https://tools.ietf.org/html/rfc7662',
           'The token should have a lifetime of at least 60 minutes.' do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'
