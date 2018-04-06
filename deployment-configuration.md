@@ -19,10 +19,9 @@ https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard
 
 A `t2.micro` sized instance should be sufficient  for sites expecting a low about of traffic.
 
+It is important to open port `80` for HTTP  and port `22` for SSH if you need to gain shell access to the server.  Instead of clicking the "Review and Lunch" button, click next button until you get to the Security Groups option. Ensure 80 is accesible from anywhere and 22 is avaiable from an IP range from whcih you will be connecting.  Please see the image entitled "security-groups.png" in the deployment-files directory for an example of thius setting.
 
-
-It is important to open port `80` and port `22` if you need to gain shell access to the server.
-
+After this step is done, lauch the instance.  Obtain your instance's IP or host name from the AWS console. Point a web browser to the instance using the IP address or host name.
 
 
 Ubuntu 16.04 With Nginx and Unicorn Installation (Preferred Method)
