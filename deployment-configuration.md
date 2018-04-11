@@ -4,7 +4,7 @@ Deployment Configuration
 This document describes how to install the software on various platforms.
 
 Run on Amazon Web Services EC2 using an Amazon Machine Image (AMI)
-==================================================================
+------------------------------------------------------------------
 
 An AWS account is required to use AMI version. If you wish to run it locally, you can use Docker, or a number of other configuration options described below.
 
@@ -25,7 +25,7 @@ After this step is done, launch the instance.  Obtain your instance's IP or host
 
 
 Ubuntu 16.04 With Nginx and Unicorn Installation (Preferred Method)
-===================================================================
+-------------------------------------------------------------------
 
 This section details how to configure the crucible_smart_app using Nginx 
 and Unicorn on Ubuntu 16.
@@ -41,7 +41,8 @@ and Unicorn on Ubuntu 16.
 
 TLS connection testing requires Ruby 2.5 or greater. To check to see what version of ruby is installed, type in the following command:
 
-ruby --version
+
+    ruby --version
 
 If you are not running version Ruby 2.5, you can install it using Ruby Version Manager (rvm) by issuing the following commands.
 
@@ -79,11 +80,13 @@ Install NGINX with apt-get
 
 Innstall unicorn with gem
 
+
     sudo gem install unicorn
 
 5. Create some directories Unicorn will need. 
 
 From within the `crucible_smart_app`, execute the following commands.
+
 
     mkdir tmp
     mkdir tmp/sockets
@@ -95,12 +98,14 @@ From within the `crucible_smart_app`, execute the following commands.
 
 Start running Unicorn as a daemon procedss with the following command:
 
+
     unicorn -c deployment-files/unicorn.rb -E development -D
 
 You can now test this is working by pointing your browser
  to http://localhost:4567
 
 Note: If you need to stop Unicorn use the following command.
+
 
     cat tmp/pids/unicorn.pid | xargs kill -QUIT
 
@@ -157,7 +162,7 @@ restart Nginx.
 
 
 Ubuntu 16.04 With Apache2 and Passenger Installation
-====================================================
+----------------------------------------------------
 
 This section describes how to setup the tool using Apache2 using Passenger.
 
@@ -172,6 +177,7 @@ This section describes how to setup the tool using Apache2 using Passenger.
 
 Next We will install Passenger
 
+
     sudo apt-get install -y dirmngr gnupg
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7
     sudo apt-get install -y apt-transport-https ca-certificates
@@ -181,12 +187,15 @@ Next We will install Passenger
     sudo a2enmod passenger
     sudo apache2ctl restart
     
+
 Verify the Passenger Install:
+
 
     sudo /usr/bin/passenger-config validate-install
     sudo /usr/sbin/passenger-memory-stats
 
 Modify the Apache configuration file.
+
 
     sudo nano /etc/apache2/sites-available/000-default.conf
 
@@ -195,42 +204,43 @@ and `Directory` sections like seen below. Make sure the path you set
 matches your actual path.  If you plan to host this non locally,
 then update the `Servername` to match that of your DNS setting.
 
-    <VirtualHost *:80>
-	# The ServerName directive sets the request scheme, hostname and port that
-	# the server uses to identify itself. This is used when creating
-	# redirection URLs. In the context of virtual hosts, the ServerName
-	# specifies what hostname must appear in the request's Host: header to
-	# match this virtual host. For the default virtual host (this file) this
-	# value is not decisive as it is used as a last resort host regardless.
-	# However, you must set it for any further virtual host explicitly.
-	ServerName localhost
 
-	ServerAdmin webmaster@localhost
-	DocumentRoot /home/parallels/crucible_smart_app/public
-
-
-    <Directory /home/parallels/crucible_smart_app/public >
-        Require all granted
-        Allow from all
-        Options -MultiViews
-    </Directory>
-
-	# Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
-	# error, crit, alert, emerg.
-	# It is also possible to configure the loglevel for particular
-	# modules, e.g.
-	#LogLevel info ssl:warn
-
-	ErrorLog ${APACHE_LOG_DIR}/error.log
-	CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-	# For most configuration files from conf-available/, which are
-	# enabled or disabled at a global level, it is possible to
-	# include a line for only one particular virtual host. For example the
-	# following line enables the CGI configuration for this host only
-	# after it has been globally disabled with "a2disconf".
-	#Include conf-available/serve-cgi-bin.conf
-    </VirtualHost>
+     <VirtualHost *:80>
+     # The ServerName directive sets the request scheme, hostname and port that
+     # the server uses to identify itself. This is used when creating
+     # redirection URLs. In the context of virtual hosts, the ServerName
+     # specifies what hostname must appear in the request's Host: header to
+     # match this virtual host. For the default virtual host (this file) this
+     # value is not decisive as it is used as a last resort host regardless.
+     # However, you must set it for any further virtual host explicitly.
+     ServerName localhost
+    
+     ServerAdmin webmaster@localhost
+     DocumentRoot /home/parallels/crucible_smart_app/public
+    
+    
+        <Directory /home/parallels/crucible_smart_app/public >
+            Require all granted
+            Allow from all
+            Options -MultiViews
+        </Directory>
+    
+     # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+     # error, crit, alert, emerg.
+     # It is also possible to configure the loglevel for particular
+     # modules, e.g.
+     #LogLevel info ssl:warn
+    
+     ErrorLog ${APACHE_LOG_DIR}/error.log
+     CustomLog ${APACHE_LOG_DIR}/access.log combined
+    
+     # For most configuration files from conf-available/, which are
+     # enabled or disabled at a global level, it is possible to
+     # include a line for only one particular virtual host. For example the
+     # following line enables the CGI configuration for this host only
+     # after it has been globally disabled with "a2disconf".
+     #Include conf-available/serve-cgi-bin.conf
+     </VirtualHost>
 
 
 Now all that is left to do is to restart Apache2.
@@ -245,18 +255,18 @@ That's it!
 
 
 Local Windows Configuration
-===========================
+---------------------------
 
 Use Docker to run the application on Windows.
 
 
 Docker Configuration
-====================
+--------------------
 
 1. Install Docker for Windows.
 2. Download the crucuble_smart_app to your local computer on a directory of your choice.
 3. Open a terminal Window and navigate to the crucuble_smart_app folder.
-4. Run the command `docker-compose up` to configure and run the contrainer.
+4. Run the command `docker-compose up` to configure and run the container.
 5. Navigate to http://localhost:8080 to find the running application.
 
 Note: If you run into issues in the above instructions, you _may_ need to `docker-compose up -- build` to rebuild the containers.
