@@ -23,7 +23,7 @@ It is important to open port `80` for HTTP  and port `22` for SSH if you need to
 "Review and Launch" button, click next button until you get to the Security Groups option. Ensure 80 is accessible from anywhere and 22 is
 available from an IP range from which you will connect. Below is an example:
 
-![Security Groups Configuration]https://raw.githubusercontent.com/fhir-crucible/crucible_smart_app/master/deployment-files/security-groups.png "Security Groups Configuration")
+![Security Groups Configuration](https://raw.githubusercontent.com/fhir-crucible/crucible_smart_app/master/deployment-files/security-groups.png "Security Groups Configuration")
 
 After this step is done, launch the instance.  Obtain your instance's IP or host name from the AWS console. Point a web browser to the instance using the IP address or host name.
 
@@ -265,9 +265,6 @@ Now all that is left to do is to restart Apache2.
 
 
 Now point a browser to `http://localhost` to test.
-
-That's it!
-
 
 
 Local Windows Configuration
