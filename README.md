@@ -32,7 +32,7 @@ The *Crucible SMART on FHIR Test App* can also be deployed onto a server to test
 instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
 be saved for future reference or shared.
 
-* Please see the file `deployment-configuration.md` for details.
+* Please see the file [deployment-configuration.md](https://github.com/fhir-crucible/crucible_smart_app/blob/master/deployment-configuration.md) for details.
 
 ## Unit Tests
 
