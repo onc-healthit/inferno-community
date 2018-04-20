@@ -32,12 +32,14 @@ class DynamicRegistrationSequence < SequenceBase
 
     params = {
       'client_name' => @instance.client_name,
-      'initiate_login_uri' => "#{@instance.base_url}/smart/#{@instance.id}/#{@instance.client_endpoint_key}/launch",
-      'redirect_uris' => ["#{@instance.base_url}/smart/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
+      'initiate_login_uri' => "#{@instance.base_url}#{BASE_PATH}/#{@instance.id}/#{@instance.client_endpoint_key}/launch",
+      'redirect_uris' => ["#{@instance.base_url}#{BASE_PATH}/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
       'token_endpoint_auth_method' => 'none',
       'grant_types' => ['authorization_code'],
       'scope' => @instance.scopes,
     }
+
+    binding.pry
 
     @registration_response = LoggedRestClient.post(@instance.oauth_register_endpoint, params.to_json, headers)
     @registration_response_body = JSON.parse(@registration_response.body)

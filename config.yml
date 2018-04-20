@@ -1,6 +1,10 @@
 # Name of app
 app_name: Inferno - SMART on FHIR Testing
 
+# Base path of application
+# There are a few exceptions, such as "/" and "/landing".
+base_path: "inferno"
+
 # Show or hide tutorials
 show_tutorial: true
 
@@ -9,8 +13,6 @@ purge_database_on_reload: false
 
 # Disable peer SSL verification for environments that use SSL inspection
 disable_verify_peer: false
-
-app_name: Inferno - SMART on FHIR Testing
 
 # When running in a docker containerr, we have to listen to other than just 'localhost' which is the default
 bind: '0.0.0.0'
