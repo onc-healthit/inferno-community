@@ -11,7 +11,9 @@ Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 * [Ruby Bundler](http://bundler.io/)
 * [SQLite](https://www.sqlite.org/)
 
-## Local Installation
+## Installation and Running
+
+### Local Installation
 
 The *Crucible SMART on FHIR Test App* can installed and run locally on your machine.  Install the dependencies
 listed above and enter the following in a terminal prompt:
@@ -26,11 +28,25 @@ bundle exec ruby app.rb
 
 *Crucible SMART on FHIR Test App* can then be accessed at http://localhost:4567 in a web browser.
 
-## Remote Deployment
+### Docker Installation
+
+Docker is the recommended installation method for Windows devices and can also be used on Linux and MacOS hosts.
+
+1. Install Docker for the host platform as well as the docker-compose tool (which may be included in the distribution, as is the case for Windows and MacOS).
+2. Download the `crucuble_smart_app` project to your local computer on a directory of your choice.
+3. Open a terminal in the directory where the project was downloaded (above).
+4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image with the correct ruby version and launch both the ruby server (using unicorn) and an NGINX server to front it all.
+5. Navigate to http://localhost:8080 to find the running application.
+
+If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up -- build` to rebuild the containers.
+
+### Remote Deployment
 
 The *Crucible SMART on FHIR Test App* can also be deployed onto a server to test many different
 instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
 be saved for future reference or shared.
+
+Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
 * Please see the file [deployment-configuration.md](https://github.com/fhir-crucible/crucible_smart_app/blob/master/deployment-configuration.md) for details.
 

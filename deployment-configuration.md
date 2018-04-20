@@ -267,19 +267,7 @@ Now all that is left to do is to restart Apache2.
 Now point a browser to `http://localhost` to test.
 
 
-Local Windows Configuration
----------------------------
-
-Use Docker to run the application on Windows.
-
-
 Docker Configuration
---------------------
+---------------------
 
-1. Install Docker for Windows.
-2. Download the crucuble_smart_app to your local computer on a directory of your choice.
-3. Open a terminal Window and navigate to the crucuble_smart_app folder.
-4. Run the command `docker-compose up` to configure and run the container.
-5. Navigate to http://localhost:8080 to find the running application.
-
-Note: If you run into issues in the above instructions, you _may_ need to `docker-compose up -- build` to rebuild the containers.
+Docker can be used as a container to deploy this application. Docker configuration files are included in the main distribution, but these are targeted towards a local installation. They can be modified to run remotely as needed.
