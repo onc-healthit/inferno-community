@@ -68,6 +68,11 @@ get '/' do
   status, headers, body = call! env.merge("PATH_INFO" => '/smart/')
 end
 
+get '/landing/?' do
+  # Custom landing page intended to be overwritten for branded deployments
+  erb :landing
+end
+
 get '/smart/?' do
   erb :index
 end
