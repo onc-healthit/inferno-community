@@ -48,7 +48,7 @@ be saved for future reference or shared.
 
 Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
-* Please see the file [deployment-configuration.md](https://github.com/fhir-crucible/crucible_smart_app/blob/master/deployment-configuration.md) for details.
+Please see the file [deployment-configuration.md](https://github.com/fhir-crucible/crucible_smart_app/blob/master/deployment-configuration.md) for details.
 
 ## Unit Tests
 
