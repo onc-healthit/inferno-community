@@ -39,8 +39,6 @@ class DynamicRegistrationSequence < SequenceBase
       'scope' => @instance.scopes,
     }
 
-    binding.pry
-
     @registration_response = LoggedRestClient.post(@instance.oauth_register_endpoint, params.to_json, headers)
     @registration_response_body = JSON.parse(@registration_response.body)
 
