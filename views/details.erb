@@ -12,7 +12,7 @@
 
           <!--- not yet implemented -->
           <div style="display:none" class="client-state-button float-right" data-toggle="tooltip" title="Print Results.">
-            <a href="<%=instance.base_url%>/smart/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
+            <a href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
           </div>
 
           <div class="client-state-button float-right" data-toggle="tooltip" title="Save link to this test instance.">
@@ -50,7 +50,7 @@
       <% if sequence_results.size == 0 %>
         <div class="alert alert-info" role="alert">
           <p>
-          You have created a new testing session at <a class="alert-link" href="<%=instance.base_url%>/smart/<%=instance.id%>/"><%=instance.base_url%>/smart/<%=instance.id%>/</a>.
+          You have created a new testing session at <a class="alert-link" href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/"><%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/</a>.
           Please take note of this URL if you would like to share the results or return to the results of these tests in the future.
           </p>
           <p>
@@ -173,11 +173,11 @@
           </div>
           <div class="form-group">
             <label for="initiate_login_uri">Launch URI</label>
-            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
+            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
             <label for="redirect_uris">Redirect URI</label>
-            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
+            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
@@ -209,11 +209,11 @@
           </p>
           <div class="form-group">
             <label for="skip_launch">Launch URL</label>
-            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
+            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
             <label for="skip_redirect">Redirect URL</label>
-            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%>/smart/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
+            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
             <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
@@ -325,7 +325,7 @@
 
 <% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
-  <% redirect_to = "#{request.base_url}/smart/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
+  <% redirect_to = "#{request.base_url}#{BASE_PATH}/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
   <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true" data-backdrop="static">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
@@ -338,8 +338,8 @@
           </p>
           <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
           <div class="modal-footer">
-            <a href="<%= "#{request.base_url}/smart/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
-            <a href="<%= "#{request.base_url}/smart/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}#{BASE_PATH}/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
+            <a href="<%= "#{request.base_url}#{BASE_PATH}/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
           </div>
         </div>
       </div>
@@ -510,7 +510,7 @@
           The results recorded during this testing session can be accessed at the following URI.
           Please save this URI if you would like to revisit these results, as this secret URI will not be published.
           </p>
-          <input type="text" class="form-control" value="<%=instance.base_url%>/smart/<%=instance.id%>/" readonly="readonly">
+          <input type="text" class="form-control" value="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/" readonly="readonly">
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>

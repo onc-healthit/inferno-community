@@ -11,7 +11,7 @@ class InstancePageTest < MiniTest::Unit::TestCase
 
   def setup
     @fhir_server = "http://#{SecureRandomBase62.generate(32)}.example.com"
-    post '/smart', {fhir_server: @fhir_server}
+    post BASE_PATH, {fhir_server: @fhir_server}
     assert last_response.redirect?
     follow_redirect!
     assert last_response.ok?
@@ -27,9 +27,9 @@ class InstancePageTest < MiniTest::Unit::TestCase
   end
 
   def test_not_found_instance
-    get '/smart/asdfasdf'
+    get "#{BASE_PATH}/asdfasdf"
     assert last_response.not_found?
-    get "/smart/asdfasdf/#{@instance.client_endpoint_key}/launch"
+    get "#{BASE_PATH}/asdfasdf/#{@instance.client_endpoint_key}/launch"
     assert last_response.not_found?
   end
 

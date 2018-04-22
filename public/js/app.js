@@ -36,7 +36,7 @@ $(function(){
 
   $('.result-details li').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
-      var url = '/smart/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
+      var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
       $("#testResultDetailsModal").find('.modal-content').load(url, function(value){
         $(this).find("pre>code").each(function(el){
           let $el = $(this)
