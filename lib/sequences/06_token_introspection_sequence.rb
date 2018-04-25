@@ -102,4 +102,46 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
+  test 'Refresh Token - Token introspection endpoint responds properly to introspection request',
+       'https://tools.ietf.org/html/rfc7662',
+       'A resource server is capable of calling the introspection endpoint.',
+       :optional do
+
+    assert !@instance.introspect_refresh_token.blank?, 'Refresh Token not supplied'
+
+    headers = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }
+
+    params = {
+        'token' => @instance.introspect_refresh_token,
+        'client_id' => @instance.resource_id,
+        'client_secret' => @instance.resource_secret
+    }
+
+    @introspection_response = LoggedRestClient.post(@instance.oauth_introspection_endpoint, params, headers)
+
+    assert !@introspection_response.nil?, 'No refresh token introspection response'
+    assert_response_ok(@introspection_response)
+    @introspection_response_body = JSON.parse(@introspection_response.body)
+    assert !@introspection_response_body.nil?, 'No refresh token introspection response body'
+
+    FHIR.logger.debug "Refresh Token Introspection response: #{@introspection_response}"
+
+    assert !(@introspection_response['error'] || @introspection_response['error_description']), 'Got an error from the introspection endpoint'
+
+  end
+
+  test 'REFRESH - Token introspection response confirms that Access token is active',
+       'https://tools.ietf.org/html/rfc7662',
+       'A current access token is listed as active.',
+       :optional do
+
+    assert !@instance.introspect_refresh_token.blank?, 'Refresh Token not supplied'
+
+    assert !@introspection_response_body.nil?, 'No introspection response body'
+
+    active = @introspection_response_body['active']
+
+    assert active, 'Refresh Token is not active, try the test again with a valid token'
+  end
+
 end

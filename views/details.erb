@@ -389,6 +389,10 @@
             <input type="text" class="form-control" name="access_token" id="access_token" value="<%= instance.token %>" required>
           </div>
           <div class="form-group">
+            <label for="access_token">Refresh Token</label>
+            <input type="text" class="form-control" name="refresh_token" id="refresh_token" value="<%= instance.refresh_token %>">
+          </div>
+          <div class="form-group">
             <label for="oauth_introspection_endpoint">Introspection URL</label>
             <input type="text" class="form-control" name="oauth_introspection_endpoint" id="oauth_introspection_endpoint" value="<%= instance.oauth_introspection_endpoint %>" required>
           </div>
@@ -481,7 +485,7 @@
               <div class="form-group row">
                 <label class="col-sm-3 col-form-label"><%=resource_type %></label>
                 <div class="col-sm-9">
-                  <texatarea class="form-control" rows=3 readonly><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
+                  <textarea class="form-control" rows=3 readonly><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
                 </div>
               </div>
             <% end %>
