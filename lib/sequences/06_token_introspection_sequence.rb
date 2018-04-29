@@ -24,7 +24,7 @@ class TokenIntrospectionSequence < SequenceBase
   end
 
 
-  test 'Token introspection endpoint responds properly to introspection request',
+  test 'Token introspection endpoint responds properly to introspection request for access token',
           'https://tools.ietf.org/html/rfc7662',
           'A resource server is capable of calling the introspection endpoint.' do
 
@@ -57,12 +57,12 @@ class TokenIntrospectionSequence < SequenceBase
 
     active = @introspection_response_body['active']
 
-    assert active, 'Token is not active, try the test again with a valid token'
+    assert active, 'Token is not active, try the test again with a valid Access token'
   end
 
   test 'Scopes returned by token introspection request match expected scopes',
           'https://tools.ietf.org/html/rfc7662',
-          'The scopes we received alongside the token match those from the introspection response.',
+          'The scopes we received alongside the Access token match those from the introspection response.',
           :optional do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'
@@ -82,9 +82,9 @@ class TokenIntrospectionSequence < SequenceBase
   end
 
   # TODO verify timeout requirements
-  test 'Token introspection response confirms token has appropriate lifetime',
+  test 'Token introspection response confirms Access token has appropriate lifetime',
           'https://tools.ietf.org/html/rfc7662',
-          'The token should have a lifetime of at least 60 minutes.' do
+          'The Access token should have a lifetime of at least 60 minutes.' do
 
     assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -96,13 +96,13 @@ class TokenIntrospectionSequence < SequenceBase
     max_token_seconds = 60 * 60 # one hour expiration?
     clock_slip = 5 # a few seconds of clock skew allowed
 
-    assert (expiration - token_retrieved_at) < max_token_seconds, "Token does not have adequate lifetime of at least #{max_token_seconds} seconds"
+    assert (expiration - token_retrieved_at) < max_token_seconds, "Access token does not have adequate lifetime of at least #{max_token_seconds} seconds"
 
-    assert (now + Rational(clock_slip, (24 * 60 * 60))) < expiration, "Token has expired"
+    assert (now + Rational(clock_slip, (24 * 60 * 60))) < expiration, "Access token has expired"
 
   end
 
-  test 'Refresh Token - Token introspection endpoint responds properly to introspection request',
+  test 'Token introspection endpoint responds properly to introspection request for refresh token',
        'https://tools.ietf.org/html/rfc7662',
        'A resource server is capable of calling the introspection endpoint.',
        :optional do
@@ -130,7 +130,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
-  test 'REFRESH - Token introspection response confirms that Access token is active',
+  test 'Token introspection response confirms that Refresh token is active',
        'https://tools.ietf.org/html/rfc7662',
        'A current access token is listed as active.',
        :optional do
