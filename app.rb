@@ -262,6 +262,7 @@ namespace BASE_PATH do
 
     # copy over the access token to a different place in case it's not the same
     @instance.update(introspect_token: params['access_token'])
+    @instance.update(introspect_refresh_token: params['refresh_token'])
 
     redirect "/#{BASE_PATH}/#{params[:id]}/TokenIntrospection/"
 

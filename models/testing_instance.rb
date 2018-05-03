@@ -30,6 +30,7 @@ class TestingInstance
   property :resource_id, String
   property :resource_secret, String
   property :introspect_token, String
+  property :introspect_refresh_token, String
 
   has n, :sequence_results
   has n, :supported_resources, order: [:index.asc]
