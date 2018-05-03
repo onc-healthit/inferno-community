@@ -33,6 +33,12 @@ module Assertions
     end
   end
 
+  def assert_response_bad_or_unauthorized(response)
+    unless assertion_negated( [400, 401].include?(response.code) )
+      raise AssertionException.new "Bad response code: expected 400 or 401, but found #{response.code}", response.body
+    end
+  end
+
   def assert_response_bad(response)
     unless assertion_negated( [400].include?(response.code) )
       raise AssertionException.new "Bad response code: expected 400, but found #{response.code}", response.body

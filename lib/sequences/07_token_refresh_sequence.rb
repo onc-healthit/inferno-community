@@ -19,7 +19,7 @@ class TokenRefreshSequence < SequenceBase
     }
 
     token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
-    assert_response_unauthorized token_response
+    assert_response_bad_or_unauthorized token_response
 
     oauth2_params = {
       'grant_type' => 'refresh_token',
@@ -28,7 +28,7 @@ class TokenRefreshSequence < SequenceBase
     }
 
     token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
-    assert_response_unauthorized token_response
+    assert_response_bad_or_unauthorized token_response
 
   end
 
