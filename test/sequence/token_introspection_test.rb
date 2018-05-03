@@ -177,8 +177,9 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
 
     failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
 
-    # 1 test depends on active being true
-    assert failures.length == 1, 'One test should fail.'
+    # 1 optional test depends on active being true
+    assert failures.length == 1 && !failures.first.required, 'One optional test should fail.'
+    # This should still pass because the one failing test is optional
     assert sequence_result.result == 'pass', 'Sequence should pass.'
   end
 
