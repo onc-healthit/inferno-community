@@ -52,7 +52,9 @@ class OpenIDConnectSequence < SequenceBase
     assert_response_ok(@openid_configuration_response)
     @openid_configuration_response_headers = @openid_configuration_response.headers
     @openid_configuration_response_body = JSON.parse(@openid_configuration_response.body)
-
+    
+    # save the introspection URL while we're here, we'll need it for the next test sequence
+    @instance.oauth_introspection_endpoint = @openid_configuration_response_body['introspection_endpoint']
   end
 
   test 'OpenID configuration includes JSON Web Key information',
