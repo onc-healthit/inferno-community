@@ -7,14 +7,13 @@ services:
       context: ./
     # map the project directory into the running container
     volumes:
-      - .:/var/www/crucible_smart_app
+      - .:/var/www/inferno
     # expose the internal application to direct HTTP requests
     #ports:
-    #  - "8080:8080"
+    #  - "4567:8080"
     # run the application
-    working_dir: /var/www/crucible_smart_app
-    #command: bundle exec ruby app.rb
-    command: unicorn -c deployment-files/unicorn.rb -E development
+    working_dir: /var/www/inferno
+    command: bundle exec ruby app.rb
   nginx_server:
     image: nginx
     volumes:
