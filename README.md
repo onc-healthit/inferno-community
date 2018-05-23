@@ -95,7 +95,7 @@ by the FHIR server and related authorization services.  This sequence will gathe
 ## Inspecting and Exporting Tests
 
 Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
-viewed directly [in this repository](https://github.com/fhir-crucible/crucible_smart_app/tree/master/lib/sequences).
+viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/sequences).
 
 Tests contain metadata that provide additional details and traceability to standards.  The tests and related metadata
 can be exported into CSV format and saved into a file named `testlist.csv` in MacOS and Linux with the following command:
