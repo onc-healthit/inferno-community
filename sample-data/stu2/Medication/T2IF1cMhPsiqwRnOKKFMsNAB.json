@@ -1,0 +1,1 @@
+{"resourceType":"Medication","id":"T2IF1cMhPsiqwRnOKKFMsNAB","product":{"form":{"text":"tablet","coding":[{"system":"urn:oid:1.2.840.114350.1.13.0.1.7.4.698288.310","code":"55","display":"tablet"}]}},"code":{"text":"DIGOXIN 125 MCG PO TABS","coding":[{"system":"http://www.nlm.nih.gov/research/umls/rxnorm","code":"197604","display":"DIGOXIN 125 MCG PO TABS"}]}}

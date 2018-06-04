@@ -1,0 +1,80 @@
+
+{
+    "resourceType":"Bundle",
+    "id":"0dd7898a-39bc-4496-b751-537eab48970a",
+    "meta":{
+        "lastUpdated":"2018-05-31T13:17:11.310+00:00"
+    },
+    "type":"searchset",
+    "total":1,
+    "link":[
+        {
+            "relation":"self",
+            "url":"http://api:8080/baseDstu2/AllergyIntolerance?patient=smart-1288992"
+        }
+    ],
+    "entry":[
+        {
+            "fullUrl":"http://api:8080/baseDstu2/AllergyIntolerance/smart-allergyintolerance-28",
+            "resource":{
+                "resourceType":"AllergyIntolerance",
+                "id":"smart-allergyintolerance-28",
+                "meta":{
+                    "versionId":"2",
+                    "lastUpdated":"2018-02-21T15:01:44.340+00:00",
+                    "security":[
+                        {
+                            "system":"http://smarthealthit.org/security/categories",
+                            "code":"allergy"
+                        },
+                        {
+                            "system":"http://smarthealthit.org/security/users",
+                            "code":"Patient/smart-1288992"
+                        }
+                    ]
+                },
+                "text":{
+                    "status":"generated",
+                    "div":"<div xmlns=\"http://www.w3.org/1999/xhtml\">Sensitivity to sulfonamide antibacterial</div>"
+                },
+                "recordedDate":"2000",
+                "patient":{
+                    "reference":"Patient/smart-1288992"
+                },
+                "substance":{
+                    "coding":[
+                        {
+                            "system":"http://rxnav.nlm.nih.gov/REST/Ndfrt",
+                            "code":"N0000175503",
+                            "display":"sulfonamide antibacterial"
+                        }
+                    ],
+                    "text":"sulfonamide antibacterial"
+                },
+                "status":"confirmed",
+                "criticality":"CRITL",
+                "category":"medication",
+                "reaction":[
+                    {
+                        "manifestation":[
+                            {
+                                "coding":[
+                                    {
+                                        "system":"http://snomed.info/sct",
+                                        "code":"271807003",
+                                        "display":"skin rash"
+                                    }
+                                ],
+                                "text":"skin rash"
+                            }
+                        ],
+                        "severity":"mild"
+                    }
+                ]
+            },
+            "search":{
+                "mode":"match"
+            }
+        }
+    ]
+}

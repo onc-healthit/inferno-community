@@ -1,0 +1,78 @@
+
+{
+    "resourceType":"Patient",
+    "id":"smart-1213208",
+    "meta":{
+        "versionId":"2",
+        "lastUpdated":"2018-02-21T15:01:02.831+00:00",
+        "security":[
+            {
+                "system":"http://smarthealthit.org/security/categories",
+                "code":"patient"
+            },
+            {
+                "system":"http://smarthealthit.org/security/users",
+                "code":"Patient/smart-1213208"
+            }
+        ]
+    },
+    "text":{
+        "status":"generated",
+        "div":"<div xmlns=\"http://www.w3.org/1999/xhtml\">        <p>Brian Gracia</p>      </div>"
+    },
+    "identifier":[
+        {
+            "use":"usual",
+            "type":{
+                "coding":[
+                    {
+                        "system":"http://hl7.org/fhir/v2/0203",
+                        "code":"MR",
+                        "display":"Medical record number"
+                    }
+                ],
+                "text":"Medical record number"
+            },
+            "system":"http://hospital.smarthealthit.org",
+            "value":"1213208"
+        }
+    ],
+    "active":true,
+    "name":[
+        {
+            "use":"official",
+            "family":[
+                "Gracia"
+            ],
+            "given":[
+                "Brian",
+                "Q."
+            ]
+        }
+    ],
+    "telecom":[
+        {
+            "system":"phone",
+            "value":"800-504-7344",
+            "use":"home"
+        },
+        {
+            "system":"email",
+            "value":"brian.gracia@example.com"
+        }
+    ],
+    "gender":"male",
+    "birthDate":"1965-06-22",
+    "address":[
+        {
+            "use":"home",
+            "line":[
+                "25 Church St"
+            ],
+            "city":"Bixby",
+            "state":"OK",
+            "postalCode":"74008",
+            "country":"USA"
+        }
+    ]
+}
