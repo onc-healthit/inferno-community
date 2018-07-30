@@ -29,7 +29,7 @@
         </div>
       <% end %>
       <% unless @test_result.required %> [OPTIONAL] <% end %>
-      <%= @test_result.name %>
+      <%= @test_result.test_id + ': ' +@test_result.name %>
     </div>
 
     <% unless @test_result.description.nil? %>

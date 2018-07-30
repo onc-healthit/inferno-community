@@ -3,19 +3,23 @@ class ProviderEHRLaunchSequence < SequenceBase
   title 'Provider EHR Launch Sequence'
 
   description 'Demonstrate the Provider EHR Launch Sequence.'
+
+  test_id_prefix 'PELS'
+
+
   modal_before_run
 
   preconditions 'Client must be registered' do
     !@instance.client_id.nil?
   end
 
-  test 'EHR server redirects client browser to app launch URI',
+  test '01', '', 'EHR server redirects client browser to app launch URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Client browser sent from EHR server to launch URI of client app as described in SMART EHR Launch Sequence.'  do
     wait_at_endpoint 'launch'
   end
 
-  test 'EHR provides iss and launch parameter to the launch URI via the client browser querystring',
+  test '02', '', 'EHR provides iss and launch parameter to the launch URI via the client browser querystring',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The EHR is required to provide a reference to the EHR FHIR endpoint in the iss queystring parameter, and an '\
       'opaque identifier for the launch in the launch querystring parameter.'  do
@@ -29,7 +33,7 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   end
 
-  test 'OAuth authorize endpoint secured by transport layer security',
+  test '03', '', 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
@@ -40,7 +44,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth server redirects client browser to app redirect URI',
+  test '04', '', 'OAuth server redirects client browser to app redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.'  do
 
@@ -65,7 +69,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     redirect oauth2_auth_query[0..-2], 'redirect'
   end
 
-  test 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI',
+  test '05', '', 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Code and state are required querystring parameters. State must be the exact value received from the client.'  do
 
@@ -74,7 +78,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     assert !@params['code'].nil?, "Expected code to be submitted in request"
   end
 
-  test 'OAuth token exchange endpoint secured by transport layer security',
+  test '06', '', 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
 
@@ -85,7 +89,7 @@ class ProviderEHRLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID',
+  test '07', '', 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID',
     'https://tools.ietf.org/html/rfc6749',
     'If the request failed verification or is invalid, the authorization server returns an error response.' do
 
@@ -112,7 +116,7 @@ class ProviderEHRLaunchSequence < SequenceBase
   end
 
 
-  test 'OAuth token exchange request succeeds when supplied correct information',
+  test '08', '', 'OAuth token exchange request succeeds when supplied correct information',
     'http://www.hl7.org/fhir/smart-app-launch/',
     "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
@@ -128,7 +132,7 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   end
 
-  test 'Data returned from token exchange contains token contains expected information.',
+  test '09', '', 'Data returned from token exchange contains token contains expected information.',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
     'The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\

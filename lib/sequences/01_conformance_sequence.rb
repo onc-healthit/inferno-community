@@ -4,7 +4,10 @@ class ConformanceSequence < SequenceBase
 
   description 'Verify that the FHIR server exposes a Conformance Statement with the necessary information.'
 
-  test 'FHIR server secured by transport layer security',
+  test_id_prefix 'C'
+
+  #test 'C-01', '', 'FHIR server secured by transport layer security',
+  test '01', '', 'FHIR server secured by transport layer security',
     'https://www.hl7.org/fhir/security.html',
     'All exchange of production data should be secured with TLS/SSL.' do
 
@@ -15,7 +18,7 @@ class ConformanceSequence < SequenceBase
     }
   end
 
-  test 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance Statement resource',
+  test '02', '', 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance Statement resource',
           'https://www.hl7.org/fhir/DSTU2/http.html',
           'Servers shall provide a conformance statement that specifies which interactions and resources are supported.' do
 
@@ -24,14 +27,14 @@ class ConformanceSequence < SequenceBase
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
   end
 
-  test 'Conformance Statement states JSON support',
+  test '03', '', 'Conformance Statement states JSON support',
          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
          'The Argonaut Data Query Server shall support JSON resource format for all Argonaut Data Query interactions.' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
     assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
   end
 
-  test 'Conformance Statement provides OAuth 2.0 endpoints',
+  test '04', '', 'Conformance Statement provides OAuth 2.0 endpoints',
          'http://www.hl7.org/fhir/smart-app-launch/capability-statement/',
          'If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints.' do
     assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
@@ -61,7 +64,7 @@ class ConformanceSequence < SequenceBase
     @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
   end
 
-  test 'Conformance Statement describes SMART on FHIR core capabilities',
+  test '05', '', 'Conformance Statement describes SMART on FHIR core capabilities',
     'http://www.hl7.org/fhir/smart-app-launch/conformance/',
     'A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.',
     :optional do
@@ -89,7 +92,7 @@ class ConformanceSequence < SequenceBase
     assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
   end
 
-  test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters',
+  test '06', '', 'Conformance Statement lists supported Argonaut profiles, operations and search parameters',
     'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
     'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
 

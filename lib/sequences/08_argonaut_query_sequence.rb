@@ -6,6 +6,8 @@ class ArgonautDataQuerySequence < SequenceBase
 
   description 'Verify that the FHIR server follows the Argonaut Data Query Implementation Guide Server.'
 
+  test_id_prefix 'ADQ'
+
   preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
@@ -14,7 +16,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Patient Search
   # --------------------------------------------------
   #
-  test 'Server rejects patient read without proper authorization',
+  test '01', '', 'Server rejects patient read without proper authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A patient read does not work without authorization.' do
 
@@ -25,7 +27,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient read resource',
+  test '02', '', 'Server returns expected results from Patient read resource',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -37,7 +39,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server rejects Patient search without proper authorization',
+  test '03', '', 'Server rejects Patient search without proper authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Patient search does not work without proper authorization.' do
 
@@ -51,7 +53,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient search by identifier',
+  test '04', '', 'Server returns expected results from Patient search by identifier',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.' do
 
@@ -63,7 +65,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient search by name + gender',
+  test '05', '', 'Server returns expected results from Patient search by name + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
@@ -79,7 +81,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient search by name + birthdate',
+  test '06', '', 'Server returns expected results from Patient search by name + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
@@ -95,7 +97,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient search by gender + birthdate',
+  test '07', '', 'Server returns expected results from Patient search by gender + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
@@ -109,7 +111,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient history resource',
+  test '08', '', 'Server returns expected results from Patient history resource',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -120,7 +122,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Patient vread resource',
+  test '09', '', 'Server returns expected results from Patient vread resource',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -145,7 +147,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # AllergyIntolerance Search
   # --------------------------------------------------
 
-  test 'Server rejects AllergyIntolerance search without authorization',
+  test '10', '', 'Server rejects AllergyIntolerance search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An AllergyIntolerance search does not work without proper authorization.' do
 
@@ -158,7 +160,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from AllergyIntolerance search by patient',
+  test '11', '', 'Server returns expected results from AllergyIntolerance search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's allergies." do
 
@@ -171,7 +173,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from AllergyIntolerance read resource',
+  test '12', '', 'Server returns expected results from AllergyIntolerance read resource',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -180,7 +182,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'AllergyIntolerance history resource supported',
+  test '13', '', 'AllergyIntolerance history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -190,7 +192,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'AllergyIntolerance vread resource supported',
+  test '14', '', 'AllergyIntolerance vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -206,7 +208,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # CarePlan Search
   # --------------------------------------------------
 
-  test 'Server rejects CarePlan search without authorization',
+  test '15', '', 'Server rejects CarePlan search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A CarePlan search does not work without proper authorization.' do
 
@@ -218,7 +220,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from CarePlan search by patient + category',
+  test '16', '', 'Server returns expected results from CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's Assessment and Plan of Treatment information." do
 
@@ -231,7 +233,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from CarePlan search by patient + category + date',
+  test '17', '', 'Server returns expected results from CarePlan search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.",
           :optional do
@@ -247,7 +249,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from CarePlan search by patient + category + status',
+  test '18', '', 'Server returns expected results from CarePlan search by patient + category + status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.",
           :optional do
@@ -259,7 +261,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from CarePlan search by patient + category + status + date',
+  test '19', '', 'Server returns expected results from CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.",
           :optional do
@@ -274,7 +276,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'CarePlan read resource supported',
+  test '20', '', 'CarePlan read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -284,7 +286,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'CarePlan history resource supported',
+  test '21', '', 'CarePlan history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -295,7 +297,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'CarePlan vread resource supported',
+  test '22', '', 'CarePlan vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -311,7 +313,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Condition Search
   # --------------------------------------------------
 
-  test 'Server rejects Condition search without authorization',
+  test '23', '', 'Server rejects Condition search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Condition search does not work without proper authorization.' do
 
@@ -324,7 +326,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Condition search by patient',
+  test '24', '', 'Server returns expected results from Condition search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server is capable of returning a patients conditions list.' do
 
@@ -337,7 +339,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Condition search by patient + clinicalstatus',
+  test '25', '', 'Server returns expected results from Condition search by patient + clinicalstatus',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable returning all of a patients active problems and health concerns.',
           :optional do
@@ -349,7 +351,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Condition search by patient + problem category',
+  test '26', '', 'Server returns expected results from Condition search by patient + problem category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable returning all of a patients problems or all of patients health concerns.',
           :optional do
@@ -361,7 +363,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Condition search by patient + health-concern category',
+  test '27', '', 'Server returns expected results from Condition search by patient + health-concern category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server SHOULD be capable returning all of a patients problems or all of patients health concerns.',
           :optional do
@@ -373,7 +375,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Condition read resource supported',
+  test '28', '', 'Condition read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -383,7 +385,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Condition history resource supported',
+  test '29', '', 'Condition history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -394,7 +396,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Condition vread resource supported',
+  test '30', '', 'Condition vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -410,7 +412,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Device Search
   # --------------------------------------------------
 
-  test 'Server rejects Device search without authorization',
+  test '31', '', 'Server rejects Device search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Device search does not work without proper authorization.' do
 
@@ -423,7 +425,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Device search by patient',
+  test '32', '', 'Server returns expected results from Device search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all Unique device identifier(s)(UDI) for a patient's implanted device(s)." do
 
@@ -436,7 +438,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Device read resource supported',
+  test '33', '', 'Device read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -446,7 +448,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Device history resource supported',
+  test '34', '', 'Device history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -457,7 +459,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Device vread resource supported',
+  test '35', '', 'Device vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -473,7 +475,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # DocumentReference Search
   # --------------------------------------------------
 
-  test 'Server rejects DocumentReference search without authorization',
+  test '36', '', 'Server rejects DocumentReference search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A DocumentReference search does not work without proper authorization.' do
 
@@ -486,7 +488,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DocumentReference search by patient',
+  test '37', '', 'Server returns expected results from DocumentReference search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, a server SHALL be capable of returning at least the most recent CCD document references and MAY provide most recent references to other document types for a patient.]' do
 
@@ -499,7 +501,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DocumentReference search by patient + type',
+  test '38', '', 'Server returns expected results from DocumentReference search by patient + type',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date.',
           :optional do
@@ -514,7 +516,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DocumentReference search by patient + period',
+  test '39', '', 'Server returns expected results from DocumentReference search by patient + period',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date.',
           :optional do
@@ -529,7 +531,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DocumentReference search by patient + type + period',
+  test '40', '', 'Server returns expected results from DocumentReference search by patient + type + period',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'If supporting a direct query, A server SHOULD be capable of returning references to CCD documents and MAY provide references to other document types for a patient searched by type and/or date.',
           :optional do
@@ -546,7 +548,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DocumentReference read resource supported',
+  test '41', '', 'DocumentReference read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -556,7 +558,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DocumentReference history resource supported',
+  test '42', '', 'DocumentReference history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -567,7 +569,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DocumentReference vread resource supported',
+  test '43', '', 'DocumentReference vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -583,7 +585,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Goal Search
   # --------------------------------------------------
 
-  test 'Server rejects Goal search without authorization',
+  test '44', '', 'Server rejects Goal search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Goal search does not work without proper authorization.' do
 
@@ -596,7 +598,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Goal search by patient',
+  test '45', '', 'Server returns expected results from Goal search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's goals." do
 
@@ -609,7 +611,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Goal search by patient + date',
+  test '46', '', 'Server returns expected results from Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of all of a patient's goals over a specified time period." do
 
@@ -623,7 +625,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Goal read resource supported',
+  test '47', '', 'Goal read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -633,7 +635,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Goal history resource supported',
+  test '48', '', 'Goal history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -644,7 +646,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Goal vread resource supported',
+  test '49', '', 'Goal vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -660,7 +662,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Immunization Search
   # --------------------------------------------------
 
-  test 'Server rejects Immunization search without authorization',
+  test '50', '', 'Server rejects Immunization search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An Immunization search does not work without proper authorization.' do
 
@@ -673,7 +675,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Servr supports Immunization search by patient',
+  test '51', '', 'Servr supports Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A client has connected to a server and fetched all immunizations for a patient.' do
 
@@ -686,7 +688,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Immunization read resource supported',
+  test '52', '', 'Immunization read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -696,7 +698,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Immunization history resource supported',
+  test '53', '', 'Immunization history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -707,7 +709,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Immunization vread resource supported',
+  test '54', '', 'Immunization vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -723,7 +725,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # DiagnosticReport Search
   # --------------------------------------------------
 
-  test 'Server rejects DiagnosticReport search without authorization',
+  test '55', '', 'Server rejects DiagnosticReport search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A DiagnosticReport search does not work without proper authorization.' do
 
@@ -736,7 +738,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DiagnosticReport search by patient + category',
+  test '56', '', 'Server returns expected results from DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category." do
 
@@ -748,7 +750,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DiagnosticReport search by patient + category + date',
+  test '57', '', 'Server returns expected results from DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range." do
 
@@ -762,7 +764,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DiagnosticReport search by patient + category + code',
+  test '58', '', 'Server returns expected results from DiagnosticReport search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code." do
 
@@ -776,7 +778,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from DiagnosticReport search by patient + category + code + date',
+  test '59', '', 'Server returns expected results from DiagnosticReport search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning all of a patient's laboratory diagnostic reports queried by category and one or more codes and date range.",
           :optional do
@@ -793,7 +795,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DiagnosticReport read resource supported',
+  test '60', '', 'DiagnosticReport read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -803,7 +805,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DiagnosticReport history resource supported',
+  test '61', '', 'DiagnosticReport history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -814,7 +816,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'DiagnosticReport vread resource supported',
+  test '62', '', 'DiagnosticReport vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -829,7 +831,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # MedicationStatement Search
   # --------------------------------------------------
 
-  test 'Server rejects MedicationStatement search without authorization',
+  test '63', '', 'Server rejects MedicationStatement search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An MedicationStatement search does not work without proper authorization.' do
 
@@ -842,7 +844,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from MedicationStatement search by patient',
+  test '64', '', 'Server returns expected results from MedicationStatement search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's medications." do
 
@@ -855,7 +857,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationStatement read resource supported',
+  test '65', '', 'MedicationStatement read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -865,7 +867,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationStatement history resource supported',
+  test '66', '', 'MedicationStatement history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -876,7 +878,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationStatement vread resource supported',
+  test '67', '', 'MedicationStatement vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -892,7 +894,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # MedicationOrder Search
   # --------------------------------------------------
 
-  test 'Server rejects MedicationOrder search without authorization',
+  test '68', '', 'Server rejects MedicationOrder search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An MedicationOrder search does not work without proper authorization.' do
 
@@ -905,7 +907,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from MedicationOrder search by patient',
+  test '69', '', 'Server returns expected results from MedicationOrder search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's medications." do
 
@@ -918,7 +920,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationOrder read resource supported',
+  test '70', '', 'MedicationOrder read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -928,7 +930,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationOrder history resource supported',
+  test '71', '', 'MedicationOrder history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -939,7 +941,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'MedicationOrder vread resource supported',
+  test '72', '', 'MedicationOrder vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -955,7 +957,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Observation Search
   # --------------------------------------------------
 
-  test 'Observation Results search without authorization',
+  test '73', '', 'Observation Results search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An Observation Results search does not work without proper authorization.' do
 
@@ -968,7 +970,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Observation Results search by patient + category',
+  test '74', '', 'Server returns expected results from Observation Results search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory results queried by category." do
 
@@ -981,7 +983,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Observation Results search by patient + category + date',
+  test '75', '', 'Server returns expected results from Observation Results search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory results queried by category code and date range." do
 
@@ -995,7 +997,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Observation Results search by patient + category + code',
+  test '76', '', 'Server returns expected results from Observation Results search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory results queried by category and code." do
 
@@ -1009,7 +1011,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Observation Results search by patient + category + code + date',
+  test '77', '', 'Server returns expected results from Observation Results search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range.",
           :optional do
@@ -1026,7 +1028,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server rejects Smoking Status search without authorization',
+  test '78', '', 'Server rejects Smoking Status search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Smoking Status search does not work without proper authorization.' do
 
@@ -1039,7 +1041,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Smoking Status search by patient + code',
+  test '79', '', 'Server returns expected results from Smoking Status search by patient + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's smoking status." do
 
@@ -1052,7 +1054,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server rejects Vital Signs search without authorization',
+  test '80', '', 'Server rejects Vital Signs search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Vital Signs search does not work without proper authorization.' do
 
@@ -1065,7 +1067,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Vital Signs search by patient + category',
+  test '81', '', 'Server returns expected results from Vital Signs search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's vital signs that it supports." do
 
@@ -1079,7 +1081,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Vital Signs search by patient + category + date',
+  test '82', '', 'Server returns expected results from Vital Signs search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's vital signs queried by date range." do
 
@@ -1093,7 +1095,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Vital Signs search by patient + category + code',
+  test '83', '', 'Server returns expected results from Vital Signs search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning any of a patient's vital signs queried by one or more of the specified codes." do
 
@@ -1107,7 +1109,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Vital Signs search by patient + category + code + date',
+  test '84', '', 'Server returns expected results from Vital Signs search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning any of a patient's vital signs queried by one or more of the codes listed below and date range.",
           :optional do
@@ -1124,7 +1126,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Observation read resource supported',
+  test '85', '', 'Observation read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -1134,7 +1136,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Observation history resource supported',
+  test '86', '', 'Observation history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -1145,7 +1147,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Observation vread resource supported',
+  test '87', '', 'Observation vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -1161,7 +1163,7 @@ class ArgonautDataQuerySequence < SequenceBase
   # Procedure Search
   # --------------------------------------------------
 
-  test 'Server rejects Procedure search without authorization',
+  test '88', '', 'Server rejects Procedure search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Procedure search does not work without proper authorization.' do
 
@@ -1176,7 +1178,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Procedure search by patient',
+  test '89', '', 'Server returns expected results from Procedure search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's procedures." do
 
@@ -1188,7 +1190,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Procedure search by patient + date',
+  test '90', '', 'Server returns expected results from Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of all of a patient's procedures over a specified time period." do
 
@@ -1202,7 +1204,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Procedure read resource supported',
+  test '91', '', 'Procedure read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -1212,7 +1214,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Procedure history resource supported',
+  test '92', '', 'Procedure history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -1223,7 +1225,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test 'Procedure vread resource supported',
+  test '93', '', 'Procedure vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
