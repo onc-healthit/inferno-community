@@ -15,25 +15,25 @@ Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ### Local Installation
 
-The *Crucible SMART on FHIR Test App* can installed and run locally on your machine.  Install the dependencies
+The *Inferno SMART on FHIR Test App* can installed and run locally on your machine.  Install the dependencies
 listed above and enter the following in a terminal prompt:
 
 ```sh
 # MacOS or Linux
-git clone https://github.com/fhir-crucible/crucible_smart_app.git
-cd crucible_smart_app
+git clone https://github.com/siteadmin/inferno
+cd inferno
 bundle install
 bundle exec ruby app.rb
 ```
 
-*Crucible SMART on FHIR Test App* can then be accessed at http://localhost:4567 in a web browser.
+*Inferno SMART on FHIR Test App* can then be accessed at http://localhost:4567 in a web browser.
 
 ### Docker Installation
 
 Docker is the recommended installation method for Windows devices and can also be used on Linux and MacOS hosts.
 
 1. Install Docker for the host platform as well as the docker-compose tool (which may be included in the distribution, as is the case for Windows and MacOS).
-2. Download the `crucuble_smart_app` project to your local computer on a directory of your choice.
+2. Download the `inferno` project to your local computer on a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
 4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image with the correct ruby version and launch both the ruby server (using unicorn) and an NGINX server to front it all.
 5. Navigate to http://localhost:8080 to find the running application.
@@ -42,17 +42,17 @@ If the docker image gets out of sync with the underlying system, such as when ne
 
 ### Remote Deployment
 
-The *Crucible SMART on FHIR Test App* can also be deployed onto a server to test many different
+The *Inferno SMART on FHIR Test App* can also be deployed onto a server to test many different
 instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
 be saved for future reference or shared.
 
 Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
-Please see the file [deployment-configuration.md](https://github.com/fhir-crucible/crucible_smart_app/blob/master/deployment-configuration.md) for details.
+Please see the file [deployment-configuration.md](https://github.com/siteadmin/inferno/blob/master/deployment-configuration.md) for details.
 
 ## Unit Tests
 
-The *Crucible SMART on FHIR Test App* contains a robust set of self-tests to ensure that the
+The *Inferno SMART on FHIR Test App* contains a robust set of self-tests to ensure that the
 test clients conform to the specification and performs as intended.  To run these tests, execute the following
 command:
 
@@ -81,7 +81,7 @@ For the purpose of example, testing of the DSTU2 FHIR server of the SMART Sandbo
 
 2) Create a new DSTU 2 Sandbox. 
 
-3) Open the Crucible SMART on FHIR Test App, and enter the SMART DSTU2 FHIR endpoint, which can be found under Settings, into the prompt on the front page. Click Begin. A new testing instance is created that saves results of tests and associated client state.
+3) Open the Inferno SMART on FHIR Test App, and enter the SMART DSTU2 FHIR endpoint, which can be found under Settings, into the prompt on the front page. Click Begin. A new testing instance is created that saves results of tests and associated client state.
 
 4) To start testing, run the `Conformance Statement Sequence` , which queries the FHIR server for capabilities supported
 by the FHIR server and related authorization services.  This sequence will gather information about the server, as well as check to make sure all responses from the server conform to the appropriate specifications.  Tests are results are listed below the sequence.  Specifics about why tests failed, or what requests were made during the excution of the test, can be accessed by clicking on the test.
