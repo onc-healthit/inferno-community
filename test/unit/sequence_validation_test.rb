@@ -26,7 +26,6 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
 
     test_list.select!{ |test| !excluded_tests.include?(test[:name])}
 
-    #incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? || test[:description].nil? || !valid_uri?(test[:url])}
     incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? ||
       test[:description].nil? ||
       !valid_uri?(test[:url]) ||
