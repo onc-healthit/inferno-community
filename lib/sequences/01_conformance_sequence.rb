@@ -6,7 +6,6 @@ class ConformanceSequence < SequenceBase
 
   test_id_prefix 'C'
 
-  #test 'C-01', '', 'FHIR server secured by transport layer security',
   test '01', '', 'FHIR server secured by transport layer security',
     'https://www.hl7.org/fhir/security.html',
     'All exchange of production data should be secured with TLS/SSL.' do
