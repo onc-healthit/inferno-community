@@ -33,7 +33,7 @@ class AdditionalResourcesSequenceTest < MiniTest::Unit::TestCase
     end
 
     @instance = TestingInstance.new(url: 'http://www.example.com',
-                                   client_name: 'Crucible Smart App',
+                                   client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
                                    client_id: SecureRandom.uuid,

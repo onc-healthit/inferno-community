@@ -12,7 +12,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
     resource_secret = SecureRandom.hex(32)
 
     @instance = TestingInstance.new(url: 'http://www.example.com',
-                                   client_name: 'Crucible Smart App',
+                                   client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
                                    scopes: 'launch openid patient/*.* profile',
                                    oauth_introspection_endpoint: 'https://oauth_reg.example.com/introspect',
