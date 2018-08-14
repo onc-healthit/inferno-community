@@ -45,34 +45,484 @@
         <% end %>
       </div>
     <% end %>
-    <div class="sequence-table">
-      <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
-        <div class="sequence-group">
-          <div class="sequence-header">
-            <div class='row align-items-center'>
-              <div class='col'>
-                <% if sequence_group[1].length > 1 %>
-                  <a id="<%=sequence_group[1].join(',')%>" name="<%=sequence_group[1].join(',')%>"></a>
 
-                <% end %>
-                <h1>
-                  <%=sequence_group[0] %>
-                  <%# FIXME: This is brittle. Instead of checking for the number of tests, maybe check for specific sequence groups? %>
-                  <% if sequence_group[1].length > 10 %>
-                    <button data-group="<%=sequence_group[0]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
-                      <span class="oi oi-media-play"></span> Run All
-                    </button>
-                  <% end %>
-                </h1>
+    <% if show_tutorial %>
+      <% if sequence_results.size == 0 %>
+        <div class="alert alert-info" role="alert">
+          Inferno has created a new testing session at <a class="alert-link" href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/"><%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/</a>.
+        </div>
+      <% end %>
+
+      <% if instance.sequence_results.count == 1 %>
+        <div class="alert alert-info" role="alert">
+          <% if !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil? && instance.sequence_results.all?{|s| s.name == 'Conformance'} %>
+           <p>
+             The Conformance Statement sequence was able to extract the OAuth 2.0 endpoints from the conformance statement the FHIR server.
+             You can inspect what was tested by clicking on individual tests within the sequence.  Those tests that have a
+             <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
+             responses, can show what was communicated between the client and the server.
+           </p>
+           <p>
+             Click on the <strong><span class="oi oi-list"></span> Client Status</strong> button above to see more details about what
+             was extracted from the conformance statement that will be used in subsequent tests.  Click on the
+             <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Note that only the most recent
+             test results are saved within a sequence.
+           </p>
+           <p>
+           For more information about usage of this application, please visit the
+           <a href="https://github.com/siteadmin/inferno" class="alert-link" target="_blank">documentation.</a>
+           </p>
+         <% else %>
+           <p>
+           The Conformance Statement sequence was unable to extract the required fields from the metadata endpoint of this FHIR server.
+           You can inspect what happened by clicking on individual tests within the sequence.  Those tests that have a
+           <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
+           responses, may help identify what occured to cause these tests to fail.
+           </p>
+           <p>
+           You can click on the <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Only the most recent
+           test results are saved within a sequence.
+           </p>
+        <% end %>
+        </div>
+      <% end %>
+     <% end %>
+
+    <%#
+    Design Principles for this view:
+    - Give the user as few options/dialogs as possible (use defaults for everything)
+    - Hide actions that the user is unable to complete due to prerequisites
+    - Use visual guides to orient the user in the process
+    - Provide helpful (but terse) introductions to each step of the process and link out to more details
+    %>
+
+    <%# TODO: Create a persistent flag for this?  Store it in the url? %>
+    <p class="alert alert-info">
+      Want to run individual Inferno tests? Try the <a href="#expert">Expert Mode</a>.
+    </p>
+
+    <%# Create visual separation between the first four steps and the last two %>
+    <h1 id="guided">OAuth Handshake Process</h1>
+    <p>The OAuth Handshake process requires that some actions be successfully completed in a prescribed order.  The following four tests need to be completed before subsequent testing can occur.</p>
+    <%# TODO: pull these cards into partials? %>
+    <div class="card sequence-item" id="discover">
+      <h2 class="card-header">
+        1. Discover Server Capabilities
+      </h2>
+      <div class="card-body">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/conformance.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">FHIR servers use a resource called a <a href="https://www.hl7.org/fhir/DSTU2/conformance.html" target="_blank">Conformance statement</a> to communicate which parts of the FHIR specification they support.  Among other things, Inferno uses this to determine the OAuth endpoints that will be used in later tests.  Your FHIR server should include its OAuth endpoints in the <a href="https://www.hl7.org/fhir/DSTU2/conformance-definitions.html#Conformance.rest.security" target="_blank">Conformance.rest.security</a> portion of the Conformance statement.</p>
+            <%# TODO: remove the buttons after they are clicked, replace with results div and rerun button %>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <button class="btn btn-info sequence_button" id="run_discover" data-enable-sequence="#test_data">Get Conformance Statement</button>
+              </li>
+            </ul>
+            <%# TODO: create a partial for test results %>
+            <div class='test_result collapse' id='run_discover_results'>
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    Get Conformance Statement
+                  </h5>
+                  <div class='card-text test_result_details alert alert-info'>
+                    <span class="oi oi-loop-square"></span> Tests are running...
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <% sequence_group[1].each do |sequence_class| %>
-            <% unless sequence_class.inactive? %>
-              <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
-            <% end %>
-          <% end %>
         </div>
+      </div>
+    </div>
+
+    <div class="card sequence-item disabled" id="test_data">
+      <h2 class="card-header">
+        2. Populate Test Data
+      </h2>
+      <div class="card-body collapse">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/test_data.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">Inferno requests data on FHIR patients during the test process.  It is <strong>highly recommended</strong> that any test servers be populated with synthetic patient data to prevent potential HIPAA breaches.  Inferno has a test data set that you can download and incorporate into your server, or you can skip this step if your server is already populated with test data.
+            </p>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <%# TODO: this action will be different than the others - it sets up a file download rather than running a sequence %>
+                <button class="btn btn-info sequence_button" data-enable-sequence="#register" disabled>Download Test Data</button>
+              </li>
+              <li class="list-group-item">
+                <button class="btn btn-outline-info sequence_button" data-enable-sequence="#register" disabled>My Server Already Has Test Data</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sequence-item disabled" id="register">
+      <h2 class="card-header">
+        3. Register Client App with the Authentication Server
+      </h2>
+      <div class="card-body collapse">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/register.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">
+              Inferno has created a unique FHIR client to connect to your FHIR server.  Before that client can connect to your server, it needs to be registered with the Authentication server.  It is recommended that implementers use the <a href="https://tools.ietf.org/html/rfc7591" target="_blank">OAuth 2.0 Dynamic Client Registration Protocol</a>, but you can also manually register the application if the Authorization server does not support this protocol.
+            </p>
+            <%# TODO %>
+            <p>
+              <a href="#">Help me choose</a>
+            </p>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <button class="btn btn-info sequence_button" data-enable-sequence="#launch" id="run_dynamic_registration" disabled>Dynamic Client Registration</button>
+              </li>
+              <li class="list-group-item">
+                <button class="btn btn-outline-info sequence_button" data-enable-sequence="#launch" id="run_manual_registration" disabled>Manual Client Registration</button>
+              </li>
+            </ul>
+            <%# TODO: create a partial for test results %>
+            <div class='test_result collapse' id='run_dynamic_registration_results'>
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    Dynamic Client Registration
+                  </h5>
+                  <div class='card-text test_result_details alert alert-info'>
+                    <span class="oi oi-loop-square"></span> Tests are running...
+                  </div>
+                </div>
+              </div>
+            </div>
+            <%# TODO: create a partial for test results %>
+            <div class='test_result collapse' id='run_manual_registration_results'>
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    Manual Client Registration
+                  </h5>
+                  <div class='card-text test_result_details alert alert-info'>
+                    <span class="oi oi-loop-square"></span> Tests are running...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sequence-item disabled" id="launch">
+      <h2 class="card-header">
+        4. Launch SMART-on-FHIR App
+      </h2>
+      <div class="card-body collapse">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/launch.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">
+              Now that Inferno's FHIR client app has been registered, it can be launched according to the <a href="http://www.hl7.org/fhir/smart-app-launch/" target="_blank">SMART App Launch Framework</a>.  This framework allows for two different types of application launch sequences:
+              <ul>
+                <li><a href="http://www.hl7.org/fhir/smart-app-launch/#standalone-launch-sequence" target="_blank">Standalone Launch</a>, where a patient is using a mobile app (outside the EHR) to access their data
+                <li><a href="http://www.hl7.org/fhir/smart-app-launch/#ehr-launch-sequence" target="_blank">EHR Launch</a>, where a provider is asking for data about a specific patient from within the EHR
+              </ul>
+              It is recommended that implementers support both launch sequences, but only one launch sequence is necessary for subsequent tests to run properly.
+
+              For subsequent tests to run properly, one of these launch sequences needs to be completed successfully.
+            </p>
+            <%# TODO %>
+            <p>
+              <a href="#">Help me choose</a>
+            </p>
+            <%# TODO: Be explicit about which patient the user chooses so they pass the Argonauts IG %>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <button class="btn btn-info sequence_button" data-enable-sequence='#probe,#argonaut,#alternate_launch' id="run_standalone_launch" disabled>Standalone Launch (Patient)</button>
+              </li>
+              <li class="list-group-item">
+                <button class="btn btn-info sequence_button" data-enable-sequence='#probe,#argonaut,#alternate_launch' id="run_ehr_launch" disabled>EHR Launch (Provider)</button>
+              </li>
+            </ul>
+            <%# TODO: create a partial for test results %>
+            <div class='test_result collapse' id='run_standalone_launch_results'>
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    Standalone Launch (Patient)
+                  </h5>
+                  <div class='card-text test_result_details alert alert-info'>
+                    <span class="oi oi-loop-square"></span> Tests are running...
+                  </div>
+                </div>
+              </div>
+            </div>
+            <%# TODO: create a partial for test results %>
+            <div class='test_result collapse' id='run_ehr_launch_results'>
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    EHR Launch (Provider)
+                  </h5>
+                  <div class='card-text test_result_details alert alert-info'>
+                    <span class="oi oi-loop-square"></span> Tests are running...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h1>Additional Tests</h1>
+    <p>Once the OAuth Handshake Process has been successfully completed, you can run the following tests in any order you choose.</p>
+
+    <div class="card sequence-item disabled" id="probe">
+      <h2 class="card-header">
+        Probe Authentication/Authorization Capabilities
+      </h2>
+      <div class="card-body collapse">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/probe.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">
+              With the client application fully authenticated and authorized, Inferno can now probe the server for its conformance to several parts of the SMART-on-FHIR specification, including:
+              <ul>
+                <li>Conformance to <a href="http://openid.net/specs/openid-connect-core-1_0.html" target="_blank">OpenID Connect Core 1.0</a> for Authentication</li>
+                <li>Support for <a href="http://docs.smarthealthit.org/authorization/best-practices/#23-refresh-tokens" target="_blank">refresh tokens</a>
+                <li>Support for <a href="https://tools.ietf.org/html/rfc7662" target="_blank">token introspection</a>
+              </ul>
+              It is recommended that servers support OpenID Connect and Token Refresh, but support for Token Introspection is optional.
+            </p>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <button class="btn btn-info" disabled>Probe Authentication/Authorization</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sequence-item disabled" id="argonaut">
+      <h2 class="card-header">
+        Test Conformance to Argonaut IGs
+      </h2>
+      <div class="card-body collapse">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/argonaut.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">
+              This test determines conformance to the <a href="http://www.fhir.org/guides/argonaut/r2" target="_blank">DSTU2 version</a> of the <a href="http://argonautwiki.hl7.org/index.php?title=Main_Page" target="_blank">Argonaut Project</a> Implementation Guides.  It will first check to make sure that the appropriate FHIR resources exist, then whether they meet the constraints in the Argonaut profiles.
+            </p>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <button class="btn btn-info" disabled>Test Argonaut Conformance</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sequence-item disabled" id="alternate_launch">
+      <h2 class="card-header">
+        Alternate SMART-on-FHIR Launch
+      </h2>
+      <div class="card-body collapse">
+        <div class="row">
+          <div class="col">
+            <img src="../../images/launch.png" style="width:190px" />
+          </div>
+          <div class="col-9">
+            <p class="card-text">
+            <%# TODO: Replace this text with something more meaningful %>
+              Since the <code>previous launch sequence</code> was already tested, it is recommended that you also test the <code>alternate launch sequence</code>.
+            </p>
+            <%# TODO: Make this dependent on which launch sequence was previously tested %>
+            <ul class="list-group list-group-flush sequence-choice">
+              <li class="list-group-item">
+                <button class="btn btn-info sequence_button" disabled>Alternate Launch Sequence</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+    <h1 id="expert">Expert Mode</h1>
+    <p class="alert alert-warning">
+      Not sure what these are? Try the <a href="#guided">Guided Tests</a>.
+    </p>
+    <form>
+      <h2>Authentication/Authorization</h2>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="capability">
+        <label class="form-check-label" for="capability">
+          Get Conformance Statement
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="radio" name="client_registration" id="dynamic_client_registration" value="dynamic">
+        <label class="form-check-label" for="dynamic_client_registration">
+          Dynamic Client Registration
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="radio" name="client_registration" id="manual_client_registration" value="manual">
+        <label class="form-check-label" for="manual_client_registration">
+          Manual Client Registration
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="radio" name="launch" id="standalone_launch" value="standalone">
+        <label class="form-check-label" for="standalone_launch">
+          Standalone Launch (Patient)
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="radio" name="launch" id="ehr_launch" value="manual">
+        <label class="form-check-label" for="ehr_launch">
+          EHR Launch (Provider)
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="openid">
+        <label class="form-check-label" for="openid">
+          Test OpenID Connect
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="token_refresh">
+        <label class="form-check-label" for="token_refresh">
+          Test Token Refresh
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="token_introspection">
+        <label class="form-check-label" for="token_introspection">
+          Test Token Introspection
+        </label>
+      </div>
+      <h2>FHIR Resources</h2>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="allergy_intolerance">
+        <label class="form-check-label" for="allergy_intolerance">
+          AllergyIntolerance
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="care_plan">
+        <label class="form-check-label" for="care_plan">
+          CarePlan
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="condition">
+        <label class="form-check-label" for="condition">
+          Condition
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="device">
+        <label class="form-check-label" for="device">
+          Device
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="document_reference">
+        <label class="form-check-label" for="document_reference">
+          DocumentReference
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="goal">
+        <label class="form-check-label" for="goal">
+          Goal
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="immunization">
+        <label class="form-check-label" for="immunization">
+          Immunization
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="diagnostic_report">
+        <label class="form-check-label" for="diagnostic_report">
+          DianosticReport
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="medication_statement">
+        <label class="form-check-label" for="medication_statement">
+          MedicationStatement
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="medication_order">
+        <label class="form-check-label" for="medication_order">
+          MedicationOrder
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="observation">
+        <label class="form-check-label" for="observation">
+          Observation
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="patient">
+        <label class="form-check-label" for="patient">
+          Patient
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="procedure">
+        <label class="form-check-label" for="procedure">
+          Procedure
+        </label>
+      </div>
+      <div class="form-group form-check">
+        <input class="form-check-input" type="checkbox" value="" id="vital_signs">
+        <label class="form-check-label" for="vital_signs">
+          VitalSigns
+        </label>
+      </div>
+    </form>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+    <div class="sequence-header">
+      Test Sequences
+      <span class="sequence-header-details">
+        <% details_pass = sequence_results.values.map(&:result).count("pass") == SequenceBase.subclasses.reject(&:optional?).count %>
+        <span class="sequence-header-details-big details-pass-<%=details_pass%>"><%= sequence_results.values.select(&:required).map(&:result).count("pass") %></span> of
+        <span class="sequence-header-details-big details-pass-<%=details_pass%>"><%= SequenceBase.subclasses.reject(&:optional?).count %></span>
+        required sequences passed
+      </span>
+    </div>
+    <div class="sequence-table">
+      <% sequences.each do |sequence_class| %>
+        <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
       <% end %>
 
       <%# Removed total score for community edition. %>
@@ -138,6 +588,49 @@
               <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
               <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
             </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="DynamicRegistrationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">OAuth 2.0 Dynamic Client Registration</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="DynamicRegistration">
+        <div class="modal-body">
+          <p>
+            Enter the dynamic registration details.
+          </p>
+          <div class="form-group">
+            <label for="registration_url">Registration URL</label>
+            <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= instance.oauth_register_endpoint %>" required>
+          </div>
+          <div class="form-group">
+            <label for="client_name">Client Name</label>
+            <input type="text" class="form-control" name="client_name" id="client_name" value="Inferno" required>
+          </div>
+          <div class="form-group">
+            <label for="initiate_login_uri">Launch URI</label>
+            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
+          </div>
+          <div class="form-group">
+            <label for="redirect_uris">Redirect URI</label>
+            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
+          </div>
+          <div class="form-group">
+            <label for="scope">Scopes</label>
+            <input type="text" class="form-control" name="scope" id="scope" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
           </div>
 
           <div class="client-secret-container">

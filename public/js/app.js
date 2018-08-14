@@ -22,6 +22,30 @@ $(function(){
        $('.client-secret-container').hide();
        break;
    }
+   
+  $(".sequence_button").click(function () {
+    let sequence = $(this).attr("data-enable-sequence")
+    let test_result = $("#" + $(this).attr('id') + "_results")
+    // Remove the button because the test has been run
+    // TODO: Consider not doing this if the step is about downloading test data...
+    $(this).parent().parent().empty()
+    // Show the test running
+    test_result.collapse('show')
+    // TODO: replace timeout with callback when results are in
+    setTimeout(function () {
+      // Add the test results
+      $(test_result).find('.test_result_details').replaceWith('TODO: Replace with Test Results as they currently appear in Inferno, including re-run button')
+      // Enable and show the next step
+      $(sequence).removeClass('disabled')
+      $(sequence).find('.btn').attr('disabled', false)
+      $(sequence).find('.card-body.collapse').collapse('show')
+    }, 2000)
+  })
+
+  $('.sequence-main').on('click', function(e) {
+    if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
+      $(this).parent().find('.collapse').collapse('toggle');
+    }
   });
 
   $('.sequence-expand-button').click(function (event) {
