@@ -1,4 +1,4 @@
-# Crucible SMART on FHIR Test App [![Build Status](https://travis-ci.org/fhir-crucible/crucible_smart_app.svg?branch=master)](https://travis-ci.org/fhir-crucible/crucible_smart_app)
+# Inferno
 
 This application creates test clients that exercise the range of requirements of a
 [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the
