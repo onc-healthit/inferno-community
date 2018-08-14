@@ -4,11 +4,13 @@ class AdditionalResourcesSequence < SequenceBase
 
   description 'Verify additional non-Argonaut resource requirements.'
 
+  test_id_prefix 'ARS'
+
   preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
-  test 'Server rejects Composition search without authorization',
+  test '01', '', 'Server rejects Composition search without authorization',
           '',
           'Additional Composition resource requirement.' do
 
@@ -19,7 +21,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Composition search by patient',
+  test '02', '', 'Server returns expected results from Composition search by patient',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -30,7 +32,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Composition search by patient + type',
+  test '03', '', 'Server returns expected results from Composition search by patient + type',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -43,7 +45,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Composition search by patient + period',
+  test '04', '', 'Server returns expected results from Composition search by patient + period',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -57,7 +59,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Composition search by patient + type + period',
+  test '05', '', 'Server returns expected results from Composition search by patient + type + period',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -73,7 +75,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition read resource supported',
+  test '06', '', 'Composition read resource supported',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -82,7 +84,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition history resource supported',
+  test '07', '', 'Composition history resource supported',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -91,7 +93,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition vread resource supported',
+  test '08', '', 'Composition vread resource supported',
           '',
           'Additional Composition resource requirement.',
           :optional do
@@ -100,7 +102,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Composition resource contains section text',
+  test '09', '', 'Composition resource contains section text',
           '',
           'Additional Composition resource requirement.' do
 
@@ -111,7 +113,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server rejects Provenance search without authorization',
+  test '10', '', 'Server rejects Provenance search without authorization',
           '',
           'Additional Provenance resource requirement.' do
 
@@ -122,7 +124,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Provenance search by patient',
+  test '11', '', 'Server returns expected results from Provenance search by patient',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -133,7 +135,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Provenance search by patient + target',
+  test '12', '', 'Server returns expected results from Provenance search by patient + target',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -147,7 +149,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Provenance search by patient + start + end',
+  test '13', '', 'Server returns expected results from Provenance search by patient + start + end',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -162,7 +164,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Provenance search by patient + target + start + end',
+  test '14', '', 'Server returns expected results from Provenance search by patient + target + start + end',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -180,7 +182,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Provenance search by userid',
+  test '15', '', 'Server returns expected results from Provenance search by userid',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -193,7 +195,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Server returns expected results from Provenance search by agent',
+  test '16', '', 'Server returns expected results from Provenance search by agent',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -207,7 +209,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance read resource supported',
+  test '17', '', 'Provenance read resource supported',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -216,7 +218,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance history resource supported',
+  test '18', '', 'Provenance history resource supported',
           '',
           'Additional Provenance resource requirement.',
           :optional do
@@ -225,7 +227,7 @@ class AdditionalResourcesSequence < SequenceBase
 
   end
 
-  test 'Provenance vread resource supported',
+  test '19', '', 'Provenance vread resource supported',
           '',
           'Additional Provenance resource requirement.',
           :optional do

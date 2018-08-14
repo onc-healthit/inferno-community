@@ -3,11 +3,13 @@ class OpenIDConnectSequence < SequenceBase
   title 'OpenID Connect'
   description 'Verify OpenID Connect functionality of server.'
 
+  test_id_prefix 'OIDC'
+
   preconditions 'Client must have ID token' do
     !@instance.id_token.nil?
   end
 
-  test 'ID token is valid jwt token',
+  test '01', '', 'ID token is valid jwt token',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Examine the ID token for its issuer property.' do
 
@@ -29,7 +31,7 @@ class OpenIDConnectSequence < SequenceBase
     end
   end
 
-  test 'ID token contains expected header and payload information',
+  test '02', '', 'ID token contains expected header and payload information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Examine the ID token for its issuer property.' do
 
@@ -41,7 +43,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'Issuer provides OpenID configuration information',
+  test '03', '', 'Issuer provides OpenID configuration information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Perform a GET {issuer}/.well-known/openid-configuration.' do
 
@@ -57,7 +59,7 @@ class OpenIDConnectSequence < SequenceBase
     @instance.oauth_introspection_endpoint = @openid_configuration_response_body['introspection_endpoint']
   end
 
-  test 'OpenID configuration includes JSON Web Key information',
+  test '04', '', 'OpenID configuration includes JSON Web Key information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Fetch the JSON Web Key of the server by following the "jwks_uri" property.' do
 
@@ -74,7 +76,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token can be decoded using JSON Web Key information',
+  test '05', '', 'ID token can be decoded using JSON Web Key information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     "Validate the token's signature against the public key." do
 
@@ -91,7 +93,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token signature validates using JSON Web Key information',
+  test '06', '', 'ID token signature validates using JSON Web Key information',
     'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation',
     'Validate the ID token claims.' do
 
@@ -122,7 +124,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'Profile claim in ID token is represented as a resource URI',
+  test '07', '', 'Profile claim in ID token is represented as a resource URI',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Extract the profile claim and treat it as the URL of a FHIR resource.' do
 

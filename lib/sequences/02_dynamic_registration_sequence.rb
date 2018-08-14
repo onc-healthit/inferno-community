@@ -4,6 +4,8 @@ class DynamicRegistrationSequence < SequenceBase
 
   description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
 
+  test_id_prefix 'DR'
+
   optional
 
   modal_before_run
@@ -12,7 +14,7 @@ class DynamicRegistrationSequence < SequenceBase
     !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?
   end
 
-  test 'Client registration endpoint secured by transport layer security',
+  test '01', '', 'Client registration endpoint secured by transport layer security',
     'https://tools.ietf.org/html/rfc7591',
     'The client registration endpoint MUST be protected by a transport layer security.' do
 
@@ -23,7 +25,7 @@ class DynamicRegistrationSequence < SequenceBase
     }
   end
 
-  test 'Client registration endpoint accepts POST messages',
+  test '02', '', 'Client registration endpoint accepts POST messages',
     'https://tools.ietf.org/html/rfc7591',
     'The client registration endpoint MUST accept HTTP POST messages with request parameters encoded in the entity body using the "application/json" format.' do
     # params['redirect_uris'] = [params['redirect_uris']]
@@ -44,7 +46,7 @@ class DynamicRegistrationSequence < SequenceBase
 
   end
 
-  test 'Registration endpoint does not respond with an error',
+  test '03', '', 'Registration endpoint does not respond with an error',
     'https://tools.ietf.org/html/rfc7591',
     'When an OAuth 2.0 error condition occurs, such as the client presenting an invalid initial access token, the authorization server returns an error response appropriate to the OAuth 2.0 token type.' do
 
@@ -53,7 +55,7 @@ class DynamicRegistrationSequence < SequenceBase
 
   end
 
-  test 'Registration endpoint responds with HTTP 201 and body contains JSON with required fields',
+  test '04', '', 'Registration endpoint responds with HTTP 201 and body contains JSON with required fields',
     'https://tools.ietf.org/html/rfc7591',
     'The server responds with an HTTP 201 Created status code and a body of type "application/json" with content as described in Section 3.2.1.' do
 

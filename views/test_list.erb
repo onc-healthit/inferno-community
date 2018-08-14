@@ -64,7 +64,7 @@
 
         <% if result.result == 'todo' %> TODO: <% end %>
         <% unless result.required %> OPTIONAL |  <% end %>
-        <%= result.name %>
+        <%= result.test_id + ': ' + result.name %>
         <% unless result.message.nil? %>
           <div class="result-details-message">
               Details: <%= result.message %>
@@ -81,7 +81,7 @@
           <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
         </div>
         <% unless test[:required] %> OPTIONAL |  <% end %>
-        <%= test[:name] %>
+        <%= test[:test_id] + ': '+ test[:name] %>
       </li>
     <% end %>
   </ul>

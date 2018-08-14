@@ -26,7 +26,12 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
 
     test_list.select!{ |test| !excluded_tests.include?(test[:name])}
 
-    incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? || test[:description].nil? || !valid_uri?(test[:url])}
+    incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? ||
+      test[:description].nil? ||
+      !valid_uri?(test[:url]) ||
+      test[:test_id].nil? ||
+      test[:ext_ref].nil?
+    }
 
     assert incomplete_metadata_tests.empty?, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
       "First: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:sequence]}: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:name]}"

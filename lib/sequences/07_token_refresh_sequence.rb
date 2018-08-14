@@ -2,13 +2,14 @@ class TokenRefreshSequence < SequenceBase
 
   title 'Token Refresh'
   description 'Demonstrate token refresh capability'
+  test_id_prefix 'TR'
   # modal_before_run
 
   preconditions 'No refresh token available.' do
     !@instance.refresh_token.nil?
   end
 
-  test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.',
+  test '01', '', 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.',
     'https://tools.ietf.org/html/rfc6749',
     'If the request failed verification or is invalid, the authorization server returns an error response.' do
 
@@ -32,7 +33,7 @@ class TokenRefreshSequence < SequenceBase
 
   end
 
-  test 'Server successfully exchanges refresh token at OAuth token endpoint',
+  test '02', '', 'Server successfully exchanges refresh token at OAuth token endpoint',
     'https://tools.ietf.org/html/rfc6749',
     'Server successfully exchanges refresh token at OAuth token endpoint.' do
 
@@ -46,7 +47,8 @@ class TokenRefreshSequence < SequenceBase
     assert_response_ok(@token_response)
 
   end
-  test 'Data returned from refresh token exchange contains required information encoded in JSON.',
+
+  test '03', '', 'Data returned from refresh token exchange contains required information encoded in JSON.',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
     'The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\
