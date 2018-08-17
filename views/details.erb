@@ -163,6 +163,18 @@
           <p>
             Enter the dynamic registration details.
           </p>
+          <div class="form-check">
+            <input id="is_confidential_dynamic" type="checkbox" class="form-check-input" name="is_confidential">
+            <label for="is_confidential"
+                   class="form-check-label"
+                   data-toggle="tooltip"
+                   data-html="true"
+                   data-placement="right"
+                   title="A Confidential App meets <u> all </u> the following: <ul>
+                   <li> App runs on a trusted server</li>
+                   <li> App has server-side business logic</li>
+                   <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
+          </div>
           <div class="form-group">
             <label for="registration_url">Registration URL</label>
             <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= instance.oauth_register_endpoint %>" required>
@@ -223,14 +235,6 @@
             <label for="grant_types">Grant Type</label>
             <input readonly type="text" class="form-control" name="grant_types" id="grant_types" value="authorization_code" required>
           </div>
-          <div class="form-group">
-            <label for="scope">Scopes</label>
-            <input type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
-          </div>
-          <div class="form-group">
-            <label for="dynamicRegistrationClientId">Enter Client Id</label>
-            <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId" required>
-          </div>
           <div class="form-check">
             <input id="is_confidential" type="checkbox" class="form-check-input" name="is_confidential">
             <label for="is_confidential"
@@ -242,6 +246,14 @@
                    <li> App runs on a trusted server</li>
                    <li> App has server-side business logic</li>
                    <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
+          </div>
+          <div class="form-group">
+            <label for="scope">Scopes</label>
+            <input type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
+          </div>
+          <div class="form-group">
+            <label for="dynamicRegistrationClientId">Enter Client Id</label>
+            <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId" required>
           </div>
           <div class="form-group d-none" id="client_secret_form_group">
             <label for="dynamicRegistrationClientSecret"

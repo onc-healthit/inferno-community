@@ -185,8 +185,19 @@ namespace BASE_PATH do
 
   post '/:id/DynamicRegistration' do
     @instance = TestingInstance.get(params[:id])
-    @instance.update(dynamically_registered: false, oauth_register_endpoint: params['registration_url'], scopes: params['scope'], client_name: params['client_name'])
+    @instance.update(dynamically_registered: false,
+                     oauth_register_endpoint: params['registration_url'],
+                     scopes: params['scope'],
+                     client_name: params['client_name'])
 
+    if params[:is_confidential].nil?
+      puts "public client"
+      @instance.update(confidential_client: false)
+    else
+      puts "confidential client"
+      @instance.update(confidential_client: true)
+      @instance.update(client_secret: params[:client_secret])
+    end
     redirect "#{BASE_PATH}/#{@instance.id}/DynamicRegistration/"
   end
 
