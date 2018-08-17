@@ -231,6 +231,24 @@
             <label for="dynamicRegistrationClientId">Enter Client Id</label>
             <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId" required>
           </div>
+          <div class="form-check">
+            <input id="is_confidential" type="checkbox" class="form-check-input" name="is_confidential">
+            <label for="is_confidential"
+                   class="form-check-label"
+                   data-toggle="tooltip"
+                   data-html="true"
+                   data-placement="right"
+                   title="A Confidential App meets <u> all </u> the following: <ul>
+                   <li> App runs on a trusted server</li>
+                   <li> App has server-side business logic</li>
+                   <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
+          </div>
+          <div class="form-group d-none" id="client_secret_form_group">
+            <label for="dynamicRegistrationClientSecret"
+                   data-toggle="tooltip" data-placement="right"
+                   title="The Client Secret provided by the server which must be protected">Enter Client Secret</label>
+            <input type="text" class="form-control" name="client_secret" id="dynamicRegistrationClientSecret">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

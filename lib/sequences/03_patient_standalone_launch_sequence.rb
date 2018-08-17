@@ -101,13 +101,19 @@ class PatientStandaloneLaunchSequence < SequenceBase
     "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
     oauth2_params = {
-      'grant_type' => 'authorization_code',
-      'code' => @params['code'],
-      'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
-      'client_id' => @instance.client_id
+        'grant_type' => 'authorization_code',
+        'code' => @params['code'],
+        'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
     }
-
-    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    if @instance.confidential_client
+      oauth2_header = {
+          'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
+      }
+    else
+      oauth2_params['client_id'] = @instance.client_id
+      oauth2_header = {}
+    end
+    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_header)
     assert_response_ok(@token_response)
 
   end

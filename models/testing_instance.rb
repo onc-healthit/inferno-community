@@ -3,7 +3,9 @@ class TestingInstance
   property :id, String, key: true, default: proc { SecureRandomBase62.generate(64) }
   property :url, String
   property :name, String
+  property :confidential_client, Boolean
   property :client_id, String
+  property :client_secret, String
   property :base_url, String
 
   property :client_name, String

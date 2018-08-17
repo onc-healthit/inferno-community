@@ -54,6 +54,10 @@ body {
 
 }
 
+.form-check-input {
+  margin-left: 0;
+}
+
 /* ------------------------- DETAILS -------------------------------- */
 
 .details-server {

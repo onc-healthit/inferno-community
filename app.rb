@@ -219,6 +219,14 @@ namespace BASE_PATH do
     instance.sequence_results << sequence_result
 
     instance.client_id = params[:client_id]
+
+    if params[:is_confidential].nil?
+      instance.confidential_client = false
+    else
+      instance.confidential_client = true
+      instance.client_secret = params[:client_secret]
+    end
+
     instance.scopes = params[:scope]
     instance.dynamically_registered = false
     instance.save!
