@@ -1,6 +1,7 @@
 require 'fhir_client'
 require 'pry'
 require './lib/sequence_base'
+require './models/testing_instance'
 require 'dm-core'
 require 'csv'
 
@@ -32,5 +33,40 @@ task :tests_to_csv do
 
   puts csv_out
 
+end
+
+desc 'Execute sequence against a FHIR server'
+task :execute_sequence, [:sequence, :server] do |task, args|
+
+  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
+                      'Accept-Charset'=>'UTF-8',
+                      'Content-Type'=>'application/json+fhir;charset=UTF-8'
+                     }
+
+  RESPONSE_HEADERS = {'content-type'=>'application/json+fhir;charset=UTF-8'}
+
+  @sequence = nil
+  SequenceBase.ordered_sequences.map do |seq|
+    if seq.sequence_name == args[:sequence]
+      @sequence = seq
+    end
+  end
+
+  if @sequence == nil
+    puts "Sequence not found."
+    exit
+  end
+
+  binding.pry
+  instance = TestingInstance.new(url: args[:server])
+  instance.save!
+  client = FHIR::Client.new(args[:server])
+  client.use_dstu2
+  client.default_json
+  sequence_instance = sequence_to_run.new(instance, client, true)
+  sequence_result = sequence_instance.start
+  
+  puts sequence_result.test_results.all
+  
 end
 
