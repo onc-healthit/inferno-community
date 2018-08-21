@@ -233,10 +233,8 @@ namespace BASE_PATH do
                      client_name: params['client_name'])
 
     if params[:is_confidential].nil?
-      puts "public client"
       @instance.update(confidential_client: false)
     else
-      puts "confidential client"
       @instance.update(confidential_client: true)
       @instance.update(client_secret: params[:client_secret])
     end
