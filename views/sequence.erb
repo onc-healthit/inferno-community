@@ -83,12 +83,12 @@
         <% else %>
           <span title="Execute Test" data-toggle="tooltip">
             <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
-              <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-outline-info btn-sm">
+              <a href="<%= sequence_class.sequence_name %>" role="button" class="btn btn-outline-info btn-sm">
                 <span class="oi oi-action-undo" title="Execute Test"></span>
                 Rerun
               </a>
             <% else %>
-              <a href="<%= sequence_class.sequence_name %>/" role="button" class="btn btn-info btn-sm">
+              <a href="<%= sequence_class.sequence_name %>" role="button" class="btn btn-info btn-sm">
                 <span class="oi oi-media-play" title="Execute Test"></span>
                 Begin
               </a>

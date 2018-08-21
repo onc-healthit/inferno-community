@@ -226,20 +226,20 @@ namespace BASE_PATH do
 
   post '/:id/DynamicRegistration' do
     @instance = TestingInstance.get(params[:id])
+
     @instance.update(dynamically_registered: false,
                      oauth_register_endpoint: params['registration_url'],
                      scopes: params['scope'],
                      client_name: params['client_name'])
 
     if params[:is_confidential].nil?
-      puts "public client"
       @instance.update(confidential_client: false)
     else
-      puts "confidential client"
       @instance.update(confidential_client: true)
       @instance.update(client_secret: params[:client_secret])
     end
-    redirect "#{BASE_PATH}/#{@instance.id}/DynamicRegistration/"
+    redirect "#{BASE_PATH}/#{@instance.id}/DynamicRegistration"
+
   end
 
   post '/:id/ArgonautDataQuery' do
@@ -253,7 +253,7 @@ namespace BASE_PATH do
 
     instance.save
 
-    redirect "#{BASE_PATH}/#{instance.id}/ArgonautDataQuery/"
+    redirect "#{BASE_PATH}/#{instance.id}/ArgonautDataQuery"
   end
 
   post '/:id/ArgonautProfiles' do
@@ -261,7 +261,7 @@ namespace BASE_PATH do
     instance = TestingInstance.get(params[:id])
     halt 404 if instance.nil?
 
-    redirect "/#{BASE_PATH}/#{instance.id}/ArgonautProfiles/"
+    redirect "/#{BASE_PATH}/#{instance.id}/ArgonautProfiles"
   end
 
   post '/:id/dynamic_registration_skip/?' do
@@ -289,18 +289,18 @@ namespace BASE_PATH do
   post '/:id/PatientStandaloneLaunch/?' do
     @instance = TestingInstance.get(params[:id])
     @instance.update(scopes: params['scopes'], id_token: nil, refresh_token: nil)
-    redirect "/#{BASE_PATH}/#{params[:id]}/PatientStandaloneLaunch/"
+    redirect "/#{BASE_PATH}/#{params[:id]}/PatientStandaloneLaunch"
   end
 
   post '/:id/ProviderEHRLaunch/?' do
     @instance = TestingInstance.get(params[:id])
     @instance.update(scopes: params['scopes'], id_token: nil, refresh_token: nil)
-    redirect "/#{BASE_PATH}/#{params[:id]}/ProviderEHRLaunch/"
+    redirect "/#{BASE_PATH}/#{params[:id]}/ProviderEHRLaunch"
   end
 
   post '/:id/OpenIDConnect/?' do
     @instance = TestingInstance.get(params[:id])
-    redirect "/#{BASE_PATH}/#{params[:id]}/OpenIDConnect/"
+    redirect "/#{BASE_PATH}/#{params[:id]}/OpenIDConnect"
   end
 
   post '/:id/TokenIntrospectionSkip/?' do
@@ -324,7 +324,7 @@ namespace BASE_PATH do
     @instance.update(introspect_token: params['access_token'])
     @instance.update(introspect_refresh_token: params['refresh_token'])
 
-    redirect "/#{BASE_PATH}/#{params[:id]}/TokenIntrospection/"
+    redirect "/#{BASE_PATH}/#{params[:id]}/TokenIntrospection"
 
   end
 
