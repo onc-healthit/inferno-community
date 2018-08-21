@@ -144,7 +144,13 @@ namespace BASE_PATH do
 
     sequence.tests.each_with_index do |test, index|
       next if index < current_test_count
-      @sequence_result.test_results << TestResult.new(name: test[:name], result: 'cancel', url: test[:url], description: test[:description], test_index: test[:test_index], message: cancel_message)
+      @sequence_result.test_results << TestResult.new(test_id: test[:test_id],
+                                                      name: test[:name],
+                                                      result: 'cancel',
+                                                      url: test[:url],
+                                                      description: test[:description],
+                                                      test_index: test[:test_index],
+                                                      message: cancel_message)
     end
 
     @sequence_result.save!
