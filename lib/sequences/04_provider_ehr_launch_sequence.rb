@@ -121,18 +121,24 @@ class ProviderEHRLaunchSequence < SequenceBase
     "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
     oauth2_params = {
-      'grant_type' => 'authorization_code',
-      'code' => @params['code'],
-      'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
-      'client_id' => @instance.client_id
+        'grant_type' => 'authorization_code',
+        'code' => @params['code'],
+        'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
     }
-
-    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    if @instance.confidential_client
+      oauth2_header = {
+          'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
+      }
+    else
+      oauth2_params['client_id'] = @instance.client_id
+      oauth2_header = {}
+    end
+    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_header)
     assert_response_ok(@token_response)
 
   end
 
-  test '09', '', 'Data returned from token exchange contains token contains expected information.',
+  test '09', '', 'Data returned from token exchange contains the expected information.',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
     'The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\
