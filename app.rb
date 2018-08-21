@@ -64,6 +64,25 @@ helpers do
   def show_tutorial
     settings.show_tutorial
   end
+
+  def js_hide_wait_modal
+    "<script>console.log('hide_wait_modal');$('#WaitModal').modal('hide');</script>"
+  end
+  def js_show_test_modal
+    "<script>console.log('show_test_modal');$('#testsRunningModal').modal('show')</script>"
+  end
+  def js_stayalive(time)
+    "<script>console.log('Time running: ' + #{time})</script>"
+  end
+  def js_update_result(result, count, total)
+    "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete').html('(#{count} of #{total} complete)');</script>"
+  end
+  def js_redirect(location)
+    "<script>console.log('js_window_location'); window.location = '#{location}'</script>"
+  end
+  def js_redirect_modal(location)
+    "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea>');</script>"
+  end
 end
 
 get '/' do
@@ -141,23 +160,39 @@ namespace BASE_PATH do
     client.use_dstu2
     client.default_json
     klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
+
+    timer_count = 0;
+    stayalive_timer_seconds = 20;
+
     if klass
       sequence = klass.new(instance, client, settings.disable_tls_tests)
-      stream do |out|
-        out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
-        out << "<script>$('#WaitModal').modal('hide')</script>"
-        out << "<script>$('#testsRunningModal').modal('show')</script>"
+      stream :keep_open do |out|
+
+        EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
+          timer_count = timer_count + 1;
+          out << js_stayalive(timer_count * stayalive_timer_seconds)
+        end
+
+        out << erb(:details, {}, {instance: instance,
+                                  sequences: SequenceBase.ordered_sequences,
+                                  sequence_results: instance.latest_results,
+                                  tests_running: true
+                                 }
+                  )
+        out << js_show_test_modal
         count = 0
         sequence_result = sequence.start do |result|
           count = count + 1
-          out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
+
+          out << js_update_result(result, count, sequence.test_count)
         end
+
         sequence_result.save!
         if sequence_result.redirect_to_url
-          out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{sequence_result.redirect_to_url}</textarea>');</script>"
-          out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+          out << js_redirect_modal(sequence_result.redirect_to_url)
+          out << js_redirect(sequence_result.redirect_to_url)
         else
-          out << "<script> window.location = '#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}'</script>"
+          out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}")
         end
       end
 
@@ -302,23 +337,38 @@ namespace BASE_PATH do
       client.use_dstu2
       client.default_json
       sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
+
+      timer_count = 0;
+      stayalive_timer_seconds = 20;
+
       stream do |out|
-        out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
-        out << "<script>$('#WaitModal').modal('hide')</script>"
-        out << "<script>$('#testsRunningModal').modal('show')</script>"
+
+        EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
+          timer_count = timer_count + 1;
+          out << js_stayalive(timer_count * stayalive_timer_seconds)
+        end
+
+        out << erb(:details, {}, {instance: instance,
+                                  sequences: SequenceBase.ordered_sequences,
+                                  sequence_results: instance.latest_results,
+                                  tests_running: true}
+                  )
+
+        out << js_hide_wait_modal
+        out << js_show_test_modal
         count = sequence_result.test_results.length
         sequence_result = sequence.resume(request, headers, request.params) do |result|
           count = count + 1
-          out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
+          out << js_update_result(result, count, sequence_results.total)
           instance.save!
         end
         instance.sequence_results.push(sequence_result)
         instance.save!
         if sequence_result.redirect_to_url
-          out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{sequence_result.redirect_to_url}</textarea>');</script>"
-          out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+          out << js_redirect_modal(sequence_result.redirect_to_url)
+          out << js_redirect(sequence_result.redirect_to_url)
         else
-          out << "<script> window.location = '#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}'</script>"
+          out << js_redirect('#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}')
         end
       end
     end
