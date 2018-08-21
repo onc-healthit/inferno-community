@@ -1,4 +1,5 @@
 require_relative './utils/assertions'
+
 class SequenceBase
 
   include Assertions
@@ -273,7 +274,6 @@ class SequenceBase
         result.message = e.message
 
       rescue => e
-        # binding.pry
         result.result = STATUS[:error]
         result.message = "Fatal Error: #{e.message}"
       end

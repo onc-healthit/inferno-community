@@ -13,6 +13,21 @@ $(function(){
     }
   }
 
+  var isConfidential = $('#is_confidential'),
+      secretEntry = $('#client_secret_form_group')
+
+
+  isConfidential.on('click', function() {
+      if($(this).is(':checked')) {
+          $('#client_secret_form_group').removeClass("d-none");
+          secretEntry.find('input').attr('required', true);
+      } else {
+          $('#client_secret_form_group').addClass("d-none");
+          secretEntry.find('input').attr('required', false);
+      }
+  });
+
+
   $('.sequence-main').on('click', function(e) {
     if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
       $(this).parent().find('.collapse').collapse('toggle');
