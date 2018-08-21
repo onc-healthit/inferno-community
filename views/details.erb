@@ -38,10 +38,10 @@
     <% unless locals[:error_code].nil? %>
       <div class="alert alert-danger" role="alert">
         <% if error_code == 'no_launch' %>
-          The launch URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
+          The launch URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
           before initiating an EHR launch from the server.
         <% elsif error_code == 'no_redirect' %>
-          The redirect URL for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
+          The redirect URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
           before visiting this redirect url.
         <% end %>
       </div>
@@ -51,7 +51,7 @@
         <div class="alert alert-info" role="alert">
           <p>
           You have created a new testing session at <a class="alert-link" href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/"><%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/</a>.
-          Please take note of this URL if you would like to share the results or return to the results of these tests in the future.
+          Please take note of this URI if you would like to share the results or return to the results of these tests in the future.
           </p>
           <p>
           Start testing by clicking on the <strong><span class="oi oi-media-play"></span> Begin</strong> button next to the
@@ -164,7 +164,7 @@
             Enter the dynamic registration details.
           </p>
           <div class="form-group">
-            <label for="registration_url">Registration URL</label>
+            <label for="registration_url">Registration URI</label>
             <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= instance.oauth_register_endpoint %>" required>
           </div>
           <div class="form-group">
@@ -178,6 +178,18 @@
           <div class="form-group">
             <label for="redirect_uris">Redirect URI</label>
             <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
+          </div>
+          <div class="form-check">
+            <input id="is_confidential_dynamic" type="checkbox" class="form-check-input" name="is_confidential">
+            <label for="is_confidential_dynamic"
+                   class="form-check-label"
+                   data-toggle="tooltip"
+                   data-html="true"
+                   data-placement="right"
+                   title="A Confidential App meets <u> all </u> the following: <ul>
+                   <li> App runs on a trusted server</li>
+                   <li> App has server-side business logic</li>
+                   <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
           </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
@@ -208,11 +220,11 @@
             Please register your application with the following information:
           </p>
           <div class="form-group">
-            <label for="skip_launch">Launch URL</label>
+            <label for="skip_launch">Launch URI</label>
             <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
           </div>
           <div class="form-group">
-            <label for="skip_redirect">Redirect URL</label>
+            <label for="skip_redirect">Redirect URI</label>
             <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
           </div>
           <div class="form-group">
@@ -223,6 +235,18 @@
             <label for="grant_types">Grant Type</label>
             <input readonly type="text" class="form-control" name="grant_types" id="grant_types" value="authorization_code" required>
           </div>
+          <div class="form-check">
+            <input id="is_confidential" type="checkbox" class="form-check-input" name="is_confidential">
+            <label for="is_confidential"
+                   class="form-check-label"
+                   data-toggle="tooltip"
+                   data-html="true"
+                   data-placement="right"
+                   title="A Confidential App meets <u> all </u> the following: <ul>
+                   <li> App runs on a trusted server</li>
+                   <li> App has server-side business logic</li>
+                   <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
+          </div>
           <div class="form-group">
             <label for="scope">Scopes</label>
             <input type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
@@ -230,6 +254,12 @@
           <div class="form-group">
             <label for="dynamicRegistrationClientId">Enter Client Id</label>
             <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId" required>
+          </div>
+          <div class="form-group d-none" id="client_secret_form_group">
+            <label for="dynamicRegistrationClientSecret"
+                   data-toggle="tooltip" data-placement="right"
+                   title="The Client Secret provided by the server which must be protected">Enter Client Secret</label>
+            <input type="text" class="form-control" name="client_secret" id="dynamicRegistrationClientSecret">
           </div>
         </div>
         <div class="modal-footer">
@@ -330,11 +360,11 @@
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI</h5>
         </div>
         <div class="modal-body">
           <p>
-          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URL:
+          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI:
           </p>
           <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
           <div class="modal-footer">
@@ -393,7 +423,7 @@
             <input type="text" class="form-control" name="refresh_token" id="refresh_token" value="<%= instance.refresh_token %>">
           </div>
           <div class="form-group">
-            <label for="oauth_introspection_endpoint">Introspection URL</label>
+            <label for="oauth_introspection_endpoint">Introspection URI</label>
             <input type="text" class="form-control" name="oauth_introspection_endpoint" id="oauth_introspection_endpoint" value="<%= instance.oauth_introspection_endpoint %>" required>
           </div>
           <div class="form-group">
