@@ -38,13 +38,6 @@ end
 desc 'Execute sequence against a FHIR server'
 task :execute_sequence, [:sequence, :server] do |task, args|
 
-  REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
-                      'Accept-Charset'=>'UTF-8',
-                      'Content-Type'=>'application/json+fhir;charset=UTF-8'
-                     }
-
-  RESPONSE_HEADERS = {'content-type'=>'application/json+fhir;charset=UTF-8'}
-
   @sequence = nil
   SequenceBase.ordered_sequences.map do |seq|
     if seq.sequence_name == args[:sequence]
@@ -54,10 +47,10 @@ task :execute_sequence, [:sequence, :server] do |task, args|
 
   if @sequence == nil
     puts "Sequence not found."
+    binding.pry
     exit
   end
 
-  binding.pry
   instance = TestingInstance.new(url: args[:server])
   instance.save!
   client = FHIR::Client.new(args[:server])
