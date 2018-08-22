@@ -218,12 +218,12 @@ class SequenceBase
   # Defines a new test.
   #
   # test_id - The String unique id
-  # ext_ref - The String specification reference
+  # ref - The String specification reference
   # name - The String name of the test
   # description - The String description of the test
   # required - The Symbol used as the key in the metadata indicating if the test is required
   # block - The Block test to be executed
-  def self.test(test_id, ext_ref, name, url = nil, description = nil, required = :required, &block)
+  def self.test(test_id, ref, name, url = nil, description = nil, required = :required, &block)
 
     @@test_index += 1
 
@@ -236,7 +236,7 @@ class SequenceBase
     test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
     @@test_metadata[self.sequence_name] ||= []
     @@test_metadata[self.sequence_name] << { test_id: complete_test_id,
-                                             ext_ref: ext_ref,
+                                             ref: ref,
                                              name: name,
                                              url: url, 
                                              description: description,
@@ -245,7 +245,7 @@ class SequenceBase
 
     wrapped = -> () do
       @test_warnings, @links, @requires, @validates = [],[],[],[]
-      result = TestResult.new(test_id: complete_test_id, ext_ref: ext_ref, name: name,
+      result = TestResult.new(test_id: complete_test_id, ref: ref, name: name,
         result: STATUS[:pass], url: url, description: description,
         test_index: test_index, required: is_required)
       begin
