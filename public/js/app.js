@@ -28,19 +28,30 @@ $(function(){
   });
 
 
-  $('.sequence-main').on('click', function(e) {
-    if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
-      $(this).parent().find('.collapse').collapse('toggle');
+  // $('.sequence-main').on('click', function(e) {
+  //   if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
+  //     $(this).parent().find('.collapse').collapse('toggle');
+  //   }
+  // });
+
+  $('.sequence-expand-button').click(function () {
+    let button = $(this)
+    button.parent().find('.collapse').collapse('toggle');
+    if (button.text().indexOf("Show") > 0) {
+      button.html("<span class='oi oi-chevron-top'></span> Hide Details")
+    }
+    else {
+      button.html("<span class='oi oi-chevron-bottom'></span> Show Details")
     }
   });
 
-  $('.sequence-row').on('show.bs.collapse', function() {
-    $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
-  });
+  // $('.sequence-row').on('show.bs.collapse', function() {
+  //   $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
+  // });
 
-  $('.sequence-row').on('hide.bs.collapse', function() {
-    $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
-  });
+  // $('.sequence-row').on('hide.bs.collapse', function() {
+  //   $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
+  // });
 
   $('.disable-buttons').each(function(el){
     $(this).find('.btn').attr('disabled', true)
@@ -76,7 +87,9 @@ $(function(){
   })
 
   if(window.location.hash.length > 0){
-    $(window.location.hash + "Sequence-details").collapse('show')
+    let details = $(window.location.hash + "Sequence-details")
+    details.collapse('show')
+    details.parent().find('.sequence-expand-button').html("<span class='oi oi-chevron-top'></span> Hide Details")
   }
 
   $('[data-toggle="tooltip"]').tooltip()

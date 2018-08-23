@@ -1,11 +1,11 @@
-<div class="sequence-row">
+<div class="sequence-row card">
   <div class="sequence-main">
     <a name="<%=sequence_class.sequence_name%>"></a>
     <% case sequence_results[sequence_class.sequence_name].try(:result)
       when nil %>
-        <div class="sequence-score sequence-score-pending" data-toggle="tooltip" title="Sequence Not Yet Run">
+        <%# <div class="sequence-score sequence-score-pending" data-toggle="tooltip" title="Sequence Not Yet Run">
           &nbsp;
-        </div>
+        </div> %>
     <% when 'pass' %>
         <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Sequence Passed">
           <span class="oi oi-check" aria-hidden="true"></span>
@@ -95,12 +95,11 @@
       <% else %>
         <span><%= sequence_class.preconditions_description %></span>
       <% end %>
-      <div class="sequence-action-collapse">
-        <a class="sequence-collapse collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
-          <span id="<%=sequence_class%>-details-expand" data-toggle="tooltip" class="oi oi-chevron-right" title="View Sequence Tests" aria-hidden="true"></span>
-        </a>
-      </div>
+      <%# Replaced chevron with 'more details...' %>
     </div>
   </div>
   <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
+  <button class='btn btn-outline-secondary sequence-expand-button'>
+    <span class="oi oi-chevron-bottom"></span> Show Details
+  </button>
 </div>
