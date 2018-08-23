@@ -30,7 +30,7 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
       test[:description].nil? ||
       !valid_uri?(test[:url]) ||
       test[:test_id].nil? ||
-      test[:ext_ref].nil?
+      test[:ref].nil?
     }
 
     assert incomplete_metadata_tests.empty?, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
