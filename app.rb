@@ -365,7 +365,7 @@ namespace BASE_PATH do
         count = sequence_result.test_results.length
         sequence_result = sequence.resume(request, headers, request.params) do |result|
           count = count + 1
-          out << js_update_result(result, count, sequence_results.total)
+          out << js_update_result(result, count, sequence.test_count)
           instance.save!
         end
         instance.sequence_results.push(sequence_result)
@@ -374,7 +374,7 @@ namespace BASE_PATH do
           out << js_redirect_modal(sequence_result.redirect_to_url)
           out << js_redirect(sequence_result.redirect_to_url)
         else
-          out << js_redirect('#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}')
+          out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}")
         end
       end
     end
