@@ -33,9 +33,6 @@
     <% end %>
     <div class="sequence-title">
       <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
-        <% if sequence_class.optional? %>
-          OPTIONAL |
-        <% end %>
         <%= sequence_class.title %>
       </a>
       <div class="sequence-out-of">
