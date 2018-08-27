@@ -1,12 +1,12 @@
 class ArgonautCareTeamSequence < SequenceBase
 
-  group 'Argonaut Care Team Profile'
+  group 'Argonaut Query and Data'
 
-  title 'Argonaut Data Query'
+  title 'Argonaut Care Team Profile'
 
   modal_before_run
 
-  description 'Verify that the FHIR server follows the Argonaut Data Query Implementation Guide Server.'
+  description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-CT'
 

@@ -4,7 +4,7 @@
       <div class="container row row-no-padding">
         <div class="col-9">
           <div class="server-state-title">FHIR Resource Server</div>
-          <div class="server-state" data-toggle="tooltip" title="<%=instance.url%>">
+          <div class="server-state">
             <%=instance.url%>
           </div>
         </div>
@@ -15,14 +15,14 @@
             <a href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
           </div>
 
-          <div class="client-state-button float-right" data-toggle="tooltip" title="Save a link to this test instance">
+          <div class="client-state-button float-right">
             <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
               <span class="oi oi-link-intact" aria-hidden="true"></span>
               <span id="save-test-button-text">Save</span>
             </button>
           </div>
 
-          <div class="client-state-button float-right" data-toggle="tooltip" title="View client status">
+          <div class="client-state-button float-right">
             <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
               <span class="oi oi-list" aria-hidden="true"></span>
               <span id="client-status-button-text">Client State</span>
@@ -36,6 +36,11 @@
 
 <div class="container">
   <div class="main main-details">
+
+    <div class='alert alert-warning'>
+      <span class="oi oi-wrench"></span> This software is under active development.  Please report bugs and submit feature requests as <a href='https://github.com/siteadmin/inferno/issues'>GitHub issues</a>.
+    </div>
+
     <% unless locals[:error_code].nil? %>
       <div class="alert alert-danger" role="alert">
         <% if error_code == 'no_launch' %>
@@ -47,55 +52,6 @@
         <% end %>
       </div>
     <% end %>
-    <% if show_tutorial %>
-      <% if sequence_results.size == 0 %>
-        <div class="alert alert-info" role="alert">
-          <p>
-          You have created a new testing session at <a class="alert-link" href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/"><%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/</a>.
-          Please take note of this URI if you would like to share the results or return to the results of these tests in the future.
-          </p>
-          <p>
-          Start testing by clicking on the <strong><span class="oi oi-media-play"></span> Begin</strong> button next to the
-          Conformance Statement sequence below. This sequence queries the metadata endpoint of the FHIR server for supported features and
-          security configuration information. This information will inform the testing client how to access the necessary endpoints
-          for subsequent tests.
-        </div>
-      <% end %>
-
-      <% if instance.sequence_results.count == 1 %>
-        <div class="alert alert-info" role="alert">
-          <% if !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil? && instance.sequence_results.all?{|s| s.name == 'Conformance'} %>
-           <p>
-             The Conformance Statement sequence was able to extract the OAuth 2.0 endpoints from the conformance statement the FHIR server.
-             You can inspect what was tested by clicking on individual tests within the sequence.  Those tests that have a
-             <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
-             responses, can show what was communicated between the client and the server.
-           </p>
-           <p>
-             Click on the <strong><span class="oi oi-list"></span> Client State</strong> button above to see more details about what
-             was extracted from the conformance statement that will be used in subsequent tests.  Click on the
-             <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Note that only the most recent
-             test results are saved within a sequence.
-           </p>
-           <p>
-           For more information about usage of this application, please visit the
-           <a href="https://github.com/siteadmin/inferno" class="alert-link" target="_blank">documentation.</a>
-           </p>
-         <% else %>
-           <p>
-           The Conformance Statement sequence was unable to extract the required fields from the metadata endpoint of this FHIR server.
-           You can inspect what happened by clicking on individual tests within the sequence.  Those tests that have a
-           <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
-           responses, may help identify what occured to cause these tests to fail.
-           </p>
-           <p>
-           You can click on the <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Only the most recent
-           test results are saved within a sequence.
-           </p>
-        <% end %>
-        </div>
-      <% end %>
-     <% end %>
     <div class="sequence-table">
       <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
         <div class="sequence_group">
@@ -115,11 +71,11 @@
 
 
 <!-- Modals -->
-<div class="modal fade" id="PrerequisitesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="PrerequisitesModal" tabindex="-1" role="dialog" aria-labelledby="PrerequisitesModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Prerequisites</h5>
+        <h5 class="modal-title" id="PrerequisitesModalTitle">Prerequisites for </h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>

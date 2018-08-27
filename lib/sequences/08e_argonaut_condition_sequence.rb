@@ -6,7 +6,7 @@ class ArgonautConditionSequence < SequenceBase
 
   modal_before_run
 
-  description 'Verify that the FHIR server follows the Argonaut Data Query Implementation Guide Server.'
+  description 'Verify that Condition resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-CO'
 

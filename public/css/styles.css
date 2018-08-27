@@ -5,6 +5,17 @@ html {
   min-height: 100%;
 }
 
+@font-face {
+  font-family: 'Source Sans Pro';
+  src: url('../source-sans/SourceSansPro-Regular.ttf') format('truetype'),
+       url('../source-sans/SourceSansPro-Bold.ttf') format('truetype'),
+       url('../source-sans/SourceSansPro-Light.ttf') format('truetype');
+}
+
+html, body, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
 body {
   margin-bottom: 80px;
   min-width: 900px;
@@ -165,9 +176,9 @@ body {
 
 
 .sequence-main {
-  padding-top: 1rem;
+  padding: 1rem;
   margin: 0;
-  padding-left: 1rem;
+  padding-bottom: 0;
 }
 
 .child-test {
@@ -228,14 +239,10 @@ body {
 }
 
 .sequence-title {
-  display: inline-block;
-  vertical-align: top;
-  padding: 8px;
+  font-size: 1.1em;
 }
 
 .sequence-container {
-  display: inline-block;
-  vertical-align: top;
 }
 
 .sequence-collapse {
@@ -249,7 +256,7 @@ body {
 }
 
 .sequence-action {
-  float: right;
+  text-align: right;
   padding: 14px 8px;
 }
 
@@ -259,7 +266,8 @@ body {
 
 .sequence-action .btn {
   margin-right: 5px;
-  font-size: 1rem;
+  font-size: 1.3rem;
+  cursor: pointer;
 }
 
 .sequence-action-collapse {
@@ -284,11 +292,11 @@ body {
 
 .sequence-out-of {
   display: inline-block;
-  font-size: .8em;
+  color: #666;
 }
 
 .sequence-details {
-  font-size: .8em;
+  font-size: .9em;
 }
 
 .sequence-message {
@@ -310,6 +318,17 @@ body {
 .server-state-title {
   margin-top: 20px;
   font-size: 1.0em;
+}
+
+.prerequisite-tooltip {
+  font-size: 1rem;
+  color: darkorange;
+}
+
+.tooltip-inner ul {
+  text-align: left;
+  margin-left: 0;
+  padding-left: 1rem;
 }
 
 /* ------------------------- CLIENT STATE POPOP -------------------------------- */

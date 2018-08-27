@@ -209,6 +209,8 @@ class SequenceBase
 
       dependencies.merge! linked_dependencies
 
+    else
+      return dependencies[self]
     end
 
     dependencies

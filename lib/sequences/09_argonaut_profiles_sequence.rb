@@ -1,3 +1,5 @@
+# TODO: Is this still valid, or have all of these tests been broken out by FHIR resource?
+
 class ArgonautProfilesSequence < SequenceBase
 
   group 'Argonaut Query and Data'

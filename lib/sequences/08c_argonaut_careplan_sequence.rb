@@ -6,7 +6,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   modal_before_run
 
-  description 'Verify that the FHIR server follows the Argonaut Data Query Implementation Guide Server for Care plans.'
+  description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-CP'
 
