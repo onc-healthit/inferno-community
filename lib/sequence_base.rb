@@ -18,12 +18,16 @@ class SequenceBase
   @@preconditions = {}
   @@titles = {}
   @@descriptions = {}
+  @@requires = {}
+  @@defines = {}
   @@test_metadata = {}
 
   @@modal_before_run = []
   @@optional = []
 
   @@test_id_prefixes = {}
+
+  @@inactive = {}
 
   def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
     @client = client
@@ -167,9 +171,69 @@ class SequenceBase
     @@descriptions[self.sequence_name]
   end
 
+  def self.requires(*requires)
+    @@requires[self.sequence_name] = requires unless requires.empty?
+    @@requires[self.sequence_name] || []
+  end
+
+  def self.missing_requirements(instance, recurse = false)
+
+    return [] unless @@requires.key?(self.sequence_name)
+
+    requires = @@requires[self.sequence_name]
+
+    missing = requires.select { |r| instance.respond_to?(r) && instance.send(r).nil? }
+
+    dependencies = {}
+    dependencies[self] = missing.map do |requirement|
+      [requirement, ordered_sequences.select{ |sequence| sequence.defines.include? requirement}]
+    end
+
+    # move this into a hash so things are duplicated.
+
+    if(recurse)
+
+      linked_dependencies = {}
+      dependencies[self].each do |dep|
+        return if linked_dependencies.has_key? dep
+        dep[1].each do |seq|
+          linked_dependencies.merge! seq.missing_requirements(instance, true)
+        end
+      end
+
+      dependencies.merge! linked_dependencies
+
+    end
+
+    dependencies
+
+  end
+
+  def self.variable_required_by(variable)
+    ordered_sequences.select{ |sequence| sequence.requires.include? variable}
+  end
+
+  def self.variable_defined_by(variable)
+    ordered_sequences.select{ |sequence| sequence.defines.include? variable}
+  end
+
+  def self.defines(*defines)
+    @@defines[self.sequence_name] = defines unless defines.empty?
+    @@defines[self.sequence_name] || []
+  end
+
+
   def self.test_id_prefix(test_id_prefix = nil)
     @@test_id_prefixes[self.sequence_name] = test_id_prefix unless test_id_prefix.nil?
     @@test_id_prefixes[self.sequence_name]
+  end
+
+  def self.inactive
+    @@inactive[self.sequence_name] = true
+  end
+
+  def self.inactive?
+    @@inactive.has_key?(self.sequence_name)
   end
 
   def self.tests
@@ -238,7 +302,7 @@ class SequenceBase
     @@test_metadata[self.sequence_name] << { test_id: complete_test_id,
                                              ref: ref,
                                              name: name,
-                                             url: url, 
+                                             url: url,
                                              description: description,
                                              test_index: test_index,
                                              required: is_required}

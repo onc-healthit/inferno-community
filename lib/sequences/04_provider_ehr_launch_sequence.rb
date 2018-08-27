@@ -6,6 +6,8 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   test_id_prefix 'PELS'
 
+  requires :client_id, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
+  defines :token, :id_token, :refresh_token, :patient_id
 
   modal_before_run
 

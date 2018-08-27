@@ -1,5 +1,7 @@
 class TokenIntrospectionSequence < SequenceBase
 
+  inactive
+
   title 'OAuth 2.0 Token Introspection'
 
   description 'Verify token properties using token introspection at the authorization server.'

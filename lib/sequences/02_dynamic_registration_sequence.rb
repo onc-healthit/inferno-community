@@ -8,7 +8,11 @@ class DynamicRegistrationSequence < SequenceBase
 
   optional
 
+  # TODO remove
   modal_before_run
+
+  requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes
+  defines :client_id, :scopes, :client_secret
 
   preconditions 'OAuth endpoints are necessary' do
     !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?

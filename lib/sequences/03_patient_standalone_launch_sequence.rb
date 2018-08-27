@@ -5,6 +5,9 @@ class PatientStandaloneLaunchSequence < SequenceBase
   test_id_prefix 'PSLS'
   modal_before_run
 
+  requires :client_id, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
+  defines :token, :id_token, :refresh_token, :patient_id
+
   preconditions 'Client must be registered' do
     !@instance.client_id.nil?
   end

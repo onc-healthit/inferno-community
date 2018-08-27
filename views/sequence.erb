@@ -51,51 +51,28 @@
       </div>
       <div class="sequence-details">
         <%= sequence_class.description %>
+        <br/>
+        <%= sequence_class.missing_requirements(instance) %>
       </div>
     </div>
     <div class="sequence-action">
-      <% if sequence_class.preconditions_met_for? instance %>
-        <% if sequence_class.optional? %>
-            <span title="Manually perform/verify this test" data-toggle="tooltip">
-              <button type="submit" class="btn btn-outline-info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>SkipModal">
-                <span class="oi oi-eye" title="Manual"></span>
-                Manual
-              </button>
-            </span>
-        <% end %>
-        <% if sequence_class.modal_before_run? %>
-          <span title="Execute Test" data-toggle="tooltip">
-            <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
-              <button type="submit" class="btn btn-outline-info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
-                <span class="oi oi-action-undo" title="Execute Test"></span>
-                Rerun
-              </button>
-            <% else %>
-                <button type="submit" class="btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm" data-toggle="modal" data-target="#<%= sequence_class.sequence_name %>Modal">
-                <span class="oi oi-media-play" title="Execute Test"></span>
-                Begin
-              </button>
-            <% end %>
-          </span>
+      <span title="Execute Test" data-toggle="tooltip">
+        <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
+          <button type="submit" class="btn btn-outline-info btn-sm"
+                                data-requires= "<%= sequence_class.requires.join(',') %>"
+                                data-sequence="<%=sequence_class%>">
+            <span class="oi oi-action-undo" title="Execute Test"></span>
+            Rerun
+          </button>
         <% else %>
-          <span title="Execute Test" data-toggle="tooltip">
-            <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
-              <a href="<%= sequence_class.sequence_name %>" role="button" class="btn btn-outline-info btn-sm">
-                <span class="oi oi-action-undo" title="Execute Test"></span>
-                Rerun
-              </a>
-            <% else %>
-              <a href="<%= sequence_class.sequence_name %>" role="button" class="btn btn-info btn-sm">
-                <span class="oi oi-media-play" title="Execute Test"></span>
-                Begin
-              </a>
-            <% end %>
-          </span>
+          <button type="submit" class="btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm "
+                                data-requires= "<%= sequence_class.requires.join(',') %>"
+                                data-sequence="<%=sequence_class%>">
+            <span class="oi oi-media-play" title="Execute Test"></span>
+            Begin
+          </button>
         <% end %>
-      <% else %>
-        <span><%= sequence_class.preconditions_description %></span>
-      <% end %>
-      <%# Replaced chevron with 'more details...' %>
+      </span>
     </div>
   </div>
   <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>

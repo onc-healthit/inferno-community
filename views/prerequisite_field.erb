@@ -1,0 +1,19 @@
+<div class="form-group"
+     data-requiredby="<%=SequenceBase.variable_required_by(prerequisite).join(',')%>"
+     data-prerequisite="<%=prerequisite.to_s%>"
+     >
+
+     <label for="<%=prerequisite.to_s%>"
+     data-toggle="tooltip"
+     title="Defined by <%=SequenceBase.variable_defined_by(prerequisite).join(',')%>"
+       ><%=label%></label>
+     <input type="text"
+            class="form-control"
+            name="<%=prerequisite.to_s%>"
+            id="<%=prerequisite.to_s%>"
+            placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
+            value="<%=value%>"
+            <%if defined?(readonly) && readonly %>readonly<%end%>
+            <%if defined?(required) && required %>required<%end%>
+            />
+</div>

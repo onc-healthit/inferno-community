@@ -8,6 +8,8 @@ class ArgonautDataQuerySequence < SequenceBase
 
   test_id_prefix 'ADQ'
 
+  requires :token, :patient_id
+
   preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end

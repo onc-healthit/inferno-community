@@ -160,8 +160,18 @@ namespace BASE_PATH do
   end
 
 
-  get '/:id/:sequence/?' do
+  post '/:id/sequence_result/?' do
     instance = TestingInstance.get(params[:id])
+    halt 404 if instance.nil?
+
+    # Save params
+
+    params[:required_fields].split(',').each do |field|
+      instance.send("#{field}=", params[field]) if instance.respond_to? field
+    end
+
+    instance.save!
+
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json

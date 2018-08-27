@@ -53,7 +53,40 @@ $(function(){
   //   $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
   // });
 
-  $('.disable-buttons').each(function(el){
+  $('.sequence-action button').click(function() {
+    var sequence = $(this).data('sequence');
+    var requirements = []
+    $('#PrerequisitesModal .form-group').each(function(){
+      var requiredby = $(this).data('requiredby');
+      var prerequisite = $(this).data('prerequisite');
+      var show = false;
+      if(requiredby){
+        requiredby.split(',').forEach(function(item){
+          if(item === sequence){
+            show = true;
+            requirements.push(prerequisite)
+          }
+        })
+      }
+      if(show){
+        $(this).show()
+      } else {
+        $(this).hide();
+      }
+    });
+
+    $('#PrerequisitesModal input[name=sequence]').val(sequence);
+    $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
+
+    if(requirements.length === 0){
+      $('#PrerequisitesModal form').submit();
+    } else {
+      $('#PrerequisitesModal').modal('show');
+    }
+
+  });
+
+  $('.disable-buttons').each(function(){
     $(this).find('.btn').attr('disabled', true)
 
     $(this).attr('title', $(this).data('preconditionDescription'))
@@ -87,7 +120,7 @@ $(function(){
   })
 
   if(window.location.hash.length > 0){
-    let details = $(window.location.hash + "Sequence-details")
+    let details = $(window.location.hash + "-details")
     details.collapse('show')
     details.parent().find('.sequence-expand-button').html("<span class='oi oi-chevron-top'></span> Hide Details")
   }
