@@ -489,15 +489,29 @@ class SequenceBase
   # There is a test to ensure that this doesn't fall out of date
   def self.ordered_sequences
     [ ConformanceSequence,
-        DynamicRegistrationSequence,
-        PatientStandaloneLaunchSequence,
-        ProviderEHRLaunchSequence,
-        OpenIDConnectSequence,
-        TokenIntrospectionSequence,
-        TokenRefreshSequence,
-        ArgonautDataQuerySequence,
-        ArgonautProfilesSequence,
-        AdditionalResourcesSequence]
+      DynamicRegistrationSequence,
+      PatientStandaloneLaunchSequence,
+      ProviderEHRLaunchSequence,
+      OpenIDConnectSequence,
+      TokenIntrospectionSequence,
+      TokenRefreshSequence,
+      ArgonautPatientSequence,
+      ArgonautAllergyIntoleranceSequence,
+      ArgonautCarePlanSequence,
+      ArgonautCareTeamSequence,
+      ArgonautConditionSequence,
+      ArgonautDeviceSequence,
+      ArgonautDiagnosticReportSequence,
+      ArgonautObservationSequence,
+      ArgonautGoalSequence,
+      ArgonautImmunizationSequence,
+      ArgonautMedicationStatementSequence,
+      ArgonautMedicationOrderSequence,
+      ArgonautProcedureSequence,
+      ArgonautSmokingStatusSequence,
+      ArgonautVitalSignsSequence,
+      ArgonautProfilesSequence,
+      AdditionalResourcesSequence]
   end
 
 end

@@ -10,7 +10,6 @@ class ArgonautProfilesSequence < SequenceBase
 
   test_id_prefix 'ADP'
 
-
   preconditions 'Argonaut Data Query Sequence must be completed' do
     !@instance.token.nil? && @instance.latest_results.has_key?('ArgonautDataQuery')
   end
