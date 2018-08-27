@@ -74,7 +74,7 @@ class TestingInstance
   def patient_id= patient_id
 
     existing_patients = self.resource_references.select{|ref| ref.resource_type == 'Patient'}
-    self.supported_resources.each(&:destroy)
+    self.resource_references.each(&:destroy)
     self.save!
 
     self.resource_references << ResourceReference.new({
