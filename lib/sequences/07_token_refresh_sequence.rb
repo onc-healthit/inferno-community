@@ -1,5 +1,7 @@
 class TokenRefreshSequence < SequenceBase
 
+  group 'SMART App Launch'
+
   title 'Token Refresh'
   description 'Demonstrate token refresh capability'
   test_id_prefix 'TR'

@@ -8,7 +8,7 @@ class TestingInstance
   property :client_secret, String
   property :base_url, String
 
-  property :client_name, String
+  property :client_name, String, default: 'Inferno'
   property :scopes, String
   property :launch_type, String
   property :state, String
@@ -69,6 +69,19 @@ class TestingInstance
 
   def patient_id
     self.resource_references.select{|ref| ref.resource_type == 'Patient'}.first.try(:resource_id)
+  end
+
+  def patient_id= patient_id
+
+    existing_patients = self.resource_references.select{|ref| ref.resource_type == 'Patient'}
+    self.supported_resources.each(&:destroy)
+    self.save!
+
+    self.resource_references << ResourceReference.new({
+      resource_type: 'Patient',
+      resource_id: patient_id
+      })
+
   end
 
   def save_supported_resources(conformance)

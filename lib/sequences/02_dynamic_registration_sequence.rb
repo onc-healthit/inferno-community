@@ -1,5 +1,7 @@
 class DynamicRegistrationSequence < SequenceBase
 
+  group 'SMART App Launch'
+
   title 'Dynamic Registration'
 
   description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
@@ -11,7 +13,7 @@ class DynamicRegistrationSequence < SequenceBase
   # TODO remove
   modal_before_run
 
-  requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes
+  requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client
   defines :client_id, :scopes, :client_secret
 
   preconditions 'OAuth endpoints are necessary' do

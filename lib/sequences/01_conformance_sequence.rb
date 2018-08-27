@@ -1,5 +1,7 @@
 class ConformanceSequence < SequenceBase
 
+  group 'Discovery'
+
   title 'Conformance Statement'
 
   description 'Verify that the FHIR server exposes a Conformance Statement with the necessary information.'

@@ -1,11 +1,13 @@
 class PatientStandaloneLaunchSequence < SequenceBase
 
+  group 'SMART App Launch'
+
   title 'Patient Standalone Launch Sequence'
   description 'Demonstrate the Patient Standalone Launch Sequence.'
   test_id_prefix 'PSLS'
   modal_before_run
 
-  requires :client_id, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
+  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
   defines :token, :id_token, :refresh_token, :patient_id
 
   preconditions 'Client must be registered' do
@@ -77,6 +79,8 @@ class PatientStandaloneLaunchSequence < SequenceBase
     'https://tools.ietf.org/html/rfc6749',
     'If the request failed verification or is invalid, the authorization server returns an error response.' do
 
+    headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+
     oauth2_params = {
       'grant_type' => 'authorization_code',
       'code' => 'INVALID_CODE',
@@ -84,7 +88,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
       'client_id' => @instance.client_id
     }
 
-    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
     assert_response_bad_or_unauthorized token_response
 
     oauth2_params = {
@@ -94,7 +98,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
       'client_id' => 'INVALID_CLIENT_ID'
     }
 
-    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
     assert_response_bad_or_unauthorized token_response
 
   end
@@ -109,14 +113,15 @@ class PatientStandaloneLaunchSequence < SequenceBase
         'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
     }
     if @instance.confidential_client
-      oauth2_header = {
+      oauth2_headers = {
           'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
+          'Accept' => 'application/json', 'Content-Type' => 'application/json'
       }
     else
       oauth2_params['client_id'] = @instance.client_id
-      oauth2_header = {}
+      oauth2_headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
     end
-    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_header)
+    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
     assert_response_ok(@token_response)
 
   end

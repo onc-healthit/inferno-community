@@ -13,18 +13,15 @@ $(function(){
     }
   }
 
-  var isConfidential = $('#is_confidential'),
-      secretEntry = $('#client_secret_form_group')
-
-
-  isConfidential.on('click', function() {
-      if($(this).is(':checked')) {
-          $('#client_secret_form_group').removeClass("d-none");
-          secretEntry.find('input').attr('required', true);
-      } else {
-          $('#client_secret_form_group').addClass("d-none");
-          secretEntry.find('input').attr('required', false);
-      }
+  $('input[type=radio][name=confidential_client]').on('change', function() {
+   switch($(this).val()) {
+     case 'true':
+       $('.client-secret-container').show();
+       break;
+     case 'false':
+       $('.client-secret-container').hide();
+       break;
+   }
   });
 
 
@@ -77,6 +74,13 @@ $(function(){
 
     $('#PrerequisitesModal input[name=sequence]').val(sequence);
     $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
+
+    // Confidential client special case
+    if($('#confidential_client_on')[0].checked){
+       $('.client-secret-container').show();
+    } else {
+       $('.client-secret-container').hide();
+    }
 
     if(requirements.length === 0){
       $('#PrerequisitesModal form').submit();

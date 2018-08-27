@@ -1,15 +1,15 @@
 class ProviderEHRLaunchSequence < SequenceBase
 
+  group 'SMART App Launch'
+
   title 'Provider EHR Launch Sequence'
 
   description 'Demonstrate the Provider EHR Launch Sequence.'
 
   test_id_prefix 'PELS'
 
-  requires :client_id, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
+  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
   defines :token, :id_token, :refresh_token, :patient_id
-
-  modal_before_run
 
   preconditions 'Client must be registered' do
     !@instance.client_id.nil?

@@ -25,7 +25,7 @@
           <div class="client-state-button float-right" data-toggle="tooltip" title="View client status">
             <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
               <span class="oi oi-list" aria-hidden="true"></span>
-              <span id="client-status-button-text">Client Status</span>
+              <span id="client-status-button-text">Client State</span>
             </button>
           </div>
         </div>
@@ -72,7 +72,7 @@
              responses, can show what was communicated between the client and the server.
            </p>
            <p>
-             Click on the <strong><span class="oi oi-list"></span> Client Status</strong> button above to see more details about what
+             Click on the <strong><span class="oi oi-list"></span> Client State</strong> button above to see more details about what
              was extracted from the conformance statement that will be used in subsequent tests.  Click on the
              <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Note that only the most recent
              test results are saved within a sequence.
@@ -96,15 +96,16 @@
         </div>
       <% end %>
      <% end %>
-    <div class="sequence-header">
-      Test Sequences
-      <%# Removed total score for community edition. %>
-    </div>
     <div class="sequence-table">
-      <% sequences.each do |sequence_class| %>
-        <% unless sequence_class.inactive? %>
-          <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
-        <% end %>
+      <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
+        <div class="sequence_group">
+          <div class="sequence-header"><%=sequence_group[0] %></div>
+          <% sequence_group[1].each do |sequence_class| %>
+            <% unless sequence_class.inactive? %>
+              <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
+            <% end %>
+          <% end %>
+        </div>
       <% end %>
 
       <%# Removed total score for community edition. %>
@@ -136,9 +137,36 @@
                                           label: 'OAuth 2.0 Token Endpoint',
                                           value: instance.oauth_token_endpoint}); %>
 
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
+                                          label: 'Client ID',
+                                          value: instance.client_id}); %>
+
           <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
                                           label: 'OAuth 2.0 Dynamic Registration Endpoint',
                                           value: instance.oauth_register_endpoint}); %>
+
+          <%# SPECIAL CASE: CLIENT SECRET %>
+          <div class="form-group"
+               data-requiredby="<%=SequenceBase.variable_required_by(:confidential_client).join(',')%>"
+               data-prerequisite="confidential_client"
+               id="is_confidential"
+               >
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
+              <label class="form-check-label" for="confidential_client_off">Public Client</label>
+            </div>
+            <div class="form-check form-check-inline" data-requiredby>
+              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
+              <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
+            </div>
+          </div>
+
+          <div class="client-secret-container">
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+                                          label: 'Client Secret',
+                                          value: instance.client_secret}); %>
+          </div>
+
 
           <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
                                           label: 'OAuth Client Name',
@@ -220,7 +248,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Client Status</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Client State</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>

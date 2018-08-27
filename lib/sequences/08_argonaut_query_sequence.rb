@@ -1,5 +1,7 @@
 class ArgonautDataQuerySequence < SequenceBase
 
+  group 'Argonaut Query and Data'
+
   title 'Argonaut Data Query'
 
   modal_before_run
@@ -677,7 +679,7 @@ class ArgonautDataQuerySequence < SequenceBase
 
   end
 
-  test '51', '', 'Servr supports Immunization search by patient',
+  test '51', '', 'Server supports Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A client has connected to a server and fetched all immunizations for a patient.' do
 

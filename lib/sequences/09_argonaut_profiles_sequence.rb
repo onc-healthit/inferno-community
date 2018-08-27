@@ -1,5 +1,7 @@
 class ArgonautProfilesSequence < SequenceBase
 
+  group 'Argonaut Query and Data'
+
   title 'Argonaut Data Profiles'
 
   modal_before_run

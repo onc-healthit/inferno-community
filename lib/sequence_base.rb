@@ -15,6 +15,7 @@ class SequenceBase
 
   @@test_index = 0
 
+  @@group = {}
   @@preconditions = {}
   @@titles = {}
   @@descriptions = {}
@@ -155,6 +156,11 @@ class SequenceBase
 
   def sequence_name
     self.class.sequence_name
+  end
+
+  def self.group(group = nil)
+    @@group[self.sequence_name] = group unless group.nil?
+    @@group[self.sequence_name] || []
   end
 
   def self.sequence_name

@@ -1,5 +1,7 @@
 class TokenIntrospectionSequence < SequenceBase
 
+  group 'SMART App Launch'
+
   inactive
 
   title 'OAuth 2.0 Token Introspection'
