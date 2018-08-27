@@ -1,6 +1,7 @@
 require 'fhir_client'
 require 'pry'
 require './lib/sequence_base'
+require File.expand_path '../../../app.rb', __FILE__
 require './models/testing_instance'
 require 'dm-core'
 require 'csv'
@@ -46,8 +47,17 @@ task :execute_sequence, [:sequence, :server] do |task, args|
   end
 
   if @sequence == nil
-    puts "Sequence not found."
-    binding.pry
+    puts "Sequence not found. Valid sequences are:
+            Conformance,
+            DynamicRegistration,
+            PatientStandaloneLaunch,
+            ProviderEHRLaunch,
+            OpenIDConnect,
+            TokenIntrospection,
+            TokenRefresh,
+            ArgonautDataQuery,
+            ArgonautProfiles,
+            AdditionalResources"
     exit
   end
 
@@ -56,10 +66,16 @@ task :execute_sequence, [:sequence, :server] do |task, args|
   client = FHIR::Client.new(args[:server])
   client.use_dstu2
   client.default_json
-  sequence_instance = sequence_to_run.new(instance, client, true)
+  sequence_instance = @sequence.new(instance, client, true)
   sequence_result = sequence_instance.start
   
-  puts sequence_result.test_results.all
+  sequence_result.test_results.each do |result|
+    puts "Test Name: " + result.name + "\n" +
+         "Test Result: " + result.result + "\n" +
+         "Test Result Message: " + result.message + "\n" +
+         "Test Description: " + result.description + "\n\n"
+  end
+    
   
 end
 
