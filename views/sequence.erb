@@ -2,71 +2,65 @@
   <div class="sequence-main">
     <a name="<%=sequence_class.sequence_name%>"></a>
     <div class='container'>
-    <div class='row align-items-center'>
-      <% case sequence_results[sequence_class.sequence_name].try(:result)
-        when nil %>
-        <div class='col-10'>
-      <% when 'pass' %>
-        <div class='col-1'>
-          <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Sequence Passed">
-            <span class="oi oi-check" aria-hidden="true"></span>
-          </div>
-        </div>
-        <div class='col-9'>
-      <% when 'fail' %>
-        <div class='col-1'>
-          <div class="sequence-score sequence-score-fail" data-toggle="tooltip" title="Sequence Failed">
-            <span class="oi oi-x" aria-hidden="true"></span>
-          </div>
-        </div>
-        <div class='col-9'>
-      <% when 'cancel' %>
-        <div class='col-1'>
-          <div class="sequence-score sequence-score-fail" data-toggle="tooltip" title="Sequence Cancelled During Execution">
-            <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
-          </div>
-      <% when 'error' %>
-        <div class='col-1'>
-          <div class="sequence-score sequence-score-error" data-toggle="tooltip" title="Sequence Test System Error">
-            !
-          </div>
-        </div>
-        <div class='col-9'>
-      <% when 'wait' %>
-        <div class='col-1'>
-          <div class="sequence-score sequence-score-wait" data-toggle="tooltip" title="Sequence is Awaiting Client Redirect or Launch">
-            <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
-          </div>
-        </div>
-        <div class='col-9'>
-      <% when 'skip' %>
-        <div class='col-1'>
-          <div class="sequence-score sequence-score-skip" data-toggle="tooltip" title="Sequence Manually Verified by User">
-              <span class="oi oi-eye" title="Manual Verification" aria-hidden="true"></span>
-          </div>
-        </div>
-        <div class='col-9'>
-      <% end %>
-        <div class="sequence-title">
-          <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
-            <%= sequence_class.title %>
-          </a> - 
-          <div class="sequence-out-of">
-            <% if sequence_results[sequence_class.sequence_name].nil? %>
-              <%= sequence_class.test_count %> tests
-            <% elsif sequence_results[sequence_class.sequence_name].result == 'skip' %>
-              Test manually verified
-            <% else %>
-              <%= sequence_results[sequence_class.sequence_name].passed_count %> Passed -
-              <%= sequence_results[sequence_class.sequence_name].failed_count %> Failed
-              <% if sequence_results[sequence_class.sequence_name].skip_count > 0 %> -
-                <%= sequence_results[sequence_class.sequence_name].skip_count %> Skipped
-              <% end %>
+    <div class='row align-items-center no-gutters'>
+      <div class='col-10'>
+        <div class='row no-gutters'>
+          <% case sequence_results[sequence_class.sequence_name].try(:result)
+            when nil %>
+            <div class='col-12'>
+          <% when 'pass' %>
+            <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Sequence Passed">
+              <span class="oi oi-check" aria-hidden="true"></span>
+            </div>
+            <div class='col-11'>
+          <% when 'fail' %>
+            <div class="sequence-score sequence-score-fail" data-toggle="tooltip" title="Sequence Failed">
+              <span class="oi oi-x" aria-hidden="true"></span>
+            </div>
+            <div class='col-11'>
+          <% when 'cancel' %>
+            <div class="sequence-score sequence-score-fail" data-toggle="tooltip" title="Sequence Cancelled During Execution">
+              <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+            </div>
+            <div class='col-11'>
+          <% when 'error' %>
+            <div class="sequence-score sequence-score-error" data-toggle="tooltip" title="Sequence Test System Error">
+              !
+            </div>
+            <div class='col-11'>
+          <% when 'wait' %>
+            <div class="sequence-score sequence-score-wait" data-toggle="tooltip" title="Sequence is Awaiting Client Redirect or Launch">
+              <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+            </div>
+            <div class='col-11'>
+          <% when 'skip' %>
+            <div class="sequence-score sequence-score-skip" data-toggle="tooltip" title="Sequence Manually Verified by User">
+                <span class="oi oi-eye" title="Manual Verification" aria-hidden="true"></span>
+            </div>
+            <div class='col-11'>
+          <% end %>
+            <div class="sequence-title">
+              <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+                <%= sequence_class.title %>
+              </a> - 
+              <div class="sequence-out-of">
+                <% if sequence_results[sequence_class.sequence_name].nil? %>
+                  <%= sequence_class.test_count %> tests
+                <% elsif sequence_results[sequence_class.sequence_name].result == 'skip' %>
+                  Test manually verified
+                <% else %>
+                  <%= sequence_results[sequence_class.sequence_name].passed_count %> Passed -
+                  <%= sequence_results[sequence_class.sequence_name].failed_count %> Failed
+                  <% if sequence_results[sequence_class.sequence_name].skip_count > 0 %> -
+                    <%= sequence_results[sequence_class.sequence_name].skip_count %> Skipped
+                  <% end %>
 
-            <% end %>
-          </div>
-          <div class="sequence-details">
-            <%= sequence_class.description %>
+                <% end %>
+              </div>
+              <div class="sequence-details">
+                <%= sequence_class.description %>
+              </div>
+            </div>
           </div>
         </div>
       </div>

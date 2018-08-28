@@ -197,7 +197,7 @@ body {
 
 
 .sequence-main {
-  padding: 1rem;
+  padding-top: 1rem;
   margin: 0;
   padding-bottom: 0;
 }
@@ -216,6 +216,7 @@ body {
   border-radius: 20px;
   display: inline-block;
   margin: 8px;
+  margin-top: 5px;
 }
 
 .sequence-score-pending {
