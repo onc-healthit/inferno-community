@@ -1,5 +1,5 @@
 <%# FIXME: This is ugly, but it works for now %>
-<% prerequisite_sequences = "<ul><li>" + SequenceBase.variable_required_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</ul>" %>
+<% prerequisite_sequences = "<ul><li>" + SequenceBase.variable_required_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</li></ul>" %>
 
 <div class="form-group"
      data-requiredby="<%=SequenceBase.variable_required_by(prerequisite).join(',')%>"

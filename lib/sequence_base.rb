@@ -164,7 +164,7 @@ class SequenceBase
   end
 
   def self.sequence_name
-    self.name.split('::').last.split('Sequence').first
+    self.name.split('::').last
   end
 
   def self.title(title = nil)

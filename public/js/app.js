@@ -31,14 +31,16 @@ $(function(){
   //   }
   // });
 
-  $('.sequence-expand-button').click(function () {
+  $('.sequence-expand-button').click(function (event) {
+    event.preventDefault();
     let button = $(this)
-    button.parent().find('.collapse').collapse('toggle');
-    if (button.text().indexOf("Show") > 0) {
-      button.html("<span class='oi oi-chevron-top'></span> Hide Details")
+    let details = $('#' + button.data('result-details'))
+    details.collapse('toggle');
+    if (button.text().indexOf("Show") > -1) {
+      button.html("Hide Details")
     }
     else {
-      button.html("<span class='oi oi-chevron-bottom'></span> Show Details")
+      button.html("Show Details")
     }
   });
 
@@ -126,9 +128,10 @@ $(function(){
   })
 
   if(window.location.hash.length > 0){
+    let sequence = $(window.location.hash)
     let details = $(window.location.hash + "-details")
     details.collapse('show')
-    details.parent().find('.sequence-expand-button').html("<span class='oi oi-chevron-top'></span> Hide Details")
+    sequence.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
   }
 
   $('[data-toggle="tooltip"]').tooltip()

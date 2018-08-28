@@ -47,10 +47,10 @@ body {
 }
 .navbar-brand-subheading {
   color: white;
-  display: block;
+  display: inline-block;
   font-size: 1em;
   position: relative;
-  top: -10px;
+  top: -1px;
 }
 .row-no-padding > [class*="col-"] {
   padding-left: 0 !important;
@@ -58,7 +58,12 @@ body {
 }
 
 /* ------------------------- INDEX -------------------------------- */
- .logo {
+.headline {
+  font-size: 1.8rem;
+  margin: 3rem 0;
+  font-weight: 100;
+}
+.logo {
   width: 100%;
   height: 8rem;
   background-size: contain;
@@ -176,7 +181,7 @@ body {
 .sequence-row {
   margin: 0;
   padding: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 5px;
 }
 
 .sequence-row:hover {
@@ -205,7 +210,6 @@ body {
 
 
 .sequence-main {
-  padding-top: 1rem;
   margin: 0;
   padding-bottom: 0;
 }
@@ -304,18 +308,6 @@ body {
 .sequence-action-collapse {
   display: inline-block;
   width: 20px;
-}
-
-.sequence-expand-button {
-  margin: 0 auto;
-  font-size: 1rem;
-  position: relative;
-  top: 0.75rem;
-  background-color: white;
-  padding: .15rem 1rem
-}
-.sequence-expand-button span {
-  margin-right: 0.6rem;
 }
 
 .sequence-name {

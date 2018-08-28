@@ -1,6 +1,6 @@
 <div class="sequence-row card">
   <div class="sequence-main">
-    <a name="<%=sequence_class.sequence_name%>"></a>
+    <a id="<%=sequence_class.sequence_name%>" name="<%=sequence_class.sequence_name%>"></a>
     <div class='container'>
     <div class='row align-items-center no-gutters'>
       <div class='col-10'>
@@ -56,6 +56,10 @@
                   <% end %>
 
                 <% end %>
+                 - 
+                <a href='#' class='sequence-expand-button' data-result-details='<%=sequence_class%>-details'>
+                  Show Details
+                </a>
               </div>
               <div class="sequence-details">
                 <%= sequence_class.description %>
@@ -87,7 +91,4 @@
     </div>
   </div>
   <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
-  <button class='btn btn-outline-secondary sequence-expand-button'>
-    <span class="oi oi-chevron-bottom"></span> Show Details
-  </button>
 </div>
