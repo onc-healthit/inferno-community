@@ -70,14 +70,14 @@
             <button type="submit" class="btn btn-outline-info btn-sm"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
                                   data-sequence="<%=sequence_class%>">
-              <span class="oi oi-action-undo" title="Execute Test"></span>
+              <span class="oi oi-action-undo"></span>
               Run Again
             </button>
           <% else %>
             <button type="submit" class="btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm "
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
                                   data-sequence="<%=sequence_class%>">
-              <span class="oi oi-media-play" title="Execute Test"></span>
+              <span class="oi oi-media-play"></span>
               Run
             </button>
           <% end %>

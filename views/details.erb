@@ -51,7 +51,20 @@
     <div class="sequence-table">
       <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
         <div class="sequence_group">
-          <div class="sequence-header"><%=sequence_group[0] %></div>
+          <div class="sequence-header">
+            <div class='row align-items-center'>
+              <div class='col'>
+                <h1><%=sequence_group[0] %></h1>
+              </div>
+              <% if sequence_group[1].length > 1 %>
+                <div class='col'>
+                  <button class='btn btn-light float-right'>
+                    <span class="oi oi-media-play"></span> Run All <%=sequence_group[0] %> Tests
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          </div>
           <% sequence_group[1].each do |sequence_class| %>
             <% unless sequence_class.inactive? %>
               <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
