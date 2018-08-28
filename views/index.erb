@@ -1,12 +1,6 @@
 
 <div class="container">
   <div class="main">
-    <p>
-      This application creates test clients that exercise the range of requirements of a <a href="https://smarthealthit.org/">SMART on FHIR</a>
-      server. These tests focus on the <a href="http://www.hl7.org/fhir/smart-app-launch/">SMART App Launch Framework</a>,
-      <a href="http://hl7.org/fhir/DSTU2/argonaut/argonaut.html">Argonaut</a> Implementation Guides,
-      and <a href="http://hl7.org/fhir/DSTU2/index.html">FHIR DSTU2</a>.
-    </p>
 
     <% unless tls_testing_supported? %>
       <div class="alert alert-warning" role="alert">
@@ -15,20 +9,73 @@
       </div>
     <% end %>
 
+    <div class='alert alert-warning'>
+      <span class="oi oi-wrench "></span> This software is under active development.  Please report bugs and submit feature requests as <a href='https://github.com/siteadmin/inferno/issues'>GitHub issues</a>.
+    </div>
+
+    <div class='whitespace'></div>
+    
+    <h2>Start Testing</h2>
     <p>
-      To begin, enter the URL of your FHIR server below.  This will create a unique SMART on FHIR client app endpoint
-      and will walk the user through a sequence of tests.
+      To begin, enter the URL of your FHIR server below.  Inferno will create a unique SMART on FHIR client app 
+      and perform a sequence of tests.
     </p>
     <form method="POST" action="<%=BASE_PATH%>/">
       <div class="form-group">
         <label for="fhir_server" class="endpoint-label">FHIR Server Endpoint</label>
         <div class="input-group">
-          <input type="url" class="form-control" name="fhir_server" placeholder="http://" aria-label="Create App">
+          <input type="url" class="form-control" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
           <span class="input-group-btn">
             <button class="btn btn-secondary" type="submit">Begin</button>
           </span>
         </div>
       </div>
     </form>
+
+    <div class='whitespace'></div>
+
+    <h2>What does Inferno test?</h2>
+    <div class="container">
+      <div class="card-deck">
+        <div class="card">
+          <div class='card-body'>
+            <div class='logo smart'></div>
+            <p>
+              Inferno tests conformance to <a href="https://smarthealthit.org/" target="_blank">SMART on FHIR</a> requirements for authentication and authorization of FHIR servers, including:
+              <ul>
+                <li><strong>App Registration</strong> through either manual registration or the <a href="https://tools.ietf.org/html/rfc7591" target="_blank">OAuth 2.0 Dynamic Client Registration Protocol</a>
+                <li><strong>App Launch</strong> using the <a href="http://www.hl7.org/fhir/smart-app-launch/" target="_blank">SMART App Launch Framework</a> with support for both the <a href="http://www.hl7.org/fhir/smart-app-launch/#standalone-launch-sequence" target="_blank">Standalone Launch</a> and <a href="http://www.hl7.org/fhir/smart-app-launch/#ehr-launch-sequence" target="_blank">EHR Launch</a> sequences</li>
+                <li><strong>Authentication</strong>, which must conform to <a href="http://openid.net/specs/openid-connect-core-1_0.html" target="_blank">OpenID Connect Core 1.0 incorporating errata set 1</a></li>
+              </ul>
+              <%# TODO: replace this link when the bulk data API is actually published %>
+              Inferno also requires that servers are capable of both patient-level and population-level access to data.  Population data should be accessible through the <a href="https://github.com/smart-on-fhir/fhir-bulk-data-docs" target="_blank">Bulk Data FHIR API</a>.
+            </p>
+          </div>
+        </div>
+        <div class="card">
+          <div class='card-body'>
+            <div class='logo argonaut'></div>
+            <p>
+              Inferno also tests conformance to the <a href="http://www.fhir.org/guides/argonaut/r2" target="_blank">DSTU2 version</a> of the <a href="http://argonautwiki.hl7.org/index.php?title=Main_Page" target="_blank">Argonaut Project</a> Implementation Guides.  Specifically, Inferno requires a publicly accessible <a href="https://www.hl7.org/fhir/DSTU2/conformance.html" target="_blank">Conformance statement with OAuth endpoints</a> and support for the following FHIR resources:
+            </p>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/allergyintolerance.html" target="_blank"><code>AllergyIntolerance</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/careplan.html" target="_blank"><code>CarePlan</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/condition.html" target="_blank"><code>Condition</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/device.html" target="_blank"><code>Device</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/diagnosticreport.html" target="_blank"><code>DiagnosticReport</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/documentreference.html" target="_blank"><code>DocumentReference</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/goal.html" target="_blank"><code>Goal</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/immunization.html" target="_blank"><code>Immunization</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/medication.html" target="_blank"><code>Medication</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/medicationorder.html" target="_blank"><code>MedicationOrder</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/medicationstatement.html" target="_blank"><code>MedicationStatement</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/observation.html" target="_blank"><code>Observation</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/patient.html" target="_blank"><code>Patient</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/procedure.html" target="_blank"><code>Procedure</code></a>
+              <a class='badge badge-info fhir-resource-badge' href="https://www.hl7.org/fhir/DSTU2/provenance.html" target="_blank"><code>Provenance</code></a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
