@@ -217,6 +217,7 @@ body {
   display: inline-block;
   margin: 8px;
   margin-top: 5px;
+  margin-left: 0;
 }
 
 .sequence-score-pending {
