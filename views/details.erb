@@ -54,15 +54,15 @@
           <div class="sequence-header">
             <div class='row align-items-center'>
               <div class='col'>
-                <h1><%=sequence_group[0] %></h1>
+                <h1>
+                  <%=sequence_group[0] %>
+                  <% if sequence_group[1].length > 1 %>
+                    <button class='btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                      <span class="oi oi-media-play"></span> Run All
+                    </button>
+                  <% end %>
+                </h1>
               </div>
-              <% if sequence_group[1].length > 1 %>
-                <div class='col'>
-                  <button class='btn btn-light float-right'>
-                    <span class="oi oi-media-play"></span> Run All <%=sequence_group[0] %> Tests
-                  </button>
-                </div>
-              <% end %>
             </div>
           </div>
           <% sequence_group[1].each do |sequence_class| %>

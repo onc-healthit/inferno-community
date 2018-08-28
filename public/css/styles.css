@@ -39,10 +39,18 @@ body {
 .footer .container {
   margin: auto;
 }
-
-.navbar-brand {
-
+.inferno-branding {
   padding-left: 15px;
+}
+.navbar-brand {
+  font-size: 2rem;
+}
+.navbar-brand-subheading {
+  color: white;
+  display: block;
+  font-size: 1em;
+  position: relative;
+  top: -10px;
 }
 .row-no-padding > [class*="col-"] {
   padding-left: 0 !important;
@@ -300,11 +308,14 @@ body {
 
 .sequence-expand-button {
   margin: 0 auto;
-  font-size: 0.75rem;
+  font-size: 1rem;
   position: relative;
   top: 0.75rem;
   background-color: white;
-  padding: .15rem .25rem
+  padding: .15rem 1rem
+}
+.sequence-expand-button span {
+  margin-right: 0.6rem;
 }
 
 .sequence-name {
