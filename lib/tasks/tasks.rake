@@ -42,7 +42,7 @@ task :execute_sequence, [:sequence, :server] do |task, args|
 
   @sequence = nil
   SequenceBase.ordered_sequences.map do |seq|
-    if seq.sequence_name == args[:sequence]
+    if seq.sequence_name == args[:sequence] + "Sequence"
       @sequence = seq
     end
   end
@@ -79,7 +79,11 @@ task :execute_sequence, [:sequence, :server] do |task, args|
     elsif result.result == 'skip'
       puts 'skip '.yellow + '*'.yellow
     elsif result.result == 'fail'
-      puts 'fail '.red + 'X'.red
+      if result.required == 'true'
+        puts 'fail '.red + 'X'.red
+      else
+        puts 'fail X (optional)'.light_black
+      end
     end
   end
   print @sequence.sequence_name + " Sequence Result: " 
