@@ -68,7 +68,8 @@
       </div>
       <div class="sequence-action col-2">
         <span>
-          <% if sequence_results[sequence_class.sequence_name] && sequence_results[sequence_class.sequence_name].result != 'skip'%>
+          <% #FIXME: Consider ignoring SKIP when displaying the latest sequence result because it shouldn't materially change the current status. %>
+          <% if sequence_results[sequence_class.sequence_name]%>
             <button type="submit" class="sequence-button btn btn-outline-info btn-sm"
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
