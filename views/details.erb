@@ -60,6 +60,7 @@
                 <% end %>
                 <h1>
                   <%=sequence_group[0] %>
+                  <%# FIXME: This is brittle. Instead of checking for the number of tests, maybe check for specific sequence groups? %>
                   <% if sequence_group[1].length > 10 %>
                     <button data-group="<%=sequence_group[0]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
                       <span class="oi oi-media-play"></span> Run All

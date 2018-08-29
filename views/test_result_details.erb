@@ -28,6 +28,7 @@
           <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
         </div>
       <% end %>
+      <%# TODO: Make this dependent on a flag for community/program edition %>
       <% unless @test_result.required %> [OPTIONAL] <% end %>
       <%= @test_result.test_id + ': ' +@test_result.name %>
     </div>
