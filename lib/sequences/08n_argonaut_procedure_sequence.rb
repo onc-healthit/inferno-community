@@ -4,8 +4,6 @@ class ArgonautProcedureSequence < SequenceBase
 
   title 'Argonaut Procedure Profile'
 
-  modal_before_run
-
   description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-PR'
@@ -20,7 +18,7 @@ class ArgonautProcedureSequence < SequenceBase
   # Procedure Search
   # --------------------------------------------------
 
-  test '88', '', 'Server rejects Procedure search without authorization',
+  test '01', '', 'Server rejects Procedure search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Procedure search does not work without proper authorization.' do
 
@@ -35,7 +33,7 @@ class ArgonautProcedureSequence < SequenceBase
 
   end
 
-  test '89', '', 'Server returns expected results from Procedure search by patient',
+  test '02', '', 'Server returns expected results from Procedure search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's procedures." do
 
@@ -47,7 +45,7 @@ class ArgonautProcedureSequence < SequenceBase
 
   end
 
-  test '90', '', 'Server returns expected results from Procedure search by patient + date',
+  test '03', '', 'Server returns expected results from Procedure search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of all of a patient's procedures over a specified time period." do
 
@@ -61,7 +59,7 @@ class ArgonautProcedureSequence < SequenceBase
 
   end
 
-  test '91', '', 'Procedure read resource supported',
+  test '04', '', 'Procedure read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -71,7 +69,7 @@ class ArgonautProcedureSequence < SequenceBase
 
   end
 
-  test '92', '', 'Procedure history resource supported',
+  test '05', '', 'Procedure history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -82,7 +80,7 @@ class ArgonautProcedureSequence < SequenceBase
 
   end
 
-  test '93', '', 'Procedure vread resource supported',
+  test '06', '', 'Procedure vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -93,10 +91,11 @@ class ArgonautProcedureSequence < SequenceBase
 
   end
 
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '07', '', 'Procedure resources associated with Procedure conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-procedure.html',
+          'Procedure resources associated with Procedure conform to Argonaut profiles.' do
+    test_resources_against_profile('Procedure')
   end
+
 
 end

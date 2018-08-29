@@ -4,8 +4,6 @@ class ArgonautGoalSequence < SequenceBase
 
   title 'Argonaut Goal Profile'
 
-  modal_before_run
-
   description 'Verify that Goal resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ'
@@ -20,7 +18,7 @@ class ArgonautGoalSequence < SequenceBase
   # Goal Search
   # --------------------------------------------------
 
-  test '44', '', 'Server rejects Goal search without authorization',
+  test '01', '', 'Server rejects Goal search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Goal search does not work without proper authorization.' do
 
@@ -33,7 +31,7 @@ class ArgonautGoalSequence < SequenceBase
 
   end
 
-  test '45', '', 'Server returns expected results from Goal search by patient',
+  test '02', '', 'Server returns expected results from Goal search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's goals." do
 
@@ -46,7 +44,7 @@ class ArgonautGoalSequence < SequenceBase
 
   end
 
-  test '46', '', 'Server returns expected results from Goal search by patient + date',
+  test '03', '', 'Server returns expected results from Goal search by patient + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of all of a patient's goals over a specified time period." do
 
@@ -60,7 +58,7 @@ class ArgonautGoalSequence < SequenceBase
 
   end
 
-  test '47', '', 'Goal read resource supported',
+  test '04', '', 'Goal read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -70,7 +68,7 @@ class ArgonautGoalSequence < SequenceBase
 
   end
 
-  test '48', '', 'Goal history resource supported',
+  test '05', '', 'Goal history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -81,7 +79,7 @@ class ArgonautGoalSequence < SequenceBase
 
   end
 
-  test '49', '', 'Goal vread resource supported',
+  test '06', '', 'Goal vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -92,11 +90,11 @@ class ArgonautGoalSequence < SequenceBase
 
   end
 
-
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '12', '', 'Goal resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-goal.html',
+          'Goal resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('Goal')
   end
+
 
 end

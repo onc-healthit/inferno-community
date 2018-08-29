@@ -4,8 +4,6 @@ class ArgonautImmunizationSequence < SequenceBase
 
   title 'Argonaut Immunization Profile'
 
-  modal_before_run
-
   description 'Verify that Immunization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-IM'
@@ -20,7 +18,7 @@ class ArgonautImmunizationSequence < SequenceBase
   # Immunization Search
   # --------------------------------------------------
 
-  test '50', '', 'Server rejects Immunization search without authorization',
+  test '01', '', 'Server rejects Immunization search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An Immunization search does not work without proper authorization.' do
 
@@ -33,7 +31,7 @@ class ArgonautImmunizationSequence < SequenceBase
 
   end
 
-  test '51', '', 'Server supports Immunization search by patient',
+  test '02', '', 'Server supports Immunization search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A client has connected to a server and fetched all immunizations for a patient.' do
 
@@ -46,7 +44,7 @@ class ArgonautImmunizationSequence < SequenceBase
 
   end
 
-  test '52', '', 'Immunization read resource supported',
+  test '03', '', 'Immunization read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -56,7 +54,7 @@ class ArgonautImmunizationSequence < SequenceBase
 
   end
 
-  test '53', '', 'Immunization history resource supported',
+  test '04', '', 'Immunization history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -67,7 +65,7 @@ class ArgonautImmunizationSequence < SequenceBase
 
   end
 
-  test '54', '', 'Immunization vread resource supported',
+  test '05', '', 'Immunization vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -78,11 +76,10 @@ class ArgonautImmunizationSequence < SequenceBase
 
   end
 
-
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '06', '', 'Immunization resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-immunization.html',
+          'Immunization resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('Immunization')
   end
 
 end

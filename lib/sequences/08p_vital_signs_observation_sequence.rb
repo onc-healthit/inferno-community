@@ -4,8 +4,6 @@ class ArgonautVitalSignsSequence < SequenceBase
 
   title 'Argonaut Vital Signs Profile'
 
-  modal_before_run
-
   description 'Verify that Vital Signs are collected on the FHIR server according to the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-VS'
@@ -88,11 +86,12 @@ class ArgonautVitalSignsSequence < SequenceBase
 
   end
 
-
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '20', '', 'Vital Signs resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-vitalsigns.html',
+          'Vital Signs resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('Observation', ValidationUtil::VITAL_SIGNS_URL)
+    skip_unless @profiles_encountered.include?(ValidationUtil::VITAL_SIGNS_URL), 'No Vital Sign Observations found.'
+    assert !@profiles_failed.include?(ValidationUtil::VITAL_SIGNS_URL), "Vital Sign Observations failed validation.<br/>#{@profiles_failed[ValidationUtil::VITAL_SIGNS_URL]}"
   end
 
 end

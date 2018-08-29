@@ -4,8 +4,6 @@ class ArgonautCareTeamSequence < SequenceBase
 
   title 'Argonaut Care Team Profile'
 
-  modal_before_run
-
   description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-CT'
@@ -20,7 +18,7 @@ class ArgonautCareTeamSequence < SequenceBase
   # CareTeam Search
   # --------------------------------------------------
 
-  test '16', '', 'Server returns expected CareTeam results from CarePlan search by patient + category',
+  test '01', '', 'Server returns expected CareTeam results from CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's Assessment and Plan of Treatment information." do
 
@@ -33,11 +31,12 @@ class ArgonautCareTeamSequence < SequenceBase
 
   end
 
-
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '02', '', 'CareTeam resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careteam.html',
+         'CareTeam resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('CarePlan', ValidationUtil::CARE_TEAM_URL)
+    skip_unless @profiles_encountered.include?(ValidationUtil::CARE_TEAM_URL), 'No CareTeams found.'
+    assert !@profiles_failed.include?(ValidationUtil::CARE_TEAM_URL), "CareTeams failed validation.<br/>#{@profiles_failed[ValidationUtil::CARE_TEAM_URL]}"
   end
 
 end

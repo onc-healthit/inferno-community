@@ -4,8 +4,6 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   title 'Argonaut Medication Statement Profile'
 
-  modal_before_run
-
   description 'Verify that Medication resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-MP'
@@ -20,7 +18,7 @@ class ArgonautMedicationStatementSequence < SequenceBase
   # MedicationStatement Search
   # --------------------------------------------------
 
-  test '63', '', 'Server rejects MedicationStatement search without authorization',
+  test '01', '', 'Server rejects MedicationStatement search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'An MedicationStatement search does not work without proper authorization.' do
 
@@ -33,7 +31,7 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   end
 
-  test '64', '', 'Server returns expected results from MedicationStatement search by patient',
+  test '02', '', 'Server returns expected results from MedicationStatement search by patient',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning a patient's medications." do
 
@@ -46,7 +44,7 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   end
 
-  test '65', '', 'MedicationStatement read resource supported',
+  test '03', '', 'MedicationStatement read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -56,7 +54,7 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   end
 
-  test '66', '', 'MedicationStatement history resource supported',
+  test '04', '', 'MedicationStatement history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -67,7 +65,7 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   end
 
-  test '67', '', 'MedicationStatement vread resource supported',
+  test '05', '', 'MedicationStatement vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -78,11 +76,11 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   end
 
-
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '06', '', 'Medication resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html',
+          'Medication resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('Medication')
   end
+
 
 end

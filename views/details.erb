@@ -50,14 +50,18 @@
     <% end %>
     <div class="sequence-table">
       <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
-        <div class="sequence_group">
+        <div class="sequence-group">
           <div class="sequence-header">
             <div class='row align-items-center'>
               <div class='col'>
+                <% if sequence_group[1].length > 1 %>
+                  <a id="<%=sequence_group[1].join(',')%>" name="<%=sequence_group[1].join(',')%>"></a>
+
+                <% end %>
                 <h1>
                   <%=sequence_group[0] %>
-                  <% if sequence_group[1].length > 1 %>
-                    <button class='btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                  <% if sequence_group[1].length > 10 %>
+                    <button data-group="<%=sequence_group[0]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
                       <span class="oi oi-media-play"></span> Run All
                     </button>
                   <% end %>
@@ -94,6 +98,21 @@
         <input type="hidden" name="required_fields" value="" />
         <div class="modal-body">
 
+          <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                                          label: 'Launch URI',
+                                          value: request.base_url + BASE_PATH + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
+                                          readonly: true })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                                          label: 'Redirect URI',
+                                          value: request.base_url + BASE_PATH + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
+                                          readonly: true })%>
+
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
+                                          label: 'OAuth 2.0 Dynamic Registration Endpoint',
+                                          value: instance.oauth_register_endpoint}); %>
+
           <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
                                           label: 'OAuth 2.0 Authorize Endpoint',
                                           value: instance.oauth_authorize_endpoint}); %>
@@ -106,9 +125,6 @@
                                           label: 'Client ID',
                                           value: instance.client_id}); %>
 
-          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
-                                          label: 'OAuth 2.0 Dynamic Registration Endpoint',
-                                          value: instance.oauth_register_endpoint}); %>
 
           <%# SPECIAL CASE: CLIENT SECRET %>
           <div class="form-group"
@@ -136,16 +152,6 @@
           <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
                                           label: 'OAuth Client Name',
                                           value: instance.client_name}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
-                                          label: 'Launch URI',
-                                          value: request.base_url + BASE_PATH + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
-                                          readonly: true })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                                          label: 'Redirect URI',
-                                          value: request.base_url + BASE_PATH + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
-                                          readonly: true })%>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
                                           label: 'Scopes',

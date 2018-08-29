@@ -8,7 +8,8 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   test_id_prefix 'PELS'
 
-  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
+  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes,:initiate_login_uri, :redirect_uris
+
   defines :token, :id_token, :refresh_token, :patient_id
 
   preconditions 'Client must be registered' do
@@ -37,7 +38,7 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   test '03', '', 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_authorize_endpoint
@@ -65,7 +66,7 @@ class ProviderEHRLaunchSequence < SequenceBase
 
     oauth2_auth_query = @instance.oauth_authorize_endpoint + "?"
     oauth2_params.each do |key,value|
-      oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
+      oauth2_auth_query += "#{key}=#{CGI.escape(value)}&" unless value.nil? || key.nil?
     end
 
     redirect oauth2_auth_query[0..-2], 'redirect'
@@ -82,7 +83,7 @@ class ProviderEHRLaunchSequence < SequenceBase
 
   test '06', '', 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_token_endpoint

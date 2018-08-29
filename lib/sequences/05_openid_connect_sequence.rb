@@ -7,6 +7,9 @@ class OpenIDConnectSequence < SequenceBase
 
   test_id_prefix 'OIDC'
 
+  requires :id_token, :client_id
+  defines :oauth_introspection_endpoint
+
   preconditions 'Client must have ID token' do
     !@instance.id_token.nil?
   end

@@ -4,8 +4,6 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
 
   title 'Argonaut Allergy Intolerance Profile'
 
-  modal_before_run
-
   description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-AI'
@@ -40,6 +38,15 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
     skip_if_not_supported(:AllergyIntolerance, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+
+    @no_resources_found = false
+    resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+    if resource_count === 0
+      @no_resources_found = true
+    end
+
+    skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
     @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
     validate_search_reply(FHIR::DSTU2::AllergyIntolerance, reply)
     save_resource_ids_in_bundle(FHIR::DSTU2::AllergyIntolerance, reply)
@@ -51,6 +58,8 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
     skip_if_not_supported(:AllergyIntolerance, [:search, :read])
+    skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
     validate_read_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
@@ -61,6 +70,7 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
           :optional do
 
     skip_if_not_supported(:AllergyIntolerance, [:history])
+    skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
     validate_history_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
@@ -71,15 +81,18 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
           :optional do
 
     skip_if_not_supported(:AllergyIntolerance, [:vread])
+    skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
     validate_vread_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
   end
 
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '06', '', 'AllergyIntolerance resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-allergyintolerance.html',
+          'AllergyIntolerance resources associated with Patient conform to Argonaut profiles.' do
+    skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+    test_resources_against_profile('AllergyIntolerance')
   end
+
 
 end
