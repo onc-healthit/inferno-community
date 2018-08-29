@@ -4,8 +4,6 @@ class ArgonautPatientSequence < SequenceBase
 
   title 'Argonaut Patient Profile'
 
-  modal_before_run
-
   description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-PA'
@@ -43,7 +41,47 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '03', '', 'Server rejects Patient search without proper authorization',
+  test '03', '', 'Patient validates against Argonaut Profile',
+          'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
+          'A server returns valid FHIR Patient resources according to the Data Access Framework (DAF) Patient Profile (http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).' do
+
+    assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
+    assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+    profile = ValidationUtil.guess_profile(@patient)
+    errors = profile.validate_resource(@patient)
+    assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
+  end
+
+  test '04', '', 'Patient has address',
+          '',
+          'Additional Patient resource requirement.' do
+
+    assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
+    assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+    address = @patient.try(:address).try(:first)
+    assert !address.nil?, 'Patient address not returned'
+  end
+
+  test '05', '', 'Patient has telecom',
+          '',
+          'Additional Patient resource requirement.' do
+
+    assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
+    assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
+    telecom = @patient.try(:telecom).try(:first)
+    assert !telecom.nil?, 'Patient telecom not returned'
+  end
+
+
+  # test 'Patient supports $everything operation', '', 'DISCUSSION REQUIRED', :optional do
+  #   everything_response = @client.fetch_patient_record(@instance.patient_id)
+  #   skip_unless [200, 201].include?(everything_response.code)
+  #   @everything = everything_response.resource
+  #   assert !@everything.nil?, 'Expected valid DSTU2 Bundle resource on $everything request'
+  #   assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
+  # end
+          #
+  test '06', '', 'Server rejects Patient search without proper authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A Patient search does not work without proper authorization.' do
 
@@ -57,7 +95,7 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '04', '', 'Server returns expected results from Patient search by identifier',
+  test '07', '', 'Server returns expected results from Patient search by identifier',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.' do
 
@@ -69,7 +107,7 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '05', '', 'Server returns expected results from Patient search by name + gender',
+  test '08', '', 'Server returns expected results from Patient search by name + gender',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
@@ -85,7 +123,7 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '06', '', 'Server returns expected results from Patient search by name + birthdate',
+  test '09', '', 'Server returns expected results from Patient search by name + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
@@ -101,7 +139,7 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '07', '', 'Server returns expected results from Patient search by gender + birthdate',
+  test '10', '', 'Server returns expected results from Patient search by gender + birthdate',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
 
@@ -115,7 +153,7 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '08', '', 'Server returns expected results from Patient history resource',
+  test '11', '', 'Server returns expected results from Patient history resource',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -126,7 +164,7 @@ class ArgonautPatientSequence < SequenceBase
 
   end
 
-  test '09', '', 'Server returns expected results from Patient vread resource',
+  test '12', '', 'Server returns expected results from Patient vread resource',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -146,10 +184,5 @@ class ArgonautPatientSequence < SequenceBase
   #   assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
   # end
 
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
-  end
 
 end

@@ -4,8 +4,6 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   title 'Argonaut Diagnostic Report Profile'
 
-  modal_before_run
-
   description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
   test_id_prefix 'ADQ-DR'
@@ -20,7 +18,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
   # DiagnosticReport Search
   # --------------------------------------------------
 
-  test '55', '', 'Server rejects DiagnosticReport search without authorization',
+  test '01', '', 'Server rejects DiagnosticReport search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A DiagnosticReport search does not work without proper authorization.' do
 
@@ -33,7 +31,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '56', '', 'Server returns expected results from DiagnosticReport search by patient + category',
+  test '02', '', 'Server returns expected results from DiagnosticReport search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category." do
 
@@ -45,7 +43,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '57', '', 'Server returns expected results from DiagnosticReport search by patient + category + date',
+  test '03', '', 'Server returns expected results from DiagnosticReport search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range." do
 
@@ -59,7 +57,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '58', '', 'Server returns expected results from DiagnosticReport search by patient + category + code',
+  test '04', '', 'Server returns expected results from DiagnosticReport search by patient + category + code',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code." do
 
@@ -73,7 +71,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '59', '', 'Server returns expected results from DiagnosticReport search by patient + category + code + date',
+  test '05', '', 'Server returns expected results from DiagnosticReport search by patient + category + code + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning all of a patient's laboratory diagnostic reports queried by category and one or more codes and date range.",
           :optional do
@@ -90,7 +88,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '60', '', 'DiagnosticReport read resource supported',
+  test '06', '', 'DiagnosticReport read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -100,7 +98,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '61', '', 'DiagnosticReport history resource supported',
+  test '07', '', 'DiagnosticReport history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -111,7 +109,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  test '62', '', 'DiagnosticReport vread resource supported',
+  test '08', '', 'DiagnosticReport vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -122,10 +120,10 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   end
 
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '09', '', 'DiagnosticReport resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-diagnosticreport.html',
+         'DiagnosticReport resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('DiagnosticReport')
   end
 
 end

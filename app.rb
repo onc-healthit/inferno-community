@@ -74,14 +74,17 @@ helpers do
   def js_stayalive(time)
     "<script>console.log('Time running: ' + #{time})</script>"
   end
-  def js_update_result(result, count, total)
-    "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete').html('(#{count} of #{total} complete)');</script>"
+  def js_update_result(sequence, result, count, total)
+    "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');</script>"
   end
   def js_redirect(location)
     "<script>console.log('js_window_location'); window.location = '#{location}'</script>"
   end
   def js_redirect_modal(location)
     "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea>');</script>"
+  end
+  def js_next_sequence(sequences)
+    # "<script>console.log('js_next_sequence');$('#testsRunningModal').find('.number-complete-container').append('<div class=\'number-complete\'></div>');</script>"
   end
 end
 
@@ -175,166 +178,64 @@ namespace BASE_PATH do
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
-    klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
+    submitted_sequences = params[:sequence].split(',')
+
 
     timer_count = 0;
     stayalive_timer_seconds = 20;
 
-    if klass
-      sequence = klass.new(instance, client, settings.disable_tls_tests)
-      stream :keep_open do |out|
+    finished = false
+    stream :keep_open do |out|
 
-        EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
-          timer_count = timer_count + 1;
-          out << js_stayalive(timer_count * stayalive_timer_seconds)
-        end
+      EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
+        timer_count = timer_count + 1;
+        out << js_stayalive(timer_count * stayalive_timer_seconds)
+      end
 
-        out << erb(:details, {}, {instance: instance,
-                                  sequences: SequenceBase.ordered_sequences,
-                                  sequence_results: instance.latest_results,
-                                  tests_running: true
-                                 }
-                  )
+      out << erb(:details, {}, {instance: instance,
+                                sequences: SequenceBase.ordered_sequences,
+                                sequence_results: instance.latest_results,
+                                tests_running: true
+                               })
+
+      next_sequence = submitted_sequences.shift
+
+      klass = nil
+      klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(next_sequence)} if next_sequence
+
+      while !klass.nil?
+
         out << js_show_test_modal
+
+        sequence = klass.new(instance, client, settings.disable_tls_tests)
         count = 0
         sequence_result = sequence.start do |result|
           count = count + 1
 
-          out << js_update_result(result, count, sequence.test_count)
+          out << js_update_result(sequence,result, count, sequence.test_count)
         end
+
+        sequence_result.next_sequences = submitted_sequences.join(',')
 
         sequence_result.save!
         if sequence_result.redirect_to_url
           out << js_redirect_modal(sequence_result.redirect_to_url)
           out << js_redirect(sequence_result.redirect_to_url)
+        elsif  submitted_sequences.count > 0
+          out << js_next_sequence(sequence_result.next_sequences)
         else
-          out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}")
+          finished = true
         end
+
+        next_sequence = submitted_sequences.shift
+
+        klass = nil
+        klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(next_sequence)} if next_sequence
       end
 
-    else
-     redirect "#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}"
+      out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}") if finished
+
     end
-
-  end
-
-  post '/:id/ConformanceSkip/?' do
-    instance = TestingInstance.get(params[:id])
-
-    conformance_sequence_result = SequenceResult.new(name: "Conformance", result: "skip")
-    conformance_sequence_result.save
-
-    instance.conformance_checked = false
-    instance.oauth_authorize_endpoint = params[:conformance_authorize_endpoint]
-    instance.oauth_token_endpoint = params[:conformance_token_endpoint]
-
-    instance.sequence_results.push(conformance_sequence_result)
-    instance.save!
-
-    redirect "#{BASE_PATH}/#{params[:id]}/"
-  end
-
-  post '/:id/DynamicRegistration' do
-    @instance = TestingInstance.get(params[:id])
-
-    @instance.update(dynamically_registered: false,
-                     oauth_register_endpoint: params['registration_url'],
-                     scopes: params['scope'],
-                     client_name: params['client_name'])
-
-    if params[:is_confidential].nil?
-      @instance.update(confidential_client: false)
-    else
-      @instance.update(confidential_client: true)
-      @instance.update(client_secret: params[:client_secret])
-    end
-    redirect "#{BASE_PATH}/#{@instance.id}/DynamicRegistration"
-
-  end
-
-  post '/:id/ArgonautDataQuery' do
-    instance = TestingInstance.get(params[:id])
-    halt 404 if instance.nil?
-
-    instance.resource_references.select{|ref| ref.resource_type == 'Patient'}.each(&:destroy)
-    params['patient_id'].split(",").map(&:strip).each do |patient_id|
-      instance.resource_references << ResourceReference.new({resource_type: 'Patient', resource_id: patient_id})
-    end
-
-    instance.save
-
-    redirect "#{BASE_PATH}/#{instance.id}/ArgonautDataQuery"
-  end
-
-  post '/:id/ArgonautProfiles' do
-
-    instance = TestingInstance.get(params[:id])
-    halt 404 if instance.nil?
-
-    redirect "/#{BASE_PATH}/#{instance.id}/ArgonautProfiles"
-  end
-
-  post '/:id/dynamic_registration_skip/?' do
-    instance = TestingInstance.get(params[:id])
-
-    sequence_result = SequenceResult.new(name: "DynamicRegistration", result: "skip")
-    instance.sequence_results << sequence_result
-
-    instance.client_id = params[:client_id]
-
-    if params[:is_confidential].nil?
-      instance.confidential_client = false
-    else
-      instance.confidential_client = true
-      instance.client_secret = params[:client_secret]
-    end
-
-    instance.scopes = params[:scope]
-    instance.dynamically_registered = false
-    instance.save!
-
-    redirect "/#{BASE_PATH}/#{params[:id]}/"
-  end
-
-  post '/:id/PatientStandaloneLaunch/?' do
-    @instance = TestingInstance.get(params[:id])
-    @instance.update(scopes: params['scopes'], id_token: nil, refresh_token: nil)
-    redirect "/#{BASE_PATH}/#{params[:id]}/PatientStandaloneLaunch"
-  end
-
-  post '/:id/ProviderEHRLaunch/?' do
-    @instance = TestingInstance.get(params[:id])
-    @instance.update(scopes: params['scopes'], id_token: nil, refresh_token: nil)
-    redirect "/#{BASE_PATH}/#{params[:id]}/ProviderEHRLaunch"
-  end
-
-  post '/:id/OpenIDConnect/?' do
-    @instance = TestingInstance.get(params[:id])
-    redirect "/#{BASE_PATH}/#{params[:id]}/OpenIDConnect"
-  end
-
-  post '/:id/TokenIntrospectionSkip/?' do
-    instance = TestingInstance.get(params[:id])
-
-    sequence_result = SequenceResult.new(name: "TokenIntrospection", result: "skip")
-    instance.sequence_results << sequence_result
-
-    instance.save!
-
-    redirect "/#{BASE_PATH}/#{params[:id]}/"
-  end
-
-  post '/:id/TokenIntrospection/?' do
-    @instance = TestingInstance.get(params[:id])
-    @instance.update(oauth_introspection_endpoint: params['oauth_introspection_endpoint'])
-    @instance.update(resource_id: params['resource_id'])
-    @instance.update(resource_secret: params['resource_secret'])
-
-    # copy over the access token to a different place in case it's not the same
-    @instance.update(introspect_token: params['access_token'])
-    @instance.update(introspect_refresh_token: params['refresh_token'])
-
-    redirect "/#{BASE_PATH}/#{params[:id]}/TokenIntrospection"
 
   end
 
@@ -375,7 +276,7 @@ namespace BASE_PATH do
         count = sequence_result.test_results.length
         sequence_result = sequence.resume(request, headers, request.params) do |result|
           count = count + 1
-          out << js_update_result(result, count, sequence.test_count)
+          out << js_update_result(sequence,result, count, sequence.test_count)
           instance.save!
         end
         instance.sequence_results.push(sequence_result)

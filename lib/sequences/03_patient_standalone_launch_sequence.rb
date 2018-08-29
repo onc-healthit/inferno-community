@@ -5,9 +5,8 @@ class PatientStandaloneLaunchSequence < SequenceBase
   title 'Patient Standalone Launch Sequence'
   description 'Demonstrate the Patient Standalone Launch Sequence.'
   test_id_prefix 'PSLS'
-  modal_before_run
 
-  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint
+  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :initiate_login_uri, :redirect_uris
   defines :token, :id_token, :refresh_token, :patient_id
 
   preconditions 'Client must be registered' do
@@ -16,7 +15,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
   test '01', '', 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_authorize_endpoint
@@ -66,7 +65,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
 
   test '04', '', 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_token_endpoint

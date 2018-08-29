@@ -267,9 +267,10 @@ body {
 }
 
 .sequence-score-skip {
-  /* background-color: #FF7F50; */
+  padding-left: 1px;
+  background-color: #00e1e1;
   color: #FFF;
-  background-color: #28a745;
+  /* background-color: #28a745; */
   border: 2px solid #fff;
 }
 

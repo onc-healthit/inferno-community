@@ -2,9 +2,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   group 'Argonaut Query and Data'
 
-  title 'Argonaut Care plan Profile'
-
-  modal_before_run
+  title 'Argonaut Care Plan Profile'
 
   description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -20,7 +18,7 @@ class ArgonautCarePlanSequence < SequenceBase
   # CarePlan Search
   # --------------------------------------------------
 
-  test '15', '', 'Server rejects CarePlan search without authorization',
+  test '01', '', 'Server rejects CarePlan search without authorization',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'A CarePlan search does not work without proper authorization.' do
 
@@ -32,7 +30,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '16', '', 'Server returns expected results from CarePlan search by patient + category',
+  test '02', '', 'Server returns expected results from CarePlan search by patient + category',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server is capable of returning all of a patient's Assessment and Plan of Treatment information." do
 
@@ -45,7 +43,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '17', '', 'Server returns expected results from CarePlan search by patient + category + date',
+  test '03', '', 'Server returns expected results from CarePlan search by patient + category + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.",
           :optional do
@@ -61,7 +59,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '18', '', 'Server returns expected results from CarePlan search by patient + category + status',
+  test '04', '', 'Server returns expected results from CarePlan search by patient + category + status',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.",
           :optional do
@@ -73,7 +71,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '19', '', 'Server returns expected results from CarePlan search by patient + category + status + date',
+  test '05', '', 'Server returns expected results from CarePlan search by patient + category + status + date',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           "A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.",
           :optional do
@@ -88,7 +86,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '20', '', 'CarePlan read resource supported',
+  test '06', '', 'CarePlan read resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
@@ -98,7 +96,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '21', '', 'CarePlan history resource supported',
+  test '07', '', 'CarePlan history resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -109,7 +107,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  test '22', '', 'CarePlan vread resource supported',
+  test '08', '', 'CarePlan vread resource supported',
           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
           :optional do
@@ -120,10 +118,12 @@ class ArgonautCarePlanSequence < SequenceBase
 
   end
 
-  def skip_if_not_supported(resource, methods)
-
-    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+  test '09', '', 'CarePlan resources associated with Patient conform to Argonaut profiles',
+          'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html',
+         'CarePlan resources associated with Patient conform to Argonaut profiles.' do
+    test_resources_against_profile('CarePlan', ValidationUtil::CARE_PLAN_URL)
+    skip_unless @profiles_encountered.include?(ValidationUtil::CARE_PLAN_URL), 'No CarePlans found.'
+    assert !@profiles_failed.include?(ValidationUtil::CARE_PLAN_URL), "CarePlans failed validation.<br/>#{@profiles_failed[ValidationUtil::CARE_PLAN_URL]}"
   end
 
 end

@@ -17,6 +17,8 @@ class SequenceResult
 
   property :required, Boolean, default: true
 
+  property :next_sequences, String
+
   property :created_at, DateTime, default: proc { DateTime.now }
 
   has n, :test_results, order: [:test_index.asc]

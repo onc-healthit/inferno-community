@@ -23,7 +23,6 @@ class SequenceBase
   @@defines = {}
   @@test_metadata = {}
 
-  @@modal_before_run = []
   @@optional = []
 
   @@test_id_prefixes = {}
@@ -136,7 +135,10 @@ class SequenceBase
           @sequence_result.result = result.result
         end
       when STATUS[:skip]
-        @sequence_result.skip_count += 1
+        if result.required
+          @sequence_result.skip_count += 1
+          @sequence_result.result = result.result if @sequence_result.result == STATUS[:pass]
+        end
       when STATUS[:wait]
         @sequence_result.result = result.result
       end
@@ -246,14 +248,6 @@ class SequenceBase
 
   def self.tests
     @@test_metadata[self.sequence_name]
-  end
-
-  def self.modal_before_run
-    @@modal_before_run << self.sequence_name
-  end
-
-  def self.modal_before_run?
-    @@modal_before_run.include?(self.sequence_name)
   end
 
   def optional?
@@ -487,6 +481,56 @@ class SequenceBase
     assert vread_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
   end
 
+  attr_accessor :profiles_encountered
+  attr_accessor :profiles_failed
+
+  def test_resources_against_profile(resource_type, specified_profile=nil)
+    @profiles_encountered = [] unless @profiles_encountered
+    @profiles_failed = {} unless @profiles_failed
+
+    all_errors = []
+
+    resources = @instance.resource_references.select{|r| r.resource_type == resource_type}
+    skip("Skip profile validation since no #{resource_type} resources found for Patient.") if resources.empty?
+
+    @instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).each do |resource_id|
+
+      resource_response = @client.read("FHIR::DSTU2::#{resource_type}", resource_id)
+      assert_response_ok resource_response
+      resource = resource_response.resource
+      assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize), "Expected resource to be of type #{resource_type}"
+
+      p = ValidationUtil.guess_profile(resource)
+      if specified_profile
+        next unless p.url == specified_profile
+      end
+      if p
+        @profiles_encountered << p.url
+        @profiles_encountered.uniq!
+        errors = p.validate_resource(resource)
+        unless errors.empty?
+          errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
+          @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
+          @profiles_failed[p.url].concat(errors)
+        end
+        all_errors.concat(errors)
+      else
+        errors = entry.resource.validate
+        all_errors.concat(errors.values)
+      end
+    end
+    # TODO
+    # bundle = client.next_bundle
+    assert(all_errors.empty?, all_errors.join("<br/>\n"))
+  end
+
+  def skip_if_not_supported(resource, methods)
+
+    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
+
+  end
+
+
   # This is intended to be called on SequenceBase
   # There is a test to ensure that this doesn't fall out of date
   def self.ordered_sequences
@@ -512,7 +556,6 @@ class SequenceBase
       ArgonautProcedureSequence,
       ArgonautSmokingStatusSequence,
       ArgonautVitalSignsSequence,
-      ArgonautProfilesSequence,
       AdditionalResourcesSequence]
   end
 
