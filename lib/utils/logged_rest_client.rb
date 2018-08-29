@@ -28,6 +28,8 @@ class LoggedRestClient
       headers: headers,
       payload: payload
     }
+
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
@@ -83,6 +85,8 @@ class LoggedRestClient
       headers: headers,
       payload: payload
     }
+
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
@@ -95,6 +99,8 @@ class LoggedRestClient
       headers: headers,
       payload: payload
     }
+
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
