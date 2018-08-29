@@ -66,6 +66,16 @@ body {
   padding-right: 0 !important;
 }
 
+.server-actions button {
+  font-size: .8em;
+  color: #000;
+}
+
+.server-actions a {
+  font-size: .8em;
+  color: #000;
+}
+
 /* ------------------------- INDEX -------------------------------- */
 .headline {
   font-size: 1.8rem;
@@ -141,26 +151,6 @@ body {
   padding-bottom: 5px;
   margin: 15px 0 10px;
 }
-
-.client-state-button {
-  margin: 32px 0 0 8px;
-}
-
-.client-state-button button {
-  font-size: .8em;
-  color: #000;
-}
-
-.client-state-button a {
-  font-size: .8em;
-  color: #000;
-}
-
-/* @media screen and (max-width: 960px){
-  #client-status-button-text, #save-test-button-text {
-    display: none
-  }
-} */
 
 .sequence-header-details {
   float: right;

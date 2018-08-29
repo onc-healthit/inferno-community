@@ -1,33 +1,30 @@
 <div class="container-fluid details-server">
   <div class="row">
     <div class="col">
-      <div class="container row row-no-padding">
+      <div class="container row row-no-padding align-items-center">
         <div class="col-9">
           <div class="server-state-title">FHIR Resource Server</div>
           <div class="server-state">
             <%=instance.url%>
           </div>
         </div>
-        <div class="col-3">
+        <div class="col-3 server-actions" style='text-align:right;'>
 
           <!--- not yet implemented -->
-          <div style="display:none" class="client-state-button float-right" data-toggle="tooltip" title="Print Results.">
+          <div style="display:none" data-toggle="tooltip" title="Print Results">
             <a href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
           </div>
 
-          <div class="client-state-button float-right">
-            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
-              <span class="oi oi-link-intact" aria-hidden="true"></span>
-              <span id="save-test-button-text">Save</span>
-            </button>
-          </div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+            <span class="oi oi-list" aria-hidden="true"></span>
+            <span id="client-status-button-text">Client State</span>
+          </button>
 
-          <div class="client-state-button float-right">
-            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
-              <span class="oi oi-list" aria-hidden="true"></span>
-              <span id="client-status-button-text">Client State</span>
-            </button>
-          </div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+            <span class="oi oi-link-intact" aria-hidden="true"></span>
+            <span id="save-test-button-text">Save</span>
+          </button>
+
         </div>
       </div>
     </div>
