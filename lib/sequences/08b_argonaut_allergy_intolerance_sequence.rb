@@ -38,6 +38,7 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
     skip_if_not_supported(:AllergyIntolerance, [:search, :read])
 
     reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+    assert_bundle_response(reply)
 
     @no_resources_found = false
     resource_count = reply.try(:resource).try(:entry).try(:length) || 0
