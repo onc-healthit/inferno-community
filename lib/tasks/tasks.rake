@@ -24,7 +24,7 @@ task :tests_to_csv, [:group, :filename] do |task, args|
   when 'all'
     test_group = SequenceBase.ordered_sequences
   else
-    puts "#{args.which} is not valid argument.  Valid arguments include:
+    puts "#{args.group} is not valid argument.  Valid arguments include:
                 active
                 inactive
                 all"

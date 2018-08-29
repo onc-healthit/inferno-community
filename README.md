@@ -98,7 +98,7 @@ Tests are written to be easily understood, even by those who aren't familiar wit
 viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/sequences).
 
 Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata
-can be exported into CSV format and saved to a file named `testlist.csv` iwith the following command:
+can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
 ```sh
 bundle exec rake tests_to_csv
