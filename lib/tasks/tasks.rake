@@ -1,8 +1,11 @@
 require 'fhir_client'
 require 'pry'
 require './lib/sequence_base'
+require File.expand_path '../../../app.rb', __FILE__
+require './models/testing_instance'
 require 'dm-core'
 require 'csv'
+require 'colorize'
 
 ['lib', 'models'].each do |dir|
   Dir.glob(File.join(File.expand_path('../..', File.dirname(File.absolute_path(__FILE__))),dir, '**','*.rb')).each do |file|
@@ -32,5 +35,65 @@ task :tests_to_csv do
 
   puts csv_out
 
+end
+
+desc 'Execute sequence against a FHIR server'
+task :execute_sequence, [:sequence, :server] do |task, args|
+
+  @sequence = nil
+  SequenceBase.ordered_sequences.map do |seq|
+    if seq.sequence_name == args[:sequence] + "Sequence"
+      @sequence = seq
+    end
+  end
+
+  if @sequence == nil
+    puts "Sequence not found. Valid sequences are:
+            Conformance,
+            DynamicRegistration,
+            PatientStandaloneLaunch,
+            ProviderEHRLaunch,
+            OpenIDConnect,
+            TokenIntrospection,
+            TokenRefresh,
+            ArgonautDataQuery,
+            ArgonautProfiles,
+            AdditionalResources"
+    exit
+  end
+
+  instance = TestingInstance.new(url: args[:server])
+  instance.save!
+  client = FHIR::Client.new(args[:server])
+  client.use_dstu2
+  client.default_json
+  sequence_instance = @sequence.new(instance, client, true)
+  sequence_result = sequence_instance.start
+  
+  checkmark = "\u2713"
+  puts @sequence.sequence_name + " Sequence: "  
+  sequence_result.test_results.each do |result|
+    print "\tTest: #{result.name} - "
+    if result.result == 'pass'
+      puts 'pass '.green + checkmark.encode('utf-8').green
+    elsif result.result == 'skip'
+      puts 'skip '.yellow + '*'.yellow
+    elsif result.result == 'fail'
+      if result.required == 'true'
+        puts 'fail '.red + 'X'.red
+      else
+        puts 'fail X (optional)'.light_black
+      end
+    end
+  end
+  print @sequence.sequence_name + " Sequence Result: " 
+  if sequence_result.result == 'pass'
+    puts 'pass '.green + checkmark.encode('utf-8').green
+  elsif sequence_result.result == 'fail'
+    puts 'fail '.red + 'X'.red
+    exit 1
+  end
+    
+  
 end
 
