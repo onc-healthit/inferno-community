@@ -13,8 +13,16 @@ html {
        url('../source-sans/SourceSansPro-Light.ttf') format('truetype');
 }
 
-html, body, h1, h2, h3, h4, h5, h6 {
+@font-face {
+  font-family: 'Roboto Condensed';
+  src: url('../roboto-condensed/RobotoCondensed-Bold.ttf') format('truetype');
+}
+
+html, body {
   font-family: 'Source Sans Pro', sans-serif;
+}
+h1, h2, h3, h4, h5, h6, .sequence-name, .navbar-brand {
+  font-family: 'Roboto Condensed', sans-serif;
 }
 
 body {
@@ -44,6 +52,7 @@ body {
 }
 .navbar-brand {
   font-size: 2rem;
+  letter-spacing: 3px;
 }
 .navbar-brand-subheading {
   color: white;
