@@ -1,9 +1,12 @@
 class TokenRefreshSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
   title 'Token Refresh'
   description 'Demonstrate token refresh capability'
   test_id_prefix 'TR'
-  # modal_before_run
+
+  requires :refresh_token, :client_id, :oauth_token_endpoint
 
   preconditions 'No refresh token available.' do
     !@instance.refresh_token.nil?

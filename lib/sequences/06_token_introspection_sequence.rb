@@ -1,5 +1,9 @@
 class TokenIntrospectionSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
+  inactive
+
   title 'OAuth 2.0 Token Introspection'
 
   description 'Verify token properties using token introspection at the authorization server.'
@@ -8,15 +12,13 @@ class TokenIntrospectionSequence < SequenceBase
 
   optional
 
-  modal_before_run
-
   preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
   test '01', '', 'OAuth token introspection endpoint secured by transport layer security',
     'https://tools.ietf.org/html/rfc7662',
-    'The server MUST support Transport Layer Security (TLS) 1.2.' do
+    'The server MUST support Transport Layer Security (TLS) 1.2.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_introspection_endpoint

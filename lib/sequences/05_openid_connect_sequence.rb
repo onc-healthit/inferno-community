@@ -1,9 +1,14 @@
 class OpenIDConnectSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
   title 'OpenID Connect'
   description 'Verify OpenID Connect functionality of server.'
 
   test_id_prefix 'OIDC'
+
+  requires :id_token, :client_id
+  defines :oauth_introspection_endpoint
 
   preconditions 'Client must have ID token' do
     !@instance.id_token.nil?
@@ -54,7 +59,7 @@ class OpenIDConnectSequence < SequenceBase
     assert_response_ok(@openid_configuration_response)
     @openid_configuration_response_headers = @openid_configuration_response.headers
     @openid_configuration_response_body = JSON.parse(@openid_configuration_response.body)
-    
+
     # save the introspection URL while we're here, we'll need it for the next test sequence
     @instance.oauth_introspection_endpoint = @openid_configuration_response_body['introspection_endpoint']
   end

@@ -1,5 +1,7 @@
 class AdditionalResourcesSequence < SequenceBase
 
+  inactive
+
   title 'Additional Resources'
 
   description 'Verify additional non-Argonaut resource requirements.'

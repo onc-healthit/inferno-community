@@ -1,5 +1,7 @@
 class DynamicRegistrationSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
   title 'Dynamic Registration'
 
   description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
@@ -8,7 +10,8 @@ class DynamicRegistrationSequence < SequenceBase
 
   optional
 
-  modal_before_run
+  requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris
+  defines :client_id, :client_secret
 
   preconditions 'OAuth endpoints are necessary' do
     !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?
@@ -16,7 +19,8 @@ class DynamicRegistrationSequence < SequenceBase
 
   test '01', '', 'Client registration endpoint secured by transport layer security',
     'https://tools.ietf.org/html/rfc7591',
-    'The client registration endpoint MUST be protected by a transport layer security.' do
+    'The client registration endpoint MUST be protected by a transport layer security.',
+     :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_register_endpoint

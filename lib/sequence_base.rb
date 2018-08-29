@@ -15,15 +15,19 @@ class SequenceBase
 
   @@test_index = 0
 
+  @@group = {}
   @@preconditions = {}
   @@titles = {}
   @@descriptions = {}
+  @@requires = {}
+  @@defines = {}
   @@test_metadata = {}
 
-  @@modal_before_run = []
   @@optional = []
 
   @@test_id_prefixes = {}
+
+  @@inactive = {}
 
   def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
     @client = client
@@ -131,7 +135,10 @@ class SequenceBase
           @sequence_result.result = result.result
         end
       when STATUS[:skip]
-        @sequence_result.skip_count += 1
+        if result.required
+          @sequence_result.skip_count += 1
+          @sequence_result.result = result.result if @sequence_result.result == STATUS[:pass]
+        end
       when STATUS[:wait]
         @sequence_result.result = result.result
       end
@@ -153,8 +160,13 @@ class SequenceBase
     self.class.sequence_name
   end
 
+  def self.group(group = nil)
+    @@group[self.sequence_name] = group unless group.nil?
+    @@group[self.sequence_name] || []
+  end
+
   def self.sequence_name
-    self.name.split('::').last.split('Sequence').first
+    self.name.split('::').last
   end
 
   def self.title(title = nil)
@@ -167,21 +179,75 @@ class SequenceBase
     @@descriptions[self.sequence_name]
   end
 
+  def self.requires(*requires)
+    @@requires[self.sequence_name] = requires unless requires.empty?
+    @@requires[self.sequence_name] || []
+  end
+
+  def self.missing_requirements(instance, recurse = false)
+
+    return [] unless @@requires.key?(self.sequence_name)
+
+    requires = @@requires[self.sequence_name]
+
+    missing = requires.select { |r| instance.respond_to?(r) && instance.send(r).nil? }
+
+    dependencies = {}
+    dependencies[self] = missing.map do |requirement|
+      [requirement, ordered_sequences.select{ |sequence| sequence.defines.include? requirement}]
+    end
+
+    # move this into a hash so things are duplicated.
+
+    if(recurse)
+
+      linked_dependencies = {}
+      dependencies[self].each do |dep|
+        return if linked_dependencies.has_key? dep
+        dep[1].each do |seq|
+          linked_dependencies.merge! seq.missing_requirements(instance, true)
+        end
+      end
+
+      dependencies.merge! linked_dependencies
+
+    else
+      return dependencies[self]
+    end
+
+    dependencies
+
+  end
+
+  def self.variable_required_by(variable)
+    ordered_sequences.select{ |sequence| sequence.requires.include? variable}
+  end
+
+  def self.variable_defined_by(variable)
+    ordered_sequences.select{ |sequence| sequence.defines.include? variable}
+  end
+
+  def self.defines(*defines)
+    @@defines[self.sequence_name] = defines unless defines.empty?
+    @@defines[self.sequence_name] || []
+  end
+
+
   def self.test_id_prefix(test_id_prefix = nil)
     @@test_id_prefixes[self.sequence_name] = test_id_prefix unless test_id_prefix.nil?
     @@test_id_prefixes[self.sequence_name]
   end
 
+  def self.inactive
+    @@inactive[self.sequence_name] = true
+  end
+
+  def self.inactive?
+    @@inactive.has_key?(self.sequence_name)
+  end
+
   def self.tests
     @@test_metadata[self.sequence_name]
-  end
-
-  def self.modal_before_run
-    @@modal_before_run << self.sequence_name
-  end
-
-  def self.modal_before_run?
-    @@modal_before_run.include?(self.sequence_name)
   end
 
   def optional?
@@ -238,7 +304,7 @@ class SequenceBase
     @@test_metadata[self.sequence_name] << { test_id: complete_test_id,
                                              ref: ref,
                                              name: name,
-                                             url: url, 
+                                             url: url,
                                              description: description,
                                              test_index: test_index,
                                              required: is_required}
@@ -415,19 +481,82 @@ class SequenceBase
     assert vread_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
   end
 
+  attr_accessor :profiles_encountered
+  attr_accessor :profiles_failed
+
+  def test_resources_against_profile(resource_type, specified_profile=nil)
+    @profiles_encountered = [] unless @profiles_encountered
+    @profiles_failed = {} unless @profiles_failed
+
+    all_errors = []
+
+    resources = @instance.resource_references.select{|r| r.resource_type == resource_type}
+    skip("Skip profile validation since no #{resource_type} resources found for Patient.") if resources.empty?
+
+    @instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).each do |resource_id|
+
+      resource_response = @client.read("FHIR::DSTU2::#{resource_type}", resource_id)
+      assert_response_ok resource_response
+      resource = resource_response.resource
+      assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize), "Expected resource to be of type #{resource_type}"
+
+      p = ValidationUtil.guess_profile(resource)
+      if specified_profile
+        next unless p.url == specified_profile
+      end
+      if p
+        @profiles_encountered << p.url
+        @profiles_encountered.uniq!
+        errors = p.validate_resource(resource)
+        unless errors.empty?
+          errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
+          @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
+          @profiles_failed[p.url].concat(errors)
+        end
+        all_errors.concat(errors)
+      else
+        errors = entry.resource.validate
+        all_errors.concat(errors.values)
+      end
+    end
+    # TODO
+    # bundle = client.next_bundle
+    assert(all_errors.empty?, all_errors.join("<br/>\n"))
+  end
+
+  def skip_if_not_supported(resource, methods)
+
+    skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
+
+  end
+
+
   # This is intended to be called on SequenceBase
   # There is a test to ensure that this doesn't fall out of date
   def self.ordered_sequences
     [ ConformanceSequence,
-        DynamicRegistrationSequence,
-        PatientStandaloneLaunchSequence,
-        ProviderEHRLaunchSequence,
-        OpenIDConnectSequence,
-        TokenIntrospectionSequence,
-        TokenRefreshSequence,
-        ArgonautDataQuerySequence,
-        ArgonautProfilesSequence,
-        AdditionalResourcesSequence]
+      DynamicRegistrationSequence,
+      PatientStandaloneLaunchSequence,
+      ProviderEHRLaunchSequence,
+      OpenIDConnectSequence,
+      TokenIntrospectionSequence,
+      TokenRefreshSequence,
+      ArgonautPatientSequence,
+      ArgonautAllergyIntoleranceSequence,
+      ArgonautCarePlanSequence,
+      ArgonautCareTeamSequence,
+      ArgonautConditionSequence,
+      ArgonautDeviceSequence,
+      ArgonautDiagnosticReportSequence,
+      ArgonautObservationSequence,
+      ArgonautGoalSequence,
+      ArgonautImmunizationSequence,
+      ArgonautMedicationStatementSequence,
+      ArgonautMedicationOrderSequence,
+      ArgonautProcedureSequence,
+      ArgonautSmokingStatusSequence,
+      ArgonautVitalSignsSequence,
+      AdditionalResourcesSequence]
   end
 
 end

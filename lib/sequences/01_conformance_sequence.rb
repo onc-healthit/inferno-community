@@ -1,14 +1,20 @@
 class ConformanceSequence < SequenceBase
 
+  group 'Discovery'
+
   title 'Conformance Statement'
 
   description 'Verify that the FHIR server exposes a Conformance Statement with the necessary information.'
 
   test_id_prefix 'C'
 
+  requires :url
+  defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
+
   test '01', '', 'FHIR server secured by transport layer security',
     'https://www.hl7.org/fhir/security.html',
-    'All exchange of production data should be secured with TLS/SSL.' do
+    'All exchange of production data should be secured with TLS/SSL.',
+    :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.url

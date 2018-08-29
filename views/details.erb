@@ -1,32 +1,30 @@
 <div class="container-fluid details-server">
   <div class="row">
     <div class="col">
-      <div class="container row row-no-padding">
+      <div class="container row row-no-padding align-items-center">
         <div class="col-9">
           <div class="server-state-title">FHIR Resource Server</div>
-          <div class="server-state" data-toggle="tooltip" title="<%=instance.url%>">
+          <div class="server-state">
             <%=instance.url%>
           </div>
         </div>
-        <div class="col-3">
+        <div class="col-3 server-actions" style='text-align:right;'>
 
           <!--- not yet implemented -->
-          <div style="display:none" class="client-state-button float-right" data-toggle="tooltip" title="Print Results.">
+          <div style="display:none" data-toggle="tooltip" title="Print Results">
             <a href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
           </div>
 
-          <div class="client-state-button float-right" data-toggle="tooltip" title="Save link to this test instance.">
-            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
-              <span class="oi oi-link-intact" aria-hidden="true"></span>
-            </button>
-          </div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+            <span class="oi oi-list" aria-hidden="true"></span>
+            <span id="client-status-button-text">Client State</span>
+          </button>
 
-          <div class="client-state-button float-right" data-toggle="tooltip" title="View status of client">
-            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
-              <span class="oi oi-list" aria-hidden="true"></span>
-              <span id="client-status-button-text">Client Status</span>
-            </button>
-          </div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+            <span class="oi oi-link-intact" aria-hidden="true"></span>
+            <span id="save-test-button-text">Save</span>
+          </button>
+
         </div>
       </div>
     </div>
@@ -35,6 +33,7 @@
 
 <div class="container">
   <div class="main main-details">
+
     <% unless locals[:error_code].nil? %>
       <div class="alert alert-danger" role="alert">
         <% if error_code == 'no_launch' %>
@@ -46,307 +45,144 @@
         <% end %>
       </div>
     <% end %>
-    <% if show_tutorial %>
-      <% if sequence_results.size == 0 %>
-        <div class="alert alert-info" role="alert">
-          <p>
-          You have created a new testing session at <a class="alert-link" href="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/"><%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/</a>.
-          Please take note of this URI if you would like to share the results or return to the results of these tests in the future.
-          </p>
-          <p>
-          Start testing by clicking on the <strong><span class="oi oi-media-play"></span> Begin</strong> button next to the
-          Conformance Statement sequence below. This sequence queries the metadata endpoint of the FHIR server for supported features and
-          security configuration information. This information will inform the testing client how to access the necessary endpoints
-          for subsequent tests.
-        </div>
-      <% end %>
-
-      <% if instance.sequence_results.count == 1 %>
-        <div class="alert alert-info" role="alert">
-          <% if !instance.oauth_authorize_endpoint.nil? && !instance.oauth_token_endpoint.nil? && instance.sequence_results.all?{|s| s.name == 'Conformance'} %>
-           <p>
-             The Conformance Statement sequence was able to extract the OAuth 2.0 endpoints from the conformance statement the FHIR server.
-             You can inspect what was tested by clicking on individual tests within the sequence.  Those tests that have a
-             <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
-             responses, can show what was communicated between the client and the server.
-           </p>
-           <p>
-             Click on the <strong><span class="oi oi-list"></span> Client Status</strong> button above to see more details about what
-             was extracted from the conformance statement that will be used in subsequent tests.  Click on the
-             <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Note that only the most recent
-             test results are saved within a sequence.
-           </p>
-           <p>
-           For more information about usage of this application, please visit the
-           <a href="https://github.com/siteadmin/inferno" class="alert-link" target="_blank">documentation.</a>
-           </p>
-         <% else %>
-           <p>
-           The Conformance Statement sequence was unable to extract the required fields from the metadata endpoint of this FHIR server.
-           You can inspect what happened by clicking on individual tests within the sequence.  Those tests that have a
-           <span class="oi oi-arrow-thick-right"></span> to the right have made HTTP requests to the server. These requests, and corresponding
-           responses, may help identify what occured to cause these tests to fail.
-           </p>
-           <p>
-           You can click on the <strong><span class="oi oi-action-undo"></span> Rerun</strong> button to attempt the sequence again. Only the most recent
-           test results are saved within a sequence.
-           </p>
-        <% end %>
-        </div>
-      <% end %>
-     <% end %>
-    <div class="sequence-header">
-      Test Sequences
-      <span class="sequence-header-details">
-        <% details_pass = sequence_results.values.map(&:result).count("pass") == SequenceBase.subclasses.reject(&:optional?).count %>
-        <span class="sequence-header-details-big details-pass-<%=details_pass%>"><%= sequence_results.values.select(&:required).map(&:result).count("pass") %></span> of
-        <span class="sequence-header-details-big details-pass-<%=details_pass%>"><%= SequenceBase.subclasses.reject(&:optional?).count %></span>
-        required sequences passed
-      </span>
-    </div>
     <div class="sequence-table">
-      <% sequences.each do |sequence_class| %>
-        <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
+      <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
+        <div class="sequence-group">
+          <div class="sequence-header">
+            <div class='row align-items-center'>
+              <div class='col'>
+                <% if sequence_group[1].length > 1 %>
+                  <a id="<%=sequence_group[1].join(',')%>" name="<%=sequence_group[1].join(',')%>"></a>
+
+                <% end %>
+                <h1>
+                  <%=sequence_group[0] %>
+                  <%# FIXME: This is brittle. Instead of checking for the number of tests, maybe check for specific sequence groups? %>
+                  <% if sequence_group[1].length > 10 %>
+                    <button data-group="<%=sequence_group[0]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                      <span class="oi oi-media-play"></span> Run All
+                    </button>
+                  <% end %>
+                </h1>
+              </div>
+            </div>
+          </div>
+          <% sequence_group[1].each do |sequence_class| %>
+            <% unless sequence_class.inactive? %>
+              <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
+            <% end %>
+          <% end %>
+        </div>
       <% end %>
 
-      <%= erb(:total_score,{},{instance: instance}) %>
+      <%# Removed total score for community edition. %>
     </div>
   </div>
 </div>
 
 
 <!-- Modals -->
-<div class="modal fade" id="ConformanceSequenceSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="PrerequisitesModal" tabindex="-1" role="dialog" aria-labelledby="PrerequisitesModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Skip Capability Test</h5>
+        <h5 class="modal-title" id="PrerequisitesModalTitle">Prerequisites for </h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form method="POST" action="ConformanceSkip">
+      <form method="POST" action="sequence_result">
+        <input type="hidden" name="sequence" value="" />
+        <input type="hidden" name="required_fields" value="" />
         <div class="modal-body">
-          <p>
-            If you want to skip the Conformance sequence, then you are required
-            to manually supply authorization and token endpoints.
-          </p>
-            <div class="form-group">
-              <label for="conformanceAuthorizeEndpoint">OAuth 2.0 Authorize Endpoint</label>
-              <input type="text" class="form-control" name="conformance_authorize_endpoint" id="conformanceAuthorizeEndpoint"  placeholder="https://">
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                                          label: 'Launch URI',
+                                          value: request.base_url + BASE_PATH + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
+                                          readonly: true })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                                          label: 'Redirect URI',
+                                          value: request.base_url + BASE_PATH + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
+                                          readonly: true })%>
+
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
+                                          label: 'OAuth 2.0 Dynamic Registration Endpoint',
+                                          value: instance.oauth_register_endpoint}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
+                                          label: 'OAuth 2.0 Authorize Endpoint',
+                                          value: instance.oauth_authorize_endpoint}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
+                                          label: 'OAuth 2.0 Token Endpoint',
+                                          value: instance.oauth_token_endpoint}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
+                                          label: 'Client ID',
+                                          value: instance.client_id}); %>
+
+
+          <%# SPECIAL CASE: CLIENT SECRET %>
+          <div class="form-group"
+               data-requiredby="<%=SequenceBase.variable_required_by(:confidential_client).join(',')%>"
+               data-prerequisite="confidential_client"
+               id="is_confidential"
+               >
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
+              <label class="form-check-label" for="confidential_client_off">Public Client</label>
             </div>
-            <div class="form-group">
-              <label for="conformanceAuthorizeEndpoint">OAuth 2.0 Token Endpoint</label>
-              <input type="text" class="form-control" name="conformance_token_endpoint" id="conformanceTokenEndpoint"  placeholder="https://">
+            <div class="form-check form-check-inline" data-requiredby>
+              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
+              <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
             </div>
+          </div>
+
+          <div class="client-secret-container">
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+                                          label: 'Client Secret',
+                                          value: instance.client_secret}); %>
+          </div>
+
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
+                                          label: 'OAuth Client Name',
+                                          value: instance.client_name}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
+                                          label: 'Scopes',
+                                          value: instance.scopes || DEFAULT_SCOPES,
+                                          required: true,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :token_endpoint_auth_method,
+                                          label: 'Token Endpoint Authorization Method',
+                                          value: 'none',
+                                          readonly: true
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :grant_types,
+                                          label: 'Grant Type',
+                                          value: 'authorization_code',
+                                          readonly: true
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :token,
+                                          label: 'Bearer Token',
+                                          value: instance.token,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+                                          label: 'Patient ID',
+                                          value: instance.patient_id,
+                                          })%>
+
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="DynamicRegistrationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">OAuth 2.0 Dynamic Client Registration</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="DynamicRegistration">
-        <div class="modal-body">
-          <p>
-            Enter the dynamic registration details.
-          </p>
-          <div class="form-group">
-            <label for="registration_url">Registration URI</label>
-            <input type="text" class="form-control" name="registration_url" id="registration_url" value="<%= instance.oauth_register_endpoint %>" required>
-          </div>
-          <div class="form-group">
-            <label for="client_name">Client Name</label>
-            <input type="text" class="form-control" name="client_name" id="client_name" value="Inferno" required>
-          </div>
-          <div class="form-group">
-            <label for="initiate_login_uri">Launch URI</label>
-            <input readonly type="text" class="form-control" name="initiate_login_uri" id="initiate_login_uri" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
-          </div>
-          <div class="form-group">
-            <label for="redirect_uris">Redirect URI</label>
-            <input readonly type="text" class="form-control" name="redirect_uris" id="redirect_uris" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
-          </div>
-          <div class="form-check">
-            <input id="is_confidential_dynamic" type="checkbox" class="form-check-input" name="is_confidential">
-            <label for="is_confidential_dynamic"
-                   class="form-check-label"
-                   data-toggle="tooltip"
-                   data-html="true"
-                   data-placement="right"
-                   title="A Confidential App meets <u> all </u> the following: <ul>
-                   <li> App runs on a trusted server</li>
-                   <li> App has server-side business logic</li>
-                   <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
-          </div>
-          <div class="form-group">
-            <label for="scope">Scopes</label>
-            <input type="text" class="form-control" name="scope" id="scope" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Register</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="DynamicRegistrationSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Skip Dynamic Registration</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="dynamic_registration_skip">
-        <div class="modal-body">
-          <p>
-            Please register your application with the following information:
-          </p>
-          <div class="form-group">
-            <label for="skip_launch">Launch URI</label>
-            <input id="skip_launch" name="skip_launch" readonly type="text" class="form-control" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/launch">
-          </div>
-          <div class="form-group">
-            <label for="skip_redirect">Redirect URI</label>
-            <input id="skip_redirect" name="skip_redirect" readonly type="text" class="form-control" value="<%=request.base_url%><%=BASE_PATH%>/<%=instance.id%>/<%=instance.client_endpoint_key%>/redirect">
-          </div>
-          <div class="form-group">
-            <label for="token_endpoint_auth_method">Token Endpoint Authorization Method</label>
-            <input readonly type="text" class="form-control" name="token_endpoint_auth_method" id="token_endpoint_auth_method" value="none">
-          </div>
-          <div class="form-group">
-            <label for="grant_types">Grant Type</label>
-            <input readonly type="text" class="form-control" name="grant_types" id="grant_types" value="authorization_code" required>
-          </div>
-          <div class="form-check">
-            <input id="is_confidential" type="checkbox" class="form-check-input" name="is_confidential">
-            <label for="is_confidential"
-                   class="form-check-label"
-                   data-toggle="tooltip"
-                   data-html="true"
-                   data-placement="right"
-                   title="A Confidential App meets <u> all </u> the following: <ul>
-                   <li> App runs on a trusted server</li>
-                   <li> App has server-side business logic</li>
-                   <li> App is <em> able to protect </em> a Client Secret</li> </ul>">Confidential Client</label>
-          </div>
-          <div class="form-group">
-            <label for="scope">Scopes</label>
-            <input type="text" class="form-control" name="scope" id="scope" value="<%= DEFAULT_SCOPES %>" required>
-          </div>
-          <div class="form-group">
-            <label for="dynamicRegistrationClientId">Enter Client Id</label>
-            <input type="text" class="form-control" name="client_id" id="dynamicRegistrationClientId" required>
-          </div>
-          <div class="form-group d-none" id="client_secret_form_group">
-            <label for="dynamicRegistrationClientSecret"
-                   data-toggle="tooltip" data-placement="right"
-                   title="The Client Secret provided by the server which must be protected">Enter Client Secret</label>
-            <input type="text" class="form-control" name="client_secret" id="dynamicRegistrationClientSecret">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Skip Dynamic Registration</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="PatientStandaloneLaunchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Patient Standalone Launch</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="PatientStandaloneLaunch">
-        <div class="modal-body">
-          <p>
-            Enter the desired authorization scopes. Ensure your app registration included these scopes.
-          </p>
-          <div class="form-group">
-            <label for="patientStandaloneLaunchScopes">Scopes</label>
-            <input type="text" class="form-control" name="scopes" id="patientStandaloneLaunchScopes" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Run Standalone Launch</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="ProviderEHRLaunchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Provider EHR Launch</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="ProviderEHRLaunch">
-        <div class="modal-body">
-          <p>
-            Enter the desired authorization scopes. Ensure your app registration included these scopes.
-          </p>
-          <div class="form-group">
-            <label for="patientStandaloneLaunchScopes">Scopes</label>
-            <input type="text" class="form-control" name="scopes" id="providerEHRLaunchScopes" value="<%=instance.scopes || DEFAULT_SCOPES %>" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Run EHR Launch</button>
-          </div>
-        </div>
-      </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="TokenIntrospectionSkipModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Skip Token Introspection Test</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="TokenIntrospectionSkip">
-        <div class="modal-body">
-          <p>
-            By skipping the OAuth 2.0 Token Introspection test, you are confirming that the user is
-            authorized for at least three months.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Manually Confirm Authorization Period</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Execute</button>
         </div>
       </form>
     </div>
@@ -381,7 +217,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Current Application State</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Client State</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -534,7 +370,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Bookmark or Share Results</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Save a link to this test instance</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
