@@ -1,6 +1,6 @@
 class DynamicRegistrationSequence < SequenceBase
 
-  group 'SMART App Launch'
+  group 'Authentication and Authorization'
 
   title 'Dynamic Registration'
 

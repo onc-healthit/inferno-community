@@ -1,6 +1,6 @@
 class PatientStandaloneLaunchSequence < SequenceBase
 
-  group 'SMART App Launch'
+  group 'Authentication and Authorization'
 
   title 'Patient Standalone Launch Sequence'
   description 'Demonstrate the Patient Standalone Launch Sequence.'

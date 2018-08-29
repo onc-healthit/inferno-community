@@ -1,8 +1,8 @@
 class ArgonautVitalSignsSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Vital Signs Profile'
+  title 'Vital Signs'
 
   description 'Verify that Vital Signs are collected on the FHIR server according to the Argonaut Data Query Implementation Guide'
 

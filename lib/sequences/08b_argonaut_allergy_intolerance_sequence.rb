@@ -1,8 +1,8 @@
 class ArgonautAllergyIntoleranceSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Allergy Intolerance Profile'
+  title 'Allergy Intolerance'
 
   description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

@@ -1,8 +1,8 @@
 class ArgonautDeviceSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Device Profile'
+  title 'Device'
 
   description 'Verify that Device resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

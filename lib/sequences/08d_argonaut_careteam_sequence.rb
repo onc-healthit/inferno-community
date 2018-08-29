@@ -1,8 +1,8 @@
 class ArgonautCareTeamSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Care Team Profile'
+  title 'Care Team'
 
   description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

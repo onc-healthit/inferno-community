@@ -1,8 +1,8 @@
 class ArgonautGoalSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Goal Profile'
+  title 'Goal'
 
   description 'Verify that Goal resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

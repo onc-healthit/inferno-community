@@ -1,8 +1,8 @@
 class ArgonautCarePlanSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Care Plan Profile'
+  title 'Care Plan'
 
   description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

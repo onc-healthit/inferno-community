@@ -1,6 +1,6 @@
 class TokenRefreshSequence < SequenceBase
 
-  group 'SMART App Launch'
+  group 'Authentication and Authorization'
 
   title 'Token Refresh'
   description 'Demonstrate token refresh capability'

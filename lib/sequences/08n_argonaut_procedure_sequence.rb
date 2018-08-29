@@ -1,8 +1,8 @@
 class ArgonautProcedureSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Procedure Profile'
+  title 'Procedure'
 
   description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

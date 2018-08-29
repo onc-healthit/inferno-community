@@ -1,8 +1,8 @@
 class ArgonautObservationSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Observation Profile'
+  title 'Observation'
 
   description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

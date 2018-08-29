@@ -1,8 +1,8 @@
 class ArgonautSmokingStatusSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Smoking Status Profile'
+  title 'Smoking Status'
 
   description 'Verify that Smoking Status is collected on the FHIR server according to the Argonaut Data Query Implementation Guide'
 

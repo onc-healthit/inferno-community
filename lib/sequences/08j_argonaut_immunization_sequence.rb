@@ -1,8 +1,8 @@
 class ArgonautImmunizationSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Immunization Profile'
+  title 'Immunization'
 
   description 'Verify that Immunization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

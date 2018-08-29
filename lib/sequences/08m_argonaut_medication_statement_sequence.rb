@@ -1,8 +1,8 @@
 class ArgonautMedicationStatementSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Medication Statement Profile'
+  title 'Medication Statement'
 
   description 'Verify that MedicationStatement resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

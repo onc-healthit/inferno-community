@@ -1,6 +1,6 @@
 class OpenIDConnectSequence < SequenceBase
 
-  group 'SMART App Launch'
+  group 'Authentication and Authorization'
 
   title 'OpenID Connect'
   description 'Verify OpenID Connect functionality of server.'

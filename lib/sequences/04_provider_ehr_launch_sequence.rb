@@ -1,6 +1,6 @@
 class ProviderEHRLaunchSequence < SequenceBase
 
-  group 'SMART App Launch'
+  group 'Authentication and Authorization'
 
   title 'Provider EHR Launch Sequence'
 

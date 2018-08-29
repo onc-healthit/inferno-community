@@ -1,8 +1,8 @@
 class ArgonautPatientSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Patient Profile'
+  title 'Patient'
 
   description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

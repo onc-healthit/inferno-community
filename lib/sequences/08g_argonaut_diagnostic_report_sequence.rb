@@ -1,8 +1,8 @@
 class ArgonautDiagnosticReportSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Diagnostic Report Profile'
+  title 'Diagnostic Report'
 
   description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

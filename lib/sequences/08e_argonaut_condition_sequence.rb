@@ -1,8 +1,8 @@
 class ArgonautConditionSequence < SequenceBase
 
-  group 'Argonaut Query and Data'
+  group 'Argonaut Profile Conformance'
 
-  title 'Argonaut Condition Profile'
+  title 'Condition'
 
   description 'Verify that Condition resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

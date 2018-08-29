@@ -1,6 +1,6 @@
 class TokenIntrospectionSequence < SequenceBase
 
-  group 'SMART App Launch'
+  group 'Authentication and Authorization'
 
   inactive
 
