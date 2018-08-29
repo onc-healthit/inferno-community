@@ -3,7 +3,7 @@ set -e
 
 # Feel free to change any of the following variables for your app:
 TIMEOUT=${TIMEOUT-300}
-APP_NAME=crucible_smart_app
+APP_NAME=inferno
 APP_ROOT=/var/www/$APP_NAME
 CONFIG_PATH=$APP_ROOT/deployment-files/unicorn.rb
 PID=$APP_ROOT/tmp/pids/unicorn.pid

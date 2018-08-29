@@ -1,20 +1,24 @@
 class TokenIntrospectionSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
+  inactive
+
   title 'OAuth 2.0 Token Introspection'
 
   description 'Verify token properties using token introspection at the authorization server.'
 
-  optional
+  test_id_prefix 'TI'
 
-  modal_before_run
+  optional
 
   preconditions 'Client must be authorized' do
     !@instance.token.nil?
   end
 
-  test 'OAuth token introspection endpoint secured by transport layer security',
+  test '01', '', 'OAuth token introspection endpoint secured by transport layer security',
     'https://tools.ietf.org/html/rfc7662',
-    'The server MUST support Transport Layer Security (TLS) 1.2.' do
+    'The server MUST support Transport Layer Security (TLS) 1.2.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_introspection_endpoint
@@ -24,7 +28,7 @@ class TokenIntrospectionSequence < SequenceBase
   end
 
 
-  test 'Token introspection endpoint responds properly to introspection request for access token',
+  test '02', '', 'Token introspection endpoint responds properly to introspection request for access token',
           'https://tools.ietf.org/html/rfc7662',
           'A resource server is capable of calling the introspection endpoint.' do
 
@@ -49,7 +53,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
-  test 'Token introspection response confirms that Access token is active',
+  test '03', '', 'Token introspection response confirms that Access token is active',
           'https://tools.ietf.org/html/rfc7662',
           'A current access token is listed as active.' do
 
@@ -60,7 +64,7 @@ class TokenIntrospectionSequence < SequenceBase
     assert active, 'Token is not active, try the test again with a valid Access token'
   end
 
-  test 'Scopes returned by token introspection request match expected scopes',
+  test '04', '', 'Scopes returned by token introspection request match expected scopes',
           'https://tools.ietf.org/html/rfc7662',
           'The scopes we received alongside the Access token match those from the introspection response.',
           :optional do
@@ -82,7 +86,7 @@ class TokenIntrospectionSequence < SequenceBase
   end
 
   # TODO verify timeout requirements
-  test 'Token introspection response confirms Access token has appropriate lifetime',
+  test '05', '', 'Token introspection response confirms Access token has appropriate lifetime',
           'https://tools.ietf.org/html/rfc7662',
           'The Access token should have a lifetime of at least 60 minutes.' do
 
@@ -102,7 +106,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
-  test 'Token introspection endpoint responds properly to introspection request for refresh token',
+  test '06', '', 'Token introspection endpoint responds properly to introspection request for refresh token',
        'https://tools.ietf.org/html/rfc7662',
        'A resource server is capable of calling the introspection endpoint.',
        :optional do
@@ -130,7 +134,7 @@ class TokenIntrospectionSequence < SequenceBase
 
   end
 
-  test 'Token introspection response confirms that Refresh token is active',
+  test '07', '', 'Token introspection response confirms that Refresh token is active',
        'https://tools.ietf.org/html/rfc7662',
        'A current access token is listed as active.',
        :optional do

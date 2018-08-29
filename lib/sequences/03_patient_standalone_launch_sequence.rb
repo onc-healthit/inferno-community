@@ -1,16 +1,21 @@
 class PatientStandaloneLaunchSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
   title 'Patient Standalone Launch Sequence'
   description 'Demonstrate the Patient Standalone Launch Sequence.'
-  modal_before_run
+  test_id_prefix 'PSLS'
+
+  requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :initiate_login_uri, :redirect_uris
+  defines :token, :id_token, :refresh_token, :patient_id
 
   preconditions 'Client must be registered' do
     !@instance.client_id.nil?
   end
 
-  test 'OAuth authorize endpoint secured by transport layer security',
+  test '01', '', 'OAuth authorize endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_authorize_endpoint
@@ -19,7 +24,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth server redirects client browser to app redirect URI',
+  test '02', '', 'OAuth server redirects client browser to app redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.'  do
 
@@ -49,7 +54,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     redirect oauth2_auth_query[0..-2], 'redirect'
   end
 
-  test 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI',
+  test '03', '', 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'Code and state are required querystring parameters. State must be the exact value received from the client.'  do
 
@@ -58,9 +63,9 @@ class PatientStandaloneLaunchSequence < SequenceBase
     assert !@params['code'].nil?, "Expected code to be submitted in request"
   end
 
-  test 'OAuth token exchange endpoint secured by transport layer security',
+  test '04', '', 'OAuth token exchange endpoint secured by transport layer security',
     'http://www.hl7.org/fhir/smart-app-launch/',
-    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.' do
+    'Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.', :optional do
 
     skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
     assert_tls_1_2 @instance.oauth_token_endpoint
@@ -69,9 +74,11 @@ class PatientStandaloneLaunchSequence < SequenceBase
     }
   end
 
-  test 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID',
+  test '05', '', 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID',
     'https://tools.ietf.org/html/rfc6749',
     'If the request failed verification or is invalid, the authorization server returns an error response.' do
+
+    headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
 
     oauth2_params = {
       'grant_type' => 'authorization_code',
@@ -80,7 +87,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
       'client_id' => @instance.client_id
     }
 
-    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
     assert_response_bad_or_unauthorized token_response
 
     oauth2_params = {
@@ -90,28 +97,35 @@ class PatientStandaloneLaunchSequence < SequenceBase
       'client_id' => 'INVALID_CLIENT_ID'
     }
 
-    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
     assert_response_bad_or_unauthorized token_response
 
   end
 
-  test 'OAuth token exchange request succeeds when supplied correct information',
+  test '06', '', 'OAuth token exchange request succeeds when supplied correct information',
     'http://www.hl7.org/fhir/smart-app-launch/',
     "After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749." do
 
     oauth2_params = {
-      'grant_type' => 'authorization_code',
-      'code' => @params['code'],
-      'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
-      'client_id' => @instance.client_id
+        'grant_type' => 'authorization_code',
+        'code' => @params['code'],
+        'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
     }
-
-    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+    if @instance.confidential_client
+      oauth2_headers = {
+          'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
+          'Accept' => 'application/json', 'Content-Type' => 'application/json'
+      }
+    else
+      oauth2_params['client_id'] = @instance.client_id
+      oauth2_headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+    end
+    @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
     assert_response_ok(@token_response)
 
   end
 
-  test 'Data returned from token exchange contains required information encoded in JSON',
+  test '07', '', 'Data returned from token exchange contains required information encoded in JSON',
     'http://www.hl7.org/fhir/smart-app-launch/',
     'The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
     'The EHR authorization server shall return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\

@@ -4,13 +4,13 @@
 # Start crucuble_smarrt_app with unicorn.
 #
 ##########################################
-echo "Starting the crucible_smart_app with unicorn."
+echo "Starting Inferno with unicorn."
 echo "Add rvm to path"
 [[ -s "/home/ubuntu/.profile" ]] && source "/home/ubuntu/.profile" # Load the default .profile
 
 [[ -s "/home/ubuntu/.rvm/scripts/rvm" ]] && source "/home/ubuntu/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
-APP_NAME="crucible_smart_app"
+APP_NAME="inferno"
 APP_ROOT=/var/www/$APP_NAME
 UNICORN_CONFIG=$APP_ROOT/deployment-files/unicorn.rb
 echo "Unicorn config file is " $UNICORN_CONFIG

@@ -8,20 +8,22 @@
 
     <link rel="stylesheet" href="<%=BASE_PATH%>/static/css/bootstrap.min.css">
     <link rel="stylesheet" href="<%=BASE_PATH%>/static/open-iconic/css/open-iconic-bootstrap.min.css">
-
     <link rel="stylesheet" href="<%=BASE_PATH%>/static/css/styles.css">
   </head>
   <body>
     <nav class="navbar navbar-expand navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="<%=BASE_PATH%>/"><%=app_name.upcase%></a>
+        <div class='inferno-branding'>
+          <a class="navbar-brand" href="<%=BASE_PATH%>/">INFERNO</a>
+          <span class='navbar-brand-subheading'>Developer Preview</span>
+        </div>
         <!-- Navbar content -->
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" target="_blank" href="https://github.com/fhir-crucible/crucible_smart_app/">Documentation</a>
+            <a class="nav-link" target="_blank" href="https://github.com/siteadmin/inferno/">Documentation</a>
           </li>
         </ul>
       </div>
@@ -30,10 +32,10 @@
     <footer class="footer">
       <div class="container row">
         <div class="col-sm text-left">
-          <a target="_blank" href="https://github.com/fhir-crucible/crucible_smart_app">Open Source</a>
+          <a target="_blank" href="https://github.com/siteadmin/inferno">Open Source</a>
         </div>
         <div class="col-sm text-center">
-          <a target="_blank" href="https://github.com/fhir-crucible/crucible_smart_app/issues">Issues</a>
+          <a target="_blank" href="https://github.com/siteadmin/inferno/issues">Issues</a>
         </div>
         <div class="col-sm text-right">
           Version <%= version %>

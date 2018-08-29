@@ -3,10 +3,12 @@ class TestingInstance
   property :id, String, key: true, default: proc { SecureRandomBase62.generate(64) }
   property :url, String
   property :name, String
+  property :confidential_client, Boolean
   property :client_id, String
+  property :client_secret, String
   property :base_url, String
 
-  property :client_name, String
+  property :client_name, String, default: 'Inferno'
   property :scopes, String
   property :launch_type, String
   property :state, String
@@ -67,6 +69,19 @@ class TestingInstance
 
   def patient_id
     self.resource_references.select{|ref| ref.resource_type == 'Patient'}.first.try(:resource_id)
+  end
+
+  def patient_id= patient_id
+
+    existing_patients = self.resource_references.select{|ref| ref.resource_type == 'Patient'}
+    self.resource_references.each(&:destroy)
+    self.save!
+
+    self.resource_references << ResourceReference.new({
+      resource_type: 'Patient',
+      resource_id: patient_id
+      })
+
   end
 
   def save_supported_resources(conformance)
