@@ -29,7 +29,8 @@ class LoggedRestClient
       payload: payload
     }
 
-    request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
@@ -72,7 +73,8 @@ class LoggedRestClient
       payload: payload
     }
 
-    request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
@@ -86,7 +88,8 @@ class LoggedRestClient
       payload: payload
     }
 
-    request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
@@ -100,7 +103,8 @@ class LoggedRestClient
       payload: payload
     }
 
-    request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+    request[:payload] = payload.to_json if payload.is_a?(Hash)
     self.record_response(request, reply)
     return reply
   end
