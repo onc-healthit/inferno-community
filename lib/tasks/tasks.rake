@@ -14,9 +14,24 @@ require 'colorize'
 end
 
 desc 'Generate List of All Tests'
-task :tests_to_csv do
+task :tests_to_csv, [:group, :filename] do |task, args|
+  args.with_defaults(group: 'active', filename: 'testlist.csv')
+  case args.group
+  when 'active'
+    test_group = SequenceBase.ordered_sequences.reject {|sb| sb.inactive?}
+  when 'inactive'
+    test_group = SequenceBase.ordered_sequences.select {|sb| sb.inactive?}
+  when 'all'
+    test_group = SequenceBase.ordered_sequences
+  else
+    puts "#{args.group} is not valid argument.  Valid arguments include:
+                active
+                inactive
+                all"
+    exit
+  end
 
-  flat_tests = SequenceBase.ordered_sequences.map do |klass|
+  flat_tests = test_group.map  do |klass|
     klass.tests.map do |test|
       test[:sequence] = klass.to_s
       test[:sequence_required] = !klass.optional?
@@ -33,7 +48,7 @@ task :tests_to_csv do
     end
   end
 
-  puts csv_out
+  File.write(args.filename, csv_out)
 
 end
 
