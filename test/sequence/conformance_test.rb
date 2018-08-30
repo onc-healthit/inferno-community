@@ -38,7 +38,7 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
 
     sequence_result = @sequence.start
     assert sequence_result.result == 'fail'
-    assert sequence_result.test_results.select{|r| !r.required}.length == 1
+    assert sequence_result.test_results.select{|r| !r.required}.length == 2 #TLS and SMART capabilities
     assert sequence_result.test_results.all?{|r| r.result == 'fail' || r.result == 'skip' || !r.required}
   end
 

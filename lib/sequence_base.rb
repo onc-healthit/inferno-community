@@ -534,12 +534,12 @@ class SequenceBase
   # This is intended to be called on SequenceBase
   # There is a test to ensure that this doesn't fall out of date
   def self.ordered_sequences
-    [ ConformanceSequence,
+    [
+      ConformanceSequence,
       DynamicRegistrationSequence,
       PatientStandaloneLaunchSequence,
       ProviderEHRLaunchSequence,
       OpenIDConnectSequence,
-      TokenIntrospectionSequence,
       TokenRefreshSequence,
       ArgonautPatientSequence,
       ArgonautAllergyIntoleranceSequence,
@@ -555,8 +555,8 @@ class SequenceBase
       ArgonautMedicationOrderSequence,
       ArgonautProcedureSequence,
       ArgonautSmokingStatusSequence,
-      ArgonautVitalSignsSequence,
-      AdditionalResourcesSequence]
+      ArgonautVitalSignsSequence
+    ]
   end
 
 end
