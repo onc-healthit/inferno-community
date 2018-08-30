@@ -6,7 +6,7 @@ class ArgonautMedicationOrderSequence < SequenceBase
 
   description 'Verify that MedicationOrder resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-MP'
+  test_id_prefix 'ARMP'
 
   requires :token, :patient_id
 

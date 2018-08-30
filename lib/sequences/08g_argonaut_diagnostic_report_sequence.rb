@@ -6,7 +6,7 @@ class ArgonautDiagnosticReportSequence < SequenceBase
 
   description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-DR'
+  test_id_prefix 'ARDR'
 
   requires :token, :patient_id
 

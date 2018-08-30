@@ -6,7 +6,7 @@ class ArgonautSmokingStatusSequence < SequenceBase
 
   description 'Verify that Smoking Status is collected on the FHIR server according to the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-SS'
+  test_id_prefix 'ARSS'
 
   requires :token, :patient_id
 

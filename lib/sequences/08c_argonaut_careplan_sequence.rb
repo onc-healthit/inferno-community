@@ -6,7 +6,7 @@ class ArgonautCarePlanSequence < SequenceBase
 
   description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-CP'
+  test_id_prefix 'ARCP'
 
   requires :token, :patient_id
 

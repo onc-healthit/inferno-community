@@ -6,7 +6,7 @@ class ArgonautAllergyIntoleranceSequence < SequenceBase
 
   description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-AI'
+  test_id_prefix 'ARAI'
 
   requires :token, :patient_id
 

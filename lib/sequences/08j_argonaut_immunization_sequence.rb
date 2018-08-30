@@ -6,7 +6,7 @@ class ArgonautImmunizationSequence < SequenceBase
 
   description 'Verify that Immunization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-IM'
+  test_id_prefix 'ARIM'
 
   requires :token, :patient_id
 

@@ -6,7 +6,7 @@ class ArgonautDeviceSequence < SequenceBase
 
   description 'Verify that Device resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-DE'
+  test_id_prefix 'ARDE'
 
   requires :token, :patient_id
 

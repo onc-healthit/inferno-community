@@ -6,7 +6,7 @@ class ArgonautCareTeamSequence < SequenceBase
 
   description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-CT'
+  test_id_prefix 'ARCT'
 
   requires :token, :patient_id
 

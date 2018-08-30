@@ -6,7 +6,7 @@ class ArgonautObservationSequence < SequenceBase
 
   description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-OB'
+  test_id_prefix 'AROB'
 
   requires :token, :patient_id
 
