@@ -1,0 +1,27 @@
+<%# FIXME: This is ugly, but it works for now %>
+<% prerequisite_sequences = "<ul><li>" + SequenceBase.variable_defined_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</li></ul>" %>
+
+<div class="form-group"
+     data-requiredby="<%=SequenceBase.variable_required_by(prerequisite).join(',')%>"
+     data-definedby="<%=SequenceBase.variable_defined_by(prerequisite).join(',')%>"
+     data-prerequisite="<%=prerequisite.to_s%>"
+     >
+
+    <label for="<%=prerequisite.to_s%>"><%=label%>
+      <% unless SequenceBase.variable_defined_by(prerequisite).empty? || value %>
+        <span class="oi oi-warning prerequisite-tooltip"
+              data-toggle='tooltip'
+              data-html='true'
+              title='You can enter this manually or populate it by running: <%=prerequisite_sequences%>'></span>
+      <% end %>
+    </label>
+    <input type="text"
+          class="form-control"
+          name="<%=prerequisite.to_s%>"
+          id="<%=prerequisite.to_s%>"
+          placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
+          value="<%=value%>"
+          <%if defined?(readonly) && readonly %>readonly<%end%>
+          <%if defined?(required) && required %>required<%end%>
+          />
+</div>

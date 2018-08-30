@@ -26,7 +26,12 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
 
     test_list.select!{ |test| !excluded_tests.include?(test[:name])}
 
-    incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? || test[:description].nil? || !valid_uri?(test[:url])}
+    incomplete_metadata_tests = test_list.select{ |test| test[:name].nil? ||
+      test[:description].nil? ||
+      !valid_uri?(test[:url]) ||
+      test[:test_id].nil? ||
+      test[:ref].nil?
+    }
 
     assert incomplete_metadata_tests.empty?, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
       "First: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:sequence]}: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:name]}"
@@ -35,7 +40,7 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
   def test_ordered_sequences
 
     assert SequenceBase.ordered_sequences.uniq.length == SequenceBase.ordered_sequences.length, 'There are duplicate sequences in SequenceBase.ordered_sequences.'
-    assert (SequenceBase.subclasses-SequenceBase.ordered_sequences).blank?  && (SequenceBase.ordered_sequences-SequenceBase.subclasses).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
+    assert (SequenceBase.subclasses.select{|seq| !seq.inactive?}-SequenceBase.ordered_sequences).blank?  && (SequenceBase.ordered_sequences-SequenceBase.subclasses.select{|seq| !seq.inactive?}).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
   end
 
 end

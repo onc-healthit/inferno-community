@@ -1,7 +1,7 @@
 {
   "client_id": "67b7f11c-13ff-48ae-a44f-3cc2e126a890",
   "client_secret": "bF3f0yhNJ__ugoUwwU-k99zoMGtTlhVW9gEO2PK7xp6JfcfpA3m8Ixitcca2UeD04WweKDzOfcqxgyI6J8nmmg",
-  "client_name": "Crucible Introspection Resource",
+  "client_name": "Inferno Introspection Resource",
   "client_uri": null,
   "logo_uri": null,
   "contacts": [],

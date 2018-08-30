@@ -3,7 +3,7 @@ Deployment Files
 
 Heere are some handy files for deploying this application on a production server.
 
-* start_unicirn.sh - A bash script that starts the crucible_smart_app using unicorn.
+* start_unicirn.sh - A bash script that starts Inferno using unicorn.
 
 * unicorn.rb - A unicorn configuration file.
 

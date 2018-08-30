@@ -23,7 +23,7 @@ It is important to open port `80` for HTTP  and port `22` for SSH if you need to
 "Review and Launch" button, click next button until you get to the Security Groups option. Ensure 80 is accessible from anywhere and 22 is
 available from an IP range from which you will connect. Below is an example:
 
-![Security Groups Configuration](https://raw.githubusercontent.com/fhir-crucible/crucible_smart_app/master/deployment-files/security-groups.png "Security Groups Configuration")
+![Security Groups Configuration](https://raw.githubusercontent.com/siteadmin/inferno/master/deployment-files/security-groups.png "Security Groups Configuration")
 
 After this step is done, launch the instance.  Obtain your instance's IP or host name from the AWS console. Point a web browser to the instance using the IP address or host name.
 
@@ -31,7 +31,7 @@ After this step is done, launch the instance.  Obtain your instance's IP or host
 Ubuntu 16.04 With Nginx and Unicorn Installation (Preferred Method)
 -------------------------------------------------------------------
 
-This section details how to configure the crucible_smart_app using Nginx 
+This section details how to configure Inferno using Nginx 
 and Unicorn on Ubuntu 16.
 
 1. Remove Apache2 if already installed.
@@ -41,7 +41,7 @@ and Unicorn on Ubuntu 16.
     sudo apt-get remove apache2
 
 
-2. Setup the crucible_smart_app.
+2. Setup Inferno.
 
 TLS connection testing requires Ruby 2.5 or greater. To check to see what version of ruby is installed, type in the following command:
 
@@ -63,15 +63,15 @@ If you are not running version Ruby 2.5, you can install it using Ruby Version M
     
 
 
-Now, issue the following commands to setup the crucible smart app.
+Now, issue the following commands to setup Inferno.
 
 
      sudo apt-get update
      sudo apt-get install git ruby-bundler ruby-dev
      sudo apt-get install sqlite3 libsqlite3-dev
      sudo apt-get install build-essential patch zlib1g-dev liblzma-dev
-     git clone https://github.com/fhir-crucible/crucible_smart_app.git
-     cd  crucible_smart_app
+     git clone https://github.com/siteadmin/inferno.git
+     cd  inferno
      bundle install
 
 
@@ -93,7 +93,7 @@ Install unicorn with gem
 
 5. Create some directories Unicorn will need. 
 
-From within the `crucible_smart_app`, execute the following commands.
+From within the `inferno` directory, execute the following commands.
 
 
     mkdir tmp
@@ -122,7 +122,7 @@ Note: If you need to stop Unicorn use the following command.
 
 Delete the contents of `/etc/nginx/nginx.conf` and replace with the content
 found in deployment-files/nginx.conf.
-(Please note to change all paths to `crucilbe_smart_app`, to your actual path.)
+(Please note to change all paths to `inferno`, to your actual path.)
 
 9. Restart Nginx
 
@@ -183,8 +183,8 @@ This section describes how to setup the tool using Apache2 using Passenger.
     sudo apt-get install apache2 git ruby-bundler ruby-dev
     sudo apt-get install sqlite3 libsqlite3-dev
     sudo apt-get install build-essential patch zlib1g-dev liblzma-dev
-    git clone https://github.com/fhir-crucible/crucible_smart_app.git
-    cd  crucible_smart_app
+    git clone https://github.com/siteadmin/inferno.git
+    cd  inferno
     bundle install
 
 
@@ -231,10 +231,10 @@ then update the `Servername` to match that of your DNS setting.
      ServerName localhost
     
      ServerAdmin webmaster@localhost
-     DocumentRoot /home/parallels/crucible_smart_app/public
+     DocumentRoot /home/parallels/inferno/public
     
     
-        <Directory /home/parallels/crucible_smart_app/public >
+        <Directory /home/parallels/inferno/public >
             Require all granted
             Allow from all
             Options -MultiViews

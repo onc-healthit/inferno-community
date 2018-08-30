@@ -34,7 +34,7 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
     @expired_id_token = @expired_id_token.sign(@key_pair, jwk['alg'])
 
     @instance = TestingInstance.new(url: 'https://www.example.com/testing',
-                                   client_name: 'Crucible Smart App',
+                                   client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
                                    client_endpoint_key: SecureRandomBase62.generate(32),
                                    client_id: client_id,

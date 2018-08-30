@@ -17,5 +17,6 @@ gem 'rake'
 gem 'webmock'
 gem 'rack-test'
 gem 'json-jwt'
+gem 'colorize'
 
 gem 'simplecov', require: false, group: :test

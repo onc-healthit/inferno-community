@@ -1,13 +1,20 @@
 class OpenIDConnectSequence < SequenceBase
 
+  group 'Authentication and Authorization'
+
   title 'OpenID Connect'
   description 'Verify OpenID Connect functionality of server.'
+
+  test_id_prefix 'OIDC'
+
+  requires :id_token, :client_id
+  defines :oauth_introspection_endpoint
 
   preconditions 'Client must have ID token' do
     !@instance.id_token.nil?
   end
 
-  test 'ID token is valid jwt token',
+  test '01', '', 'ID token is valid jwt token',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Examine the ID token for its issuer property.' do
 
@@ -29,7 +36,7 @@ class OpenIDConnectSequence < SequenceBase
     end
   end
 
-  test 'ID token contains expected header and payload information',
+  test '02', '', 'ID token contains expected header and payload information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Examine the ID token for its issuer property.' do
 
@@ -41,7 +48,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'Issuer provides OpenID configuration information',
+  test '03', '', 'Issuer provides OpenID configuration information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Perform a GET {issuer}/.well-known/openid-configuration.' do
 
@@ -52,12 +59,12 @@ class OpenIDConnectSequence < SequenceBase
     assert_response_ok(@openid_configuration_response)
     @openid_configuration_response_headers = @openid_configuration_response.headers
     @openid_configuration_response_body = JSON.parse(@openid_configuration_response.body)
-    
+
     # save the introspection URL while we're here, we'll need it for the next test sequence
     @instance.oauth_introspection_endpoint = @openid_configuration_response_body['introspection_endpoint']
   end
 
-  test 'OpenID configuration includes JSON Web Key information',
+  test '04', '', 'OpenID configuration includes JSON Web Key information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Fetch the JSON Web Key of the server by following the "jwks_uri" property.' do
 
@@ -74,7 +81,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token can be decoded using JSON Web Key information',
+  test '05', '', 'ID token can be decoded using JSON Web Key information',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     "Validate the token's signature against the public key." do
 
@@ -91,7 +98,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'ID token signature validates using JSON Web Key information',
+  test '06', '', 'ID token signature validates using JSON Web Key information',
     'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation',
     'Validate the ID token claims.' do
 
@@ -122,7 +129,7 @@ class OpenIDConnectSequence < SequenceBase
 
   end
 
-  test 'Profile claim in ID token is represented as a resource URI',
+  test '07', '', 'Profile claim in ID token is represented as a resource URI',
     'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
     'Extract the profile claim and treat it as the URL of a FHIR resource.' do
 

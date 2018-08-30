@@ -1,6 +1,8 @@
 class TestResult
   include DataMapper::Resource
   property :id, String, key: true, default: proc { SecureRandom.uuid}
+  property :test_id, String
+  property :ref, String
   property :name, String
   property :result, String
   property :message, String, length: 500

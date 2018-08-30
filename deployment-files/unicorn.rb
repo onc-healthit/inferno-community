@@ -1,6 +1,6 @@
 # set path to app that will be used to configure unicorn,
 # note the trailing slash in this example
-@dir = "/var/www/crucible_smart_app/"
+@dir = "/var/www/inferno/"
 @log_dir = "/var/unicorn/"
 
 worker_processes 2
