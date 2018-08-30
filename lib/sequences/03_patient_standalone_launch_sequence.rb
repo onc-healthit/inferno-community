@@ -78,7 +78,7 @@ class PatientStandaloneLaunchSequence < SequenceBase
     'https://tools.ietf.org/html/rfc6749',
     'If the request failed verification or is invalid, the authorization server returns an error response.' do
 
-    headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+    headers = {'Content-Type' => 'application/x-www-form-urlencoded' }
 
     oauth2_params = {
       'grant_type' => 'authorization_code',
@@ -114,11 +114,11 @@ class PatientStandaloneLaunchSequence < SequenceBase
     if @instance.confidential_client
       oauth2_headers = {
           'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
-          'Accept' => 'application/json', 'Content-Type' => 'application/json'
+          'Content-Type' => 'application/x-www-form-urlencoded'
       }
     else
       oauth2_params['client_id'] = @instance.client_id
-      oauth2_headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+      oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
     end
     @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
     assert_response_ok(@token_response)
