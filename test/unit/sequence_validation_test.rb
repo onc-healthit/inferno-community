@@ -40,7 +40,7 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
   def test_ordered_sequences
 
     assert SequenceBase.ordered_sequences.uniq.length == SequenceBase.ordered_sequences.length, 'There are duplicate sequences in SequenceBase.ordered_sequences.'
-    assert (SequenceBase.subclasses-SequenceBase.ordered_sequences).blank?  && (SequenceBase.ordered_sequences-SequenceBase.subclasses).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
+    assert (SequenceBase.subclasses.select{|seq| !seq.inactive?}-SequenceBase.ordered_sequences).blank?  && (SequenceBase.ordered_sequences-SequenceBase.subclasses.select{|seq| !seq.inactive?}).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
   end
 
 end

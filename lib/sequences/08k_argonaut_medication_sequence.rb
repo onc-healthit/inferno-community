@@ -8,6 +8,8 @@ class ArgonautMedicationSequence < SequenceBase
 
   test_id_prefix 'ARMP'
 
+  inactive
+
   requires :token, :patient_id
 
   preconditions 'Client must be authorized' do
