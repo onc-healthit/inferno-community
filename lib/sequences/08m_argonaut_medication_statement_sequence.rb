@@ -6,7 +6,7 @@ class ArgonautMedicationStatementSequence < SequenceBase
 
   description 'Verify that MedicationStatement resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-MS'
+  test_id_prefix 'ARMS'
 
   requires :token, :patient_id
 

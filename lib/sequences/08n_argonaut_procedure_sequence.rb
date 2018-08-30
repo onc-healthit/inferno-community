@@ -6,7 +6,7 @@ class ArgonautProcedureSequence < SequenceBase
 
   description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-PR'
+  test_id_prefix 'ARPR'
 
   requires :token, :patient_id
 

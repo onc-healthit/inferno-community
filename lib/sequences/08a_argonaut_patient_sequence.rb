@@ -6,7 +6,7 @@ class ArgonautPatientSequence < SequenceBase
 
   description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-PA'
+  test_id_prefix 'ARPA'
 
   requires :token, :patient_id
 

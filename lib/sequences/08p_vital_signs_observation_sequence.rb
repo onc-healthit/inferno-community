@@ -6,7 +6,7 @@ class ArgonautVitalSignsSequence < SequenceBase
 
   description 'Verify that Vital Signs are collected on the FHIR server according to the Argonaut Data Query Implementation Guide'
 
-  test_id_prefix 'ADQ-VS'
+  test_id_prefix 'ARVS'
 
   requires :token, :patient_id
 
