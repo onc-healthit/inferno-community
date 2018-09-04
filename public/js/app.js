@@ -32,7 +32,7 @@ $(function(){
   // });
 
   $('.sequence-expand-button').click(function (event) {
-    event.preventDefault();
+    event.preventDefault ? event.preventDefault() : (event.returnValue = false);
     let button = $(this)
     let details = $('#' + button.data('result-details'))
     details.collapse('toggle');
@@ -54,8 +54,8 @@ $(function(){
 
   $('.sequence-action button').click(function() {
     var sequence = $(this).data('sequence');
-    // FIXME: This replaces the modal title with a regex'd sequence title, but it may not match (e.g., 'Dynamic Registration' vs. 'Dynamic Registration Sequence')
-    $('#PrerequisitesModalTitle').html(sequence.replace(/(?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z])/g, ' $1'))
+    let sequence_title = $(this).data('sequence-title');
+    $('#PrerequisitesModalTitle').html(sequence_title)
     var requirements = []
     $('#PrerequisitesModal .form-group').each(function(){
       var requiredby = $(this).data('requiredby');
