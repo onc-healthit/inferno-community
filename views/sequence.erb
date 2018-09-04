@@ -40,9 +40,9 @@
             <div class='col-11'>
           <% end %>
             <div class="sequence-title">
-              <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+              <span class="sequence-name">
                 <%= sequence_class.title %>
-              </a> - 
+              </span> - 
               <div class="sequence-out-of">
                 <% if sequence_results[sequence_class.sequence_name].nil? %>
                   <%= sequence_class.test_count %> tests
