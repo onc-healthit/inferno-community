@@ -31,6 +31,19 @@ body {
   background-color: #EEE;
 }
 
+/* Effectively removing default breakpoints for repsonsive bootstrap container */
+@media (min-width: 576px) {
+  .container {
+    max-width: 1000px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 1000px;
+  }
+}
+
 .main {
   margin: 20px 0;
 }
@@ -74,6 +87,10 @@ body {
 .server-actions a {
   font-size: .8em;
   color: #000;
+}
+
+.btn {
+  cursor: pointer;
 }
 
 /* ------------------------- INDEX -------------------------------- */
@@ -176,6 +193,18 @@ body {
   width: 100%;
 }
 
+.sequence-expand-button {
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  vertical-align: initial;
+  border: none;
+  color: #007bff;
+  background: none;
+}
+ .sequence-expand-button:hover {
+  cursor: pointer;
+}
 
 .sequence-row {
   margin: 0;

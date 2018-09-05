@@ -40,9 +40,9 @@
             <div class='col-11'>
           <% end %>
             <div class="sequence-title">
-              <a class="sequence-name collapsed" data-toggle="collapse" aria-expanded="false" data-target="#<%=sequence_class%>-details">
+              <span class="sequence-name">
                 <%= sequence_class.title %>
-              </a> - 
+              </span> - 
               <div class="sequence-out-of">
                 <% if sequence_results[sequence_class.sequence_name].nil? %>
                   <%= sequence_class.test_count %> tests
@@ -55,9 +55,13 @@
 
                 <% end %>
                  -
-                <a href='#' class='sequence-expand-button' data-result-details='<%=sequence_class%>-details'>
+                <button class='sequence-expand-button'
+                        href="#<%=sequence_class%>-details"
+                        data-toggle="collapse"
+                        data-result-details='<%=sequence_class%>-details'
+                        aria-controls="<%=sequence_class%>-details">
                   Show Details
-                </a>
+                </button>
               </div>
               <div class="sequence-details">
                 <%= sequence_class.description %>
@@ -73,7 +77,8 @@
             <button type="submit" class="sequence-button btn btn-outline-info btn-sm"
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
-                                  data-sequence="<%=sequence_class%>">
+                                  data-sequence="<%=sequence_class%>"
+                                  data-sequence-title="<%= sequence_class.title %>">
               <span class="oi oi-action-undo"></span>
               Run Again
             </button>
@@ -81,7 +86,8 @@
             <button type="submit" class="sequence-button btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm "
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
-                                  data-sequence="<%=sequence_class%>">
+                                  data-sequence="<%=sequence_class%>"
+                                  data-sequence-title="<%= sequence_class.title %>">
               <span class="oi oi-media-play"></span>
               Run
             </button>
