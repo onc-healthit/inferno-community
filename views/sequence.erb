@@ -55,9 +55,13 @@
 
                 <% end %>
                  -
-                <a href='#' class='sequence-expand-button' data-result-details='<%=sequence_class%>-details'>
+                <button class='sequence-expand-button'
+                        href="#<%=sequence_class%>-details"
+                        data-toggle="collapse"
+                        data-result-details='<%=sequence_class%>-details'
+                        aria-controls="<%=sequence_class%>-details">
                   Show Details
-                </a>
+                </button>
               </div>
               <div class="sequence-details">
                 <%= sequence_class.description %>

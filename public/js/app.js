@@ -24,33 +24,15 @@ $(function(){
    }
   });
 
-
-  // $('.sequence-main').on('click', function(e) {
-  //   if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
-  //     $(this).parent().find('.collapse').collapse('toggle');
-  //   }
-  // });
-
   $('.sequence-expand-button').click(function (event) {
-    event.preventDefault ? event.preventDefault() : (event.returnValue = false);
-    let button = $(this)
-    let details = $('#' + button.data('result-details'))
-    details.collapse('toggle');
+    let button = $(this);
     if (button.text().indexOf("Show") > -1) {
-      button.html("Hide Details")
+      button.html("Hide Details");
     }
     else {
-      button.html("Show Details")
+      button.html("Show Details");
     }
   });
-
-  // $('.sequence-row').on('show.bs.collapse', function() {
-  //   $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
-  // });
-
-  // $('.sequence-row').on('hide.bs.collapse', function() {
-  //   $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
-  // });
 
   $('.sequence-action button').click(function() {
     var sequence = $(this).data('sequence');
