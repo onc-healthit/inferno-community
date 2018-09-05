@@ -338,6 +338,16 @@ body {
   font-size: .9em;
 }
 
+.sequence-details-more {
+  padding: 0;
+  margin: 0;
+  vertical-align: initial;
+}
+
+.sequence-details-more:hover {
+  cursor: pointer;
+}
+
 .sequence-message {
   display:inline-block;
   vertical-align: top;
@@ -580,6 +590,28 @@ li.result-details-clickable:hover {
 
 /* ------------------------- TEST RESULT POPUP -------------------------------- */
 
+.modal-header {
+  background-color: #eee;
+}
+
+.help-modal-body h1{
+  font-size: 1.5em;
+}
+
+.help-modal-body h2 {
+  font-size: 1.3em;
+}
+
+.help-modal-body h3, .help-modal-body h4, .help-modal-body h5 {
+  font-size: 1.1em;
+}
+
 .modal-body .form-row {
   margin: 0 20px;
+}
+
+.modal-subheader {
+  padding: 5px 15px;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: bold;
 }

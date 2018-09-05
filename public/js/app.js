@@ -44,6 +44,30 @@ $(function(){
     }
   });
 
+  $('.sequence-details-more').click(function () {
+    var button = $(this);
+    var sequence = button.data('sequence');
+
+    if(sequence){
+      $('.help-details').each(function(){
+        if($(this).data('sequence') === sequence){
+          $(this).show();
+          $('#help-modal-title').html($(this).data('sequence-title'));
+          $('#help-modal-description').html($(this).data('sequence-description'));
+
+          // FIXME: technically we don't hae to do this every time it is opened, only the first time
+          $(this).find('a[href^="http"]').attr('target','_blank');
+        } else {
+          $(this).hide();
+        }
+      })
+      $('#help-sequence-' + sequence).collapse('show')
+
+      $('#help-modal').modal('show');
+
+    }
+  });
+
   // $('.sequence-row').on('show.bs.collapse', function() {
   //   $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
   // });

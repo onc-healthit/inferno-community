@@ -61,6 +61,9 @@
               </div>
               <div class="sequence-details">
                 <%= sequence_class.description %>
+                <% if !sequence_class.details.nil? %>
+                  <button class="btn btn-link sequence-details-more" data-sequence='<%=sequence_class%>' >more...</button>
+                <% end %>
               </div>
             </div>
           </div>
