@@ -163,7 +163,71 @@ namespace BASE_PATH do
   end
 
 
-  post '/:id/sequence_result/?' do
+  get '/:id/:sequence/?' do
+    instance = TestingInstance.get(params[:id])
+    client = FHIR::Client.new(instance.url)
+    client.use_dstu2
+    client.default_json
+    klass = SequenceBase.subclasses.find{|x| x.to_s.start_with?(params[:sequence])}
+    if klass
+      sequence = klass.new(instance, client, settings.disable_tls_tests)
+      stream do |out|
+        # out << erb(:details, {}, {instance: instance, sequences: SequenceBase.ordered_sequences, sequence_results: instance.latest_results, tests_running: true})
+        # out << "<script>$('#WaitModal').modal('hide')</script>"
+        # out << "<script>$('#testsRunningModal').modal('show')</script>"
+        count = 0
+        sequence_result = sequence.start do |result|
+          puts "result..."
+          count = count + 1
+          # out << "<script>$('#testsRunningModal').find('.number-complete').html('(#{count} of #{sequence.test_count} complete)');</script>"
+          out << erb(:result,{:layout => false},{result: result, testing_instance: instance})
+        end
+        
+        # out << '<ul class="list-group list-group-flush sequence-choice">'
+        # out <<    '<li class="list-group-item">'
+        # out <<      "<button class='btn btn-info sequence_button' data-enable-sequence='#{params[:sequence]}' data-sequence-name='#{params[:sequence]}'>Rerun</button>"#     
+        # out <<    " </li>"
+        # out << "</ul>"
+
+        sequence_result.save!
+        # if sequence_result.redirect_to_url
+        #   out << "<script>$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{sequence_result.redirect_to_url}</textarea>');</script>"
+        #   out << "<script> window.location = '#{sequence_result.redirect_to_url}'</script>"
+        # else
+        #   out << "<script> window.location = '#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}'</script>"
+        # end
+      end
+
+    else
+     redirect "#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}"
+    end
+
+  end
+
+  post '/:id/ConformanceSkip/?' do
+    instance = TestingInstance.get(params[:id])
+
+    conformance_sequence_result = SequenceResult.new(name: "Conformance", result: "skip")
+    conformance_sequence_result.save
+
+    instance.conformance_checked = false
+    instance.oauth_authorize_endpoint = params[:conformance_authorize_endpoint]
+    instance.oauth_token_endpoint = params[:conformance_token_endpoint]
+
+    instance.sequence_results.push(conformance_sequence_result)
+    instance.save!
+
+    redirect "#{BASE_PATH}/#{params[:id]}/"
+  end
+
+  post '/:id/DynamicRegistration' do
+    @instance = TestingInstance.get(params[:id])
+    @instance.update(dynamically_registered: false, oauth_register_endpoint: params['registration_url'], scopes: params['scope'], client_name: params['client_name'])
+
+    redirect "#{BASE_PATH}/#{@instance.id}/DynamicRegistration/"
+  end
+
+  post '/:id/ArgonautDataQuery' do
     instance = TestingInstance.get(params[:id])
     halt 404 if instance.nil?
 

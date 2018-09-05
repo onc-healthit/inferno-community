@@ -119,7 +119,7 @@
             <%# TODO: remove the buttons after they are clicked, replace with results div and rerun button %>
             <ul class="list-group list-group-flush sequence-choice">
               <li class="list-group-item">
-                <button class="btn btn-info sequence_button" id="run_discover" data-enable-sequence="#test_data">Get Conformance Statement</button>
+                <button class="btn btn-info sequence_button" id="run_discover" data-enable-sequence="#test_data" data-sequence-name="ConformanceSequence">Get Conformance Statement</button>
               </li>
             </ul>
             <%# TODO: create a partial for test results %>
@@ -185,10 +185,10 @@
             </p>
             <ul class="list-group list-group-flush sequence-choice">
               <li class="list-group-item">
-                <button class="btn btn-info sequence_button" data-enable-sequence="#launch" id="run_dynamic_registration" disabled>Dynamic Client Registration</button>
+                <button class="btn btn-info sequence_button" data-enable-sequence="#launch" data-sequence-name="DynamicRegistrationSequence" id="run_dynamic_registration" disabled>Dynamic Client Registration</button>
               </li>
               <li class="list-group-item">
-                <button class="btn btn-outline-info sequence_button" data-enable-sequence="#launch" id="run_manual_registration" disabled>Manual Client Registration</button>
+                <button class="btn btn-outline-info sequence_button" data-enable-sequence="#launch" data-sequence-name="" id="run_manual_registration" disabled>Manual Client Registration</button>
               </li>
             </ul>
             <%# TODO: create a partial for test results %>
@@ -249,7 +249,7 @@
             <%# TODO: Be explicit about which patient the user chooses so they pass the Argonauts IG %>
             <ul class="list-group list-group-flush sequence-choice">
               <li class="list-group-item">
-                <button class="btn btn-info sequence_button" data-enable-sequence='#probe,#argonaut,#alternate_launch' id="run_standalone_launch" disabled>Standalone Launch (Patient)</button>
+                <button class="btn btn-info sequence_button" data-enable-sequence='#probe,#argonaut,#alternate_launch' data-sequence-name="PatientStandaloneLaunchSequence" id="run_standalone_launch" disabled>Standalone Launch (Patient)</button>
               </li>
               <li class="list-group-item">
                 <button class="btn btn-info sequence_button" data-enable-sequence='#probe,#argonaut,#alternate_launch' id="run_ehr_launch" disabled>EHR Launch (Provider)</button>
