@@ -89,6 +89,10 @@ body {
   color: #000;
 }
 
+.btn {
+  cursor: pointer;
+}
+
 /* ------------------------- INDEX -------------------------------- */
 .headline {
   font-size: 1.8rem;
@@ -189,6 +193,18 @@ body {
   width: 100%;
 }
 
+.sequence-expand-button {
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  vertical-align: initial;
+  border: none;
+  color: #007bff;
+  background: none;
+}
+ .sequence-expand-button:hover {
+  cursor: pointer;
+}
 
 .sequence-row {
   margin: 0;

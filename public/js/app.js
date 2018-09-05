@@ -24,38 +24,20 @@ $(function(){
    }
   });
 
-
-  // $('.sequence-main').on('click', function(e) {
-  //   if(e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable'){
-  //     $(this).parent().find('.collapse').collapse('toggle');
-  //   }
-  // });
-
   $('.sequence-expand-button').click(function (event) {
-    event.preventDefault();
-    let button = $(this)
-    let details = $('#' + button.data('result-details'))
-    details.collapse('toggle');
+    let button = $(this);
     if (button.text().indexOf("Show") > -1) {
-      button.html("Hide Details")
+      button.html("Hide Details");
     }
     else {
-      button.html("Show Details")
+      button.html("Show Details");
     }
   });
 
-  // $('.sequence-row').on('show.bs.collapse', function() {
-  //   $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
-  // });
-
-  // $('.sequence-row').on('hide.bs.collapse', function() {
-  //   $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
-  // });
-
   $('.sequence-action button').click(function() {
     var sequence = $(this).data('sequence');
-    // FIXME: This replaces the modal title with a regex'd sequence title, but it may not match (e.g., 'Dynamic Registration' vs. 'Dynamic Registration Sequence')
-    $('#PrerequisitesModalTitle').html(sequence.replace(/(?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z])/g, ' $1'))
+    let sequence_title = $(this).data('sequence-title');
+    $('#PrerequisitesModalTitle').html(sequence_title)
     var requirements = []
     $('#PrerequisitesModal .form-group').each(function(){
       var requiredby = $(this).data('requiredby');
