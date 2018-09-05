@@ -7,6 +7,7 @@ class ConformanceSequence < SequenceBase
   description 'Retrieve information about supported server functionality in the Conformance Statement.'
 
   details %(
+    # Background
 
     The #{title} Sequence tests a FHIR server's ability to formally describe features
     supported by the API by using the [Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html) resource.
@@ -22,9 +23,10 @@ class ConformanceSequence < SequenceBase
     the client does not have to be hard-coded with information about the authorization services associated with
     every FHIR API.
 
-    The Conformance Statement for the server is accessed at the `/metadata` endpoint using a `GET` request.
     Note that the name of this resource changed to 'Capability Statement' in STU3 to better describe the intent of this resource.
     This test refers to it as the Capability Statement as that is what it was called in DSTU2.
+
+    # Test Methodology
 
     This test suite accesses the server endpoint at `/metadata` using a `GET` request.  It parses the Conformance Statement and
     verifies that the server claims support of following features:
@@ -35,11 +37,13 @@ class ConformanceSequence < SequenceBase
     * SMART on FHIR authorization
 
     It collects the following information that is saved in the testing session for use by later tests:
+
     * List of resources supported
     * List of queries parameters supported
     * SMART on FHIR endpoints
 
     For more information of the Conformance Statement, visit these links:
+
     * Conformance
     * Argonaut Conformance Requirements
     * SMART on FHIR Conformance
