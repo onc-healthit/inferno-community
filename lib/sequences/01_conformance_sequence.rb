@@ -4,7 +4,47 @@ class ConformanceSequence < SequenceBase
 
   title 'Conformance Statement'
 
-  description 'Verify that the FHIR server exposes a Conformance Statement with the necessary information.'
+  description 'Retrieve information about supported server functionality in the Conformance Statement.'
+
+  details %(
+
+    The #{title} Sequence tests a FHIR server's ability to formally describe features
+    supported by the API by using the [Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html) resource.
+    The features described in the Conformance Statement must be consistent with the required capabilities of an
+    Argonaut server.  The Conformance Statement must also advertise the location of the required SMART on FHIR endpoints
+    that enable authenticated access to the FHIR server resources.
+
+    Not all servers are expected to implement all possible queries and data elements described in the Argonaut API.
+    For example, the Argonaut specification requires that the Patient resource and only one other Argonaut resource are required.
+    Implementing the Conformance Statement resource allows clients to dynamically determine which of these resources
+    are supported at runtime, instead of having to specifically write the application to accomidate every known server implementation
+    at development time.  Similarly, by providing information about the location of SMART on FHIR OAuth 2.0 endpoints,
+    the client does not have to be hard-coded with information about the authorization services associated with
+    every FHIR API.
+
+    The Conformance Statement for the server is accessed at the `/metadata` endpoint using a `GET` request.
+    Note that the name of this resource changed to 'Capability Statement' in STU3 to better describe the intent of this resource.
+    This test refers to it as the Capability Statement as that is what it was called in DSTU2.
+
+    This test suite accesses the server endpoint at `/metadata` using a `GET` request.  It parses the Conformance Statement and
+    verifies that the server claims support of following features:
+
+    * JSON encoding of resources
+    * Patient resource
+    * At least one of the other resources that form the basis of Argonaut profiles
+    * SMART on FHIR authorization
+
+    It collects the following information that is saved in the testing session for use by later tests:
+    * List of resources supported
+    * List of queries parameters supported
+    * SMART on FHIR endpoints
+
+    For more information of the Conformance Statement, visit these links:
+    * Conformance
+    * Argonaut Conformance Requirements
+    * SMART on FHIR Conformance
+
+  )
 
   test_id_prefix 'C'
 
