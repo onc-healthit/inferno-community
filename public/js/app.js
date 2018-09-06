@@ -22,10 +22,10 @@ $(function () {
        $('.client-secret-container').hide();
        break;
    }
+  })
    
   $(".sequence_button").click(function () {
     let button = $(this)
-    debugger
     let sequence = $(this).attr("data-enable-sequence")
     let test_result = $("#" + $(this).attr('id') + "_results")
     // Remove the button because the test has been run
@@ -192,7 +192,7 @@ $(function () {
   })
 
 
-  $('.disable-buttons').each(function(){
+  $('.disable-buttons').each(function(){})
   $('.sequence-row').on('show.bs.collapse', function () {
     $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
   });

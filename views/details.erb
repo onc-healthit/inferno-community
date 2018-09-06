@@ -522,7 +522,7 @@
     </div>
     <div class="sequence-table">
       <% sequences.each do |sequence_class| %>
-        <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
+        <%#= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
       <% end %>
 
       <%# Removed total score for community edition. %>
