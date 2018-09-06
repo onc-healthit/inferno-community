@@ -28,6 +28,11 @@
         </ul>
       </div>
     </nav>
+    <script type="text/javascript">
+      if(/MSIE \d|Trident.*rv:/.test(navigator.userAgent))
+        alert('Inferno does not currently support Internet Explorer.  Please switch to another browser, such as Chrome, Firefox, Safari, or Edge.');
+    </script>
+
     <%= yield %>
     <footer class="footer">
       <div class="container row">
