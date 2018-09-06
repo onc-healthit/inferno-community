@@ -1,10 +1,10 @@
-$(function(){
+$(function () {
 
   function indent(value) {
     var firstCharacter = value.trim().charAt(0)
-    try{
-      if(['{','['].indexOf(firstCharacter) >= 0){
-        return JSON.stringify(JSON.parse(value),null,2);
+    try {
+      if (['{', '['].indexOf(firstCharacter) >= 0) {
+        return JSON.stringify(JSON.parse(value), null, 2);
       } else {
         return value;
       }
@@ -22,6 +22,52 @@ $(function(){
        $('.client-secret-container').hide();
        break;
    }
+  })
+   
+  $(".sequence_button").click(function () {
+    let button = $(this)
+    let sequence = $(this).attr("data-enable-sequence")
+    let test_result = $("#" + $(this).attr('id') + "_results")
+    // Remove the button because the test has been run
+    // TODO: Consider not doing this if the step is about downloading test data...
+      // $(this).parent().parent().empty();
+      $(this).attr('disabled', true);
+    // Show the test running
+    test_result.collapse('show')
+    let sequenceName = $(this).attr("data-sequence-name");
+    if (!sequenceName) {
+      $(sequence).removeClass('disabled')
+      $(sequence).find('.btn').attr('disabled', false)
+      $(sequence).find('.card-body.collapse').collapse('show')
+      return
+    }
+
+    var onSuccess = function (res) {
+      // Add the test results
+      
+      // Enable and show the next step
+      $(sequence).removeClass('disabled')
+      $(sequence).find('.btn').attr('disabled', false)
+      $(sequence).find('.card-body.collapse').collapse('show')
+      button.attr('disabled', false);
+    }
+
+    $.get({
+      url: sequenceName,
+      success: onSuccess,
+      xhrFields: {
+        onprogress: function (chunk) {
+          $(test_result).find('.test_result_details').html(chunk.currentTarget.responseText)
+        }
+      }
+    })
+
+  })
+
+  $('.sequence-main').on('click', function (e) {
+    if (e.target.getAttribute('role') !== 'button' && e.target.className !== 'result-details-clickable') {
+      $(this).parent().find('.collapse').collapse('toggle');
+    }
   });
 
   $('.sequence-expand-button').click(function (event) {
@@ -146,22 +192,31 @@ $(function(){
   })
 
 
-  $('.disable-buttons').each(function(){
+  $('.disable-buttons').each(function(){})
+  $('.sequence-row').on('show.bs.collapse', function () {
+    $(this).find('.oi-chevron-right').removeClass('oi-chevron-right').addClass('oi-chevron-bottom');
+  });
+
+  $('.sequence-row').on('hide.bs.collapse', function () {
+    $(this).find('.oi-chevron-bottom').removeClass('oi-chevron-bottom').addClass('oi-chevron-right');
+  });
+
+  $('.disable-buttons').each(function (el) {
     $(this).find('.btn').attr('disabled', true)
 
     $(this).attr('title', $(this).data('preconditionDescription'))
-                        .attr('data-toggle','tooltip');
+      .attr('data-toggle', 'tooltip');
   });
 
-  $('.result-details li').on('click', function() {
-    if($(this).data('testingInstanceId') && $(this).data('testResultId')){
+  $('.result-details li').on('click', function () {
+    if ($(this).data('testingInstanceId') && $(this).data('testResultId')) {
       var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
-      $("#testResultDetailsModal").find('.modal-content').load(url, function(value){
-        $(this).find("pre>code").each(function(el){
+      $("#testResultDetailsModal").find('.modal-content').load(url, function (value) {
+        $(this).find("pre>code").each(function (el) {
           let $el = $(this)
           let content = $el.html()
-          try{
-            if(content && content.length > 0){
+          try {
+            if (content && content.length > 0) {
               content = indent($el.html())
             }
           } catch (ex) {
@@ -175,7 +230,7 @@ $(function(){
     }
   })
 
-  $(":input[type=text][readonly='readonly']").on('click', function(){
+  $(":input[type=text][readonly='readonly']").on('click', function () {
     this.select();
   })
 
