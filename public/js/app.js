@@ -53,7 +53,6 @@ $(function(){
         if($(this).data('sequence') === sequence){
           $(this).show();
           $('#help-modal-title').html($(this).data('sequence-title'));
-          $('#help-modal-description').html($(this).data('sequence-description'));
 
           // FIXME: technically we don't hae to do this every time it is opened, only the first time
           $(this).find('a[href^="http"]').attr('target','_blank');
@@ -195,7 +194,7 @@ $(function(){
                         .attr('data-toggle','tooltip');
   });
 
-  $('.result-details li').on('click', function() {
+  $('.test-list li').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
       var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
       $("#testResultDetailsModal").find('.modal-content').load(url, function(value){

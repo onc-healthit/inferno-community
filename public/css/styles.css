@@ -418,17 +418,17 @@ body {
 
 .result-details {
   margin-top: 0;
-  max-height: 300px;
-  overflow-y: scroll;
   cursor: default;
+  padding: 10px;
+  padding-top: 0;
 }
 
-.result-details ul {
+.test-list {
   padding: 0;
-  margin: 0 10px;
+  margin: 0;
 }
 
-.result-details li {
+.test-list li {
   list-style: none;
   font-size: .8em;
   padding: 5px 15px 5px;
@@ -436,7 +436,7 @@ body {
   border-bottom: none;
 }
 
-.result-details li:last-child {
+.test-list li:last-child {
   border-bottom: 1px solid #efefef;
 }
 
@@ -506,7 +506,22 @@ li.result-details-clickable:hover {
 
 .result-details-message {
   margin-left: 19px;
+}
 
+.result-details h1{
+  font-size: 1.5em;
+}
+
+.result-details h2 {
+  font-size: 1.3em;
+}
+
+.result-details h3, .result-details h4, .result-details h5 {
+  font-size: 1.1em;
+}
+
+.more-information {
+  padding: 10px;
 }
 
 /* ------------------------- TEST RESULT POPUP -------------------------------- */
@@ -585,33 +600,5 @@ li.result-details-clickable:hover {
 }
 
 .test-result-details-message-label {
-  font-weight: bold;
-}
-
-/* ------------------------- TEST RESULT POPUP -------------------------------- */
-
-.modal-header {
-  background-color: #eee;
-}
-
-.help-modal-body h1{
-  font-size: 1.5em;
-}
-
-.help-modal-body h2 {
-  font-size: 1.3em;
-}
-
-.help-modal-body h3, .help-modal-body h4, .help-modal-body h5 {
-  font-size: 1.1em;
-}
-
-.modal-body .form-row {
-  margin: 0 20px;
-}
-
-.modal-subheader {
-  padding: 5px 15px;
-  border-bottom: 1px solid #e9ecef;
   font-weight: bold;
 }

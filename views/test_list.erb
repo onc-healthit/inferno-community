@@ -1,88 +1,86 @@
-<div class="result-details collapse" id="<%=sequence_class%>-details">
-  <ul>
-    <% sequence_result && sequence_result.test_results.each do |result, index| %>
-      <li class="result-details-clickable" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
-        <% case result.result
-          when 'pass' %>
-            <div class="result-details-icon result-details-icon-pass" data-toggle="tooltip" title="Test passed.">
-              <span class="oi oi-check"></span>
-            </div>
-        <% when 'fail' %>
-            <% if result.required %>
-                <div class="result-details-icon result-details-icon-fail" data-toggle="tooltip" title="Test Failed.  Click for more information.">
-                  <span class="oi oi-x"></span>
-                </div>
-            <% else %>
-                <div class="result-details-icon result-details-icon-fail-optional" data-toggle="tooltip" title="Optional test failed. Optional tests are not required for conformance.">
-                  <span class="oi oi-x"></span>
-                </div>
-            <% end %>
-        <% when 'cancel' %>
-            <div class="result-details-icon result-details-icon-cancel" data-toggle="tooltip" title="Test cancelled by user during execution.">
-              <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
-            </div>
-        <% when 'error' %>
-            <div class="result-details-icon result-details-icon-error" data-toggle="tooltip" title="Fatal error occurred during test.">
-              !
-            </div>
-        <% when 'skip' %>
-            <div class="result-details-icon result-details-icon-skip" data-toggle="tooltip" title="Test was skipped and does not affect passing or failed scores.  Click for more information.">
-              <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
-            </div>
-        <% when 'wait' %>
-            <div class="result-details-icon result-details-icon-wait" data-toggle="tooltip" title="Test is waiting for a server launch or redirect">
-              <span class="oi oi-media-pause"></span>
-            </div>
-        <% when 'todo' %>
-            <div class="result-details-icon result-details-icon-todo">
-              <span class="oi oi-minus"></span>
-            </div>
-        <% end %>
-        <% if result.test_warnings.length > 0 %>
-            <div class="result-details-icon result-details-icon-warning" data-toggle="tooltip" title="<%= result.test_warnings.length %> warning(s).  Warnings do not result in a test failure.">
-              <span class="oi oi-warning" data-toggle="tooltip" title="Test is waiting for a server launch or redirect"></span>
-            </div>
-        <% else %>
-            <div class="result-details-icon result-details-icon-warning"></div>
-        <% end %>
-
-        <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
-            <div class="result-details-icon result-details-icon-requests" data-toggle="tooltip" title="Test contains outbound http requests.  Click to view.">
-              <span class="oi oi-arrow-thick-right"></span>
-            </div>
-        <% else %>
-            <div class="result-details-icon result-details-icon-requests"></div>
-        <% end %>
-
-        <% unless result.request_responses.find{ |f| f.direction == 'inbound'}.nil? %>
-            <div class="result-details-icon result-details-icon-requests" data-toggle="tooltip" title="Test contains inbound http requests.  Click to view.">
-              <span class="oi oi-arrow-thick-left"></span>
-            </div>
-        <% else %>
-            <div class="result-details-icon result-details-icon-requests"></div>
-        <% end %>
-
-        <% if result.result == 'todo' %> TODO: <% end %>
-        <%= result.test_id + ': ' + result.name %>
-        <% unless result.message.nil? %>
-          <div class="result-details-message">
-              Details: <%= result.message %>
-              <%# TODO: Make this dependent on a flag for community/program edition %>
-              <% unless result.required %> <br/>This optional test is not required for conformance. <% end %>
+<ul class='test-list'>
+  <% sequence_result && sequence_result.test_results.each do |result, index| %>
+    <li class="result-details-clickable" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
+      <% case result.result
+        when 'pass' %>
+          <div class="result-details-icon result-details-icon-pass" data-toggle="tooltip" title="Test passed.">
+            <span class="oi oi-check"></span>
           </div>
-        <% end %>
-      </li>
-    <% end %>
-    <% start_at = 0%>
-    <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
-    <% sequence_class.tests[start_at..-1].each do |test, index| %>
-      <li>
-        <div class="result-details-icon result-details-icon-pending">
-          <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+      <% when 'fail' %>
+          <% if result.required %>
+              <div class="result-details-icon result-details-icon-fail" data-toggle="tooltip" title="Test Failed.  Click for more information.">
+                <span class="oi oi-x"></span>
+              </div>
+          <% else %>
+              <div class="result-details-icon result-details-icon-fail-optional" data-toggle="tooltip" title="Optional test failed. Optional tests are not required for conformance.">
+                <span class="oi oi-x"></span>
+              </div>
+          <% end %>
+      <% when 'cancel' %>
+          <div class="result-details-icon result-details-icon-cancel" data-toggle="tooltip" title="Test cancelled by user during execution.">
+            <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+          </div>
+      <% when 'error' %>
+          <div class="result-details-icon result-details-icon-error" data-toggle="tooltip" title="Fatal error occurred during test.">
+            !
+          </div>
+      <% when 'skip' %>
+          <div class="result-details-icon result-details-icon-skip" data-toggle="tooltip" title="Test was skipped and does not affect passing or failed scores.  Click for more information.">
+            <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
+          </div>
+      <% when 'wait' %>
+          <div class="result-details-icon result-details-icon-wait" data-toggle="tooltip" title="Test is waiting for a server launch or redirect">
+            <span class="oi oi-media-pause"></span>
+          </div>
+      <% when 'todo' %>
+          <div class="result-details-icon result-details-icon-todo">
+            <span class="oi oi-minus"></span>
+          </div>
+      <% end %>
+      <% if result.test_warnings.length > 0 %>
+          <div class="result-details-icon result-details-icon-warning" data-toggle="tooltip" title="<%= result.test_warnings.length %> warning(s).  Warnings do not result in a test failure.">
+            <span class="oi oi-warning" data-toggle="tooltip" title="Test is waiting for a server launch or redirect"></span>
+          </div>
+      <% else %>
+          <div class="result-details-icon result-details-icon-warning"></div>
+      <% end %>
+
+      <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
+          <div class="result-details-icon result-details-icon-requests" data-toggle="tooltip" title="Test contains outbound http requests.  Click to view.">
+            <span class="oi oi-arrow-thick-right"></span>
+          </div>
+      <% else %>
+          <div class="result-details-icon result-details-icon-requests"></div>
+      <% end %>
+
+      <% unless result.request_responses.find{ |f| f.direction == 'inbound'}.nil? %>
+          <div class="result-details-icon result-details-icon-requests" data-toggle="tooltip" title="Test contains inbound http requests.  Click to view.">
+            <span class="oi oi-arrow-thick-left"></span>
+          </div>
+      <% else %>
+          <div class="result-details-icon result-details-icon-requests"></div>
+      <% end %>
+
+      <% if result.result == 'todo' %> TODO: <% end %>
+      <%= result.test_id + ': ' + result.name %>
+      <% unless result.message.nil? %>
+        <div class="result-details-message">
+            Details: <%= result.message %>
+            <%# TODO: Make this dependent on a flag for community/program edition %>
+            <% unless result.required %> <br/>This optional test is not required for conformance. <% end %>
         </div>
-        <%= test[:test_id] + ': '+ test[:name] %>
-      </li>
-    <% end %>
-  </ul>
-</div>
+      <% end %>
+    </li>
+  <% end %>
+  <% start_at = 0%>
+  <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
+  <% sequence_class.tests[start_at..-1].each do |test, index| %>
+    <li>
+      <div class="result-details-icon result-details-icon-pending">
+        <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
+      </div>
+      <%= test[:test_id] + ': '+ test[:name] %>
+    </li>
+  <% end %>
+</ul>
 
