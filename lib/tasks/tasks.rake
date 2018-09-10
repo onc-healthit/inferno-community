@@ -7,6 +7,8 @@ require 'dm-core'
 require 'csv'
 require 'colorize'
 
+require_relative '../app/helpers/configuration'
+
 ['lib', 'models'].each do |dir|
   Dir.glob(File.join(File.expand_path('../..', File.dirname(File.absolute_path(__FILE__))),dir, '**','*.rb')).each do |file|
     require file
@@ -18,11 +20,11 @@ task :tests_to_csv, [:group, :filename] do |task, args|
   args.with_defaults(group: 'active', filename: 'testlist.csv')
   case args.group
   when 'active'
-    test_group = SequenceBase.ordered_sequences.reject {|sb| sb.inactive?}
+    test_group = Inferno::Sequence::SequenceBase.ordered_sequences.reject {|sb| sb.inactive?}
   when 'inactive'
-    test_group = SequenceBase.ordered_sequences.select {|sb| sb.inactive?}
+    test_group = Inferno::Sequence::SequenceBase.ordered_sequences.select {|sb| sb.inactive?}
   when 'all'
-    test_group = SequenceBase.ordered_sequences
+    test_group = Inferno::Sequence::SequenceBase.ordered_sequences
   else
     puts "#{args.group} is not valid argument.  Valid arguments include:
                 active
@@ -56,7 +58,7 @@ desc 'Execute sequence against a FHIR server'
 task :execute_sequence, [:sequence, :server] do |task, args|
 
   @sequence = nil
-  SequenceBase.ordered_sequences.map do |seq|
+  Inferno::Sequence::SequenceBase.ordered_sequences.map do |seq|
     if seq.sequence_name == args[:sequence] + "Sequence"
       @sequence = seq
     end
@@ -77,7 +79,7 @@ task :execute_sequence, [:sequence, :server] do |task, args|
     exit
   end
 
-  instance = TestingInstance.new(url: args[:server])
+  instance = Inferno::Models::TestingInstance.new(url: args[:server])
   instance.save!
   client = FHIR::Client.new(args[:server])
   client.use_dstu2
