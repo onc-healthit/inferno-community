@@ -27,7 +27,7 @@ listed above and enter the following in a terminal prompt:
 git clone https://github.com/siteadmin/inferno
 cd inferno
 bundle install
-bundle exec ruby app.rb
+rackup
 ```
 
 *Inferno SMART on FHIR Test App* can then be accessed at http://localhost:4567 in a web browser.

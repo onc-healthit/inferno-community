@@ -1,4 +1,4 @@
-#\ -s Thin
+#\ -s Thin -p 4567
 
 #require 'rubygems'
 #require 'sinatra'
