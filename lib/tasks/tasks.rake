@@ -1,19 +1,27 @@
 require 'fhir_client'
 require 'pry'
-require './lib/sequence_base'
-require File.expand_path '../../../app.rb', __FILE__
-require './models/testing_instance'
+#require File.expand_path '../../../app.rb', __FILE__
+#require './models/testing_instance'
 require 'dm-core'
 require 'csv'
 require 'colorize'
 
+require_relative '../app'
+require_relative '../app/endpoint'
 require_relative '../app/helpers/configuration'
+require_relative '../app/sequence_base'
+require_relative '../app/models'
 
-['lib', 'models'].each do |dir|
-  Dir.glob(File.join(File.expand_path('../..', File.dirname(File.absolute_path(__FILE__))),dir, '**','*.rb')).each do |file|
-    require file
-  end
-end
+#['lib', 'models'].each do |dir|
+#  Dir.glob(File.join(File.expand_path('../..', File.dirname(File.absolute_path(__FILE__))),dir, '**','*.rb')).each do |file|
+#    require file
+#  end
+#end
+#
+#
+#
+
+include Inferno
 
 desc 'Generate List of All Tests'
 task :tests_to_csv, [:group, :filename] do |task, args|
@@ -86,9 +94,9 @@ task :execute_sequence, [:sequence, :server] do |task, args|
   client.default_json
   sequence_instance = @sequence.new(instance, client, true)
   sequence_result = sequence_instance.start
-  
+
   checkmark = "\u2713"
-  puts @sequence.sequence_name + " Sequence: "  
+  puts @sequence.sequence_name + " Sequence: "
   sequence_result.test_results.each do |result|
     print "\tTest: #{result.name} - "
     if result.result == 'pass'
@@ -103,14 +111,14 @@ task :execute_sequence, [:sequence, :server] do |task, args|
       end
     end
   end
-  print @sequence.sequence_name + " Sequence Result: " 
+  print @sequence.sequence_name + " Sequence Result: "
   if sequence_result.result == 'pass'
     puts 'pass '.green + checkmark.encode('utf-8').green
   elsif sequence_result.result == 'fail'
     puts 'fail '.red + 'X'.red
     exit 1
   end
-    
-  
+
+
 end
 

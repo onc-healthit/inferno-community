@@ -115,6 +115,15 @@ The currently supported groups of tests are `all`, `active` or `inactive`.  For 
 ```sh
 bundle exec rake tests_to_csv[all,all_tests.csv]
 ```
+
+## Running Tests from the Command Line
+
+Testing sequences can be run from the command line via a rake task which takes the sequence to be run and server url as
+arguments.:
+```sh
+rake execute_sequence[Conformance,https://my-server.org/data]
+```
+
 ## License
 
 Copyright 2018 The MITRE Corporation
