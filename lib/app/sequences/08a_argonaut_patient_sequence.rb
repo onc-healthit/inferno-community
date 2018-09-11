@@ -49,7 +49,7 @@ module Inferno
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
-        profile = ValidationUtil.guess_profile(@patient)
+        profile = Inferno::ValidationUtil.guess_profile(@patient)
         errors = profile.validate_resource(@patient)
         assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
       end

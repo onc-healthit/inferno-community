@@ -18,17 +18,17 @@ class ArgonautQueryTest < MiniTest::Unit::TestCase
     end
     @patient_id = get_resources_from_bundle(@bundle,'Patient').first.id
 
-    @instance = TestingInstance.new(url: 'http://www.example.com',
+    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
-                                   client_endpoint_key: SecureRandomBase62.generate(32),
+                                   client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                    client_id: SecureRandom.uuid,
                                    oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                    oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                                    scopes: 'launch openid patient/*.* profile'
                                    )
     @instance.save_supported_resources(@conformance)
-    @instance.resource_references << ResourceReference.new({
+    @instance.resource_references << Inferno::ResourceReference.new({
       resource_type: 'Patient',
       resource_id: @patient_id
       })
@@ -36,7 +36,7 @@ class ArgonautQueryTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = ArgonautDataQuerySequence.new(@instance, client)
+    @sequence = Inferno::Sequence::ArgonautDataQuerySequence.new(@instance, client)
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
   end
 

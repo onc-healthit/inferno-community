@@ -123,9 +123,9 @@ module Inferno
       test '09', '', 'CarePlan resources associated with Patient conform to Argonaut profiles',
            'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html',
            'CarePlan resources associated with Patient conform to Argonaut profiles.' do
-        test_resources_against_profile('CarePlan', ValidationUtil::CARE_PLAN_URL)
-        skip_unless @profiles_encountered.include?(ValidationUtil::CARE_PLAN_URL), 'No CarePlans found.'
-        assert !@profiles_failed.include?(ValidationUtil::CARE_PLAN_URL), "CarePlans failed validation.<br/>#{@profiles_failed[ValidationUtil::CARE_PLAN_URL]}"
+        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::CARE_PLAN_URL)
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::CARE_PLAN_URL), 'No CarePlans found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::CARE_PLAN_URL), "CarePlans failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::CARE_PLAN_URL]}"
       end
 
     end

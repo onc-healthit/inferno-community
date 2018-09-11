@@ -2,6 +2,7 @@ require_relative 'utils/assertions'
 require_relative 'ext/fhir_client'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
+require_relative 'utils/validation'
 
 module Inferno
   module Sequence
@@ -505,7 +506,7 @@ module Inferno
           resource = resource_response.resource
           assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize), "Expected resource to be of type #{resource_type}"
 
-          p = ValidationUtil.guess_profile(resource)
+          p = Inferno::ValidationUtil.guess_profile(resource)
           if specified_profile
             next unless p.url == specified_profile
           end

@@ -152,9 +152,9 @@ module Inferno
       test '16', '', 'Observation Result resources associated with Patient conform to Argonaut profiles',
            'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html',
            'Observation Result resources associated with Patient conform to Argonaut profiles.' do
-        test_resources_against_profile('Observation', ValidationUtil::OBSERVATION_RESULTS_URL)
-        skip_unless @profiles_encountered.include?(ValidationUtil::OBSERVATION_RESULTS_URL), 'No Observation Results found.'
-        assert !@profiles_failed.include?(ValidationUtil::OBSERVATION_RESULTS_URL), "Observation Results failed validation.<br/>#{@profiles_failed[ValidationUtil::OBSERVATION_RESULTS_URL]}"
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::OBSERVATION_RESULTS_URL)
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::OBSERVATION_RESULTS_URL), 'No Observation Results found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::OBSERVATION_RESULTS_URL), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::OBSERVATION_RESULTS_URL]}"
       end
 
     end

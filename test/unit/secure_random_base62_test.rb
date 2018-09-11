@@ -3,8 +3,8 @@ require File.expand_path '../../test_helper.rb', __FILE__
 class SecureRandomTest < MiniTest::Unit::TestCase
 
   def setup
-    @random_64_bit = Array.new(1000){SecureRandomBase62.generate(64)}
-    @random_32_bit = Array.new(1000){SecureRandomBase62.generate(32)}
+    @random_64_bit = Array.new(1000){Inferno::SecureRandomBase62.generate(64)}
+    @random_32_bit = Array.new(1000){Inferno::SecureRandomBase62.generate(32)}
   end
 
 

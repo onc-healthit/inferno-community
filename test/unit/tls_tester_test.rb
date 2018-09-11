@@ -3,7 +3,7 @@ require File.expand_path '../../test_helper.rb', __FILE__
 class TlsTesterTest < MiniTest::Unit::TestCase
 
   def setup
-    @tester_under_test = TlsTester.new({uri: 'https://www.example.org/'})
+    @tester_under_test = Inferno::TlsTester.new({uri: 'https://www.example.org/'})
   end
 
   def test_verify_tls_1_2

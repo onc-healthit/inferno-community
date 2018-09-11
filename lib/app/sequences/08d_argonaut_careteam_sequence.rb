@@ -36,9 +36,9 @@ module Inferno
       test '02', '', 'CareTeam resources associated with Patient conform to Argonaut profiles',
            'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careteam.html',
            'CareTeam resources associated with Patient conform to Argonaut profiles.' do
-        test_resources_against_profile('CarePlan', ValidationUtil::CARE_TEAM_URL)
-        skip_unless @profiles_encountered.include?(ValidationUtil::CARE_TEAM_URL), 'No CareTeams found.'
-        assert !@profiles_failed.include?(ValidationUtil::CARE_TEAM_URL), "CareTeams failed validation.<br/>#{@profiles_failed[ValidationUtil::CARE_TEAM_URL]}"
+        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::CARE_TEAM_URL)
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::CARE_TEAM_URL), 'No CareTeams found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::CARE_TEAM_URL), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::CARE_TEAM_URL]}"
       end
 
     end

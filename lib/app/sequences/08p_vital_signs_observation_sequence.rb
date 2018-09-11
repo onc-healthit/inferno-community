@@ -91,9 +91,9 @@ module Inferno
       test '20', '', 'Vital Signs resources associated with Patient conform to Argonaut profiles',
            'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-vitalsigns.html',
            'Vital Signs resources associated with Patient conform to Argonaut profiles.' do
-        test_resources_against_profile('Observation', ValidationUtil::VITAL_SIGNS_URL)
-        skip_unless @profiles_encountered.include?(ValidationUtil::VITAL_SIGNS_URL), 'No Vital Sign Observations found.'
-        assert !@profiles_failed.include?(ValidationUtil::VITAL_SIGNS_URL), "Vital Sign Observations failed validation.<br/>#{@profiles_failed[ValidationUtil::VITAL_SIGNS_URL]}"
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::VITAL_SIGNS_URL)
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::VITAL_SIGNS_URL), 'No Vital Sign Observations found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::VITAL_SIGNS_URL), "Vital Sign Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::VITAL_SIGNS_URL]}"
       end
 
     end

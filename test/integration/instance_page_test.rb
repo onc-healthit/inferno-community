@@ -6,18 +6,18 @@ class InstancePageTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods
 
   def app
-    Sinatra::Application
+    Inferno::App.new
   end
 
   def setup
-    @fhir_server = "http://#{SecureRandomBase62.generate(32)}.example.com"
-    post BASE_PATH, {fhir_server: @fhir_server}
+    @fhir_server = "http://#{Inferno::SecureRandomBase62.generate(32)}.example.com"
+    post Inferno::BASE_PATH, {fhir_server: @fhir_server}
     assert last_response.redirect?
     follow_redirect!
     assert last_response.ok?
     @instance_path = last_request.url
     instance_id = @instance_path.split('/').last
-    @instance = TestingInstance.get(instance_id)
+    @instance = Inferno::Models::TestingInstance.get(instance_id)
   end
 
   def instance_details_ok_test
@@ -27,9 +27,9 @@ class InstancePageTest < MiniTest::Unit::TestCase
   end
 
   def test_not_found_instance
-    get "#{BASE_PATH}/asdfasdf"
+    get "#{Inferno::BASE_PATH}/asdfasdf"
     assert last_response.not_found?
-    get "#{BASE_PATH}/asdfasdf/#{@instance.client_endpoint_key}/launch"
+    get "#{Inferno::BASE_PATH}/asdfasdf/#{@instance.client_endpoint_key}/launch"
     assert last_response.not_found?
   end
 

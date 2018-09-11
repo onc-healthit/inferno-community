@@ -1,12 +1,9 @@
-require "socket"
-require "openssl"
-
+require 'net/http'
+require 'openssl'
 module Inferno
   class TlsTester
 
     def initialize(params)
-      # puts "TESTING - SRM"
-      # puts(params)
       if params[:uri].nil?
         if not (params[:host].nil? or params[:port].nil?)
           @host = params[:host]
@@ -15,9 +12,9 @@ module Inferno
           raise ArgumentError, '"uri" or "host"/"port" required by TlsTester'
         end
       else
-        uri = URI(params[:uri])
-        @host = uri.host
-        @port = uri.port
+        @uri = URI(params[:uri])
+        @host = @uri.host
+        @port = @uri.port
       end
     end
 
@@ -26,82 +23,48 @@ module Inferno
     end
 
     def verifyEnsureProtocol(ssl_version)
-
-      sslClient, tcpSocket = getConnection(ssl_version)
-
-      # attempt the connection and handshake
+      http = Net::HTTP.new(@host, @port)
+      http.use_ssl = true
+      http.min_version = ssl_version
+      http.max_version = ssl_version
+      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
-        sslClient.connect
-      rescue OpenSSL::SSL::SSLError => sslError
-        sslClient.close
-        tcpSocket.close
-        # send the message up with false
-        return FALSE, "Caught SSL Error: #{sslError.message}"
+        response = http.request_get(@uri)
+      rescue StandardError => ex
+        return false, "Caught TLS Error: #{ex.message}"
       end
-      return_message = "Allowed connection with #{sslClient.ssl_version}"
-      sslClient.close
-      tcpSocket.close
-
-      return TRUE, return_message
+      return true, "Allowed Connection with TLSv1_2"
     end
 
     def verifyDenyProtocol(ssl_version, readable_version)
-
-      sslClient, tcpSocket = getConnection(ssl_version)
-
-      # attempt the connection and handshake
+      http = Net::HTTP.new(@host, @port)
+      http.use_ssl = true
+      http.min_version = ssl_version
+      http.max_version = ssl_version
+      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
-        sslClient.connect
-      rescue OpenSSL::SSL::SSLError => sslError
-        # Correctly denied the connection
-        sslClient.close
-        tcpSocket.close
-        return TRUE, "Correctly denied connection with #{readable_version}"
+        response = http.request_get(@host)
+      rescue StandardError => ex
+        return true, "Correctly denied connection error of type #{ex.class} happened, message is #{ex.message}"
       end
-      return_message = "Should not allow connections with #{sslClient.ssl_version}"
-      sslClient.close
-      tcpSocket.close
-      return FALSE, return_message
+      return false, "Should not allow connections with #{readable_version}"
     end
 
     def verifyEnsureTLSv1_2
-      #return verifyEnsureProtocol(:TLSv1_2)
       return verifyEnsureProtocol(OpenSSL::SSL::TLS1_2_VERSION)
     end
 
     def verifyDenyTLSv1()
-      return verifyDenyProtocol(OpenSSL::SSL::TLS1_VERSION, "TLSv1.0")
+      return verifyDenyProtocol(OpenSSL::SSL::TLS1_VERSION, 'TLSv1.0')
     end
 
-    def verfiyDenySSLv3()
-      return verifyDenyProtocol(OpenSSL::SSL::SSL3_VERSION, "SSLv3.0")
+    def verifyDenySSLv3()
+      return verifyDenyProtocol(OpenSSL::SSL::SSL3_VERSION, 'SSLv3.0')
     end
 
-    # Ruby and/or OpenSSL won't let us set a max version of SSL2_VERSION
-    #def verfiyDenySSLv2()
-    #  return TRUE # verifyDenyProtocol(OpenSSL::SSL::SSL2_VERSION)
-    #end
-
-    def verfiyDenyTLSv1_1()
-      return verifyDenyProtocol(OpenSSL::SSL::TLS1_1_VERSION, "TLSv1.1")
+    def verifyDenyTLSv1_1()
+      return verifyDenyProtocol(OpenSSL::SSL::TLS1_1_VERSION, 'TLSv1.1')
     end
 
-    private
-    def getConnection(ssl_version)
-      #create a socket
-      tcpSocket = TCPSocket.new(@host, @port)
-
-      # set up the SSL context
-      sslCtx = OpenSSL::SSL::SSLContext.new
-      sslCtx.set_params({verify_mode: OpenSSL::SSL::VERIFY_PEER})
-      #sslCtx.set_params.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      sslCtx.max_version = ssl_version
-      sslCtx.min_version = ssl_version
-      # set up the SSL client
-      sslClient = OpenSSL::SSL::SSLSocket.new(tcpSocket, sslCtx)
-      sslClient.hostname = @host
-
-      return sslClient, tcpSocket
-    end
   end
 end

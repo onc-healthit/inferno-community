@@ -7,7 +7,8 @@ require 'webmock/minitest'
 require 'rack/test'
 require 'json/jwt'
 
-require File.expand_path '../../app.rb', __FILE__
+#require File.expand_path '../../app.rb', __FILE__
+require_relative '../lib/app'
 
 def load_json_fixture(file)
    JSON.parse(load_fixture(file))

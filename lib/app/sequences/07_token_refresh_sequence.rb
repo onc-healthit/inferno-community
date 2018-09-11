@@ -67,7 +67,7 @@ module Inferno
         token_retrieved_at = DateTime.now
 
         @instance.resource_references.each(&:destroy)
-        @instance.resource_references << ResourceReference.new({resource_type: 'Patient', resource_id: @token_response_body['patient']}) if @token_response_body.key?('patient')
+        @instance.resource_references << Inferno::Models::ResourceReference.new({resource_type: 'Patient', resource_id: @token_response_body['patient']}) if @token_response_body.key?('patient')
 
         @instance.save!
 

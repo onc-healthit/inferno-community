@@ -45,9 +45,9 @@ module Inferno
       test '11', '', 'Smoking Status resources associated with Patient conform to Argonaut profiles',
            'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html',
            'Procedure resources associated with Procedure conform to Argonaut profiles.' do
-        test_resources_against_profile('Observation', ValidationUtil::SMOKING_STATUS_URL)
-        skip_unless @profiles_encountered.include?(ValidationUtil::SMOKING_STATUS_URL), 'No Smoking Status Observations found.'
-        assert !@profiles_failed.include?(ValidationUtil::SMOKING_STATUS_URL), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[ValidationUtil::SMOKING_STATUS_URL]}"
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::SMOKING_STATUS_URL)
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::SMOKING_STATUS_URL), 'No Smoking Status Observations found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::SMOKING_STATUS_URL), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::SMOKING_STATUS_URL]}"
       end
 
     end
