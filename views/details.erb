@@ -379,8 +379,11 @@
         <p>
           The results recorded during this testing session can be accessed at the following URI.
           Please save this URI if you would like to revisit these results, as this secret URI will not be published.
-          </p>
+        </p>
           <input type="text" class="form-control" value="<%=instance.base_url%><%=BASE_PATH%>/<%=instance.id%>/" readonly="readonly">
+        <p class='alert alert-warning'>
+          This URI is not guaranteed to be permanently accessible.  The team maintaining this instance of Inferno may choose to periodically clear the database.  To ensure that test results are saved indefinitely, it is recommended that users download, install, and use Inferno on their own hardware.
+        </p>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>

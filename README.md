@@ -11,6 +11,10 @@ Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 * [Ruby Bundler](http://bundler.io/)
 * [SQLite](https://www.sqlite.org/)
 
+## Supported Browsers
+
+Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and Edge.  Internet Explorer is not supported at this time.
+
 ## Installation and Running
 
 ### Local Installation
