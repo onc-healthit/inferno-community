@@ -6,7 +6,7 @@ require File.expand_path '../../test_helper.rb', __FILE__
 class SequenceValidationTest < MiniTest::Unit::TestCase
 
   def setup
-    @sequences = SequenceBase.subclasses
+    @sequences = Inferno::Sequence::SequenceBase.subclasses
   end
 
   def test_metadata
@@ -18,7 +18,7 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
     excluded_tests << 'Patient supports $everything operation'
 
     # not yet finished
-    AdditionalResourcesSequence.tests.each { |test| excluded_tests << test[:name]}
+    Inferno::Sequence::AdditionalResourcesSequence.tests.each { |test| excluded_tests << test[:name]}
 
     test_list = @sequences.map do |sequence|
       test_list = sequence.tests.map {|test| test[:sequence] = sequence.name; test}
@@ -39,8 +39,8 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
 
   def test_ordered_sequences
 
-    assert SequenceBase.ordered_sequences.uniq.length == SequenceBase.ordered_sequences.length, 'There are duplicate sequences in SequenceBase.ordered_sequences.'
-    assert (SequenceBase.subclasses.select{|seq| !seq.inactive?}-SequenceBase.ordered_sequences).blank?  && (SequenceBase.ordered_sequences-SequenceBase.subclasses.select{|seq| !seq.inactive?}).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
+    assert Inferno::Sequence::SequenceBase.ordered_sequences.uniq.length == Inferno::Sequence::SequenceBase.ordered_sequences.length, 'There are duplicate sequences in SequenceBase.ordered_sequences.'
+    assert (Inferno::Sequence::SequenceBase.subclasses.select{|seq| !seq.inactive?}-Inferno::Sequence::SequenceBase.ordered_sequences).blank?  && (Inferno::Sequence::SequenceBase.ordered_sequences-Inferno::Sequence::SequenceBase.subclasses.select{|seq| !seq.inactive?}).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
   end
 
 end

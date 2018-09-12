@@ -10,10 +10,10 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
   def setup
-    @instance = TestingInstance.new(url: 'http://www.example.com',
+    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
-                                   client_endpoint_key: SecureRandomBase62.generate(32),
+                                   client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                    oauth_register_endpoint: 'https://oauth_reg.example.com/register',
                                    scopes: 'launch openid patient/*.* profile'
                                    )
@@ -21,7 +21,7 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = DynamicRegistrationSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::DynamicRegistrationSequence.new(@instance, client, true)
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 

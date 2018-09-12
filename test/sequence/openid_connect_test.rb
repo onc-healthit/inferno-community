@@ -33,10 +33,10 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
     @id_token = @id_token.sign(@key_pair, jwk['alg'])
     @expired_id_token = @expired_id_token.sign(@key_pair, jwk['alg'])
 
-    @instance = TestingInstance.new(url: 'https://www.example.com/testing',
+    @instance = Inferno::Models::TestingInstance.new(url: 'https://www.example.com/testing',
                                    client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
-                                   client_endpoint_key: SecureRandomBase62.generate(32),
+                                   client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                    client_id: client_id,
                                    oauth_authorize_endpoint: @openid_configuration['authorization_endpoint'],
                                    oauth_token_endpoint: @openid_configuration['token_endpoint'],
@@ -47,7 +47,7 @@ class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = OpenIDConnectSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::OpenIDConnectSequence.new(@instance, client, true)
   end
 
   def test_all_pass

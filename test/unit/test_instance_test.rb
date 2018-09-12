@@ -3,7 +3,7 @@ require File.expand_path '../../test_helper.rb', __FILE__
 class TestInstanceTest < MiniTest::Unit::TestCase
 
   def setup
-    @instance = TestingInstance.create
+    @instance = Inferno::Models::TestingInstance.create
   end
 
   def test_conformance_supported

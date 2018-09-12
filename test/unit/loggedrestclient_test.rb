@@ -9,7 +9,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:get, url).
       to_return(status: 200)
 
-    response = LoggedRestClient.get(url)
+    response = Inferno::LoggedRestClient.get(url)
     assert response.code == 200
   end
 
@@ -20,7 +20,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:get, url).
       to_return(status: 201)
 
-    response = LoggedRestClient.get(url)
+    response = Inferno::LoggedRestClient.get(url)
     assert response.code == 201
   end
 
@@ -31,7 +31,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:get, url).
       to_return(status: 404)
 
-    response = LoggedRestClient.get(url)
+    response = Inferno::LoggedRestClient.get(url)
     assert response.code == 404
   end
 
@@ -42,7 +42,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:get, url).
       to_return(status: 400)
 
-    response = LoggedRestClient.get(url)
+    response = Inferno::LoggedRestClient.get(url)
     assert response.code == 400
   end
 
@@ -53,7 +53,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:post, url).
       to_return(status: 200)
 
-    response = LoggedRestClient.post(url, nil)
+    response = Inferno::LoggedRestClient.post(url, nil)
     assert response.code == 200
   end
 
@@ -64,7 +64,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:post, url).
       to_return(status: 201)
 
-    response = LoggedRestClient.post(url, nil)
+    response = Inferno::LoggedRestClient.post(url, nil)
     assert response.code == 201
   end
 
@@ -75,7 +75,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:post, url).
       to_return(status: 404)
 
-    response = LoggedRestClient.post(url, nil)
+    response = Inferno::LoggedRestClient.post(url, nil)
     assert response.code == 404
   end
 
@@ -86,7 +86,7 @@ class LoggedRestClientTest < MiniTest::Unit::TestCase
     stub_request(:post, url).
       to_return(status: 400)
 
-    response = LoggedRestClient.post(url, nil)
+    response = Inferno::LoggedRestClient.post(url, nil)
     assert response.code == 400
   end
 
