@@ -99,7 +99,7 @@ module Inferno
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Inferno::Models::RequestResponse.new(
+            result.request_responses << Models::RequestResponse.new(
                 direction: req[:direction],
                 request_method: req[:request][:method].to_s,
                 request_url: req[:request][:url],
@@ -445,7 +445,7 @@ module Inferno
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
 
         entries.each do |entry|
-          @instance.resource_references << ResourceReference.new({resource_type: klass.name.split(':').last, resource_id: entry.resource.id})
+          @instance.resource_references << Models::ResourceReference.new({resource_type: klass.name.split(':').last, resource_id: entry.resource.id})
         end
 
         @instance.save!

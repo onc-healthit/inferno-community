@@ -28,7 +28,7 @@ class ArgonautQueryTest < MiniTest::Unit::TestCase
                                    scopes: 'launch openid patient/*.* profile'
                                    )
     @instance.save_supported_resources(@conformance)
-    @instance.resource_references << Inferno::ResourceReference.new({
+    @instance.resource_references << Inferno::Models::ResourceReference.new({
       resource_type: 'Patient',
       resource_id: @patient_id
       })
