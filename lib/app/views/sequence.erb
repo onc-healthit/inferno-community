@@ -77,7 +77,7 @@
             <button type="submit" class="sequence-button btn btn-outline-info btn-sm"
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
-                                  data-sequence="<%=sequence_class%>"
+                                  data-sequence="<%=sequence_class.name.demodulize%>"
                                   data-sequence-title="<%= sequence_class.title %>">
               <span class="oi oi-action-undo"></span>
               Run Again
@@ -86,7 +86,7 @@
             <button type="submit" class="sequence-button btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm "
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
-                                  data-sequence="<%=sequence_class%>"
+                                  data-sequence="<%=sequence_class.name.demodulize%>"
                                   data-sequence-title="<%= sequence_class.title %>">
               <span class="oi oi-media-play"></span>
               Run

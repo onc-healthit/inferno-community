@@ -17,8 +17,7 @@ module Inferno
 
       helpers Helpers::Configuration
       helpers Helpers::BrowserLogic
-
-      puts root
+      
       set :public_folder, Proc.new { File.join(root, '../../public') }
       set :static, true
       set :views, File.expand_path('../views', __FILE__)

@@ -78,7 +78,6 @@ module Inferno
             halt 404 if instance.nil?
 
             # Save params
-
             params[:required_fields].split(',').each do |field|
               instance.send("#{field}=", params[field]) if instance.respond_to? field
             end
@@ -93,7 +92,7 @@ module Inferno
 
             timer_count = 0;
             stayalive_timer_seconds = 20;
-
+            
             finished = false
             stream :keep_open do |out|
 
@@ -111,7 +110,7 @@ module Inferno
               next_sequence = submitted_sequences.shift
 
               klass = nil
-              klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.to_s.start_with?(next_sequence)} if next_sequence
+              klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(next_sequence)} if next_sequence
 
               while !klass.nil?
 
