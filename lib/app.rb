@@ -18,9 +18,7 @@ require_relative 'app/utils/secure_random_base62'
 require_relative 'app/sequence_base'
 
 module Inferno
-  BASE_PATH = '/inferno'.freeze
-  VERSION = '0.9.3'.freeze
-  DEFAULT_SCOPES = 'launch launch/patient offline_access openid profile user/*.* patient/*.*'
+
   class App
     attr_reader :app
 
