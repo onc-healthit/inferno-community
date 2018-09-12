@@ -56,10 +56,10 @@
                 <% end %>
                  -
                 <button class='sequence-expand-button'
-                        href="#<%=sequence_class%>-details"
+                        href="#<%=sequence_class.name.demodulize%>-details"
                         data-toggle="collapse"
-                        data-result-details='<%=sequence_class%>-details'
-                        aria-controls="<%=sequence_class%>-details">
+                        data-result-details='<%=sequence_class.name.demodulize%>-details'
+                        aria-controls="<%=sequence_class.name.demodulize%>-details">
                   Show Details
                 </button>
               </div>

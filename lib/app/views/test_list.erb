@@ -1,4 +1,4 @@
-<div class="result-details collapse" id="<%=sequence_class%>-details">
+<div class="result-details collapse" id="<%=sequence_class.name.demodulize%>-details">
   <ul>
     <% sequence_result && sequence_result.test_results.each do |result, index| %>
       <li style="list-style: none;" class="result-details-clickable" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
