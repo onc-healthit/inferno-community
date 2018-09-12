@@ -16,6 +16,7 @@ require_relative 'app/endpoint'
 require_relative 'app/models'
 require_relative 'app/utils/secure_random_base62'
 require_relative 'app/sequence_base'
+require_relative 'version'
 
 module Inferno
 
