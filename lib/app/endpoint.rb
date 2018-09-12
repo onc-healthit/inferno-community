@@ -8,6 +8,8 @@ module Inferno
 
       config_file '../../config.yml'
 
+      OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE if settings.disable_verify_peer
+
       helpers Helpers::Configuration
       helpers Helpers::BrowserLogic
       puts root
