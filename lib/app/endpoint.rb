@@ -11,6 +11,9 @@ module Inferno
       OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE if settings.disable_verify_peer
       Inferno::BASE_PATH = "/#{settings.base_path.gsub(/[^0-9a-z_-]/i, '')}"
       Inferno::DEFAULT_SCOPES = settings.default_scopes
+      Inferno::ENVIRONMENT = settings.environment
+      Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
+
 
       helpers Helpers::Configuration
       helpers Helpers::BrowserLogic
