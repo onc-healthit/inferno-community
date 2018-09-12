@@ -92,7 +92,7 @@ module Inferno
 
             timer_count = 0;
             stayalive_timer_seconds = 20;
-            
+
             finished = false
             stream :keep_open do |out|
 

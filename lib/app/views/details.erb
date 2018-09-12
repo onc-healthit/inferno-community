@@ -52,7 +52,7 @@
             <div class='row align-items-center'>
               <div class='col'>
                 <% if sequence_group[1].length > 1 %>
-                  <a id="<%=sequence_group[1].join(',')%>" name="<%=sequence_group[1].join(',')%>"></a>
+                  <a id="<%=sequence_group[1].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=sequence_group[1].map {|seq| seq.name.demodulize}.join(',')%>"></a>
 
                 <% end %>
                 <h1>
@@ -126,7 +126,7 @@
 
           <%# SPECIAL CASE: CLIENT SECRET %>
           <div class="form-group"
-               data-requiredby="<%=Inferno::Sequence::SequenceBase.variable_required_by(:confidential_client).join(',')%>"
+               data-requiredby="<%=Inferno::Sequence::SequenceBase.variable_required_by(:confidential_client).map {|seq| seq.name.demodulize}.join(',')%>"
                data-prerequisite="confidential_client"
                id="is_confidential"
                >
