@@ -30,6 +30,14 @@ module Inferno
         def js_next_sequence(sequences)
           # "<script>console.log('js_next_sequence');$('#testsRunningModal').find('.number-complete-container').append('<div class=\'number-complete\'></div>');</script>"
         end
+
+        def markdown_to_html(markdown)
+          # we need to remove the 'normal' level of indentation before passing to markdown editor
+          # find the minimum non-zero spacing indent and reduce by that many for all lines (note, did't make work for tabs)
+          natural_indent = markdown.lines.collect{|l| l.index(/[^ ]/)}.select{|l| !l.nil? && l> 0}.min || 0
+          unindented_markdown = markdown.lines.map{|l| l[natural_indent..-1] || "\n"}.join
+          Kramdown::Document.new(unindented_markdown).to_html
+        end
       end
     end
   end

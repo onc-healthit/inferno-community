@@ -10,6 +10,8 @@ require 'dm-core'
 require 'dm-migrations'
 require 'jwt'
 require 'json/jwt'
+require 'kramdown'
+
 
 require 'rack'
 require_relative 'app/endpoint'

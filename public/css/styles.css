@@ -354,6 +354,15 @@ body {
   font-size: .9em;
 }
 
+.sequence-details-more {
+  padding: 0;
+  margin: 0;
+  vertical-align: initial;
+}
+ .sequence-details-more:hover {
+  cursor: pointer;
+}
+
 .sequence-message {
   display:inline-block;
   vertical-align: top;
@@ -424,25 +433,38 @@ body {
 
 .result-details {
   margin-top: 0;
-  max-height: 300px;
-  overflow-y: scroll;
+  /* max-height: 300px; */
+  /* overflow-y: scroll; */
   cursor: default;
 }
 
-.result-details ul {
-  padding: 0;
-  margin: 0 10px;
+.nav.nav-tabs.result-details-tabs {
+  padding-left: 10px;
 }
 
-.result-details li {
+.nav.nav-tabs.result-details-tabs .nav-link{
+  padding: .25rem .8rem;
+}
+
+.nav.nav-tabs.result-details-tabs {
+  padding-left: 10px;
+}
+
+
+.test-list {
+  padding: 0;
+  margin: 0;
+}
+
+.test-list li {
   list-style: none;
   font-size: .8em;
   padding: 5px 15px 5px;
   border: 1px solid #efefef;
-  border-bottom: none;
+  border-top: none;
 }
 
-.result-details li:last-child {
+.test-list li:last-child {
   border-bottom: 1px solid #efefef;
 }
 
@@ -513,6 +535,19 @@ li.result-details-clickable:hover {
 .result-details-message {
   margin-left: 19px;
 
+}
+
+.result-details h1{
+  font-size: 1.5em;
+}
+ .result-details h2 {
+  font-size: 1.3em;
+}
+ .result-details h3, .result-details h4, .result-details h5 {
+  font-size: 1.1em;
+}
+ .more-information {
+  padding: 10px;
 }
 
 /* ------------------------- TEST RESULT POPUP -------------------------------- */
@@ -592,10 +627,4 @@ li.result-details-clickable:hover {
 
 .test-result-details-message-label {
   font-weight: bold;
-}
-
-/* ------------------------- TEST RESULT POPUP -------------------------------- */
-
-.modal-body .form-row {
-  margin: 0 20px;
 }
