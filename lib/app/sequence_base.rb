@@ -25,6 +25,7 @@ module Inferno
       @@preconditions = {}
       @@titles = {}
       @@descriptions = {}
+      @@details = {}
       @@requires = {}
       @@defines = {}
       @@test_metadata = {}
@@ -183,6 +184,11 @@ module Inferno
       def self.description(description = nil)
         @@descriptions[self.sequence_name] = description unless description.nil?
         @@descriptions[self.sequence_name]
+      end
+
+      def self.details(details = nil)
+        @@details[self.sequence_name] = details unless details.nil?
+        @@details[self.sequence_name]
       end
 
       def self.requires(*requires)
