@@ -36,6 +36,16 @@ module Inferno
         skip_if_not_supported(:Observation, [:search, :read])
 
         reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "vital-signs"})
+        assert_bundle_response(reply)
+
+        @no_resources_found = false
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count === 0
+          @no_resources_found = true
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
         @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(FHIR::DSTU2::Observation, reply)
         # TODO check for `vital-signs` category
@@ -48,6 +58,7 @@ module Inferno
            "A server is capable of returning all of a patient's vital signs queried by date range." do
 
         skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
         date = @vitalsigns.try(:effectiveDateTime)
@@ -62,6 +73,7 @@ module Inferno
            "A server is capable of returning any of a patient's vital signs queried by one or more of the specified codes." do
 
         skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
         code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
@@ -77,6 +89,7 @@ module Inferno
            :optional do
 
         skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@vitalsigns.nil?, 'Expected valid DSTU2 Observation resource to be present'
         code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)

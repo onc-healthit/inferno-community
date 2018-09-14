@@ -40,6 +40,16 @@ module Inferno
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
         reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
+        assert_bundle_response(reply)
+
+        @no_resources_found = false
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count === 0
+          @no_resources_found = true
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(FHIR::DSTU2::DiagnosticReport, reply)
 
@@ -50,6 +60,7 @@ module Inferno
            "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range." do
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
         date = @diagnosticreport.try(:effectiveDateTime)
@@ -64,6 +75,7 @@ module Inferno
            "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code." do
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
         code = @diagnosticreport.try(:code).try(:coding).try(:first).try(:code)
@@ -79,6 +91,7 @@ module Inferno
            :optional do
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
         code = @diagnosticreport.try(:code).try(:coding).try(:first).try(:code)
@@ -95,6 +108,7 @@ module Inferno
            'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
@@ -106,6 +120,7 @@ module Inferno
            :optional do
 
         skip_if_not_supported(:DiagnosticReport, [:history])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
@@ -117,6 +132,7 @@ module Inferno
            :optional do
 
         skip_if_not_supported(:DiagnosticReport, [:vread])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
 
