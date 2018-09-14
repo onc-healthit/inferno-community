@@ -222,6 +222,8 @@ $(function(){
 
   var autoRun = $.getQueryParameters().autoRun;
   if(autoRun) {
+    var url = window.location.pathname;
+    window.history.replaceState({}, null, url);
     $("button[data-sequence='" + autoRun + "']").click()
   }
 

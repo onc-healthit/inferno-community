@@ -28,7 +28,7 @@ module Inferno
           url = url.chomp('/') if url.end_with?('/')
           @instance = Inferno::Models::TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
           @instance.save!
-          redirect "#{BASE_PATH}/#{@instance.id}/?autoRun=ConformanceSequence"
+          redirect "#{BASE_PATH}/#{@instance.id}/"
         end
 
         get '/:id/test_result/:test_result_id/?' do
