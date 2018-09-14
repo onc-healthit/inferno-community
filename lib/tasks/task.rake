@@ -39,6 +39,110 @@ def print_requests(result)
   end
 end
 
+def execute(instance, sequences)
+
+  client = FHIR::Client.new(instance.url)
+  client.use_dstu2
+  client.default_json
+
+  sequence_results = []
+
+  fails = false
+
+  system "clear"
+  puts "\n"
+  puts "==========================================\n"
+  puts " Testing #{sequences.length} Sequences"
+  puts "==========================================\n"
+  sequences.each do |sequence_info|
+
+    sequence = sequence_info['sequence']
+    sequence_info.each do |key, val|
+      if key != 'sequence'
+        instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
+      end
+    end
+    sequence_instance = sequence.new(instance, client, true)
+    sequence_result = nil
+
+    suppress_output{sequence_result = sequence_instance.start}
+
+    sequence_results << sequence_result
+
+    checkmark = "\u2713"
+    puts "\n" + sequence.sequence_name + " Sequence: \n"
+    sequence_result.test_results.each do |result|
+      print " "
+      if result.result == 'pass'
+        print "#{checkmark.encode('utf-8')} pass".green
+        print " - #{result.name}\n"
+      elsif result.result == 'skip'
+        print "* skip".yellow
+        print " - #{result.name}\n"
+        puts "    Message: #{result.message}"
+      elsif result.result == 'fail'
+        if result.required
+          print "X fail".red
+          print " - #{result.name}\n"
+          puts "    Message: #{result.message}"
+          print_requests(result).map do |req|
+            puts "    #{req}"
+          end
+          fails = true
+        else
+          print "X fail (optional)".light_black
+          print " - #{result.name}\n"
+          puts "    Message: #{result.message}"
+          print_requests(result).map do |req|
+            puts "      #{req}"
+          end
+        end
+      elsif sequence_result.result == 'error'
+        print "X error".magenta
+        print " - #{result.name}\n"
+        print "    Message: #{result.message}"
+        print_requests(result).map do |req|
+          puts "      #{req}"
+        end
+        fails = true
+      end
+    end
+    print "\n" + sequence.sequence_name + " Sequence Result: "
+    if sequence_result.result == 'pass'
+      puts 'pass '.green + checkmark.encode('utf-8').green
+    elsif sequence_result.result == 'fail'
+      puts 'fail '.red + 'X'.red
+      fails = true
+    elsif sequence_result.result == 'error'
+      puts 'error '.magenta + 'X'.magenta
+      fails = true
+    elsif sequence_result.result == 'skip'
+      puts 'skip '.yellow + '*'.yellow
+    # else
+    #   binding.pry
+    end
+    puts "---------------------------------------------\n"
+  end
+
+  failures_count = "" + sequence_results.select{|s| s.result == 'fail'}.count.to_s
+  passed_count = "" + sequence_results.select{|s| s.result == 'pass'}.count.to_s
+  skip_count = "" + sequence_results.select{|s| s.result == 'skip'}.count.to_s
+  print " Result: " + failures_count.red + " failed, " + passed_count.green + " passed"
+  if sequence_results.select{|s| s.result == 'skip'}.count > 0
+    print (", " + sequence_results.select{|s| s.result == 'skip'}.count.to_s).yellow + " skipped"
+  end
+  if sequence_results.select{|s| s.result == 'error'}.count > 0
+    print (", " + sequence_results.select{|s| s.result == 'error'}.count.to_s).yellow + " error"
+  end
+  puts "\n=============================================\n"
+
+  return_value = 0
+  return_value = 1 if fails
+
+  return_value
+
+end
+
 namespace :inferno do |argv|
 
   desc 'Generate List of All Tests'
@@ -80,6 +184,56 @@ namespace :inferno do |argv|
 
   end
 
+  desc 'Generate automated run configuration'
+  task :generate_config, [:server] do |task, args|
+
+    sequences = []
+    requires = []
+    defines = []
+
+    input = ''
+
+    output = {server: args[:server], arguments: {}, sequences: []}
+    Inferno::Sequence::SequenceBase.ordered_sequences.each do |seq|
+      unless input == 'a'
+        print "\nInclude #{seq.name} (y/n/a)? "
+        input = STDIN.getc
+      end
+
+      if input == 'a' || input == 'y'
+        output[:sequences].push({sequence: seq.name.demodulize})
+        sequences << seq
+        seq.requires.each do |req|
+          requires << req unless (requires.include?(req) || defines.include?(req) || req == :url)
+        end
+        defines.push(*seq.defines)
+      end
+
+    end
+
+    STDOUT.print "\n"
+
+    requires.each do |req|
+      input = ""
+
+      if req == :initiate_login_uri
+        input = 'http://localhost:4568/launch'
+      elsif req == :redirect_uris
+        input = 'http://localhost:4568/redirect'
+      else
+        STDOUT.flush
+        STDOUT.print "\nEnter #{req.to_s.upcase}: "
+        STDOUT.flush
+        input = STDIN.gets.chomp
+      end
+
+      output[:arguments][req] = input
+    end
+
+    File.open('config.json', 'w') { |file| file.write(JSON.pretty_generate(output)) }
+
+  end
+
   desc 'Execute sequence against a FHIR server'
   task :execute, [:server] do |task, args|
 
@@ -101,9 +255,6 @@ namespace :inferno do |argv|
 
     instance = Inferno::Models::TestingInstance.new(url: args[:server])
     instance.save!
-    client = FHIR::Client.new(args[:server])
-    client.use_dstu2
-    client.default_json
 
     o = OptionParser.new
 
@@ -148,96 +299,43 @@ namespace :inferno do |argv|
       print "            \r"
     end
 
-    fails = false
+    exit execute(instance, sequences.map{|s| {'sequence' => s}})
 
-    sequence_results = []
+  end
 
-    system "clear"
-    puts "\n"
-    puts "==========================================\n"
-    puts " Testing #{sequences.length} Sequences"
-    puts "==========================================\n"
-    sequences.each do |sequence|
+  desc 'Execute sequence against a FHIR server'
+  task :execute_batch, [:config] do |task, args|
+    file = File.read(args.config)
+    config = JSON.parse(file)
 
-      sequence_instance = sequence.new(instance, client, true)
-      sequence_result = nil
+    instance = Inferno::Models::TestingInstance.new(url: config['server'])
+    instance.save!
+    client = FHIR::Client.new(config['server'])
+    client.use_dstu2
+    client.default_json
 
-      suppress_output{sequence_result = sequence_instance.start}
-
-      sequence_results << sequence_result
-
-      checkmark = "\u2713"
-      puts "\n" + sequence.sequence_name + " Sequence: \n"
-      sequence_result.test_results.each do |result|
-        print " "
-        if result.result == 'pass'
-          print "#{checkmark.encode('utf-8')} pass".green
-          print " - #{result.name}\n"
-        elsif result.result == 'skip'
-          print "* skip".yellow
-          print " - #{result.name}\n"
-          puts "    Message: #{result.message}"
-        elsif result.result == 'fail'
-          if result.required
-            print "X fail".red
-            print " - #{result.name}\n"
-            puts "    Message: #{result.message}"
-            print_requests(result).map do |req|
-              puts "    #{req}"
-            end
-            fails = true
-          else
-            print "X fail (optional)".light_black
-            print " - #{result.name}\n"
-            puts "    Message: #{result.message}"
-            print_requests(result).map do |req|
-              puts "      #{req}"
-            end
-          end
-        elsif sequence_result.result == 'error'
-          print "X error".magenta
-          print " - #{result.name}\n"
-          print "    Message: #{result.message}"
-          print_requests(result).map do |req|
-            puts "      #{req}"
-          end
-          fails = true
-        end
-
+    config['arguments'].each do |req, value|
+      if instance.respond_to?(req)
+        instance.send("#{req}=", value)
       end
-      print "\n" + sequence.sequence_name + " Sequence Result: "
-      if sequence_result.result == 'pass'
-        puts 'pass '.green + checkmark.encode('utf-8').green
-      elsif sequence_result.result == 'fail'
-        puts 'fail '.red + 'X'.red
-        fails = true
-      elsif sequence_result.result == 'error'
-        puts 'error '.magenta + 'X'.magenta
-        fails = true
-      elsif sequence_result.result == 'skip'
-        puts 'skip '.yellow + '*'.yellow
+    end
+
+    sequences = config['sequences'].map do |sequence|
+      sequence_name = sequence
+      out = {}
+      if !sequence.is_a?(Hash)
+        out = {
+          'sequence' => Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence_name)}
+        }
       else
-        binding.pry
+        out = sequence
+        out['sequence'] = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence['sequence'])}
       end
-      puts "---------------------------------------------\n"
+
+      out
+
     end
 
-    failures_count = "" + sequence_results.select{|s| s.result == 'fail'}.count.to_s
-    passed_count = "" + sequence_results.select{|s| s.result == 'pass'}.count.to_s
-    skip_count = "" + sequence_results.select{|s| s.result == 'skip'}.count.to_s
-    print " Result: " + failures_count.red + " failed, " + passed_count.green + " passed"
-    if sequence_results.select{|s| s.result == 'skip'}.count > 0
-      print (", " + sequence_results.select{|s| s.result == 'skip'}.count.to_s).yellow + " skipped"
-    end
-    if sequence_results.select{|s| s.result == 'error'}.count > 0
-      print (", " + sequence_results.select{|s| s.result == 'error'}.count.to_s).yellow + " error"
-    end
-    puts "\n=============================================\n"
-
-    if fails
-      exit 1
-    else
-      exit 0
-    end
+    exit execute(instance, sequences)
   end
 end
