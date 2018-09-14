@@ -6,8 +6,7 @@ module Inferno
         set :prefix, '/'
 
         get '/' do
-          #status, headers, body = call! env.merge("PATH_INFO" => BASE_PATH)
-          erb :landing
+          erb :index
         end
 
         get '/landing/?' do
