@@ -72,6 +72,7 @@ module Inferno
            'https://www.hl7.org/fhir/DSTU2/http.html',
            'Servers shall provide a conformance statement that specifies which interactions and resources are supported.' do
 
+        @client.set_no_auth
         @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
         assert_response_ok @client.reply
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'

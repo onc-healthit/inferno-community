@@ -1,7 +1,7 @@
 #DataMapper::Logger.new($stdout, :debug) if settings.environment == :development
 DataMapper::Model.raise_on_save_failure = true
 
-DataMapper::Logger.new($stdout, :debug) if Inferno::ENVIRONMENT == :development
+# DataMapper::Logger.new($stdout, :debug) if Inferno::ENVIRONMENT == :development
 DataMapper.setup(:default, "sqlite3:data/#{Inferno::ENVIRONMENT.to_s}_data.db")
 
 require_relative 'models/request_response'

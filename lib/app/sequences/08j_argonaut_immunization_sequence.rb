@@ -40,6 +40,16 @@ module Inferno
         skip_if_not_supported(:Immunization, [:search, :read])
 
         reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+        assert_bundle_response(reply)
+
+        @no_resources_found = false
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count === 0
+          @no_resources_found = true
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
         @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(FHIR::DSTU2::Immunization, reply)
         save_resource_ids_in_bundle(FHIR::DSTU2::Immunization, reply)
@@ -51,6 +61,7 @@ module Inferno
            'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
 
         skip_if_not_supported(:Immunization, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@immunization, FHIR::DSTU2::Immunization)
 
@@ -62,6 +73,7 @@ module Inferno
            :optional do
 
         skip_if_not_supported(:Immunization, [:history])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@immunization, FHIR::DSTU2::Immunization)
 
@@ -73,6 +85,7 @@ module Inferno
            :optional do
 
         skip_if_not_supported(:Immunization, [:vread])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@immunization, FHIR::DSTU2::Immunization)
 
