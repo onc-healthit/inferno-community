@@ -165,11 +165,11 @@ module Inferno
       tlsTester = TlsTester.new({uri:uri})
 
       begin
-        passed, msg = tlsTester.verfiyDenySSLv3
+        passed, msg = tlsTester.verifyDenySSLv3
         unless passed
           raise AssertionException.new msg
         end
-        passed, msg = tlsTester.verfiyDenyTLSv1_1
+        passed, msg = tlsTester.verifyDenyTLSv1_1
         unless passed
           raise AssertionException.new msg
         end
