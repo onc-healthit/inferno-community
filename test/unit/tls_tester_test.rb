@@ -19,7 +19,7 @@ class TlsTesterTest < MiniTest::Unit::TestCase
     stub_request(:any, "https://www.example.org/")
 
     result, msg =@tester_under_test.verifyDenyTLSv1
-    assert result
+    assert result, msg
   end
 
   def test_deny_tls_1_1
@@ -27,7 +27,7 @@ class TlsTesterTest < MiniTest::Unit::TestCase
     stub_request(:any, "https://www.example.org/")
 
     result, msg =@tester_under_test.verifyDenyTLSv1_1
-    assert result
+    assert result, msg
   end
 
   def test_deny_ssl_3
@@ -35,7 +35,7 @@ class TlsTesterTest < MiniTest::Unit::TestCase
     stub_request(:any, "https://www.example.org/")
 
     result, msg =@tester_under_test.verifyDenySSLv3
-    assert result
+    assert result, msg
   end
 
   def test_timeout
@@ -43,6 +43,6 @@ class TlsTesterTest < MiniTest::Unit::TestCase
     stub_request(:any, "https://www.example.org/").to_timeout
 
     result, msg = @tester_under_test.verifyEnsureTLSv1_2
-    assert !result
+    assert !result, msg
   end
 end
