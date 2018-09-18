@@ -23,8 +23,10 @@ module Inferno
           "<script>console.log('js_window_location'); window.location = '#{location}'</script>"
         end
 
-        def js_redirect_modal(location)
-          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('Redirecting to <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea>');</script>"
+        def js_redirect_modal(location, sequence)
+          cancelBtn = "<a href=\"sequence_result/#{sequence.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
+          okBtn = "<a href=\"#{location}\" class=\"btn btn-primary\">Continue</a>"
+          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('Redirecting you to <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea> We do not control the content of this site <div class=\"modal-footer\">#{cancelBtn} #{okBtn}</div>');</script>"
         end
 
         def js_next_sequence(sequences)
@@ -35,7 +37,7 @@ module Inferno
           # we need to remove the 'normal' level of indentation before passing to markdown editor
           # find the minimum non-zero spacing indent and reduce by that many for all lines (note, did't make work for tabs)
           natural_indent = markdown.lines.collect{|l| l.index(/[^ ]/)}.select{|l| !l.nil? && l> 0}.min || 0
-          unindented_markdown = markdown.lines.map{|l| l[natural_indent..-1] || "\n"}.join
+          unindented_markdown = markdown.lines.map{|l| l[natural_indent..-1] || "\n"}.join  
           Kramdown::Document.new(unindented_markdown).to_html
         end
       end

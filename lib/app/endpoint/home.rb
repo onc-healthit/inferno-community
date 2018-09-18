@@ -130,8 +130,8 @@ module Inferno
 
                 sequence_result.save!
                 if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url)
-                  out << js_redirect(sequence_result.redirect_to_url)
+                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result)
+                  # out << js_redirect(sequence_result.redirect_to_url)
                 elsif  submitted_sequences.count > 0
                   out << js_next_sequence(sequence_result.next_sequences)
                 else
