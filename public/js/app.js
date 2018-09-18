@@ -1,4 +1,13 @@
+
+
 $(function(){
+  jQuery.extend({
+
+    getQueryParameters : function(str) {
+      return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
+    }
+  
+  });
 
   function indent(value) {
     var firstCharacter = value.trim().charAt(0)
@@ -210,5 +219,12 @@ $(function(){
   $('[data-toggle="tooltip"]').tooltip()
 
   $('#WaitModal').modal('show');
+
+  var autoRun = $.getQueryParameters().autoRun;
+  if(autoRun) {
+    var url = window.location.pathname;
+    window.history.replaceState({}, null, url);
+    $("button[data-sequence='" + autoRun + "']").click()
+  }
 
 }); 
