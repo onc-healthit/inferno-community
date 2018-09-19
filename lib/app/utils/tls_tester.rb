@@ -31,7 +31,21 @@ module Inferno
       begin
         response = http.request_get(@uri)
       rescue StandardError => ex
-        return false, "Caught TLS Error: #{ex.message}"
+
+        return false, "Caught TLS Error: #{ex.message}", %(
+          The following error was returned when the application attempted to connect to the server:
+
+          #{ex.message}
+
+          The following parameters were used:
+
+          ```
+          host: #{@host}
+          port: #{@port}
+          ssl version: #{ssl_version}
+          PEER verify mode
+          ```
+        )
       end
       return true, "Allowed Connection with TLSv1_2"
     end

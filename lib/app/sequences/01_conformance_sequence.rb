@@ -6,7 +6,11 @@ module Inferno
 
       title 'Conformance Statement'
 
-      description 'Verify that the FHIR server exposes a Conformance Statement with the necessary information.'
+      test_id_prefix 'C'
+
+      requires :url
+      defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
+
       description 'Retrieve information about supported server functionality in the Conformance Statement.'
       details %(
         # Background
@@ -48,46 +52,119 @@ module Inferno
         * Conformance
         * Argonaut Conformance Requirements
         * SMART on FHIR Conformance
-
       )
 
-      test_id_prefix 'C'
+      test 'FHIR server secured by transport layer security' do
 
-      requires :url
-      defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
+        metadata {
+          id '01'
+          link 'https://www.hl7.org/fhir/security.html'
+          optional
+          desc %(
+            All exchange of production data should be secured with TLS/SSL v1.2.
+          )
+        }
 
-      test '01', '', 'FHIR server secured by transport layer security',
-           'https://www.hl7.org/fhir/security.html',
-           'All exchange of production data should be secured with TLS/SSL.',
-           :optional do
+        if @disable_tls_tests
+          skip 'TLS tests have been disabled by configuration.', %(
 
-        skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+               Inferno allows users to disable TLS testing if they are using a network configuration
+               that prevents TLS from tested properly.
+            )
+
+        end
+
         assert_tls_1_2 @instance.url
+
         warning {
           assert_deny_previous_tls @instance.url
         }
       end
 
-      test '02', '', 'FHIR server responds to /metadata endpoint with valid DSTU2 Conformance Statement resource',
-           'https://www.hl7.org/fhir/DSTU2/http.html',
-           'Servers shall provide a conformance statement that specifies which interactions and resources are supported.' do
+      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
+
+        metadata {
+          id '02'
+          link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
+          desc %(
+            The conformance 'whole system' interaction provides a method to get the conformance statement for
+            the FHIR server.  This test checks that the server responds to a `GET` request at the following endpoint:
+
+            ```
+            GET [base]/metadata
+            ```
+
+            This test checks the following SHALL requirement for DSTU2 FHIR:
+
+            > Applications SHALL return a Conformance Resource that specifies which resource types and interactions are supported for the GET command
+
+            [http://hl7.org/fhir/DSTU2/http.html#conformance](http://hl7.org/fhir/DSTU2/http.html#conformance)
+
+            It does this by checking that the server responds with an HTTP OK 200 status code and that the body of the
+            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html).
+            This test does not inspect the content of the Conformance resource to see if it contains the required information.
+            It only checks to see if the RESTful interaction is supported and returns a valid Conformance resource.
+
+            This test does not check to see if the server supports the `OPTION` command, though DSTU2 provides
+            this as a second method to retrieve the Conformance for the server.  It is not expected that clients
+            will broadly support this method, so this test does not cover this option.
+          )
+        }
 
         @client.set_no_auth
         @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
-        assert_response_ok @client.reply
+        assert_response_ok @client.reply, %(
+
+        )
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
       end
 
-      test '03', '', 'Conformance Statement states JSON support',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'The Argonaut Data Query Server shall support JSON resource format for all Argonaut Data Query interactions.' do
+      test 'FHIR server conformance states JSON support' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+
+            FHIR provides multiple (https://www.hl7.org/fhir/DSTU2/formats.html)[representation formats] for resources, including JSON and XML.
+            Argonaut profiles require servers to use the JSON representation:
+
+            ```
+            The Argonaut Data Query Server shall support JSON resource format for all Argonaut Data Query interactions.
+            ```
+            [http://www.fhir.org/guides/argonaut/r2/Conformance-server.html](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
+
+            The FHIR conformance interaction require servers to describe which formats are available for clients to use.  The server must
+            explicitly state that JSON is supported. This is located in the (format element)[https://www.hl7.org/fhir/DSTU2/conformance-definitions.html#Conformance.format]
+            of the Conformance Resource.
+
+            This test checks that one of the following values are located in the format field.
+
+            * json
+            * application/json
+            * application/json+fhir
+
+            Note that FHIR changed the FHIR-specific JSON mime type to `application/fhir+json` in later versions of the specification.
+
+          )
+        }
+
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
         assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
       end
 
-      test '04', '', 'Conformance Statement provides OAuth 2.0 endpoints',
-           'http://www.hl7.org/fhir/smart-app-launch/capability-statement/',
-           'If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints.' do
+      test 'Conformance Statement provides OAuth 2.0 endpoints' do
+
+        metadata {
+          id '04'
+          link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
+          desc %(
+
+           If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
+
+          )
+        }
+
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
         oauth_metadata = @client.get_oauth2_metadata_from_conformance
         assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
@@ -115,10 +192,18 @@ module Inferno
         @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
       end
 
-      test '05', '', 'Conformance Statement describes SMART on FHIR core capabilities',
-           'http://www.hl7.org/fhir/smart-app-launch/conformance/',
-           'A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.',
-           :optional do
+      test 'Conformance Statement describes SMART on FHIR core capabilities' do
+
+        metadata {
+          id '05'
+          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
+          optional
+          desc %(
+
+           A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.
+
+          )
+        }
 
         required_capabilities = ['launch-ehr',
                                  'launch-standalone',
@@ -143,9 +228,16 @@ module Inferno
         assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
       end
 
-      test '06', '', 'Conformance Statement lists supported Argonaut profiles, operations and search parameters',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.' do
+      test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do
+
+        metadata {
+          id '06'
+          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
+          desc %(
+           The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.
+
+          )
+        }
 
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
 
