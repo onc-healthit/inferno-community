@@ -12,8 +12,8 @@ require 'jwt'
 require 'json/jwt'
 require 'kramdown'
 
-
 require 'rack'
+require_relative 'app/utils/logging'
 require_relative 'app/endpoint'
 require_relative 'app/utils/secure_random_base62'
 require_relative 'app/sequence_base'
@@ -21,12 +21,9 @@ require_relative 'version'
 require_relative 'app/models'
 
 module Inferno
-
   class App
     attr_reader :app
-
     def initialize
-
       @app = Rack::Builder.app do
         Endpoint.subclasses.each do |e|
           map(e.prefix) { run(e.new) }

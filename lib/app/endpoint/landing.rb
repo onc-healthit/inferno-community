@@ -6,6 +6,7 @@ module Inferno
         set :prefix, '/'
 
         get '/' do
+          logger.info 'loading index page.'
           erb :index
         end
 
