@@ -9,13 +9,16 @@
     <link rel="stylesheet" href="<%=base_path%>/static/css/bootstrap.min.css">
     <link rel="stylesheet" href="<%=base_path%>/static/open-iconic/css/open-iconic-bootstrap.min.css">
     <link rel="stylesheet" href="<%=base_path%>/static/css/styles.css">
+    <link rel="icon" href="<%=base_path%>/static/images/favicon.ico?" type="image/x-icon">
   </head>
   <body>
-    <nav class="navbar navbar-expand navbar-dark bg-dark">
+    <nav class="navbar navbar-expand navbar-light inferno-header" role="banner">
       <div class="container">
         <div class='inferno-branding'>
-          <a class="navbar-brand" href="<%=base_path%>/">INFERNO</a>
-          <span class='navbar-brand-subheading'>Developer Preview</span>
+          <a class="navbar-brand" href="<%=base_path%>/">
+            <img src='/images/inferno_logo.png' alt='Inferno Logo'>
+          </a>
+          <span class='badge badge-dark'>Developer Preview</span>
         </div>
         <!-- Navbar content -->
         <ul class="navbar-nav">

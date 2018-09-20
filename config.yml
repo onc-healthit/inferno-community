@@ -1,5 +1,5 @@
 # Name of app
-app_name: Inferno - SMART on FHIR Testing
+app_name: Inferno
 
 # Base path of application
 # There are a few exceptions, such as "/" and "/landing".
