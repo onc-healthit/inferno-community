@@ -36,7 +36,11 @@ module Inferno
 
       @@inactive = {}
 
+<<<<<<< HEAD
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
+=======
+      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, standalone_launch_config = nil)
+>>>>>>> Initial configuration of headless command line testing
         @client = client
         @instance = instance
         @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
@@ -44,7 +48,11 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
+<<<<<<< HEAD
         @metadata_only = metadata_only
+=======
+        @standalone_launch_config = standalone_launch_config
+>>>>>>> Initial configuration of headless command line testing
       end
 
       def resume(request = nil, headers = nil, params = nil, &block)
@@ -352,6 +360,30 @@ module Inferno
             result.result = STATUS[:wait]
             result.wait_at_endpoint = e.endpoint
             result.redirect_to_url = e.url
+            options = Selenium::WebDriver::Chrome::Options.new
+            options.add_argument('--headless')
+            options.add_argument('--disable-gpu')
+            options.add_argument('--remote-debugging-port=9222')
+
+            driver = Selenium::WebDriver.for :chrome, options: options
+            driver.navigate.to e.url
+
+            wait = Selenium::WebDriver::Wait.new(:timeout => 15)
+
+            if e.config != nil 
+              script = e.config
+              script.each do |command|
+                current_element = wait.until {
+                  current = driver.send(command['cmd'], {command['find_type']: command['value']})
+                  current if current_element.displayed?
+                }
+                if command['index'] != nil
+                  current_element[command['index']].send(command['action'])
+                else
+                  current_element.send(command['action'], command['value'])
+                end
+              end 
+            end
 
           rescue SkipException => e
             result.result = STATUS[:skip]
@@ -423,8 +455,8 @@ module Inferno
         raise WaitException.new endpoint
       end
 
-      def redirect(url, endpoint)
-        raise RedirectException.new url, endpoint
+      def redirect(url, endpoint, config)
+        raise RedirectException.new url, endpoint, config
       end
 
       def warning

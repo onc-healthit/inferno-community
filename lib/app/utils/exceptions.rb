@@ -35,10 +35,12 @@ module Inferno
   class RedirectException < Exception
     attr_accessor :endpoint
     attr_accessor :url
+    attr_accessor :config
     def initialize(url, endpoint)
       super("Redirecting to #{url} and waiting at endpoint #{endpoint}")
       @url = url
       @endpoint = endpoint
+      @config = config
     end
   end
 

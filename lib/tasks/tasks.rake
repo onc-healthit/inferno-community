@@ -39,7 +39,7 @@ def print_requests(result)
   end
 end
 
-def execute(instance, sequences)
+def execute(instance, sequences, headless = false)
 
   client = FHIR::Client.new(instance.url)
   client.use_dstu2
@@ -59,10 +59,13 @@ def execute(instance, sequences)
     sequence = sequence_info['sequence']
     sequence_info.each do |key, val|
       if key != 'sequence'
+        if key == 'standalone_launch_script'
+          headless_config = val
+        end
         instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
       end
     end
-    sequence_instance = sequence.new(instance, client, false)
+    sequence_instance = sequence.new(instance, client, false, nil, headless_config)
     sequence_result = nil
 
     suppress_output{sequence_result = sequence_instance.start}
