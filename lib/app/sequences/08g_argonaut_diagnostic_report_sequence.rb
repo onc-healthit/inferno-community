@@ -12,17 +12,15 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects DiagnosticReport search without authorization' do
 
-      # --------------------------------------------------
-      # DiagnosticReport Search
-      # --------------------------------------------------
-
-      test '01', '', 'Server rejects DiagnosticReport search without authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A DiagnosticReport search does not work without proper authorization.' do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A DiagnosticReport search does not work without proper authorization.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
@@ -33,9 +31,15 @@ module Inferno
 
       end
 
-      test '02', '', 'Server returns expected results from DiagnosticReport search by patient + category',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category." do
+      test 'Server returns expected results from DiagnosticReport search by patient + category' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning all of a patient's laboratory diagnostic reports queried by category.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
 
@@ -55,9 +59,15 @@ module Inferno
 
       end
 
-      test '03', '', 'Server returns expected results from DiagnosticReport search by patient + category + date',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range." do
+      test 'Server returns expected results from DiagnosticReport search by patient + category + date' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -70,9 +80,15 @@ module Inferno
 
       end
 
-      test '04', '', 'Server returns expected results from DiagnosticReport search by patient + category + code',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code." do
+      test 'Server returns expected results from DiagnosticReport search by patient + category + code' do
+
+        metadata {
+          id '04'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -85,10 +101,16 @@ module Inferno
 
       end
 
-      test '05', '', 'Server returns expected results from DiagnosticReport search by patient + category + code + date',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server SHOULD be capable of returning all of a patient's laboratory diagnostic reports queried by category and one or more codes and date range.",
-           :optional do
+      test 'Server returns expected results from DiagnosticReport search by patient + category + code' do
+
+        metadata {
+          id '05'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            A server SHOULD be capable of returning all of a patient's laboratory diagnostic reports queried by category and one or more codes and date range.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -103,9 +125,15 @@ module Inferno
 
       end
 
-      test '06', '', 'DiagnosticReport read resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+      test 'DiagnosticReport read resource supported' do
+
+        metadata {
+          id '06'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -114,10 +142,16 @@ module Inferno
 
       end
 
-      test '07', '', 'DiagnosticReport history resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'DiagnosticReport history resource supported' do
+
+        metadata {
+          id '07'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -126,10 +160,16 @@ module Inferno
 
       end
 
-      test '08', '', 'DiagnosticReport vread resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'DiagnosticReport vread resource supported' do
+
+        metadata {
+          id '08'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:DiagnosticReport, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -138,10 +178,17 @@ module Inferno
 
       end
 
-      test '09', '', 'DiagnosticReport resources associated with Patient conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-diagnosticreport.html',
-           'DiagnosticReport resources associated with Patient conform to Argonaut profiles.' do
+      test 'DiagnosticReport resources associated with Patient conform to Argonaut profiles' do
+
+        metadata {
+          id '09'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-diagnosticreport.html'
+          desc %(
+            DiagnosticReport resources associated with Patient conform to Argonaut profiles.
+          )
+        }
         test_resources_against_profile('DiagnosticReport')
+
       end
 
     end

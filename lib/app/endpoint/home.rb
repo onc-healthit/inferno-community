@@ -18,6 +18,7 @@ module Inferno
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
           erb :details, {}, {instance: instance,
+                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
                              sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                              sequence_results: sequence_results,
                              error_code: params[:error]}
@@ -102,6 +103,7 @@ module Inferno
               end
 
               out << erb(:details, {}, {instance: instance,
+                                        sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
                                         sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                                         sequence_results: instance.latest_results,
                                         tests_running: true
@@ -175,6 +177,7 @@ module Inferno
                 end
 
                 out << erb(:details, {}, {instance: instance,
+                                          sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
                                           sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                                           sequence_results: instance.latest_results,
                                           tests_running: true}

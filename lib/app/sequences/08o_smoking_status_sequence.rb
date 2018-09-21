@@ -12,13 +12,15 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects Smoking Status search without authorization' do
 
-      test '01', '', 'Server rejects Smoking Status search without authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A Smoking Status search does not work without proper authorization.' do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A Smoking Status search does not work without proper authorization.
+          )
+        }
 
         skip_if_not_supported(:Observation, [:search, :read])
 
@@ -29,9 +31,15 @@ module Inferno
 
       end
 
-      test '02', '', 'Server returns expected results from Smoking Status search by patient + code',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning a patient's smoking status." do
+      test 'Server returns expected results from Smoking Status search by patient + code' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning a patient's smoking status.
+          )
+        }
 
         skip_if_not_supported(:Observation, [:search, :read])
 
@@ -42,9 +50,15 @@ module Inferno
 
       end
 
-      test '11', '', 'Smoking Status resources associated with Patient conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html',
-           'Procedure resources associated with Procedure conform to Argonaut profiles.' do
+      test 'Smoking Status resources associated with Patient conform to Argonaut profiles' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
+          desc %(
+            Smoking Status resources associated with Patient conform to Argonaut profiles
+          )
+        }
         test_resources_against_profile('Observation', Inferno::ValidationUtil::SMOKING_STATUS_URL)
         skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::SMOKING_STATUS_URL), 'No Smoking Status Observations found.'
         assert !@profiles_failed.include?(Inferno::ValidationUtil::SMOKING_STATUS_URL), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::SMOKING_STATUS_URL]}"

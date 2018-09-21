@@ -2,8 +2,6 @@ module Inferno
   module Sequence
     class ArgonautMedicationOrderSequence < SequenceBase
 
-      group 'Argonaut Profile Conformance'
-
       title 'Medication Order'
 
       description 'Verify that MedicationOrder resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
@@ -12,17 +10,15 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects MedicationOrder search without authorization' do
 
-      # --------------------------------------------------
-      # MedicationOrder Search
-      # --------------------------------------------------
-
-      test '01', '', 'Server rejects MedicationOrder search without authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'An MedicationOrder search does not work without proper authorization.' do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            An MedicationOrder search does not work without proper authorization.
+          )
+        }
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
 
@@ -33,9 +29,15 @@ module Inferno
 
       end
 
-      test '02', '', 'Server returns expected results from MedicationOrder search by patient',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning a patient's medications." do
+      test 'Server returns expected results from MedicationOrder search by patient' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning a patient's medications.
+          )
+        }
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
 
@@ -56,9 +58,15 @@ module Inferno
 
       end
 
-      test '03', '', 'MedicationOrder read resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+      test 'MedicationOrder read resource supported' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -67,10 +75,16 @@ module Inferno
 
       end
 
-      test '04', '', 'MedicationOrder history resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'MedicationOrder history resource supported' do
+
+        metadata {
+          id '04'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:MedicationOrder, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -79,10 +93,16 @@ module Inferno
 
       end
 
-      test '05', '', 'MedicationOrder vread resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'MedicationOrder vread resource supported' do
+
+        metadata {
+          id '05'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:MedicationOrder, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -91,9 +111,15 @@ module Inferno
 
       end
 
-      test '06', '', 'MedicationOrder resources associated with Patient conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html',
-           'MedicationOrder resources associated with Patient conform to Argonaut profiles.' do
+      test 'MedicationOrder resources associated with Patient conform to Argonaut profiles' do
+
+        metadata {
+          id '06'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html'
+          desc %(
+            MedicationOrder resources associated with Patient conform to Argonaut profiles.
+          )
+        }
         test_resources_against_profile('MedicationOrder')
       end
 

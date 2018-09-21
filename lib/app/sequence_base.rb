@@ -374,6 +374,7 @@ module Inferno
           rescue SkipException => e
             result.result = STATUS[:skip]
             result.message = e.message
+            result.details = e.message
 
           rescue => e
             binding.pry
@@ -430,9 +431,9 @@ module Inferno
         raise SkipException.new message, details
       end
 
-      def skip_unless(test, message = '')
+      def skip_unless(test, message = '', details = nil)
         unless test
-          raise SkipException.new message
+          raise SkipException.new message, details
         end
       end
 
@@ -606,34 +607,74 @@ module Inferno
       # This is intended to be called on SequenceBase
       # There is a test to ensure that this doesn't fall out of date
       def self.ordered_sequences
-        [
-            ConformanceSequence
-            # DynamicRegistrationSequence,
-            # PatientStandaloneLaunchSequence,
-            # ProviderEHRLaunchSequence,
-            # OpenIDConnectSequence,
-            # TokenRefreshSequence,
-            # ArgonautPatientSequence,
-            # ArgonautAllergyIntoleranceSequence,
-            # ArgonautCarePlanSequence,
-            # ArgonautCareTeamSequence,
-            # ArgonautConditionSequence,
-            # ArgonautDeviceSequence,
-            # ArgonautDiagnosticReportSequence,
-            # ArgonautObservationSequence,
-            # ArgonautGoalSequence,
-            # ArgonautImmunizationSequence,
-            # ArgonautMedicationStatementSequence,
-            # ArgonautMedicationOrderSequence,
-            # ArgonautProcedureSequence,
-            # ArgonautSmokingStatusSequence,
-            # ArgonautVitalSignsSequence
-        ]
+        self.sequences_groups.map{|h| h[:sequences]}.flatten
+      end
+
+      def self.sequences_overview
+        %(
+          Background
+        )
+
+      end
+
+      def self.sequences_groups
+        [{
+          name: 'Discovery',
+          overview: %(
+            This is a description of the discovery group
+          ),
+          sequences: [ConformanceSequence],
+          run_all: false
+        },
+        {
+          name: 'Authentication and Authorization',
+          overview: %(
+
+
+
+          ),
+          sequences: [
+            DynamicRegistrationSequence,
+            PatientStandaloneLaunchSequence,
+            ProviderEHRLaunchSequence,
+            OpenIDConnectSequence,
+            TokenRefreshSequence
+          ],
+          run_all: false
+        },
+        {
+          name: 'Argonaut Profile Conformance',
+          overview: %(
+
+
+
+          ),
+          sequences: [
+            ArgonautPatientSequence,
+            ArgonautAllergyIntoleranceSequence,
+            ArgonautCarePlanSequence,
+            ArgonautCareTeamSequence,
+            ArgonautConditionSequence,
+            ArgonautDeviceSequence,
+            ArgonautDiagnosticReportSequence,
+            ArgonautObservationSequence,
+            ArgonautGoalSequence,
+            ArgonautImmunizationSequence,
+            ArgonautMedicationStatementSequence,
+            ArgonautMedicationOrderSequence,
+            ArgonautProcedureSequence,
+            ArgonautSmokingStatusSequence,
+            ArgonautVitalSignsSequence
+          ],
+          run_all: true
+        }]
+
+
       end
 
     end
 
-    Dir[File.join(__dir__, 'sequences', '01*.rb')].each { |file| require file }
+    Dir[File.join(__dir__, 'sequences', '*_sequence.rb')].each { |file| require file }
 
   end
 end

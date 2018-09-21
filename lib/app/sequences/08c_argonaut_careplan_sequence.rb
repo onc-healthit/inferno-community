@@ -12,17 +12,15 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects CarePlan search without authorization' do
 
-      # --------------------------------------------------
-      # CarePlan Search
-      # --------------------------------------------------
-
-      test '01', '', 'Server rejects CarePlan search without authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A CarePlan search does not work without proper authorization.' do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A CarePlan search does not work without proper authorization.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
         @client.set_no_auth
@@ -32,9 +30,15 @@ module Inferno
 
       end
 
-      test '02', '', 'Server returns expected results from CarePlan search by patient + category',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning all of a patient's Assessment and Plan of Treatment information." do
+      test 'Server returns expected results from CarePlan search by patient + category' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
 
@@ -55,10 +59,16 @@ module Inferno
 
       end
 
-      test '03', '', 'Server returns expected results from CarePlan search by patient + category + date',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.",
-           :optional do
+      test 'Server returns expected results from CarePlan search by patient + category + date' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -72,10 +82,16 @@ module Inferno
 
       end
 
-      test '04', '', 'Server returns expected results from CarePlan search by patient + category + status',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.",
-           :optional do
+      test 'Server returns expected results from CarePlan search by patient + category + status' do
+
+        metadata {
+          id '04'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -85,10 +101,16 @@ module Inferno
 
       end
 
-      test '05', '', 'Server returns expected results from CarePlan search by patient + category + status + date',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.",
-           :optional do
+      test 'Server returns expected results from CarePlan search by patient + category + status + date' do
+
+        metadata {
+          id '05'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -101,9 +123,15 @@ module Inferno
 
       end
 
-      test '06', '', 'CarePlan read resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+      test 'Server returns expected results from CarePlan search by patient' do
+
+        metadata {
+          id '06'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -112,10 +140,16 @@ module Inferno
 
       end
 
-      test '07', '', 'CarePlan history resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'Careplan history resource available' do
+
+        metadata {
+          id '07'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -124,10 +158,16 @@ module Inferno
 
       end
 
-      test '08', '', 'CarePlan vread resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'CarePlan vread resource supported' do
+
+        metadata {
+          id '08'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -136,9 +176,15 @@ module Inferno
 
       end
 
-      test '09', '', 'CarePlan resources associated with Patient conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html',
-           'CarePlan resources associated with Patient conform to Argonaut profiles.' do
+      test 'CarePlan vread resource supported' do
+
+        metadata {
+          id '09'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html'
+          desc %(
+            CarePlan resources associated with Patient conform to Argonaut profiles.
+          )
+        }
         test_resources_against_profile('CarePlan', Inferno::ValidationUtil::CARE_PLAN_URL)
         skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::CARE_PLAN_URL), 'No CarePlans found.'
         assert !@profiles_failed.include?(Inferno::ValidationUtil::CARE_PLAN_URL), "CarePlans failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::CARE_PLAN_URL]}"

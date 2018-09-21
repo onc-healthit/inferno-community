@@ -2,8 +2,6 @@ module Inferno
   module Sequence
     class ConformanceSequence < SequenceBase
 
-      group 'Discovery'
-
       title 'Conformance Statement'
 
       test_id_prefix 'C'

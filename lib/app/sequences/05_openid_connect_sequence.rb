@@ -2,8 +2,6 @@ module Inferno
   module Sequence
     class OpenIDConnectSequence < SequenceBase
 
-      group 'Authentication and Authorization'
-
       title 'OpenID Connect'
       description 'Verify OpenID Connect functionality of server.'
 
@@ -12,13 +10,16 @@ module Inferno
       requires :id_token, :client_id
       defines :oauth_introspection_endpoint
 
-      preconditions 'Client must have ID token' do
-        !@instance.id_token.nil?
-      end
+      test 'ID token is valid jwt token' do
 
-      test '01', '', 'ID token is valid jwt token',
-           'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-           'Examine the ID token for its issuer property.' do
+        metadata {
+          id '01'
+          link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
+          desc %(
+            Examine the ID token for its issuer property.
+          )
+        }
+
 
         begin
           @decoded_payload, @decoded_header = JWT.decode(@instance.id_token, nil, false,
@@ -38,10 +39,15 @@ module Inferno
         end
       end
 
-      test '02', '', 'ID token contains expected header and payload information',
-           'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-           'Examine the ID token for its issuer property.' do
+      test 'ID token contains expected header and payload information' do
 
+        metadata {
+          id '02'
+          link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
+          desc %(
+            Examine the ID token for its issuer property.
+          )
+        }
 
         assert !@decoded_payload.nil?, 'Payload could not be extracted from ID token'
         assert !@decoded_header.nil?, 'Header could not be extracted from ID token'
@@ -50,9 +56,15 @@ module Inferno
 
       end
 
-      test '03', '', 'Issuer provides OpenID configuration information',
-           'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-           'Perform a GET {issuer}/.well-known/openid-configuration.' do
+      test 'ID token contains expected header and payload information' do
+
+        metadata {
+          id '03'
+          link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
+          desc %(
+            Perform a GET {issuer}/.well-known/openid-configuration.
+          )
+        }
 
         assert !@issuer.nil?, 'no issuer available'
         @issuer = @issuer.chomp('/')
@@ -66,9 +78,15 @@ module Inferno
         @instance.oauth_introspection_endpoint = @openid_configuration_response_body['introspection_endpoint']
       end
 
-      test '04', '', 'OpenID configuration includes JSON Web Key information',
-           'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-           'Fetch the JSON Web Key of the server by following the "jwks_uri" property.' do
+      test 'OpenID configuration includes JSON Web Key information' do
+
+        metadata {
+          id '04'
+          link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
+          desc %(
+            Fetch the JSON Web Key of the server by following the "jwks_uri" property.
+          )
+        }
 
         assert !@openid_configuration_response_body.nil?, 'no openid-configuration response body available'
         jwks_uri = @openid_configuration_response_body['jwks_uri']
@@ -83,9 +101,15 @@ module Inferno
 
       end
 
-      test '05', '', 'ID token can be decoded using JSON Web Key information',
-           'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-           "Validate the token's signature against the public key." do
+      test 'ID token can be decoded using JSON Web Key information' do
+
+        metadata {
+          id '05'
+          link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
+          desc %(
+            Validate the token's signature against the public key.
+          )
+        }
 
         assert !@jwk_set.nil?, 'JWK set not present'
         assert @jwk_set.length > 0, 'JWK set is empty'
@@ -100,9 +124,15 @@ module Inferno
 
       end
 
-      test '06', '', 'ID token signature validates using JSON Web Key information',
-           'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation',
-           'Validate the ID token claims.' do
+      test 'ID token signature validates using JSON Web Key information' do
+
+        metadata {
+          id '06'
+          link 'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation'
+          desc %(
+            Validate the ID token claims.
+          )
+        }
 
         leeway = 30 # 30 seconds clock slip allowed
 
@@ -131,14 +161,23 @@ module Inferno
 
       end
 
-      test '07', '', 'Profile claim in ID token is represented as a resource URI',
-           'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/',
-           'Extract the profile claim and treat it as the URL of a FHIR resource.' do
+      test 'Profile claim in ID token is represented as a resource URI' do
+
+        metadata {
+          id '07'
+          link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
+          desc %(
+            Extract the profile claim and treat it as the URL of a FHIR resource.
+          )
+        }
 
         assert !@decoded_payload.nil?, 'no id_token payload available'
         assert !@decoded_header.nil?, 'no id_token header available'
         assert !@decoded_payload['profile'].nil?, 'no id_token profile claim'
-        assert @decoded_payload['profile'] =~ URI::regexp, "id_token profile claim #{@decoded_payload['profile']} is not a valid URL"
+
+        # How should we validate this profile id?
+        # Does this have to be a URI, or is a fragment ok?
+        # assert @decoded_payload['profile'] =~ URI::regexp, "id_token profile claim #{@decoded_payload['profile']} is not a valid URL"
 
       end
 
