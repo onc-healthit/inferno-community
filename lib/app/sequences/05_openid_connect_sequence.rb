@@ -56,7 +56,7 @@ module Inferno
 
       end
 
-      test 'ID token contains expected header and payload information' do
+      test 'Issuer provides OpenID configuration information' do
 
         metadata {
           id '03'

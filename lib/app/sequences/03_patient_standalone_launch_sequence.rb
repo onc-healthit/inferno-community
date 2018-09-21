@@ -74,7 +74,7 @@ module Inferno
           id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-            Client app receives code parameter and correct state parameter from OAuth server at redirect URI
+            Code and state are required querystring parameters. State must be the exact value received from the client.
           )
         }
 

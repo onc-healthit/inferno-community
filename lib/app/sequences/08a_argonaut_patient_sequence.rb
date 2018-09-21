@@ -191,7 +191,7 @@ module Inferno
       end
 
 
-      test 'Server returns expected results from Patient search by name + birthdate' do
+      test 'Server returns expected results from Patient search by gender + birthdate' do
 
         metadata {
           id '10'

@@ -31,7 +31,7 @@ module Inferno
 
       end
 
-      test 'Condition resources associated with Patient conform to Argonaut profiles' do
+      test 'Server returns expected results from Device search by patient' do
 
         metadata {
           id '02'

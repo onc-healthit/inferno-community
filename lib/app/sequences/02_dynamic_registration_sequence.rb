@@ -76,7 +76,7 @@ module Inferno
 
       end
 
-      test 'Client registration endpoint accepts POST messages' do
+      test 'Registration endpoint does not respond with an error' do
 
         metadata {
           id '03'

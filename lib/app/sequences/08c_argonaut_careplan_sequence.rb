@@ -123,7 +123,7 @@ module Inferno
 
       end
 
-      test 'Server returns expected results from CarePlan search by patient' do
+      test 'Server returns expected results from CarePlan read resource' do
 
         metadata {
           id '06'
@@ -140,7 +140,7 @@ module Inferno
 
       end
 
-      test 'Careplan history resource available' do
+      test 'Careplan history resource supported' do
 
         metadata {
           id '07'

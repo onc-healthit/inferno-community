@@ -62,7 +62,7 @@ module Inferno
 
       end
 
-      test 'Server returns expected results from MedicationStatement search by patient' do
+      test 'MedicationStatement read resource supported' do
 
         metadata {
           id '03'

@@ -60,7 +60,7 @@ module Inferno
 
       end
 
-      test 'Server returns expected results from AllergyIntolerance search by patient' do
+      test 'Server returns expected results from AllergyIntolerance read resource' do
 
         metadata {
           id '03'
