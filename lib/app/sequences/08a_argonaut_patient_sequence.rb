@@ -2,8 +2,6 @@ module Inferno
   module Sequence
     class ArgonautPatientSequence < SequenceBase
 
-      group 'Argonaut Profile Conformance'
-
       title 'Patient'
 
       description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
@@ -12,28 +10,34 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects patient read without proper authorization' do
 
-      # --------------------------------------------------
-      # Patient Search
-      # --------------------------------------------------
-      #
-      test '01', '', 'Server rejects patient read without proper authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A patient read does not work without authorization.' do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A patient read does not work without authorization.
+          )
+        }
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
       end
 
-      test '02', '', 'Server returns expected results from Patient read resource',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+      test 'Server returns expected results from Patient read resource' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         patient_read_response = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
         assert_response_ok patient_read_response
@@ -43,9 +47,15 @@ module Inferno
 
       end
 
-      test '03', '', 'Patient validates against Argonaut Profile',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A server returns valid FHIR Patient resources according to the Data Access Framework (DAF) Patient Profile (http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).' do
+      test 'Patient validates against Argonaut Profile' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server returns valid FHIR Patient resources according to the [Data Access Framework (DAF) Patient Profile](http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
@@ -54,9 +64,14 @@ module Inferno
         assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
       end
 
-      test '04', '', 'Patient has address',
-           '',
-           'Additional Patient resource requirement.' do
+      test 'Patient has address' do
+
+        metadata {
+          id '04'
+          desc %(
+            Additional Patient resource requirement
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
@@ -64,9 +79,14 @@ module Inferno
         assert !address.nil?, 'Patient address not returned'
       end
 
-      test '05', '', 'Patient has telecom',
-           '',
-           'Additional Patient resource requirement.' do
+      test 'Patient has telecom' do
+
+        metadata {
+          id '05'
+          desc %(
+            Additional Patient resource requirement
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         assert @patient.is_a?(FHIR::DSTU2::Patient), 'Expected resource to be valid DSTU2 Patient'
@@ -74,7 +94,15 @@ module Inferno
         assert !telecom.nil?, 'Patient telecom not returned'
       end
 
+      # test 'Patient supports $everything operation' do
 
+      #   metadata {
+      #     id '00'
+      #     optional
+      #     desc %(
+      #       Additional Patient resource requirement
+      #     )
+      #   }
       # test 'Patient supports $everything operation', '', 'DISCUSSION REQUIRED', :optional do
       #   everything_response = @client.fetch_patient_record(@instance.patient_id)
       #   skip_unless [200, 201].include?(everything_response.code)
@@ -82,10 +110,17 @@ module Inferno
       #   assert !@everything.nil?, 'Expected valid DSTU2 Bundle resource on $everything request'
       #   assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
       # end
-      #
-      test '06', '', 'Server rejects Patient search without proper authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A Patient search does not work without proper authorization.' do
+
+      test 'Server rejects Patient search without proper authorization' do
+
+        metadata {
+          id '06'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A Patient search does not work without proper authorization.          )
+        }
+
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         identifier = @patient.try(:identifier).try(:first).try(:value)
@@ -97,9 +132,15 @@ module Inferno
 
       end
 
-      test '07', '', 'Server returns expected results from Patient search by identifier',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.' do
+      test 'Server returns expected results from Patient search by identifier' do
+
+        metadata {
+          id '07'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         identifier = @patient.try(:identifier).try(:first).try(:value)
@@ -109,9 +150,15 @@ module Inferno
 
       end
 
-      test '08', '', 'Server returns expected results from Patient search by name + gender',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
+      test 'Server returns expected results from Patient search by name + gender' do
+
+        metadata {
+          id '08'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         family = @patient.try(:name).try(:first).try(:family).try(:first)
@@ -125,9 +172,15 @@ module Inferno
 
       end
 
-      test '09', '', 'Server returns expected results from Patient search by name + birthdate',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
+      test 'Server returns expected results from Patient search by name + birthdate' do
+
+        metadata {
+          id '09'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         family = @patient.try(:name).try(:first).try(:family).try(:first)
@@ -141,9 +194,16 @@ module Inferno
 
       end
 
-      test '10', '', 'Server returns expected results from Patient search by gender + birthdate',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.' do
+
+      test 'Server returns expected results from Patient search by gender + birthdate' do
+
+        metadata {
+          id '10'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
+          )
+        }
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         gender = @patient.try(:gender)
@@ -155,10 +215,15 @@ module Inferno
 
       end
 
-      test '11', '', 'Server returns expected results from Patient history resource',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'Server returns expected results from Patient history resource' do
+
+        metadata {
+          id '11'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.          )
+        }
 
         skip_if_not_supported(:Patient, [:history])
 
@@ -166,26 +231,22 @@ module Inferno
 
       end
 
-      test '12', '', 'Server returns expected results from Patient vread resource',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'Server returns expected results from Patient vread resource' do
 
+        metadata {
+          id '12'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:Patient, [:vread])
 
         validate_vread_reply(@patient, FHIR::DSTU2::Patient)
 
       end
-
-      # test 'Patient supports $everything operation', '', 'DISCUSSION REQUIRED', :optional do
-      #   everything_response = @client.fetch_patient_record(@instance.patient_id)
-      #   skip_unless [200, 201].include?(everything_response.code)
-      #   @everything = everything_response.resource
-      #   assert !@everything.nil?, 'Expected valid DSTU2 Bundle resource on $everything request'
-      #   assert @everything.is_a?(FHIR::DSTU2::Bundle), 'Expected resource to be valid DSTU2 Bundle'
-      # end
-
 
     end
 

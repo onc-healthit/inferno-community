@@ -36,7 +36,7 @@ module Inferno
 
       @@inactive = {}
 
-      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
+      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
         @client = client
         @instance = instance
         @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
@@ -44,6 +44,7 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
+        @metadata_only = metadata_only
       end
 
       def resume(request = nil, headers = nil, params = nil, &block)
@@ -295,37 +296,35 @@ module Inferno
 
       # Defines a new test.
       #
-      # test_id - The String unique id
-      # ref - The String specification reference
       # name - The String name of the test
-      # description - The String description of the test
-      # required - The Symbol used as the key in the metadata indicating if the test is required
       # block - The Block test to be executed
-      def self.test(test_id, ref, name, url = nil, description = nil, required = :required, &block)
+      def self.test(name, &block)
 
         @@test_index += 1
 
-        is_required = (required != :optional)
-
         test_index = @@test_index
-
-        complete_test_id = @@test_id_prefixes[self.sequence_name] + '-' + test_id
 
         test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
         @@test_metadata[self.sequence_name] ||= []
-        @@test_metadata[self.sequence_name] << { test_id: complete_test_id,
-                                                 ref: ref,
-                                                 name: name,
-                                                 url: url,
-                                                 description: description,
+        @@test_metadata[self.sequence_name] << { name: name,
                                                  test_index: test_index,
-                                                 required: is_required}
+                                                 required: true }
+
+        test_index_in_sequence = @@test_metadata[self.sequence_name].length - 1
 
         wrapped = -> () do
+
+          instance_eval &block if @metadata_only # just run the test to hit the metadata block
+
           @test_warnings, @links, @requires, @validates = [],[],[],[]
-          result = Models::TestResult.new(test_id: complete_test_id, ref: ref, name: name,
-                                  result: STATUS[:pass], url: url, description: description,
-                                  test_index: test_index, required: is_required)
+          result = Models::TestResult.new(test_id: @@test_metadata[self.sequence_name][test_index_in_sequence][:test_id],
+                                          name: name,
+                                          ref: @@test_metadata[self.sequence_name][test_index_in_sequence][:ref],
+                                          required: @@test_metadata[self.sequence_name][test_index_in_sequence][:required],
+                                          description: @@test_metadata[self.sequence_name][test_index_in_sequence][:description],
+                                          url: @@test_metadata[self.sequence_name][test_index_in_sequence][:url],
+                                          result: STATUS[:pass],
+                                          test_index: test_index)
           begin
 
             instance_eval &block
@@ -333,6 +332,7 @@ module Inferno
           rescue AssertionException, ClientException => e
             result.result = STATUS[:fail]
             result.message = e.message
+            result.details = e.details
 
           rescue TodoException => e
             result.result = STATUS[:todo]
@@ -350,8 +350,10 @@ module Inferno
           rescue SkipException => e
             result.result = STATUS[:skip]
             result.message = e.message
+            result.details = e.details
 
           rescue => e
+            # binding.pry
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end
@@ -360,19 +362,54 @@ module Inferno
         end
 
         define_method test_method, wrapped
+
+        instance = self.new(nil, nil, nil, nil, true)
+        begin
+          instance.send(test_method)
+        rescue MetadataException => e
+        end
+
+      end
+
+      def metadata
+        if @metadata_only
+          yield
+          raise MetadataException.new
+        end
+      end
+
+      def id test_id
+        complete_test_id = @@test_id_prefixes[self.sequence_name] + '-' + test_id
+        @@test_metadata[self.sequence_name].last[:test_id] = complete_test_id
+      end
+
+      def link link
+        @@test_metadata[self.sequence_name].last[:url] = link
+      end
+
+      def ref ref
+        @@test_metadata[self.sequence_name].last[:ref] = requirement
+      end
+
+      def optional
+        @@test_metadata[self.sequence_name].last[:required] = false
+      end
+
+      def desc description
+        @@test_metadata[self.sequence_name].last[:description] = description
       end
 
       def todo(message = "")
         raise TodoException.new message
       end
 
-      def skip(message = "")
-        raise SkipException.new message
+      def skip(message = "", details = nil)
+        raise SkipException.new message, details
       end
 
-      def skip_unless(test, message = '')
+      def skip_unless(test, message = '', details = nil)
         unless test
-          raise SkipException.new message
+          raise SkipException.new message, details
         end
       end
 
@@ -546,13 +583,49 @@ module Inferno
       # This is intended to be called on SequenceBase
       # There is a test to ensure that this doesn't fall out of date
       def self.ordered_sequences
-        [
-            ConformanceSequence,
+        self.sequences_groups.map{|h| h[:sequences]}.flatten
+      end
+
+      def self.sequences_overview
+        %(
+          Background
+        )
+
+      end
+
+      def self.sequences_groups
+        [{
+          name: 'Discovery',
+          overview: %(
+            This is a description of the discovery group
+          ),
+          sequences: [ConformanceSequence],
+          run_all: false
+        },
+        {
+          name: 'Authentication and Authorization',
+          overview: %(
+
+
+
+          ),
+          sequences: [
             DynamicRegistrationSequence,
             PatientStandaloneLaunchSequence,
             ProviderEHRLaunchSequence,
             OpenIDConnectSequence,
-            TokenRefreshSequence,
+            TokenRefreshSequence
+          ],
+          run_all: false
+        },
+        {
+          name: 'Argonaut Profile Conformance',
+          overview: %(
+
+
+
+          ),
+          sequences: [
             ArgonautPatientSequence,
             ArgonautAllergyIntoleranceSequence,
             ArgonautCarePlanSequence,
@@ -568,11 +641,16 @@ module Inferno
             ArgonautProcedureSequence,
             ArgonautSmokingStatusSequence,
             ArgonautVitalSignsSequence
-        ]
+          ],
+          run_all: true
+        }]
+
+
       end
 
     end
-    Dir[File.join(__dir__, 'sequences', '*.rb')].each { |file| require file }
+
+    Dir[File.join(__dir__, 'sequences', '*_sequence.rb')].each { |file| require file }
 
   end
 end

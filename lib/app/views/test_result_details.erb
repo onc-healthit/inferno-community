@@ -35,7 +35,7 @@
 
     <% unless @test_result.description.nil? %>
       <div class="test-result-details-description">
-        <%= @test_result.description %>
+        <%= markdown_to_html(@test_result.description) %>
         <a class="test-result-details-url"target="_blank" href="<%= @test_result.url %>"><%= @test_result.url %></a>
       </div>
     <% end %>
@@ -47,7 +47,13 @@
 
     <% unless @test_result.message.nil? %>
       <div class="test-result-details-message">
-        <span class="test-result-details-message-label">Message:</span> <%= @test_result.message %>
+        <span class="test-result-details-message-label">Error Message:</span> <%= @test_result.message %>
+      </div>
+    <% end %>
+
+    <% unless @test_result.details.nil? %>
+      <div class="test-result-details-details">
+        <%= markdown_to_html(@test_result.details) %>
       </div>
     <% end %>
 

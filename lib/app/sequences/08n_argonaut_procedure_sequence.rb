@@ -12,22 +12,21 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects Procedure search without authorization' do
 
-      # --------------------------------------------------
-      # Procedure Search
-      # --------------------------------------------------
-
-      test '01', '', 'Server rejects Procedure search without authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'A Procedure search does not work without proper authorization.' do
-
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A Procedure search does not work without proper authorization.
+          )
+        }
 
         skip_if_not_supported(:Procedure, [:search, :read])
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -35,9 +34,15 @@ module Inferno
 
       end
 
-      test '02', '', 'Server returns expected results from Procedure search by patient',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning a patient's procedures." do
+      test 'Server returns expected results from Procedure search by patient' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning a patient's procedures.
+          )
+        }
 
         skip_if_not_supported(:Procedure, [:search, :read])
 
@@ -57,9 +62,15 @@ module Inferno
 
       end
 
-      test '03', '', 'Server returns expected results from Procedure search by patient + date',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning all of all of a patient's procedures over a specified time period." do
+      test 'Server returns expected results from Procedure search by patient + date' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning all of all of a patient's procedures over a specified time period.
+          )
+        }
 
         skip_if_not_supported(:Procedure, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -72,9 +83,15 @@ module Inferno
 
       end
 
-      test '04', '', 'Procedure read resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+      test 'Procedure read resource supported' do
+
+        metadata {
+          id '04'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:Procedure, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -83,10 +100,16 @@ module Inferno
 
       end
 
-      test '05', '', 'Procedure history resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'Procedure history resource supported' do
+
+        metadata {
+          id '05'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:Procedure, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -95,10 +118,16 @@ module Inferno
 
       end
 
-      test '06', '', 'Procedure vread resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'Procedure vread resource supported' do
+
+        metadata {
+          id '06'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:Procedure, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -107,9 +136,16 @@ module Inferno
 
       end
 
-      test '07', '', 'Procedure resources associated with Procedure conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-procedure.html',
-           'Procedure resources associated with Procedure conform to Argonaut profiles.' do
+      test 'Procedure resources associated with Patient conform to Argonaut profiles' do
+
+        metadata {
+          id '07'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            Procedure resources associated with Patient conform to Argonaut profiles.
+          )
+        }
         test_resources_against_profile('Procedure')
       end
 

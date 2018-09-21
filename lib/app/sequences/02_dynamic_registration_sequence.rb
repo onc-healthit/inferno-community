@@ -2,11 +2,22 @@ module Inferno
   module Sequence
     class DynamicRegistrationSequence < SequenceBase
 
-      group 'Authentication and Authorization'
-
       title 'Dynamic Registration'
 
       description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
+
+      details %(
+        # Background
+
+        The #{title} Sequence tests the authorization server to dynamically register OAuth 2.0 clients using
+        the [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591).  This
+        functionality is *OPTIONAL* but is recommended by the SMART App Launch framework.
+
+        # Test Methodology
+
+        This sequence tests tests this functionality by dynamically an app for Inferno to use in later sequences.
+
+      )
 
       test_id_prefix 'DR'
 
@@ -15,14 +26,16 @@ module Inferno
       requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris
       defines :client_id, :client_secret
 
-      preconditions 'OAuth endpoints are necessary' do
-        !@instance.oauth_authorize_endpoint.nil? && !@instance.oauth_token_endpoint.nil?
-      end
+      test 'Client registration endpoint secured by transport layer security' do
 
-      test '01', '', 'Client registration endpoint secured by transport layer security',
-           'https://tools.ietf.org/html/rfc7591',
-           'The client registration endpoint MUST be protected by a transport layer security.',
-           :optional do
+        metadata {
+          id '01'
+          link 'https://www.hl7.org/fhir/security.html'
+          optional
+          desc %(
+            The client registration endpoint MUST be protected by a transport layer security.
+          )
+        }
 
         skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
         assert_tls_1_2 @instance.oauth_register_endpoint
@@ -31,9 +44,15 @@ module Inferno
         }
       end
 
-      test '02', '', 'Client registration endpoint accepts POST messages',
-           'https://tools.ietf.org/html/rfc7591',
-           'The client registration endpoint MUST accept HTTP POST messages with request parameters encoded in the entity body using the "application/json" format.' do
+      test 'Client registration endpoint accepts POST messages' do
+
+        metadata {
+          id '02'
+          link 'https://tools.ietf.org/html/rfc7591'
+          desc %(
+            The client registration endpoint MUST accept HTTP POST messages with request parameters encoded in the entity body using the "application/json" format.
+          )
+        }
         # params['redirect_uris'] = [params['redirect_uris']]
         # params['grant_types'] = params['grant_types'].split(',')
         headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
@@ -57,19 +76,30 @@ module Inferno
 
       end
 
-      test '03', '', 'Registration endpoint does not respond with an error',
-           'https://tools.ietf.org/html/rfc7591',
-           'When an OAuth 2.0 error condition occurs, such as the client presenting an invalid initial access token, the authorization server returns an error response appropriate to the OAuth 2.0 token type.' do
+      test 'Registration endpoint does not respond with an error' do
+
+        metadata {
+          id '03'
+          link 'https://tools.ietf.org/html/rfc7591'
+          desc %(
+            When an OAuth 2.0 error condition occurs, such as the client presenting an invalid initial access token, the authorization server returns an error response appropriate to the OAuth 2.0 token type.
+          )
+        }
 
         assert !@registration_response_body.has_key?('error') && !@registration_response_body.has_key?('error_description'),
                "Error returned.  Error: #{@registration_response_body['error']}, Description: #{@registration_response_body['error_description']}"
 
       end
 
-      test '04', '', 'Registration endpoint responds with HTTP 201 and body contains JSON with required fields',
-           'https://tools.ietf.org/html/rfc7591',
-           'The server responds with an HTTP 201 Created status code and a body of type "application/json" with content as described in Section 3.2.1.' do
+      test 'Registration endpoint responds with HTTP 201 and body contains JSON with required fields' do
 
+        metadata {
+          id '04'
+          link 'https://tools.ietf.org/html/rfc7591'
+          desc %(
+            The server responds with an HTTP 201 Created status code and a body of type "application/json" with content as described in Section 3.2.1.
+          )
+        }
 
         assert @registration_response.code == 201, "Expected HTTP 201 response from registration endpoint but received #{@registration_response.code}"
         assert @registration_response_body.has_key?('client_id') && @registration_response_body.has_key?('scope'), 'Registration response did not include client_id and scope fields in JSON body'

@@ -17,37 +17,37 @@ module Inferno
 
     def assert_response_ok(response, error_message="")
       unless assertion_negated( [200, 201].include?(response.code) )
-        raise AssertionException.new "Bad response code: expected 200, 201, but found #{response.code}.#{" " + error_message}", response.body
+        raise AssertionException.new "Bad response code: expected 200, 201, but found #{response.code}.#{" " + error_message}"#,response.body
       end
     end
 
     def assert_response_not_found(response)
       unless assertion_negated( [404].include?(response.code) )
-        raise AssertionException.new "Bad response code: expected 404, but found #{response.code}", response.body
+        raise AssertionException.new "Bad response code: expected 404, but found #{response.code}"#,response.body
       end
     end
 
     def assert_response_unauthorized(response)
       unless assertion_negated( [401, 406].include?(response.code) )
-        raise AssertionException.new "Bad response code: expected 401 or 406, but found #{response.code}", response.body
+        raise AssertionException.new "Bad response code: expected 401 or 406, but found #{response.code}"#,response.body
       end
     end
 
     def assert_response_bad_or_unauthorized(response)
       unless assertion_negated( [400, 401].include?(response.code) )
-        raise AssertionException.new "Bad response code: expected 400 or 401, but found #{response.code}", response.body
+        raise AssertionException.new "Bad response code: expected 400 or 401, but found #{response.code}"#,response.body
       end
     end
 
     def assert_response_bad(response)
       unless assertion_negated( [400].include?(response.code) )
-        raise AssertionException.new "Bad response code: expected 400, but found #{response.code}", response.body
+        raise AssertionException.new "Bad response code: expected 400, but found #{response.code}"#,response.body
       end
     end
 
     def assert_response_conflict(response)
       unless assertion_negated( [409, 412].include?(response.code) )
-        raise AssertionException.new "Bad response code: expected 409 or 412, but found #{response.code}", response.body
+        raise AssertionException.new "Bad response code: expected 409 or 412, but found #{response.code}"#,response.body
       end
     end
 
@@ -66,7 +66,7 @@ module Inferno
         rescue
           found = nil
         end
-        raise AssertionException.new "Expected FHIR Bundle but found: #{found.class.name.demodulize}", response.body
+        raise AssertionException.new "Expected FHIR Bundle but found: #{found.class.name.demodulize}"#,response.body
       end
     end
 
@@ -128,13 +128,13 @@ module Inferno
 
     def assert_response_code(response, code)
       unless assertion_negated( code.to_s == response.code.to_s )
-        raise AssertionException.new "Bad response code: expected #{code}, but found #{response.code}", response.body
+        raise AssertionException.new "Bad response code: expected #{code}, but found #{response.code}"#,response.body
       end
     end
 
     def assert_resource_type(response, resource_type)
       unless assertion_negated( !response.resource.nil? && response.resource.class == resource_type )
-        raise AssertionException.new "Bad response type: expected #{resource_type}, but found #{response.resource.class}.", response.body
+        raise AssertionException.new "Bad response type: expected #{resource_type}, but found #{response.resource.class}."#,response.body
       end
     end
 
@@ -146,18 +146,70 @@ module Inferno
       tlsTester = TlsTester.new({uri:uri})
 
       unless uri.downcase.start_with?('https')
-        raise AssertionException.new "URI is not HTTPS: #{uri}"
+        raise AssertionException.new "URI is not HTTPS: #{uri}", %(
+
+          The following URI does not use the HTTPS protocol identifier:
+
+          [uri](uri)
+
+          The HTTPS protocol identifier is required for TLS connections.
+
+          ```
+          HTTP/TLS is differentiated from HTTP URIs by using the 'https'
+          protocol identifier in place of the 'http' protocol identifier. An
+          example URI specifying HTTP/TLS is:
+
+          https://www.example.com/~smith/home.html
+          ```
+          [HTTP Over TLS](https://tools.ietf.org/html/rfc2818#section-2.4)
+
+
+          In order to fix this error you must secure this endpoint with TLS 1.2 and ensure that references
+          to this URL point to the HTTPS protocol so that use of TLS is explicit.
+
+          You may safely ignore this error if this environment does not secure content using TLS.  If you are
+          running a local copy of Inferno, you can turn off TLS detection by changing setting the `disable_tls_tests`
+          option to false in `config.yml`.
+          )
       end
 
       begin
-        passed, msg = tlsTester.verifyEnsureTLSv1_2
+        passed, msg, details = tlsTester.verifyEnsureTLSv1_2
         unless passed
-          raise AssertionException.new msg
+          raise AssertionException.new msg, details
         end
       rescue SocketError => e
-        raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", e
+        raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", %(
+            The following URI did not accept socket connections over port 443:
+
+            [uri](uri)
+
+            ```
+            When HTTP/TLS is being run over a TCP/IP connection, the default port
+            is 443.
+            ```
+            [HTTP Over TLS](https://tools.ietf.org/html/rfc2818#section-2.3)
+
+
+            To fix this error ensure that the URI uses TLS.
+
+            You may safely ignore this error if this environment does not secure content using TLS.  If you are
+            running a local copy of Inferno, you can turn off TLS detection by changing setting the `disable_tls_tests`
+            option to false in `config.yml`.
+          )
+
       rescue => e
-        raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}"
+        raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}", %(
+            An unexpected error occured when attempting to connect to the following URI using TLS.
+
+            [uri](uri)
+
+            Ensure that this URI is protected by TLS.
+
+            You may safely ignore this error if this environment does not secure content using TLS.  If you are
+            running a local copy of Inferno, you can turn off TLS detection by changing setting the `disable_tls_tests`
+            option to false in `config.yml`.
+          )
       end
     end
 
@@ -165,22 +217,49 @@ module Inferno
       tlsTester = TlsTester.new({uri:uri})
 
       begin
-        passed, msg = tlsTester.verifyDenySSLv3
+        passed, msg, details = tlsTester.verifyDenySSLv3
         unless passed
-          raise AssertionException.new msg
+          raise AssertionException.new msg, details
         end
-        passed, msg = tlsTester.verifyDenyTLSv1_1
+        passed, msg, details = tlsTester.verifyDenyTLSv1_1
         unless passed
-          raise AssertionException.new msg
+          raise AssertionException.new msg, details
         end
-        passed, msg = tlsTester.verifyDenyTLSv1
+        passed, msg, details = tlsTester.verifyDenyTLSv1
         unless passed
-          raise AssertionException.new msg
+          raise AssertionException.new msg, details
         end
       rescue SocketError => e
-        raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", e
+        raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", %(
+            The following URI did not accept socket connections over port 443:
+
+            [uri](uri)
+
+            ```
+            When HTTP/TLS is being run over a TCP/IP connection, the default port
+            is 443.
+            ```
+            [HTTP Over TLS](https://tools.ietf.org/html/rfc2818#section-2.3)
+
+
+            To fix this error ensure that the URI uses TLS.
+
+            You may safely ignore this error if this environment does not secure content using TLS.  If you are
+            running a local copy of Inferno, you can turn off TLS detection by changing setting the `disable_tls_tests`
+            option to false in `config.yml`.
+          )
       rescue => e
-        raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}"
+        raise AssertionException.new "Unable to connect to #{uri}: #{e.class.name}, #{e.message}", %(
+            An unexpected error occured when attempting to connect to the following URI using TLS.
+
+            [uri](uri)
+
+            Ensure that this URI is protected by TLS.
+
+            You may safely ignore this error if this environment does not secure content using TLS.  If you are
+            running a local copy of Inferno, you can turn off TLS detection by changing setting the `disable_tls_tests`
+            option to false in `config.yml`.
+          )
       end
     end
   end

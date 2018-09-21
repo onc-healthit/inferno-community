@@ -1,18 +1,19 @@
 module Inferno
   class AssertionException < Exception
-    attr_accessor :data
-    def initialize(message, data=nil)
+    attr_accessor :details
+    def initialize(message, details = nil)
       super(message)
       FHIR.logger.error "AssertionException: #{message}"
-      @data = data
+      @details = details
     end
   end
 
-  # WILL WE NEED THIS?
   class SkipException < Exception
-    def initialize(message = '')
+    attr_accessor :details
+    def initialize(message = '', details = nil)
       super(message)
       FHIR.logger.info "SkipException: #{message}"
+      @details = details
     end
   end
 
@@ -39,5 +40,8 @@ module Inferno
       @url = url
       @endpoint = endpoint
     end
+  end
+
+  class MetadataException < Exception
   end
 end

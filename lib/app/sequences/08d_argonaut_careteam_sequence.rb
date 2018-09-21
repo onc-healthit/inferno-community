@@ -12,17 +12,15 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server returns expected CareTeam results from CarePlan search by patient + category' do
 
-      # --------------------------------------------------
-      # CareTeam Search
-      # --------------------------------------------------
-
-      test '01', '', 'Server returns expected CareTeam results from CarePlan search by patient + category',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning all of a patient's Assessment and Plan of Treatment information." do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
+          )
+        }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
 
@@ -33,9 +31,15 @@ module Inferno
 
       end
 
-      test '02', '', 'CareTeam resources associated with Patient conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careteam.html',
-           'CareTeam resources associated with Patient conform to Argonaut profiles.' do
+      test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careteam.html'
+          desc %(
+            CareTeam resources associated with Patient conform to Argonaut profiles.
+          )
+        }
         test_resources_against_profile('CarePlan', Inferno::ValidationUtil::CARE_TEAM_URL)
         skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::CARE_TEAM_URL), 'No CareTeams found.'
         assert !@profiles_failed.include?(Inferno::ValidationUtil::CARE_TEAM_URL), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::CARE_TEAM_URL]}"

@@ -2,8 +2,6 @@ module Inferno
   module Sequence
     class ArgonautMedicationStatementSequence < SequenceBase
 
-      group 'Argonaut Profile Conformance'
-
       title 'Medication Statement'
 
       description 'Verify that MedicationStatement resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
@@ -12,30 +10,36 @@ module Inferno
 
       requires :token, :patient_id
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects MedicationStatement search without authorization' do
 
-      # --------------------------------------------------
-      # MedicationStatement Search
-      # --------------------------------------------------
-
-      test '01', '', 'Server rejects MedicationStatement search without authorization',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'An MedicationStatement search does not work without proper authorization.' do
+        metadata {
+          id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A MedicationStatement search does not work without proper authorization.
+          )
+        }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
       end
 
-      test '02', '', 'Server returns expected results from MedicationStatement search by patient',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           "A server is capable of returning a patient's medications." do
+      test 'Server returns expected results from MedicationStatement search by patient' do
+
+        metadata {
+          id '02'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            A server is capable of returning a patient's medications.
+          )
+        }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
 
@@ -56,9 +60,15 @@ module Inferno
 
       end
 
-      test '03', '', 'MedicationStatement read resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.' do
+      test 'MedicationStatement read resource supported' do
+
+        metadata {
+          id '03'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -67,10 +77,16 @@ module Inferno
 
       end
 
-      test '04', '', 'MedicationStatement history resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'MedicationStatement history resource supported' do
+
+        metadata {
+          id '04'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:MedicationStatement, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -79,10 +95,16 @@ module Inferno
 
       end
 
-      test '05', '', 'MedicationStatement vread resource supported',
-           'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html',
-           'All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.',
-           :optional do
+      test 'MedicationStatement vread resource supported' do
+
+        metadata {
+          id '05'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          optional
+          desc %(
+            All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
+          )
+        }
 
         skip_if_not_supported(:MedicationStatement, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -91,9 +113,15 @@ module Inferno
 
       end
 
-      test '16', '', 'MedicationStatement resources associated with Patient conform to Argonaut profiles',
-           'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html',
-           'MedicationStatement resources associated with Patient conform to Argonaut profiles.' do
+      test 'MedicationStatement resources associated with Patient conform to Argonaut profiles' do
+
+        metadata {
+          id '06'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
+          desc %(
+            MedicationStatement resources associated with Patient conform to Argonaut profiles.
+          )
+        }
         test_resources_against_profile('MedicationStatement')
       end
 

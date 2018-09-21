@@ -10,25 +10,32 @@ module Inferno
 
       test_id_prefix 'ARS'
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'Server rejects Composition search without authorization' do
 
-      test '01', '', 'Server rejects Composition search without authorization',
-           '',
-           'Additional Composition resource requirement.' do
+        metadata {
+          id '01'
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
       end
 
-      test '02', '', 'Server returns expected results from Composition search by patient',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Server returns expected results from Composition search by patient' do
+
+        metadata {
+          id '02'
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id})
         @composition = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -36,10 +43,15 @@ module Inferno
 
       end
 
-      test '03', '', 'Server returns expected results from Composition search by patient + type',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Server returns expected results from Composition search by patient + type' do
+
+        metadata {
+          id '03'
+          optional
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
         type = @composition.try(:type).try(:coding).try(:first).try(:code)
@@ -49,10 +61,15 @@ module Inferno
 
       end
 
-      test '04', '', 'Server returns expected results from Composition search by patient + period',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Server returns expected results from Composition search by patient + period' do
+
+        metadata {
+          id '04'
+          optional
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
         period = @composition.try(:event).try(:first).try(:period).try(:start)
@@ -63,10 +80,15 @@ module Inferno
 
       end
 
-      test '05', '', 'Server returns expected results from Composition search by patient + type + period',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Server returns expected results from Composition search by patient + type + period' do
+
+        metadata {
+          id '05'
+          optional
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
         type = @composition.try(:type).try(:coding).try(:first).try(:code)
@@ -79,36 +101,55 @@ module Inferno
 
       end
 
-      test '06', '', 'Composition read resource supported',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Composition read resource supported' do
+
+        metadata {
+          id '06'
+          optional
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         validate_read_reply(@composition, FHIR::DSTU2::Composition)
 
       end
 
-      test '07', '', 'Composition history resource supported',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Composition history resource supported' do
 
+        metadata {
+          id '07'
+          optional
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
         validate_history_reply(@composition, FHIR::DSTU2::Composition)
 
       end
 
-      test '08', '', 'Composition vread resource supported',
-           '',
-           'Additional Composition resource requirement.',
-           :optional do
+      test 'Composition vread resource supported' do
+
+        metadata {
+          id '08'
+          optional
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         validate_vread_reply(@composition, FHIR::DSTU2::Composition)
 
       end
 
-      test '09', '', 'Composition resource contains section text',
-           '',
-           'Additional Composition resource requirement.' do
+      test 'Composition resource contains section text' do
+
+        metadata {
+          id '09'
+          desc %(
+            Additional Composition resource requirement.
+          )
+        }
 
         assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
         assert @composition.is_a?(FHIR::DSTU2::Composition), 'Expected resource to be valid DSTU2 Composition'
@@ -117,21 +158,33 @@ module Inferno
 
       end
 
-      test '10', '', 'Server rejects Provenance search without authorization',
-           '',
-           'Additional Provenance resource requirement.' do
+      test 'Server rejects Provenance search without authorization' do
+
+        metadata {
+          id '10'
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
       end
 
-      test '11', '', 'Server returns expected results from Provenance search by patient',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Server rejects Provenance search without authorization' do
+
+        metadata {
+          id '11'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id})
         @provenance = reply.try(:resource).try(:entry).try(:first).try(:resource)
@@ -139,10 +192,15 @@ module Inferno
 
       end
 
-      test '12', '', 'Server returns expected results from Provenance search by patient + target',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Server returns expected results from Provenance search by patient + target' do
+
+        metadata {
+          id '12'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
         target = @provenance.try(:target).try(:first).try(:reference)
@@ -153,10 +211,15 @@ module Inferno
 
       end
 
-      test '13', '', 'Server returns expected results from Provenance search by patient + start + end',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Server returns expected results from Provenance search by patient + start + end' do
+
+        metadata {
+          id '13'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
         periodStart = @provenance.try(:period).try(:start)
@@ -168,10 +231,15 @@ module Inferno
 
       end
 
-      test '14', '', 'Server returns expected results from Provenance search by patient + target + start + end',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Server returns expected results from Provenance search by patient + target + start + end' do
+
+        metadata {
+          id '14'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
         target = @provenance.try(:target).try(:first).try(:reference)
@@ -186,10 +254,15 @@ module Inferno
 
       end
 
-      test '15', '', 'Server returns expected results from Provenance search by userid',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Server returns expected results from Provenance search by userid' do
+
+        metadata {
+          id '15'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
         userid = @provenance.try(:agent).try(:first).try(:userId).try(:value)
@@ -199,10 +272,15 @@ module Inferno
 
       end
 
-      test '16', '', 'Server returns expected results from Provenance search by agent',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Server returns expected results from Provenance search by agent' do
+
+        metadata {
+          id '16'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
         actor = @provenance.try(:agent).try(:first).try(:actor).try(:reference)
@@ -213,28 +291,43 @@ module Inferno
 
       end
 
-      test '17', '', 'Provenance read resource supported',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Provenance read resource supported' do
+
+        metadata {
+          id '17'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         validate_read_reply(@provenance, FHIR::DSTU2::Provenance)
 
       end
 
-      test '18', '', 'Provenance history resource supported',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Provenance history resource supported' do
+
+        metadata {
+          id '18'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         validate_history_reply(@provenance, FHIR::DSTU2::Provenance)
 
       end
 
-      test '19', '', 'Provenance vread resource supported',
-           '',
-           'Additional Provenance resource requirement.',
-           :optional do
+      test 'Provenance vread resource supported' do
+
+        metadata {
+          id '19'
+          optional
+          desc %(
+            Additional Provenance resource requirement.
+          )
+        }
 
         validate_vread_reply(@provenance, FHIR::DSTU2::Provenance)
 

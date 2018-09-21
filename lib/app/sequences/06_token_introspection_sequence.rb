@@ -2,8 +2,6 @@ module Inferno
   module Sequence
     class TokenIntrospectionSequence < SequenceBase
 
-      group 'Authentication and Authorization'
-
       inactive
 
       title 'OAuth 2.0 Token Introspection'
@@ -14,13 +12,16 @@ module Inferno
 
       optional
 
-      preconditions 'Client must be authorized' do
-        !@instance.token.nil?
-      end
+      test 'OAuth token introspection endpoint secured by transport layer security' do
 
-      test '01', '', 'OAuth token introspection endpoint secured by transport layer security',
-           'https://tools.ietf.org/html/rfc7662',
-           'The server MUST support Transport Layer Security (TLS) 1.2.', :optional do
+        metadata {
+          id '01'
+          link 'https://tools.ietf.org/html/rfc7662'
+          optional
+          desc %(
+            The server MUST support Transport Layer Security (TLS) 1.2.
+          )
+        }
 
         skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
         assert_tls_1_2 @instance.oauth_introspection_endpoint
@@ -29,10 +30,15 @@ module Inferno
         }
       end
 
+      test 'Token introspection endpoint responds properly to introspection request for access token' do
 
-      test '02', '', 'Token introspection endpoint responds properly to introspection request for access token',
-           'https://tools.ietf.org/html/rfc7662',
-           'A resource server is capable of calling the introspection endpoint.' do
+        metadata {
+          id '02'
+          link 'https://tools.ietf.org/html/rfc7662'
+          desc %(
+            A resource server is capable of calling the introspection endpoint.
+          )
+        }
 
         headers = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }
 
@@ -55,9 +61,15 @@ module Inferno
 
       end
 
-      test '03', '', 'Token introspection response confirms that Access token is active',
-           'https://tools.ietf.org/html/rfc7662',
-           'A current access token is listed as active.' do
+      test 'Token introspection response confirms that Access token is active' do
+
+        metadata {
+          id '03'
+          link 'https://tools.ietf.org/html/rfc7662'
+          desc %(
+            A current access token is listed as active.
+          )
+        }
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -66,10 +78,16 @@ module Inferno
         assert active, 'Token is not active, try the test again with a valid Access token'
       end
 
-      test '04', '', 'Scopes returned by token introspection request match expected scopes',
-           'https://tools.ietf.org/html/rfc7662',
-           'The scopes we received alongside the Access token match those from the introspection response.',
-           :optional do
+      test 'Scopes returned by token introspection request match expected scopes' do
+
+        metadata {
+          id '04'
+          link 'https://tools.ietf.org/html/rfc7662'
+          optional
+          desc %(
+            The scopes we received alongside the Access token match those from the introspection response.
+          )
+        }
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -88,9 +106,15 @@ module Inferno
       end
 
       # TODO verify timeout requirements
-      test '05', '', 'Token introspection response confirms Access token has appropriate lifetime',
-           'https://tools.ietf.org/html/rfc7662',
-           'The Access token should have a lifetime of at least 60 minutes.' do
+      test 'Token introspection response confirms Access token has appropriate lifetime' do
+
+        metadata {
+          id '05'
+          link 'https://tools.ietf.org/html/rfc7662'
+          desc %(
+            The Access token should have a lifetime of at least 60 minutes.
+          )
+        }
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -108,10 +132,16 @@ module Inferno
 
       end
 
-      test '06', '', 'Token introspection endpoint responds properly to introspection request for refresh token',
-           'https://tools.ietf.org/html/rfc7662',
-           'A resource server is capable of calling the introspection endpoint.',
-           :optional do
+      test 'Token introspection endpoint responds properly to introspection request for refresh token' do
+
+        metadata {
+          id '06'
+          link 'https://tools.ietf.org/html/rfc7662'
+          optional
+          desc %(
+            A resource server is capable of calling the introspection endpoint.
+          )
+        }
 
         assert !@instance.introspect_refresh_token.blank?, 'Refresh Token not supplied'
 
@@ -136,10 +166,16 @@ module Inferno
 
       end
 
-      test '07', '', 'Token introspection response confirms that Refresh token is active',
-           'https://tools.ietf.org/html/rfc7662',
-           'A current access token is listed as active.',
-           :optional do
+      test 'Token introspection response confirms that Refresh token is active' do
+
+        metadata {
+          id '06'
+          link 'https://tools.ietf.org/html/rfc7662'
+          optional
+          desc %(
+            A current access token is listed as active.
+          )
+        }
 
         assert !@instance.introspect_refresh_token.blank?, 'Refresh Token not supplied'
 

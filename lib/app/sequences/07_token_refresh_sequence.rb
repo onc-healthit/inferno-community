@@ -2,21 +2,20 @@ module Inferno
   module Sequence
     class TokenRefreshSequence < SequenceBase
 
-      group 'Authentication and Authorization'
-
       title 'Token Refresh'
       description 'Demonstrate token refresh capability'
       test_id_prefix 'TR'
 
       requires :refresh_token, :client_id, :oauth_token_endpoint
 
-      preconditions 'No refresh token available.' do
-        !@instance.refresh_token.nil?
-      end
+      test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.' do
 
-      test '01', '', 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.',
-           'https://tools.ietf.org/html/rfc6749',
-           'If the request failed verification or is invalid, the authorization server returns an error response.' do
+        metadata {
+          id '01'
+          link 'https://tools.ietf.org/html/rfc6749'
+          desc %(
+            If the request failed verification or is invalid, the authorization server returns an error response.          )
+        }
 
         oauth2_params = {
             'grant_type' => 'refresh_token',
@@ -38,9 +37,15 @@ module Inferno
 
       end
 
-      test '02', '', 'Server successfully exchanges refresh token at OAuth token endpoint',
-           'https://tools.ietf.org/html/rfc6749',
-           'Server successfully exchanges refresh token at OAuth token endpoint.' do
+      test 'Server successfully exchanges refresh token at OAuth token endpoint.' do
+
+        metadata {
+          id '02'
+          link 'https://tools.ietf.org/html/rfc6749'
+          desc %(
+            Server successfully exchanges refresh token at OAuth token endpoint.
+          )
+        }
 
         oauth2_params = {
             'grant_type' => 'refresh_token',
@@ -53,11 +58,17 @@ module Inferno
 
       end
 
-      test '03', '', 'Data returned from refresh token exchange contains required information encoded in JSON.',
-           'http://www.hl7.org/fhir/smart-app-launch/',
-           'The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache. '\
-    'The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied. '\
-    'access_token, token_type, and scope are required. access_token must be Bearer.' do
+      test 'Data returned from refresh token exchange contains required information encoded in JSON.' do
+
+        metadata {
+          id '03'
+          link 'http://www.hl7.org/fhir/smart-app-launch/'
+          desc %(
+           The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
+           The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
+           access_token, token_type, and scope are required. access_token must be Bearer.
+          )
+        }
 
         @token_response_headers = @token_response.headers
         @token_response_body = JSON.parse(@token_response.body)

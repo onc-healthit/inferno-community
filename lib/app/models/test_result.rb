@@ -8,6 +8,7 @@ module Inferno
       property :name, String
       property :result, String
       property :message, String, length: 500
+      property :details, String
       property :required, Boolean, default: true
 
       property :url, String, length: 500

@@ -50,20 +50,20 @@
       </div>
     <% end %>
     <div class="sequence-table">
-      <% sequences.select{|s| !s.inactive? }.group_by{|seq| seq.group}.each do |sequence_group| %>
+      <% sequences_groups.each do |group| %>
         <div class="sequence-group">
           <div class="sequence-header">
             <div class='row align-items-center'>
               <div class='col'>
-                <% if sequence_group[1].length > 1 %>
-                  <a id="<%=sequence_group[1].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=sequence_group[1].map {|seq| seq.name.demodulize}.join(',')%>"></a>
+                <% if group.length > 1 %>
+                  <a id="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>"></a>
 
                 <% end %>
                 <h1>
-                  <%=sequence_group[0] %>
+                  <%=group[:name]%>
                   <%# FIXME: This is brittle. Instead of checking for the number of tests, maybe check for specific sequence groups? %>
-                  <% if sequence_group[1].length > 10 %>
-                    <button data-group="<%=sequence_group[0]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                  <% if group[:run_all]%>
+                    <button data-group="<%=group[:name]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
                       <span class="oi oi-media-play"></span> Run All
                     </button>
                   <% end %>
@@ -71,7 +71,7 @@
               </div>
             </div>
           </div>
-          <% sequence_group[1].each do |sequence_class| %>
+          <% group[:sequences].each do |sequence_class| %>
             <% unless sequence_class.inactive? %>
               <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
             <% end %>
