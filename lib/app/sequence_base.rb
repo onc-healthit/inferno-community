@@ -296,29 +296,13 @@ module Inferno
 
       # Defines a new test.
       #
-      # test_id - The String unique id
-      # ref - The String specification reference
       # name - The String name of the test
-      # description - The String description of the test
-      # required - The Symbol used as the key in the metadata indicating if the test is required
       # block - The Block test to be executed
-      # def self.test(test_id, ref, name, url = nil, description = nil, required = :required, &block)
       def self.test(name, &block)
 
         @@test_index += 1
 
-        #temp
-        test_id = "01";
-        ref = "";
-        url = "";
-        description = "";
-        is_required = false;
-
-        # is_required = (required != :optional)
-
         test_index = @@test_index
-
-        # complete_test_id = @@test_id_prefixes[self.sequence_name] + '-' + test_id
 
         test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
         @@test_metadata[self.sequence_name] ||= []
@@ -327,14 +311,6 @@ module Inferno
                                                  required: true }
 
         test_index_in_sequence = @@test_metadata[self.sequence_name].length - 1
-
-        # @@test_metadata[self.sequence_name] << { test_id: complete_test_id,
-        #                                          ref: ref,
-        #                                          name: name,
-        #                                          url: url,
-        #                                          description: description,
-        #                                          test_index: test_index,
-        #                                          required: is_required}
 
         wrapped = -> () do
 
