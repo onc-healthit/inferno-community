@@ -23,6 +23,8 @@ module Inferno
         skip_if_not_supported(:Observation, [:search, :read])
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -138,6 +140,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply

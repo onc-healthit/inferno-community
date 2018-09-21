@@ -21,6 +21,8 @@ module Inferno
         }
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = @client.read(FHIR::DSTU2::Patient, @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -117,6 +119,8 @@ module Inferno
           desc %(
             A Patient search does not work without proper authorization.          )
         }
+
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         assert !@patient.nil?, 'Expected valid DSTU2 Patient resource to be present'
         identifier = @patient.try(:identifier).try(:first).try(:value)

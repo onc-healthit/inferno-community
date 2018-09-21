@@ -27,6 +27,8 @@ module Inferno
         skip_if_not_supported(:MedicationStatement, [:search, :read])
 
         @client.set_no_auth
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
         reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
