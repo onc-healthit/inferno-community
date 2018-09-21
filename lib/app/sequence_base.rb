@@ -377,7 +377,7 @@ module Inferno
             result.details = e.message
 
           rescue => e
-            binding.pry
+            # binding.pry
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end
