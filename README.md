@@ -19,7 +19,7 @@ Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and E
 
 ### Local Installation
 
-The *Inferno SMART on FHIR Test App* can installed and run locally on your machine.  Install the dependencies
+Inferno can installed and run locally on your machine.  Install the dependencies
 listed above and enter the following in a terminal prompt:
 
 ```sh
@@ -30,7 +30,7 @@ bundle install
 rackup
 ```
 
-*Inferno SMART on FHIR Test App* can then be accessed at http://localhost:4567 in a web browser.
+Inferno can then be accessed at http://localhost:4567 in a web browser.
 
 ### Docker Installation
 
@@ -46,7 +46,7 @@ If the docker image gets out of sync with the underlying system, such as when ne
 
 ### Remote Deployment
 
-The *Inferno SMART on FHIR Test App* can also be deployed onto a server to test many different
+Inferno can also be deployed onto a server to test many different
 instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
 be saved for future reference or shared.
 
@@ -56,7 +56,7 @@ Please see the file [deployment-configuration.md](https://github.com/siteadmin/i
 
 ## Unit Tests
 
-The *Inferno SMART on FHIR Test App* contains a robust set of self-tests to ensure that the
+Inferno contains a robust set of self-tests to ensure that the
 test clients conform to the specification and performs as intended.  To run these tests, execute the following
 command:
 
@@ -83,12 +83,11 @@ For the purpose of example, testing of the DSTU2 FHIR server of the SMART Sandbo
 
 1) Create an account at https://sandbox.hspconsortium.org/#/start
 
-2) Create a new DSTU 2 Sandbox. 
+2) Create a new DSTU 2 Sandbox.
 
-3) Open the Inferno SMART on FHIR Test App, and enter the SMART DSTU2 FHIR endpoint, which can be found under Settings, into the prompt on the front page. Click Begin. A new testing instance is created that saves results of tests and associated client state.
+3) Open Inferno and enter the SMART DSTU2 FHIR endpoint, which can be found under Settings, into the prompt on the front page. Click Begin. A new testing instance is created that saves results of tests and associated client state.
 
-4) To start testing, run the `Conformance Statement Sequence` , which queries the FHIR server for capabilities supported
-by the FHIR server and related authorization services.  This sequence will gather information about the server, as well as check to make sure all responses from the server conform to the appropriate specifications.  Tests are results are listed below the sequence.  Specifics about why tests failed, or what requests were made during the excution of the test, can be accessed by clicking on the test.
+4) To start testing, run the `Conformance Statement Sequence` , which queries the FHIR server for capabilities supported by the FHIR server and related authorization services.  This sequence will gather information about the server, as well as check to make sure all responses from the server conform to the appropriate specifications.  Tests are results are listed below the sequence.  Specifics about why tests failed, or what requests were made during the excution of the test, can be accessed by clicking on the test.
 
 5) The `Dynamic Registration Sequence` can be run by entering the correct registration URL, client name, and scopes necessary. Default values will already be provided. If this sequence is skipped, the user is required to manually enter their client ID. In the case of the SMART Sandbox, this client ID will be provided upon registering an application. The launch URL and redirect URL necessary to register an app will be provided upon trying to skip dynamic registration.
 
@@ -128,14 +127,8 @@ rake execute_sequence[Conformance,https://my-server.org/data]
 
 Copyright 2018 The MITRE Corporation
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 ```
 http://www.apache.org/licenses/LICENSE-2.0
 ```
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

@@ -60,19 +60,17 @@ body {
 .footer .container {
   margin: auto;
 }
+
+.inferno-header {
+  padding: 0;
+  background: white;
+}
+
 .inferno-branding {
   padding-left: 15px;
 }
-.navbar-brand {
-  font-size: 2rem;
-  letter-spacing: 3px;
-}
-.navbar-brand-subheading {
-  color: white;
-  display: inline-block;
-  font-size: 1em;
-  position: relative;
-  top: -1px;
+.inferno-branding img {
+  height: 70px;
 }
 .row-no-padding > [class*="col-"] {
   padding-left: 0 !important;
@@ -82,6 +80,7 @@ body {
 .server-actions button {
   font-size: .8em;
   color: #000;
+  background-color: white;
 }
 
 .server-actions a {
@@ -136,17 +135,18 @@ body {
 
 /* ------------------------- DETAILS -------------------------------- */
 
-.details-server {
+.server-info {
   background-color: #fafbfc;
   border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
 }
 
-.details-server .container{
+.server-info .container{
   margin: auto;
   /* border-bottom: 1px solid #999; */
 }
 
-.details-server .container .col{
+.server-info .container .col{
   padding: 0;
 }
 
@@ -371,17 +371,16 @@ body {
   font-size: .9em;
 }
 
-.server-state {
-  margin-bottom: 15px;
-  font-size: 1.2em;
-  font-weight: bold;
-  overflow:hidden;
-  text-overflow: ellipsis;
+.server-info {
+  background-color: #ffe9b3;
 }
 
-.server-state-title {
-  margin-top: 20px;
-  font-size: 1.0em;
+.server-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: .5rem 0;
 }
 
 .prerequisite-tooltip {
@@ -458,14 +457,13 @@ body {
 
 .test-list li {
   list-style: none;
-  font-size: .8em;
+  font-size: .9em;
   padding: 5px 15px 5px;
-  border: 1px solid #efefef;
-  border-top: none;
+  border-bottom: 1px solid #efefef;
 }
 
 .test-list li:last-child {
-  border-bottom: 1px solid #efefef;
+  border-bottom: none;
 }
 
 li.result-details-clickable:hover {

@@ -1,10 +1,9 @@
-<div class="container-fluid details-server">
+<div class="container-fluid server-info" role='main'>
   <div class="row">
     <div class="col">
       <div class="container row row-no-padding align-items-center">
         <div class="col-9">
-          <div class="server-state-title">FHIR Resource Server</div>
-          <div class="server-state">
+          <div class="server-name">
             <%=instance.url%>
           </div>
         </div>
@@ -15,14 +14,19 @@
             <a href="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
           </div>
 
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
             <span class="oi oi-list" aria-hidden="true"></span>
             <span id="client-status-button-text">Client State</span>
           </button>
 
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
             <span class="oi oi-link-intact" aria-hidden="true"></span>
             <span id="save-test-button-text">Save</span>
+          </button>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#helpModal">
+            <strong style='line-height:1em;font-size:1.3em'>?</strong>
+            <span id="help-button-text">Help</span>
           </button>
 
         </div>
@@ -32,7 +36,7 @@
 </div>
 
 <div class="container">
-  <div class="main main-details">
+  <div class="main main-details" role='region'>
 
     <% unless locals[:error_code].nil? %>
       <div class="alert alert-danger" role="alert">
@@ -192,11 +196,11 @@
 <% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
   <% redirect_to = "#{request.base_url}#{base_path}/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
-  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-show="true" data-backdrop="static">
+  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="WaitModalLabel" data-show="true" data-backdrop="static">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI</h5>
+            <h5 class="modal-title" id="WaitModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI</h5>
         </div>
         <div class="modal-body">
           <p>
@@ -229,18 +233,18 @@
   </div>
 </div>
 
-<div class="modal fade" id="testResultDetailsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="testResultDetailsModal" tabindex="-1" role="dialog" aria-labelledby="testResultDetailsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="TokenIntrospectionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="TokenIntrospectionModal" tabindex="-1" role="dialog" aria-labelledby="TokenIntrospectionModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Introspection Launch</h5>
+        <h5 class="modal-title" id="TokenIntrospectionModalLabel">Introspection Launch</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -280,11 +284,11 @@
   </div>
 </div>
 
-<div class="modal fade" id="ArgonautDataQueryModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="ArgonautDataQueryModal" tabindex="-1" role="dialog" aria-labelledby="ArgonautDataQueryModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Argonaut Query Server</h5>
+        <h5 class="modal-title" id="ArgonautDataQueryModalLabel">Argonaut Query Server</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -330,11 +334,11 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="ArgonautProfilesModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Argonaut Data Profiles</h5>
+        <h5 class="modal-title" id="ArgonautProfilesModalLabel">Argonaut Data Profiles</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -366,11 +370,11 @@
   </div>
 </div>
 
-<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Save a link to this test instance</h5>
+        <h5 class="modal-title" id="linkModalLabel">Save a link to this test instance</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -384,19 +388,16 @@
         <p class='alert alert-warning'>
           This URI is not guaranteed to be permanently accessible.  The team maintaining this instance of Inferno may choose to periodically clear the database.  To ensure that test results are saved indefinitely, it is recommended that users download, install, and use Inferno on their own hardware.
         </p>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="testsRunningModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Tests Running</h5>
+        <h5 class="modal-title" id="testsRunningModalLabel">Tests Running</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -406,6 +407,52 @@
           Tests are currently running <span class="number-complete"></span>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="helpModalLabel">Help</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h6>Hints</h6>
+        <p>Inferno provides inline context about each of the tests and the standards that they are testing.  If you find yourself stuck, try the following:</p>
+        <ul>
+          <li>Click the 'Show Details' link on a test sequence
+          <li>Click on a completed test to see incoming/outgoing HTTP(S) requests and reasons why it passed or failed
+          <li>Follow any of the links on the page to standards definition documents
+        </ul>
+        <h6>Testing Order</h6>
+        <p>Inferno allows users to test anything at any time, but if you're new to FHIR (or SMART-on-FHIR) the easiest way to get started with Inferno is to run the following test sequences (in order):<p>
+        <ul>
+          <li><em>Conformance Statement</em>, which populates the OAuth endpoints needed for authentication/authorization
+          <li><em>Dynamic Registration</em>, which registers the Inferno client app with your server (if your server does not support this, you can always register the Inferno client manually and get the client ID)
+          <li><em>Patient Standalone Launch Sequence</em>, which allows the registered Inferno client app to pick a Patient record and authorize the Inferno client to query data from your FHIR server
+          <li><em>Patient</em>, which is the first (and arguably most important) Argonaut Profile Conformance test
+        </ul>
+        <h6>Icon Legend</h6>
+        <table class='table table-sm'>
+          <thead class='sr-only'>
+            <tr><td>Icon</td><td>Meaning</td><td>Description</td>
+          </thead>
+          <tbody>
+            <tr><td><span class="oi oi-check" style='color:#28a745' aria-hidden="true"></span></td> <td><strong>Pass</strong></td> <td>A test passed</td></tr>
+            <tr><td><span class="oi oi-x" style='color:#cb2431' aria-hidden="true"></span></td> <td><strong>Fail</strong></td> <td>A test failed</td></tr>
+            <tr><td><span class="oi oi-x" style='color:#999' aria-hidden="true"></span></td> <td><strong>Optional Fail</strong> </td> <td>An optional test failed - this will not affect the overall count of passed tests</td></tr>
+            <tr><td><span class="oi oi-ban" style='color:#00e1e1' aria-hidden="true"></span></td> <td><strong>Skip</strong></td> <td>A test was skipped</td></tr>
+            <tr><td><span class="oi oi-warning" style='color:#FF9500' aria-hidden="true"></span></td> <td><strong>Warning</strong></td> <td>There is some critical information that you should be aware of</td></tr>
+            <tr><td><span class="oi oi-arrow-thick-right" style='color:#336699' aria-hidden="true"></span></td> <td><strong>Outgoing HTTP(S)</strong></td> <td>This test contains outgoing HTTP(S) requests</td></tr>
+            <tr><td><span class="oi oi-arrow-thick-left" style='color:#336699' aria-hidden="true"></span></td> <td><strong>Incoming HTTP(S)</strong></td> <td>This test contains incoming HTTP(S) requests</td></tr>
+          </tbody>
+        </table>
+        <p>For more information, see the <a href='https://github.com/siteadmin/inferno#inferno' target="_blank">Inferno README</a> and the <a href='https://github.com/siteadmin/inferno/wiki' target='_blank'>Inferno wiki</a>.</p>
+      </div>
     </div>
   </div>
 </div>
