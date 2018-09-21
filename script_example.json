@@ -22,18 +22,17 @@
   "sequences": [
     "Conformance",
     "DynamicRegistration",
-    "PatientStandaloneLaunch",
     "TokenRefresh",
     "OpenIDConnect",
     "ArgonautPatient",
     {
       "sequence": "PatientStandaloneLaunch",
       "standalone_launch_script": [
-        {"cmd": "find_element", "type": "name", "find_value": "email", "action": "send_keys", "value": "inferno@groups.mitre.org"},
-        {"cmd": "find_element", "type": "name", "find_value": "password", "action": "send_keys", "value": "temp_password"},
-        {"cmd": "find_element", "type": "tag_name", "find_value": "button", "index": 3, "action": "click"},
-        {"cmd": "find_element", "type": "class", "find_value": "patient-row", "index": 1, "action": "click"},
-        {"cmd": "find_element", "type": "id", "find_value": "authorize", "action": "click"}
+        {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
+        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "temp_password"},
+        {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
+        {"cmd": "click", "type": "class", "find_value": "patient-row", "index": 1},
+        {"cmd": "click", "type": "id", "find_value": "authorize"}
       ]
     },
     "ArgonautPatient"

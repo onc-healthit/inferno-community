@@ -4,6 +4,8 @@ require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
 require_relative 'utils/validation'
 
+require 'selenium-webdriver'
+
 module Inferno
   module Sequence
     class SequenceBase
@@ -36,11 +38,7 @@ module Inferno
 
       @@inactive = {}
 
-<<<<<<< HEAD
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
-=======
-      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, standalone_launch_config = nil)
->>>>>>> Initial configuration of headless command line testing
         @client = client
         @instance = instance
         @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
@@ -48,11 +46,7 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
-<<<<<<< HEAD
         @metadata_only = metadata_only
-=======
-        @standalone_launch_config = standalone_launch_config
->>>>>>> Initial configuration of headless command line testing
       end
 
       def resume(request = nil, headers = nil, params = nil, &block)
@@ -88,7 +82,7 @@ module Inferno
 
         start_at = @sequence_result.test_results.length
 
-        
+
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|
           next if index < start_at
@@ -121,7 +115,7 @@ module Inferno
                 response_headers: req[:response][:headers].to_json,
                 response_body: req[:response][:body])
           end
-          
+
           yield result if block_given?
 
           @sequence_result.test_results << result
@@ -370,19 +364,23 @@ module Inferno
 
             wait = Selenium::WebDriver::Wait.new(:timeout => 15)
 
-            if e.config != nil 
-              script = e.config
+            if script = @instance.standalone_launch_script != nil
               script.each do |command|
                 current_element = wait.until {
-                  current = driver.send(command['cmd'], {command['find_type']: command['value']})
-                  current if current_element.displayed?
+                      current = driver.find_element({command['type'].to_sym => command['find_value']})
+                      current if current_element.displayed?
                 }
-                if command['index'] != nil
-                  current_element[command['index']].send(command['action'])
-                else
-                  current_element.send(command['action'], command['value'])
+                case command['cmd']
+                when 'send_keys'
+                  current_element.send_keys(command['value'])
+                when 'click'
+                  if command['index'] != nil
+                    current_element[command['index']].click(command['value'])
+                  else
+                    current_element.click(command['value'])
+                  end
                 end
-              end 
+              end
             end
 
           rescue SkipException => e
@@ -455,8 +453,8 @@ module Inferno
         raise WaitException.new endpoint
       end
 
-      def redirect(url, endpoint, config)
-        raise RedirectException.new url, endpoint, config
+      def redirect(url, endpoint)
+        raise RedirectException.new url, endpoint
       end
 
       def warning
