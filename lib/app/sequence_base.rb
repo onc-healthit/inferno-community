@@ -350,7 +350,7 @@ module Inferno
           rescue SkipException => e
             result.result = STATUS[:skip]
             result.message = e.message
-            result.details = e.message
+            result.details = e.details
 
           rescue => e
             # binding.pry

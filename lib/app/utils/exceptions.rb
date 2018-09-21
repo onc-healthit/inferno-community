@@ -8,12 +8,12 @@ module Inferno
     end
   end
 
-  # WILL WE NEED THIS?
   class SkipException < Exception
     attr_accessor :details
     def initialize(message = '', details = nil)
       super(message)
       FHIR.logger.info "SkipException: #{message}"
+      @details = details
     end
   end
 
