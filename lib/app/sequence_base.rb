@@ -75,10 +75,12 @@ module Inferno
       def start
         if @sequence_result.nil?
           @sequence_result = Models::SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance, required: !optional?, app_version: VERSION)
+          @sequence_result.save!
         end
 
         start_at = @sequence_result.test_results.length
 
+        
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|
           next if index < start_at
@@ -111,7 +113,7 @@ module Inferno
                 response_headers: req[:response][:headers].to_json,
                 response_body: req[:response][:body])
           end
-
+          
           yield result if block_given?
 
           @sequence_result.test_results << result
@@ -175,6 +177,10 @@ module Inferno
 
       def self.sequence_name
         self.name.split('::').last
+      end
+
+      def sequence_result
+        @sequence_result
       end
 
       def self.title(title = nil)

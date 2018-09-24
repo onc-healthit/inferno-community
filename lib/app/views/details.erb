@@ -237,6 +237,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
     </div>
+
   </div>
 </div>
 
@@ -393,18 +394,20 @@
   </div>
 </div>
 
-<div class="modal fade" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="testsRunningModalLabel" aria-hidden="true">
+<div class="modal fade" data-backdrop="static" data-keyboard="false" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="testsRunningModalLabel">Tests Running</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title" id="exampleModalLabel">Tests Running</h5>
+        <%# <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
-        </button>
+        </button> %>
       </div>
       <form method="POST" action="TokenIntrospection">
         <div class="modal-body">
           Tests are currently running <span class="number-complete"></span>
+        </div>
+        <div class="modal-footer">
         </div>
       </form>
     </div>

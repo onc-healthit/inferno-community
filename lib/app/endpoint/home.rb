@@ -122,7 +122,6 @@ module Inferno
                 count = 0
                 sequence_result = sequence.start do |result|
                   count = count + 1
-
                   out << js_update_result(sequence,result, count, sequence.test_count)
                 end
 
@@ -130,8 +129,8 @@ module Inferno
 
                 sequence_result.save!
                 if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url)
-                  out << js_redirect(sequence_result.redirect_to_url)
+                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                  # out << js_redirect(sequence_result.redirect_to_url)
                 elsif  submitted_sequences.count > 0
                   out << js_next_sequence(sequence_result.next_sequences)
                 else
@@ -194,8 +193,8 @@ module Inferno
                 instance.sequence_results.push(sequence_result)
                 instance.save!
                 if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url)
-                  out << js_redirect(sequence_result.redirect_to_url)
+                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                  # out << js_redirect(sequence_result.redirect_to_url)
                 else
                   out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}")
                 end
