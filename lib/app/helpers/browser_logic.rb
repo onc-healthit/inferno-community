@@ -16,17 +16,21 @@ module Inferno
         end
 
         def js_update_result(sequence, result, count, total)
-          "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');</script>"
+            cancelBtn = ""
+            cancelBtn = "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>" if(sequence.sequence_result)
+          "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');$('#testsRunningModal .modal-footer').html('#{cancelBtn}');</script>"
         end
 
         def js_redirect(location)
           "<script>console.log('js_window_location'); window.location = '#{location}'</script>"
         end
 
-        def js_redirect_modal(location, sequence)
-          cancelBtn = "<a href=\"sequence_result/#{sequence.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
+        def js_redirect_modal(location, sequence, instance)
+          # cancelBtn = "<a href=\"sequence_result/#{sequence.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
+          cancelBtn = ""
           okBtn = "<a href=\"#{location}\" class=\"btn btn-primary\">Continue</a>"
-          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('Redirecting you to <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea> We do not control the content of this site <div class=\"modal-footer\">#{cancelBtn} #{okBtn}</div>');</script>"
+          warningTxt = "Inferno will now redirect you to an external website.  For this test sequence to complete successfully, you will need to select a patient and authorize the Inferno client to access their data.  Once you authorize the Inferno client to access patient data, you should be redirected back to Inferno.  If something goes wrong, you can always return to Inferno at <a href=\"#{instance.base_url}#{base_path}/#{instance.id}\">#{instance.base_url}#{base_path}/#{instance.id}</a>."
+          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('#{warningTxt} <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea> <div class=\"modal-footer\">#{cancelBtn} #{okBtn}</div>');</script>"
         end
 
         def js_next_sequence(sequences)
