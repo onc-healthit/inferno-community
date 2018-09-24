@@ -104,19 +104,19 @@
           <a class="nav-link active" id="<%=sequence_class.name.demodulize%>_test_list-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_test_list" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_test_list" aria-selected="true"><% if sequence_results[sequence_class.sequence_name].nil? %>Test List<% else %> Test Results<%end%></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="<%=sequence_class.name.demodulize%>_more-information-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_more-information" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_more-information" aria-selected="false">More Information</a>
+          <a class="nav-link" id="<%=sequence_class.name.demodulize%>_more-information-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_more-information" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_more-information" aria-selected="false">Overview</a>
         </li>
       </ul>
       <div class="tab-content" id="<%=sequence_class.name.demodulize%>_tabs">
         <div class="tab-pane fade show active" id="<%=sequence_class.name.demodulize%>_test_list" role="tabpanel" aria-labelledby="<%=sequence_class.name.demodulize%>_test_list-tab">
-          <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
+          <%= erb(:test_list,{},{instance: instance, sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
         </div>
         <div class="tab-pane fade more-information" id="<%=sequence_class.name.demodulize%>_more-information" role="tabpanel" aria-labelledby="<%=sequence_class.name.demodulize%>_more-information-tab">
           <%= markdown_to_html(sequence_class.details).html_safe %>
         </div>
       </div>
     <% else %>
-      <%= erb(:test_list,{},{sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
+      <%= erb(:test_list,{},{instance: instance, sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
     <% end %>
   </div>
 </div>

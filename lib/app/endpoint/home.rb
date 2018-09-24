@@ -32,6 +32,14 @@ module Inferno
           redirect "#{BASE_PATH}/#{@instance.id}/"
         end
 
+        get '/test_details/:sequence_name/:test_index?' do
+          sequence = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(params[:sequence_name])}
+          halt 404 if !sequence
+          @test_metadata = sequence.tests[params[:test_index].to_i]
+          halt 404 if !@test_metadata
+          erb :test_details, layout: false
+        end
+
         get '/:id/test_result/:test_result_id/?' do
           @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
           halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
