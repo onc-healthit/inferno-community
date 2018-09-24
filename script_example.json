@@ -29,10 +29,10 @@
       "sequence": "PatientStandaloneLaunch",
       "standalone_launch_script": [
         {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
-        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "temp_password"},
+        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "Crucible2Inferno"},
         {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
         {"cmd": "click", "type": "class", "find_value": "patient-row", "index": 1},
-        {"cmd": "click", "type": "id", "find_value": "authorize"}
+        {"cmd": "click", "type": "name", "find_value": "authorize"}
       ]
     },
     "ArgonautPatient"

@@ -47,11 +47,13 @@ module Inferno
         oauth2_params = {
             'response_type' => 'code',
             'client_id' => @instance.client_id,
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => "#{@instance.base_url}#{BASE_PATH}/#{@instance.id}/#{@instance.client_endpoint_key}/redirect",
             'scope' => @instance.scopes,
             'state' => @instance.state,
             'aud' => @instance.url
         }
+
+        oauth2_params['redirect_uri'] = 'http://localhost:4568' if @instance.standalone_launch_script
 
         oauth2_auth_query = @instance.oauth_authorize_endpoint
 

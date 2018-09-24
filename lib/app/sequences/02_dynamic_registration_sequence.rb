@@ -65,6 +65,9 @@ module Inferno
             'scope' => @instance.scopes,
         }
 
+        params['initiate_login_uri'] = 'http://localhost:4568' if @instance.standalone_launch_script
+        params['redirect_uris'] = ['http://localhost:4568'] if @instance.standalone_launch_script
+
         params['token_endpoint_auth_method'] = if @instance.confidential_client
                                                  'client_secret_basic'
                                                else

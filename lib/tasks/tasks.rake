@@ -59,14 +59,24 @@ def execute(instance, sequences)
     sequence = sequence_info['sequence']
     sequence_info.each do |key, val|
       if key != 'sequence'
-        instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
+        if val.is_a?(Array) || val.is_a?(Hash)
+          binding.pry
+          instance.send("#{key.to_s}=", val.to_json) if instance.respond_to? key.to_s
+        elsif val.is_a? String && val.downcase == 'true'
+          instance.send("#{key.to_s}=", true) if instance.respond_to? key.to_s
+        elsif val.is_a? String && val.downcase == 'false'
+          instance.send("#{key.to_s}=", false) if instance.respond_to? key.to_s
+        else
+          instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
+        end
       end
     end
     instance.save
     sequence_instance = sequence.new(instance, client, false)
     sequence_result = nil
 
-    suppress_output{sequence_result = sequence_instance.start}
+    # suppress_output{sequence_result = sequence_instance.start}
+    sequence_result = sequence_instance.start
 
     sequence_results << sequence_result
 
