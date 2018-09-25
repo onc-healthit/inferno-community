@@ -1,9 +1,7 @@
 {
   "server": "https://api-v5-dstu2.hspconsortium.org/InfernoDev/data",
   "arguments": {
-    "client_name": "",
-    "initiate_login_uri": "http://localhost:4568/launch",
-    "redirect_uris": "http://localhost:4568/redirect",
+    "client_name": "Inferno",
     "scopes": "launch launch/patient offline_access openid profile user/*.* patient/*.*",
     "confidential_client": true,
     "standalone_launch_script": [
@@ -22,9 +20,6 @@
   "sequences": [
     "Conformance",
     "DynamicRegistration",
-    "TokenRefresh",
-    "OpenIDConnect",
-    "ArgonautPatient",
     {
       "sequence": "PatientStandaloneLaunch",
       "standalone_launch_script": [

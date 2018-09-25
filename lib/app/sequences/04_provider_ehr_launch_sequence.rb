@@ -80,7 +80,7 @@ module Inferno
         oauth2_params = {
             'response_type' => 'code',
             'client_id' => @instance.client_id,
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
             'scope' => @instance.scopes,
             'launch' => @params['launch'],
             'state' => @instance.state,
@@ -141,7 +141,7 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => 'INVALID_CODE',
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
             'client_id' => @instance.client_id
         }
 
@@ -151,7 +151,7 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => @params['code'],
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
             'client_id' => 'INVALID_CLIENT_ID'
         }
 
@@ -172,8 +172,9 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => @params['code'],
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
         }
+
         if @instance.confidential_client
           oauth2_header = {
               'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",

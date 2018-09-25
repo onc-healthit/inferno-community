@@ -3,15 +3,14 @@ require_relative 'ext/fhir_client'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
 require_relative 'utils/validation'
-
-require 'selenium-webdriver'
-
+require_relative 'utils/web_driver'
 
 module Inferno
   module Sequence
     class SequenceBase
 
       include Assertions
+      include Inferno::WebDriver
 
       STATUS = {
           pass: 'pass',
@@ -90,6 +89,20 @@ module Inferno
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
           result = self.method(test_method).call()
+
+          # Check to see if we are in headless mode and should rediect
+
+          if(result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?)
+            begin
+              @params = run_standalone_launch(result.redirect_to_url)
+              result.result = STATUS[:pass]
+            rescue => e
+              result.result = STATUS[:fail]
+              result.message = "Automated browser script failed: #{e}"
+            end
+
+
+          end
 
           unless @client.nil?
             @client.requests.each do |req|
@@ -355,56 +368,6 @@ module Inferno
             result.result = STATUS[:wait]
             result.wait_at_endpoint = e.endpoint
             result.redirect_to_url = e.url
-            Selenium::WebDriver.logger.level = :debug
-
-            ENV['NO_PROXY'] = ENV['no_proxy'] = '127.0.0.1'
-            options = Selenium::WebDriver::Chrome::Options.new
-            # options.add_argument('--headless')
-            options.add_argument('--disable-gpu')
-
-            options.add_argument('--remote-debugging-port=9222')
-
-            # Selenium::WebDriver.logger.output = 'selenium.log'
-
-            # binding.pry
-            # driver = Selenium::WebDriver.for :chrome, switches: %w[--incognito]
-            if !@instance.standalone_launch_script.nil?
-
-              script = JSON.parse(@instance.standalone_launch_script)
-
-              driver = Selenium::WebDriver.for :chrome, options: options
-              driver.navigate.to e.url
-
-              wait = Selenium::WebDriver::Wait.new(:timeout => 15)
-
-
-              script.each do |command|
-                current_element = wait.until {
-                    if(command['index'])
-                      current = driver.find_elements({command['type'].to_sym => command['find_value']})
-                    else
-                      current = driver.find_element({command['type'].to_sym => command['find_value']})
-                    end
-
-                    current if (current.is_a?(Array) && current.length>0) || (!current.is_a?(Array) && current.displayed?)
-                }
-
-                case command['cmd']
-                when 'send_keys'
-                  current_element.send_keys(command['value'])
-                when 'click'
-                  if command['index'] != nil
-                    binding.pry if current_element[command['index']].nil?
-                    current_element[command['index']].click
-                  else
-                    binding.pry if current_element.nil?
-                    current_element.click
-                  end
-                end
-              end
-            end
-            # driver.current_url
-            binding.pry
 
           rescue SkipException => e
             result.result = STATUS[:skip]
@@ -412,7 +375,7 @@ module Inferno
             result.details = e.details
 
           rescue => e
-            # binding.pry
+            binding.pry
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end

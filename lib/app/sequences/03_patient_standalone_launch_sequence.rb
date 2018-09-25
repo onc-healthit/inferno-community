@@ -6,7 +6,7 @@ module Inferno
       description 'Demonstrate the Patient Standalone Launch Sequence.'
       test_id_prefix 'PSLS'
 
-      requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :initiate_login_uri, :redirect_uris
+      requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :redirect_uris
       defines :token, :id_token, :refresh_token, :patient_id
 
       preconditions 'Client must be registered' do
@@ -47,13 +47,11 @@ module Inferno
         oauth2_params = {
             'response_type' => 'code',
             'client_id' => @instance.client_id,
-            'redirect_uri' => "#{@instance.base_url}#{BASE_PATH}/#{@instance.id}/#{@instance.client_endpoint_key}/redirect",
+            'redirect_uri' => @instance.redirect_uris,
             'scope' => @instance.scopes,
             'state' => @instance.state,
             'aud' => @instance.url
         }
-
-        oauth2_params['redirect_uri'] = 'http://localhost:4568' if @instance.standalone_launch_script
 
         oauth2_auth_query = @instance.oauth_authorize_endpoint
 
@@ -103,7 +101,7 @@ module Inferno
         }
       end
 
-      test 'OAuth token exchange endpoint secured by transport layer security' do
+      test 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID' do
 
         metadata {
           id '05'
@@ -118,7 +116,7 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => 'INVALID_CODE',
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
             'client_id' => @instance.client_id
         }
 
@@ -128,7 +126,7 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => @params['code'],
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
             'client_id' => 'INVALID_CLIENT_ID'
         }
 
@@ -150,7 +148,7 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => @params['code'],
-            'redirect_uri' => @instance.base_url + BASE_PATH + '/' + @instance.id + '/' + @instance.client_endpoint_key + '/redirect',
+            'redirect_uri' => @instance.redirect_uris,
         }
         if @instance.confidential_client
           oauth2_headers = {

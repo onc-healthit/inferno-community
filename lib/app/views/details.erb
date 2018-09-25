@@ -102,12 +102,12 @@
 
           <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
                                           label: 'Launch URI',
-                                          value: request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
+                                          value: instance.initiate_login_uri || request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
                                           readonly: true })%>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
                                           label: 'Redirect URI',
-                                          value: request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
+                                          value: instance.redirect_uris || request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
                                           readonly: true })%>
 
 
