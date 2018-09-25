@@ -29,7 +29,7 @@ module Inferno
           url = url.chomp('/') if url.end_with?('/')
           @instance = Inferno::Models::TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
           @instance.save!
-          redirect "#{BASE_PATH}/#{@instance.id}/"
+          redirect "#{BASE_PATH}/#{@instance.id}/#{"?autoRun=ConformanceSequence" if settings.autorun_conformance}"
         end
 
         get '/test_details/:sequence_name/:test_index?' do
