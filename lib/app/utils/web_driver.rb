@@ -7,7 +7,7 @@ module Inferno
 
       ENV['NO_PROXY'] = ENV['no_proxy'] = '127.0.0.1'
       options = Selenium::WebDriver::Chrome::Options.new
-      # options.add_argument('--headless')
+      options.add_argument('--headless')
       options.add_argument('--disable-gpu')
       options.add_argument('--incognito')
 
