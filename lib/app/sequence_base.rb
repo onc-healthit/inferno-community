@@ -82,7 +82,6 @@ module Inferno
 
         start_at = @sequence_result.test_results.length
 
-
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|
           next if index < start_at
@@ -90,9 +89,9 @@ module Inferno
           LoggedRestClient.clear_log
           result = self.method(test_method).call()
 
-          # Check to see if we are in headless mode and should rediect
+          # Check to see if we are in headless mode and should redirect
 
-          if(result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?)
+          if result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?
             begin
               @params = run_standalone_launch(result.redirect_to_url)
               result.result = STATUS[:pass]
@@ -100,8 +99,6 @@ module Inferno
               result.result = STATUS[:fail]
               result.message = "Automated browser script failed: #{e}"
             end
-
-
           end
 
           unless @client.nil?
@@ -375,7 +372,6 @@ module Inferno
             result.details = e.details
 
           rescue => e
-            binding.pry
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end
