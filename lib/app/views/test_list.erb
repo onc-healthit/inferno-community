@@ -1,13 +1,13 @@
 <ul class='test-list'>
   <% sequence_result && sequence_result.test_results.each do |result, index| %>
-    <li class="result-details-clickable" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">
+    <li>
       <% case result.result
         when 'pass' %>
           <div class="result-details-icon result-details-icon-pass" data-toggle="tooltip" title="Test passed.">
             <span class="oi oi-check"></span>
           </div>
       <% when 'fail' %>
-          <% if result.required %>
+         <% if result.required %>
               <div class="result-details-icon result-details-icon-fail" data-toggle="tooltip" title="Test Failed.  Click for more information.">
                 <span class="oi oi-x"></span>
               </div>
@@ -63,6 +63,7 @@
 
       <% if result.result == 'todo' %> TODO: <% end %>
       <%= result.test_id + ': ' + result.name %>
+      <button class="test-results-more" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">results...</button>
       <% unless result.message.nil? %>
         <div class="result-details-message">
             Details: <%= result.message %>
@@ -74,12 +75,11 @@
   <% end %>
   <% start_at = 0%>
   <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
-  <% sequence_class.tests[start_at..-1].each do |test, index| %>
+  <% sequence_class.tests[start_at..-1].each_with_index do |test, index| %>
     <li>
-      <div class="result-details-icon result-details-icon-pending">
-        <span class="oi oi-ellipses" title="Pending" aria-hidden="true"></span>
-      </div>
-      <%= test[:test_id] + ': '+ test[:name] %>
+      <strong><%= test[:test_id] %></strong>: <%= test[:name] %> <button class="test-list-more"
+                                                                         data-sequence-name="<%=sequence_class.name.demodulize%>"
+                                                                         data-test-index="<%=index%>">more...</button>
     </li>
   <% end %>
 </ul>

@@ -458,16 +458,31 @@ body {
 .test-list li {
   list-style: none;
   font-size: .9em;
-  padding: 5px 15px 5px;
+  padding: 10px 15px;
   border-bottom: 1px solid #efefef;
+}
+
+.test-results-more {
+  margin: 0;
+  padding: 0;
+  vertical-align: initial;
+  border: none;
+  color: #007bff;
+  background: none;
+  cursor: pointer;
 }
 
 .test-list li:last-child {
   border-bottom: none;
 }
 
-li.result-details-clickable:hover {
-  background-color: #efefef;
+.test-list-more {
+  margin: 0;
+  padding: 0;
+  vertical-align: initial;
+  border: none;
+  color: #007bff;
+  background: none;
   cursor: pointer;
 }
 
