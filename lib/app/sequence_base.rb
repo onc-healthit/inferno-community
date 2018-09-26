@@ -637,6 +637,7 @@ module Inferno
 
           ),
           sequences: [
+            ManualRegistrationSequence,
             DynamicRegistrationSequence,
             PatientStandaloneLaunchSequence,
             ProviderEHRLaunchSequence,

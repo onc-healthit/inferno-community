@@ -4,7 +4,7 @@ module Inferno
 
       title 'EHR Launch Sequence'
 
-      description 'Demonstrate the Provider EHR Launch Sequence.'
+      description 'Demonstrate the SMART EHR Launch Sequence.'
 
       test_id_prefix 'ELS'
 
