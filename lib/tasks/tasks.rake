@@ -59,13 +59,23 @@ def execute(instance, sequences)
     sequence = sequence_info['sequence']
     sequence_info.each do |key, val|
       if key != 'sequence'
-        instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
+        if val.is_a?(Array) || val.is_a?(Hash)
+          instance.send("#{key.to_s}=", val.to_json) if instance.respond_to? key.to_s
+        elsif val.is_a?(String) && val.downcase == 'true'
+          instance.send("#{key.to_s}=", true) if instance.respond_to? key.to_s
+        elsif val.is_a?(String) && val.downcase == 'false'
+          instance.send("#{key.to_s}=", false) if instance.respond_to? key.to_s
+        else
+          instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
+        end
       end
     end
+    instance.save
     sequence_instance = sequence.new(instance, client, false)
     sequence_result = nil
 
-    suppress_output{sequence_result = sequence_instance.start}
+    # suppress_output{sequence_result = sequence_instance.start}
+    sequence_result = sequence_instance.start
 
     sequence_results << sequence_result
 
@@ -75,15 +85,15 @@ def execute(instance, sequences)
       print " "
       if result.result == 'pass'
         print "#{checkmark.encode('utf-8')} pass".green
-        print " - #{result.name}\n"
+        print " - #{result.test_id} #{result.name}\n"
       elsif result.result == 'skip'
         print "* skip".yellow
-        print " - #{result.name}\n"
+        print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
       elsif result.result == 'fail'
         if result.required
           print "X fail".red
-          print " - #{result.name}\n"
+          print " - #{result.test_id} #{result.name}\n"
           puts "    Message: #{result.message}"
           print_requests(result).map do |req|
             puts "    #{req}"
@@ -91,7 +101,7 @@ def execute(instance, sequences)
           fails = true
         else
           print "X fail (optional)".light_black
-          print " - #{result.name}\n"
+          print " - #{result.test_id} #{result.name}\n"
           puts "    Message: #{result.message}"
           print_requests(result).map do |req|
             puts "    #{req}"
@@ -99,7 +109,7 @@ def execute(instance, sequences)
         end
       elsif sequence_result.result == 'error'
         print "X error".magenta
-        print " - #{result.name}\n"
+        print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
         print_requests(result).map do |req|
           puts "      #{req}"
@@ -118,8 +128,6 @@ def execute(instance, sequences)
       fails = true
     elsif sequence_result.result == 'skip'
       puts 'skip '.yellow + '*'.yellow
-    # else
-    #   binding.pry
     end
     puts "---------------------------------------------\n"
   end
@@ -311,15 +319,23 @@ namespace :inferno do |argv|
     file = File.read(args.config)
     config = JSON.parse(file)
 
-    instance = Inferno::Models::TestingInstance.new(url: config['server'])
+    instance = Inferno::Models::TestingInstance.new(url: config['server'], initiate_login_uri: 'http://localhost:4568/launch', redirect_uris: 'http://localhost:4568/redirect')
     instance.save!
     client = FHIR::Client.new(config['server'])
     client.use_dstu2
     client.default_json
 
-    config['arguments'].each do |req, value|
-      if instance.respond_to?(req)
-        instance.send("#{req}=", value)
+    config['arguments'].each do |key, val|
+      if instance.respond_to?(key)
+        if val.is_a?(Array) || val.is_a?(Hash)
+          instance.send("#{key.to_s}=", val.to_json) if instance.respond_to? key.to_s
+        elsif val.is_a?(String) && val.downcase == 'true'
+          instance.send("#{key.to_s}=", true) if instance.respond_to? key.to_s
+        elsif val.is_a?(String) && val.downcase == 'false'
+          instance.send("#{key.to_s}=", false) if instance.respond_to? key.to_s
+        else
+          instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
+        end
       end
     end
 

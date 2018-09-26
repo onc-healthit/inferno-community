@@ -19,5 +19,6 @@ gem 'rack-test'
 gem 'json-jwt'
 gem 'colorize'
 gem 'kramdown'
+gem 'selenium-webdriver'
 
 gem 'simplecov', require: false, group: :test

@@ -39,6 +39,13 @@ module Inferno
       property :introspect_token, String
       property :introspect_refresh_token, String
 
+      property :standalone_launch_script, String
+      property :ehr_launch_script, String
+      property :manual_registration_script, String
+
+      property :initiate_login_uri, String
+      property :redirect_uris, String
+
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references

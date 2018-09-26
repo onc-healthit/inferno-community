@@ -3,12 +3,14 @@ require_relative 'ext/fhir_client'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
 require_relative 'utils/validation'
+require_relative 'utils/web_driver'
 
 module Inferno
   module Sequence
     class SequenceBase
 
       include Assertions
+      include Inferno::WebDriver
 
       STATUS = {
           pass: 'pass',
@@ -80,13 +82,33 @@ module Inferno
 
         start_at = @sequence_result.test_results.length
 
-        
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|
           next if index < start_at
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
           result = self.method(test_method).call()
+
+          # Check to see if we are in headless mode and should redirect
+
+          if result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?
+            begin
+              @params = run_script(@instance.standalone_launch_script, result.redirect_to_url)
+              result.result = STATUS[:pass]
+            rescue => e
+              result.result = STATUS[:fail]
+              result.message = "Automated browser script failed: #{e}"
+            end
+          elsif result.wait_at_endpoint == 'launch' && !@instance.ehr_launch_script.nil?
+            begin
+              @params = run_script(@instance.ehr_launch_script)
+              binding.pry
+              result.result = STATUS[:pass]
+            rescue => e
+              result.result = STATUS[:fail]
+              result.message = "Automated browser script failed: #{e}"
+            end
+          end
 
           unless @client.nil?
             @client.requests.each do |req|
@@ -113,7 +135,7 @@ module Inferno
                 response_headers: req[:response][:headers].to_json,
                 response_body: req[:response][:body])
           end
-          
+
           yield result if block_given?
 
           @sequence_result.test_results << result
@@ -359,7 +381,6 @@ module Inferno
             result.details = e.details
 
           rescue => e
-            # binding.pry
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end
@@ -616,6 +637,7 @@ module Inferno
 
           ),
           sequences: [
+            ManualRegistrationSequence,
             DynamicRegistrationSequence,
             PatientStandaloneLaunchSequence,
             ProviderEHRLaunchSequence,

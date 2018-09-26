@@ -59,8 +59,8 @@ module Inferno
 
         params = {
             'client_name' => @instance.client_name,
-            'initiate_login_uri' => "#{@instance.base_url}#{BASE_PATH}/#{@instance.id}/#{@instance.client_endpoint_key}/launch",
-            'redirect_uris' => ["#{@instance.base_url}#{BASE_PATH}/#{@instance.id}/#{@instance.client_endpoint_key}/redirect"],
+            'initiate_login_uri' => @instance.initiate_login_uri,
+            'redirect_uris' => [@instance.redirect_uris],
             'grant_types' => ['authorization_code'],
             'scope' => @instance.scopes,
         }
