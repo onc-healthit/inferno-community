@@ -62,8 +62,9 @@
       <% end %>
 
       <% if result.result == 'todo' %> TODO: <% end %>
+      <strong><%= result.test_id %></strong>:
       <% unless result.required %> OPTIONAL |  <% end %>
-      <%= result.test_id + ': ' + result.name %>
+      <%=result.name %>
       <button class="test-results-more" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">results...</button>
       <% unless result.message.nil? %>
         <div class="result-details-message">
@@ -78,9 +79,9 @@
   <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
   <% sequence_class.tests[start_at..-1].each_with_index do |test, index| %>
     <li>
-      <strong>
+      <strong><%= test[:test_id] %></strong>:
         <% unless test[:required] %> OPTIONAL |  <% end %>
-        <%= test[:test_id] %></strong>: <%= test[:name] %>
+        <%= test[:name] %>
         <button class="test-list-more"
                 data-sequence-name="<%=sequence_class.name.demodulize%>"
                 data-test-index="<%=index%>">more...</button>

@@ -2,7 +2,7 @@ module Inferno
   module Sequence
     class DynamicRegistrationSequence < SequenceBase
 
-      title 'Dynamic Registration'
+      title 'Dynamic Registration (Optional)'
 
       description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
 
