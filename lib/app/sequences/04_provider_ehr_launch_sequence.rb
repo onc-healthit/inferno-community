@@ -2,11 +2,11 @@ module Inferno
   module Sequence
     class ProviderEHRLaunchSequence < SequenceBase
 
-      title 'Provider EHR Launch Sequence'
+      title 'EHR Launch Sequence'
 
       description 'Demonstrate the Provider EHR Launch Sequence.'
 
-      test_id_prefix 'PELS'
+      test_id_prefix 'ELS'
 
       requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes,:initiate_login_uri, :redirect_uris
 

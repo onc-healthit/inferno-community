@@ -5,31 +5,27 @@
     "scopes": "launch launch/patient offline_access openid profile user/*.* patient/*.*",
     "confidential_client": true,
     "standalone_launch_script": [
-      {"cmd": "find_element", "type": "name", "value": "email"},
-      {"cmd": "send", "value": "inferno@groups.mitre.org"},
-      {"cmd": "find_element", "type": "name", "value": "password"},
-      {"cmd": "send", "value": "temp_password"},
-      {"cmd": "find_element", "type": "tag_name", "value": "button", "index": 3},
-      {"cmd": "click"},
-      {"cmd": "find_element", "type": "class", "value": "patient-row", "index": 0},
-      {"cmd": "click"},
-      {"cmd": "find_element", "type": "id", "value": "authorize"},
-      {"cmd": "click"}
+        {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
+        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "xxx"},
+        {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
+        {"cmd": "click", "type": "class", "find_value": "patient-row", "index": 1},
+        {"cmd": "click", "type": "name", "find_value": "authorize"}
+    ],
+    "ehr_launch_script": [
+      {"cmd": "navigate", "value": "https://sandbox.hspconsortium.org/InfernoDev"},
+      {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 0},
+      {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
+      {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "xxx"},
+      {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
+      {"cmd": "wait", "value": 5},
+      {"cmd": "click", "type": "class", "find_value": "appLaunchIcon", "index": 0},
+      {"cmd": "click", "type": "class", "find_value": "patient-row", "index": 2}
     ]
   },
   "sequences": [
     "Conformance",
     "DynamicRegistration",
-    {
-      "sequence": "PatientStandaloneLaunch",
-      "standalone_launch_script": [
-        {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
-        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "Crucible2Inferno"},
-        {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
-        {"cmd": "click", "type": "class", "find_value": "patient-row", "index": 1},
-        {"cmd": "click", "type": "name", "find_value": "authorize"}
-      ]
-    },
+    "PatientStandaloneLaunch",
     "ArgonautPatient"
   ]
 }

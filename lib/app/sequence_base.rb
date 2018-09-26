@@ -93,7 +93,16 @@ module Inferno
 
           if result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?
             begin
-              @params = run_standalone_launch(result.redirect_to_url)
+              @params = run_script(@instance.standalone_launch_script, result.redirect_to_url)
+              result.result = STATUS[:pass]
+            rescue => e
+              result.result = STATUS[:fail]
+              result.message = "Automated browser script failed: #{e}"
+            end
+          elsif result.wait_at_endpoint == 'launch' && !@instance.ehr_launch_script.nil?
+            begin
+              @params = run_script(@instance.ehr_launch_script)
+              binding.pry
               result.result = STATUS[:pass]
             rescue => e
               result.result = STATUS[:fail]

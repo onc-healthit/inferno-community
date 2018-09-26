@@ -2,9 +2,9 @@ module Inferno
   module Sequence
     class PatientStandaloneLaunchSequence < SequenceBase
 
-      title 'Patient Standalone Launch Sequence'
+      title 'Standalone Launch Sequence'
       description 'Demonstrate the Patient Standalone Launch Sequence.'
-      test_id_prefix 'PSLS'
+      test_id_prefix 'SLS'
 
       requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :redirect_uris
       defines :token, :id_token, :refresh_token, :patient_id
