@@ -31,3 +31,6 @@ log_to_file: false
 
 # Logging enabled?
 logging_enabled: true
+
+# Automatically Run Conformance Sequence on new server create
+autorun_conformance: false
