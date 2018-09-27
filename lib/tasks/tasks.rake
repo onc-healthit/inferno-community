@@ -74,8 +74,8 @@ def execute(instance, sequences)
     sequence_instance = sequence.new(instance, client, false)
     sequence_result = nil
 
-    # suppress_output{sequence_result = sequence_instance.start}
-    sequence_result = sequence_instance.start
+    suppress_output{sequence_result = sequence_instance.start}
+    # sequence_result = sequence_instance.start
 
     sequence_results << sequence_result
 
@@ -182,9 +182,9 @@ namespace :inferno do |argv|
     csv_out = CSV.generate do |csv|
       csv << ['Version', VERSION, 'Generated', Time.now]
       csv << ['', '', '', '', '']
-      csv << ['Test ID', 'Reference', 'Sequence/Group', 'Test Name', 'Required?', 'Description/Requirement', 'Reference URI']
+      csv << ['Test ID', 'Reference', 'Sequence/Group', 'Test Name', 'Required?', 'Reference URI']
       flat_tests.each do |test|
-        csv <<  [test[:test_id], test[:ref], test[:sequence], test[:name], test[:sequence_required] && test[:required], test[:description], test[:url] ]
+        csv <<  [test[:test_id], test[:ref], test[:sequence].split("::").last, test[:name], test[:sequence_required] && test[:required], test[:url] ]
       end
     end
 
