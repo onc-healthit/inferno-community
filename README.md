@@ -1,15 +1,13 @@
-# Inferno
+![Inferno Logo](https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png "Inferno Logo")
+
+Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
+It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards
+and reports the results back to you.
 
 This application creates test clients that exercise the range of requirements of a
 [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the
 [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html)
 Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
-
-## System Requirements
-
-* [Ruby 2.5+](https://www.ruby-lang.org/en/)
-* [Ruby Bundler](http://bundler.io/)
-* [SQLite](https://www.sqlite.org/)
 
 ## Supported Browsers
 
@@ -17,20 +15,6 @@ Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and E
 
 ## Installation and Running
 
-### Local Installation
-
-Inferno can installed and run locally on your machine.  Install the dependencies
-listed above and enter the following in a terminal prompt:
-
-```sh
-# MacOS or Linux
-git clone https://github.com/siteadmin/inferno
-cd inferno
-bundle install
-rackup
-```
-
-Inferno can then be accessed at http://localhost:4567 in a web browser.
 
 ### Docker Installation
 
@@ -43,6 +27,27 @@ Docker is the recommended installation method for Windows devices and can also b
 5. Navigate to http://localhost:8080 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up -- build` to rebuild the containers.
+
+### Native Ruby Installation
+
+Inferno can installed and run locally on your machine.  Install the dependencies
+listed above and enter the following in a terminal prompt:
+
+## System Requirements
+
+* [Ruby 2.5+](https://www.ruby-lang.org/en/)
+* [Ruby Bundler](http://bundler.io/)
+* [SQLite](https://www.sqlite.org/)
+
+```sh
+# MacOS or Linux
+git clone https://github.com/siteadmin/inferno
+cd inferno
+bundle install
+rackup
+```
+
+Inferno can then be accessed at http://localhost:4567 in a web browser.
 
 ### Remote Deployment
 
@@ -112,7 +117,7 @@ Arguments can be provided to the task in order to export a specific set of tests
 The currently supported groups of tests are `all`, `active` or `inactive`.  For example:
 
 ```sh
-bundle exec rake tests_to_csv[all,all_tests.csv]
+bundle exec rake inferno:tests_to_csv[all,all_tests.csv]
 ```
 
 ## Running Tests from the Command Line
