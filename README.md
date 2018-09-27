@@ -5,6 +5,10 @@ It makes HTTP(S) requests to test your server's conformance to authentication, a
 
 This application creates test clients that exercise the range of requirements of a [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
+## Using Inferno
+
+If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Quick Start Guide](https://github.com/siteadmin/inferno/wiki/Quick-Start-Guide).
+
 ## Installation and Deployment
 
 ### Docker Installation
@@ -70,10 +74,6 @@ Inferno contains a robust set of self-tests to ensure that the test clients conf
 ```sh
 bundle exec rake
 ```
-
-## Basic Usage Instructions
-
-If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Quick Start Guide](https://github.com/siteadmin/inferno/wiki/Quick-Start-Guide).
 
 ## Inspecting and Exporting Tests
 
