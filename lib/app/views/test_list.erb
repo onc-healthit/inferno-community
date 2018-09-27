@@ -8,7 +8,7 @@
           </div>
       <% when 'fail' %>
          <% if result.required %>
-              <div class="result-details-icon result-details-icon-fail" data-toggle="tooltip" title="Test Failed.  Click for more information.">
+              <div class="result-details-icon result-details-icon-fail" data-toggle="tooltip" title="Test Failed.">
                 <span class="oi oi-x"></span>
               </div>
           <% else %>
@@ -25,7 +25,7 @@
             !
           </div>
       <% when 'skip' %>
-          <div class="result-details-icon result-details-icon-skip" data-toggle="tooltip" title="Test was skipped and does not affect passing or failed scores.  Click for more information.">
+          <div class="result-details-icon result-details-icon-skip" data-toggle="tooltip" title="Test was skipped and does not affect passing or failed scores.">
             <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
           </div>
       <% when 'wait' %>
