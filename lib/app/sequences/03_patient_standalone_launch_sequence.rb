@@ -1,6 +1,6 @@
 module Inferno
   module Sequence
-    class PatientStandaloneLaunchSequence < SequenceBase
+    class StandaloneLaunchSequence < SequenceBase
 
       title 'Standalone Launch Sequence'
       description 'Demonstrate the SMART Standalone Launch Sequence.'

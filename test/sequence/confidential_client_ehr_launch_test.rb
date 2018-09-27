@@ -25,7 +25,7 @@ class ConfidentialClientEHRLaunchSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = Inferno::Sequence::ProviderEHRLaunchSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::EHRLaunchSequence.new(@instance, client, true)
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
   end
 

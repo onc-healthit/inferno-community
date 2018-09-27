@@ -1,6 +1,6 @@
 module Inferno
   module Sequence
-    class ProviderEHRLaunchSequence < SequenceBase
+    class EHRLaunchSequence < SequenceBase
 
       title 'EHR Launch Sequence'
 

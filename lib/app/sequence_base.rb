@@ -639,8 +639,8 @@ module Inferno
           sequences: [
             ManualRegistrationSequence,
             DynamicRegistrationSequence,
-            PatientStandaloneLaunchSequence,
-            ProviderEHRLaunchSequence,
+            StandaloneLaunchSequence,
+            EHRLaunchSequence,
             OpenIDConnectSequence,
             TokenRefreshSequence
           ],

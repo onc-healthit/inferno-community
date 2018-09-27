@@ -25,7 +25,7 @@
   "sequences": [
     "Conformance",
     "DynamicRegistration",
-    "PatientStandaloneLaunch",
+    "StandaloneLaunch",
     "ArgonautPatient"
   ]
 }
