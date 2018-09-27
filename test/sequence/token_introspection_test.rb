@@ -11,7 +11,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
     resource_id = SecureRandom.uuid
     resource_secret = SecureRandom.hex(32)
 
-    @instance = TestingInstance.new(url: 'http://www.example.com',
+    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
                                    scopes: 'launch openid patient/*.* profile',
@@ -26,7 +26,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = TokenIntrospectionSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::TokenIntrospectionSequence.new(@instance, client, true)
   end
 
   def test_all_pass

@@ -10,10 +10,10 @@ class ConfidentialClientEHRLaunchSequenceTest < MiniTest::Unit::TestCase
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
   def setup
-    @instance = TestingInstance.new(url: 'http://www.example.com',
+    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                     client_name: 'Inferno',
                                     base_url: 'http://localhost:4567',
-                                    client_endpoint_key: SecureRandomBase62.generate(32),
+                                    client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                     confidential_client: true,
                                     client_id: SecureRandom.uuid,
                                     client_secret: SecureRandom.uuid,
@@ -25,7 +25,7 @@ class ConfidentialClientEHRLaunchSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = ProviderEHRLaunchSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::EHRLaunchSequence.new(@instance, client, true)
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
   end
 
@@ -65,7 +65,7 @@ class ConfidentialClientEHRLaunchSequenceTest < MiniTest::Unit::TestCase
     assert sequence_result.result == 'wait', 'The sequence should be in a wait state.'
     assert sequence_result.wait_at_endpoint == 'launch', 'The sequence should be waiting at a launch url.'
 
-    sequence_result = @sequence.resume(nil, nil, {"iss"=>@instance.url, "launch" => SecureRandomBase62.generate(32)})
+    sequence_result = @sequence.resume(nil, nil, {"iss"=>@instance.url, "launch" => Inferno::SecureRandomBase62.generate(32)})
 
     assert sequence_result.result == 'wait', 'The sequence should be in a wait state.'
     assert sequence_result.redirect_to_url.start_with? @instance.oauth_authorize_endpoint, 'The sequence should be redirecting to the authorize url'

@@ -1,11 +1,10 @@
 require File.expand_path '../../test_helper.rb', __FILE__
-
 class HomePageTest < MiniTest::Unit::TestCase
 
   include Rack::Test::Methods
 
   def app
-    Sinatra::Application
+    Inferno::App.new
   end
 
   def test_front_page_responds

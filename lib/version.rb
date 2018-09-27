@@ -1,1 +1,3 @@
-VERSION = "0.9.3"
+module Inferno
+  VERSION = '1.0.0 rc1'
+end

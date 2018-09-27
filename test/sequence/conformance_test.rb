@@ -10,12 +10,12 @@ class ConformanceSequenceTest < MiniTest::Unit::TestCase
   RESPONSE_HEADERS = {'content-type'=>'application/json+fhir;charset=UTF-8'}
 
   def setup
-    instance = TestingInstance.new(url: 'http://www.example.com')
+    instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com')
     instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = ConformanceSequence.new(instance, client, true)
+    @sequence = Inferno::Sequence::ConformanceSequence.new(instance, client, true)
     @conformance = load_json_fixture(:conformance_statement)
   end
 

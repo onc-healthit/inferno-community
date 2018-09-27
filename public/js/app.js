@@ -1,4 +1,13 @@
+
+
 $(function(){
+  jQuery.extend({
+
+    getQueryParameters : function(str) {
+      return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
+    }
+  
+  });
 
   function indent(value) {
     var firstCharacter = value.trim().charAt(0)
@@ -32,6 +41,25 @@ $(function(){
     else {
       button.html("Show Details");
     }
+  });
+
+  $('.sequence-details-more').click(function () {
+    var button = $(this);
+    var sequence = button.data('sequence');
+     if(sequence){
+      $('.help-details').each(function(){
+        if($(this).data('sequence') === sequence){
+          $(this).show();
+          $('#help-modal-title').html($(this).data('sequence-title'));
+           // FIXME: technically we don't hae to do this every time it is opened, only the first time
+          $(this).find('a[href^="http"]').attr('target','_blank');
+        } else {
+          $(this).hide();
+        }
+      })
+      $('#help-sequence-' + sequence).collapse('show')
+       $('#help-modal').modal('show');
+     }
   });
 
   $('.sequence-action button').click(function() {
@@ -153,7 +181,7 @@ $(function(){
                         .attr('data-toggle','tooltip');
   });
 
-  $('.result-details li').on('click', function() {
+  $('.test-results-more').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
       var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');
       $("#testResultDetailsModal").find('.modal-content').load(url, function(value){
@@ -175,6 +203,15 @@ $(function(){
     }
   })
 
+  $('.test-list .test-list-more').on('click', function() {
+    if($(this).data('sequenceName') && $(this).data('testIndex') !== undefined){
+      var url = window.basePath + '/test_details/' + $(this).data('sequenceName') + '/' + $(this).data('testIndex');
+      $("#testDetailsModal").find('.modal-content').load(url, function(value){
+        $("#testDetailsModal").modal('show');
+      })
+    }
+  })
+
   $(":input[type=text][readonly='readonly']").on('click', function(){
     this.select();
   })
@@ -191,5 +228,12 @@ $(function(){
   $('[data-toggle="tooltip"]').tooltip()
 
   $('#WaitModal').modal('show');
+
+  var autoRun = $.getQueryParameters().autoRun;
+  if(autoRun) {
+    var url = window.location.pathname;
+    window.history.replaceState({}, null, url);
+    $("button[data-sequence='" + autoRun + "']").click()
+  }
 
 }); 

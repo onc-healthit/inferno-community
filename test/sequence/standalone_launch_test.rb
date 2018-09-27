@@ -3,10 +3,10 @@ require File.expand_path '../../test_helper.rb', __FILE__
 class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
 
   def setup
-    @instance = TestingInstance.new(url: 'http://www.example.com',
+    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
-                                   client_endpoint_key: SecureRandomBase62.generate(32),
+                                   client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                    client_id: SecureRandom.uuid,
                                    oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                    oauth_token_endpoint: 'http://oauth_reg.example.com/token',
@@ -17,7 +17,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = PatientStandaloneLaunchSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::StandaloneLaunchSequence.new(@instance, client, true)
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
   end
 

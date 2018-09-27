@@ -32,10 +32,10 @@ class AdditionalResourcesSequenceTest < MiniTest::Unit::TestCase
       entry.resource.meta.versionId = '1'
     end
 
-    @instance = TestingInstance.new(url: 'http://www.example.com',
+    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                    client_name: 'Inferno',
                                    base_url: 'http://localhost:4567',
-                                   client_endpoint_key: SecureRandomBase62.generate(32),
+                                   client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                    client_id: SecureRandom.uuid,
                                    oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                    oauth_token_endpoint: 'http://oauth_reg.example.com/token',
@@ -47,7 +47,7 @@ class AdditionalResourcesSequenceTest < MiniTest::Unit::TestCase
     # and @provenance.target.reference should be identical
     @patient_id = @composition.subject.reference
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
-    @instance.resource_references << ResourceReference.new({
+    @instance.resource_references << Inferno::Models::ResourceReference.new({
     resource_type: 'Patient',
     resource_id: @patient_id
     })
@@ -56,7 +56,7 @@ class AdditionalResourcesSequenceTest < MiniTest::Unit::TestCase
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = AdditionalResourcesSequence.new(@instance, client)
+    @sequence = Inferno::Sequence::AdditionalResourcesSequence.new(@instance, client)
   end
 
   def test_all_pass

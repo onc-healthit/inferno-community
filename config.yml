@@ -1,5 +1,5 @@
 # Name of app
-app_name: Inferno - SMART on FHIR Testing
+app_name: Inferno
 
 # Base path of application
 # There are a few exceptions, such as "/" and "/landing".
@@ -22,3 +22,15 @@ disable_tls_tests: false
 
 # Default scopes
 default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
+
+# Log Level: unkown, fatal, error, warn, info, debug
+log_level: info
+
+# Log to file
+log_to_file: false
+
+# Logging enabled?
+logging_enabled: true
+
+# Automatically Run Conformance Sequence on new server create
+autorun_conformance: false

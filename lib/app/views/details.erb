@@ -1,0 +1,468 @@
+<div class="container-fluid server-info" role='main'>
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center">
+        <div class="col-9">
+          <div class="server-name">
+            <%=instance.url%>
+          </div>
+        </div>
+        <div class="col-3 server-actions" style='text-align:right;'>
+
+          <!--- not yet implemented -->
+          <div style="display:none" data-toggle="tooltip" title="Print Results">
+            <a href="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
+          </div>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+            <span class="oi oi-list" aria-hidden="true"></span>
+            <span id="client-status-button-text">Client State</span>
+          </button>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+            <span class="oi oi-link-intact" aria-hidden="true"></span>
+            <span id="save-test-button-text">Save</span>
+          </button>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#helpModal">
+            <strong style='line-height:1em;font-size:1.3em'>?</strong>
+            <span id="help-button-text">Help</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="main main-details" role='region'>
+
+    <% unless locals[:error_code].nil? %>
+      <div class="alert alert-danger" role="alert">
+        <% if error_code == 'no_launch' %>
+          The launch URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
+          before initiating an EHR launch from the server.
+        <% elsif error_code == 'no_redirect' %>
+          The redirect URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
+          before visiting this redirect url.
+        <% end %>
+      </div>
+    <% end %>
+    <div class="sequence-table">
+      <% sequences_groups.each do |group| %>
+        <div class="sequence-group">
+          <div class="sequence-header">
+            <div class='row align-items-center'>
+              <div class='col'>
+                <% if group.length > 1 %>
+                  <a id="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>"></a>
+
+                <% end %>
+                <h1>
+                  <%=group[:name]%>
+                  <%# FIXME: This is brittle. Instead of checking for the number of tests, maybe check for specific sequence groups? %>
+                  <% if group[:run_all]%>
+                    <button data-group="<%=group[:name]%>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                      <span class="oi oi-media-play"></span> Run All
+                    </button>
+                  <% end %>
+                </h1>
+              </div>
+            </div>
+          </div>
+          <% group[:sequences].each do |sequence_class| %>
+            <% unless sequence_class.inactive? %>
+              <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Removed total score for community edition. %>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modals -->
+<div class="modal fade" id="PrerequisitesModal" tabindex="-1" role="dialog" aria-labelledby="PrerequisitesModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="PrerequisitesModalTitle">Prerequisites for </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="sequence_result">
+        <input type="hidden" name="sequence" value="" />
+        <input type="hidden" name="required_fields" value="" />
+        <div class="modal-body">
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                                          label: 'Launch URI',
+                                          value: instance.initiate_login_uri || request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
+                                          readonly: true })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                                          label: 'Redirect URI',
+                                          value: instance.redirect_uris || request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
+                                          readonly: true })%>
+
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
+                                          label: 'OAuth 2.0 Dynamic Registration Endpoint',
+                                          value: instance.oauth_register_endpoint}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
+                                          label: 'OAuth 2.0 Authorize Endpoint',
+                                          value: instance.oauth_authorize_endpoint}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
+                                          label: 'OAuth 2.0 Token Endpoint',
+                                          value: instance.oauth_token_endpoint}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
+                                          label: 'Client ID',
+                                          value: instance.client_id}); %>
+
+
+          <%# SPECIAL CASE: CLIENT SECRET %>
+          <div class="form-group"
+               data-requiredby="<%=Inferno::Sequence::SequenceBase.variable_required_by(:confidential_client).map {|seq| seq.name.demodulize}.join(',')%>"
+               data-prerequisite="confidential_client"
+               id="is_confidential"
+               >
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
+              <label class="form-check-label" for="confidential_client_off">Public Client</label>
+            </div>
+            <div class="form-check form-check-inline" data-requiredby>
+              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
+              <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
+            </div>
+          </div>
+
+          <div class="client-secret-container">
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+                                          label: 'Client Secret',
+                                          value: instance.client_secret}); %>
+          </div>
+
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
+                                          label: 'OAuth Client Name',
+                                          value: instance.client_name}); %>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
+                                          label: 'Scopes',
+                                          value: instance.scopes || default_scopes,
+                                          required: true,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :token_endpoint_auth_method,
+                                          label: 'Token Endpoint Authorization Method',
+                                          value: 'none',
+                                          readonly: true
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :grant_types,
+                                          label: 'Grant Type',
+                                          value: 'authorization_code',
+                                          readonly: true
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :token,
+                                          label: 'Bearer Token',
+                                          value: instance.token,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+                                          label: 'Patient ID',
+                                          value: instance.patient_id,
+                                          })%>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Execute</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<% waiting_on_sequence = instance.waiting_on_sequence %>
+<% unless waiting_on_sequence.nil? %>
+  <% redirect_to = "#{request.base_url}#{base_path}/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
+  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="WaitModalLabel" data-show="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="WaitModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI</h5>
+        </div>
+        <div class="modal-body">
+          <p>
+          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI:
+          </p>
+          <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
+          <div class="modal-footer">
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="modal fade" id="stateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Client State</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <%= erb(:state_status, {}, {instance: instance}) %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="testResultDetailsModal" tabindex="-1" role="dialog" aria-labelledby="testResultDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="testDetailsModal" tabindex="-1" role="dialog" aria-labelledby="testDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="TokenIntrospectionModal" tabindex="-1" role="dialog" aria-labelledby="TokenIntrospectionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="TokenIntrospectionModalLabel">Introspection Launch</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="TokenIntrospection">
+        <div class="modal-body">
+          <p>
+            Enter the introspection data
+          </p>
+          <div class="form-group">
+            <label for="access_token">Access Token</label>
+            <input type="text" class="form-control" name="access_token" id="access_token" value="<%= instance.token %>" required>
+          </div>
+          <div class="form-group">
+            <label for="access_token">Refresh Token</label>
+            <input type="text" class="form-control" name="refresh_token" id="refresh_token" value="<%= instance.refresh_token %>">
+          </div>
+          <div class="form-group">
+            <label for="oauth_introspection_endpoint">Introspection URI</label>
+            <input type="text" class="form-control" name="oauth_introspection_endpoint" id="oauth_introspection_endpoint" value="<%= instance.oauth_introspection_endpoint %>" required>
+          </div>
+          <div class="form-group">
+            <label for="client_name">Resource ID (defaults to client ID but may be different)</label>
+            <input type="text" class="form-control" name="resource_id" id="resource_id" value="<%= !instance.resource_id.nil? ? instance.resource_id : instance.client_id %>" required>
+          </div>
+          <div class="form-group">
+            <label for="client_name">Resource Secret (defaults to client secret but may be different)</label>
+            <input type="text" class="form-control" name="resource_secret" id="resource_secret" value="<%= instance.resource_secret %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Introspection Test</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ArgonautDataQueryModal" tabindex="-1" role="dialog" aria-labelledby="ArgonautDataQueryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ArgonautDataQueryModalLabel">Argonaut Query Server</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="ArgonautDataQuery">
+        <div class="modal-body">
+          <p>
+          This sequence will perform queries in accordance with the Argonaut Data Query Server Guide.
+          </p>
+          <div class="form-group">
+            <label for="registration_url">Supported Resources</label>
+            <div class="form-row">
+              <% instance.supported_resources.in_groups(3) do |group| %>
+                <div class="col">
+                  <% group.each do |resource| %>
+                    <% next if resource.nil? %>
+                    <div class="form-check">
+                      <input class="form-check-input"
+                             type="checkbox"
+                             id="resource_supported_<%=resource.resource_type %>"
+                             name="resource_supported_<%=resource.resource_type %>"
+                             <% if resource.supported %>checked<%end%>
+                             disabled>
+                      <label class="form-check-label" for="resource_supported_<%=resource.resource_type %>">
+                        <%= resource.resource_type %>
+                      </label>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="registration_url">Patient ID</label>
+            <input type="text" class="form-control" name="patient_id" id="patient_id" value="<%= instance.patient_id %>" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Tests</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="ArgonautProfilesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ArgonautProfilesModalLabel">Argonaut Data Profiles</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" action="ArgonautProfiles">
+        <div class="modal-body">
+          <p>
+          This sequence will check the following resources returned by the Argonaut Query Sequence against
+          the relevant Argonaut profile.
+          </p>
+          <% if instance.resource_references.count > 0 %>
+            <!-- <h4>Authorized Resources</h4> -->
+            <%instance.resource_references.map(&:resource_type).uniq.each do |resource_type| %>
+              <div class="form-group row">
+                <label class="col-sm-3 col-form-label"><%=resource_type %></label>
+                <div class="col-sm-9">
+                  <textarea class="form-control" rows=3 readonly><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Run Tests</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="linkModalLabel">Save a link to this test instance</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          The results recorded during this testing session can be accessed at the following URI.
+          Please save this URI if you would like to revisit these results, as this secret URI will not be published.
+        </p>
+          <input type="text" class="form-control" value="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/" readonly="readonly">
+        <p class='alert alert-warning'>
+          This URI is not guaranteed to be permanently accessible.  The team maintaining this instance of Inferno may choose to periodically clear the database.  To ensure that test results are saved indefinitely, it is recommended that users download, install, and use Inferno on their own hardware.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" data-backdrop="static" data-keyboard="false" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Tests Running</h5>
+        <%# <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button> %>
+      </div>
+      <form method="POST" action="TokenIntrospection">
+        <div class="modal-body">
+          Tests are currently running <span class="number-complete"></span>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="helpModalLabel">Help</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h6>Hints</h6>
+        <p>Inferno provides inline context about each of the tests and the standards that they are testing.  If you find yourself stuck, try the following:</p>
+        <ul>
+          <li>Click the 'Show Details' link on a test sequence
+          <li>Click on a completed test to see incoming/outgoing HTTP(S) requests and reasons why it passed or failed
+          <li>Follow any of the links on the page to standards definition documents
+        </ul>
+        <h6>Testing Order</h6>
+        <p>Inferno allows users to test anything at any time, but if you're new to FHIR (or SMART-on-FHIR) the easiest way to get started with Inferno is to run the following test sequences (in order):<p>
+        <ul>
+          <li><em>Conformance Statement</em>, which populates the OAuth endpoints needed for authentication/authorization
+          <li><em>Dynamic Registration</em>, which registers the Inferno client app with your server (if your server does not support this, you can always register the Inferno client manually and get the client ID)
+          <li><em>Patient Standalone Launch Sequence</em>, which allows the registered Inferno client app to pick a Patient record and authorize the Inferno client to query data from your FHIR server
+          <li><em>Patient</em>, which is the first (and arguably most important) Argonaut Profile Conformance test
+        </ul>
+        <h6>Icon Legend</h6>
+        <table class='table table-sm'>
+          <thead class='sr-only'>
+            <tr><td>Icon</td><td>Meaning</td><td>Description</td>
+          </thead>
+          <tbody>
+            <tr><td><span class="oi oi-check" style='color:#28a745' aria-hidden="true"></span></td> <td><strong>Pass</strong></td> <td>A test passed</td></tr>
+            <tr><td><span class="oi oi-x" style='color:#cb2431' aria-hidden="true"></span></td> <td><strong>Fail</strong></td> <td>A test failed</td></tr>
+            <tr><td><span class="oi oi-x" style='color:#999' aria-hidden="true"></span></td> <td><strong>Optional Fail</strong> </td> <td>An optional test failed - this will not affect the overall count of passed tests</td></tr>
+            <tr><td><span class="oi oi-ban" style='color:#00e1e1' aria-hidden="true"></span></td> <td><strong>Skip</strong></td> <td>A test was skipped</td></tr>
+            <tr><td><span class="oi oi-warning" style='color:#FF9500' aria-hidden="true"></span></td> <td><strong>Warning</strong></td> <td>There is some critical information that you should be aware of</td></tr>
+            <tr><td><span class="oi oi-arrow-thick-right" style='color:#336699' aria-hidden="true"></span></td> <td><strong>Outgoing HTTP(S)</strong></td> <td>This test contains outgoing HTTP(S) requests</td></tr>
+            <tr><td><span class="oi oi-arrow-thick-left" style='color:#336699' aria-hidden="true"></span></td> <td><strong>Incoming HTTP(S)</strong></td> <td>This test contains incoming HTTP(S) requests</td></tr>
+          </tbody>
+        </table>
+        <p>For more information, see the <a href='https://github.com/siteadmin/inferno#inferno' target="_blank">Inferno README</a> and the <a href='https://github.com/siteadmin/inferno/wiki' target='_blank'>Inferno wiki</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
