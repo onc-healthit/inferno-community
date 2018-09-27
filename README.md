@@ -9,10 +9,6 @@ This application creates test clients that exercise the range of requirements of
 [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html)
 Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
-## Supported Browsers
-
-Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and Edge.  Internet Explorer is not supported at this time.
-
 ## Installation and Running
 
 
@@ -57,6 +53,10 @@ be saved for future reference or shared.
 Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
 Please see the file [deployment-configuration.md](https://github.com/siteadmin/inferno/blob/master/deployment-configuration.md) for details.
+
+## Supported Browsers
+
+Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and Edge.  Internet Explorer is not supported at this time.
 
 ## Unit Tests
 
