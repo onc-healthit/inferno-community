@@ -1,13 +1,11 @@
 ![Inferno Logo](https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png)
 
 Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
-It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards
-and reports the results back to you.
+It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
 
 This application creates test clients that exercise the range of requirements of a
 [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the
-[SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html)
-Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
+[SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ## Installation and Deployment
 
@@ -45,9 +43,7 @@ Inferno can then be accessed at http://localhost:4567 in a web browser.
 
 ### Remote Deployment
 
-Inferno can also be deployed onto a server to test many different
-instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can
-be saved for future reference or shared.
+Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
 
 Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
@@ -65,9 +61,7 @@ Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and E
 
 ## Unit Tests
 
-Inferno contains a robust set of self-tests to ensure that the
-test clients conform to the specification and performs as intended.  To run these tests, execute the following
-command:
+Inferno contains a robust set of self-tests to ensure that the test clients conform to the specification and performs as intended.  To run these tests, execute the following command:
 
 ```sh
 bundle exec rake
@@ -82,8 +76,7 @@ If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Qui
 Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
 viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/sequences).
 
-Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata
-can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
+Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
 ```sh
 bundle exec rake inferno:tests_to_csv
