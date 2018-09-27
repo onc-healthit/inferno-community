@@ -41,6 +41,12 @@ rackup
 
 Inferno can then be accessed at http://localhost:4567 in a web browser.
 
+If you would like to use a different port it can be specified when calling `rackup`.  For example, the following command would host Inferno on port 3000:
+
+```sh
+rackup -p 3000
+```
+
 ### Remote Deployment
 
 Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
