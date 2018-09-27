@@ -3,9 +3,7 @@
 Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
 It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
 
-This application creates test clients that exercise the range of requirements of a
-[SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the
-[SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
+This application creates test clients that exercise the range of requirements of a [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
 ## Installation and Deployment
 
@@ -13,15 +11,15 @@ This application creates test clients that exercise the range of requirements of
 
 Docker is the recommended installation method for Windows devices and can also be used on Linux and MacOS hosts.
 
-1. Install Docker for the host platform as well as the docker-compose tool (which may be included in the distribution, as is the case for Windows and MacOS).
-2. Download the `inferno` project to your local computer on a directory of your choice.
+1. Install [Docker](https://www.docker.com/) for the host platform as well as the [docker-compose](https://docs.docker.com/compose/install/) tool (which may be included in the distribution, as is the case for Windows and MacOS).
+2. Download the [latest release of the `inferno` project](https://github.com/siteadmin/inferno/releases) to your local computer on a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
-4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image with the correct ruby version and launch both the ruby server (using unicorn) and an NGINX server to front it all.
+4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
 5. Navigate to http://localhost:8080 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up -- build` to rebuild the containers.
 
-### Native Ruby Installation
+### Native Installation
 
 Inferno can installed and run locally on your machine.  Install the following dependencies first:
 
