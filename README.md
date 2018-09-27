@@ -53,6 +53,12 @@ Deployment on a remote server can be done by using a modified form of the Docker
 
 Please see the file [deployment-configuration.md](https://github.com/siteadmin/inferno/blob/master/deployment-configuration.md) for details.
 
+### Reference Implementation
+
+While it is recommended that users install Inferno locally, a reference implementation of Inferno is hosted at https://inferno.healthit.gov
+
+Users that would like to try out Inferno before installing locally can use that reference implementation, but should be forewarned that the database will be periodically refreshed and there is no guarantee that previous test runs will be available in perpetuity.
+
 ## Supported Browsers
 
 Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and Edge.  Internet Explorer is not supported at this time.
@@ -80,7 +86,7 @@ Tests contain metadata that provide additional details and traceability to stand
 can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
 ```sh
-bundle exec rake tests_to_csv
+bundle exec rake inferno:tests_to_csv
 ```
 
 Arguments can be provided to the task in order to export a specific set of tests or to specify the output file.
@@ -93,10 +99,9 @@ bundle exec rake inferno:tests_to_csv[all,all_tests.csv]
 
 ## Running Tests from the Command Line
 
-Testing sequences can be run from the command line via a rake task which takes the sequence to be run and server url as
-arguments.:
+Testing sequences can be run from the command line via a rake task which takes the sequence to be run and server url as arguments:
 ```sh
-rake execute_sequence[Conformance,https://my-server.org/data]
+bundle exec rake inferno:execute[https://my-server.org/data,Conformance]
 ```
 
 ## Using with Continuous Integration Systems
