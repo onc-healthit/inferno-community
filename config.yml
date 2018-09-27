@@ -14,7 +14,7 @@ purge_database_on_reload: false
 # Disable peer SSL verification for environments that use SSL inspection
 disable_verify_peer: false
 
-# When running in a docker containerr, we have to listen to other than just 'localhost' which is the default
+# When running in a docker container, we have to listen to other than just 'localhost' which is the default
 bind: '0.0.0.0'
 
 # Skip TLS tests
