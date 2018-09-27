@@ -30,14 +30,13 @@ If the docker image gets out of sync with the underlying system, such as when ne
 
 ### Native Ruby Installation
 
-Inferno can installed and run locally on your machine.  Install the dependencies
-listed above and enter the following in a terminal prompt:
-
-## System Requirements
+Inferno can installed and run locally on your machine.  Install the following dependencies first:
 
 * [Ruby 2.5+](https://www.ruby-lang.org/en/)
 * [Ruby Bundler](http://bundler.io/)
 * [SQLite](https://www.sqlite.org/)
+
+And run the following commands from the terminal:
 
 ```sh
 # MacOS or Linux
