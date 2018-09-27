@@ -127,6 +127,9 @@ arguments.:
 rake execute_sequence[Conformance,https://my-server.org/data]
 ```
 
+## Using with Continuous Integration Systems
+Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
+
 ## License
 
 Copyright 2018 The MITRE Corporation
