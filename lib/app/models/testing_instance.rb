@@ -46,6 +46,8 @@ module Inferno
       property :initiate_login_uri, String
       property :redirect_uris, String
 
+      property :dynamic_registration_token, String
+
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references

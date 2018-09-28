@@ -23,7 +23,7 @@ module Inferno
 
       optional
 
-      requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris
+      requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris, :dynamic_registration_token
       defines :client_id, :client_secret
 
       test 'Client registration endpoint secured by transport layer security' do
@@ -37,7 +37,9 @@ module Inferno
           )
         }
 
-        skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+        skip_if_tls_disabled
+        skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
+
         assert_tls_1_2 @instance.oauth_register_endpoint
         warning {
           assert_deny_previous_tls @instance.oauth_register_endpoint
@@ -53,9 +55,11 @@ module Inferno
             The client registration endpoint MUST accept HTTP POST messages with request parameters encoded in the entity body using the "application/json" format.
           )
         }
-        # params['redirect_uris'] = [params['redirect_uris']]
-        # params['grant_types'] = params['grant_types'].split(',')
+
+        skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
+
         headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
+        headers['Authorization'] = "Bearer #{@instance.dynamic_registration_token}" unless @instance.dynamic_registration_token.blank?
 
         params = {
             'client_name' => @instance.client_name,
@@ -64,6 +68,8 @@ module Inferno
             'grant_types' => ['authorization_code'],
             'scope' => @instance.scopes,
         }
+
+        skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
 
         params['token_endpoint_auth_method'] = if @instance.confidential_client
                                                  'client_secret_basic'
@@ -86,6 +92,8 @@ module Inferno
           )
         }
 
+        skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
+
         assert !@registration_response_body.has_key?('error') && !@registration_response_body.has_key?('error_description'),
                "Error returned.  Error: #{@registration_response_body['error']}, Description: #{@registration_response_body['error_description']}"
 
@@ -100,6 +108,8 @@ module Inferno
             The server responds with an HTTP 201 Created status code and a body of type "application/json" with content as described in Section 3.2.1.
           )
         }
+
+        skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
 
         assert @registration_response.code == 201, "Expected HTTP 201 response from registration endpoint but received #{@registration_response.code}"
         assert @registration_response_body.has_key?('client_id') && @registration_response_body.has_key?('scope'), 'Registration response did not include client_id and scope fields in JSON body'

@@ -1,4 +1,5 @@
 require_relative 'utils/assertions'
+require_relative 'utils/skip_helpers'
 require_relative 'ext/fhir_client'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
@@ -10,6 +11,7 @@ module Inferno
     class SequenceBase
 
       include Assertions
+      include SkipHelpers
       include Inferno::WebDriver
 
       STATUS = {
@@ -599,11 +601,6 @@ module Inferno
         assert(all_errors.empty?, all_errors.join("<br/>\n"))
       end
 
-      def skip_if_not_supported(resource, methods)
-
-        skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
-      end
 
 
       # This is intended to be called on SequenceBase
