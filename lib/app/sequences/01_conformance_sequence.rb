@@ -164,7 +164,7 @@ module Inferno
         }
 
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-        oauth_metadata = @client.get_oauth2_metadata_from_conformance
+        oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
         assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
         authorize_url = oauth_metadata[:authorize_url]
         token_url = oauth_metadata[:token_url]
