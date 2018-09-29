@@ -191,7 +191,7 @@ module Inferno
         @instance.update(token: @token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
 
         [:cache_control, :pragma].each do |key|
-          assert @token_response_headers.has_key?(key), "Token response headers did not contain #{key} as required"
+          assert @token_response_headers.has_key?(key), "Token response headers did not contain #{key} as is required in the SMART App Authorization Guide."
         end
 
         assert @token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
