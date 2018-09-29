@@ -202,9 +202,8 @@ module Inferno
                 instance.save!
                 if sequence_result.redirect_to_url
                   out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-                  # out << js_redirect(sequence_result.redirect_to_url)
                 else
-                  out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}")
+                  out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{sequence_result.name}")
                 end
               end
             end
