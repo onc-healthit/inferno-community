@@ -164,7 +164,7 @@ module Inferno
         }
 
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-        oauth_metadata = @client.get_oauth2_metadata_from_conformance
+        oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
         assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
         authorize_url = oauth_metadata[:authorize_url]
         token_url = oauth_metadata[:token_url]
@@ -172,6 +172,12 @@ module Inferno
         assert (authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{authorize_url}'"
         assert !token_url.blank?, 'No token URI provided in conformance statement.'
         assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
+
+        warning {
+          service = @conformance.try(:rest).try(:first).try(:security).try(:service).try(:coding).try(:code)
+          assert !service.nil?, 'No security services listed. Conformance.rest.security.service should be SMART-on-FHIR.'
+          assert service == 'SMART-on-FHIR', "Conformance.rest.security.service set to #{service}.  It should be SMART-on-FHIR."
+        }
 
         registration_url = nil
 
@@ -217,6 +223,7 @@ module Inferno
         ]
 
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+
         extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
         assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
         capabilities = extensions.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
