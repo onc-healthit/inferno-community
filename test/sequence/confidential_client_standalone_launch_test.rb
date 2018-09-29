@@ -12,6 +12,8 @@ class ConfidentialClientStandaloneLaunchTest < MiniTest::Unit::TestCase
                                     client_secret: SecureRandom.uuid,
                                     oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                     oauth_token_endpoint: 'http://oauth_reg.example.com/token',
+                                    initiate_login_uri: 'http://localhost:4567/launch',
+                                    redirect_uris: 'http://localhost:4567/redirect',
                                     scopes: 'launch openid patient/*.* profile',
                                     )
 
@@ -55,7 +57,7 @@ class ConfidentialClientStandaloneLaunchTest < MiniTest::Unit::TestCase
 
     sequence_result = @sequence.start
 
-    assert sequence_result.result == 'wait', 'The sequence should be in a wait state.'
+    assert sequence_result.result == 'wait', "The sequence should be in a wait state, currently in #{sequence_result.result} state."
     assert sequence_result.redirect_to_url.start_with? @instance.oauth_authorize_endpoint, 'The sequence should be redirecting to the authorize url'
     assert sequence_result.wait_at_endpoint == 'redirect', 'The sequence should be waiting at a redirect url'
 
