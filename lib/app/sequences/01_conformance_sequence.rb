@@ -111,9 +111,8 @@ module Inferno
 
         @client.set_no_auth
         @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
-        assert_response_ok @client.reply, %(
+        assert_response_ok @client.reply
 
-        )
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
       end
 
