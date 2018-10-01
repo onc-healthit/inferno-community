@@ -141,6 +141,20 @@ body {
   border-top: 1px solid #ccc;
 }
 
+.server-info img {
+  height: 1.6em;
+  transition-property: opacity;
+  transition-duration: .5s;
+  opacity: 0.0
+}
+
+
+.show-logo img {
+  opacity: 1.0;
+  transition-property: opacity;
+  transition-duration: 1s;
+}
+
 .server-info .container{
   margin: auto;
   /* border-bottom: 1px solid #999; */

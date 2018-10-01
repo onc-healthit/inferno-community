@@ -236,4 +236,13 @@ $(function(){
     $("button[data-sequence='" + autoRun + "']").click()
   }
 
+  $(window).on('scroll', function(e) {
+    if($(window).scrollTop() > 80) {
+      $('.server-info').addClass('show-logo')
+    }
+    else {
+      $('.server-info').removeClass('show-logo')
+    }
+  })
+
 }); 
