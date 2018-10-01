@@ -142,17 +142,28 @@ body {
 }
 
 .server-info img {
-  height: 1.6em;
+  height: 2em;
+  opacity: 0;
   transition-property: opacity;
   transition-duration: .5s;
-  opacity: 0.0
+  transition-delay: .5ms;
 }
 
 
 .show-logo img {
   opacity: 1.0;
-  transition-property: opacity;
+  transform: rotate(360deg);
+  height: 2em;
+  transition-property: opacity, transform;
+  transition-delay: .5ms;
   transition-duration: 1s;
+}
+
+.show-logo .server-name {
+  transition-property: left;
+  transition-duration: .5s;
+  left: 0em;
+  /* margin-left: 2em; */
 }
 
 .server-info .container{
@@ -391,6 +402,11 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   padding: .5rem 0;
+  transition-property: left;
+  transition-duration: .5s;
+  position: relative;
+  left: -2em;
+
 }
 
 .prerequisite-tooltip {
