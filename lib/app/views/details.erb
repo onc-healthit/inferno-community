@@ -127,6 +127,9 @@
                                           label: 'Client ID',
                                           value: instance.client_id}); %>
 
+          <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
+                                          label: 'OAuth 2.0 Dynamic Registration Bearer Token (optional)',
+                                          value: instance.dynamic_registration_token}); %>
 
           <%# SPECIAL CASE: CLIENT SECRET %>
           <div class="form-group"
@@ -181,6 +184,16 @@
           <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
                                           label: 'Patient ID',
                                           value: instance.patient_id,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
+                                          label: 'OAuth 2.0 ID Token',
+                                          value: instance.id_token,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :refresh_token,
+                                          label: 'Refresh Token',
+                                          value: instance.refresh_token,
                                           })%>
 
         </div>
