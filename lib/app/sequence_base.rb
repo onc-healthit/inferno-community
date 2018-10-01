@@ -633,8 +633,8 @@ module Inferno
 
           ),
           sequences: [
-            ManualRegistrationSequence,
             DynamicRegistrationSequence,
+            ManualRegistrationSequence,
             StandaloneLaunchSequence,
             EHRLaunchSequence,
             OpenIDConnectSequence,
