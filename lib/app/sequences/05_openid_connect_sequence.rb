@@ -2,8 +2,8 @@ module Inferno
   module Sequence
     class OpenIDConnectSequence < SequenceBase
 
-      title 'OpenID Connect'
-      description 'Verify OpenID Connect functionality of server.'
+      title 'OpenID Connect (Optional)'
+      description 'Authenticate users with OpenID Connect for OAuth 2.0.'
 
       test_id_prefix 'OIDC'
 
