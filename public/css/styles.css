@@ -139,6 +139,7 @@ body {
   background-color: #d2ccbe;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
+  padding: .3em;
 }
 
 .server-info img {
