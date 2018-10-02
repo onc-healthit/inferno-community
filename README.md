@@ -21,7 +21,9 @@ Docker is the recommended installation method for Windows devices and can also b
 4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
 5. Navigate to http://localhost:8080 to find the running application.
 
-If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up -- build` to rebuild the containers.
+If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up --build` to rebuild the containers.
+
+Check out the [Troubleshooting Documentation](https://github.com/siteadmin/inferno/wiki/Troubleshooting) for help.
 
 ### Native Installation
 
@@ -78,7 +80,7 @@ bundle exec rake
 ## Inspecting and Exporting Tests
 
 Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
-viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/sequences).
+viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/app/sequences).
 
 Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
