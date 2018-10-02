@@ -23,6 +23,8 @@ Docker is the recommended installation method for Windows devices and can also b
 
 If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up --build` to rebuild the containers.
 
+Check out the [Troubleshooting Documentation](https://github.com/siteadmin/inferno/wiki/Troubleshooting) for help.
+
 ### Native Installation
 
 Inferno can installed and run locally on your machine.  Install the following dependencies first:
