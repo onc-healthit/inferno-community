@@ -16,7 +16,7 @@ class TerminologyTest < Minitest::Test
     FileUtils.mv(umls_file, "#{umls_file}.bak", :force=>true)
     FileUtils.mv(snomed_file, "#{snomed_file}.bak", :force=>true)
     file = File.open(loinc_file,'w:UTF-8')
-    file.write('foo|Foo Description|mg')
+    file.write('foo|Foo Description')
     file.close
     file = File.open(umls_file,'w:UTF-8')
     file.write("LOINC|foo|Foo Description\n")
@@ -72,14 +72,6 @@ class TerminologyTest < Minitest::Test
 
   def test_is_top_lab_code_false
     assert !Inferno::Terminology.is_top_lab_code?('bar'), 'Lab code should not have been found.'
-  end
-
-  def test_lab_units_foo
-    assert Inferno::Terminology.lab_units('foo')=='mg', 'Incorrect units returned.'
-  end
-
-  def test_lab_units_bar
-    assert Inferno::Terminology.lab_units('bar').nil?, 'Units were unexpectedly returned (should be nil).'
   end
 
   def test_lab_description_foo

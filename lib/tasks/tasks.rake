@@ -369,8 +369,8 @@ namespace :terminology do |argv|
   task :process_loinc, [] do |t, args|
     require 'find'
     require 'csv'
-    puts 'Looking for `./resources/terminology/LOINC*.csv`...'
-    loinc_file = Find.find('resources').find('terminology').find{|f| /LOINC.*\.csv$/ =~f }
+    puts 'Looking for `./resources/terminology/Top2000*.csv`...'
+    loinc_file = Find.find('resources/terminology').find{|f| /Top2000.*\.csv$/ =~f }
     if loinc_file
       output_filename = 'resources/terminology/terminology_loinc_2000.txt'
       puts "Writing to #{output_filename}..."
@@ -380,8 +380,8 @@ namespace :terminology do |argv|
         CSV.foreach(loinc_file, encoding: 'iso-8859-1:utf-8', headers: true) do |row|
           line += 1
           next if row.length <=1 || row[1].nil? # skip the categories
-          #              CODE    | DESC    | UCUM UNITS
-          output.write("#{row[1]}|#{row[2]}|#{row[6]}\n")
+          #              CODE    | DESC
+          output.write("#{row[0]}|#{row[1]}\n")
         end
       rescue Exception => e
         puts "Error at line #{line}"
@@ -392,7 +392,7 @@ namespace :terminology do |argv|
     else
       puts 'LOINC file not found.'
       puts 'Download the LOINC Top 2000 Common Lab Results file'
-      puts '  -> http://loinc.org/usage/obs/loinc-top-2000-plus-loinc-lab-observations-us.csv'
+      puts '  -> https://loinc.org/download/loinc-top-2000-lab-observations-us-csv/'
       puts 'copy it into your `./resources/terminology` folder, and rerun this task.'
     end
   end
@@ -401,7 +401,7 @@ namespace :terminology do |argv|
   task :process_snomed, [] do |t, args|
     require 'find'
     puts 'Looking for `./resources/terminology/SNOMEDCT_CORE_SUBSET*.txt`...'
-    snomed_file = Find.find('resources').find('terminology').find{|f| /SNOMEDCT_CORE_SUBSET.*\.txt$/ =~f }
+    snomed_file = Find.find('resources/terminology').find{|f| /SNOMEDCT_CORE_SUBSET.*\.txt$/ =~f }
     if snomed_file
       output_filename = 'resources/terminology/terminology_snomed_core.txt'
       output = File.open(output_filename,'w:UTF-8')
@@ -434,7 +434,7 @@ namespace :terminology do |argv|
   task :process_ucum, [] do |t, args|
     require 'find'
     puts 'Looking for `./resources/terminology/concepts.tsv`...'
-    ucum_file = Find.find('resources').find('terminology').find{|f| /concepts.tsv$/ =~f }
+    ucum_file = Find.find('resources/terminology').find{|f| /concepts.tsv$/ =~f }
     if ucum_file
       output_filename = 'resources/terminology/terminology_ucum.txt'
       output = File.open(output_filename,'w:UTF-8')
@@ -466,8 +466,9 @@ namespace :terminology do |argv|
   desc 'post-process UMLS terminology file'
   task :process_umls, [] do |t, args|
     require 'find'
+    require 'csv'
     puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources').find('terminology').find{|f| f=='terminology/MRCONSO.RRF' }
+    input_file = Find.find('resources/terminology').find{|f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
       output_filename = 'resources/terminology/terminology_umls.txt'
@@ -476,10 +477,8 @@ namespace :terminology do |argv|
       excluded = 0
       excluded_systems = Hash.new(0)
       begin
-        entire_file = File.read(input_file)
         puts "Writing to #{output_filename}..."
-        entire_file.split("\n").each do |l|
-          row = l.split('|')
+        CSV.foreach(input_file, headers: false, col_sep: '|', quote_char: "\x00") do |row|
           line += 1
           include_code = false
           codeSystem = row[11]
@@ -555,7 +554,7 @@ namespace :terminology do |argv|
   task :process_umls_translations, [] do |t, args|
     require 'find'
     puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources').find('terminology').find{|f| f=='terminology/MRCONSO.RRF' }
+    input_file = Find.find('resources/terminology').find{|f| f=='terminology/MRCONSO.RRF' }
     if input_file
       start = Time.now
       output_filename = 'resources/terminology/translations_umls.txt'

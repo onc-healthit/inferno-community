@@ -15,7 +15,7 @@ to codes. Download the files (requires accounts) and place them here in `./resou
    SNOMEDCT_US|SNOMEDCT`
 
 - https://www.nlm.nih.gov/research/umls/Snomed/core_subset.html
-- http://loinc.org/usage/obs/loinc-top-2000-plus-loinc-lab-observations-us.csv
+- https://loinc.org/download/loinc-top-2000-lab-observations-us-csv/
 - http://download.hl7.de/documents/ucum/concepts.tsv
 
 After downloading the files, run these rake tasks to post-process each terminology file:
