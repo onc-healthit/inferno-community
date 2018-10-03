@@ -173,7 +173,7 @@ module Inferno
         assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
 
         warning {
-          service = @conformance.try(:rest).try(:first).try(:security).try(:service).try(:coding).try(:code)
+          service = @conformance.try(:rest).try(:first).try(:security).try(:service).try(:first).try(:coding).try(:first).try(:code)
           assert !service.nil?, 'No security services listed. Conformance.rest.security.service should be SMART-on-FHIR.'
           assert service == 'SMART-on-FHIR', "Conformance.rest.security.service set to #{service}.  It should be SMART-on-FHIR."
         }
