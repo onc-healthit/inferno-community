@@ -58,7 +58,7 @@
             <div class='row align-items-center'>
               <div class='col'>
                 <% if group.length > 1 %>
-                  <a id="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>"></a>
+                  <a class="sequence-anchor" id="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>"></a>
 
                 <% end %>
                 <h1>
