@@ -13,7 +13,7 @@ services:
     #  - "4567:8080"
     # run the application
     working_dir: /var/www/inferno
-    command: bundle exec ruby app.rb
+    command: rackup -o 0.0.0.0
   nginx_server:
     image: nginx
     volumes:
