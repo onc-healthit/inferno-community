@@ -19,7 +19,6 @@ module Inferno
     @@term_root = File.join('resources', 'terminology')
 
     @@loaded = false
-    @@top_lab_code_units = {}
     @@top_lab_code_descriptions = {}
     @@known_codes = {}
     @@core_snomed = {}
@@ -27,7 +26,6 @@ module Inferno
 
     def self.reset
       @@loaded = false
-      @@top_lab_code_units = {}
       @@top_lab_code_descriptions = {}
       @@known_codes = {}
       @@core_snomed = {}
@@ -48,7 +46,6 @@ module Inferno
           raw.split("\n").each do |line|
             row = line.split('|')
             @@top_lab_code_descriptions[row[0]] = row[1] if !row[1].nil?
-            @@top_lab_code_units[row[0]] = row[2] if !row[2].nil?
           end
         rescue Exception => error
           FHIR.logger.error error
@@ -124,17 +121,12 @@ module Inferno
 
     def self.is_top_lab_code?(code)
       load_terminology
-      !@@top_lab_code_units[code].nil?
-    end
-
-    def self.lab_units(code)
-      load_terminology
-      @@top_lab_code_units[code]
+      !@@top_lab_code_descriptions[code].nil?
     end
 
     def self.is_known_ucum?(units)
       load_terminology
-      @@top_lab_code_units.values.include?(units) || @@common_ucum.include?(units)
+      @@common_ucum.include?(units)
     end
 
     def self.lab_description(code)
