@@ -1,6 +1,9 @@
 version: '3'
 services:
   # the main ruby server
+  smart_server:
+    image: syncforscience/reference-api
+
   ruby_server:
     # build the image from ./Dockerfile (this installs the dependencies into the image)
     build:
@@ -8,6 +11,7 @@ services:
     # map the project directory into the running container
     volumes:
       - .:/var/www/inferno
+      - ./structure_definition.rb:/usr/local/bundle/gems/fhir_dstu2_models-1.0.4/lib/fhir_dstu2_models/fhir_ext/structure_definition.rb
     # expose the internal application to direct HTTP requests
     #ports:
     #  - "4567:8080"
