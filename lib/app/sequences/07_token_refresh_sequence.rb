@@ -64,7 +64,6 @@ module Inferno
           id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-           The authorization servers response MUST include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
            The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
            access_token, token_type, and scope are required. access_token must be Bearer.
           )
@@ -83,13 +82,6 @@ module Inferno
         @instance.save!
 
         @instance.update(token: @token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
-
-        [:cache_control, :pragma].each do |key|
-          assert @token_response_headers.has_key?(key), "Token response headers did not contain #{key} as required"
-        end
-
-        assert @token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
-        assert @token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
 
         ['token_type', 'scope'].each do |key|
           assert @token_response_body.has_key?(key), "Token response did not contain #{key} as required"
@@ -123,6 +115,24 @@ module Inferno
           @instance.update(refresh_token: @token_response_body['refresh_token'])
         end
 
+      end
+
+      test 'Response includes correct HTTP Cache-Control and Pragma headers' do
+
+        metadata {
+          id '10'
+          link 'http://www.hl7.org/fhir/smart-app-launch/'
+          desc %(
+            The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
+          )
+        }
+
+        [:cache_control, :pragma].each do |key|
+          assert @token_response_headers.has_key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
+        end
+
+        assert @token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
+        assert @token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
       end
 
     end
