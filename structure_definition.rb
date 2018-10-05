@@ -16,6 +16,11 @@ module FHIR
       #                            Profile Validation
       # -------------------------------------------------------------------------
 
+      @@vs_validators = Hash.new
+      def self.register_vs_validator(valueset_uri, validator_fn)
+        @@vs_validators[valueset_uri] = validator_fn
+      end
+
       def validates_resource?(resource)
         validate_resource(resource).empty?
       end
@@ -28,6 +33,7 @@ module FHIR
         else
           @errors << "#{resource.class} is not a resource."
         end
+        # TODO: return warnings too!
         @errors
       end
 
@@ -153,6 +159,7 @@ module FHIR
         # Check the datatype for each node, only if the element has one declared, and it isn't the root element
         if !element.type.empty? && element.path != id
           codeable_concept_pattern = element.pattern && element.pattern.is_a?(FHIR::DSTU2::CodeableConcept)
+          codeable_concept_binding = element.binding
           matching_pattern = false
           nodes.each do |value|
             matching_type = 0
@@ -187,6 +194,25 @@ module FHIR
                 pattern.each do |pcoding|
                   vcc.coding.each do |vcoding|
                     matching_pattern = true if vcoding.system == pcoding.system && vcoding.code == pcoding.code
+                  end
+                end
+              elsif data_type_found == 'CodeableConcept' && codeable_concept_binding
+                binding_issues = if element.binding.strength == "extensible"
+                  @errors # TODO make this @warnings, once we have a way to return warnings
+                elsif element.binding.strength == "required"
+                  @errors
+                else # e.g., example-strength or unspecified
+                  [ ] # Drop issues errors on the floor, in throwaway array
+                end
+
+                valueset_uri = element.binding.try(:valueSetReference).try(:reference)
+                if @@vs_validators and @@vs_validators[valueset_uri]
+                  check_fn = @@vs_validators[valueset_uri]
+                  vcc = FHIR::DSTU2::CodeableConcept.new(value)
+
+                  has_valid_code = vcc.try(:coding).any? {|c| check_fn.call(c)}
+                  unless has_valid_code
+                    binding_issues << "#{describe_element(element)} has no codings from #{valueset_uri}. Codings evaluated: #{value.to_json}"
                   end
                 end
               elsif data_type_found == 'String' && !element.maxLength.nil? && (value.size > element.maxLength)

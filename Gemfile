@@ -21,5 +21,6 @@ gem 'colorize'
 gem 'kramdown'
 gem 'selenium-webdriver'
 gem 'rubocop', require: false
+gem 'bloomer'
 
 gem 'simplecov', require: false, group: :test
