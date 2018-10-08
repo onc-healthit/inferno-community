@@ -236,13 +236,18 @@ $(function(){
     $("button[data-sequence='" + autoRun + "']").click()
   }
 
-  $(window).on('scroll', function(e) {
+  // Create a handler to handle the animation of the logo
+  function handleScroll(_) {
     if($(window).scrollTop() > 80) {
       $('.server-info').addClass('show-logo')
     }
     else {
       $('.server-info').removeClass('show-logo')
     }
-  })
+  }
+  // Need to call it for when we initially load
+  handleScroll(null)
+  // Then register the handler
+  $(window).on('scroll', handleScroll)
 
 }); 

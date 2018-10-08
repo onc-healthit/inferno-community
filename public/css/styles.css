@@ -143,7 +143,7 @@ body {
 }
 
 .server-info img {
-  height: 2em;
+  width: 0px;
   opacity: 0;
   transition-property: opacity;
   transition-duration: .5s;
@@ -154,6 +154,7 @@ body {
 .show-logo img {
   opacity: 1.0;
   transform: rotate(360deg);
+  width: auto;
   height: 2em;
   transition-property: opacity, transform;
   transition-delay: .5ms;
@@ -174,6 +175,12 @@ body {
 
 .server-info .container .col{
   padding: 0;
+}
+
+.server-info .container .col-9{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .alert strong {
@@ -406,7 +413,7 @@ body {
   transition-property: left;
   transition-duration: .5s;
   position: relative;
-  left: -2em;
+  /* left: -1em; */
 
 }
 
