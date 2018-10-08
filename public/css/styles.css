@@ -144,6 +144,7 @@ body {
 
 .server-info img {
   width: 0px;
+  height: auto;
   opacity: 0;
   transition-property: opacity;
   transition-duration: .5s;
@@ -156,9 +157,9 @@ body {
   transform: rotate(360deg);
   width: auto;
   height: 2em;
-  transition-property: opacity, transform;
-  transition-delay: .5ms;
-  transition-duration: 1s;
+  transition: opacity 1s linear .5ms, 
+    transform 1s linear .5ms, 
+    width .5ms linear 0ms;
 }
 
 .show-logo .server-name {
