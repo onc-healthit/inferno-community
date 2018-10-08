@@ -139,6 +139,34 @@ body {
   background-color: #d2ccbe;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
+  padding: .3em;
+}
+
+.server-info img {
+  width: auto;
+  height: 2em;
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: .5s;
+  margin-top:-5px;
+}
+
+
+.show-logo img {
+  opacity: 1.0;
+  transform: rotate(360deg);
+  width: auto;
+  height: 2em;
+  transition: opacity 1s ease .2s,
+    transform 1s ease .2s,
+    width .5ms ease 0ms;
+}
+
+.show-logo .server-name {
+  transition-property: margin-left;
+  transition-duration: .5s;
+  margin-left: 0;
+  /* margin-left: 2em; */
 }
 
 .server-info .container{
@@ -148,6 +176,12 @@ body {
 
 .server-info .container .col{
   padding: 0;
+}
+
+.server-info .container .col-9{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .alert strong {
@@ -244,6 +278,12 @@ body {
 
 .child-test {
   padding-left: 40px;
+}
+
+.sequence-anchor {
+  display: block;
+  position:relative;
+  top: -50px;
 }
 
 .sequence-score {
@@ -376,7 +416,11 @@ body {
   font-weight: bold;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: .5rem 0;
+  padding: 6px;
+  transition-property: margin-left;
+  transition-duration: .5s;
+  transition-delay: .2s;
+  margin-left: -2em;
 }
 
 .prerequisite-tooltip {
@@ -636,4 +680,13 @@ body {
 
 .test-result-details-message-label {
   font-weight: bold;
+}
+
+.no-transition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+  transition-delay: 0 !important;
+  transition-duration: 0 !important;
 }

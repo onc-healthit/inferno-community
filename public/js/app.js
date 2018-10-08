@@ -236,4 +236,24 @@ $(function(){
     $("button[data-sequence='" + autoRun + "']").click()
   }
 
+  // Create a handler to handle the animation of the logo
+  function handleScroll(_) {
+    /* remove the animation duration if we are loaded to the middle of the page because it is distracting */
+    /* using set timeout to reset it so when the user scrolls transitions are enabled. */
+    if(_ === null){
+      $('.server-info img, .server-name').addClass('no-transition')
+      setTimeout(function(){$('.server-info img, .server-name').removeClass('no-transition')}, 500);
+    }
+    if($(window).scrollTop() > 80) {
+      $('.server-info').addClass('show-logo')
+    }
+    else {
+      $('.server-info').removeClass('show-logo')
+    }
+  }
+  // Need to call it for when we initially load
+  handleScroll(null)
+  // Then register the handler
+  $(window).on('scroll', handleScroll)
+
 }); 

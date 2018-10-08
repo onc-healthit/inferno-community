@@ -1,11 +1,13 @@
-<div class="container-fluid server-info" role='main'>
+<div class="container-fluid server-info sticky-top" role='main'>
   <div class="row">
     <div class="col">
       <div class="container row row-no-padding align-items-center">
+
         <div class="col-9">
-          <div class="server-name">
+          <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo'></a>
+          <span class="server-name">
             <%=instance.url%>
-          </div>
+          </span>
         </div>
         <div class="col-3 server-actions" style='text-align:right;'>
 
@@ -56,7 +58,7 @@
             <div class='row align-items-center'>
               <div class='col'>
                 <% if group.length > 1 %>
-                  <a id="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>"></a>
+                  <a class="sequence-anchor" id="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>" name="<%=group[:sequences].map {|seq| seq.name.demodulize}.join(',')%>"></a>
 
                 <% end %>
                 <h1>
