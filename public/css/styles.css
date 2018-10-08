@@ -143,12 +143,12 @@ body {
 }
 
 .server-info img {
-  width: 0px;
-  height: auto;
+  width: auto;
+  height: 2em;
   opacity: 0;
   transition-property: opacity;
   transition-duration: .5s;
-  transition-delay: .5ms;
+  margin-top:-5px;
 }
 
 
@@ -157,15 +157,15 @@ body {
   transform: rotate(360deg);
   width: auto;
   height: 2em;
-  transition: opacity 1s linear .5ms, 
-    transform 1s linear .5ms, 
-    width .5ms linear 0ms;
+  transition: opacity 1s ease .2s,
+    transform 1s ease .2s,
+    width .5ms ease 0ms;
 }
 
 .show-logo .server-name {
-  transition-property: left;
+  transition-property: margin-left;
   transition-duration: .5s;
-  left: 0em;
+  margin-left: 0;
   /* margin-left: 2em; */
 }
 
@@ -416,12 +416,11 @@ body {
   font-weight: bold;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: .5rem 0;
-  transition-property: left;
+  padding: 6px;
+  transition-property: margin-left;
   transition-duration: .5s;
-  position: relative;
-  /* left: -1em; */
-
+  transition-delay: .2s;
+  margin-left: -2em;
 }
 
 .prerequisite-tooltip {
@@ -681,4 +680,13 @@ body {
 
 .test-result-details-message-label {
   font-weight: bold;
+}
+
+.no-transition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+  transition-delay: 0 !important;
+  transition-duration: 0 !important;
 }
