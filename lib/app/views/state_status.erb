@@ -7,17 +7,16 @@
       </div>
     </div>
 
-    <h4>Conformance Statement Resource Support</h4>
 
-    <% if instance.supported_resources.count %>
-      <ul>
+    <% if instance.supported_resources.count > 0%>
+    <h4>Conformance Statement Resource Support</h4>
+    <ul>
       <% instance.supported_resources.each do |resource| %>
         <% if resource.supported %>
           <li><%= resource.resource_type %> [
               <% if resource.read_supported %> read, <% end %>
               <% if resource.vread_supported %> vread, <% end %>
-              <% if resource.history_supported %> history, <% end %>
-              <% if resource.scope_supported %> authorized <% end %>
+              <% if resource.history_supported %> history<% end %><% if resource.scope_supported %>, authorized <% end %>
               ]
           <% end %>
         <% end %>
@@ -80,6 +79,15 @@
         <input type="text" class="form-control" value="<%=instance.client_id %>" disabled>
       </div>
     </div>
+
+    <% if instance.confidential_client %>
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Client Secret</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" value="<%=instance.client_secret %>" disabled>
+      </div>
+    </div>
+    <%end %>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label">Client State</label>
