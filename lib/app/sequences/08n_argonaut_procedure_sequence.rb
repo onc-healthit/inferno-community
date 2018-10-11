@@ -149,6 +149,23 @@ module Inferno
         test_resources_against_profile('Procedure')
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '08'
+          link ''
+          desc %(
+            All references in the Procedure resource should be resolveable.
+          )
+        }
+
+        skip_if_not_supported(:Procedure, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        validate_reference_resolutions(@procedure)
+
+      end
+
 
     end
 

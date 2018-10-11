@@ -193,6 +193,23 @@ module Inferno
 
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '10'
+          link ''
+          desc %(
+            All references in the DiagnosticReport resource should be resolveable.
+          )
+        }
+
+        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        validate_reference_resolutions(@diagnosticreport)
+
+      end
+
     end
 
   end

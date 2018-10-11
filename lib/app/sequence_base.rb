@@ -601,6 +601,36 @@ module Inferno
         assert(all_errors.empty?, all_errors.join("<br/>\n"))
       end
 
+      def _validate_reference_resolutions_recursive(resource, client)
+        problems = []
+        resource.instance_variables.each do |field|
+          values = [resource.instance_variable_get(field)].flatten.compact
+          next if values.empty?
+
+          meta = resource.class::METADATA[field.to_s.sub("@", "")]
+          next if FHIR::PRIMITIVES.include?(meta["type"])
+
+          if meta['type'] == 'Reference'
+            values.each do |value|
+              begin
+                value.read
+              rescue ClientException => e
+                problems << "#{meta['path']} did not resolve: #{e.to_s}"
+              end
+            end
+          else
+            values.each do |value|
+              problems.concat _validate_reference_resolutions_recursive(value, client)
+            end
+          end
+        end
+        return problems
+      end
+
+      def validate_reference_resolutions(resource, client=resource.client)
+        problems = _validate_reference_resolutions_recursive(resource, client)
+        assert(problems.empty?, problems.join("<br/>\n"))
+      end
 
 
       # This is intended to be called on SequenceBase

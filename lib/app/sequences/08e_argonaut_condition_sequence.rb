@@ -184,6 +184,23 @@ module Inferno
         test_resources_against_profile('Condition')
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '10'
+          link ''
+          desc %(
+            All references in the Condition resource should be resolveable.
+          )
+        }
+
+        skip_if_not_supported(:Condition, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        validate_reference_resolutions(@condition)
+
+      end
+
     end
 
   end

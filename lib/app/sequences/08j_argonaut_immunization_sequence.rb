@@ -126,6 +126,23 @@ module Inferno
         test_resources_against_profile('Immunization')
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '07'
+          link ''
+          desc %(
+            All references in the Immunization resource should be resolveable.
+          )
+        }
+
+        skip_if_not_supported(:Immunization, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        validate_reference_resolutions(@immunization)
+
+      end
+
     end
 
   end

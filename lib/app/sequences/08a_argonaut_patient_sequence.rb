@@ -248,6 +248,20 @@ module Inferno
 
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '13'
+          link ''
+          desc %(
+            All references in the Patient resource should be resolveable.
+          )
+        }
+
+        validate_reference_resolutions(@patient)
+
+      end
+
     end
 
   end

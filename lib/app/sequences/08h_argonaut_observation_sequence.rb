@@ -236,6 +236,23 @@ module Inferno
         assert !@profiles_failed.include?(Inferno::ValidationUtil::OBSERVATION_RESULTS_URL), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::OBSERVATION_RESULTS_URL]}"
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '11'
+          link ''
+          desc %(
+            All references in the Observation resource should be resolveable.
+          )
+        }
+
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        validate_reference_resolutions(@observation)
+
+      end
+
     end
 
   end

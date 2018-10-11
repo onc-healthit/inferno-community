@@ -45,6 +45,23 @@ module Inferno
         assert !@profiles_failed.include?(Inferno::ValidationUtil::CARE_TEAM_URL), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::CARE_TEAM_URL]}"
       end
 
+      test 'All references can be resolved' do
+
+        metadata {
+          id '03'
+          link ''
+          desc %(
+            All references in the CareTeam resource should be resolveable.
+          )
+        }
+
+        skip_if_not_supported(:CareTeam, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        validate_reference_resolutions(@careteam)
+
+      end
+
     end
 
   end
