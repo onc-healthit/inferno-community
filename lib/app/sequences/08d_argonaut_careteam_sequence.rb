@@ -12,6 +12,8 @@ module Inferno
 
       requires :token, :patient_id
 
+      @resources_found = false
+
       test 'Server returns expected CareTeam results from CarePlan search by patient + category' do
 
         metadata {
@@ -56,7 +58,7 @@ module Inferno
         }
 
         skip_if_not_supported(:CareTeam, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@careteam)
 

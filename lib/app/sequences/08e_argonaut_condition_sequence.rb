@@ -12,6 +12,8 @@ module Inferno
 
       requires :token, :patient_id
 
+      @resources_found = false
+
       test 'Server rejects Condition search without authorization' do
 
         metadata {
@@ -46,15 +48,15 @@ module Inferno
         skip_if_not_supported(:Condition, [:search, :read])
 
         reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+        assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count === 0
-          @no_resources_found = true
+        if resource_count > 0
+          @resources_found = true
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(FHIR::DSTU2::Condition, reply)
@@ -74,7 +76,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
         validate_search_reply(FHIR::DSTU2::Condition, reply)
@@ -93,7 +95,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "problem"})
         validate_search_reply(FHIR::DSTU2::Condition, reply)
@@ -112,7 +114,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "health-concern"})
         validate_search_reply(FHIR::DSTU2::Condition, reply)
@@ -130,7 +132,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@condition, FHIR::DSTU2::Condition)
 
@@ -148,7 +150,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@condition, FHIR::DSTU2::Condition)
 
@@ -166,7 +168,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@condition, FHIR::DSTU2::Condition)
 
@@ -195,7 +197,7 @@ module Inferno
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@condition)
 

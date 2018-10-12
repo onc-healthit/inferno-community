@@ -12,6 +12,8 @@ module Inferno
 
       requires :token, :patient_id
 
+      @resources_found = false
+
       test 'Server rejects AllergyIntolerance search without authorization' do
 
         metadata {
@@ -46,15 +48,15 @@ module Inferno
         skip_if_not_supported(:AllergyIntolerance, [:search, :read])
 
         reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
+        assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count === 0
-          @no_resources_found = true
+        if resource_count > 0
+          @resources_found = true
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(FHIR::DSTU2::AllergyIntolerance, reply)
@@ -73,7 +75,7 @@ module Inferno
         }
 
         skip_if_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
@@ -91,7 +93,7 @@ module Inferno
         }
 
         skip_if_not_supported(:AllergyIntolerance, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         validate_history_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
       end
@@ -108,7 +110,7 @@ module Inferno
         }
 
         skip_if_not_supported(:AllergyIntolerance, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
@@ -119,12 +121,11 @@ module Inferno
         metadata {
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-allergyintolerance.html'
-          optional
           desc %(
             AllergyIntolerance resources associated with Patient conform to Argonaut profiles
           )
         }
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('AllergyIntolerance')
       end
 
@@ -139,7 +140,7 @@ module Inferno
         }
 
         skip_if_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@allergyintolerance)
 
