@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARDR'
 
       requires :token, :patient_id
+      conformance_supports :DiagnosticReport
 
       test 'Server rejects DiagnosticReport search without authorization' do
 

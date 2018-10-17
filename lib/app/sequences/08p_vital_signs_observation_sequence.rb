@@ -9,6 +9,7 @@ module Inferno
       test_id_prefix 'ARVS'
 
       requires :token, :patient_id
+      conformance_supports :Observation
 
       test 'Server rejects Vital Signs search without authorization' do
 

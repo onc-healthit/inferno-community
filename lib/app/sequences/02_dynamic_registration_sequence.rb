@@ -18,7 +18,7 @@ module Inferno
         This sequence tests tests this functionality by dynamically an app for Inferno to use in later sequences.
 
       )
-
+      
       test_id_prefix 'DR'
 
       optional

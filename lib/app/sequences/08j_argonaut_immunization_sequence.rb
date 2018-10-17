@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARIM'
 
       requires :token, :patient_id
+      conformance_supports :Immunization
 
       test 'Server rejects Immunization search without authorization' do
 

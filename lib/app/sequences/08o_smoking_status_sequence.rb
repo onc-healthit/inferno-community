@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARSS'
 
       requires :token, :patient_id
+      conformance_supports :Observation
 
       test 'Server rejects Smoking Status search without authorization' do
 

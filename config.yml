@@ -18,7 +18,7 @@ disable_verify_peer: false
 bind: '0.0.0.0'
 
 # Skip TLS tests
-disable_tls_tests: false
+disable_tls_tests: true
 
 # Default scopes
 default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*

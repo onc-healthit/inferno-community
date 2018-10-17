@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ADQ'
 
       requires :token, :patient_id
+      conformance_supports :Goal
 
       test 'Server rejects Goal search without authorization' do
 

@@ -9,6 +9,7 @@ module Inferno
       test_id_prefix 'AROB'
 
       requires :token, :patient_id
+      conformance_supports :Observation
 
       test 'Observation Results search without authorization' do
 

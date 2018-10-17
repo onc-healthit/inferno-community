@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARAI'
 
       requires :token, :patient_id
+      conformance_supports :AllergyIntolerance
 
       test 'Server rejects AllergyIntolerance search without authorization' do
 

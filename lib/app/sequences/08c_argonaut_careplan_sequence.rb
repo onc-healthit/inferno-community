@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARCP'
 
       requires :token, :patient_id
+      conformance_supports :CarePlan
 
       test 'Server rejects CarePlan search without authorization' do
 

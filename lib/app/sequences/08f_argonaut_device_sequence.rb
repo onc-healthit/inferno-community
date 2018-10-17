@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARDE'
 
       requires :token, :patient_id
+      conformance_supports :Device
 
       test 'Server rejects Device search without authorization' do
 

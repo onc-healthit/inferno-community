@@ -9,6 +9,7 @@ module Inferno
       test_id_prefix 'ARMS'
 
       requires :token, :patient_id
+      conformance_supports :MedicationStatement
 
       test 'Server rejects MedicationStatement search without authorization' do
 

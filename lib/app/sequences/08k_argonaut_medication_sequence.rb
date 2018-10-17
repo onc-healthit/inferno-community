@@ -13,6 +13,7 @@ module Inferno
       inactive
 
       requires :token, :patient_id
+      conformance_supports :MedicationStatement
 
       test 'Server rejects MedicationStatement search without authorization' do
 
@@ -124,7 +125,7 @@ module Inferno
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
           optional
           desc %(
-            MedicationSatement resources associated with Patient conform to Argonaut profiles.
+            MedicationStatement resources associated with Patient conform to Argonaut profiles.
           )
         }
         test_resources_against_profile('MedicationStatement')

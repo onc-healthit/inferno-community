@@ -7,7 +7,12 @@
         <div class='row no-gutters'>
           <% case sequence_results[sequence_class.sequence_name].try(:result)
             when nil %>
-            <div class='col-12'>
+             <% if !sequence_class.conformance_supports.all?{|resource| instance.conformance_supported?(resource)}%>
+                <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Your Conformance says you don't support the required Resources for this test.">
+                  <span class="oi oi-warning" aria-hidden="true" ></span>
+                </div>
+              <% end%>
+            <div class='col-11'>
           <% when 'pass' %>
             <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Sequence Passed">
               <span class="oi oi-check" aria-hidden="true"></span>

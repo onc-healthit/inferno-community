@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARCT'
 
       requires :token, :patient_id
+      conformance_supports :CarePlan
 
       test 'Server returns expected CareTeam results from CarePlan search by patient + category' do
 

@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARCO'
 
       requires :token, :patient_id
+      conformance_supports :Condition
 
       test 'Server rejects Condition search without authorization' do
 

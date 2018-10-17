@@ -9,6 +9,7 @@ module Inferno
       test_id_prefix 'ARPA'
 
       requires :token, :patient_id
+      conformance_supports :Patient
 
       test 'Server rejects patient read without proper authorization' do
 

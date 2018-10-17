@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARPR'
 
       requires :token, :patient_id
+      conformance_supports :Procedure
 
       test 'Server rejects Procedure search without authorization' do
 

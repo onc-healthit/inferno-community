@@ -10,6 +10,8 @@ module Inferno
 
       requires :token, :patient_id
 
+      conformance_supports :MedicationOrder
+
       test 'Server rejects MedicationOrder search without authorization' do
 
         metadata {
