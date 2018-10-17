@@ -121,15 +121,12 @@ module Inferno
                                      tests_running: true)
 
             next_sequence = submitted_sequences.shift
-
-            klass = nil
-            if next_sequence
+            until next_sequence.nil?
               klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
                 x.name.demodulize.start_with?(next_sequence)
               end
-            end
-
-            until klass.nil?
+              next_sequence = submitted_sequences.shift
+              next if klass.nil?
 
               out << js_show_test_modal
 
@@ -151,13 +148,7 @@ module Inferno
               else
                 finished = true
               end
-
-              next_sequence = submitted_sequences.shift
-
-              klass = nil
-              klass = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(next_sequence) } if next_sequence
             end
-
             out << js_redirect("#{base_path}/#{params[:id]}/##{params[:sequence]}") if finished
           end
         end
