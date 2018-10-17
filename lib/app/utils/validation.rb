@@ -1,33 +1,66 @@
+require 'json'
+
 module Inferno
   class ValidationUtil
+    def self.get_resource(json, version)
+      if version == :dstu2
+        FHIR::DSTU2.from_contents(json)
+      else
+        FHIR.from_contents(json)
+      end
+    end
 
     # Cache the Argonaut IG definitions
-    argonaut_validation_pack = File.join('resources', 'argonauts', '*.json')
+    validation_packs = File.join('resources', '*', '*.json')
 
     DEFINITIONS = {}
-    RESOURCES = {}
+    RESOURCES = {dstu2: {}, stu3: {}}
     VALUESETS = {}
 
-    Dir.glob(argonaut_validation_pack).each do |definition|
+    VERSION_MAP = {"1.0.2" => :dstu2, "3.0.1" => :stu3}
+
+    Dir.glob(validation_packs).each do |definition|
       json = File.read(definition)
-      resource = FHIR::DSTU2.from_contents(json)
+      version = VERSION_MAP[JSON.parse(json)["fhirVersion"]]
+      resource = self.get_resource(json, version)
       DEFINITIONS[resource.url] = resource
       if resource.resourceType == 'StructureDefinition'
-        profiled_type = resource.snapshot.element.first.path
-        RESOURCES[profiled_type] = [] unless RESOURCES[profiled_type]
-        RESOURCES[profiled_type] << resource
+        profiled_type = resource.snapshot.element.first.path  # will this always be the first?
+        RESOURCES[version][profiled_type] = [] unless RESOURCES[version][profiled_type]
+        RESOURCES[version][profiled_type] << resource
       elsif resource.resourceType == 'ValueSet'
         VALUESETS[resource.url] = resource
       end
     end
 
-    SMOKING_STATUS_URL = 'http://fhir.org/guides/argonaut/StructureDefinition/argo-smokingstatus'
-    OBSERVATION_RESULTS_URL = 'http://fhir.org/guides/argonaut/StructureDefinition/argo-observationresults'
-    VITAL_SIGNS_URL = 'http://fhir.org/guides/argonaut/StructureDefinition/argo-vitalsigns'
-    CARE_TEAM_URL = 'http://fhir.org/guides/argonaut/StructureDefinition/argo-careteam'
-    CARE_PLAN_URL = 'http://fhir.org/guides/argonaut/StructureDefinition/argo-careplan'
+    ARGONAUT_URIS = {
+      smoking_status: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-smokingstatus',
+      observation_results: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-observationresults',
+      vital_signs: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-vitalsigns',
+      care_team: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-careteam',
+      care_plan: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-careplan'
+    }
 
-    def self.guess_profile(resource)
+    BLUEBUTTON_URIS = {
+      carrier: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-carrier-claim',
+      dme: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-dme-claim',
+      hha: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-hha-claim',
+      hospice: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-hospice-claim',
+      inpatient: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-inpatient-claim',
+      outpatient: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-outpatient-claim',
+      pde: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-pde-claim',
+      snf: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-snf-claim'
+    }
+
+    def self.guess_profile(resource, version)
+      if version == :dstu2
+        self.guess_dstu2_profile(resource)
+      else
+        self.guess_stu3_profile(resource)
+      end
+    end
+
+    def self.guess_dstu2_profile(resource)
       if resource
         # if the profile is given, we don't need to guess
         if resource.meta && resource.meta.profile && !resource.meta.profile.empty?
@@ -35,22 +68,59 @@ module Inferno
             return DEFINITIONS[uri] if DEFINITIONS[uri]
           end
         end
-        candidates = RESOURCES[resource.resourceType]
+        candidates = RESOURCES[:dstu2][resource.resourceType]
         if candidates && !candidates.empty?
           # Special cases where there are multiple profiles per Resource type
           if resource.resourceType == 'Observation'
-            if resource.code && resource.code.coding && resource.code.coding.first && resource.code.coding.first.code == '72166-2'
-              return DEFINITIONS[SMOKING_STATUS_URL]
-            elsif resource.category && resource.category.coding && resource.category.coding.first && resource.category.coding.first.code == 'laboratory'
-              return DEFINITIONS[OBSERVATION_RESULTS_URL]
-            elsif resource.category && resource.category.coding && resource.category.coding.first && resource.category.coding.first.code == 'vital-signs'
-              return DEFINITIONS[VITAL_SIGNS_URL]
+            if resource.code && resource.code.coding && resource.code.coding.any? { |coding| coding.code == '72166-2' }
+              return DEFINITIONS[ARGONAUT_URIS[:smoking_status]]
+            elsif resource.category && resource.category.coding && resource.category.coding.any? { |coding| coding.code == 'laboratory' }
+              return DEFINITIONS[ARGONAUT_URIS[:observation_results]]
+            elsif resource.category && resource.category.coding && resource.category.coding.any? { |coding| coding.code == 'vital-signs' }
+              return DEFINITIONS[ARGONAUT_URIS[:vital_signs]]
             end
           elsif resource.resourceType == 'CareTeam'
-            if resource.category && resource.category.coding && resource.category.coding.first && resource.category.coding.first.code = 'careteam'
-              return DEFINITIONS[CARE_TEAM_URL]
+            if resource.category && resource.category.coding && resource.category.coding.any? { |coding| coding.code = 'careteam' }
+              return DEFINITIONS[ARGONAUT_URIS[:care_team]]
             else
-              return DEFINITIONS[CARE_PLAN_URL]
+              return DEFINITIONS[ARGONAUT_URIS[:care_plan]]
+            end
+          end
+          # Otherwise, guess the first profile that matches on resource type
+          return candidates.first
+        end
+      end
+      nil
+    end
+
+    def self.guess_stu3_profile(resource)
+      if resource
+        # if the profile is given, we don't need to guess
+        if resource.meta && resource.meta.profile && !resource.meta.profile.empty?
+          resource.meta.profile.each do |uri|
+            return DEFINITIONS[uri] if DEFINITIONS[uri]
+          end
+        end
+        candidates = RESOURCES[:stu3][resource.resourceType]
+        if candidates && !candidates.empty?
+          # Special cases where there are multiple profiles per Resource type
+          if resource.resourceType == 'ExplanationOfBenefit'
+            if resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'CARRIER' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:carrier]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'DME' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:dme]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'HHA' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:hha]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'HOSPICE' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:hospice]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'INPATIENT' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:inpatient]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'OUTPATIENT' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:outpatient]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'PDE' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:pde]]
+            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'SNF' }
+              return DEFINITIONS[BLUEBUTTON_URIS[:snf]]
             end
           end
           # Otherwise, guess the first profile that matches on resource type

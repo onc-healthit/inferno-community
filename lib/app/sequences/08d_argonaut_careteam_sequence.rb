@@ -22,14 +22,15 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
 
-        reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "careteam"})
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "careteam"})
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::CarePlan, reply)
-        # save_resource_ids_in_bundle(FHIR::DSTU2::CarePlan, reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        # save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
       end
 
@@ -41,10 +42,11 @@ module Inferno
           desc %(
             CareTeam resources associated with Patient conform to Argonaut profiles.
           )
+          versions :dstu2
         }
-        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::CARE_TEAM_URL)
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::CARE_TEAM_URL), 'No CareTeams found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::CARE_TEAM_URL), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::CARE_TEAM_URL]}"
+        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::ARGONAUT_URIS[:care_team])
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]), 'No CareTeams found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]]}"
       end
 
       test 'All references can be resolved' do
@@ -55,6 +57,7 @@ module Inferno
           desc %(
             All references in the CareTeam resource should be resolveable.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:CareTeam, [:search, :read])

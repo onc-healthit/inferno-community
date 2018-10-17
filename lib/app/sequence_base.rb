@@ -33,6 +33,7 @@ module Inferno
       @@details = {}
       @@requires = {}
       @@defines = {}
+      @@versions = {}
       @@test_metadata = {}
 
       @@optional = []
@@ -227,6 +228,11 @@ module Inferno
         @@requires[self.sequence_name] || []
       end
 
+      def self.versions(*versions)
+        @@versions[self.sequence_name] = versions unless versions.empty?
+        @@versions[self.sequence_name] || FHIR::VERSIONS
+      end
+
       def self.missing_requirements(instance, recurse = false)
 
         return [] unless @@requires.key?(self.sequence_name)
@@ -237,7 +243,7 @@ module Inferno
 
         dependencies = {}
         dependencies[self] = missing.map do |requirement|
-          [requirement, ordered_sequences.select{ |sequence| sequence.defines.include? requirement}]
+          [requirement, ordered_sequences(instance.usecase).select{ |sequence| sequence.defines.include? requirement}]
         end
 
         # move this into a hash so things are duplicated.
@@ -338,7 +344,8 @@ module Inferno
         @@test_metadata[self.sequence_name] ||= []
         @@test_metadata[self.sequence_name] << { name: name,
                                                  test_index: test_index,
-                                                 required: true }
+                                                 required: true,
+                                                 versions: FHIR::VERSIONS }
 
         test_index_in_sequence = @@test_metadata[self.sequence_name].length - 1
 
@@ -353,10 +360,12 @@ module Inferno
                                           required: @@test_metadata[self.sequence_name][test_index_in_sequence][:required],
                                           description: @@test_metadata[self.sequence_name][test_index_in_sequence][:description],
                                           url: @@test_metadata[self.sequence_name][test_index_in_sequence][:url],
+                                          versions: @@test_metadata[self.sequence_name][test_index_in_sequence][:versions].join(","),
                                           result: STATUS[:pass],
                                           test_index: test_index)
           begin
 
+            skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.version.to_sym), 'This test does not run with this FHIR version')
             instance_eval &block
 
           rescue AssertionException, ClientException => e
@@ -428,6 +437,10 @@ module Inferno
         @@test_metadata[self.sequence_name].last[:description] = description
       end
 
+      def versions *versions
+        @@test_metadata[self.sequence_name].last[:versions] = versions
+      end
+
       def todo(message = "")
         raise TodoException.new message
       end
@@ -470,6 +483,10 @@ module Inferno
         @client.search(klass, options)
       end
 
+      def versioned_resource_class(klass)
+        @client.versioned_resource_class klass
+      end
+
       def check_sort_order(entries)
         relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
         relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
@@ -492,14 +509,14 @@ module Inferno
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
         assert entries.length > 0, 'No resources of this type were returned'
 
-        if klass == FHIR::DSTU2::Patient
+        if klass == versioned_resource_class('Patient')
           assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
           assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
-        elsif klass == FHIR::DSTU2::Provenance
+        elsif klass == versioned_resource_class('Provenance')
           entries.each do |entry|
             assert (entry.resource.target && entry.resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
           end
-        elsif [FHIR::DSTU2::CarePlan, FHIR::DSTU2::Goal, FHIR::DSTU2::DiagnosticReport, FHIR::DSTU2::Observation, FHIR::DSTU2::Procedure, FHIR::DSTU2::DocumentReference, FHIR::DSTU2::Composition].include?(klass)
+        elsif ['CarePlan', 'Goal', 'DiagnosticReport', 'Observation', 'Procedure', 'DocumentReference', 'Composition'].map{|type| versioned_resource_class(type)}.include?(klass)
           entries.each do |entry|
             assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
           end
@@ -573,12 +590,12 @@ module Inferno
 
         @instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).each do |resource_id|
 
-          resource_response = @client.read("FHIR::DSTU2::#{resource_type}", resource_id)
+          resource_response = @client.read(versioned_resource_class(resource_type), resource_id)
           assert_response_ok resource_response
           resource = resource_response.resource
-          assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize), "Expected resource to be of type #{resource_type}"
+          assert resource.is_a?(versioned_resource_class(resource_type)), "Expected resource to be of type #{resource_type}"
 
-          p = Inferno::ValidationUtil.guess_profile(resource)
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.version.to_sym)
           if specified_profile
             next unless p.url == specified_profile
           end
@@ -620,8 +637,8 @@ module Inferno
 
       # This is intended to be called on SequenceBase
       # There is a test to ensure that this doesn't fall out of date
-      def self.ordered_sequences
-        self.sequences_groups.map{|h| h[:sequences]}.flatten
+      def self.ordered_sequences(usecase=nil)
+        self.sequences_groups(usecase).map{|h| h[:sequences]}.flatten
       end
 
       def self.sequences_overview
@@ -631,8 +648,8 @@ module Inferno
 
       end
 
-      def self.sequences_groups
-        [{
+      def self.sequences_groups(usecase=nil)
+        groups = [{
           name: 'Discovery',
           overview: %(
             This is a description of the discovery group
@@ -656,35 +673,54 @@ module Inferno
             TokenRefreshSequence
           ],
           run_all: false
-        },
-        {
-          name: 'Argonaut Profile Conformance',
-          overview: %(
-
-
-
-          ),
-          sequences: [
-            ArgonautPatientSequence,
-            ArgonautAllergyIntoleranceSequence,
-            ArgonautCarePlanSequence,
-            ArgonautCareTeamSequence,
-            ArgonautConditionSequence,
-            ArgonautDeviceSequence,
-            ArgonautDiagnosticReportSequence,
-            ArgonautObservationSequence,
-            ArgonautGoalSequence,
-            ArgonautImmunizationSequence,
-            ArgonautMedicationStatementSequence,
-            ArgonautMedicationOrderSequence,
-            ArgonautProcedureSequence,
-            ArgonautSmokingStatusSequence,
-            ArgonautVitalSignsSequence
-          ],
-          run_all: true
         }]
 
+        if usecase.nil? or usecase == "argonaut"
+          groups << {
+            name: 'Argonaut Profile Conformance',
+            overview: %(
 
+
+
+            ),
+            sequences: [
+              ArgonautPatientSequence,
+              ArgonautAllergyIntoleranceSequence,
+              ArgonautCarePlanSequence,
+              ArgonautCareTeamSequence,
+              ArgonautConditionSequence,
+              ArgonautDeviceSequence,
+              ArgonautDiagnosticReportSequence,
+              ArgonautObservationSequence,
+              ArgonautGoalSequence,
+              ArgonautImmunizationSequence,
+              ArgonautMedicationStatementSequence,
+              ArgonautMedicationOrderSequence,
+              ArgonautProcedureSequence,
+              ArgonautSmokingStatusSequence,
+              ArgonautVitalSignsSequence
+            ],
+            run_all: true
+          }
+        end
+
+        if usecase.nil? or usecase == "bluebutton"
+          groups << {
+            name: 'BlueButton 2.0 Profile Conformance',
+            overview: %(
+
+
+
+            ),
+            sequences: [
+              BlueButtonPatientSequence,
+              BlueButtonExplanationOfBenefitSequence
+            ],
+            run_all: true
+          }
+        end
+
+        groups
       end
 
     end

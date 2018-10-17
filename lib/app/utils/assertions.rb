@@ -58,7 +58,7 @@ module Inferno
     end
 
     def assert_bundle_response(response)
-      unless assertion_negated( response.resource.class == FHIR::DSTU2::Bundle )
+      unless assertion_negated( response.resource.class == FHIR::DSTU2::Bundle || response.resource.class == FHIR::Bundle)
         # check what this is...
         found = response.resource
         begin

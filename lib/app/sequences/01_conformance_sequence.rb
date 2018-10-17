@@ -110,10 +110,10 @@ module Inferno
         }
 
         @client.set_no_auth
-        @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
+        @conformance = @client.conformance_statement
         assert_response_ok @client.reply
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
       end
 
       test 'FHIR server conformance states JSON support' do
@@ -146,8 +146,8 @@ module Inferno
           )
         }
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-        assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir') || @conformance.format.include?('application/fhir+json'), 'Conformance does not state support for json.'
       end
 
       test 'Conformance Statement provides OAuth 2.0 endpoints' do
@@ -162,7 +162,7 @@ module Inferno
           )
         }
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
         assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
         authorize_url = oauth_metadata[:authorize_url]
@@ -229,7 +229,7 @@ module Inferno
                                  'permission-user'
         ]
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
 
         extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
         assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
@@ -251,7 +251,7 @@ module Inferno
           )
         }
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
 
         begin
           @instance.save_supported_resources(@conformance)
@@ -263,7 +263,15 @@ module Inferno
 
       end
 
-    end
 
+      def versioned_conformance_class
+        if @instance.version == 'dstu2'
+          FHIR::DSTU2::Conformance
+        elsif @instance.version == 'stu3'
+          FHIR::CapabilityStatement
+        end
+      end
+
+    end
   end
 end

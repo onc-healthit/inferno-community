@@ -18,8 +18,8 @@ module Inferno
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
           erb :details, {}, {instance: instance,
-                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                             sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
+                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups(instance.usecase),
+                             sequences: Inferno::Sequence::SequenceBase.ordered_sequences(instance.usecase),
                              sequence_results: sequence_results,
                              error_code: params[:error]}
         end
@@ -27,7 +27,8 @@ module Inferno
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          @instance = Inferno::Models::TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
+          version, usecase = params['usecase'].split '|'
+          @instance = Inferno::Models::TestingInstance.new(url: url, name: params['name'], base_url: request.base_url, version: version, usecase: usecase)
           @instance.save!
           redirect "#{BASE_PATH}/#{@instance.id}/#{"?autoRun=ConformanceSequence" if settings.autorun_conformance}"
         end
@@ -94,7 +95,9 @@ module Inferno
             instance.save!
 
             client = FHIR::Client.new(instance.url)
-            client.use_dstu2
+            if instance.version == 'dstu2'
+              client.use_dstu2
+            end
             client.default_json
             submitted_sequences = params[:sequence].split(',')
 
@@ -111,8 +114,8 @@ module Inferno
               end
 
               out << erb(:details, {}, {instance: instance,
-                                        sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                        sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
+                                        sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups(instance.usecase),
+                                        sequences: Inferno::Sequence::SequenceBase.ordered_sequences(instance.usecase),
                                         sequence_results: instance.latest_results,
                                         tests_running: true
               })
@@ -169,7 +172,9 @@ module Inferno
               klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence_result.name)}
 
               client = FHIR::Client.new(instance.url)
-              client.use_dstu2
+              if instance.version == 'dstu2'
+                client.use_dstu2
+              end
               client.default_json
               sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
 
@@ -184,8 +189,8 @@ module Inferno
                 end
 
                 out << erb(:details, {}, {instance: instance,
-                                          sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                          sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
+                                          sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups(instance.usecase),
+                                          sequences: Inferno::Sequence::SequenceBase.ordered_sequences(instance.usecase),
                                           sequence_results: instance.latest_results,
                                           tests_running: true}
                 )

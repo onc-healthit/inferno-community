@@ -20,6 +20,7 @@ module Inferno
           desc %(
             A Smoking Status search does not work without proper authorization.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -27,7 +28,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -41,14 +42,15 @@ module Inferno
           desc %(
             A server is capable of returning a patient's smoking status.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
 
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
-        validate_search_reply(FHIR::DSTU2::Observation, reply)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
+        validate_search_reply(versioned_resource_class('Observation'), reply)
         # TODO check for 72166-2
-        save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end
 
@@ -60,10 +62,11 @@ module Inferno
           desc %(
             Smoking Status resources associated with Patient conform to Argonaut profiles
           )
+          versions :dstu2
         }
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::SMOKING_STATUS_URL)
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::SMOKING_STATUS_URL), 'No Smoking Status Observations found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::SMOKING_STATUS_URL), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::SMOKING_STATUS_URL]}"
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status])
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]), 'No Smoking Status Observations found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]]}"
       end
 
     end

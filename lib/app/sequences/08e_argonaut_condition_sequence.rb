@@ -22,6 +22,7 @@ module Inferno
           desc %(
             A Condition search does not work without proper authorization.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
@@ -29,7 +30,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -43,11 +44,12 @@ module Inferno
           desc %(
             A server is capable of returning a patients conditions list.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
 
-        reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id})
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -59,8 +61,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::Condition, reply)
-        save_resource_ids_in_bundle(FHIR::DSTU2::Condition, reply)
+        validate_search_reply(versioned_resource_class('Condition'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
 
       end
 
@@ -73,13 +75,14 @@ module Inferno
           desc %(
             A server SHOULD be capable returning all of a patients active problems and health concerns.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
-        validate_search_reply(FHIR::DSTU2::Condition, reply)
+        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
+        validate_search_reply(versioned_resource_class('Condition'), reply)
 
       end
 
@@ -92,13 +95,14 @@ module Inferno
           desc %(
             A server SHOULD be capable returning all of a patients problems or all of patients health concerns.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "problem"})
-        validate_search_reply(FHIR::DSTU2::Condition, reply)
+        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, category: "problem"})
+        validate_search_reply(versioned_resource_class('Condition'), reply)
 
       end
 
@@ -111,13 +115,14 @@ module Inferno
           desc %(
             A server SHOULD be capable returning all of a patients problems or all of patients health concerns.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(FHIR::DSTU2::Condition, {patient: @instance.patient_id, category: "health-concern"})
-        validate_search_reply(FHIR::DSTU2::Condition, reply)
+        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, category: "health-concern"})
+        validate_search_reply(versioned_resource_class('Condition'), reply)
 
       end
 
@@ -129,12 +134,13 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@condition, FHIR::DSTU2::Condition)
+        validate_read_reply(@condition, versioned_resource_class('Condition'))
 
       end
 
@@ -147,12 +153,13 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@condition, FHIR::DSTU2::Condition)
+        validate_history_reply(@condition, versioned_resource_class('Condition'))
 
       end
 
@@ -165,12 +172,13 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@condition, FHIR::DSTU2::Condition)
+        validate_vread_reply(@condition, versioned_resource_class('Condition'))
 
       end
 
@@ -182,6 +190,7 @@ module Inferno
           desc %(
             Condition resources associated with Patient conform to Argonaut profiles.
           )
+          versions :dstu2
         }
         test_resources_against_profile('Condition')
       end
@@ -194,6 +203,7 @@ module Inferno
           desc %(
             All references in the Condition resource should be resolveable.
           )
+          versions :dstu2
         }
 
         skip_if_not_supported(:Condition, [:search, :read])

@@ -22,7 +22,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Composition'), {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -37,9 +37,9 @@ module Inferno
           )
         }
 
-        reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Composition'), {patient: @instance.patient_id})
         @composition = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::Composition, reply)
+        validate_search_reply(versioned_resource_class('Composition'), reply)
 
       end
 
@@ -53,11 +53,11 @@ module Inferno
           )
         }
 
-        assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
+        assert !@composition.nil?, 'Expected valid Composition resource to be present'
         type = @composition.try(:type).try(:coding).try(:first).try(:code)
         assert !type.nil?, "Composition type not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id, type: type})
-        validate_search_reply(FHIR::DSTU2::Composition, reply)
+        reply = get_resource_by_params(versioned_resource_class('Composition'), {patient: @instance.patient_id, type: type})
+        validate_search_reply(versioned_resource_class('Composition'), reply)
 
       end
 
@@ -71,12 +71,12 @@ module Inferno
           )
         }
 
-        assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
+        assert !@composition.nil?, 'Expected valid Composition resource to be present'
         period = @composition.try(:event).try(:first).try(:period).try(:start)
         period ||= @composition.try(:event).try(:first).try(:period).try(:end)
         assert !period.nil?, "Composition period not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id, period: period})
-        validate_search_reply(FHIR::DSTU2::Composition, reply)
+        reply = get_resource_by_params(versioned_resource_class('Composition'), {patient: @instance.patient_id, period: period})
+        validate_search_reply(versioned_resource_class('Composition'), reply)
 
       end
 
@@ -90,14 +90,14 @@ module Inferno
           )
         }
 
-        assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
+        assert !@composition.nil?, 'Expected valid Composition resource to be present'
         type = @composition.try(:type).try(:coding).try(:first).try(:code)
         assert !type.nil?, "Composition type not returned"
         period = @composition.try(:event).try(:first).try(:period).try(:start)
         period ||= @composition.try(:event).try(:first).try(:period).try(:end)
         assert !period.nil?, "Composition period not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Composition, {patient: @instance.patient_id, type: type, period: period})
-        validate_search_reply(FHIR::DSTU2::Composition, reply)
+        reply = get_resource_by_params(versioned_resource_class('Composition'), {patient: @instance.patient_id, type: type, period: period})
+        validate_search_reply(versioned_resource_class('Composition'), reply)
 
       end
 
@@ -111,7 +111,7 @@ module Inferno
           )
         }
 
-        validate_read_reply(@composition, FHIR::DSTU2::Composition)
+        validate_read_reply(@composition, versioned_resource_class('Composition'))
 
       end
 
@@ -124,7 +124,7 @@ module Inferno
             Additional Composition resource requirement.
           )
         }
-        validate_history_reply(@composition, FHIR::DSTU2::Composition)
+        validate_history_reply(@composition, versioned_resource_class('Composition'))
 
       end
 
@@ -138,7 +138,7 @@ module Inferno
           )
         }
 
-        validate_vread_reply(@composition, FHIR::DSTU2::Composition)
+        validate_vread_reply(@composition, versioned_resource_class('Composition'))
 
       end
 
@@ -151,8 +151,8 @@ module Inferno
           )
         }
 
-        assert !@composition.nil?, 'Expected valid DSTU2 Composition resource to be present'
-        assert @composition.is_a?(FHIR::DSTU2::Composition), 'Expected resource to be valid DSTU2 Composition'
+        assert !@composition.nil?, 'Expected valid Composition resource to be present'
+        assert @composition.is_a?(versioned_resource_class('Composition')), 'Expected resource to be valid Composition'
         text = @composition.try(:section).try(:first).try(:text)
         assert !text.nil?, 'Composition section text not returned'
 
@@ -170,7 +170,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -186,9 +186,9 @@ module Inferno
           )
         }
 
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {patient: @instance.patient_id})
         @provenance = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        validate_search_reply(versioned_resource_class('Provenance'), reply)
 
       end
 
@@ -202,12 +202,12 @@ module Inferno
           )
         }
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert !@provenance.nil?, 'Expected valid Provenance resource to be present'
         target = @provenance.try(:target).try(:first).try(:reference)
         target = target.split('/')[-1] if target.include?('/')
         assert !target.nil?, "Provenance target not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, target: target})
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {patient: @instance.patient_id, target: target})
+        validate_search_reply(versioned_resource_class('Provenance'), reply)
 
       end
 
@@ -221,13 +221,13 @@ module Inferno
           )
         }
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert !@provenance.nil?, 'Expected valid Provenance resource to be present'
         periodStart = @provenance.try(:period).try(:start)
         assert !periodStart.nil?, "Provenance period start not returned"
         periodEnd = @provenance.try(:period).try(:end)
         assert !periodEnd.nil?, "Provenance period end not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, start: periodStart, end: periodEnd})
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {patient: @instance.patient_id, start: periodStart, end: periodEnd})
+        validate_search_reply(versioned_resource_class('Provenance'), reply)
 
       end
 
@@ -241,7 +241,7 @@ module Inferno
           )
         }
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert !@provenance.nil?, 'Expected valid Provenance resource to be present'
         target = @provenance.try(:target).try(:first).try(:reference)
         target = target.split('/')[-1] if target.include?('/')
         assert !target.nil?, "Provenance target not returned"
@@ -249,8 +249,8 @@ module Inferno
         assert !periodStart.nil?, "Provenance period start not returned"
         periodEnd = @provenance.try(:period).try(:end)
         assert !periodEnd.nil?, "Provenance period end not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {patient: @instance.patient_id, target: target, start: periodStart, end: periodEnd})
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {patient: @instance.patient_id, target: target, start: periodStart, end: periodEnd})
+        validate_search_reply(versioned_resource_class('Provenance'), reply)
 
       end
 
@@ -264,11 +264,11 @@ module Inferno
           )
         }
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert !@provenance.nil?, 'Expected valid Provenance resource to be present'
         userid = @provenance.try(:agent).try(:first).try(:userId).try(:value)
         assert !userid.nil?, "Provenance agent userId not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {userid: userid})
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {userid: userid})
+        validate_search_reply(versioned_resource_class('Provenance'), reply)
 
       end
 
@@ -282,12 +282,12 @@ module Inferno
           )
         }
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert !@provenance.nil?, 'Expected valid Provenance resource to be present'
         actor = @provenance.try(:agent).try(:first).try(:actor).try(:reference)
         actor = actor.split('/')[-1] if actor.include?('/')
         assert !actor.nil?, "Provenance agent actor not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, {agent: actor})
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        reply = get_resource_by_params(versioned_resource_class('Provenance'), {agent: actor})
+        validate_search_reply(versioned_resource_class('Provenance'), reply)
 
       end
 
@@ -301,7 +301,7 @@ module Inferno
           )
         }
 
-        validate_read_reply(@provenance, FHIR::DSTU2::Provenance)
+        validate_read_reply(@provenance, versioned_resource_class('Provenance'))
 
       end
 
@@ -315,7 +315,7 @@ module Inferno
           )
         }
 
-        validate_history_reply(@provenance, FHIR::DSTU2::Provenance)
+        validate_history_reply(@provenance, versioned_resource_class('Provenance'))
 
       end
 
@@ -329,7 +329,7 @@ module Inferno
           )
         }
 
-        validate_vread_reply(@provenance, FHIR::DSTU2::Provenance)
+        validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
 
       end
 
