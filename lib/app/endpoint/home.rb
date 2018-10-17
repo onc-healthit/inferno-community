@@ -3,6 +3,8 @@
 module Inferno
   class App
     class Endpoint
+      # Home provides a Sinatra endpoint for accessing Inferno.
+      # Home serves the main web application.
       class Home < Endpoint
         set :prefix, '/inferno'
 
@@ -11,7 +13,7 @@ module Inferno
         end
 
         get '/static/*' do
-          status, headers, body = call! env.merge('PATH_INFO' => '/' + params['splat'].first)
+          call! env.merge('PATH_INFO' => '/' + params['splat'].first)
         end
 
         get '/:id/?' do
@@ -28,13 +30,17 @@ module Inferno
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          @instance = Inferno::Models::TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
+          @instance = Inferno::Models::TestingInstance.new(url: url, 
+                                                           name: params['name'],
+                                                           base_url: request.base_url)
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=ConformanceSequence' if settings.autorun_conformance}"
         end
 
         get '/test_details/:sequence_name/:test_index?' do
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(params[:sequence_name]) }
+          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+            x.name.demodulize.start_with?(params[:sequence_name])
+          end
           halt 404 unless sequence
           @test_metadata = sequence.tests[params[:test_index].to_i]
           halt 404 unless @test_metadata
@@ -60,7 +66,9 @@ module Inferno
             last_result.message = cancel_message
           end
 
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(@sequence_result.name) }
+          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+            x.name.demodulize.start_with?(@sequence_result.name)
+          end
 
           current_test_count = @sequence_result.test_results.length
 
@@ -77,7 +85,7 @@ module Inferno
 
           @sequence_result.save!
 
-          redirect "#{BASE_PATH}/#{params[:id]}/##{@sequence_result.name}"
+          redirect "#{base_path}/#{params[:id]}/##{@sequence_result.name}"
         end
 
         post '/:id/sequence_result/?' do
@@ -115,7 +123,11 @@ module Inferno
             next_sequence = submitted_sequences.shift
 
             klass = nil
-            klass = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(next_sequence) } if next_sequence
+            if next_sequence
+              klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+                x.name.demodulize.start_with?(next_sequence)
+              end
+            end
 
             until klass.nil?
 
@@ -134,7 +146,7 @@ module Inferno
               if sequence_result.redirect_to_url
                 out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
                 # out << js_redirect(sequence_result.redirect_to_url)
-              elsif submitted_sequences.count > 0
+              elsif !submitted_sequences.empty?
                 out << js_next_sequence(sequence_result.next_sequences)
               else
                 finished = true
@@ -146,7 +158,7 @@ module Inferno
               klass = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(next_sequence) } if next_sequence
             end
 
-            out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}") if finished
+            out << js_redirect("#{base_path}/#{params[:id]}/##{params[:sequence]}") if finished
           end
         end
 
@@ -157,7 +169,7 @@ module Inferno
           sequence_result = instance.waiting_on_sequence
 
           if sequence_result.nil? || sequence_result.result != 'wait'
-            redirect "/#{BASE_PATH}/#{params[:id]}/?error=no_#{params[:endpoint]}"
+            redirect "/#{base_path}/#{params[:id]}/?error=no_#{params[:endpoint]}"
           else
             klass = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(sequence_result.name) }
 
@@ -194,7 +206,7 @@ module Inferno
               if sequence_result.redirect_to_url
                 out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
               else
-                out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{sequence_result.name}")
+                out << js_redirect("#{base_path}/#{params[:id]}/##{sequence_result.name}")
               end
             end
           end
