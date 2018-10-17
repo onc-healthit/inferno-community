@@ -6,16 +6,21 @@ module Inferno
       # Home provides a Sinatra endpoint for accessing Inferno.
       # Home serves the main web application.
       class Home < Endpoint
+
+        # Set the url prefix these routes will map to
         set :prefix, '/inferno'
 
+        # Return the index page of the application
         get '/?' do
           erb :index
         end
 
+        # Returns the static files associated with web app
         get '/static/*' do
           call! env.merge('PATH_INFO' => '/' + params['splat'].first)
         end
 
+        # Returns a specific testing instance test page
         get '/:id/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
@@ -27,6 +32,7 @@ module Inferno
                              error_code: params[:error]
         end
 
+        # Creates a new testing instance at the provided FHIR Server URL
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
@@ -37,6 +43,8 @@ module Inferno
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=ConformanceSequence' if settings.autorun_conformance}"
         end
 
+        # Returns test details for a specific test including any applicable requests and responses.
+        #   This route is typically used for retrieving test metadata before the test has been run
         get '/test_details/:sequence_name/:test_index?' do
           sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
             x.name.demodulize.start_with?(params[:sequence_name])
@@ -47,12 +55,15 @@ module Inferno
           erb :test_details, layout: false
         end
 
+        # Returns test details for a specific test including any applicable requests and responses.
+        #   This route is typically used for retrieving test metadata and results after the test has been run.
         get '/:id/test_result/:test_result_id/?' do
           @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
           halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
           erb :test_result_details, layout: false
         end
 
+        # Cancels the currently running test
         get '/:id/sequence_result/:sequence_result_id/cancel' do
           @sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
           halt 404 if @sequence_result.testing_instance.id != params[:id]
@@ -88,6 +99,7 @@ module Inferno
           redirect "#{base_path}/#{params[:id]}/##{@sequence_result.name}"
         end
 
+        # Run a sequence and get the results
         post '/:id/sequence_result/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
@@ -153,6 +165,7 @@ module Inferno
           end
         end
 
+        # Handles EHR Launch and any redirects
         get '/:id/:key/:endpoint/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && %w[launch redirect].include?(params[:endpoint])
