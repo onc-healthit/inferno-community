@@ -8,7 +8,7 @@
           <% case sequence_results[sequence_class.sequence_name].try(:result)
             when nil %>
              <% if !sequence_class.conformance_supports.all?{|resource| instance.conformance_supported?(resource)}%>
-                <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Your Conformance says you don't support the required Resources for this test.">
+                <div class="sequence-score sequence-score-error" data-toggle="tooltip" title="The Conformance Statement does not indicate support for the Resources required for this test.">
                   <span class="oi oi-warning" aria-hidden="true" ></span>
                 </div>
               <% end%>
