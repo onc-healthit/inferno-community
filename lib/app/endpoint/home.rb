@@ -6,7 +6,6 @@ module Inferno
       # Home provides a Sinatra endpoint for accessing Inferno.
       # Home serves the main web application.
       class Home < Endpoint
-
         # Set the url prefix these routes will map to
         set :prefix, '/inferno'
 
@@ -36,7 +35,7 @@ module Inferno
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          @instance = Inferno::Models::TestingInstance.new(url: url, 
+          @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
                                                            base_url: request.base_url)
           @instance.save!
@@ -175,7 +174,9 @@ module Inferno
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "/#{base_path}/#{params[:id]}/?error=no_#{params[:endpoint]}"
           else
-            klass = Inferno::Sequence::SequenceBase.subclasses.find { |x| x.name.demodulize.start_with?(sequence_result.name) }
+            klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+              x.name.demodulize.start_with?(sequence_result.name)
+            end
 
             client = FHIR::Client.new(instance.url)
             client.use_dstu2
@@ -207,11 +208,11 @@ module Inferno
               end
               instance.sequence_results.push(sequence_result)
               instance.save!
-              if sequence_result.redirect_to_url
-                out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-              else
-                out << js_redirect("#{base_path}/#{params[:id]}/##{sequence_result.name}")
-              end
+              out << if sequence_result.redirect_to_url
+                       js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                     else
+                       js_redirect("#{base_path}/#{params[:id]}/##{sequence_result.name}")
+                     end
             end
           end
         end
