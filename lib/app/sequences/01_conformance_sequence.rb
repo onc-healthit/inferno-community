@@ -174,13 +174,13 @@ module Inferno
 
         warning {
           service = []
-          @conformance.try(:rest).each do |endpoint|
-            endpoint.try(:security).try(:service).each do |sec_service|
-              sec_service.try(:coding).each do |coding|
-                service << coding.code
+          @conformance.try(:rest)&.each do |endpoint|
+              endpoint.try(:security).try(:service)&.each do |sec_service|
+                sec_service.try(:coding)&.each do |coding|
+                  service << coding.code
+                end
               end
             end
-          end
 
           assert !service.empty?, 'No security services listed. Conformance.rest.security.service should be SMART-on-FHIR.'
           assert service.any? {|any_service| any_service == 'SMART-on-FHIR'}, "Conformance.rest.security.service set to #{service.map{ |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
