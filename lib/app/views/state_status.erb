@@ -13,14 +13,10 @@
     <ul>
       <% instance.supported_resources.each do |resource| %>
         <% if resource.supported %>
-          <li><%= resource.resource_type %> [
-              <% if resource.read_supported %> read, <% end %>
-              <% if resource.vread_supported %> vread, <% end %>
-              <% if resource.history_supported %> history<% end %><% if resource.scope_supported %>, authorized <% end %>
-              ]
+          <li><%= resource.resource_type %>
+            <%= "[ #{resource.supported_interactions.join(', ')} ]" unless resource.supported_interactions.nil?%>
           <% end %>
         <% end %>
-
       </ul>
       <% end %>
 
