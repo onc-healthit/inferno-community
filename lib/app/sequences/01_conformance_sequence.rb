@@ -147,7 +147,7 @@ module Inferno
         }
 
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-        assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
+        assert @conformance.format.include?('json') || @conformance.format.include?('application/json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
       end
 
       test 'Conformance Statement provides OAuth 2.0 endpoints' do
