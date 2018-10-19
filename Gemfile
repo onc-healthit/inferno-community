@@ -20,5 +20,6 @@ gem 'json-jwt'
 gem 'colorize'
 gem 'kramdown'
 gem 'selenium-webdriver'
+gem 'rubocop', require: false
 
 gem 'simplecov', require: false, group: :test
