@@ -43,4 +43,22 @@ class SequenceValidationTest < MiniTest::Unit::TestCase
     assert (Inferno::Sequence::SequenceBase.subclasses.select{|seq| !seq.inactive?}-Inferno::Sequence::SequenceBase.ordered_sequences).blank?  && (Inferno::Sequence::SequenceBase.ordered_sequences-Inferno::Sequence::SequenceBase.subclasses.select{|seq| !seq.inactive?}).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
   end
 
+  def test_ids_sequential
+
+    # tests ids must be sequential without any holes
+    # test ids must be 2 digits long
+    # if a test is no longer valid, we should add a deprecated flag
+
+    errors = []
+
+    Inferno::Sequence::SequenceBase.subclasses.each do |seq|
+      ids = seq.tests.reduce([]){ |out,hash| out << hash[:test_id].scan(/\d/)[0,2].join.to_i }.sort
+      all_in_order = ids.each_cons(2).all? { |x,y| y == x + 1 }
+      errors << seq.sequence_name unless all_in_order
+    end
+
+    assert errors.empty?, "Sequences #{errors.join(',')} do not have incrementing test id numbers.  Add deprecated flag if a test is no longer needed."
+
+  end
+
 end
