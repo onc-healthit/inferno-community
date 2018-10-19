@@ -169,7 +169,7 @@ module Inferno
       test 'Token introspection response confirms that Refresh token is active' do
 
         metadata {
-          id '06'
+          id '07'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
           desc %(
