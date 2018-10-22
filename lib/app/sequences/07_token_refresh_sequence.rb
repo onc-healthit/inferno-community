@@ -120,7 +120,7 @@ module Inferno
       test 'Response includes correct HTTP Cache-Control and Pragma headers' do
 
         metadata {
-          id '10'
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.

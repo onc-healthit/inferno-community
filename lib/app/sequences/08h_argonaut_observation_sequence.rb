@@ -188,7 +188,7 @@ module Inferno
       test 'Observation history resource supported' do
 
         metadata {
-          id '08'
+          id '09'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
           desc %(
@@ -206,7 +206,7 @@ module Inferno
       test 'Observation vread resource supported' do
 
         metadata {
-          id '09'
+          id '10'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
           desc %(
@@ -224,7 +224,7 @@ module Inferno
       test 'Observation Result resources associated with Patient conform to Argonaut profiles' do
 
         metadata {
-          id '10'
+          id '11'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html'
           desc %(
             Observation Result resources associated with Patient conform to Argonaut profiles.
