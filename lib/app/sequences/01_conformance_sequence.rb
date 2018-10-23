@@ -123,7 +123,7 @@ module Inferno
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
 
-            FHIR provides multiple (https://www.hl7.org/fhir/DSTU2/formats.html)[representation formats] for resources, including JSON and XML.
+            FHIR provides multiple [representation formats](https://www.hl7.org/fhir/DSTU2/formats.html) for resources, including JSON and XML.
             Argonaut profiles require servers to use the JSON representation:
 
             ```
@@ -132,10 +132,10 @@ module Inferno
             [http://www.fhir.org/guides/argonaut/r2/Conformance-server.html](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
 
             The FHIR conformance interaction require servers to describe which formats are available for clients to use.  The server must
-            explicitly state that JSON is supported. This is located in the (format element)[https://www.hl7.org/fhir/DSTU2/conformance-definitions.html#Conformance.format]
+            explicitly state that JSON is supported. This is located in the [format element](https://www.hl7.org/fhir/DSTU2/conformance-definitions.html#Conformance.format)
             of the Conformance Resource.
 
-            This test checks that one of the following values are located in the format field.
+            This test checks that one of the following values are located in the [format field](https://www.hl7.org/fhir/DSTU2/json.html).
 
             * json
             * application/json
