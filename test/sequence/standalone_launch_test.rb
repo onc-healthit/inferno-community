@@ -4,15 +4,15 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
 
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                   client_name: 'Inferno',
-                                   base_url: 'http://localhost:4567',
-                                   client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-                                   client_id: SecureRandom.uuid,
-                                   oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
-                                   oauth_token_endpoint: 'http://oauth_reg.example.com/token',
-                                   initiate_login_uri: 'http://localhost:4567/launch',
-                                   redirect_uris: 'http://localhost:4567/redirect',
-                                   scopes: 'launch openid patient/*.* profile',
+                                                     client_name: 'Inferno',
+                                                     base_url: 'http://localhost:4567',
+                                                     client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
+                                                     client_id: SecureRandom.uuid,
+                                                     oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
+                                                     oauth_token_endpoint: 'http://oauth_reg.example.com/token',
+                                                     initiate_login_uri: 'http://localhost:4567/launch',
+                                                     redirect_uris: 'http://localhost:4567/redirect',
+                                                     scopes: 'launch openid patient/*.* profile',
                                    )
 
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
@@ -23,16 +23,40 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
   end
 
-  def test_all_pass
+  def all_pass(confidential)
     WebMock.reset!
+    
+    if confidential
+      # Responses Must Contain Authorization Header
+      stub_request(:post, @instance.oauth_token_endpoint)
+          .with(headers: {'Content-Type' => 'application/x-www-form-urlencoded',
+                          'Authorization' =>
+                             "Basic #{Base64.strict_encode64(@instance.client_id +
+                                                                 ':' +
+                                                                 @instance.client_secret)}"})
+          .to_return(status: 200,
+                     body: @standalone_token_exchange.to_json,
+                     headers: {content_type: 'application/json; charset=UTF-8',
+                               cache_control: 'no-store',
+                               pragma:'no-cache'})
 
-    stub_request(:post, @instance.oauth_token_endpoint).
-      with(headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
-      to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma:'no-cache'})
-
-    stub_request(:post, @instance.oauth_token_endpoint).
-      with(body: /INVALID_/,headers: {'Content-Type'=>'application/x-www-form-urlencoded'}).
-      to_return(status: 401)
+      # Responses must NOT contain client_id in the body or the client secret in any situation
+      stub_request(:post, @instance.oauth_token_endpoint)
+          .with(body: /client_id|client_secret/,
+                headers: {'Content-Type' => 'application/x-www-form-urlencoded',
+                          'Authorization' =>
+                             "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"})
+          .to_return(status: 401)
+    else
+      stub_request(:post, @instance.oauth_token_endpoint)
+          .with(headers: {'Content-Type'=>'application/x-www-form-urlencoded'})
+          .to_return(status: 200, body: @standalone_token_exchange.to_json, headers: {content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma:'no-cache'})
+    end
+    # To test rejection of invalid client_id
+    stub_request(:post, @instance.oauth_token_endpoint)
+        .with(body: /INVALID_/,
+              headers: {'Content-Type'=>'application/x-www-form-urlencoded'})
+        .to_return(status: 401)
 
     sequence_result = @sequence.start
 
@@ -48,6 +72,18 @@ class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
     assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass'
     assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
+  end
+
+  def test_all_pass_confidential_client
+    @instance.client_secret = SecureRandom.uuid
+    @instance.confidential_client = true
+    all_pass(true)
+  end
+
+  def test_all_pass_public_client
+    @instance.client_secret = nil
+    @instance.confidential_client = nil
+    all_pass(false)
   end
 
 end
