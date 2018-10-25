@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class StandaloneLaunchSequenceTest < MiniTest::Unit::TestCase
+class StandaloneLaunchSequenceTest < MiniTest::Test
 
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',

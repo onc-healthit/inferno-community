@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class ArgonautQueryTest < MiniTest::Unit::TestCase
+class ArgonautQueryTest < MiniTest::Test
 
   REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
                       'Accept-Charset'=>'UTF-8',

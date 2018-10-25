@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class OpenIDConnectSequenceTest < MiniTest::Unit::TestCase
+class OpenIDConnectSequenceTest < MiniTest::Test
 
   RESPONSE_HEADERS = {"content-type"=>"application/json"}
 
