@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class TestInstanceTest < MiniTest::Unit::TestCase
+class TestInstanceTest < MiniTest::Test
 
   def setup
     @instance = Inferno::Models::TestingInstance.create

@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class AssertionsTest < MiniTest::Unit::TestCase
+class AssertionsTest < MiniTest::Test
 
   def setup
     # Create an instance of an anonymous class to wrap Inferno's assertions which collide/conflct with the tests methods

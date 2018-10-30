@@ -6,7 +6,7 @@ module Inferno
       description 'Demonstrate token refresh capability'
       test_id_prefix 'TR'
 
-      requires :refresh_token, :client_id, :oauth_token_endpoint
+      requires :client_id, :confidential_client, :client_secret, :refresh_token, :client_id, :oauth_token_endpoint
 
       test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.' do
 
@@ -50,10 +50,18 @@ module Inferno
         oauth2_params = {
             'grant_type' => 'refresh_token',
             'refresh_token' => @instance.refresh_token,
-            'client_id' => @instance.client_id
         }
+        oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
-        @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+        if @instance.confidential_client
+          oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id +
+                                                                                ':' +
+                                                                                @instance.client_secret)}"
+        else
+          oauth2_params['client_id'] = @instance.client_id
+        end
+
+        @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
         assert_response_ok(@token_response)
 
       end
@@ -120,7 +128,7 @@ module Inferno
       test 'Response includes correct HTTP Cache-Control and Pragma headers' do
 
         metadata {
-          id '10'
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.

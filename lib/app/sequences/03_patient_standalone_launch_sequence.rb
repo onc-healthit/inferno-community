@@ -150,14 +150,13 @@ module Inferno
             'code' => @params['code'],
             'redirect_uri' => @instance.redirect_uris,
         }
+        oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
         if @instance.confidential_client
-          oauth2_headers = {
-              'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
-              'Content-Type' => 'application/x-www-form-urlencoded'
-          }
+          oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id +
+                                                                                ':' +
+                                                                                @instance.client_secret)}"
         else
           oauth2_params['client_id'] = @instance.client_id
-          oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
         end
         @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
         assert_response_ok(@token_response)

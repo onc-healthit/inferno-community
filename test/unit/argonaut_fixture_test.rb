@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class ArgonautFixtureTest < MiniTest::Unit::TestCase
+class ArgonautFixtureTest < MiniTest::Test
 
   def setup
     @bundle = FHIR::DSTU2.from_contents(load_fixture('sample_record'))

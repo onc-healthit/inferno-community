@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class LoggedRestClientTest < MiniTest::Unit::TestCase
+class LoggedRestClientTest < MiniTest::Test
 
   def test_loggedrestclient_get_ok
     WebMock.reset!

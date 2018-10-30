@@ -1,214 +1,222 @@
+# frozen_string_literal: true
+
 module Inferno
   class App
     class Endpoint
+      # Home provides a Sinatra endpoint for accessing Inferno.
+      # Home serves the main web application.
       class Home < Endpoint
-
+        # Set the url prefix these routes will map to
         set :prefix, '/inferno'
 
+        # Return the index page of the application
         get '/?' do
           erb :index
         end
 
+        # Returns the static files associated with web app
         get '/static/*' do
-          status, headers, body = call! env.merge("PATH_INFO" => '/' + params['splat'].first)
+          call! env.merge('PATH_INFO' => '/' + params['splat'].first)
         end
 
+        # Returns a specific testing instance test page
         get '/:id/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
-          erb :details, {}, {instance: instance,
+          erb :details, {},  instance: instance,
                              sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
                              sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                              sequence_results: sequence_results,
-                             error_code: params[:error]}
+                             error_code: params[:error]
         end
 
+        # Creates a new testing instance at the provided FHIR Server URL
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          @instance = Inferno::Models::TestingInstance.new(url: url, name: params['name'], base_url: request.base_url)
+          @instance = Inferno::Models::TestingInstance.new(url: url,
+                                                           name: params['name'],
+                                                           base_url: request.base_url)
           @instance.save!
-          redirect "#{BASE_PATH}/#{@instance.id}/#{"?autoRun=ConformanceSequence" if settings.autorun_conformance}"
+          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=ConformanceSequence' if settings.autorun_conformance}"
         end
 
+        # Returns test details for a specific test including any applicable requests and responses.
+        #   This route is typically used for retrieving test metadata before the test has been run
         get '/test_details/:sequence_name/:test_index?' do
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(params[:sequence_name])}
-          halt 404 if !sequence
+          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+            x.name.demodulize.start_with?(params[:sequence_name])
+          end
+          halt 404 unless sequence
           @test_metadata = sequence.tests[params[:test_index].to_i]
-          halt 404 if !@test_metadata
+          halt 404 unless @test_metadata
           erb :test_details, layout: false
         end
 
+        # Returns test details for a specific test including any applicable requests and responses.
+        #   This route is typically used for retrieving test metadata and results after the test has been run.
         get '/:id/test_result/:test_result_id/?' do
           @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
           halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
           erb :test_result_details, layout: false
         end
 
+        # Cancels the currently running test
         get '/:id/sequence_result/:sequence_result_id/cancel' do
-
           @sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
           halt 404 if @sequence_result.testing_instance.id != params[:id]
 
           @sequence_result.result = 'cancel'
           cancel_message = 'Test cancelled by user.'
 
-          if @sequence_result.test_results.length > 0
+          unless @sequence_result.test_results.empty?
             last_result = @sequence_result.test_results.last
             last_result.result = 'cancel'
             last_result.message = cancel_message
           end
 
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(@sequence_result.name)}
+          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+            x.name.demodulize.start_with?(@sequence_result.name)
+          end
 
           current_test_count = @sequence_result.test_results.length
 
           sequence.tests.each_with_index do |test, index|
             next if index < current_test_count
             @sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test[:test_id],
-                                                            name: test[:name],
-                                                            result: 'cancel',
-                                                            url: test[:url],
-                                                            description: test[:description],
-                                                            test_index: test[:test_index],
-                                                            message: cancel_message)
-            end
-
-            @sequence_result.save!
-
-            redirect "#{BASE_PATH}/#{params[:id]}/##{@sequence_result.name}"
+                                                                             name: test[:name],
+                                                                             result: 'cancel',
+                                                                             url: test[:url],
+                                                                             description: test[:description],
+                                                                             test_index: test[:test_index],
+                                                                             message: cancel_message)
           end
 
+          @sequence_result.save!
 
+          redirect "#{base_path}/#{params[:id]}/##{@sequence_result.name}"
+        end
 
-          post '/:id/sequence_result/?' do
-            instance = Inferno::Models::TestingInstance.get(params[:id])
-            halt 404 if instance.nil?
+        # Run a sequence and get the results
+        post '/:id/sequence_result/?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 if instance.nil?
 
-            # Save params
-            params[:required_fields].split(',').each do |field|
-              instance.send("#{field}=", params[field]) if instance.respond_to? field
+          # Save params
+          params[:required_fields].split(',').each do |field|
+            instance.send("#{field}=", params[field]) if instance.respond_to? field
+          end
+
+          instance.save!
+
+          client = FHIR::Client.new(instance.url)
+          client.use_dstu2
+          client.default_json
+          submitted_sequences = params[:sequence].split(',')
+
+          timer_count = 0
+          stayalive_timer_seconds = 20
+
+          finished = false
+          stream :keep_open do |out|
+            EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
+              timer_count += 1
+              out << js_stayalive(timer_count * stayalive_timer_seconds)
             end
 
-            instance.save!
+            out << erb(:details, {}, instance: instance,
+                                     sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
+                                     sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
+                                     sequence_results: instance.latest_results,
+                                     tests_running: true)
+
+            next_sequence = submitted_sequences.shift
+            until next_sequence.nil?
+              klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+                x.name.demodulize.start_with?(next_sequence)
+              end
+              next_sequence = submitted_sequences.shift
+              next if klass.nil?
+
+              out << js_show_test_modal
+
+              sequence = klass.new(instance, client, settings.disable_tls_tests)
+              count = 0
+              sequence_result = sequence.start do |result|
+                count += 1
+                out << js_update_result(sequence, result, count, sequence.test_count)
+              end
+
+              sequence_result.next_sequences = submitted_sequences.join(',')
+
+              sequence_result.save!
+              if sequence_result.redirect_to_url
+                out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                # out << js_redirect(sequence_result.redirect_to_url)
+              elsif !submitted_sequences.empty?
+                out << js_next_sequence(sequence_result.next_sequences)
+              else
+                finished = true
+              end
+            end
+            out << js_redirect("#{base_path}/#{params[:id]}/##{params[:sequence]}") if finished
+          end
+        end
+
+        # Handles EHR Launch and any redirects
+        get '/:id/:key/:endpoint/?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && %w[launch redirect].include?(params[:endpoint])
+
+          sequence_result = instance.waiting_on_sequence
+
+          if sequence_result.nil? || sequence_result.result != 'wait'
+            redirect "/#{base_path}/#{params[:id]}/?error=no_#{params[:endpoint]}"
+          else
+            klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
+              x.name.demodulize.start_with?(sequence_result.name)
+            end
 
             client = FHIR::Client.new(instance.url)
             client.use_dstu2
             client.default_json
-            submitted_sequences = params[:sequence].split(',')
+            sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
 
+            timer_count = 0
+            stayalive_timer_seconds = 20
 
-            timer_count = 0;
-            stayalive_timer_seconds = 20;
-
-            finished = false
-            stream :keep_open do |out|
-
+            stream do |out|
               EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
-                timer_count = timer_count + 1;
+                timer_count += 1
                 out << js_stayalive(timer_count * stayalive_timer_seconds)
               end
 
-              out << erb(:details, {}, {instance: instance,
-                                        sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                        sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
-                                        sequence_results: instance.latest_results,
-                                        tests_running: true
-              })
+              out << erb(:details, {}, instance: instance,
+                                       sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
+                                       sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
+                                       sequence_results: instance.latest_results,
+                                       tests_running: true)
 
-              next_sequence = submitted_sequences.shift
-
-              klass = nil
-              klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(next_sequence)} if next_sequence
-
-              while !klass.nil?
-
-                out << js_show_test_modal
-
-                sequence = klass.new(instance, client, settings.disable_tls_tests)
-                count = 0
-                sequence_result = sequence.start do |result|
-                  count = count + 1
-                  out << js_update_result(sequence,result, count, sequence.test_count)
-                end
-
-                sequence_result.next_sequences = submitted_sequences.join(',')
-
-                sequence_result.save!
-                if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-                  # out << js_redirect(sequence_result.redirect_to_url)
-                elsif  submitted_sequences.count > 0
-                  out << js_next_sequence(sequence_result.next_sequences)
-                else
-                  finished = true
-                end
-
-                next_sequence = submitted_sequences.shift
-
-                klass = nil
-                klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(next_sequence)} if next_sequence
-              end
-
-              out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{params[:sequence]}") if finished
-
-            end
-
-          end
-
-          get '/:id/:key/:endpoint/?' do
-            instance = Inferno::Models::TestingInstance.get(params[:id])
-            halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && ['launch','redirect'].include?(params[:endpoint])
-
-            sequence_result = instance.waiting_on_sequence
-
-            if sequence_result.nil? || sequence_result.result != 'wait'
-              redirect "/#{BASE_PATH}/#{params[:id]}/?error=no_#{params[:endpoint]}"
-            else
-              klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence_result.name)}
-
-              client = FHIR::Client.new(instance.url)
-              client.use_dstu2
-              client.default_json
-              sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
-
-              timer_count = 0;
-              stayalive_timer_seconds = 20;
-
-              stream do |out|
-
-                EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
-                  timer_count = timer_count + 1;
-                  out << js_stayalive(timer_count * stayalive_timer_seconds)
-                end
-
-                out << erb(:details, {}, {instance: instance,
-                                          sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                          sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
-                                          sequence_results: instance.latest_results,
-                                          tests_running: true}
-                )
-
-                out << js_hide_wait_modal
-                out << js_show_test_modal
-                count = sequence_result.test_results.length
-                sequence_result = sequence.resume(request, headers, request.params) do |result|
-                  count = count + 1
-                  out << js_update_result(sequence,result, count, sequence.test_count)
-                  instance.save!
-                end
-                instance.sequence_results.push(sequence_result)
+              out << js_hide_wait_modal
+              out << js_show_test_modal
+              count = sequence_result.test_results.length
+              sequence_result = sequence.resume(request, headers, request.params) do |result|
+                count += 1
+                out << js_update_result(sequence, result, count, sequence.test_count)
                 instance.save!
-                if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-                else
-                  out << js_redirect("#{BASE_PATH}/#{params[:id]}/##{sequence_result.name}")
-                end
               end
+              instance.sequence_results.push(sequence_result)
+              instance.save!
+              out << if sequence_result.redirect_to_url
+                       js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                     else
+                       js_redirect("#{base_path}/#{params[:id]}/##{sequence_result.name}")
+                     end
             end
           end
         end
       end
     end
   end
+end

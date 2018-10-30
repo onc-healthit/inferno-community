@@ -123,7 +123,7 @@ module Inferno
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
 
-            FHIR provides multiple (https://www.hl7.org/fhir/DSTU2/formats.html)[representation formats] for resources, including JSON and XML.
+            FHIR provides multiple [representation formats](https://www.hl7.org/fhir/DSTU2/formats.html) for resources, including JSON and XML.
             Argonaut profiles require servers to use the JSON representation:
 
             ```
@@ -132,10 +132,10 @@ module Inferno
             [http://www.fhir.org/guides/argonaut/r2/Conformance-server.html](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
 
             The FHIR conformance interaction require servers to describe which formats are available for clients to use.  The server must
-            explicitly state that JSON is supported. This is located in the (format element)[https://www.hl7.org/fhir/DSTU2/conformance-definitions.html#Conformance.format]
+            explicitly state that JSON is supported. This is located in the [format element](https://www.hl7.org/fhir/DSTU2/conformance-definitions.html#Conformance.format)
             of the Conformance Resource.
 
-            This test checks that one of the following values are located in the format field.
+            This test checks that one of the following values are located in the [format field](https://www.hl7.org/fhir/DSTU2/json.html).
 
             * json
             * application/json
@@ -147,7 +147,7 @@ module Inferno
         }
 
         assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-        assert @conformance.format.include?('json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
+        assert @conformance.format.include?('json') || @conformance.format.include?('application/json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
       end
 
       test 'Conformance Statement provides OAuth 2.0 endpoints' do
@@ -174,13 +174,13 @@ module Inferno
 
         warning {
           service = []
-          @conformance.try(:rest).each do |endpoint|
-            endpoint.try(:security).try(:service).each do |sec_service|
-              sec_service.try(:coding).each do |coding|
-                service << coding.code
+          @conformance.try(:rest)&.each do |endpoint|
+              endpoint.try(:security).try(:service)&.each do |sec_service|
+                sec_service.try(:coding)&.each do |coding|
+                  service << coding.code
+                end
               end
             end
-          end
 
           assert !service.empty?, 'No security services listed. Conformance.rest.security.service should be SMART-on-FHIR.'
           assert service.any? {|any_service| any_service == 'SMART-on-FHIR'}, "Conformance.rest.security.service set to #{service.map{ |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."

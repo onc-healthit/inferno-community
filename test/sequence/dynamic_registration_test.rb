@@ -1,6 +1,6 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
-class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
+class DynamicRegistrationSequenceTest < MiniTest::Test
 
   REQUEST_HEADERS = { 'Accept'=>'application/json+fhir',
                       'Accept-Charset'=>'UTF-8',
@@ -75,8 +75,8 @@ class DynamicRegistrationSequenceTest < MiniTest::Unit::TestCase
     all_pass(false, true)
   end
 
-  def test_all_pass_bearer_confidential
-    all_pass(true, true)
+  def test_all_pass_no_bearer_not_confidential
+    all_pass(false, false)
   end
 
   def test_all_pass_bearer_not_confidential

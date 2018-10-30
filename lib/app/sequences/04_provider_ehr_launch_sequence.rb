@@ -166,7 +166,9 @@ module Inferno
           id '08'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-            After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749.          )
+            After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the
+            EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded,
+            as described in section [4.1.3 of RFC6749](https://tools.ietf.org/html/rfc6749#section-4.1.3).          )
         }
 
         oauth2_params = {
@@ -174,16 +176,16 @@ module Inferno
             'code' => @params['code'],
             'redirect_uri' => @instance.redirect_uris,
         }
+        oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
         if @instance.confidential_client
-          oauth2_header = {
-              'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}",
-          }
+          oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id +
+                                                                                ':' +
+                                                                                @instance.client_secret)}"
         else
           oauth2_params['client_id'] = @instance.client_id
-          oauth2_header = {}
         end
-        @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_header)
+        @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
         assert_response_ok(@token_response)
 
       end

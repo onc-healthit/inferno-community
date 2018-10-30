@@ -1,4 +1,4 @@
-![Inferno Logo](https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png)
+<img src="https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
 
 Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
 It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
@@ -105,6 +105,9 @@ bundle exec rake inferno:execute[https://my-server.org/data,Conformance]
 
 ## Using with Continuous Integration Systems
 Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
+
+## Contact Us
+The Inferno development team can be reached by email at inferno@groups.mitre.org.  Inferno also has a dedicated [HL7 FHIR chat channel](https://chat.fhir.org/#narrow/stream/153-inferno).
 
 ## License
 
