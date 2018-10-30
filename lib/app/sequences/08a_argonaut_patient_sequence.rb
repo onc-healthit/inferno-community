@@ -226,7 +226,7 @@ module Inferno
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.          )
         }
 
-        skip_if_not_supported(:Patient, [:history])
+         
 
         validate_history_reply(@patient, FHIR::DSTU2::Patient)
 
@@ -243,7 +243,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Patient, [:vread])
+         
 
         validate_vread_reply(@patient, FHIR::DSTU2::Patient)
 

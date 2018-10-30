@@ -23,7 +23,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -44,7 +44,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::DiagnosticReport, {patient: @instance.patient_id, category: "LAB"})
         assert_bundle_response(reply)
@@ -72,7 +72,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
@@ -93,7 +93,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
@@ -115,7 +115,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@diagnosticreport.nil?, 'Expected valid DSTU2 DiagnosticReport resource to be present'
@@ -138,7 +138,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
@@ -156,7 +156,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:history])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)
@@ -174,7 +174,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:DiagnosticReport, [:vread])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@diagnosticreport, FHIR::DSTU2::DiagnosticReport)

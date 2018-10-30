@@ -21,7 +21,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -42,7 +42,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
         assert_bundle_response(reply)
@@ -71,7 +71,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
@@ -92,7 +92,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
@@ -114,7 +114,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
@@ -137,7 +137,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         @client.set_no_auth
@@ -159,7 +159,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
@@ -179,7 +179,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@observationresults, FHIR::DSTU2::Observation)
@@ -197,7 +197,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:history])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@observationresults, FHIR::DSTU2::Observation)
@@ -215,7 +215,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:vread])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@observationresults, FHIR::DSTU2::Observation)

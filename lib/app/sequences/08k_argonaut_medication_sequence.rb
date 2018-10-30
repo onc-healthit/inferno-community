@@ -25,7 +25,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationStatement, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -46,7 +46,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationStatement, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, {patient: @instance.patient_id})
         assert_bundle_response(reply)
@@ -75,7 +75,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationStatement, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
@@ -93,7 +93,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationStatement, [:history])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
@@ -111,7 +111,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationStatement, [:vread])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)

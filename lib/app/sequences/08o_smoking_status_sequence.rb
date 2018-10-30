@@ -23,7 +23,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -44,7 +44,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Observation, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
         validate_search_reply(FHIR::DSTU2::Observation, reply)
