@@ -3,7 +3,7 @@ require File.expand_path '../../test_helper.rb', __FILE__
 # These test structure and metadata within sequences but do not execute them.
 # Sequence execution tests are in the /test/sequence directory.
 
-class SequenceValidationTest < MiniTest::Unit::TestCase
+class SequenceValidationTest < MiniTest::Test
 
   def setup
     @sequences = Inferno::Sequence::SequenceBase.subclasses
