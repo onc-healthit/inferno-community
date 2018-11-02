@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARAI'
 
       requires :token, :patient_id
+      conformance_supports :AllergyIntolerance
 
       test 'Server rejects AllergyIntolerance search without authorization' do
 
@@ -22,7 +23,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:AllergyIntolerance, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -43,7 +44,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:AllergyIntolerance, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::AllergyIntolerance, {patient: @instance.patient_id})
         assert_bundle_response(reply)
@@ -72,7 +73,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:AllergyIntolerance, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
@@ -90,7 +91,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:AllergyIntolerance, [:history])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
         validate_history_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)
 
@@ -107,7 +108,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:AllergyIntolerance, [:vread])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@allergyintolerance, FHIR::DSTU2::AllergyIntolerance)

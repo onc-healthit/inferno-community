@@ -10,6 +10,8 @@ module Inferno
 
       requires :token, :patient_id
 
+      conformance_supports :MedicationOrder
+
       test 'Server rejects MedicationOrder search without authorization' do
 
         metadata {
@@ -20,7 +22,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationOrder, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -41,7 +43,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationOrder, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, {patient: @instance.patient_id})
         assert_bundle_response(reply)
@@ -70,7 +72,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationOrder, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
@@ -88,7 +90,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationOrder, [:history])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
@@ -106,7 +108,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:MedicationOrder, [:vread])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
