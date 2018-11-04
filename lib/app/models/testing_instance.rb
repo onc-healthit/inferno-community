@@ -86,9 +86,11 @@ module Inferno
       end
 
       def patient_id= patient_id
+        return if patient_id.to_s == self.patient_id.to_s
 
         existing_patients = self.resource_references.select{|ref| ref.resource_type == 'Patient'}
-        self.resource_references.each(&:destroy)
+        # Use destroy directly (instead of on each, so we don't have to reload)
+        self.resource_references.destroy
         self.save!
 
         self.resource_references << ResourceReference.new({
