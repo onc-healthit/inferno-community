@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARCT'
 
       requires :token, :patient_id
+      conformance_supports :CarePlan
 
       test 'Server returns expected CareTeam results from CarePlan search by patient + category' do
 
@@ -22,7 +23,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:CarePlan, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::CarePlan, {patient: @instance.patient_id, category: "careteam"})
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)

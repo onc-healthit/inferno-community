@@ -31,6 +31,7 @@ module Inferno
       @@descriptions = {}
       @@details = {}
       @@requires = {}
+      @@conformance_supports = {}
       @@defines = {}
       @@test_metadata = {}
 
@@ -224,6 +225,11 @@ module Inferno
       def self.requires(*requires)
         @@requires[self.sequence_name] = requires unless requires.empty?
         @@requires[self.sequence_name] || []
+      end
+
+      def self.conformance_supports(*supports)
+        @@conformance_supports[self.sequence_name] = supports unless supports.empty?
+        @@conformance_supports[self.sequence_name] || []
       end
 
       def self.missing_requirements(instance, recurse = false)
