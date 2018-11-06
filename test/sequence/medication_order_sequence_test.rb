@@ -14,7 +14,6 @@ class MedicationOrderSequenceTest < MiniTest::Test
         lastUpdated: '2009-10-10T12:00:00-05:00'
       },
       type: 'searchset',
-      total: 2,
       link: [
         {
           relation: 'self',
@@ -28,17 +27,14 @@ class MedicationOrderSequenceTest < MiniTest::Test
     @history_bundle[:type] = 'history'
     @history_bundle[:total] = 1
 
-    @medication_order13 = load_json_fixture(:medication_13)
-    @medication_order14 = load_json_fixture(:medication_14)
+    add_medication_orders_to_bundle(@medication_order_bundle,
+                                    [load_json_fixture(:medication_13),
+                                     load_json_fixture(:medication_14),
+                                     load_json_fixture(:medication_15)])
 
-    @medication_order_bundle[:entry] << {
-      resource: @medication_order13,
-      fullUrl: 'http://www.example.com/MedicationOrder/13'
-    }
-    @medication_order_bundle[:entry] << {
-      resource: @medication_order14,
-      fullUrl:  'http://www.example.com/MedicationOrder/14'
-    }
+    @medication_order_bundle[:total] = @medication_order_bundle[:entry].length
+
+    @medication_reference = load_json_fixture(:medication_reference)
 
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                                      client_name: 'Inferno',
@@ -74,7 +70,17 @@ class MedicationOrderSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::ArgonautMedicationOrderSequence.new(@instance, client, true)
   end
 
-  def stub_get_med(med_res)
+  def add_medication_orders_to_bundle(bundle, med_orders)
+    ar_med_orders = [med_orders].flatten.compact
+    ar_med_orders.each do |mo|
+      bundle[:entry] << {
+        resource: mo,
+        fullUrl:  "http://www.example.com/#{mo['resourceType']}/#{mo['id']}"
+      }
+    end
+  end
+
+  def stub_get_med_order(med_res)
     # Getting Medication, must have Authorization Header
     med_res[:entry].each do |resource|
       stub_request(:get, resource[:fullUrl])
@@ -132,7 +138,16 @@ class MedicationOrderSequenceTest < MiniTest::Test
                  body: @medication_order_bundle.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
-    stub_get_med @medication_order_bundle
+    # Return Medication from a reference
+    stub_request(:get, %r{example.com/Medication/})
+      .with(headers: {
+              'Authorization' => "Bearer #{@instance.token}"
+            })
+      .to_return(status: 200,
+                 body: @medication_reference.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+
+    stub_get_med_order @medication_order_bundle
     stub_history @medication_order_bundle
     stub_vread @medication_order_bundle
   end
@@ -159,15 +174,17 @@ class MedicationOrderSequenceTest < MiniTest::Test
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    secondInstance = Inferno::Models::TestingInstance.get(@instance[:id])
-    secondInstance.patient_id= @patient_id
-    second_sequence = Inferno::Sequence::ArgonautMedicationOrderSequence.new(secondInstance, client, true)
+    second_instance = Inferno::Models::TestingInstance.get(@instance[:id])
+    second_instance.patient_id = @patient_id
+    second_sequence = Inferno::Sequence::ArgonautMedicationOrderSequence.new(second_instance, client, true)
     second_sequence.start
-    assert secondInstance.resource_references.length == 3, 'There should only be two reference resources...' \
-                                                      "but #{secondInstance.resource_references.length} were found\n" \
-                                                      "They are: #{secondInstance.resource_references.map do |reference|
-                                                                     reference[:resource_type] + reference[:resource_id]
-                                                                   end.join(', ')} \n" \
-                                                      'Check for duplicates.'
+    expected_reference_number = @medication_order_bundle[:entry].length + 1 # add one for the patient reference
+    assert second_instance.resource_references.length == expected_reference_number,
+           "There should only be #{expected_reference_number} reference resources..." \
+           "but #{second_instance.resource_references.length} were found\n" \
+           "They are: #{second_instance.resource_references.map do |reference|
+             reference[:resource_type] + reference[:resource_id]
+           end.join(', ')} \n" \
+           'Check for duplicates.'
   end
 end

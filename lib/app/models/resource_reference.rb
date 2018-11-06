@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Inferno
   module Models
     class ResourceReference
       include DataMapper::Resource
-      property :id, String, key: true, default: proc { SecureRandom.uuid}
+      property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :resource_type, String
       property :resource_id, String
 
@@ -10,4 +12,3 @@ module Inferno
     end
   end
 end
-

@@ -521,17 +521,9 @@ module Inferno
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
 
         entries.each do |entry|
-          @instance.resource_references.each do |ref|
-            if (ref.resource_type == klass.name.split(':').last) && (ref.resource_id == entry.resource.id)
-              ref.destroy
-            end
-          end
-          @instance.resource_references << Models::ResourceReference.new({resource_type: klass.name.split(':').last, resource_id: entry.resource.id})
+          @instance.post_resource_references(resource_type: klass.name.split(':').last,
+                                             resource_id: entry.resource.id)
         end
-
-        @instance.save!
-        # Ensure the instance resource references are accurate
-        @instance.reload
       end
 
       def validate_read_reply(resource, klass)

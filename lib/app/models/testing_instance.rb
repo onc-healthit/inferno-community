@@ -164,6 +164,19 @@ module Inferno
           end
         end
       end
+
+      def post_resource_references(resource_type: nil, resource_id: nil)
+        self.resource_references.each do |ref|
+          if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
+            ref.destroy
+          end
+        end
+        self.resource_references << ResourceReference.new({resource_type: resource_type,
+                                                          resource_id: resource_id})
+        self.save!
+        # Ensure the instance resource references are accurate
+        self.reload
+      end
     end
   end
 end

@@ -10,9 +10,9 @@ module Inferno
       test_id_prefix 'ARMP'
 
       requires :token, :patient_id
-      
+
       conformance_supports :MedicationOrder
-      
+
       details %(
         # Background
          The #{title} Sequence tests the [#{title}](https://www.hl7.org/fhir/DSTU2/medicationorder.html)
@@ -75,7 +75,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        @medicationorder = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @medication_orders = reply&.resource&.entry.map do |med_order|
+          med_order&.resource
+        end
         validate_search_reply(FHIR::DSTU2::MedicationOrder, reply)
         save_resource_ids_in_bundle(FHIR::DSTU2::MedicationOrder, reply)
       end
@@ -91,7 +93,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        validate_read_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
+        @medication_orders.each do |medication_order|
+          validate_read_reply(medication_order, FHIR::DSTU2::MedicationOrder)
+        end
       end
 
       test 'MedicationOrder history resource supported' do
@@ -104,10 +108,11 @@ module Inferno
           )
         end
 
-         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        validate_history_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
+        @medication_orders.each do |medication_order|
+          validate_history_reply(medication_order, FHIR::DSTU2::MedicationOrder)
+        end
       end
 
       test 'MedicationOrder vread resource supported' do
@@ -120,10 +125,11 @@ module Inferno
           )
         end
 
-         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        validate_vread_reply(@medicationorder, FHIR::DSTU2::MedicationOrder)
+        @medication_orders.each do |medication_order|
+          validate_vread_reply(medication_order, FHIR::DSTU2::MedicationOrder)
+        end
       end
 
       test 'MedicationOrder resources associated with Patient conform to Argonaut profiles' do
@@ -135,6 +141,26 @@ module Inferno
           )
         end
         test_resources_against_profile('MedicationOrder')
+      end
+
+      test 'Referenced Medications conform to the Argonaut profile' do
+        metadata do
+          id '07'
+          link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
+          desc %(
+            Medication resources must conform to the Argonaut profile
+               )
+        end
+
+        medication_references  = @medication_orders&.select do |medication_order|
+          medication_order&.medicationReference unless medication_order.medicationReference.nil?
+        end
+
+        skip 'No medicationReferences available to test' if medication_references.empty?
+
+        medication_references&.each do |medication|
+          validate_read_reply(medication, FHIR::DSTU2::Medication)
+        end
       end
     end
   end
