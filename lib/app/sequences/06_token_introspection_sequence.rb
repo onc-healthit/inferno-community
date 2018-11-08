@@ -17,7 +17,6 @@ module Inferno
         metadata {
           id '01'
           link 'https://tools.ietf.org/html/rfc7662'
-          optional
           desc %(
             The server MUST support Transport Layer Security (TLS) 1.2.
           )
