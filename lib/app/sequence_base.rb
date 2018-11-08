@@ -516,16 +516,14 @@ module Inferno
       end
 
       def save_resource_ids_in_bundle(klass, reply)
-
         return if reply.try(:resource).try(:entry).nil?
 
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
 
         entries.each do |entry|
-          @instance.resource_references << Models::ResourceReference.new({resource_type: klass.name.split(':').last, resource_id: entry.resource.id})
+          @instance.post_resource_references(resource_type: klass.name.split(':').last,
+                                             resource_id: entry.resource.id)
         end
-
-        @instance.save!
       end
 
       def validate_read_reply(resource, klass)
