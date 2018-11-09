@@ -74,7 +74,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         @medication_statements.each do |medication_statement|
-          validate_read_reply(medication_statment, FHIR::DSTU2::MedicationStatement)
+          validate_read_reply(medication_statement, FHIR::DSTU2::MedicationStatement)
         end
       end
 
@@ -91,7 +91,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         @medication_statements.each do |medication_statement|
-          validate_history_reply(medication_statment, FHIR::DSTU2::MedicationStatement)
+          validate_history_reply(medication_statement, FHIR::DSTU2::MedicationStatement)
         end
       end
 
@@ -108,7 +108,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         @medication_statements.each do |medication_statement|
-          validate_vread_reply(medication_statment, FHIR::DSTU2::MedicationStatement)
+          validate_vread_reply(medication_statement, FHIR::DSTU2::MedicationStatement)
         end
       end
 
