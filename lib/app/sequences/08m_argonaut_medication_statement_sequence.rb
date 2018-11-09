@@ -122,6 +122,26 @@ module Inferno
         end
         test_resources_against_profile('MedicationStatement')
       end
+
+      test 'Referenced Medications conform to the Argonaut profile' do
+        metadata do
+          id '07'
+          link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
+          desc %(
+            Medication resources must conform to the Argonaut profile
+               )
+        end
+
+        medication_references = @medication_statments&.select do |medication_statement|
+          medication_statement&.medicationReference unless medication_statement.medicationReference.nil?
+        end
+
+        skip 'No medicationReferences available to test' if medication_references.empty?
+
+        medication_references&.each do |medication|
+          validate_read_reply(medication, FHIR::DSTU2::Medication)
+        end
+      end
     end
   end
 end
