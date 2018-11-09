@@ -18,7 +18,7 @@ module Inferno
         This sequence tests tests this functionality by dynamically an app for Inferno to use in later sequences.
 
       )
-      
+
       test_id_prefix 'DR'
 
       optional
@@ -31,7 +31,6 @@ module Inferno
         metadata {
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          optional
           desc %(
             The client registration endpoint MUST be protected by a transport layer security.
           )

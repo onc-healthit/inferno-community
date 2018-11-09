@@ -57,7 +57,6 @@ module Inferno
         metadata {
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          optional
           desc %(
             All exchange of production data should be secured with TLS/SSL v1.2.
           )

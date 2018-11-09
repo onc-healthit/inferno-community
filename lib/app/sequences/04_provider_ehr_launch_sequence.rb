@@ -50,7 +50,6 @@ module Inferno
         metadata {
           id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          optional
           desc %(
             Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
             opaque identifier for the launch in the launch querystring parameter.
@@ -116,7 +115,6 @@ module Inferno
         metadata {
           id '06'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          optional
           desc %(
             Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
           )
