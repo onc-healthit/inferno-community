@@ -34,3 +34,6 @@ logging_enabled: true
 
 # Automatically Run Conformance Sequence on new server create
 autorun_conformance: false
+
+# Include extra tests: true or false
+include_extras: true

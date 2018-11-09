@@ -115,7 +115,9 @@ module Inferno
                      'MedicationStatement',
                      'MedicationOrder',
                      'Observation',
-                     'Procedure']
+                     'Procedure',
+                     'DocumentReference',
+                     'Provenance']
 
         supported_resources = conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}
 

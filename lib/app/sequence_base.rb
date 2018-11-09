@@ -15,12 +15,12 @@ module Inferno
       include Inferno::WebDriver
 
       STATUS = {
-          pass: 'pass',
-          fail: 'fail',
-          error: 'error',
-          todo: 'todo',
-          wait: 'wait',
-          skip: 'skip'
+        pass: 'pass',
+        fail: 'fail',
+        error: 'error',
+        todo: 'todo',
+        wait: 'wait',
+        skip: 'skip'
       }
 
       @@test_index = 0
@@ -312,7 +312,7 @@ module Inferno
 
       def self.preconditions(description, &block)
         @@preconditions[self.sequence_name] = {
-            block: block,
+          block: block,
             description: description
         }
       end
@@ -466,11 +466,11 @@ module Inferno
       def get_resource_by_params(klass, params = {})
         assert !params.empty?, "No params for search"
         options = {
-            :search => {
-                :flag => false,
-                :compartment => nil,
-                :parameters => params
-            }
+          :search => {
+            :flag => false,
+              :compartment => nil,
+              :parameters => params
+          }
         }
         @client.search(klass, options)
       end
@@ -621,61 +621,64 @@ module Inferno
       end
 
       def self.sequences_groups
-        [{
+        groups = [{
           name: 'Discovery',
           overview: %(
-            This is a description of the discovery group
+            Sequences related to discovering servers and learning about their capabilities.
           ),
           sequences: [ConformanceSequence],
           run_all: false
         },
-        {
-          name: 'Authentication and Authorization',
-          overview: %(
+                  {
+                    name: 'Authentication and Authorization',
+                    overview: %(Tests for Authentication and Authorization.  Primarily in regards to SMART-on-FHIR),
+                    sequences: [
+                      DynamicRegistrationSequence,
+                      ManualRegistrationSequence,
+                      StandaloneLaunchSequence,
+                      EHRLaunchSequence,
+                      OpenIDConnectSequence,
+                      TokenRefreshSequence
+                    ],
+                    run_all: false
+                  },
+                  {
+                    name: 'Argonaut Profile Conformance',
+                    overview: %(Tests related the the Arognauts Data Query Implementation Guide),
+                    sequences: [
+                      ArgonautPatientSequence,
+                      ArgonautAllergyIntoleranceSequence,
+                      ArgonautCarePlanSequence,
+                      ArgonautCareTeamSequence,
+                      ArgonautConditionSequence,
+                      ArgonautDeviceSequence,
+                      ArgonautDiagnosticReportSequence,
+                      ArgonautObservationSequence,
+                      ArgonautGoalSequence,
+                      ArgonautImmunizationSequence,
+                      ArgonautMedicationStatementSequence,
+                      ArgonautMedicationOrderSequence,
+                      ArgonautProcedureSequence,
+                      ArgonautSmokingStatusSequence,
+                      ArgonautVitalSignsSequence
+                    ],
+                    run_all: true
+                  }]
 
-
-
-          ),
-          sequences: [
-            DynamicRegistrationSequence,
-            ManualRegistrationSequence,
-            StandaloneLaunchSequence,
-            EHRLaunchSequence,
-            OpenIDConnectSequence,
-            TokenRefreshSequence
-          ],
-          run_all: false
-        },
-        {
-          name: 'Argonaut Profile Conformance',
-          overview: %(
-
-
-
-          ),
-          sequences: [
-            ArgonautPatientSequence,
-            ArgonautAllergyIntoleranceSequence,
-            ArgonautCarePlanSequence,
-            ArgonautCareTeamSequence,
-            ArgonautConditionSequence,
-            ArgonautDeviceSequence,
-            ArgonautDiagnosticReportSequence,
-            ArgonautObservationSequence,
-            ArgonautGoalSequence,
-            ArgonautImmunizationSequence,
-            ArgonautMedicationStatementSequence,
-            ArgonautMedicationOrderSequence,
-            ArgonautProcedureSequence,
-            ArgonautSmokingStatusSequence,
-            ArgonautVitalSignsSequence
-          ],
-          run_all: true
-        }]
-
-
+        if Inferno::EXTRAS
+          groups << {
+            name: 'Additional Resources',
+            overview: %(
+              Tests for resources corresponding to [Draft USCDI v1](https://www.healthit.gov/sites/default/files/draft-uscdi.pdf) that are not represeted in the Argonaut Data Query Implementation Guide.
+            ),
+            sequences: [
+                DocumentReferenceSequence,
+                ProvenanceSequence
+              ]
+          }
+        end
+        groups
       end
-
     end
 
     Dir[File.join(__dir__, 'sequences', '*_sequence.rb')].each { |file| require file }

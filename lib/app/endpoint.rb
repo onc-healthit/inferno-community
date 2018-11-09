@@ -14,6 +14,7 @@ module Inferno
       Inferno::DEFAULT_SCOPES = settings.default_scopes
       Inferno::ENVIRONMENT = settings.environment
       Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
+      Inferno::EXTRAS = settings.include_extras
 
       if settings.logging_enabled
         Inferno.logger = if settings.log_to_file
