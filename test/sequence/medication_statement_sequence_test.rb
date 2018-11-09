@@ -43,50 +43,6 @@ class MedicationStatementSequenceTest < MiniTest::Test
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end
 
-  def stub_get_med_order(med_res)
-    # Getting Medication, must have Authorization Header
-    med_res[:entry].each do |resource|
-      stub_request(:get, resource[:fullUrl])
-        .with(headers: {
-                'Authorization' => "Bearer #{@instance.token}"
-              })
-        .to_return(status: 200,
-                   body: resource[:resource].to_json,
-                   headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-    end
-  end
-
-  def stub_history(med_res)
-    # Getting Medication Resource History, must have Authorization Header
-    med_res[:entry].each do |resource|
-      @history_bundle[:entry] = [{
-        fullUrl: resource[:fullUrl],
-        resource: resource[:resource]
-      }]
-
-      stub_request(:get, resource[:fullUrl] + '/_history')
-        .with(headers: {
-                'Authorization' => "Bearer #{@instance.token}"
-              })
-        .to_return(status: 200,
-                   body: @history_bundle.to_json,
-                   headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-    end
-  end
-
-  def stub_vread(med_res)
-    # Getting Medication Resource History, must have Authorization Header
-    med_res[:entry].each do |resource|
-      stub_request(:get, resource[:fullUrl] + '/_history/1')
-        .with(headers: {
-                'Authorization' => "Bearer #{@instance.token}"
-              })
-        .to_return(status: 200,
-                   body: resource[:resource].to_json,
-                   headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-    end
-  end
-
   def full_sequence_stubs
     WebMock.reset!
     # Return 401 if no Authorization Header
