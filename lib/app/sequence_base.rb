@@ -536,6 +536,13 @@ module Inferno
         assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
       end
 
+      def validate_reference_read_reply(resource, klass)
+        assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+        read_response = resource.read
+        assert !read_response.nil?, "Expected valid #{klass} resource to be present"
+        assert read_response.is_a?(klass), "Expected resource to be valid #{klass}"
+      end
+
       def validate_history_reply(resource, klass)
         assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
         id = resource.try(:id)
@@ -605,7 +612,29 @@ module Inferno
         assert(all_errors.empty?, all_errors.join("<br/>\n"))
       end
 
+      def check_resource_against_profile(resource, resource_type, specified_profile=nil)
+        assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
+               "Expected resource to be of type #{resource_type}"
 
+        p = Inferno::ValidationUtil.guess_profile(resource)
+        if specified_profile
+          return unless p.url == specified_profile
+        end
+
+        if p
+          @profiles_encountered << p.url
+          @profiles_encountered.uniq!
+          errors = p.validate_resource(resource)
+          unless errors.empty?
+            errors.map!{|e| "#{resource_type}/#{resource.id}: #{e}"}
+            @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
+            @profiles_failed[p.url].concat(errors)
+          end
+        else
+          errors = entry.resource.validate
+        end
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
 
       # This is intended to be called on SequenceBase
       # There is a test to ensure that this doesn't fall out of date

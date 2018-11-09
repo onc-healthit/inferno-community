@@ -143,7 +143,7 @@ module Inferno
         test_resources_against_profile('MedicationOrder')
       end
 
-      test 'Referenced Medications conform to the Argonaut profile' do
+      test 'Referenced Medications support read interactions' do
         metadata do
           id '07'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
@@ -152,14 +152,37 @@ module Inferno
                )
         end
 
-        medication_references = @medication_orders&.select do |medication_order|
-          medication_order&.medicationReference unless medication_order.medicationReference.nil?
+        @medication_references = @medication_orders&.select do |medication_order|
+          !medication_order.medicationReference.nil?
+        end&.map do |ref|
+          ref.medicationReference
         end
 
-        skip 'No medicationReferences available to test' if medication_references.empty?
+        skip 'No medicationReferences available to test' if @medication_references.empty?
 
-        medication_references&.each do |medication|
-          validate_read_reply(medication, FHIR::DSTU2::Medication)
+        not_contained_refs = @medication_references&.select {|ref| !ref.contained?}
+
+        skip 'All References are contained, unable to test' if not_contained_refs.empty?
+
+        not_contained_refs&.each do |medication|
+          validate_reference_read_reply(medication, FHIR::DSTU2::Medication)
+        end
+      end
+
+      test 'Referenced Medications conform to the Argonaut profile' do
+        metadata do
+          id '08'
+          link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
+          desc %(
+            Medication resources must conform to the Argonaut profile
+               )
+        end
+
+        skip 'No medicationReferences available to test' if @medication_references.empty?
+
+        @medication_references&.each do |medication|
+          medication_resource = medication.read
+          check_resource_against_profile(medication_resource, 'Medication')
         end
       end
     end
