@@ -669,8 +669,10 @@ module Inferno
 
         if Inferno::EXTRAS
           groups << {
-            name: 'Additional Recommended Resources',
-            overview: %(Tests for other FHIR Resources),
+            name: 'Additional Resources',
+            overview: %(
+              Tests for resources corresponding to [Draft USCDI v1](https://www.healthit.gov/sites/default/files/draft-uscdi.pdf) that are not represeted in the Argonaut Data Query Implementation Guide.
+            ),
             sequences: [
                 DocumentReferenceSequence,
                 ProvenanceSequence

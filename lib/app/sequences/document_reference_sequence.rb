@@ -46,66 +46,9 @@ module Inferno
         validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
       end
 
-      test 'Server returns expected results from DocumentReference search by patient + type' do
-        metadata do
-          id '03'
-          link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
-          optional
-          desc %(
-            DocumentReferences should be searchable by patient and type.
-          )
-        end
-
-        assert !@document_reference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
-        type = @document_reference.try(:type).try(:coding).try(:first).try(:code)
-        assert !type.nil?, 'DocumentReference type not returned'
-        reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, patient: @instance.patient_id, type: type)
-        validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
-      end
-
-      test 'Server returns expected results from DocumentReference search by patient + period' do
-        metadata do
-          id '04'
-          link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
-          optional
-          desc %(
-            DocumentReferences should be searchable by patient and period.
-          )
-        end
-
-        assert !@document_reference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
-        period = @document_reference.try(:event).try(:first).try(:period).try(:start)
-        period ||= @document_reference.try(:event).try(:first).try(:period).try(:end)
-        assert !period.nil?, 'DocumentReference period not returned'
-        reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, patient: @instance.patient_id, period: period)
-        validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
-      end
-
-      test 'Server returns expected results from DocumentReference search by patient + type + period' do
-        metadata do
-          id '05'
-          link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
-          optional
-          desc %(
-            DocumentReferences should be searchable by patient, period and type.
-          )
-        end
-
-        assert !@document_reference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
-        type = @document_reference.try(:type).try(:coding).try(:first).try(:code)
-        assert !type.nil?, 'DocumentReference type not returned'
-        period = @document_reference.try(:event).try(:first).try(:period).try(:start)
-        period ||= @document_reference.try(:event).try(:first).try(:period).try(:end)
-        assert !period.nil?, 'DocumentReference period not returned'
-        reply = get_resource_by_params(FHIR::DSTU2::DocumentReference,
-                                       patient: @instance.patient_id,
-                                       type: type, period: period)
-        validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
-      end
-
       test 'DocumentReference read resource supported' do
         metadata do
-          id '06'
+          id '03'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
           desc %(
@@ -118,7 +61,7 @@ module Inferno
 
       test 'DocumentReference history resource supported' do
         metadata do
-          id '07'
+          id '04'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
           desc %(
@@ -130,7 +73,7 @@ module Inferno
 
       test 'DocumentReference vread resource supported' do
         metadata do
-          id '08'
+          id '05'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
           desc %(
@@ -143,7 +86,7 @@ module Inferno
 
       test 'DocumentReference resource contains content' do
         metadata do
-          id '09'
+          id '06'
           optional
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           desc %(
