@@ -165,7 +165,7 @@ module Inferno
         skip 'All References are contained, unable to test' if not_contained_refs.empty?
 
         not_contained_refs&.each do |medication|
-          validate_reference_read_reply(medication, FHIR::DSTU2::Medication)
+          validate_read_reply(medication, FHIR::DSTU2::Medication)
         end
       end
 

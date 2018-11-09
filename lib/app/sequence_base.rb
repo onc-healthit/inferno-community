@@ -528,17 +528,15 @@ module Inferno
 
       def validate_read_reply(resource, klass)
         assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
-        id = resource.try(:id)
-        assert !id.nil?, "#{klass} id not returned"
-        read_response = @client.read(klass, id)
-        assert_response_ok read_response
-        assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
-        assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
-      end
-
-      def validate_reference_read_reply(resource, klass)
-        assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
-        read_response = resource.read
+        if resource.is_a? FHIR::DSTU2::Reference
+          read_response = resource.read
+        else
+          id = resource.try(:id)
+          assert !id.nil?, "#{klass} id not returned"
+          read_response = @client.read(klass, id)
+          assert_response_ok read_response
+          read_response = read_response.resource
+        end
         assert !read_response.nil?, "Expected valid #{klass} resource to be present"
         assert read_response.is_a?(klass), "Expected resource to be valid #{klass}"
       end
