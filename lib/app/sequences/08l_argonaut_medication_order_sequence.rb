@@ -75,7 +75,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        @medication_orders = reply&.resource&.entry.map do |med_order|
+        @medication_orders = reply&.resource&.entry&.map do |med_order|
           med_order&.resource
         end
         validate_search_reply(FHIR::DSTU2::MedicationOrder, reply)
@@ -152,7 +152,7 @@ module Inferno
                )
         end
 
-        medication_references  = @medication_orders&.select do |medication_order|
+        medication_references = @medication_orders&.select do |medication_order|
           medication_order&.medicationReference unless medication_order.medicationReference.nil?
         end
 

@@ -55,7 +55,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @medication_statements = reply&.resource&.entry&.map do |med_order|
+          med_order&.resource
+        end
         validate_search_reply(FHIR::DSTU2::MedicationStatement, reply)
         save_resource_ids_in_bundle(FHIR::DSTU2::MedicationStatement, reply)
       end
@@ -71,7 +73,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        validate_read_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
+        @medication_statements.each do |medication_statement|
+          validate_read_reply(medication_statment, FHIR::DSTU2::MedicationStatement)
+        end
       end
 
       test 'MedicationStatement history resource supported' do
@@ -86,7 +90,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        validate_history_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
+        @medication_statements.each do |medication_statement|
+          validate_history_reply(medication_statment, FHIR::DSTU2::MedicationStatement)
+        end
       end
 
       test 'MedicationStatement vread resource supported' do
@@ -101,7 +107,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        validate_vread_reply(@medicationstatement, FHIR::DSTU2::MedicationStatement)
+        @medication_statements.each do |medication_statement|
+          validate_vread_reply(medication_statment, FHIR::DSTU2::MedicationStatement)
+        end
       end
 
       test 'MedicationStatement resources associated with Patient conform to Argonaut profiles' do
