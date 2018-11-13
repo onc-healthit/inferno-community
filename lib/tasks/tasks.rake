@@ -316,8 +316,7 @@ namespace :inferno do |argv|
 
   desc 'Cleans the database of all models'
   task :drop_database, [] do |task| 
-    # Rips through all the classes in Models and drops them all from the DB.
-    Inferno::Models.constants.select {|c| Inferno::Models.const_get(c).is_a? Class}.map{|c| Inferno::Models.const_get(c).try(:destroy)}
+    DataMapper.auto_migrate!
   end
 
   desc 'Execute sequence against a FHIR server'
