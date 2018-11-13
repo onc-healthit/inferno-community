@@ -69,9 +69,8 @@ module Inferno
         reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, patient: @instance.patient_id)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @no_resources_found = true if resource_count === 0
+        @no_resources_found = (resource_count == 0)
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
@@ -158,11 +157,11 @@ module Inferno
           ref.medicationReference
         end
 
-        skip 'No medicationReferences available to test' if @medication_references.empty?
+        pass 'Test passes because medication resource references are not used in any medication orders.' if @medication_references.nil? || @medication_references.empty?
 
         not_contained_refs = @medication_references&.select {|ref| !ref.contained?}
 
-        skip 'All References are contained, unable to test' if not_contained_refs.empty?
+        pass 'Test passes because all medication resource references are contained within the medication orders.' if not_contained_refs.empty?
 
         not_contained_refs&.each do |medication|
           validate_read_reply(medication, FHIR::DSTU2::Medication)
@@ -178,7 +177,7 @@ module Inferno
                )
         end
 
-        skip 'No medicationReferences available to test' if @medication_references.empty?
+        pass 'Test passes because medication resource references are not used in any medication orders.' if @medication_references.nil? || @medication_references.empty?
 
         @medication_references&.each do |medication|
           medication_resource = medication.read

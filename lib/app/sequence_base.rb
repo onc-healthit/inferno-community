@@ -369,6 +369,10 @@ module Inferno
             result.message = e.message
             result.details = e.details
 
+          rescue PassException => e
+            result.result = STATUS[:pass]
+            result.message = e.message
+
           rescue TodoException => e
             result.result = STATUS[:todo]
             result.message = e.message
@@ -435,6 +439,10 @@ module Inferno
 
       def todo(message = "")
         raise TodoException.new message
+      end
+
+      def pass(message = "")
+        raise PassException.new message
       end
 
       def skip(message = "", details = nil)

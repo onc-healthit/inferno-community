@@ -49,14 +49,13 @@ module Inferno
         reply = get_resource_by_params(FHIR::DSTU2::MedicationStatement, patient: @instance.patient_id)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @no_resources_found = true if resource_count === 0
+        @no_resources_found = (resource_count == 0)
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        @medication_statements = reply&.resource&.entry&.map do |med_order|
-          med_order&.resource
+        @medication_statements = reply&.resource&.entry&.map do |med_statement|
+          med_statement&.resource
         end
         validate_search_reply(FHIR::DSTU2::MedicationStatement, reply)
         save_resource_ids_in_bundle(FHIR::DSTU2::MedicationStatement, reply)
@@ -120,6 +119,9 @@ module Inferno
             MedicationStatement resources associated with Patient conform to Argonaut profiles.
           )
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
         test_resources_against_profile('MedicationStatement')
       end
 
@@ -132,17 +134,19 @@ module Inferno
                )
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
         @medication_references = @medication_statements&.select do |medication_statement|
           !medication_statement.medicationReference.nil?
         end&.map do |ref|
           ref.medicationReference
         end
 
-        skip 'No medicationReferences available to test' if @medication_references.empty?
+        pass 'Test passes because medication resource references are not used in any medication statements.' if @medication_references.nil? || @medication_references.empty?
 
         not_contained_refs = @medication_references&.select {|ref| !ref.contained?}
 
-        skip 'All References are contained, unable to test' if not_contained_refs.empty?
+        pass 'Test passes because all medication resource references are contained within the medication statements.' if not_contained_refs.empty?
 
         not_contained_refs&.each do |medication|
           validate_read_reply(medication, FHIR::DSTU2::Medication)
@@ -158,7 +162,9 @@ module Inferno
                )
         end
 
-        skip 'No medicationReferences available to test' if @medication_references.empty?
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+
+        pass 'Test passes because medication resource references are not used in any medication statements.' if @medication_references.nil? || @medication_references.empty?
 
         @medication_references&.each do |medication|
           medication_resource = medication.read
