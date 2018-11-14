@@ -69,13 +69,12 @@ module Inferno
         reply = get_resource_by_params(FHIR::DSTU2::MedicationOrder, patient: @instance.patient_id)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @no_resources_found = true if resource_count === 0
+        @no_resources_found = (resource_count == 0)
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
-        @medication_orders = reply&.resource&.entry.map do |med_order|
+        @medication_orders = reply&.resource&.entry&.map do |med_order|
           med_order&.resource
         end
         validate_search_reply(FHIR::DSTU2::MedicationOrder, reply)
@@ -143,7 +142,7 @@ module Inferno
         test_resources_against_profile('MedicationOrder')
       end
 
-      test 'Referenced Medications conform to the Argonaut profile' do
+      test 'Referenced Medications support read interactions' do
         metadata do
           id '07'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
@@ -152,14 +151,37 @@ module Inferno
                )
         end
 
-        medication_references  = @medication_orders&.select do |medication_order|
-          medication_order&.medicationReference unless medication_order.medicationReference.nil?
+        @medication_references = @medication_orders&.select do |medication_order|
+          !medication_order.medicationReference.nil?
+        end&.map do |ref|
+          ref.medicationReference
         end
 
-        skip 'No medicationReferences available to test' if medication_references.empty?
+        pass 'Test passes because medication resource references are not used in any medication orders.' if @medication_references.nil? || @medication_references.empty?
 
-        medication_references&.each do |medication|
+        not_contained_refs = @medication_references&.select {|ref| !ref.contained?}
+
+        pass 'Test passes because all medication resource references are contained within the medication orders.' if not_contained_refs.empty?
+
+        not_contained_refs&.each do |medication|
           validate_read_reply(medication, FHIR::DSTU2::Medication)
+        end
+      end
+
+      test 'Referenced Medications conform to the Argonaut profile' do
+        metadata do
+          id '08'
+          link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
+          desc %(
+            Medication resources must conform to the Argonaut profile
+               )
+        end
+
+        pass 'Test passes because medication resource references are not used in any medication orders.' if @medication_references.nil? || @medication_references.empty?
+
+        @medication_references&.each do |medication|
+          medication_resource = medication.read
+          check_resource_against_profile(medication_resource, 'Medication')
         end
       end
     end

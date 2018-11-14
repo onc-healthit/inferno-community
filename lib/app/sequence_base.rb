@@ -369,6 +369,10 @@ module Inferno
             result.message = e.message
             result.details = e.details
 
+          rescue PassException => e
+            result.result = STATUS[:pass]
+            result.message = e.message
+
           rescue TodoException => e
             result.result = STATUS[:todo]
             result.message = e.message
@@ -435,6 +439,10 @@ module Inferno
 
       def todo(message = "")
         raise TodoException.new message
+      end
+
+      def pass(message = "")
+        raise PassException.new message
       end
 
       def skip(message = "", details = nil)
@@ -528,12 +536,17 @@ module Inferno
 
       def validate_read_reply(resource, klass)
         assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
-        id = resource.try(:id)
-        assert !id.nil?, "#{klass} id not returned"
-        read_response = @client.read(klass, id)
-        assert_response_ok read_response
-        assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
-        assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
+        if resource.is_a? FHIR::DSTU2::Reference
+          read_response = resource.read
+        else
+          id = resource.try(:id)
+          assert !id.nil?, "#{klass} id not returned"
+          read_response = @client.read(klass, id)
+          assert_response_ok read_response
+          read_response = read_response.resource
+        end
+        assert !read_response.nil?, "Expected valid #{klass} resource to be present"
+        assert read_response.is_a?(klass), "Expected resource to be valid #{klass}"
       end
 
       def validate_history_reply(resource, klass)
@@ -605,7 +618,29 @@ module Inferno
         assert(all_errors.empty?, all_errors.join("<br/>\n"))
       end
 
+      def check_resource_against_profile(resource, resource_type, specified_profile=nil)
+        assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
+               "Expected resource to be of type #{resource_type}"
 
+        p = Inferno::ValidationUtil.guess_profile(resource)
+        if specified_profile
+          return unless p.url == specified_profile
+        end
+
+        if p
+          @profiles_encountered << p.url
+          @profiles_encountered.uniq!
+          errors = p.validate_resource(resource)
+          unless errors.empty?
+            errors.map!{|e| "#{resource_type}/#{resource.id}: #{e}"}
+            @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
+            @profiles_failed[p.url].concat(errors)
+          end
+        else
+          errors = entry.resource.validate
+        end
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
 
       # This is intended to be called on SequenceBase
       # There is a test to ensure that this doesn't fall out of date
