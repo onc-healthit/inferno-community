@@ -24,6 +24,13 @@ module Inferno
     end
   end
 
+  class PassException < Exception
+    def initialize(message = '')
+      super(message)
+      FHIR.logger.info "PassException: #{message}"
+    end
+  end
+
   class WaitException < Exception
     attr_accessor :endpoint
     def initialize(endpoint)

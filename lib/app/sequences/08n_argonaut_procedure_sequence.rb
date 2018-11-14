@@ -11,6 +11,7 @@ module Inferno
       test_id_prefix 'ARPR'
 
       requires :token, :patient_id
+      conformance_supports :Procedure
 
       test 'Server rejects Procedure search without authorization' do
 
@@ -22,7 +23,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Procedure, [:search, :read])
+         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -44,7 +45,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Procedure, [:search, :read])
+         
 
         reply = get_resource_by_params(FHIR::DSTU2::Procedure, {patient: @instance.patient_id})
         assert_bundle_response(reply)
@@ -72,7 +73,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Procedure, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         assert !@procedure.nil?, 'Expected valid DSTU2 Procedure resource to be present'
@@ -93,7 +94,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Procedure, [:search, :read])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_read_reply(@procedure, FHIR::DSTU2::Procedure)
@@ -111,7 +112,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Procedure, [:history])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_history_reply(@procedure, FHIR::DSTU2::Procedure)
@@ -129,7 +130,7 @@ module Inferno
           )
         }
 
-        skip_if_not_supported(:Procedure, [:vread])
+         
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
 
         validate_vread_reply(@procedure, FHIR::DSTU2::Procedure)

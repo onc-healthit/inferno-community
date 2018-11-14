@@ -8,7 +8,7 @@ module Inferno
     end
 
     def skip_if_tls_disabled
-      skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+      pass 'Test has passed because TLS tests have been disabled by configuration.' if @disable_tls_tests
     end
 
     def skip_if_url_invalid(url, url_name, details = nil)

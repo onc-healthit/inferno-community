@@ -15,12 +15,12 @@ module Inferno
       include Inferno::WebDriver
 
       STATUS = {
-          pass: 'pass',
-          fail: 'fail',
-          error: 'error',
-          todo: 'todo',
-          wait: 'wait',
-          skip: 'skip'
+        pass: 'pass',
+        fail: 'fail',
+        error: 'error',
+        todo: 'todo',
+        wait: 'wait',
+        skip: 'skip'
       }
 
       @@test_index = 0
@@ -31,6 +31,7 @@ module Inferno
       @@descriptions = {}
       @@details = {}
       @@requires = {}
+      @@conformance_supports = {}
       @@defines = {}
       @@test_metadata = {}
 
@@ -226,6 +227,11 @@ module Inferno
         @@requires[self.sequence_name] || []
       end
 
+      def self.conformance_supports(*supports)
+        @@conformance_supports[self.sequence_name] = supports unless supports.empty?
+        @@conformance_supports[self.sequence_name] || []
+      end
+
       def self.missing_requirements(instance, recurse = false)
 
         return [] unless @@requires.key?(self.sequence_name)
@@ -306,7 +312,7 @@ module Inferno
 
       def self.preconditions(description, &block)
         @@preconditions[self.sequence_name] = {
-            block: block,
+          block: block,
             description: description
         }
       end
@@ -362,6 +368,10 @@ module Inferno
             result.result = STATUS[:fail]
             result.message = e.message
             result.details = e.details
+
+          rescue PassException => e
+            result.result = STATUS[:pass]
+            result.message = e.message
 
           rescue TodoException => e
             result.result = STATUS[:todo]
@@ -431,6 +441,10 @@ module Inferno
         raise TodoException.new message
       end
 
+      def pass(message = "")
+        raise PassException.new message
+      end
+
       def skip(message = "", details = nil)
         raise SkipException.new message, details
       end
@@ -460,11 +474,11 @@ module Inferno
       def get_resource_by_params(klass, params = {})
         assert !params.empty?, "No params for search"
         options = {
-            :search => {
-                :flag => false,
-                :compartment => nil,
-                :parameters => params
-            }
+          :search => {
+            :flag => false,
+              :compartment => nil,
+              :parameters => params
+          }
         }
         @client.search(klass, options)
       end
@@ -510,26 +524,29 @@ module Inferno
       end
 
       def save_resource_ids_in_bundle(klass, reply)
-
         return if reply.try(:resource).try(:entry).nil?
 
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
 
         entries.each do |entry|
-          @instance.resource_references << Models::ResourceReference.new({resource_type: klass.name.split(':').last, resource_id: entry.resource.id})
+          @instance.post_resource_references(resource_type: klass.name.split(':').last,
+                                             resource_id: entry.resource.id)
         end
-
-        @instance.save!
       end
 
       def validate_read_reply(resource, klass)
         assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
-        id = resource.try(:id)
-        assert !id.nil?, "#{klass} id not returned"
-        read_response = @client.read(klass, id)
-        assert_response_ok read_response
-        assert !read_response.resource.nil?, "Expected valid #{klass} resource to be present"
-        assert read_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
+        if resource.is_a? FHIR::DSTU2::Reference
+          read_response = resource.read
+        else
+          id = resource.try(:id)
+          assert !id.nil?, "#{klass} id not returned"
+          read_response = @client.read(klass, id)
+          assert_response_ok read_response
+          read_response = read_response.resource
+        end
+        assert !read_response.nil?, "Expected valid #{klass} resource to be present"
+        assert read_response.is_a?(klass), "Expected resource to be valid #{klass}"
       end
 
       def validate_history_reply(resource, klass)
@@ -601,7 +618,29 @@ module Inferno
         assert(all_errors.empty?, all_errors.join("<br/>\n"))
       end
 
+      def check_resource_against_profile(resource, resource_type, specified_profile=nil)
+        assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
+               "Expected resource to be of type #{resource_type}"
 
+        p = Inferno::ValidationUtil.guess_profile(resource)
+        if specified_profile
+          return unless p.url == specified_profile
+        end
+
+        if p
+          @profiles_encountered << p.url
+          @profiles_encountered.uniq!
+          errors = p.validate_resource(resource)
+          unless errors.empty?
+            errors.map!{|e| "#{resource_type}/#{resource.id}: #{e}"}
+            @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
+            @profiles_failed[p.url].concat(errors)
+          end
+        else
+          errors = entry.resource.validate
+        end
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
 
       # This is intended to be called on SequenceBase
       # There is a test to ensure that this doesn't fall out of date
@@ -617,61 +656,64 @@ module Inferno
       end
 
       def self.sequences_groups
-        [{
+        groups = [{
           name: 'Discovery',
           overview: %(
-            This is a description of the discovery group
+            Sequences related to discovering servers and learning about their capabilities.
           ),
           sequences: [ConformanceSequence],
           run_all: false
         },
-        {
-          name: 'Authentication and Authorization',
-          overview: %(
+                  {
+                    name: 'Authentication and Authorization',
+                    overview: %(Tests for Authentication and Authorization.  Primarily in regards to SMART-on-FHIR),
+                    sequences: [
+                      DynamicRegistrationSequence,
+                      ManualRegistrationSequence,
+                      StandaloneLaunchSequence,
+                      EHRLaunchSequence,
+                      OpenIDConnectSequence,
+                      TokenRefreshSequence
+                    ],
+                    run_all: false
+                  },
+                  {
+                    name: 'Argonaut Profile Conformance',
+                    overview: %(Tests related the the Arognauts Data Query Implementation Guide),
+                    sequences: [
+                      ArgonautPatientSequence,
+                      ArgonautAllergyIntoleranceSequence,
+                      ArgonautCarePlanSequence,
+                      ArgonautCareTeamSequence,
+                      ArgonautConditionSequence,
+                      ArgonautDeviceSequence,
+                      ArgonautDiagnosticReportSequence,
+                      ArgonautObservationSequence,
+                      ArgonautGoalSequence,
+                      ArgonautImmunizationSequence,
+                      ArgonautMedicationStatementSequence,
+                      ArgonautMedicationOrderSequence,
+                      ArgonautProcedureSequence,
+                      ArgonautSmokingStatusSequence,
+                      ArgonautVitalSignsSequence
+                    ],
+                    run_all: true
+                  }]
 
-
-
-          ),
-          sequences: [
-            DynamicRegistrationSequence,
-            ManualRegistrationSequence,
-            StandaloneLaunchSequence,
-            EHRLaunchSequence,
-            OpenIDConnectSequence,
-            TokenRefreshSequence
-          ],
-          run_all: false
-        },
-        {
-          name: 'Argonaut Profile Conformance',
-          overview: %(
-
-
-
-          ),
-          sequences: [
-            ArgonautPatientSequence,
-            ArgonautAllergyIntoleranceSequence,
-            ArgonautCarePlanSequence,
-            ArgonautCareTeamSequence,
-            ArgonautConditionSequence,
-            ArgonautDeviceSequence,
-            ArgonautDiagnosticReportSequence,
-            ArgonautObservationSequence,
-            ArgonautGoalSequence,
-            ArgonautImmunizationSequence,
-            ArgonautMedicationStatementSequence,
-            ArgonautMedicationOrderSequence,
-            ArgonautProcedureSequence,
-            ArgonautSmokingStatusSequence,
-            ArgonautVitalSignsSequence
-          ],
-          run_all: true
-        }]
-
-
+        if Inferno::EXTRAS
+          groups << {
+            name: 'Additional Resources',
+            overview: %(
+              Tests for resources corresponding to [Draft USCDI v1](https://www.healthit.gov/sites/default/files/draft-uscdi.pdf) that are not represeted in the Argonaut Data Query Implementation Guide.
+            ),
+            sequences: [
+                DocumentReferenceSequence,
+                ProvenanceSequence
+              ]
+          }
+        end
+        groups
       end
-
     end
 
     Dir[File.join(__dir__, 'sequences', '*_sequence.rb')].each { |file| require file }

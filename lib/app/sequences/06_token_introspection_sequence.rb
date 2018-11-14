@@ -17,13 +17,12 @@ module Inferno
         metadata {
           id '01'
           link 'https://tools.ietf.org/html/rfc7662'
-          optional
           desc %(
             The server MUST support Transport Layer Security (TLS) 1.2.
           )
         }
 
-        skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+        skip_if_tls_disabled
         assert_tls_1_2 @instance.oauth_introspection_endpoint
         warning {
           assert_deny_previous_tls @instance.oauth_introspection_endpoint

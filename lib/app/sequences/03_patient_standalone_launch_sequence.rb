@@ -18,13 +18,12 @@ module Inferno
         metadata {
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          optional
           desc %(
             The client registration endpoint MUST be protected by a transport layer security.
           )
         }
 
-        skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+        skip_if_tls_disabled
         assert_tls_1_2 @instance.oauth_authorize_endpoint
         warning {
           assert_deny_previous_tls @instance.oauth_authorize_endpoint
@@ -88,13 +87,12 @@ module Inferno
         metadata {
           id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          optional
           desc %(
             Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
           )
         }
 
-        skip 'TLS tests have been disabled by configuration.' if @disable_tls_tests
+        skip_if_tls_disabled
         assert_tls_1_2 @instance.oauth_token_endpoint
         warning {
           assert_deny_previous_tls @instance.oauth_token_endpoint

@@ -57,20 +57,12 @@ module Inferno
         metadata {
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          optional
           desc %(
             All exchange of production data should be secured with TLS/SSL v1.2.
           )
         }
 
-        if @disable_tls_tests
-          skip 'TLS tests have been disabled by configuration.', %(
-
-               Inferno allows users to disable TLS testing if they are using a network configuration
-               that prevents TLS from tested properly.
-            )
-
-        end
+        skip_if_tls_disabled
 
         assert_tls_1_2 @instance.url
 

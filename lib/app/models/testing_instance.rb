@@ -86,9 +86,11 @@ module Inferno
       end
 
       def patient_id= patient_id
+        return if patient_id.to_s == self.patient_id.to_s
 
         existing_patients = self.resource_references.select{|ref| ref.resource_type == 'Patient'}
-        self.resource_references.each(&:destroy)
+        # Use destroy directly (instead of on each, so we don't have to reload)
+        self.resource_references.destroy
         self.save!
 
         self.resource_references << ResourceReference.new({
@@ -113,7 +115,9 @@ module Inferno
                      'MedicationStatement',
                      'MedicationOrder',
                      'Observation',
-                     'Procedure']
+                     'Procedure',
+                     'DocumentReference',
+                     'Provenance']
 
         supported_resources = conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}
 
@@ -161,6 +165,19 @@ module Inferno
             false
           end
         end
+      end
+
+      def post_resource_references(resource_type: nil, resource_id: nil)
+        self.resource_references.each do |ref|
+          if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
+            ref.destroy
+          end
+        end
+        self.resource_references << ResourceReference.new({resource_type: resource_type,
+                                                          resource_id: resource_id})
+        self.save!
+        # Ensure the instance resource references are accurate
+        self.reload
       end
     end
   end

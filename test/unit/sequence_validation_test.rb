@@ -17,9 +17,6 @@ class SequenceValidationTest < MiniTest::Test
     # questionable requirements
     excluded_tests << 'Patient supports $everything operation'
 
-    # not yet finished
-    Inferno::Sequence::AdditionalResourcesSequence.tests.each { |test| excluded_tests << test[:name]}
-
     test_list = @sequences.map do |sequence|
       test_list = sequence.tests.map {|test| test[:sequence] = sequence.name; test}
     end.flatten

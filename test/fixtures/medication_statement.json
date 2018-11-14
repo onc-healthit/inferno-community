@@ -1,0 +1,69 @@
+{
+  "resourceType": "MedicationStatement",
+  "id": "example001",
+  "text": {
+    "status": "generated",
+    "div": "<div>\n      <p>Tylenol No 1 tablet - Taking 1 tablet four times daily as needed for pain</p>\n    </div>"
+  },
+  "patient": {
+    "reference": "Patient/pat1"
+  },
+  "informationSource": {
+    "reference": "Patient/pat2"
+  },
+  "dateAsserted": "2015-02-22",
+  "status": "completed",
+  "wasNotTaken": false,
+  "reasonForUseCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "22253000",
+        "display": "Pain"
+      }
+    ]
+  },
+  "effectiveDateTime": "2015-01-23",
+  "note": "Patient indicates they miss the occasional dose",
+  "medicationReference": {
+    "reference": "Medication/MedicationExample7"
+  },
+  "dosage": [
+    {
+      "text": "one tablet four times daily as needed for pain",
+      "timing": {
+        "repeat": {
+          "frequency": 4,
+          "period": 1,
+          "periodUnits": "d"
+        }
+      },
+      "asNeededBoolean": true,
+      "route": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "260548002",
+            "display": "Oral"
+          }
+        ]
+      },
+      "quantityQuantity": {
+        "value": 1
+      },
+      "maxDosePerPeriod": {
+        "numerator": {
+          "value": 4,
+          "unit": "tablets",
+          "system": "http://snomed.info/sct",
+          "code": "385055001"
+        },
+        "denominator": {
+          "value": 1,
+          "system": "http://unitsofmeasure.org",
+          "code": "d"
+        }
+      }
+    }
+  ]
+}

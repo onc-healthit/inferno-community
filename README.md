@@ -40,7 +40,7 @@ And run the following commands from the terminal:
 git clone https://github.com/siteadmin/inferno
 cd inferno
 bundle install
-rackup
+bundle exec rackup
 ```
 
 Inferno can then be accessed at http://localhost:4567 in a web browser.

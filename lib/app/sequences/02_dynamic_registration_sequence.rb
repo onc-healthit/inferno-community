@@ -31,7 +31,6 @@ module Inferno
         metadata {
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          optional
           desc %(
             The client registration endpoint MUST be protected by a transport layer security.
           )
