@@ -62,14 +62,7 @@ module Inferno
           )
         }
 
-        if @disable_tls_tests
-          skip 'TLS tests have been disabled by configuration.', %(
-
-               Inferno allows users to disable TLS testing if they are using a network configuration
-               that prevents TLS from tested properly.
-            )
-
-        end
+        skip_if_tls_disabled
 
         assert_tls_1_2 @instance.url
 
