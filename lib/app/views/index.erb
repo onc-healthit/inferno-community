@@ -19,9 +19,17 @@
         <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
         <div class="input-group">
           <input type="url" class="form-control form-control-lg" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
-          <span class="input-group-btn">
+          <div class="input-group-btn">
             <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
-          </span>
+          </div>
+        </div>
+        <div class="btn-group" data-toggle="buttons">
+          <label class="btn btn-primary active">
+            <input type="radio" name="usecase" value="dstu2|argonaut" checked>Argonaut (DSTU2)
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" name="usecase" value="stu3|bluebutton">BlueButton (STU3)
+          </label>
         </div>
       </div>
     </form>

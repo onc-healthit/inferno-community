@@ -17,6 +17,8 @@ module Inferno
       property :scopes, String
       property :launch_type, String
       property :state, String
+      property :version, String
+      property :usecase, String
 
       property :conformance_checked, Boolean
       property :oauth_authorize_endpoint, String
@@ -107,11 +109,13 @@ module Inferno
                      'CarePlan',
                      'Condition',
                      'Device',
-                     'DocumentReference',
-                     'Goal',
                      'DiagnosticReport',
+                     'DocumentReference',
+                     'ExplanationOfBenefit',
+                     'Goal',
                      'Immunization',
                      'Medication',
+                     'MedicationDispense',
                      'MedicationStatement',
                      'MedicationOrder',
                      'Observation',

@@ -1,54 +1,57 @@
 module Inferno
   module Sequence
-    class ArgonautDeviceSequence < SequenceBase
+    class ArgonautMedicationSequence < SequenceBase
 
       group 'Argonaut Profile Conformance'
 
-      title 'Device'
+      title 'Medication'
 
-      description 'Verify that Device resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
+      description 'Verify that Medication resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'ARDE'
+      test_id_prefix 'ARMP'
+
+      inactive
 
       requires :token, :patient_id
-      conformance_supports :Device
 
       @resources_found = false
 
-      test 'Server rejects Device search without authorization' do
+      test 'Server rejects MedicationStatement search without authorization' do
 
         metadata {
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
-            A Device search does not work without proper authorization.
+            An MedicationStatement search does not work without proper authorization.
           )
           versions :dstu2
         }
 
+        skip_if_not_supported(:MedicationStatement, [:search, :read])
+
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Device'), {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
       end
 
-      test 'Server returns expected results from Device search by patient' do
+      test 'Server returns expected results from MedicationStatement search by patient' do
 
         metadata {
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
-            A server is capable of returning all Unique device identifier(s)(UDI) for a patient's implanted device(s).
+            A server is capable of returning a patient's medications.
           )
           versions :dstu2
         }
 
+        skip_if_not_supported(:MedicationStatement, [:search, :read])
 
-
-        reply = get_resource_by_params(versioned_resource_class('Device'), {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), {patient: @instance.patient_id})
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -59,13 +62,13 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Device'), reply)
-        save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
+        @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('MedicationStatement'), reply)
 
       end
 
-      test 'Device read resource supported' do
+      test 'MedicationStatement read resource supported' do
 
         metadata {
           id '03'
@@ -76,14 +79,14 @@ module Inferno
           versions :dstu2
         }
 
-        skip_if_not_supported(:Device, [:search, :read])
+        skip_if_not_supported(:MedicationStatement, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@device, versioned_resource_class('Device'))
+        validate_read_reply(@medicationstatement, versioned_resource_class('MedicationStatement'))
 
       end
 
-      test 'Device history resource supported' do
+      test 'MedicationStatement history resource supported' do
 
         metadata {
           id '04'
@@ -95,14 +98,14 @@ module Inferno
           versions :dstu2
         }
 
-        skip_if_not_supported(:Device, [:history])
+        skip_if_not_supported(:MedicationStatement, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@device, versioned_resource_class('Device'))
+        validate_history_reply(@medicationstatement, versioned_resource_class('MedicationStatement'))
 
       end
 
-      test 'Device vread resource supported' do
+      test 'MedicationStatement vread resource supported' do
 
         metadata {
           id '05'
@@ -114,24 +117,24 @@ module Inferno
           versions :dstu2
         }
 
-        skip_if_not_supported(:Device, [:vread])
+        skip_if_not_supported(:MedicationStatement, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@device, versioned_resource_class('Device'))
+        validate_vread_reply(@medicationstatement, versioned_resource_class('MedicationStatement'))
 
       end
 
-      test 'Device resources associated with Patient conform to Argonaut profiles' do
+      test 'Medication resources associated with Patient conform to Argonaut profiles' do
 
         metadata {
           id '06'
-          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-device.html'
+          link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
           desc %(
-            Device resources associated with Patient conform to Argonaut profiles
+            MedicationSatement resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
         }
-        test_resources_against_profile('Device')
+        test_resources_against_profile('MedicationStatement')
       end
 
       test 'All references can be resolved' do
@@ -140,15 +143,15 @@ module Inferno
           id '07'
           link ''
           desc %(
-            All references in the Device resource should be resolveable.
+            All references in the MedicationStatement resource should be resolveable.
           )
           versions :dstu2
         }
 
-        skip_if_not_supported(:Device, [:search, :read])
+        skip_if_not_supported(:MedicationStatement, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@device)
+        validate_reference_resolutions(@medicationstatement)
 
       end
 

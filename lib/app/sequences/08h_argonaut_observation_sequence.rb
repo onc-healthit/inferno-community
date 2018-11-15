@@ -11,6 +11,8 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Observation
 
+      @resources_found = false
+
       test 'Observation Results search without authorization' do
 
         metadata {
@@ -19,14 +21,13 @@ module Inferno
           desc %(
             An Observation Results search does not work without proper authorization.
           )
+          versions :dstu2
         }
-
-         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory"})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -40,24 +41,23 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory results queried by category.
           )
+          versions :dstu2
         }
 
-         
-
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory"})
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory"})
+        assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count === 0
-          @no_resources_found = true
+        if resource_count > 0
+          @resources_found = true
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @observationresults = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::Observation, reply)
-        save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end
 
@@ -69,16 +69,17 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory results queried by category code and date range.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
+        assert !@observationresults.nil?, 'Expected valid Observation resource to be present'
         date = @observationresults.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", date: date})
-        validate_search_reply(FHIR::DSTU2::Observation, reply)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory", date: date})
+        validate_search_reply(versioned_resource_class('Observation'), reply)
 
       end
 
@@ -90,16 +91,17 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory results queried by category and code.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
+        assert !@observationresults.nil?, 'Expected valid Observation resource to be present'
         code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
         assert !code.nil?, "Observation code not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code})
-        validate_search_reply(FHIR::DSTU2::Observation, reply)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory", code: code})
+        validate_search_reply(versioned_resource_class('Observation'), reply)
 
       end
 
@@ -112,18 +114,19 @@ module Inferno
           desc %(
             A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        assert !@observationresults.nil?, 'Expected valid DSTU2 Observation resource to be present'
+        assert !@observationresults.nil?, 'Expected valid Observation resource to be present'
         code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
         assert !code.nil?, "Observation code not returned"
         date = @observationresults.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, category: "laboratory", code: code, date: date})
-        validate_search_reply(FHIR::DSTU2::Observation, reply)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory", code: code, date: date})
+        validate_search_reply(versioned_resource_class('Observation'), reply)
 
       end
 
@@ -135,15 +138,16 @@ module Inferno
           desc %(
             A Smoking Status search does not work without proper authorization.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -157,15 +161,16 @@ module Inferno
           desc %(
             A server is capable of returning a patient's smoking status.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(FHIR::DSTU2::Observation, {patient: @instance.patient_id, code: "72166-2"})
-        validate_search_reply(FHIR::DSTU2::Observation, reply)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
+        validate_search_reply(versioned_resource_class('Observation'), reply)
         # TODO check for 72166-2
-        save_resource_ids_in_bundle(FHIR::DSTU2::Observation, reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end
 
@@ -177,12 +182,13 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@observationresults, FHIR::DSTU2::Observation)
+        validate_read_reply(@observationresults, versioned_resource_class('Observation'))
 
       end
 
@@ -195,12 +201,13 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:history])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@observationresults, FHIR::DSTU2::Observation)
+        validate_history_reply(@observationresults, versioned_resource_class('Observation'))
 
       end
 
@@ -213,12 +220,13 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Observation, [:vread])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@observationresults, FHIR::DSTU2::Observation)
+        validate_vread_reply(@observationresults, versioned_resource_class('Observation'))
 
       end
 
@@ -230,11 +238,30 @@ module Inferno
           desc %(
             Observation Result resources associated with Patient conform to Argonaut profiles.
           )
+          versions :dstu2
         }
 
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::OBSERVATION_RESULTS_URL)
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::OBSERVATION_RESULTS_URL), 'No Observation Results found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::OBSERVATION_RESULTS_URL), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::OBSERVATION_RESULTS_URL]}"
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results])
+        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]), 'No Observation Results found.'
+        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]]}"
+      end
+
+      test 'All references can be resolved' do
+
+        metadata {
+          id '11'
+          link ''
+          desc %(
+            All references in the Observation resource should be resolveable.
+          )
+          versions :dstu2
+        }
+
+        skip_if_not_supported(:Observation, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_reference_resolutions(@observationresults)
+
       end
 
     end
