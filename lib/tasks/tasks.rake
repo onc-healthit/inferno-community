@@ -314,6 +314,11 @@ namespace :inferno do |argv|
 
   end
 
+  desc 'Cleans the database of all models'
+  task :drop_database, [] do |task| 
+    DataMapper.auto_migrate!
+  end
+
   desc 'Execute sequence against a FHIR server'
   task :execute_batch, [:config] do |task, args|
     file = File.read(args.config)
