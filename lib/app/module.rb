@@ -50,7 +50,7 @@ module Inferno
       @@modules[inferno_module]
     end
 
-    Dir.glob(File.join(__dir__, 'sequences', '*_module.yml')).each do |file|
+    Dir.glob(File.join(__dir__, 'modules', '*_module.yml')).each do |file|
       this_module = YAML.load_file(file).deep_symbolize_keys
       @@modules[this_module[:name]] = self.new(this_module)
     end
