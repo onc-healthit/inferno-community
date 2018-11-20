@@ -15,6 +15,7 @@
 
     <h2>Start Testing</h2>
     <form method="POST" action="<%=base_path%>/">
+      <input type="hidden" name="module" value="dstu2|uscdi">
       <div class="form-group">
         <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
         <div class="input-group">
@@ -23,14 +24,16 @@
             <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
           </div>
         </div>
+        <%#
         <div class="btn-group" data-toggle="buttons">
           <label class="btn btn-primary active">
-            <input type="radio" name="usecase" value="dstu2|argonaut" checked>Argonaut (DSTU2)
+            <input type="radio" name="module" value="dstu2|argonaut" checked>Argonaut (DSTU2)
           </label>
           <label class="btn btn-primary">
-            <input type="radio" name="usecase" value="stu3|bluebutton">BlueButton (STU3)
+            <input type="radio" name="module" value="stu3|bluebutton">BlueButton (STU3)
           </label>
         </div>
+        %>
       </div>
     </form>
 

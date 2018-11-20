@@ -56,10 +56,10 @@
                 <% end %>
                  -
                 <button class='sequence-expand-button'
-                        href="#<%=sequence_class.name.demodulize%>-details"
+                        href="#<%=sequence_class.sequence_name%>-details"
                         data-toggle="collapse"
-                        data-result-details='<%=sequence_class.name.demodulize%>-details'
-                        aria-controls="<%=sequence_class.name.demodulize%>-details">
+                        data-result-details='<%=sequence_class.sequence_name%>-details'
+                        aria-controls="<%=sequence_class.sequence_name%>-details">
                   Show Details
                 </button>
               </div>
@@ -80,7 +80,7 @@
             <button type="submit" class="sequence-button btn btn-outline-info btn-sm"
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
-                                  data-sequence="<%=sequence_class.name.demodulize%>"
+                                  data-sequence="<%=sequence_class.sequence_name%>"
                                   data-sequence-title="<%= sequence_class.title %>">
               <span class="oi oi-action-undo"></span>
               Run Again
@@ -89,7 +89,7 @@
             <button type="submit" class="sequence-button btn btn-<% if sequence_results[sequence_class.sequence_name] %>outline-<%end%>info btn-sm "
                                   data-defines= "<%= sequence_class.defines.join(',') %>"
                                   data-requires= "<%= sequence_class.requires.join(',') %>"
-                                  data-sequence="<%=sequence_class.name.demodulize%>"
+                                  data-sequence="<%=sequence_class.sequence_name%>"
                                   data-sequence-title="<%= sequence_class.title %>">
               <span class="oi oi-media-play"></span>
               Run
@@ -100,21 +100,21 @@
     </div>
     </div>
   </div>
-  <div class="result-details collapse" id="<%=sequence_class.name.demodulize%>-details">
+  <div class="result-details collapse" id="<%=sequence_class.sequence_name%>-details">
     <% if !sequence_class.details.nil? %>
-      <ul class="nav nav-tabs result-details-tabs" id="<%=sequence_class.name.demodulize%>_result-details-tabs" role="tablist">
+      <ul class="nav nav-tabs result-details-tabs" id="<%=sequence_class.sequence_name%>_result-details-tabs" role="tablist">
         <li class="nav-item">
-          <a class="nav-link active" id="<%=sequence_class.name.demodulize%>_test_list-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_test_list" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_test_list" aria-selected="true"><% if sequence_results[sequence_class.sequence_name].nil? %>Test List<% else %> Test Results<%end%></a>
+          <a class="nav-link active" id="<%=sequence_class.sequence_name%>_test_list-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_test_list" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_test_list" aria-selected="true"><% if sequence_results[sequence_class.sequence_name].nil? %>Test List<% else %> Test Results<%end%></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="<%=sequence_class.name.demodulize%>_more-information-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_more-information" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_more-information" aria-selected="false">Overview</a>
+          <a class="nav-link" id="<%=sequence_class.sequence_name%>_more-information-tab" data-toggle="tab" href="#<%=sequence_class.name.demodulize%>_more-information" role="tab" aria-controls="<%=sequence_class.name.demodulize%>_more-information" aria-selected="false">Overview</a>
         </li>
       </ul>
-      <div class="tab-content" id="<%=sequence_class.name.demodulize%>_tabs">
-        <div class="tab-pane fade show active" id="<%=sequence_class.name.demodulize%>_test_list" role="tabpanel" aria-labelledby="<%=sequence_class.name.demodulize%>_test_list-tab">
+      <div class="tab-content" id="<%=sequence_class.sequence_name%>_tabs">
+        <div class="tab-pane fade show active" id="<%=sequence_class.sequence_name%>_test_list" role="tabpanel" aria-labelledby="<%=sequence_class.name.demodulize%>_test_list-tab">
           <%= erb(:test_list,{},{instance: instance, sequence_class: sequence_class, sequence_result: sequence_results[sequence_class.sequence_name] }) %>
         </div>
-        <div class="tab-pane fade more-information" id="<%=sequence_class.name.demodulize%>_more-information" role="tabpanel" aria-labelledby="<%=sequence_class.name.demodulize%>_more-information-tab">
+        <div class="tab-pane fade more-information" id="<%=sequence_class.sequence_name%>_more-information" role="tabpanel" aria-labelledby="<%=sequence_class.name.demodulize%>_more-information-tab">
           <%= markdown_to_html(sequence_class.details).html_safe %>
         </div>
       </div>

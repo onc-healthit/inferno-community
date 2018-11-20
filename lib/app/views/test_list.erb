@@ -83,7 +83,8 @@
         <% unless test[:required] %> OPTIONAL |  <% end %>
         <%= test[:name] %>
         <button class="test-list-more"
-                data-sequence-name="<%=sequence_class.name.demodulize%>"
+                data-module="<%=instance.module.name%>"
+                data-sequence-name="<%=sequence_class.sequence_name%>"
                 data-test-index="<%=index%>">more...</button>
     </li>
   <% end %>

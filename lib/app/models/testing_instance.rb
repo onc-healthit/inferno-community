@@ -18,7 +18,7 @@ module Inferno
       property :launch_type, String
       property :state, String
       property :version, String
-      property :usecase, String
+      property :selected_module, String
 
       property :conformance_checked, Boolean
       property :oauth_authorize_endpoint, String
@@ -81,6 +81,10 @@ module Inferno
           return 'fail'
         end
 
+      end
+
+      def module
+        Inferno::Module.get(self.selected_module)
       end
 
       def patient_id

@@ -25,8 +25,6 @@ module Inferno
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
           erb :details, {}, instance: instance,
-                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups(instance.usecase),
-                             sequences: Inferno::Sequence::SequenceBase.ordered_sequences(instance.usecase),
                              sequence_results: sequence_results,
                              error_code: params[:error]
         end
@@ -35,21 +33,21 @@ module Inferno
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          version, usecase = params['usecase'].split '|'
+          version, inferno_module = params['module'].split '|'
           @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
                                                            base_url: request.base_url,
                                                            version: version,
-                                                           usecase: usecase)
+                                                           selected_module: inferno_module)
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=ConformanceSequence' if settings.autorun_conformance}"
         end
 
         # Returns test details for a specific test including any applicable requests and responses.
         #   This route is typically used for retrieving test metadata before the test has been run
-        get '/test_details/:sequence_name/:test_index?' do
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-            x.name.demodulize.start_with?(params[:sequence_name])
+        get '/test_details/:module/:sequence_name/:test_index?' do
+          sequence = Inferno::Module.get(params[:module]).sequences.find do |x|
+            x.sequence_name == params[:sequence_name]
           end
           halt 404 unless sequence
           @test_metadata = sequence.tests[params[:test_index].to_i]
@@ -79,8 +77,8 @@ module Inferno
             last_result.message = cancel_message
           end
 
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-            x.name.demodulize.start_with?(@sequence_result.name)
+          sequence = @sequence_result.testing_instance.module.sequences.find do |x|
+            x.sequence_name == @sequence_result.name
           end
 
           current_test_count = @sequence_result.test_results.length
@@ -131,20 +129,16 @@ module Inferno
             end
 
             out << erb(:details, {}, instance: instance,
-                                     sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                     sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                                      sequence_results: instance.latest_results,
                                      tests_running: true)
 
             next_sequence = submitted_sequences.shift
             until next_sequence.nil?
-              klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-                x.name.demodulize.start_with?(next_sequence)
+              klass = instance.module.sequences.find do |x|
+                x.sequence_name == next_sequence
               end
 
               out << erb(:details, {}, {instance: instance,
-                                        sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups(instance.usecase),
-                                        sequences: Inferno::Sequence::SequenceBase.ordered_sequences(instance.usecase),
                                         sequence_results: instance.latest_results,
                                         tests_running: true
               })
@@ -186,7 +180,7 @@ module Inferno
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "/#{BASE_PATH}/#{params[:id]}/?error=no_#{params[:endpoint]}"
           else
-            klass = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence_result.name)}
+            klass = instance.module.sequences.find{|x| x.name.demodulize == sequence_result.name}
 
             client = FHIR::Client.new(instance.url)
             if instance.version == 'dstu2'
@@ -206,8 +200,6 @@ module Inferno
               end
 
               out << erb(:details, {}, {instance: instance,
-                                        sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups(instance.usecase),
-                                        sequences: Inferno::Sequence::SequenceBase.ordered_sequences(instance.usecase),
                                         sequence_results: instance.latest_results,
                                         tests_running: true}
               )

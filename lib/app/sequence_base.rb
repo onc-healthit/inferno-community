@@ -202,7 +202,7 @@ module Inferno
       end
 
       def self.sequence_name
-        self.name.split('::').last
+        self.name.demodulize
       end
 
       def sequence_result
@@ -249,7 +249,7 @@ module Inferno
 
         dependencies = {}
         dependencies[self] = missing.map do |requirement|
-          [requirement, ordered_sequences(instance.usecase).select{ |sequence| sequence.defines.include? requirement}]
+          [requirement, instance.sequences.select{ |sequence| sequence.defines.include? requirement}]
         end
 
         # move this into a hash so things are duplicated.
@@ -274,14 +274,6 @@ module Inferno
 
       end
 
-      def self.variable_required_by(variable)
-        ordered_sequences.select{ |sequence| sequence.requires.include? variable}
-      end
-
-      def self.variable_defined_by(variable)
-        ordered_sequences.select{ |sequence| sequence.defines.include? variable}
-      end
-
       def self.defines(*defines)
         @@defines[self.sequence_name] = defines unless defines.empty?
         @@defines[self.sequence_name] || []
@@ -302,7 +294,7 @@ module Inferno
       end
 
       def self.tests
-        @@test_metadata[self.sequence_name]
+        @@test_metadata[self.sequence_name] || []
       end
 
       def optional?
@@ -334,6 +326,16 @@ module Inferno
 
         block = @@preconditions[self.sequence_name][:block]
         self.new(instance,nil).instance_eval &block
+      end
+
+      # this must be called to ensure that the child class is referenced in self.sequence_name
+      def self.extends_sequence(klass)
+        @@test_metadata[klass.sequence_name].each do |metadata|
+          @@test_metadata[self.sequence_name] ||= []
+          @@test_metadata[self.sequence_name] << metadata
+          @@test_metadata[self.sequence_name].last[:test_index] = @@test_metadata[self.sequence_name].length() - 1
+          define_method metadata[:method_name], metadata[:method]
+        end
       end
 
       # Defines a new test.
@@ -410,6 +412,9 @@ module Inferno
         end
 
         define_method test_method, wrapped
+
+        @@test_metadata[self.sequence_name][test_index_in_sequence][:method] = wrapped
+        @@test_metadata[self.sequence_name][test_index_in_sequence][:method_name] = test_method
 
         instance = self.new(nil, nil, nil, nil, true)
         begin
@@ -674,108 +679,9 @@ module Inferno
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      # This is intended to be called on SequenceBase
-      # There is a test to ensure that this doesn't fall out of date
-      def self.ordered_sequences(usecase=nil)
-        self.sequences_groups(usecase).map{|h| h[:sequences]}.flatten
-      end
-
-      def self.sequences_overview
-        %(
-          Background
-        )
-
-      end
-
-      def self.sequences_groups(usecase=nil)
-        groups = [{
-          name: 'Discovery',
-          overview: %(
-            Sequences related to discovering servers and learning about their capabilities.
-          ),
-          sequences: [ConformanceSequence],
-          run_all: false
-        },
-        {
-          name: 'Authentication and Authorization',
-          overview: %(Tests for Authentication and Authorization.  Primarily in regards to SMART-on-FHIR),
-          sequences: [
-            DynamicRegistrationSequence,
-            ManualRegistrationSequence,
-            StandaloneLaunchSequence,
-            EHRLaunchSequence,
-            OpenIDConnectSequence,
-            TokenRefreshSequence
-          ],
-          run_all: false
-        }]
-
-        if usecase.nil? or usecase == "argonaut"
-          groups << {
-            name: 'Argonaut Profile Conformance',
-            overview: %(
-
-
-
-            ),
-            sequences: [
-              ArgonautPatientSequence,
-              ArgonautAllergyIntoleranceSequence,
-              ArgonautCarePlanSequence,
-              ArgonautCareTeamSequence,
-              ArgonautConditionSequence,
-              ArgonautDeviceSequence,
-              ArgonautDiagnosticReportSequence,
-              ArgonautObservationSequence,
-              ArgonautGoalSequence,
-              ArgonautImmunizationSequence,
-              ArgonautMedicationStatementSequence,
-              ArgonautMedicationOrderSequence,
-              ArgonautProcedureSequence,
-              ArgonautSmokingStatusSequence,
-              ArgonautVitalSignsSequence
-            ],
-            run_all: true
-          }
-
-          if Inferno::EXTRAS
-            groups << {
-              name: 'Additional Resources',
-              overview: %(
-                Tests for resources corresponding to [Draft USCDI v1](https://www.healthit.gov/sites/default/files/draft-uscdi.pdf) that are not represeted in the Argonaut Data Query Implementation Guide.
-              ),
-              sequences: [
-                  DocumentReferenceSequence,
-                  ProvenanceSequence
-                ]
-            }
-          end
-
-        end
-
-        if usecase.nil? or usecase == "bluebutton"
-          groups << {
-            name: 'BlueButton 2.0 Profile Conformance',
-            overview: %(
-
-
-
-            ),
-            sequences: [
-              BlueButtonPatientSequence,
-              BlueButtonExplanationOfBenefitSequence
-            ],
-            run_all: true
-          }
-        end
-
-
-        groups
-      end
     end
 
-    Dir[File.join(__dir__, 'sequences', '*_sequence.rb')].each { |file| require file }
-
+    Dir.glob(File.join(__dir__, 'sequences', '**', '*_sequence.rb')).each{|file| require file}
   end
 end
 

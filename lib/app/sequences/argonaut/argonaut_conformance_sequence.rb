@@ -1,6 +1,10 @@
+require_relative '../core/capability_sequence'
+
 module Inferno
   module Sequence
-    class ConformanceSequence < SequenceBase
+    class ArgonautConformanceSequence < ConformanceSequence
+
+      extends_sequence ConformanceSequence
 
       title 'Conformance Statement'
 
@@ -52,61 +56,6 @@ module Inferno
         * SMART on FHIR Conformance
       )
 
-      test 'FHIR server secured by transport layer security' do
-
-        metadata {
-          id '01'
-          link 'https://www.hl7.org/fhir/security.html'
-          desc %(
-            All exchange of production data should be secured with TLS/SSL v1.2.
-          )
-        }
-
-        skip_if_tls_disabled
-
-        assert_tls_1_2 @instance.url
-
-        warning {
-          assert_deny_previous_tls @instance.url
-        }
-      end
-
-      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
-
-        metadata {
-          id '02'
-          link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
-          desc %(
-            The conformance 'whole system' interaction provides a method to get the conformance statement for
-            the FHIR server.  This test checks that the server responds to a `GET` request at the following endpoint:
-
-            ```
-            GET [base]/metadata
-            ```
-
-            This test checks the following SHALL requirement for DSTU2 FHIR:
-
-            > Applications SHALL return a Conformance Resource that specifies which resource types and interactions are supported for the GET command
-
-            [http://hl7.org/fhir/DSTU2/http.html#conformance](http://hl7.org/fhir/DSTU2/http.html#conformance)
-
-            It does this by checking that the server responds with an HTTP OK 200 status code and that the body of the
-            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html).
-            This test does not inspect the content of the Conformance resource to see if it contains the required information.
-            It only checks to see if the RESTful interaction is supported and returns a valid Conformance resource.
-
-            This test does not check to see if the server supports the `OPTION` command, though DSTU2 provides
-            this as a second method to retrieve the Conformance for the server.  It is not expected that clients
-            will broadly support this method, so this test does not cover this option.
-          )
-        }
-
-        @client.set_no_auth
-        @conformance = @client.conformance_statement
-        assert_response_ok @client.reply
-
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
-      end
 
       test 'FHIR server conformance states JSON support' do
 
@@ -256,15 +205,8 @@ module Inferno
 
       end
 
-
-      def versioned_conformance_class
-        if @instance.version == 'dstu2'
-          FHIR::DSTU2::Conformance
-        elsif @instance.version == 'stu3'
-          FHIR::CapabilityStatement
-        end
-      end
-
     end
+
+
   end
 end
