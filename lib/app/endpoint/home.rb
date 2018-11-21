@@ -19,6 +19,7 @@ module Inferno
           call! env.merge('PATH_INFO' => '/' + params['splat'].first)
         end
 
+        
         # Returns a specific testing instance test page
         get '/:id/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
@@ -28,6 +29,18 @@ module Inferno
                              sequence_results: sequence_results,
                              error_code: params[:error]
         end
+
+        get '/:id/report_card/?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 if instance.nil?
+          sequence_results = instance.latest_results
+          erb :report_card, {},  instance: instance,
+                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
+                             sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
+                             sequence_results: sequence_results,
+                             error_code: params[:error]
+        end
+
 
         # Creates a new testing instance at the provided FHIR Server URL
         post '/?' do
