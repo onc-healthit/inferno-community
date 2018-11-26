@@ -1,27 +1,27 @@
-require File.expand_path '../../test_helper.rb', __FILE__
+# frozen_string_literal: true
+
+require File.expand_path '../test_helper.rb', __dir__
 
 class TokenIntrospectionSequenceTest < MiniTest::Test
-
-  REQUEST_HEADERS = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }
+  REQUEST_HEADERS = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }.freeze
 
   def setup
-
-    introspect_token = JSON::JWT.new({iss: 'foo'})
+    introspect_token = JSON::JWT.new(iss: 'foo')
     introspect_refresh_token = JSON::JWT.new(iss: 'foo_refresh')
     resource_id = SecureRandom.uuid
     resource_secret = SecureRandom.hex(32)
 
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                   client_name: 'Inferno',
-                                   base_url: 'http://localhost:4567',
-                                   scopes: 'launch openid patient/*.* profile',
-                                   oauth_introspection_endpoint: 'https://oauth_reg.example.com/introspect',
-                                   introspect_token: introspect_token,
-                                   introspect_refresh_token: introspect_refresh_token,
-                                   resource_id: resource_id,
-                                   resource_secret: resource_secret,
-                                   token_retrieved_at: DateTime.now
-                                   )
+                                                     client_name: 'Inferno',
+                                                     base_url: 'http://localhost:4567',
+                                                     scopes: 'launch openid patient/*.* profile',
+                                                     oauth_introspection_endpoint: 'https://oauth_reg.example.com/introspect',
+                                                     introspect_token: introspect_token,
+                                                     version: 'dstu2',
+                                                     introspect_refresh_token: introspect_refresh_token,
+                                                     resource_id: resource_id,
+                                                     resource_secret: resource_secret,
+                                                     token_retrieved_at: DateTime.now)
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
@@ -37,37 +37,37 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
       'client_secret' => @instance.resource_secret
     }
     response = {
-      "active" => true,
-      "scope" => @instance.scopes,
-      "exp" => 2.hours.from_now.to_i
+      'active' => true,
+      'scope' => @instance.scopes,
+      'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     refresh_response = {
-        "active" => true
+      'active' => true
     }
 
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-      with(headers: REQUEST_HEADERS, body: params).
-      to_return(status: 200, body: response.to_json)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 200, body: response.to_json)
 
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 200, body: refresh_response.to_json)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
+    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
 
-    assert failures.length == 0, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
+    assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
     assert sequence_result.result == 'pass', 'Sequence should pass.'
-    assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
+    assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 
   def test_no_introspection_endpoint
@@ -78,18 +78,18 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
       'client_secret' => @instance.resource_secret
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
 
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-      with(headers: REQUEST_HEADERS, body: params).
-      to_return(status: 404)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 404)
 
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 404)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 404)
 
     sequence_result = @sequence.start
 
@@ -97,7 +97,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_refresh_register)
 
     assert sequence_result.result == 'fail', 'Sequence should fail.'
-    assert sequence_result.test_results.select{|r| r.result == 'pass'}.length == 1, 'Only one test should pass (the tls testing sequence).'
+    assert sequence_result.test_results.select { |r| r.result == 'pass' }.length == 1, 'Only one test should pass (the tls testing sequence).'
   end
 
   def test_inactive
@@ -108,33 +108,32 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
       'client_secret' => @instance.resource_secret
     }
     response = {
-      "active" => false,
-      "scope" => @instance.scopes,
-      "exp" => 2.hours.from_now.to_i
+      'active' => false,
+      'scope' => @instance.scopes,
+      'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     refresh_response = {
-        "active" => true
+      'active' => true
     }
 
-
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-      with(headers: REQUEST_HEADERS, body: params).
-      to_return(status: 200, body: response.to_json)
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 200, body: refresh_response.to_json)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 200, body: response.to_json)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
+    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
 
     # 1 test depends on active being true
     assert failures.length == 1, 'One test should fail.'
@@ -144,38 +143,37 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
   def test_refresh_inactive
     WebMock.reset!
     params = {
-        'token' => @instance.introspect_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     response = {
-        "active" => true,
-        "scope" => @instance.scopes,
-        "exp" => 2.hours.from_now.to_i
+      'active' => true,
+      'scope' => @instance.scopes,
+      'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     refresh_response = {
-        "active" => false
+      'active' => false
     }
 
-
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: params).
-        to_return(status: 200, body: response.to_json)
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 200, body: refresh_response.to_json)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 200, body: response.to_json)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
+    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
 
     # 1 optional test depends on active being true
     assert failures.length == 1 && !failures.first.required, 'One optional test should fail.'
@@ -191,36 +189,36 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
       'client_secret' => @instance.resource_secret
     }
     response = {
-      "active" => true,
-      "scope" => @instance.scopes.split(' ')[0...-1].join(' '), # remove last scope
-      "exp" => 2.hours.from_now.to_i
+      'active' => true,
+      'scope' => @instance.scopes.split(' ')[0...-1].join(' '), # remove last scope
+      'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     refresh_response = {
-        "active" => true
+      'active' => true
     }
 
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-      with(headers: REQUEST_HEADERS, body: params).
-      to_return(status: 200, body: response.to_json)
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 200, body: refresh_response.to_json)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 200, body: response.to_json)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
-    warnings = sequence_result.test_results.select{|r| !r.test_warnings.empty?}
+    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    warnings = sequence_result.test_results.reject { |r| r.test_warnings.empty? }
 
     # 1 optional test depends on correct scopes
-    assert failures.length == 1, "One test should fail."
+    assert failures.length == 1, 'One test should fail.'
     assert sequence_result.result == 'pass', 'Sequence should pass.'
   end
 
@@ -232,36 +230,36 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
       'client_secret' => @instance.resource_secret
     }
     response = {
-      "active" => true,
-      "scope" => @instance.scopes + ' extra', # add extra scope
-      "exp" => 2.hours.from_now.to_i
+      'active' => true,
+      'scope' => @instance.scopes + ' extra', # add extra scope
+      'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     refresh_response = {
-        "active" => true
+      'active' => true
     }
 
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-      with(headers: REQUEST_HEADERS, body: params).
-      to_return(status: 200, body: response.to_json)
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 200, body: refresh_response.to_json)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 200, body: response.to_json)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
-    warnings = sequence_result.test_results.select{|r| !r.test_warnings.empty?}
+    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    warnings = sequence_result.test_results.reject { |r| r.test_warnings.empty? }
 
     # 1 optional test depends on correct scopes
-    assert failures.length == 1, "One test should fail."
+    assert failures.length == 1, 'One test should fail.'
     assert sequence_result.result == 'pass', 'Sequence should pass.'
   end
 
@@ -273,36 +271,35 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
       'client_secret' => @instance.resource_secret
     }
     response = {
-      "active" => false,
-      "scope" => @instance.scopes,
-      "exp" => 30.minutes.from_now.to_i # should be at least 60 minutes
+      'active' => false,
+      'scope' => @instance.scopes,
+      'exp' => 30.minutes.from_now.to_i # should be at least 60 minutes
     }
     refresh_params = {
-        'token' => @instance.introspect_refresh_token,
-        'client_id' => @instance.resource_id,
-        'client_secret' => @instance.resource_secret
+      'token' => @instance.introspect_refresh_token,
+      'client_id' => @instance.resource_id,
+      'client_secret' => @instance.resource_secret
     }
     refresh_response = {
-        "active" => true
+      'active' => true
     }
 
-    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-      with(headers: REQUEST_HEADERS, body: params).
-      to_return(status: 200, body: response.to_json)
-    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint).
-        with(headers: REQUEST_HEADERS, body: refresh_params).
-        to_return(status: 200, body: refresh_response.to_json)
+    stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                    .with(headers: REQUEST_HEADERS, body: params)
+                    .to_return(status: 200, body: response.to_json)
+    stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
+                            .with(headers: REQUEST_HEADERS, body: refresh_params)
+                            .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select{|r| r.result != 'pass' && r.result != 'skip'}
+    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
 
     # 1 test depends on expiration being at least 60 minutes
     assert failures.length == 1, 'One test should fail.'
     assert sequence_result.result == 'fail', 'Sequence should fail.'
   end
-
 end

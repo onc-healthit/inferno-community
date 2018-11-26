@@ -660,7 +660,7 @@ module Inferno
         assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
                "Expected resource to be of type #{resource_type}"
 
-        p = Inferno::ValidationUtil.guess_profile(resource)
+        p = Inferno::ValidationUtil.guess_profile(resource, @instance.version.to_sym)
         if specified_profile
           return unless p.url == specified_profile
         end

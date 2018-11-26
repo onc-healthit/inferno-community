@@ -111,7 +111,6 @@ module Inferno
         @medication_orders.each do |medication_order|
           validate_read_reply(medication_order, versioned_resource_class('MedicationOrder'))
         end
-
       end
 
       test 'MedicationOrder history resource supported' do
@@ -131,9 +130,6 @@ module Inferno
         @medication_orders.each do |medication_order|
           validate_history_reply(medication_order, versioned_resource_class('MedicationOrder'))
         end
-
-        validate_history_reply(@medicationorder, versioned_resource_class('MedicationOrder'))
-
       end
 
       test 'MedicationOrder vread resource supported' do
@@ -153,7 +149,6 @@ module Inferno
         @medication_orders.each do |medication_order|
           validate_vread_reply(medication_order, versioned_resource_class('MedicationOrder'))
         end
-
       end
 
       test 'MedicationOrder resources associated with Patient conform to Argonaut profiles' do
@@ -216,7 +211,7 @@ module Inferno
 
       test 'Referenced Medications conform to the Argonaut profile' do
         metadata do
-          id '08'
+          id '09'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
           desc %(
             Medication resources must conform to the Argonaut profile

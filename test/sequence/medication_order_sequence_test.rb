@@ -4,6 +4,7 @@ require_relative '../test_helper'
 
 # Tests for the Medication Order Sequence
 # It makes sure all the sequences pass and ensures no duplicate resource references occur from multiple runs
+# Note: This test currently only considers dstu2
 class MedicationOrderSequenceTest < MiniTest::Test
   def setup
     @patient_id = 1234
@@ -36,11 +37,15 @@ class MedicationOrderSequenceTest < MiniTest::Test
 
     @medication_reference = load_json_fixture(:medication_reference)
 
+    @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
+    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
+
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
                                                      client_name: 'Inferno',
                                                      base_url: 'http://localhost:4567',
                                                      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                                      client_id: SecureRandom.uuid,
+                                                     version: 'dstu2',
                                                      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                                      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                                                      scopes: 'launch openid patient/*.* profile',
@@ -147,6 +152,24 @@ class MedicationOrderSequenceTest < MiniTest::Test
                  body: @medication_reference.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
+    # Stub Patient for Reference Resolution Tests
+    stub_request(:get, %r{example.com/Patient/})
+      .with(headers: {
+        'Authorization' => "Bearer #{@instance.token}"
+      })
+      .to_return(status: 200,
+               body: @patient_resource.to_json,
+               headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+
+    # Stub Practitioner for Reference Resolution Tests
+    stub_request(:get, %r{example.com/Practitioner/})
+        .with(headers: {
+            'Authorization' => "Bearer #{@instance.token}"
+        })
+        .to_return(status: 200,
+                   body: @practitioner_resource.to_json,
+                   headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+
     stub_get_med_order @medication_order_bundle
     stub_history @medication_order_bundle
     stub_vread @medication_order_bundle
@@ -168,7 +191,7 @@ class MedicationOrderSequenceTest < MiniTest::Test
     sequence_result = @sequence.start
     sequence_result.save!
 
-    puts 'Running second sequence...'
+    #Running second sequence...
 
     # When sequences are rerun with the Sinatra Interface new sequences are created
     client = FHIR::Client.new(@instance.url)
