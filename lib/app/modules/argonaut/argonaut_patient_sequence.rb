@@ -265,7 +265,7 @@ module Inferno
 
         metadata {
           id '13'
-          link ''
+          link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the Patient resource should be resolveable.
           )

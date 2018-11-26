@@ -172,7 +172,7 @@ module Inferno
 
         metadata {
           id '08'
-          link ''
+          link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the MedicationStatement resource should be resolveable.
           )

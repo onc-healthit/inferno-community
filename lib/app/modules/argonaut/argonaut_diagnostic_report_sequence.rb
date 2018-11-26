@@ -206,7 +206,7 @@ module Inferno
 
         metadata {
           id '10'
-          link ''
+          link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the DiagnosticReport resource should be resolveable.
           )

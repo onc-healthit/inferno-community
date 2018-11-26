@@ -249,8 +249,8 @@ module Inferno
       test 'All references can be resolved' do
 
         metadata {
-          id '11'
-          link ''
+          id '12'
+          link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the Observation resource should be resolveable.
           )

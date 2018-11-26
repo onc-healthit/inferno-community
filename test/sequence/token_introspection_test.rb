@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path '../test_helper.rb', __dir__
+require_relative '../test_helper'
 
 class TokenIntrospectionSequenceTest < MiniTest::Test
   REQUEST_HEADERS = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }.freeze
