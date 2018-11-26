@@ -1,8 +1,8 @@
 module Inferno
   module Sequence
-    class ConformanceSequence < SequenceBase
+    class CapabilitySequence < SequenceBase
 
-      title 'Conformance Statement'
+      title 'Capability Statement'
 
       test_id_prefix 'C'
 

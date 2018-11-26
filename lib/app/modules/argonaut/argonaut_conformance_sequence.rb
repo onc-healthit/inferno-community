@@ -2,9 +2,9 @@ require_relative '../core/capability_sequence'
 
 module Inferno
   module Sequence
-    class ArgonautConformanceSequence < ConformanceSequence
+    class ArgonautConformanceSequence < CapabilitySequence
 
-      extends_sequence ConformanceSequence
+      extends_sequence CapabilitySequence
 
       title 'Conformance Statement'
 

@@ -33,7 +33,7 @@ log_to_file: false
 logging_enabled: true
 
 # Automatically Run Conformance Sequence on new server create
-autorun_conformance: false
+autorun_capability: false
 
 # Include extra tests: true or false
 include_extras: true

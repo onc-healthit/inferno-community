@@ -40,7 +40,7 @@ module Inferno
                                                            version: version,
                                                            selected_module: inferno_module)
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=ConformanceSequence' if settings.autorun_conformance}"
+          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilitySequence' if settings.autorun_capability}"
         end
 
         # Returns test details for a specific test including any applicable requests and responses.
