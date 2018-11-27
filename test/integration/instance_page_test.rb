@@ -12,7 +12,7 @@ class InstancePageTest < MiniTest::Test
 
   def setup
     @fhir_server = "http://#{Inferno::SecureRandomBase62.generate(32)}.example.com/"
-    post Inferno::BASE_PATH, {fhir_server: @fhir_server, module: "dstu2|uscdi"}
+    post Inferno::BASE_PATH, {fhir_server: @fhir_server, module: "uscdi", fhir_version: "dstu2"}
     assert last_response.redirect?
     follow_redirect!
     assert last_response.ok?

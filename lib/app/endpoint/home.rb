@@ -11,7 +11,7 @@ module Inferno
 
         # Return the index page of the application
         get '/?' do
-          erb :index
+          erb :index, {}, mods: settings.mods.split(' '), fhir_versions: settings.fhir_versions.split(' ')
         end
 
         # Returns the static files associated with web app
@@ -33,7 +33,8 @@ module Inferno
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          version, inferno_module = params['module'].split '|'
+          inferno_module = params['module']
+          version = params['fhir_version']
           @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
                                                            base_url: request.base_url,

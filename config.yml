@@ -37,3 +37,9 @@ autorun_capability: false
 
 # Include extra tests: true or false
 include_extras: true
+
+# module options: one or more must be set.  The first option in the list will be checked by default
+mods: uscdi bluebutton
+
+# FHIR Versions supported by web application: dstu2 and stu3 accepted.  The first option in the list will be checked by default
+fhir_versions: dstu2 stu3
