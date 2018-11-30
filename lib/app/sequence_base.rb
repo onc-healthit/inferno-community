@@ -373,7 +373,7 @@ module Inferno
                                           test_index: test_index)
           begin
 
-            skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.version.to_sym), 'This test does not run with this FHIR version')
+            skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version.to_sym), 'This test does not run with this FHIR version')
             instance_eval &block
 
           rescue AssertionException, ClientException => e
@@ -617,7 +617,7 @@ module Inferno
           resource = resource_response.resource
           assert resource.is_a?(versioned_resource_class(resource_type)), "Expected resource to be of type #{resource_type}"
 
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.version.to_sym)
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if specified_profile
             next unless p.url == specified_profile
           end
@@ -660,7 +660,7 @@ module Inferno
         assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
                "Expected resource to be of type #{resource_type}"
 
-        p = Inferno::ValidationUtil.guess_profile(resource, @instance.version.to_sym)
+        p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
         if specified_profile
           return unless p.url == specified_profile
         end

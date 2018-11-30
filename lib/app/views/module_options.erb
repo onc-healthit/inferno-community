@@ -1,36 +1,20 @@
 <div class="container">
   <div class="row">
-      <% mods = mods.flatten.compact %>
-      <% if mods.length == 1 %>
-        <input type="hidden" name="module" value=<%=mods[0] %>>
+      <% modules = modules.flatten.compact %>
+      <% if modules.length == 1 %>
+        <input type="hidden" name="module" value=<%=modules[0] %>>
       <% else %>
       <div class="col">
         <fieldset>
           <legend>What module would you like to run?</legend>
-          <input type="radio" name="module" value="<%=mods[0] %>" id="<%=mods[0] %>" checked>
-          <label for="<%=mods[0] %>"><%=mods[0] %></label>
-          <% mods.drop(1).each do |mod| %>
+          <input type="radio" name="module" value="<%=modules[0] %>" id="<%=modules[0] %>" checked>
+          <label for="<%=modules[0] %>"><%=modules[0] %></label>
+          <% modules.drop(1).each do |mod| %>
             <input type="radio" name="module" value="<%=mod %>" id="<%=mod %>">
             <label for="<%=mod %>"><%=mod %></label>
           <% end %>
         </fieldset>
       </div>
-  <% end %>
-      <% fhir_versions = fhir_versions.flatten.compact %>
-      <% if fhir_versions.length == 1 %>
-        <input type="hidden" name="fhir_version" value=<%=fhir_versions[0] %>>
-      <% else %>
-        <div class="col">
-          <fieldset>
-          <legend> What FHIR version do you want to use?</legend>
-          <input type="radio" name="fhir_version" value="<%=fhir_versions[0] %>" id="<%=fhir_versions[0] %>" checked>
-          <label for="<%=fhir_versions[0] %>"><%=fhir_versions[0] %></label>
-          <% fhir_versions.drop(1).each do |version| %>
-            <input type="radio" name="fhir_version" value="<%=version %>" id="<%=version %>">
-            <label for="<%=version %>"><%=version %></label>
-          <% end %>
-        </fieldset>
-        </div>
   <% end %>
   </div>
 </div>

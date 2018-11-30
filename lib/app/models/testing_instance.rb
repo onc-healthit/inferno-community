@@ -17,7 +17,6 @@ module Inferno
       property :scopes, String
       property :launch_type, String
       property :state, String
-      property :version, String
       property :selected_module, String
 
       property :conformance_checked, Boolean
@@ -81,6 +80,10 @@ module Inferno
           return 'fail'
         end
 
+      end
+
+      def fhir_version
+        self.module.fhir_version
       end
 
       def module

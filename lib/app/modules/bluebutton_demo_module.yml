@@ -1,11 +1,12 @@
 name: bluebutton
 description: this is a description
+fhir_version: stu3
 groups:
   - name: Discovery
     overview: >
       This is an overview of the Discovery group
     sequences:
-      - CapabilitySequence
+      - CapabilityStatementSequence
     run_all: false
   - name: Authorization and Authentication
     overview: >

@@ -1,5 +1,6 @@
 name: uscdi
 description: this is a description
+fhir_version: dstu2
 groups:
   - name: Discovery
     overview: >

@@ -21,12 +21,13 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
                                                      initiate_login_uri: 'http://localhost:4567/launch',
                                                      redirect_uris: 'http://localhost:4567/redirect',
                                                      oauth_register_endpoint: 'https://oauth_reg.example.com/register',
-                                                     scopes: 'launch openid patient/*.* profile')
+                                                     scopes: 'launch openid patient/*.* profile',
+                                                     selected_module: 'argonaut')
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
-    @sequence = Inferno::Sequence::DynamicRegistrationSequence.new(@instance, client, true)
+    @sequence = @instance.module.sequence_by_name('DynamicRegistrationSequence').new(@instance, client, true)
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 
@@ -41,7 +42,7 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
     required_fields && all_uris && confidential_correct
   end
 
-  def all_pass(bearer_present, confidential, version)
+  def all_pass(bearer_present, confidential)
     WebMock.reset!
     headers = { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
     headers['Authorization'] = "Bearer #{DYNAMIC_REGISTRATION_TOKEN}" if bearer_present
@@ -53,7 +54,6 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
     @instance.dynamic_registration_token = (DYNAMIC_REGISTRATION_TOKEN if bearer_present)
 
     @instance.confidential_client = confidential
-    @instance.version = version
     sequence_result = @sequence.start
 
     assert_requested(stub_register)
@@ -66,18 +66,18 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
   end
 
   def test_all_pass_bearer_confidential
-    all_pass(true, true, 'dstu2')
+    all_pass(true, true)
   end
 
   def test_all_pass_no_bearer_confidential
-    all_pass(false, true, 'dstu2')
+    all_pass(false, true)
   end
 
   def test_all_pass_no_bearer_not_confidential
-    all_pass(false, false, 'dstu2')
+    all_pass(false, false)
   end
 
   def test_all_pass_bearer_not_confidential
-    all_pass(true, false, 'dstu2')
+    all_pass(true, false)
   end
 end

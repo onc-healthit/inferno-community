@@ -15,7 +15,7 @@
 
     <h2>Start Testing</h2>
     <form method="POST" action="<%=base_path%>/">
-      <%= erb(:module_options,{},mods: mods, fhir_versions: fhir_versions) %>
+      <%= erb(:module_options,{},modules: modules) %>
       <div class="form-group">
         <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
         <div class="input-group">

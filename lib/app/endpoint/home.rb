@@ -11,7 +11,7 @@ module Inferno
 
         # Return the index page of the application
         get '/?' do
-          erb :index, {}, mods: settings.mods.split(' '), fhir_versions: settings.fhir_versions.split(' ')
+          erb :index, {}, modules: settings.modules
         end
 
         # Returns the static files associated with web app
@@ -34,14 +34,12 @@ module Inferno
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
           inferno_module = params['module']
-          version = params['fhir_version']
           @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
                                                            base_url: request.base_url,
-                                                           version: version,
                                                            selected_module: inferno_module)
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilitySequence' if settings.autorun_capability}"
+          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if settings.autorun_capability}"
         end
 
         # Returns test details for a specific test including any applicable requests and responses.
@@ -113,7 +111,7 @@ module Inferno
           instance.save!
 
           client = FHIR::Client.new(instance.url)
-          if instance.version == 'dstu2'
+          if instance.fhir_version == 'dstu2'
             client.use_dstu2
           end
           client.default_json
@@ -184,7 +182,7 @@ module Inferno
             klass = instance.module.sequences.find{|x| x.name.demodulize == sequence_result.name}
 
             client = FHIR::Client.new(instance.url)
-            if instance.version == 'dstu2'
+            if instance.fhir_version == 'dstu2'
               client.use_dstu2
             end
             client.default_json

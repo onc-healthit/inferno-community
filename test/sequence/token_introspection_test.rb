@@ -17,7 +17,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
                                                      scopes: 'launch openid patient/*.* profile',
                                                      oauth_introspection_endpoint: 'https://oauth_reg.example.com/introspect',
                                                      introspect_token: introspect_token,
-                                                     version: 'dstu2',
+                                                     selected_module: 'argonaut',
                                                      introspect_refresh_token: introspect_refresh_token,
                                                      resource_id: resource_id,
                                                      resource_secret: resource_secret,

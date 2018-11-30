@@ -12,7 +12,7 @@ module Inferno
         # Return the index page of the application
         get '/' do
           logger.info 'loading index page.'
-          erb :index, {}, mods: settings.mods.split(' '), fhir_versions: settings.fhir_versions.split(' ')
+          erb :index, {}, modules: settings.modules
         end
 
         get '/landing/?' do

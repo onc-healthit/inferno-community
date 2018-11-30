@@ -16,7 +16,6 @@ module Inferno
         @name = config[:name]
         @overview = config[:overview]
         @run_all = config[:run_all]
-
         @sequences = config[:sequences].map do |seq_string|
           Inferno::Sequence::SequenceBase.descendants.find {|seq| seq.sequence_name == seq_string}
         end
@@ -27,15 +26,21 @@ module Inferno
     attr_accessor :name
     attr_accessor :description
     attr_accessor :groups
+    attr_accessor :fhir_version
 
     def initialize(config)
       @name = config[:name]
       @description = config[:name]
       @groups = config[:groups].map {|group| Group.new(group)}
+      @fhir_version = config[:fhir_version]
     end
 
     def sequences
       groups.map{|h| h.sequences}.flatten
+    end
+
+    def sequence_by_name(sequence_name)
+      sequences.find{|seq| seq.sequence_name == sequence_name}
     end
 
     def variable_required_by(variable)

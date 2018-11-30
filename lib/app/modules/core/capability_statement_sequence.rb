@@ -1,6 +1,6 @@
 module Inferno
   module Sequence
-    class CapabilitySequence < SequenceBase
+    class CapabilityStatementSequence < SequenceBase
 
       title 'Capability Statement'
 
@@ -110,9 +110,9 @@ module Inferno
 
 
       def versioned_conformance_class
-        if @instance.version == 'dstu2'
+        if @instance.fhir_version == 'dstu2'
           FHIR::DSTU2::Conformance
-        elsif @instance.version == 'stu3'
+        elsif @instance.fhir_version == 'stu3'
           FHIR::CapabilityStatement
         end
       end

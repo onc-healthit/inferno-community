@@ -45,7 +45,7 @@ class MedicationOrderSequenceTest < MiniTest::Test
                                                      base_url: 'http://localhost:4567',
                                                      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                                      client_id: SecureRandom.uuid,
-                                                     version: 'dstu2',
+                                                     selected_module: 'argonaut',
                                                      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                                      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                                                      scopes: 'launch openid patient/*.* profile',

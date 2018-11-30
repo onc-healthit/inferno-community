@@ -43,10 +43,10 @@ def get_test_instance(url: 'http://www.example.com',
                       base_url: 'http://localhost:4567',
                       client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                       client_id: SecureRandom.uuid,
-                      version: 'dstu2',
                       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                       scopes: 'launch openid patient/*.* profile',
+                      selected_module: 'argonaut',
                       token: JSON::JWT.new({iss: 'foo'}))
 
   @instance = Inferno::Models::TestingInstance.new(url: url,
@@ -54,10 +54,10 @@ def get_test_instance(url: 'http://www.example.com',
                                                    base_url: base_url,
                                                    client_endpoint_key: client_endpoint_key,
                                                    client_id: client_id,
-                                                   version: version,
                                                    oauth_authorize_endpoint: oauth_authorize_endpoint,
                                                    oauth_token_endpoint: oauth_token_endpoint,
                                                    scopes: scopes,
+                                                   selected_module: 'argonaut',
                                                    token: token)
 end
 

@@ -12,7 +12,7 @@ class ConformanceSequenceTest < MiniTest::Test
   RESPONSE_HEADERS = { 'content-type' => 'application/json+fhir;charset=UTF-8' }.freeze
 
   def setup
-    instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', version: 'dstu2')
+    instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', selected_module: 'argonaut')
     instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(instance.url)
     client.use_dstu2

@@ -41,7 +41,7 @@ class OpenIDConnectSequenceTest < MiniTest::Test
                                                      base_url: 'http://localhost:4567',
                                                      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
                                                      client_id: client_id,
-                                                     version: 'dstu2',
+                                                     selected_module: 'argonaut',
                                                      oauth_authorize_endpoint: @openid_configuration['authorization_endpoint'],
                                                      oauth_token_endpoint: @openid_configuration['token_endpoint'],
                                                      scopes: @openid_configuration['scopes_supported'].join(' '))
