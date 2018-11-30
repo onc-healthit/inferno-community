@@ -7,33 +7,33 @@
             </div>
             <div class="report-card-section">
             <%group[:sequences].each do |seq|%>
-            <a href="/inferno/<%=instance.id %>#<%=seq.sequence_name%>" target="_blank">   
+            <a href="/inferno/<%=instance.id %>/<%=sequence_results[seq.sequence_name].try(:result) == nil ?"?autoRun=#{seq.sequence_name}":"" %>#<%=seq.sequence_name%>" target="_blank">   
             <% case sequence_results[seq.sequence_name].try(:result) 
             when nil %>
-                <div class="sequence-score sequence-score-todo <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence Not Run">
+                <div class="sequence-score sequence-score-todo <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Not Run">
                 </div>
             <% when 'pass' %>
-                <div class="sequence-score sequence-score-pass <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence Passed">
+                <div class="sequence-score sequence-score-pass <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Passed">
                 <span class="oi oi-check" aria-hidden="true"></span>
                 </div>
             <% when 'fail' %>
-                <div class="sequence-score sequence-score-fail <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence Failed">
+                <div class="sequence-score sequence-score-fail <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Failed">
                 <span class="oi oi-x" aria-hidden="true"></span>
                 </div>
             <% when 'cancel' %>
-                <div class="sequence-score sequence-score-fail <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence Cancelled During Execution">
+                <div class="sequence-score sequence-score-fail <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Cancelled During Execution">
                 <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
                 </div>
             <% when 'error' %>
-                <div class="sequence-score sequence-score-error <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence Test System Error">
+                <div class="sequence-score sequence-score-error <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Test System Error">
                 !
                 </div>
             <% when 'wait' %>
-                <div class="sequence-score sequence-score-wait <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence is Awaiting Client Redirect or Launch">
+                <div class="sequence-score sequence-score-wait <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> is Awaiting Client Redirect or Launch">
                 <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
                 </div>
             <% when 'skip' %>
-                <div class="sequence-score sequence-score-skip <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="Sequence Skipped Due to Insufficient Information">
+                <div class="sequence-score sequence-score-skip <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Skipped Due to Insufficient Information">
                 <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
                 </div>
           <% end %>
