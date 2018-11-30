@@ -17,6 +17,7 @@ require_relative 'app/utils/logging'
 require_relative 'app/endpoint'
 require_relative 'app/utils/secure_random_base62'
 require_relative 'app/sequence_base'
+require_relative 'app/module'
 require_relative 'version'
 require_relative 'app/models'
 

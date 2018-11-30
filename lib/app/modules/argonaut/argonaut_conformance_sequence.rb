@@ -1,6 +1,10 @@
+require_relative '../core/capability_statement_sequence'
+
 module Inferno
   module Sequence
-    class ConformanceSequence < SequenceBase
+    class ArgonautConformanceSequence < CapabilityStatementSequence
+
+      extends_sequence CapabilityStatementSequence
 
       title 'Conformance Statement'
 
@@ -52,61 +56,6 @@ module Inferno
         * SMART on FHIR Conformance
       )
 
-      test 'FHIR server secured by transport layer security' do
-
-        metadata {
-          id '01'
-          link 'https://www.hl7.org/fhir/security.html'
-          desc %(
-            All exchange of production data should be secured with TLS/SSL v1.2.
-          )
-        }
-
-        skip_if_tls_disabled
-
-        assert_tls_1_2 @instance.url
-
-        warning {
-          assert_deny_previous_tls @instance.url
-        }
-      end
-
-      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
-
-        metadata {
-          id '02'
-          link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
-          desc %(
-            The conformance 'whole system' interaction provides a method to get the conformance statement for
-            the FHIR server.  This test checks that the server responds to a `GET` request at the following endpoint:
-
-            ```
-            GET [base]/metadata
-            ```
-
-            This test checks the following SHALL requirement for DSTU2 FHIR:
-
-            > Applications SHALL return a Conformance Resource that specifies which resource types and interactions are supported for the GET command
-
-            [http://hl7.org/fhir/DSTU2/http.html#conformance](http://hl7.org/fhir/DSTU2/http.html#conformance)
-
-            It does this by checking that the server responds with an HTTP OK 200 status code and that the body of the
-            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html).
-            This test does not inspect the content of the Conformance resource to see if it contains the required information.
-            It only checks to see if the RESTful interaction is supported and returns a valid Conformance resource.
-
-            This test does not check to see if the server supports the `OPTION` command, though DSTU2 provides
-            this as a second method to retrieve the Conformance for the server.  It is not expected that clients
-            will broadly support this method, so this test does not cover this option.
-          )
-        }
-
-        @client.set_no_auth
-        @conformance = @client.conformance_statement(FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2)
-        assert_response_ok @client.reply
-
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource.'
-      end
 
       test 'FHIR server conformance states JSON support' do
 
@@ -138,8 +87,9 @@ module Inferno
           )
         }
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
-        assert @conformance.format.include?('json') || @conformance.format.include?('application/json') || @conformance.format.include?('application/json+fhir'), 'Conformance does not state support for json.'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert @conformance.format.include?('json') || @conformance.format.include?('application/json') || @conformance.format.include?('application/json+fhir') || @conformance.format.include?('application/fhir+json'), 'Conformance does not state support for json.'
+
       end
 
       test 'Conformance Statement provides OAuth 2.0 endpoints' do
@@ -154,7 +104,7 @@ module Inferno
           )
         }
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
         assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
         authorize_url = oauth_metadata[:authorize_url]
@@ -221,7 +171,7 @@ module Inferno
                                  'permission-user'
         ]
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
 
         extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
         assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
@@ -243,7 +193,7 @@ module Inferno
           )
         }
 
-        assert @conformance.class == FHIR::DSTU2::Conformance, 'Expected valid DSTU2 Conformance resource'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
 
         begin
           @instance.save_supported_resources(@conformance)
@@ -256,6 +206,7 @@ module Inferno
       end
 
     end
+
 
   end
 end

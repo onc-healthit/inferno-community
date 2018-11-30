@@ -1,5 +1,6 @@
+# frozen_string_literal: true
 
-require File.expand_path '../../test_helper.rb', __FILE__
+require_relative '../test_helper'
 
 class InstancePageTest < MiniTest::Test
 
@@ -10,8 +11,8 @@ class InstancePageTest < MiniTest::Test
   end
 
   def setup
-    @fhir_server = "http://#{Inferno::SecureRandomBase62.generate(32)}.example.com"
-    post Inferno::BASE_PATH, {fhir_server: @fhir_server}
+    @fhir_server = "http://#{Inferno::SecureRandomBase62.generate(32)}.example.com/"
+    post Inferno::BASE_PATH, {fhir_server: @fhir_server, module: "uscdi", fhir_version: "dstu2"}
     assert last_response.redirect?
     follow_redirect!
     assert last_response.ok?

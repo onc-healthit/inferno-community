@@ -1,8 +1,9 @@
-require File.expand_path '../../test_helper.rb', __FILE__
+# frozen_string_literal: true
+
+require_relative '../test_helper'
 
 # These test structure and metadata within sequences but do not execute them.
 # Sequence execution tests are in the /test/sequence directory.
-
 class SequenceValidationTest < MiniTest::Test
 
   def setup
@@ -36,8 +37,15 @@ class SequenceValidationTest < MiniTest::Test
 
   def test_ordered_sequences
 
-    assert Inferno::Sequence::SequenceBase.ordered_sequences.uniq.length == Inferno::Sequence::SequenceBase.ordered_sequences.length, 'There are duplicate sequences in SequenceBase.ordered_sequences.'
-    assert (Inferno::Sequence::SequenceBase.subclasses.select{|seq| !seq.inactive?}-Inferno::Sequence::SequenceBase.ordered_sequences).blank?  && (Inferno::Sequence::SequenceBase.ordered_sequences-Inferno::Sequence::SequenceBase.subclasses.select{|seq| !seq.inactive?}).blank?, 'SequenceBase.ordered_sequences does not contain correct subclasses.  Please update method in SequenceBase.'
+    instance = get_test_instance
+    instance.selected_module = 'uscdi'
+    my_module = instance.module
+    my_module.groups.each do |group|
+      assert group.sequences.uniq.length == group.sequences.length, "There are duplicate sequences in the selected module: #{instance.selected_module}"
+      group.sequences.each do |sequence|
+        assert sequence.ancestors.include?(Inferno::Sequence::SequenceBase), "#{sequence} should be a subclass of SequenceBase"
+      end
+    end
   end
 
   def test_ids_sequential
