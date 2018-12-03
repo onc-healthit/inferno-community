@@ -39,7 +39,8 @@ module Inferno
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module)
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if settings.autorun_capability}"
+          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
+              settings.autorun_capability}"
         end
 
         # Returns test details for a specific test including any applicable requests and responses.
@@ -165,7 +166,9 @@ module Inferno
 
         get '/:id/:key/:endpoint/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && %w[launch redirect].include?(params[:endpoint])
+          halt 404 unless !instance.nil? &&
+                          instance.client_endpoint_key == params[:key] &&
+                          %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
 
