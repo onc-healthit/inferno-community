@@ -172,7 +172,7 @@ module Inferno
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "/#{BASE_PATH}/#{params[:id]}/?error=no_#{params[:endpoint]}"
           else
-            klass = instance.module.sequences.find { |x| x.name.demodulize == sequence_result.name }
+            klass = instance.module.sequences.find { |x| x.sequence_name == sequence_result.name }
 
             client = FHIR::Client.new(instance.url)
             client.use_dstu2 if instance.fhir_version == 'dstu2'
