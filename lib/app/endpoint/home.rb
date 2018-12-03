@@ -137,11 +137,6 @@ module Inferno
                 x.sequence_name == next_sequence
               end
 
-              out << erb(:details, {}, {instance: instance,
-                                        sequence_results: instance.latest_results,
-                                        tests_running: true
-              })
-
               next_sequence = submitted_sequences.shift
               next if klass.nil?
 
