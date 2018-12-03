@@ -1,14 +1,14 @@
 <div class="container">
     <div class="report-card">
-        <%sequences_groups.each do |group|%>
+        <%instance.module.groups.each do |group|%>
             
             <div class="group-title">
-                <span class="sequence-name"><%=group[:name].titleize%></span>
+                <span class="sequence-name"><%=group.name.titleize%></span>
             </div>
             <div class="report-card-section">
-            <%group[:sequences].each do |seq|%>
-            <a href="/inferno/<%=instance.id %>/<%=sequence_results[seq.sequence_name].try(:result) == nil ?"?autoRun=#{seq.sequence_name}":"" %>#<%=seq.sequence_name%>" target="_blank">   
-            <% case sequence_results[seq.sequence_name].try(:result) 
+            <%group.sequences.each do |seq|%>
+            <a href="/inferno/<%=instance.id %>/<%=sequence_results[seq.sequence_name]&.result == nil ?"?autoRun=#{seq.sequence_name}":"" %>#<%=seq.sequence_name%>" target="_blank">
+            <% case sequence_results[seq.sequence_name]&.result
             when nil %>
                 <div class="sequence-score sequence-score-todo <%=(seq.optional?)?'optional': ''%>" data-toggle="tooltip" title="<%=seq.sequence_name %> Not Run">
                 </div>

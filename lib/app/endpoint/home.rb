@@ -30,15 +30,14 @@ module Inferno
                              error_code: params[:error]
         end
 
+        # Returns the report card for the specific testing instance
         get '/:id/report_card/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
-          erb :report_card, {},  instance: instance,
-                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                             sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
-                             sequence_results: sequence_results,
-                             error_code: params[:error]
+          erb :report_card, {}, instance: instance,
+                                sequence_results: sequence_results,
+                                error_code: params[:error]
         end
 
 
