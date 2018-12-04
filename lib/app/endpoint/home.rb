@@ -25,8 +25,8 @@ module Inferno
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
           erb :details, {}, instance: instance,
-                             sequence_results: sequence_results,
-                             error_code: params[:error]
+                            sequence_results: sequence_results,
+                            error_code: params[:error]
         end
 
         # Creates a new testing instance at the provided FHIR Server URL
@@ -39,7 +39,8 @@ module Inferno
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module)
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if settings.autorun_capability}"
+          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
+              settings.autorun_capability}"
         end
 
         # Returns test details for a specific test including any applicable requests and responses.
@@ -111,9 +112,7 @@ module Inferno
           instance.save!
 
           client = FHIR::Client.new(instance.url)
-          if instance.fhir_version == 'dstu2'
-            client.use_dstu2
-          end
+          client.use_dstu2 if instance.fhir_version == 'dstu2'
           client.default_json
           submitted_sequences = params[:sequence].split(',')
 
@@ -136,11 +135,6 @@ module Inferno
               klass = instance.module.sequences.find do |x|
                 x.sequence_name == next_sequence
               end
-
-              out << erb(:details, {}, {instance: instance,
-                                        sequence_results: instance.latest_results,
-                                        tests_running: true
-              })
 
               next_sequence = submitted_sequences.shift
               next if klass.nil?
@@ -172,43 +166,41 @@ module Inferno
 
         get '/:id/:key/:endpoint/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && ['launch','redirect'].include?(params[:endpoint])
+          halt 404 unless !instance.nil? &&
+                          instance.client_endpoint_key == params[:key] &&
+                          %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
 
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "/#{BASE_PATH}/#{params[:id]}/?error=no_#{params[:endpoint]}"
           else
-            klass = instance.module.sequences.find{|x| x.name.demodulize == sequence_result.name}
+            klass = instance.module.sequences.find { |x| x.sequence_name == sequence_result.name }
 
             client = FHIR::Client.new(instance.url)
-            if instance.fhir_version == 'dstu2'
-              client.use_dstu2
-            end
+            client.use_dstu2 if instance.fhir_version == 'dstu2'
             client.default_json
             sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
 
-            timer_count = 0;
-            stayalive_timer_seconds = 20;
+            timer_count = 0
+            stayalive_timer_seconds = 20
 
             stream do |out|
-
               EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
-                timer_count = timer_count + 1;
+                timer_count += 1
                 out << js_stayalive(timer_count * stayalive_timer_seconds)
               end
 
-              out << erb(:details, {}, {instance: instance,
-                                        sequence_results: instance.latest_results,
-                                        tests_running: true}
-              )
+              out << erb(:details, {}, instance: instance,
+                                       sequence_results: instance.latest_results,
+                                       tests_running: true)
 
               out << js_hide_wait_modal
               out << js_show_test_modal
               count = sequence_result.test_results.length
               sequence_result = sequence.resume(request, headers, request.params) do |result|
-                count = count + 1
-                out << js_update_result(sequence,result, count, sequence.test_count)
+                count += 1
+                out << js_update_result(sequence, result, count, sequence.test_count)
                 instance.save!
               end
               instance.sequence_results.push(sequence_result)
