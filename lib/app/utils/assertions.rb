@@ -150,17 +150,15 @@ module Inferno
 
           The following URI does not use the HTTPS protocol identifier:
 
-          [uri](uri)
+          [#{uri}](#{uri})
 
           The HTTPS protocol identifier is required for TLS connections.
 
-          ```
-          HTTP/TLS is differentiated from HTTP URIs by using the 'https'
-          protocol identifier in place of the 'http' protocol identifier. An
+          HTTP/TLS is differentiated from HTTP by using the `https`
+          protocol identifier in place of the `http` protocol identifier. An
           example URI specifying HTTP/TLS is:
+          `https://www.example.org`
 
-          https://www.example.com/~smith/home.html
-          ```
           [HTTP Over TLS](https://tools.ietf.org/html/rfc2818#section-2.4)
 
 
