@@ -153,7 +153,7 @@ end
 
 namespace :inferno do |argv|
 
-  # Exports a CSV of containing the test metadata
+  # Exports a CSV containing the test metadata
   desc 'Generate List of All Tests'
   task :tests_to_csv, [:module, :group, :filename] do |task, args|
     args.with_defaults(module: 'argonaut', group: 'active')

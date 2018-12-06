@@ -4,7 +4,6 @@ require_relative '../test_helper'
 require 'rake'
 
 class TasksTest < MiniTest::Test
-
   def setup
     Rake.application.load_rakefile
   end
