@@ -153,16 +153,23 @@ end
 
 namespace :inferno do |argv|
 
+  # Exports a CSV of containing the test metadata
   desc 'Generate List of All Tests'
-  task :tests_to_csv, [:group, :filename] do |task, args|
-    args.with_defaults(group: 'active', filename: 'testlist.csv')
+  task :tests_to_csv, [:module, :group, :filename] do |task, args|
+    args.with_defaults(module: 'argonaut', group: 'active')
+    args.with_defaults(filename: "#{args.module}_testlist.csv")
+    sequences = Inferno::Module.get(args.module)&.sequences
+    if sequences.nil?
+      puts "No sequence found for module: #{args.module}"
+      exit
+    end
     case args.group
     when 'active'
-      test_group = Inferno::Sequence::SequenceBase.ordered_sequences.reject {|sb| sb.inactive?}
+      test_group = sequences.reject {|sb| sb.inactive?}
     when 'inactive'
-      test_group = Inferno::Sequence::SequenceBase.ordered_sequences.select {|sb| sb.inactive?}
+      test_group = sequences.select {|sb| sb.inactive?}
     when 'all'
-      test_group = Inferno::Sequence::SequenceBase.ordered_sequences
+      test_group = sequences
     else
       puts "#{args.group} is not valid argument.  Valid arguments include:
                   active
@@ -189,7 +196,7 @@ namespace :inferno do |argv|
     end
 
     File.write(args.filename, csv_out)
-
+    puts "Writing to #{args.filename}"
   end
 
   desc 'Generate automated run configuration'
@@ -315,7 +322,7 @@ namespace :inferno do |argv|
   end
 
   desc 'Cleans the database of all models'
-  task :drop_database, [] do |task| 
+  task :drop_database, [] do |task|
     DataMapper.auto_migrate!
   end
 
