@@ -216,7 +216,6 @@ namespace :inferno do |argv|
       unless input == 'a'
         print "\nInclude #{seq.sequence_name} (y/n/a)? "
         input = STDIN.gets.chomp
-        puts "input is #{input}"
       end
 
       if input == 'a' || input == 'y'
