@@ -100,21 +100,36 @@ To just choose the module and use the default groups and filename:
 
 ```sh
 bundle exec rake inferno:tests_to_csv[argonaut]
+
 ```
 
 ## Running Tests from the Command Line
+Inferno provides two methods of running tests via the command line: by directly providing the sequences or running automated scripts
+
+_Note: This feature is still in development and we are looking for feedback on features and improvements in ways it can be used_
+
+### Running Tests Directly
 
 Testing sequences can be run from the command line via a rake task which takes the sequence (or sequences) to be run and server url as arguments:
 ```sh
 bundle exec rake inferno:execute[https://my-server.org/data,argonaut,ArgonautConformance]
 ```
 
-## Generating Automated Run Scripts
-The `generate_script` rake task prompts the user for a series of inputs which are then used to generate a script for executing inferno.
+### Running Automated Command Line Interface Scripts
+For more complicated testing where passing arguments is unwieldy, Inferno provides the ability to use a script containing parameters to drive test execution.
+The provided `example_script.json` shows an example of this script and how it can be used.
+Inferno also provides a  `generate_script` rake task which prompts the user for a series of inputs which are then used to generate a script.
 The user is expected to provide a url for the FHIR Server to be tested and the module name from which sequences will be pulled.
 ```sh
 bundle exec rake inferno:generate_script[https://my-server.org/data,argonaut]
 ```
+
+### Caveats
+* For `DynamicRegistration` users must provide instructions similar to that provided in `example_script.json` to automate the webdriver.
+* The `confidential_client` field is a boolean and must be provided as `true` or `false`
+
+
+These scripts can be executed with 
 
 ## Using with Continuous Integration Systems
 Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
