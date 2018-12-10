@@ -1,7 +1,5 @@
 require 'fhir_client'
 require 'pry'
-#require File.expand_path '../../../app.rb', __FILE__
-#require './models/testing_instance'
 require 'dm-core'
 require 'csv'
 require 'colorize'
@@ -42,7 +40,9 @@ end
 def execute(instance, sequences)
 
   client = FHIR::Client.new(instance.url)
-  client.use_dstu2
+
+  client.use_dstu2 if instance.module.fhir_version == 'dstu2'
+
   client.default_json
 
   sequence_results = []
@@ -75,7 +75,6 @@ def execute(instance, sequences)
     sequence_result = nil
 
     suppress_output{sequence_result = sequence_instance.start}
-    # sequence_result = sequence_instance.start
 
     sequence_results << sequence_result
 
@@ -199,8 +198,8 @@ namespace :inferno do |argv|
     puts "Writing to #{args.filename}"
   end
 
-  desc 'Generate automated run configuration'
-  task :generate_config, [:server] do |task, args|
+  desc 'Generate automated run script'
+  task :generate_script, [:server,:module] do |task, args|
 
     sequences = []
     requires = []
@@ -208,8 +207,12 @@ namespace :inferno do |argv|
 
     input = ''
 
-    output = {server: args[:server], arguments: {}, sequences: []}
-    Inferno::Sequence::SequenceBase.ordered_sequences.each do |seq|
+    output = {server: args[:server], module: args[:module], arguments: {}, sequences: []}
+
+    instance = Inferno::Models::TestingInstance.new(url: args[:server], selected_module: args[:module])
+    instance.save!
+
+    instance.module.sequences.each do |seq|
       unless input == 'a'
         print "\nInclude #{seq.name} (y/n/a)? "
         input = STDIN.getc
@@ -245,20 +248,23 @@ namespace :inferno do |argv|
       output[:arguments][req] = input
     end
 
-    File.open('config.json', 'w') { |file| file.write(JSON.pretty_generate(output)) }
+    File.open('script.json', 'w') { |file| file.write(JSON.pretty_generate(output)) }
 
   end
 
-  desc 'Execute sequence against a FHIR server'
-  task :execute, [:server] do |task, args|
+  desc 'Execute sequences against a FHIR server'
+  task :execute, [:server,:module] do |task, args|
 
     FHIR.logger.level = Logger::UNKNOWN
     sequences = []
     requires = []
     defines = []
 
-    Inferno::Sequence::SequenceBase.ordered_sequences.each do |seq|
-      if args.extras.include? seq.sequence_name.split('Sequence')[0]
+    instance = Inferno::Models::TestingInstance.new(url: args[:server], selected_module: args[:module])
+    instance.save!
+
+    instance.module.sequences.each do |seq|
+      if args.extras.empty? || args.extras.include?(seq.sequence_name.split('Sequence')[0])
         seq.requires.each do |req|
           oauth_required ||= (req == :initiate_login_uri)
           requires << req unless (requires.include?(req) || defines.include?(req) || req == :url)
@@ -267,9 +273,6 @@ namespace :inferno do |argv|
         sequences << seq
       end
     end
-
-    instance = Inferno::Models::TestingInstance.new(url: args[:server])
-    instance.save!
 
     o = OptionParser.new
 
@@ -308,9 +311,12 @@ namespace :inferno do |argv|
     instance.save!
 
     if input_required
+      args_list = "#{instance.url},#{args.module}"
+      args_list = args_list + ",#{args.extras.join(',')}" unless args.extras.empty?
+
       puts ""
       puts "\nIn the future, run with the following command:\n\n"
-      puts "  rake inferno:execute[#{instance.url},#{args.extras.join(',')}] -- #{param_list}".light_black
+      puts "  rake inferno:execute[#{args_list}] -- #{param_list}".light_black
       puts ""
       print "(enter to continue)".red
       STDIN.getc
@@ -331,10 +337,10 @@ namespace :inferno do |argv|
     file = File.read(args.config)
     config = JSON.parse(file)
 
-    instance = Inferno::Models::TestingInstance.new(url: config['server'], initiate_login_uri: 'http://localhost:4568/launch', redirect_uris: 'http://localhost:4568/redirect')
+    instance = Inferno::Models::TestingInstance.new(url: config['server'], selected_module: config['module'], initiate_login_uri: 'http://localhost:4568/launch', redirect_uris: 'http://localhost:4568/redirect')
     instance.save!
     client = FHIR::Client.new(config['server'])
-    client.use_dstu2
+    client.use_dstu2 if instance.module.fhir_version == 'dstu2'
     client.default_json
 
     config['arguments'].each do |key, val|
@@ -356,11 +362,11 @@ namespace :inferno do |argv|
       out = {}
       if !sequence.is_a?(Hash)
         out = {
-          'sequence' => Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence_name)}
+          'sequence' => Inferno::Sequence::SequenceBase.descendants.find{|x| x.name.demodulize.start_with?(sequence_name)}
         }
       else
         out = sequence
-        out['sequence'] = Inferno::Sequence::SequenceBase.subclasses.find{|x| x.name.demodulize.start_with?(sequence['sequence'])}
+        out['sequence'] = Inferno::Sequence::SequenceBase.descendants.find{|x| x.name.demodulize.start_with?(sequence['sequence'])}
       end
 
       out

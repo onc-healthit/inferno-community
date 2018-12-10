@@ -106,7 +106,7 @@ bundle exec rake inferno:tests_to_csv[argonaut]
 
 Testing sequences can be run from the command line via a rake task which takes the sequence (or sequences) to be run and server url as arguments:
 ```sh
-bundle exec rake inferno:execute[https://my-server.org/data,Conformance]
+bundle exec rake inferno:execute[https://my-server.org/data,argonaut,ArgonautConformance]
 ```
 
 ## Using with Continuous Integration Systems
