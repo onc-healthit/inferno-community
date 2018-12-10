@@ -18,12 +18,4 @@ class TasksTest < MiniTest::Test
       Rake::Task['inferno:tests_to_csv'].reenable
     end
   end
-
-  def test_execute
-    WebMock.reset!
-    stub_request(:get, /example/)
-        .to_return(status: 200, body: @conformance.to_json, headers: RESPONSE_HEADERS)
-
-    Rake::Task['inferno:execute'].invoke('https://www.example.com', 'argonaut', 'ArgonautConformance')
-  end
 end
