@@ -1,4 +1,4 @@
-<div class="sequence-row card">
+<div class="sequence-row card" data-status="<%=sequence_results[sequence_class.sequence_name].try(:result)||'todo' %>">
   <div class="sequence-main">
     <a id="<%=sequence_class.sequence_name%>" name="<%=sequence_class.sequence_name%>" class='sequence-anchor'></a>
     <div class='container'>

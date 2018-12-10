@@ -30,8 +30,16 @@
             <strong style='line-height:1em;font-size:1.3em'>?</strong>
             <span id="help-button-text">Help</span>
           </button>
-
         </div>
+        <div class="server-summary">
+            <% sequence_summary = instance.module.groups.map{|g| g.sequences}.flatten.map{|s| sequence_results[s.sequence_name].try(:result)}%>
+            <div class="sequence-summary sequence-todo" data-toggle="tooltip" title="<%=sequence_summary.count(nil)%> unrun test sequences." style="width: <%=sequence_summary.count(nil).fdiv(sequence_summary.length) * 100 %>%" onClick="$('.sequence-row.card').show(); $('.sequence-row.card[data-status!=\'todo\']').hide()"></div>
+            <div class="sequence-summary sequence-fail" data-toggle="tooltip" title="<%=(sequence_summary.count("cancel") + sequence_summary.count("fail"))%> failing test sequences." style="width: <%=(sequence_summary.count("cancel") + sequence_summary.count("fail")).fdiv(sequence_summary.length) * 100 %>%" onClick="$('.sequence-row.card').show(); $('.sequence-row.card[data-status!=\'fail\'][data-status!=\'cancel\']').hide()"></div>
+            <div class="sequence-summary sequence-pass" data-toggle="tooltip" title="<%=sequence_summary.count("pass")%> passing test sequences." style="width: <%=sequence_summary.count("pass").fdiv(sequence_summary.length) * 100 %>%" onClick="$('.sequence-row.card').show(); $('.sequence-row.card[data-status!=\'pass\']').hide()"></div>
+            <div class="sequence-summary sequence-error" data-toggle="tooltip" title="<%=sequence_summary.count("error")%> erroring test sequences." style="width: <%=sequence_summary.count("error").fdiv(sequence_summary.length) * 100 %>%" onClick="$('.sequence-row.card').show(); $('.sequence-row.card[data-status!=\'error\']').hide()"></div>
+            <div class="sequence-summary sequence-skip" data-toggle="tooltip" title="<%=sequence_summary.count("skip")%> skipping test sequences." style="width: <%=sequence_summary.count("skip").fdiv(sequence_summary.length) * 100 %>%" onClick="$('.sequence-row.card').show(); $('.sequence-row.card[data-status!=\'skip\']').hide()"></div>
+          </div>
+          <div onClick="$('.sequence-row.card').show()">Clear Filter </div>
       </div>
     </div>
   </div>

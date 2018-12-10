@@ -300,6 +300,31 @@ body {
   margin-left: 0;
 }
 
+.sequence-summary {
+  height: .6em;
+  margin-top: .4em;
+}
+
+.sequence-todo {
+  background-color: #777;
+}
+
+.sequence-pass {
+  background-color: #28a745;
+}
+
+.sequence-fail {
+  background-color: #cb2431;
+}
+
+.sequence-error {
+  background-color: #f0f;
+}
+
+.sequence-skip {
+  background-color: #00e1e1;
+}
+
 .sequence-score-todo {
   /* background-color: #ccc; */
   color: #333333;
@@ -429,6 +454,11 @@ body {
   transition-duration: .5s;
   transition-delay: .2s;
   margin-left: -2em;
+}
+
+.server-summary {
+  display: flex;
+  width: 100%;
 }
 
 .prerequisite-tooltip {
