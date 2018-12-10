@@ -109,6 +109,13 @@ Testing sequences can be run from the command line via a rake task which takes t
 bundle exec rake inferno:execute[https://my-server.org/data,argonaut,ArgonautConformance]
 ```
 
+## Generating Automated Run Scripts
+The `generate_script` rake task prompts the user for a series of inputs which are then used to generate a script for executing inferno.
+The user is expected to provide a url for the FHIR Server to be tested and the module name from which sequences will be pulled.
+```sh
+bundle exec rake inferno:generate_script[https://my-server.org/data,argonaut]
+```
+
 ## Using with Continuous Integration Systems
 Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
 

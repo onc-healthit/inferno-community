@@ -214,19 +214,19 @@ namespace :inferno do |argv|
 
     instance.module.sequences.each do |seq|
       unless input == 'a'
-        print "\nInclude #{seq.name} (y/n/a)? "
-        input = STDIN.getc
+        print "\nInclude #{seq.sequence_name} (y/n/a)? "
+        input = STDIN.gets.chomp
+        puts "input is #{input}"
       end
 
       if input == 'a' || input == 'y'
-        output[:sequences].push({sequence: seq.name.demodulize})
+        output[:sequences].push({sequence: seq.sequence_name})
         sequences << seq
         seq.requires.each do |req|
           requires << req unless (requires.include?(req) || defines.include?(req) || req == :url)
         end
         defines.push(*seq.defines)
       end
-
     end
 
     STDOUT.print "\n"
@@ -362,11 +362,11 @@ namespace :inferno do |argv|
       out = {}
       if !sequence.is_a?(Hash)
         out = {
-          'sequence' => Inferno::Sequence::SequenceBase.descendants.find{|x| x.name.demodulize.start_with?(sequence_name)}
+          'sequence' => Inferno::Sequence::SequenceBase.descendants.find{|x| x.sequence_name.start_with?(sequence_name)}
         }
       else
         out = sequence
-        out['sequence'] = Inferno::Sequence::SequenceBase.descendants.find{|x| x.name.demodulize.start_with?(sequence['sequence'])}
+        out['sequence'] = Inferno::Sequence::SequenceBase.descendants.find{|x| x.sequence_name.start_with?(sequence['sequence'])}
       end
 
       out
