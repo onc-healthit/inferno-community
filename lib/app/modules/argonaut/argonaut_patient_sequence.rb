@@ -204,7 +204,6 @@ module Inferno
 
       end
 
-
       test 'Server returns expected results from Patient search by gender + birthdate' do
 
         metadata {
@@ -237,8 +236,6 @@ module Inferno
           versions :dstu2
         }
 
-         
-
         validate_history_reply(@patient, versioned_resource_class('Patient'))
 
       end
@@ -255,8 +252,6 @@ module Inferno
           versions :dstu2
         }
 
-         
-
         validate_vread_reply(@patient, versioned_resource_class('Patient'))
 
       end
@@ -271,6 +266,8 @@ module Inferno
           )
           versions :dstu2
         }
+
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         validate_reference_resolutions(@patient)
 
