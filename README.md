@@ -133,9 +133,6 @@ bundle exec rake inferno:generate_script[https://my-server.org/data,argonaut]
 * For `DynamicRegistration` users must provide instructions similar to that provided in `example_script.json` to automate the webdriver.
 * The `confidential_client` field is a boolean and must be provided as `true` or `false`
 
-
-These scripts can be executed with 
-
 ## Using with Continuous Integration Systems
 Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
 
