@@ -117,7 +117,12 @@ bundle exec rake inferno:execute[https://my-server.org/data,argonaut,ArgonautCon
 
 ### Running Automated Command Line Interface Scripts
 For more complicated testing where passing arguments is unwieldy, Inferno provides the ability to use a script containing parameters to drive test execution.
-The provided `example_script.json` shows an example of this script and how it can be used.
+The provided `example_script.json` shows an example of this script and how it can be used.  The `execute_batch` task runs the script:
+
+```sh
+bundle exec rake inferno:execute_batch[script.json]
+```
+
 Inferno also provides a  `generate_script` rake task which prompts the user for a series of inputs which are then used to generate a script.
 The user is expected to provide a url for the FHIR Server to be tested and the module name from which sequences will be pulled.
 ```sh
