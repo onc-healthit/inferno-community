@@ -186,9 +186,13 @@ module Inferno
 
         metadata {
           id '06'
-          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
+          link 'https://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
-           The Argonaut Data Query Server shall declare a Conformance identifying the list of profiles, operations, search parameter supported.
+           The Argonaut Data Query Implementation Guide states:
+
+           ```
+           The Argonaut Data Query Server SHALL... Declare a Conformance identifying the list of profiles, operations, search parameter supported.
+           ```
 
           )
         }
