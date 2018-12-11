@@ -325,6 +325,11 @@ body {
   background-color: #00e1e1;
 }
 
+.clear-filter {
+  display: none;
+  
+}
+
 .sequence-score-todo {
   /* background-color: #ccc; */
   color: #333333;
