@@ -1,0 +1,27 @@
+name: bluebutton
+description: this is a description
+fhir_version: stu3
+groups:
+  - name: Discovery
+    overview: >
+      This is an overview of the Discovery group
+    sequences:
+      - CapabilityStatementSequence
+    run_all: false
+  - name: Authorization and Authentication
+    overview: >
+      This an overview of the Authentication
+    sequences:
+      - DynamicRegistrationSequence
+      - ManualRegistrationSequence
+      - StandaloneLaunchSequence
+      - EHRLaunchSequence
+      - OpenIDConnectSequence
+      - TokenRefreshSequence
+  - name: BlueButton 2.0 Profile Conformance
+    overview: >
+      This an overview of the Authentication
+    sequences:
+      - BlueButtonPatientSequence
+      - BlueButtonExplanationOfBenefitSequence
+    run_all: true

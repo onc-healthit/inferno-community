@@ -1,12 +1,13 @@
 {
   "server": "https://api-v5-dstu2.hspconsortium.org/InfernoDev/data",
+  "module": "uscdi",
   "arguments": {
     "client_name": "Inferno",
     "scopes": "launch launch/patient offline_access openid profile user/*.* patient/*.*",
     "confidential_client": true,
     "standalone_launch_script": [
         {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
-        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "xxx"},
+        {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "redacted"},
         {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
         {"cmd": "click", "type": "class", "find_value": "patient-row", "index": 1},
         {"cmd": "click", "type": "name", "find_value": "authorize"}
@@ -15,7 +16,7 @@
       {"cmd": "navigate", "value": "https://sandbox.hspconsortium.org/InfernoDev"},
       {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 0},
       {"cmd": "send_keys", "type": "name", "find_value": "email", "value": "inferno@groups.mitre.org"},
-      {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "xxx"},
+      {"cmd": "send_keys", "type": "name", "find_value": "password", "value": "redacted"},
       {"cmd": "click", "type": "tag_name", "find_value": "button", "index": 3},
       {"cmd": "wait", "value": 5},
       {"cmd": "click", "type": "class", "find_value": "appLaunchIcon", "index": 0},
@@ -23,7 +24,7 @@
     ]
   },
   "sequences": [
-    "Conformance",
+    "ArgonautConformance",
     "DynamicRegistration",
     "StandaloneLaunch",
     "ArgonautPatient"

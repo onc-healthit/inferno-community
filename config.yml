@@ -33,7 +33,11 @@ log_to_file: false
 logging_enabled: true
 
 # Automatically Run Conformance Sequence on new server create
-autorun_conformance: false
+autorun_capability: false
 
 # Include extra tests: true or false
 include_extras: true
+
+# module options: one or more must be set.  The first option in the list will be checked by default
+modules:
+  - uscdi

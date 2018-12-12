@@ -11,7 +11,7 @@ module Inferno
 
         # Return the index page of the application
         get '/?' do
-          erb :index
+          erb :index, {}, modules: settings.modules
         end
 
         # Returns the static files associated with web app
@@ -24,29 +24,30 @@ module Inferno
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
           sequence_results = instance.latest_results
-          erb :details, {},  instance: instance,
-                             sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                             sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
-                             sequence_results: sequence_results,
-                             error_code: params[:error]
+          erb :details, {}, instance: instance,
+                            sequence_results: sequence_results,
+                            error_code: params[:error]
         end
 
         # Creates a new testing instance at the provided FHIR Server URL
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
+          inferno_module = params['module']
           @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
-                                                           base_url: request.base_url)
+                                                           base_url: request.base_url,
+                                                           selected_module: inferno_module)
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=ConformanceSequence' if settings.autorun_conformance}"
+          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
+              settings.autorun_capability}"
         end
 
         # Returns test details for a specific test including any applicable requests and responses.
         #   This route is typically used for retrieving test metadata before the test has been run
-        get '/test_details/:sequence_name/:test_index?' do
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-            x.name.demodulize.start_with?(params[:sequence_name])
+        get '/test_details/:module/:sequence_name/:test_index?' do
+          sequence = Inferno::Module.get(params[:module]).sequences.find do |x|
+            x.sequence_name == params[:sequence_name]
           end
           halt 404 unless sequence
           @test_metadata = sequence.tests[params[:test_index].to_i]
@@ -76,8 +77,8 @@ module Inferno
             last_result.message = cancel_message
           end
 
-          sequence = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-            x.name.demodulize.start_with?(@sequence_result.name)
+          sequence = @sequence_result.testing_instance.module.sequences.find do |x|
+            x.sequence_name == @sequence_result.name
           end
 
           current_test_count = @sequence_result.test_results.length
@@ -111,7 +112,7 @@ module Inferno
           instance.save!
 
           client = FHIR::Client.new(instance.url)
-          client.use_dstu2
+          client.use_dstu2 if instance.fhir_version == 'dstu2'
           client.default_json
           submitted_sequences = params[:sequence].split(',')
 
@@ -126,16 +127,15 @@ module Inferno
             end
 
             out << erb(:details, {}, instance: instance,
-                                     sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                     sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                                      sequence_results: instance.latest_results,
                                      tests_running: true)
 
             next_sequence = submitted_sequences.shift
             until next_sequence.nil?
-              klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-                x.name.demodulize.start_with?(next_sequence)
+              klass = instance.module.sequences.find do |x|
+                x.sequence_name == next_sequence
               end
+
               next_sequence = submitted_sequences.shift
               next if klass.nil?
 
@@ -164,22 +164,21 @@ module Inferno
           end
         end
 
-        # Handles EHR Launch and any redirects
         get '/:id/:key/:endpoint/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 unless !instance.nil? && instance.client_endpoint_key == params[:key] && %w[launch redirect].include?(params[:endpoint])
+          halt 404 unless !instance.nil? &&
+                          instance.client_endpoint_key == params[:key] &&
+                          %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
 
           if sequence_result.nil? || sequence_result.result != 'wait'
-            redirect "/#{base_path}/#{params[:id]}/?error=no_#{params[:endpoint]}"
+            redirect "/#{BASE_PATH}/#{params[:id]}/?error=no_#{params[:endpoint]}"
           else
-            klass = Inferno::Sequence::SequenceBase.subclasses.find do |x|
-              x.name.demodulize.start_with?(sequence_result.name)
-            end
+            klass = instance.module.sequences.find { |x| x.sequence_name == sequence_result.name }
 
             client = FHIR::Client.new(instance.url)
-            client.use_dstu2
+            client.use_dstu2 if instance.fhir_version == 'dstu2'
             client.default_json
             sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
 
@@ -193,8 +192,6 @@ module Inferno
               end
 
               out << erb(:details, {}, instance: instance,
-                                       sequences_groups: Inferno::Sequence::SequenceBase.sequences_groups,
-                                       sequences: Inferno::Sequence::SequenceBase.ordered_sequences,
                                        sequence_results: instance.latest_results,
                                        tests_running: true)
 

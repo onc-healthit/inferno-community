@@ -205,7 +205,7 @@ $(function(){
 
   $('.test-list .test-list-more').on('click', function() {
     if($(this).data('sequenceName') && $(this).data('testIndex') !== undefined){
-      var url = window.basePath + '/test_details/' + $(this).data('sequenceName') + '/' + $(this).data('testIndex');
+      var url = window.basePath + '/test_details/' + $(this).data('module') + '/' + $(this).data('sequenceName') + '/' + $(this).data('testIndex');
       $("#testDetailsModal").find('.modal-content').load(url, function(value){
         $("#testDetailsModal").modal('show');
       })

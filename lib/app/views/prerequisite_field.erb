@@ -1,14 +1,14 @@
 <%# FIXME: This is ugly, but it works for now %>
-<% prerequisite_sequences = "<ul><li>" + Inferno::Sequence::SequenceBase.variable_defined_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</li></ul>" %>
+<% prerequisite_sequences = "<ul><li>" + instance.module.variable_defined_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</li></ul>" %>
 
 <div class="form-group"
-     data-requiredby="<%=Inferno::Sequence::SequenceBase.variable_required_by(prerequisite).map {|seq| seq.name.demodulize}.join(',')%>"
-     data-definedby="<%=Inferno::Sequence::SequenceBase.variable_defined_by(prerequisite).map {|seq| seq.name.demodulize}.join(',')%>"
+     data-requiredby="<%=instance.module.variable_required_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
+     data-definedby="<%=instance.module.variable_defined_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
      data-prerequisite="<%=prerequisite.to_s%>"
      >
 
     <label for="<%=prerequisite.to_s%>"><%=label%>
-      <% unless Inferno::Sequence::SequenceBase.variable_defined_by(prerequisite).empty? || value %>
+      <% unless instance.module.variable_defined_by(prerequisite).empty? || value %>
         <span class="oi oi-warning prerequisite-tooltip"
               data-toggle='tooltip'
               data-html='true'

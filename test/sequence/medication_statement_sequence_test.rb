@@ -24,10 +24,24 @@ class MedicationStatementSequenceTest < MiniTest::Test
     @patient_id = @medication_statement.patient.reference
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
+    @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
+    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
+
     # Assume we already have a patient
     @instance.resource_references << Inferno::Models::ResourceReference.new(
       resource_type: 'Patient',
       resource_id: @patient_id
+    )
+
+    # Register that the server supports MedicationStatement
+    @instance.supported_resources << Inferno::Models::SupportedResource.create(
+        resource_type: 'MedicationStatement',
+        testing_instance_id: @instance.id,
+        supported: true,
+        read_supported: true,
+        vread_supported: true,
+        search_supported: true,
+        history_supported: true
     )
 
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
@@ -85,6 +99,25 @@ class MedicationStatementSequenceTest < MiniTest::Test
       .to_return(status: 200,
                  body: @medication_reference.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+
+    # Stub Patient for Reference Resolution Tests
+    stub_request(:get, %r{example.com/Patient/})
+        .with(headers: {
+            'Authorization' => "Bearer #{@instance.token}"
+        })
+        .to_return(status: 200,
+                   body: @patient_resource.to_json,
+                   headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+
+    # Stub Practitioner for Reference Resolution Tests
+    stub_request(:get, %r{example.com/Practitioner/})
+        .with(headers: {
+            'Authorization' => "Bearer #{@instance.token}"
+        })
+        .to_return(status: 200,
+                   body: @practitioner_resource.to_json,
+                   headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+
   end
 
   def test_all_pass

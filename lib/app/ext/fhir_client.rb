@@ -1,5 +1,7 @@
 module FHIR
 
+  VERSIONS = [:dstu2, :stu3]
+
   class Client
 
     attr_accessor :requests

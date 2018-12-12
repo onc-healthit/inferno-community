@@ -46,6 +46,7 @@ def get_test_instance(url: 'http://www.example.com',
                       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                       scopes: 'launch openid patient/*.* profile',
+                      selected_module: 'argonaut',
                       token: JSON::JWT.new({iss: 'foo'}))
 
   @instance = Inferno::Models::TestingInstance.new(url: url,
@@ -56,6 +57,7 @@ def get_test_instance(url: 'http://www.example.com',
                                                    oauth_authorize_endpoint: oauth_authorize_endpoint,
                                                    oauth_token_endpoint: oauth_token_endpoint,
                                                    scopes: scopes,
+                                                   selected_module: 'argonaut',
                                                    token: token)
 end
 

@@ -17,6 +17,7 @@ module Inferno
       property :scopes, String
       property :launch_type, String
       property :state, String
+      property :selected_module, String
 
       property :conformance_checked, Boolean
       property :oauth_authorize_endpoint, String
@@ -81,6 +82,14 @@ module Inferno
 
       end
 
+      def fhir_version
+        self.module.fhir_version
+      end
+
+      def module
+        Inferno::Module.get(self.selected_module)
+      end
+
       def patient_id
         self.resource_references.select{|ref| ref.resource_type == 'Patient'}.first.try(:resource_id)
       end
@@ -107,11 +116,13 @@ module Inferno
                      'CarePlan',
                      'Condition',
                      'Device',
-                     'DocumentReference',
-                     'Goal',
                      'DiagnosticReport',
+                     'DocumentReference',
+                     'ExplanationOfBenefit',
+                     'Goal',
                      'Immunization',
                      'Medication',
+                     'MedicationDispense',
                      'MedicationStatement',
                      'MedicationOrder',
                      'Observation',

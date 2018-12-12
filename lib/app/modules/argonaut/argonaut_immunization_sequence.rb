@@ -13,6 +13,8 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Immunization
 
+      @resources_found = false
+
       test 'Server rejects Immunization search without authorization' do
 
         metadata {
@@ -21,14 +23,13 @@ module Inferno
           desc %(
             An Immunization search does not work without proper authorization.
           )
+          versions :dstu2
         }
-
-         
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
 
@@ -41,24 +42,23 @@ module Inferno
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             A client has connected to a server and fetched all immunizations for a patient.          )
+          versions :dstu2
         }
 
-         
-
-        reply = get_resource_by_params(FHIR::DSTU2::Immunization, {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), {patient: @instance.patient_id})
+        assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @no_resources_found = false
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count === 0
-          @no_resources_found = true
+        if resource_count > 0
+          @resources_found = true
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::Immunization, reply)
-        save_resource_ids_in_bundle(FHIR::DSTU2::Immunization, reply)
+        validate_search_reply(versioned_resource_class('Immunization'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Immunization'), reply)
 
       end
 
@@ -70,12 +70,13 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Immunization, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@immunization, FHIR::DSTU2::Immunization)
+        validate_read_reply(@immunization, versioned_resource_class('Immunization'))
 
       end
 
@@ -88,12 +89,13 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Immunization, [:history])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@immunization, FHIR::DSTU2::Immunization)
+        validate_history_reply(@immunization, versioned_resource_class('Immunization'))
 
       end
 
@@ -106,12 +108,13 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
+          versions :dstu2
         }
 
-         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Immunization, [:vread])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@immunization, FHIR::DSTU2::Immunization)
+        validate_vread_reply(@immunization, versioned_resource_class('Immunization'))
 
       end
 
@@ -123,8 +126,27 @@ module Inferno
           desc %(
             Immunization resources associated with Patient conform to Argonaut profiles.
           )
+          versions :dstu2
         }
         test_resources_against_profile('Immunization')
+      end
+
+      test 'All references can be resolved' do
+
+        metadata {
+          id '07'
+          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          desc %(
+            All references in the Immunization resource should be resolveable.
+          )
+          versions :dstu2
+        }
+
+        skip_if_not_supported(:Immunization, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_reference_resolutions(@immunization)
+
       end
 
     end
