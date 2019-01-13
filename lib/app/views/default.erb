@@ -53,7 +53,7 @@
     <% end %>
     <div class="sequence-table">
       <% test_set.groups.each do |group| %>
-        <div class="sequence-group">
+        <div class="sequence-group sequence-action-boundary" data-group="<%= group.name %>" >
           <div class="sequence-header">
             <div class='row align-items-center'>
               <div class='col'>
@@ -64,7 +64,7 @@
                 <h1>
                   <%= group.name %>
                   <% if group.run_all %>
-                    <button data-group="<%= group.name %>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                    <button class='sequence-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
                       <span class="oi oi-media-play"></span> Run All
                     </button>
                   <% end %>
@@ -73,9 +73,7 @@
             </div>
           </div>
           <% group.test_cases.each do |tc| %>
-            <% unless tc.sequence.inactive? %>
-              <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: tc.sequence}) %>
-            <% end %>
+            <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc}) %>
           <% end %>
         </div>
       <% end %>
@@ -98,6 +96,7 @@
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
+        <input type="hidden" name="test_case" value="" />
         <input type="hidden" name="required_fields" value="" />
         <div class="modal-body">
 

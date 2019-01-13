@@ -22,6 +22,7 @@ module Inferno
       property :required, Boolean, default: true
 
       property :next_sequences, String
+      property :next_test_cases, String
 
       property :created_at, DateTime, default: proc { DateTime.now }
 

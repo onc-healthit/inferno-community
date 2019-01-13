@@ -19,7 +19,6 @@ module Inferno
           call! env.merge('PATH_INFO' => '/' + params['splat'].first)
         end
 
-
         # Resume oauth2 flow
         # This must be early so it doesn't get picked up by the other routes
         get '/oauth2/:key/:endpoint/?' do
@@ -47,26 +46,30 @@ module Inferno
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
           else
-            klass = instance.module.sequences.find { |x| x.sequence_name == sequence_result.name }
-
+            test_case = test_set.test_case_by_id(sequence_result.test_case_id)
+            
             client = FHIR::Client.new(instance.url)
             client.use_dstu2 if instance.fhir_version == 'dstu2'
             client.default_json
-            sequence = klass.new(instance, client, settings.disable_tls_tests, sequence_result)
+            sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests, sequence_result)
 
             timer_count = 0
             stayalive_timer_seconds = 20
 
-            stream do |out|
+            finished = false
+
+            stream :keep_open do |out|
               EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
                 timer_count += 1
                 out << js_stayalive(timer_count * stayalive_timer_seconds)
               end
 
+              # finish the inprocess stream
+
               out << erb(instance.module.view_by_test_set(test_set.id), {}, instance: instance,
-                                       sequence_results: instance.latest_results,
-                                       test_set: test_set,
-                                       tests_running: true)
+                                      test_set: test_set,
+                                      sequence_results: instance.latest_results_by_case,
+                                      tests_running: true)
 
               out << js_hide_wait_modal
               out << js_show_test_modal
@@ -78,11 +81,66 @@ module Inferno
               end
               instance.sequence_results.push(sequence_result)
               instance.save!
-              out << if sequence_result.redirect_to_url
-                       js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-                     else
-                       js_redirect("#{BASE_PATH}/#{instance.id}/#{test_set.id}/##{sequence_result.name}")
-                     end
+
+              submitted_test_cases = sequence_result.next_test_cases.split(',')
+
+              next_test_case = submitted_test_cases.shift
+              finished = next_test_case.nil?
+              if sequence_result.redirect_to_url
+                out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                next_test_case = nil
+                finished = false
+              elsif !submitted_test_cases.empty?
+                out << js_next_sequence(sequence_result.next_test_cases)
+              else
+                finished = true
+              end
+
+              # continue processesing any afterwards
+
+
+              until next_test_case.nil?
+                test_case = test_set.test_case_by_id(next_test_case)
+                
+                next_test_case = submitted_test_cases.shift
+                if test_case.nil?
+                  finished = next_test_case.nil?
+                  next
+                end
+
+                out << js_show_test_modal
+
+                sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
+                count = 0
+                sequence_result = sequence.start do |result|
+                  count += 1
+                  out << js_update_result(sequence, test_set, result, count, sequence.test_count)
+                end
+
+                sequence_result.test_set_id = test_set.id
+                sequence_result.test_case_id = test_case.id
+
+                sequence_result.next_test_cases = submitted_test_cases.join(',')
+
+                sequence_result.save!
+                if sequence_result.redirect_to_url
+                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                  finished = false
+                elsif !submitted_test_cases.empty?
+                  out << js_next_sequence(sequence_result.next_test_cases)
+                else
+                  finished = true
+                end
+              end
+
+              # todo: this doesn't open properly
+              out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{params[:test_case]}") if finished
+
+              #out << if sequence_result.redirect_to_url
+              #         js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+               #      else
+              #         js_redirect("#{BASE_PATH}/#{instance.id}/#{test_set.id}/##{sequence_result.name}")
+               #      end
             end
           end
         end
@@ -101,7 +159,7 @@ module Inferno
           halt 404 if instance.nil?
           test_set = instance.module.test_sets[params[:test_set].to_sym]
           halt 404 if test_set.nil?
-          sequence_results = instance.latest_results
+          sequence_results = instance.latest_results_by_case
 
           erb instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
                             test_set: test_set,
@@ -183,7 +241,7 @@ module Inferno
 
           @sequence_result.save!
 
-          redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/##{@sequence_result.name}"
+          redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/##{@sequence_result.test_case_id}"
         end
 
         get '/:id/:test_set/sequence_result?' do
@@ -207,7 +265,7 @@ module Inferno
           client = FHIR::Client.new(instance.url)
           client.use_dstu2 if instance.fhir_version == 'dstu2'
           client.default_json
-          submitted_sequences = params[:sequence].split(',')
+          submitted_test_cases = params[:test_case].split(',')
 
           timer_count = 0
           stayalive_timer_seconds = 20
@@ -221,21 +279,24 @@ module Inferno
 
             out << erb(instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
                                     test_set: test_set,
-                                    sequence_results: instance.latest_results,
+                                    sequence_results: instance.latest_results_by_case,
                                     tests_running: true)
 
-            next_sequence = submitted_sequences.shift
-            until next_sequence.nil?
-              klass = instance.module.sequences.find do |x|
-                x.sequence_name == next_sequence
-              end
+            next_test_case = submitted_test_cases.shift
+            finished = next_test_case.nil?
 
-              next_sequence = submitted_sequences.shift
-              next if klass.nil?
+            until next_test_case.nil?
+              test_case = test_set.test_case_by_id(next_test_case)
+              
+              next_test_case = submitted_test_cases.shift
+              if test_case.nil?
+                finished = next_test_case.nil?
+                next
+              end
 
               out << js_show_test_modal
 
-              sequence = klass.new(instance, client, settings.disable_tls_tests)
+              sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
               count = 0
               sequence_result = sequence.start do |result|
                 count += 1
@@ -243,20 +304,22 @@ module Inferno
               end
 
               sequence_result.test_set_id = test_set.id
+              sequence_result.test_case_id = test_case.id
 
-              sequence_result.next_sequences = submitted_sequences.join(',')
+              sequence_result.next_test_cases = submitted_test_cases.join(',')
 
               sequence_result.save!
               if sequence_result.redirect_to_url
                 out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-                # out << js_redirect(sequence_result.redirect_to_url)
-              elsif !submitted_sequences.empty?
-                out << js_next_sequence(sequence_result.next_sequences)
+                next_test_case = nil
+                finished = false
+              elsif !submitted_test_cases.empty?
+                out << js_next_sequence(sequence_result.next_test_cases)
               else
                 finished = true
               end
             end
-            out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{params[:sequence]}") if finished
+            out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{params[:test_case]}") if finished
           end
         end
 

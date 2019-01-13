@@ -62,6 +62,15 @@ module Inferno
         end
       end
 
+      def latest_results_by_case
+        self.sequence_results.reduce({}) do |hash, result|
+          if hash[result.test_case_id].nil? || hash[result.test_case_id].created_at < result.created_at
+            hash[result.test_case_id] = result
+          end
+          hash
+        end
+      end
+
       def waiting_on_sequence
         self.sequence_results.first(result: 'wait')
       end

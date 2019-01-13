@@ -41,8 +41,6 @@ module Inferno
 
       @@test_id_prefixes = {}
 
-      @@inactive = {}
-
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
         @client = client
         @instance = instance
@@ -283,14 +281,6 @@ module Inferno
       def self.test_id_prefix(test_id_prefix = nil)
         @@test_id_prefixes[self.sequence_name] = test_id_prefix unless test_id_prefix.nil?
         @@test_id_prefixes[self.sequence_name]
-      end
-
-      def self.inactive
-        @@inactive[self.sequence_name] = true
-      end
-
-      def self.inactive?
-        @@inactive.has_key?(self.sequence_name)
       end
 
       def self.tests

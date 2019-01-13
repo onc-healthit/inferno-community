@@ -21,6 +21,14 @@ module Inferno
         @groups.map{|group| group.test_cases.map{|tc| tc.sequence}}.flatten
       end
 
+      def test_cases
+        @groups.map{|group| group.test_cases}.flatten
+      end
+
+      def test_case_by_id(test_case_id)
+        test_cases.find {|tc| tc.id == test_case_id}
+      end
+
       def variable_required_by(variable)
         sequences.select{ |sequence| sequence.requires.include? variable}
       end
@@ -81,7 +89,7 @@ module Inferno
       attr_accessor :id
       attr_accessor :group
       attr_accessor :sequence
-      attr_accessor :paramters
+      attr_accessor :parameters
   
       def initialize(id, test_case, sequence, parameters)
         @id = id
