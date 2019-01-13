@@ -15,7 +15,7 @@ module Inferno
           "<script>console.log('Time running: ' + #{time})</script>"
         end
 
-        def js_update_result(sequence, test_set, result, count, total)
+        def js_update_result(sequence, result, count, total)
             cancelBtn = ""
             cancelBtn = "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>" if(sequence.sequence_result)
           "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');$('#testsRunningModal .modal-footer').html('#{cancelBtn}');</script>"
@@ -26,6 +26,7 @@ module Inferno
         end
 
         def js_redirect_modal(location, sequence, instance)
+          # cancelBtn = "<a href=\"sequence_result/#{sequence.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
           okBtn = "<a href=\"#{location}\" class=\"btn btn-primary\">Continue</a>"
           warningTxt = "Inferno will now redirect you to an external website for user authorization.  For this test sequence to complete successfully, you will need to select a patient and authorize the Inferno client to access their data.  Once you authorize the Inferno client to access patient data, you should be redirected back to Inferno.  If something goes wrong, you can always return to Inferno at <a href=\"#{instance.base_url}#{base_path}/#{instance.id}\">#{instance.base_url}#{base_path}/#{instance.id}</a>.<br/><br/>"
 
