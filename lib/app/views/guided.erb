@@ -1,15 +1,16 @@
+
 <div class="container-fluid server-info sticky-top" role='main'>
   <div class="row">
     <div class="col">
       <div class="container row row-no-padding align-items-center">
 
-        <div class="col-8">
+        <div class="col-7">
           <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo'></a>
           <span class="server-name">
             <%=instance.url%>
           </span>
         </div>
-        <div class="col-4 server-actions" style='text-align:right;'>
+        <div class="col-5 server-actions" style='text-align:right;'>
 
           <!--- not yet implemented -->
           <div style="display:none" data-toggle="tooltip" title="Print Results">
@@ -52,7 +53,7 @@
   </div>
 </div>
 
-<div class="container">
+<div class="container guided">
   <div class="main main-details" role='region'>
 
     <% unless locals[:error_code].nil? %>
@@ -66,34 +67,63 @@
         <% end %>
       </div>
     <% end %>
-    <div class="sequence-table">
-      <% test_set.groups.each do |group| %>
-        <div class="sequence-group sequence-action-boundary" data-group="<%= group.name %>" >
-          <div class="sequence-header">
-            <div class='row align-items-center'>
-              <div class='col'>
-                <% if group.test_cases.length > 1 %>
-                  <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
+    <div class="group-nav">
+      <ul class="nav nav-pills">
+      <li class="nav-item"><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.name %></a></li>
+      <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
+        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
+      <%end%>
+      </ul>
+    </div>
 
-                <% end %>
+    <div class="row">
+      <div class="col-12 sequence-table">
+
+        <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
+          <div class="sequence-header">
+            <div class="row align-items-center">
+              <div class="col">
+                
+                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
+
+                
                 <h1>
-                  <%= group.name %>
-                  <% if group.run_all %>
-                    <button class='sequence-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
-                      <span class="oi oi-media-play"></span> Run All
-                    </button>
-                  <% end %>
+                  <%= instance.module.name %>
                 </h1>
               </div>
             </div>
           </div>
-          <% group.test_cases.each do |tc| %>
-            <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: true}) %>
-          <% end %>
+          <div class="sequence-overview">
+            <%= markdown_to_html(instance.module.description) %>
+          </div>
         </div>
-      <% end %>
+        
+        <% test_set.groups.each do |group| %>
+          <div class="sequence-group sequence-action-boundary tab-pane" data-group="<%= group.name %>" id="group-<%=group.id%>">
+            <div class="sequence-header">
+              <div class='row align-items-center'>
+                <div class='col'>
+                  <% if group.test_cases.length > 1 %>
+                    
+                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
 
-      <%# Removed total score for community edition. %>
+                  <% end %>
+                  <h1>
+                    <%= group.name %>
+                      <button class='sequence-button btn' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
+                        <span class="oi oi-media-play"></span> Start
+                      </button>
+                  </h1>
+                </div>
+              </div>
+            </div>
+            <% group.test_cases.each do |tc| %>
+              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false}) %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
     </div>
   </div>
 </div>
@@ -377,3 +407,5 @@
     </div>
   </div>
 </div>
+
+<div class="guided-background-fill"></div>

@@ -1,8 +1,100 @@
 name: uscdi
-description: this is a description
+description: |
+
+  Describe any requirements of the program.  Duis mollis congue hendrerit. Curabitur fringilla,
+  mauris lacinia tincidunt condimentum, lectus erat hendrerit est, ut vehicula metus arcu quis tellus. Nunc molestie
+  tempor quam, sed sodales neque facilisis non. Donec vehicula dui quis egestas suscipit. Fusce a placerat elit.
+
+  Note that this is a concept based on Argonaut and does not reflect actual program requirements.
+
+  For example:
+
+  * EHR and Standalone Launches
+  * Confidential OR Public clients
+  * OpenID Connect single sign on
+  * Resources
+  * Argonaut Data Queries
+
+  Descibe how to get started:
+
+  * click this button
+
 fhir_version: dstu2
+default_test_set: guided
 test_sets:
-  developer:
+  guided:
+    view: guided
+    tests:
+      - name: Discovery and Registration
+        overview: |
+          Demonstrate the server's ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
+          supported resources and searches.  If the server provides a dynamic registration endpoint, this will attempt to register Inferno's
+          test application.  Otherwise, the user must demonstrate the ability to manually register the application.
+        sequences:
+          - ArgonautConformanceSequence
+          - SMARTDiscoverySequence
+          - ManualRegistrationSequence
+      - name: Standalone Patient App Launch
+        overview: |
+          Demonstrate the ability to support launching SMART on FHIR apps that are authorized to access a single patient using the standalone launch sequence.
+        sequences:
+          - sequence: StandaloneLaunchSequence
+            title: Standalone Launch with Patient Scope
+            description: Perform SMART launch sequence.  Patient, OpenID Connect and Token Refresh scopes required.
+          - sequence: ArgonautPatientSequence
+            title: Read Patient Resource
+            description: Demonstrate successful authorization by reading Patient resource.
+      - name: EHR Practitioner App Launch
+        overview: >
+          Demonstrate the ability for an external launch with a user-level scope that is capable of accessing multiple patients.  This test requires the system to
+          access multiple patient endpoints to demonstrate that a 3rd party app can interact with multiple patients without requiring re-authentication.
+          Note that this is not the same as the Population-level API, which requires the ability for transfering much larger quantities of data in a more efficient manner.
+        sequences:
+          - EHRLaunchSequence
+          - sequence: ArgonautPatientSequence
+            title: Retrieve first patient
+            description: retrieve second patient
+          - sequence: ArgonautPatientSequence
+            title: Retrieve second patient
+            description: retrieve second patient
+      - name: OpenID Connect (SSO)
+        overview: >
+          Demonstrate OpenID Connect
+        sequences:
+          - sequence: OpenIDConnectSequence
+            title: Single Sign on using OpenID Connect
+            description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
+      - name: Token Refresh Sequence
+        overview: >
+          Demonstrate Token Refresh Sequence
+        sequences:
+          - TokenRefreshSequence
+          - sequence: ArgonautPatientSequence
+            title: Read Patient Resource Using New Token
+            description: Ensure new token is functional by performing a simple read of the Patient resource.
+      - name: USCDI Access
+        run_all: true
+        overview: >
+          Description of USCDI Data access.
+        sequences:
+          - ArgonautPatientSequence
+          - ArgonautAllergyIntoleranceSequence
+          - ArgonautCarePlanSequence
+          - ArgonautCareTeamSequence
+          - ArgonautConditionSequence
+          - ArgonautDeviceSequence
+          - ArgonautDiagnosticReportSequence
+          - ArgonautObservationSequence
+          - ArgonautGoalSequence
+          - ArgonautImmunizationSequence
+          - ArgonautMedicationStatementSequence
+          - ArgonautMedicationOrderSequence
+          - ArgonautProcedureSequence
+          - ArgonautSmokingStatusSequence
+          - ArgonautVitalSignsSequence
+          - DocumentReferenceSequence
+          - ProvenanceSequence
+  ad_hoc:
     view: default
     tests:
       - name: Discovery
@@ -10,6 +102,7 @@ test_sets:
           This is an overview of the Discovery group
         sequences:
           - ArgonautConformanceSequence
+          - SMARTDiscoverySequence
         run_all: false
       - name: Authorization and Authentication
         overview: >
@@ -23,7 +116,7 @@ test_sets:
           - TokenRefreshSequence
       - name: Argonaut Data Query Implementation Guide
         overview: >
-          This an overview of the Authentication
+          This an overview of the Argonaut Data Query Implementation Guide
         sequences:
           - ArgonautPatientSequence
           - ArgonautAllergyIntoleranceSequence
@@ -41,7 +134,7 @@ test_sets:
           - ArgonautSmokingStatusSequence
           - ArgonautVitalSignsSequence
         run_all: true
-      - name: Additional Resources
+      - name: Additional USCDI Resources
         overview: >
           This is an overview of additional resources
         sequences:

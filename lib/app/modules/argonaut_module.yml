@@ -1,7 +1,7 @@
 name: argonaut
 description: this is a description
 fhir_version: dstu2
-default_test_set: program
+default_test_set: guided
 test_sets:
   developer:
     view: default
@@ -10,7 +10,9 @@ test_sets:
         overview: >
           This is an overview of the Discovery group
         sequences:
-          - ArgonautConformanceSequence
+          - sequence: ArgonautConformanceSequence
+            title: Test override argo sequence
+            description: Test description
         run_all: false
       - name: Authorization and Authentication
         overview: >
@@ -42,8 +44,8 @@ test_sets:
           - ArgonautSmokingStatusSequence
           - ArgonautVitalSignsSequence
         run_all: true
-  program:
-    view: default
+  guided:
+    view: guided
     tests: 
       - name: Discovery
         overview: >

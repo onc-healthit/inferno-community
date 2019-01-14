@@ -56,9 +56,6 @@ module Inferno
         @run_all = run_all
         @test_cases = []
         @test_case_names = {}
-        # @sequences = config[:sequences].map do |seq_string|
-        #   Inferno::Sequence::SequenceBase.descendants.find {|seq| seq.sequence_name == seq_string}
-        # end
       end
 
       def add_test_case(sequence_name, parameters = {})
@@ -74,6 +71,8 @@ module Inferno
         @test_case_names[current_name] = true
 
         sequence = Inferno::Sequence::SequenceBase.descendants.find {|seq| seq.sequence_name == sequence_name}
+
+        binding.pry if sequence.nil?
 
         new_test_case = TestCase.new(current_name, self, sequence, parameters)
 
@@ -127,7 +126,6 @@ module Inferno
       @default_test_set = default_test_set
       @fhir_version = fhir_version
       @test_sets = {}
-      @groups = []
     end
 
     def sequences

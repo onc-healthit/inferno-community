@@ -31,7 +31,12 @@ body {
   background-color: #EEE;
 }
 
+.navbar {
+  z-index: 1000;
+}
+
 /* Effectively removing default breakpoints for repsonsive bootstrap container */
+/*
 @media (min-width: 576px) {
   .container {
     max-width: 1000px;
@@ -43,6 +48,7 @@ body {
     max-width: 1000px;
   }
 }
+*/
 
 .main {
   margin: 20px 0;
@@ -55,6 +61,7 @@ body {
   height: 60px; /* Set the fixed height of the footer here */
   line-height: 60px; /* Vertically center the text there */
   background-color: #fafbfc;
+  z-index: 1000;
 }
 
 .footer .container {
@@ -149,6 +156,10 @@ body {
   transition-property: opacity;
   transition-duration: .5s;
   margin-top:-5px;
+}
+
+.server-info .dropdown {
+  display: inline-block;
 }
 
 
@@ -698,3 +709,138 @@ body {
   vertical-align: middle;
   padding-right: 1em;
 }
+
+
+/* guided specific view */
+
+.guided-background-fill {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  z-index: -1;
+  background-color: white;
+}
+
+.guided .main {
+  margin-top: -160px;
+
+}
+.guided h1 {
+  margin-top: 0;
+  text-transform: uppercase;
+}
+
+.guided .group-nav {
+  position: absolute;
+  width: 275px;
+  z-index:100;
+  padding: 180px 0 0;
+  background-color: white;
+  min-height: 100vh;
+  height: 100%;
+  border-right: 1px solid #d2ccbe;
+  box-shadow: 4px 0 5px 0 #ddd;
+  z-index: 10;
+}
+
+
+.guided .group-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+
+.guided .group-nav li{
+  width: 100%;
+  text-align: left;
+  text-transform: uppercase;
+  font-size: .9rem;
+  position: relative;
+}
+
+.guided .group-nav li a.active::after{
+   border-top-right-radius: 4px;
+    background-color: #53585e;
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: 8px;
+    z-index: 10;
+    border-right: 1px solid #999;
+}
+
+.guided .group-nav li a.active::before{
+   border-bottom-right-radius: 4px;
+    background-color: #000;
+    opacity: .8;
+    content: "";
+    position: absolute;
+    top: 100%;
+    height: 4px;
+    left: 100%;
+    width: 8px;
+    z-index: 10;
+}
+
+
+.guided .group-nav li a {
+  border-radius: 0;
+  color: #53585e;
+}
+
+.guided .group-nav li a.active {
+  background-color: #53585e;
+  color: white;
+}
+
+.guided .group-nav li.group-result-pass::before{
+  border-radius: 50%;
+  background-color: #28a745;
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 2.1rem;
+  left: -1.5rem;
+  width: 2.1rem;
+  z-index: 100;
+  border: .5rem solid white;
+}
+
+.guided .group-nav li.group-result-fail::before{
+  border-radius: 50%;
+  background-color: #cb2431;
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 2.1rem;
+  left: -1.5rem;
+  width: 2.1rem;
+  z-index: 100;
+  border: .5rem solid white;
+}
+
+.guided .sequence-table {
+  min-height: 100vh;
+  margin-left: 20px;
+  padding-left: 290px;
+  padding-top: 170px;
+  background-color: #EEE;
+  padding-bottom: 80px;
+}
+
+.guided .sequence-score {
+  margin-left: -30px;
+}
+
+.tab-pane {
+  display:none;
+}
+.tab-pane.active {
+  display:inherit;
+}
+

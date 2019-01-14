@@ -13,7 +13,7 @@
     <a id="<%=test_case.id%>" name="<%=test_case.id%>" class='sequence-anchor'></a>
     <div class='container'>
       <div class='row align-items-center no-gutters'>
-        <div class='col-10'>
+        <div class='col-<%if show_button%>10<%else%>12<%end%>'>
           <div class='row no-gutters'>
             <% case sequence_results[test_case.id].try(:result)
               when nil %>
@@ -80,25 +80,29 @@
             </div>
         </div>
       </div>
+      <% if show_button %>
       <div class="sequence-action col-2">
         <%if !sequence_results[test_case.id] && instance.supported_resources.length > 0 && !test_case.sequence.conformance_supports.all?{|resource| instance.conformance_supported?(resource)}%>
           <span class="oi oi-warning not-supported-warning" aria-hidden="true" data-toggle="tooltip" title="The Conformance Statement does not indicate support for the Resources required for this test."></span>
         <%end%>
         <span>
-          <% #FIXME: Consider ignoring SKIP when displaying the latest sequence result because it shouldn't materially change the current status. %>
-          <% if sequence_results[test_case.id]%>
-            <button type="submit" class="sequence-button btn btn-outline-info btn-sm">
-              <span class="oi oi-action-undo"></span>
-              Run Again
-            </button>
-          <% else %>
-            <button type="submit" class="sequence-button btn btn-<% if sequence_results[test_case.id] %>outline-<%end%>info btn-sm "">
-              <span class="oi oi-media-play"></span>
-              Run
-            </button>
-          <% end %>
+          
+            <% #FIXME: Consider ignoring SKIP when displaying the latest sequence result because it shouldn't materially change the current status. %>
+            <% if sequence_results[test_case.id]%>
+              <button type="submit" class="sequence-button btn btn-outline-info btn-sm">
+                <span class="oi oi-action-undo"></span>
+                Run Again
+              </button>
+            <% else %>
+              <button type="submit" class="sequence-button btn btn-<% if sequence_results[test_case.id] %>outline-<%end%>info btn-sm "">
+                <span class="oi oi-media-play"></span>
+                Run
+              </button>
+            <% end %>
+            
         </span>
       </div>
+      <% end %>
     </div>
     </div>
   </div>

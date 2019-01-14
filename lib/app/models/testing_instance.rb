@@ -71,6 +71,39 @@ module Inferno
         end
       end
 
+      def group_results(test_set_id)
+        return_data = []
+        results = latest_results_by_case
+
+        self.module.test_sets[test_set_id.to_sym].groups.each do |group|
+          pass_count = 0
+          failure_count = 0;
+          total_count = 0;
+          result_details = group.test_cases.reduce(cancel: 0, pass: 0, skip: 0, fail: 0, error: 0, total: 0) do |hash, val|
+            
+            if results.has_key?(val.id)
+              hash[results[val.id].result.to_sym] = 0 if !hash.has_key?(results[val.id].result.to_sym)
+              hash[results[val.id].result.to_sym] += 1
+              hash[:total] += 1
+            end
+            hash
+          end
+
+          result = :pass
+          result = :skip if result_details[:skip] > 0
+          result = :fail if result_details[:fail] > 0
+          result = :fail if result_details[:cancel] > 0
+          result = :error if result_details[:error] > 0
+          result = :not_run if result_details[:total] == 0
+
+          return_data << { group: group, result_details: result_details, result: result }
+
+          return_data
+        end
+        
+        return_data
+      end
+
       def waiting_on_sequence
         self.sequence_results.first(result: 'wait')
       end
