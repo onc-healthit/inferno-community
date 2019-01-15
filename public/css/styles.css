@@ -233,7 +233,6 @@ body {
 }
 
 .sequence-table {
-  align: left;
   text-align: left;
   width: 100%;
 }
@@ -826,11 +825,16 @@ body {
 
 .guided .sequence-table {
   min-height: 100vh;
-  margin-left: 20px;
+  margin: 20px 30px;
   padding-left: 290px;
   padding-top: 170px;
   background-color: #EEE;
   padding-bottom: 80px;
+}
+
+.guided .sequence-row{
+  margin: 10px 0;
+  padding: 8px 0;
 }
 
 .guided .sequence-score {
