@@ -30,7 +30,7 @@ module Inferno
           one_filter.include? probe
         end
 
-        FHIR::DSTU2::StructureDefinition.register_vs_validator(vs_url, validate_fn)
+        FHIR::DSTU2::StructureDefinition.validates_vs(vs_url, &validate_fn)
       end
     end
 
@@ -640,6 +640,7 @@ module Inferno
             @profiles_encountered << p.url
             @profiles_encountered.uniq!
             errors = p.validate_resource(resource)
+            @test_warnings.concat(p.warnings.reject(&:empty?))
             unless errors.empty?
               errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
               @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
