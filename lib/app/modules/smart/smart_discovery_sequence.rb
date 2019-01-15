@@ -17,17 +17,28 @@ module Inferno
         metadata {
           id '01'
           optional
-          link 'TODOLINKTOSPEC'
+          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
           desc %(
-            DESCRIPTION HERE
+            The authorization endpoints accepted by a FHIR resource server can be exposed as a Well-Known Uniform Resource Identifier
           )
         }
         
-        # get well-known endpoint using LoggedRestClient
-        # make sure authorize and token are available
-        # save authorize endpoint, token endpoint, register endpoint
-        # @instance.asdfasdfasdf = 
-        # @instance.save
+        oauth_configuration_url = @instance.url.chomp('/') + '/.well-known/smart-configuration'
+        @oauth_configuration_response = LoggedRestClient.get(oauth_configuration_url)
+        assert_response_ok(@oauth_configuration_response)
+        @oauth_configuration_response_body =  JSON.parse(@oauth_configuration_response.body)
+
+        assert !@oauth_configuration_response_body.nil?, 'No authorization response body available'
+        authorize_url = @oauth_configuration_response_body['authorization_endpoint']
+        token_url = @oauth_configuration_response_body['token_endpoint']
+        capabilities = @oauth_configuration_response_body['capabilities']
+
+        assert !authorize_url.blank?, 'No authorize URI provided in response.'
+        assert !token_url.blank?, 'No token URI provided in response.'
+        assert !capabilities.nil?, 'The response did not contain capabilities as required'
+        assert capabilities.kind_of?(Array), 'The capabilities response is not an array'
+
+        @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url)
 
       end
 
