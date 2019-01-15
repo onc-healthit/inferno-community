@@ -24,22 +24,22 @@ module Inferno
         }
         
         oauth_configuration_url = @instance.url.chomp('/') + '/.well-known/smart-configuration'
-        @oauth_configuration_response = LoggedRestClient.get(oauth_configuration_url)
-        assert_response_ok(@oauth_configuration_response)
-        @oauth_configuration_response_body =  JSON.parse(@oauth_configuration_response.body)
+        oauth_configuration_response = LoggedRestClient.get(oauth_configuration_url)
+        assert_response_ok(oauth_configuration_response)
+        oauth_configuration_response_body =  JSON.parse(oauth_configuration_response.body)
 
-        assert !@oauth_configuration_response_body.nil?, 'No authorization response body available'
-        authorize_url = @oauth_configuration_response_body['authorization_endpoint']
-        token_url = @oauth_configuration_response_body['token_endpoint']
-        capabilities = @oauth_configuration_response_body['capabilities']
+        assert !oauth_configuration_response_body.nil?, 'No authorization response body available'
+        @well_known_authorize_url = oauth_configuration_response_body['authorization_endpoint']
+        @well_known_token_url = oauth_configuration_response_body['token_endpoint']
+        capabilities = oauth_configuration_response_body['capabilities']
+        register_url = oauth_configuration_response_body['registration_endpoint']
+        
+        @instance.update(oauth_authorize_endpoint: @well_known_authorize_url, oauth_token_endpoint: @well_known_token_url, oauth_register_endpoint: register_url)
 
-        assert !authorize_url.blank?, 'No authorize URI provided in response.'
-        assert !token_url.blank?, 'No token URI provided in response.'
+        assert !@well_known_authorize_url.blank?, 'No authorize URI provided in response.'
+        assert !@well_known_token_url.blank?, 'No token URI provided in response.'
         assert !capabilities.nil?, 'The response did not contain capabilities as required'
         assert capabilities.kind_of?(Array), 'The capabilities response is not an array'
-
-        @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url)
-
       end
 
       test 'Conformance Statement provides OAuth 2.0 endpoints' do
@@ -55,15 +55,16 @@ module Inferno
           )
         }
 
+        @conformance = @client.conformance_statement
         assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
         assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
-        authorize_url = oauth_metadata[:authorize_url]
-        token_url = oauth_metadata[:token_url]
-        assert !authorize_url.blank?, 'No authorize URI provided in conformance statement.'
-        assert (authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{authorize_url}'"
-        assert !token_url.blank?, 'No token URI provided in conformance statement.'
-        assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
+        @conformance_authorize_url = oauth_metadata[:authorize_url]
+        @conformance_token_url = oauth_metadata[:token_url]
+        assert !@conformance_authorize_url.blank?, 'No authorize URI provided in conformance statement.'
+        assert (@conformance_authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{@conformance_authorize_url}'"
+        assert !@conformance_token_url.blank?, 'No token URI provided in conformance statement.'
+        assert (@conformance_token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{@conformance_token_url}'"
 
         warning {
           service = []
@@ -93,7 +94,7 @@ module Inferno
           assert !manage_url.blank?,  'No user-facing authorization management workflow entry point for this FHIR server.'
         }
 
-        @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
+        @instance.update(oauth_authorize_endpoint: @conformance_authorize_url, oauth_token_endpoint: @conformance_token_url, oauth_register_endpoint: registration_url)
       end
 
       test 'OAuth Endpoints must be either in conformance statement or well known endpoint' do
@@ -108,11 +109,11 @@ module Inferno
           )
         }
 
-        # the two above tests are optional
-        # we need to have it be at least one
-        # so see if what we saved at the instance.oauth_authorize_endpoitn and oauth_token_endpoint is not empty. etc.
-        # fail if empty assert !@instance.adsfasdfasdf.nil?
-        
+        assert !@well_known_authorize_url.blank? || !@conformance_authorize_url.blank?, 'Neither the well-known endpoint nor the conformance statement contained an authorization url'
+        assert @well_known_authorize_url == @conformance_authorize_url, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
+      
+        assert !@well_known_token_url.blank? || !@conformance_token_url.blank?, 'Neither the well-known endpoint nor the conformance statement contained a token url'
+        assert @well_known_token_url == @conformance_token_url, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
       end
 
 
