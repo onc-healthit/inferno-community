@@ -1,7 +1,7 @@
 name: argonaut
 description: this is a description
 fhir_version: dstu2
-default_test_set: guided
+default_test_set: developer
 test_sets:
   developer:
     view: default
