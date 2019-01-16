@@ -7,7 +7,7 @@ module Inferno
       # Home serves the main web application.
       class Home < Endpoint
         # Set the url prefix these routes will map to
-        set :prefix, '/inferno'
+        set :prefix, "/#{base_path}"
 
         # Return the index page of the application
         get '/?' do
@@ -22,7 +22,7 @@ module Inferno
         # Resume oauth2 flow
         # This must be early so it doesn't get picked up by the other routes
         get '/oauth2/:key/:endpoint/?' do
-          
+
           instance = nil
           if params[:endpoint] == 'redirect' && !params[:state].nil?
             instance = Inferno::Models::TestingInstance.first(state: params[:state])
@@ -38,7 +38,7 @@ module Inferno
           halt 500, 'Error: No Could not find a running test that match this set of critera' unless !instance.nil? &&
                           instance.client_endpoint_key == params[:key] &&
                           %w[launch redirect].include?(params[:endpoint])
-          
+
 
           sequence_result = instance.waiting_on_sequence
           test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
@@ -48,7 +48,7 @@ module Inferno
           else
             test_case = test_set.test_case_by_id(sequence_result.test_case_id)
             test_group = test_case.test_group
-            
+
             client = FHIR::Client.new(instance.url)
             client.use_dstu2 if instance.fhir_version == 'dstu2'
             client.default_json
@@ -102,7 +102,7 @@ module Inferno
 
               until next_test_case.nil?
                 test_case = test_set.test_case_by_id(next_test_case)
-                
+
                 next_test_case = submitted_test_cases.shift
                 if test_case.nil?
                   finished = next_test_case.nil?
@@ -133,12 +133,12 @@ module Inferno
                   finished = true
                 end
               end
-              
+
               query_target = "#{params[:test_case]}"
               unless test_group.nil?
-                query_target = "#{test_group.id}/#{test_case.id}" 
+                query_target = "#{test_group.id}/#{test_case.id}"
               end
-              
+
               out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{query_target}") if finished
 
             end
@@ -177,10 +177,10 @@ module Inferno
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module)
 
-                                                        
-          
+
+
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
-          
+
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
               settings.autorun_capability}"
@@ -246,7 +246,7 @@ module Inferno
 
           query_target = sequence_result.test_case_id
           unless test_group.nil?
-            query_target = "#{test_group.id}/#{sequence_result.test_case_id}" 
+            query_target = "#{test_group.id}/#{sequence_result.test_case_id}"
           end
 
           redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}"
@@ -297,7 +297,7 @@ module Inferno
 
             until next_test_case.nil?
               test_case = test_set.test_case_by_id(next_test_case)
-              
+
               next_test_case = submitted_test_cases.shift
               if test_case.nil?
                 finished = next_test_case.nil?
@@ -335,15 +335,15 @@ module Inferno
 
             query_target = params[:test_case]
             unless test_group.nil?
-              query_target = "#{test_group.id}/#{test_case.id}" 
+              query_target = "#{test_group.id}/#{test_case.id}"
             end
-            
+
             out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}") if finished
           end
         end
 
 
-        
+
       end
     end
   end
