@@ -90,10 +90,8 @@ bundle exec rake inferno:tests_to_csv
 
 Arguments can be provided to the task in order to export a specific set of tests or to specify the output file.
 
-The currently supported groups of tests are `all`, `active` or `inactive`.  For example:
-
 ```sh
-bundle exec rake inferno:tests_to_csv[argonaut,all,all_tests.csv]
+bundle exec rake inferno:tests_to_csv[argonaut,all_tests.csv]
 ```
 
 To just choose the module and use the default groups and filename:

@@ -1,58 +1,25 @@
 module Inferno
   module Sequence
-    class EHRLaunchSequence < SequenceBase
+    class StandaloneLaunchSequence < SequenceBase
 
-      title 'EHR Launch Sequence'
+      title 'Standalone Launch Sequence'
+      description 'Demonstrate the SMART Standalone Launch Sequence.'
+      test_id_prefix 'SLS'
 
-      description 'Demonstrate the SMART EHR Launch Sequence.'
-
-      test_id_prefix 'ELS'
-
-      requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes,:initiate_login_uri, :redirect_uris
-
+      requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :redirect_uris
       defines :token, :id_token, :refresh_token, :patient_id
 
-      test 'EHR server redirects client browser to app launch URI' do
+      preconditions 'Client must be registered' do
+        !@instance.client_id.nil?
+      end
+
+      test 'OAuth 2.0 authorize endpoint secured by transport layer security' do
 
         metadata {
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-            Client browser sent from EHR server to launch URI of client app as described in SMART EHR Launch Sequence.
-          )
-        }
-
-        wait_at_endpoint 'launch'
-      end
-
-      test 'EHR provides iss and launch parameter to the launch URI via the client browser querystring' do
-
-        metadata {
-          id '02'
-          link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
-            The EHR is required to provide a reference to the EHR FHIR endpoint in the iss queystring parameter, and an
-            opaque identifier for the launch in the launch querystring parameter.
-          )
-        }
-
-        assert !@params['iss'].nil?, 'Expecting "iss" as a querystring parameter.'
-        assert !@params['launch'].nil?, 'Expecting "launch" as a querystring parameter.'
-
-        warning {
-          assert @params['iss'] == @instance.url, "'iss' param [#{@params['iss']}] does not match url of testing instance [#{@instance.url}]"
-        }
-
-      end
-
-      test 'OAuth authorize endpoint secured by transport layer security' do
-
-        metadata {
-          id '03'
-          link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
-            Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
-            opaque identifier for the launch in the launch querystring parameter.
+            The client registration endpoint MUST be protected by a transport layer security.
           )
         }
 
@@ -61,44 +28,50 @@ module Inferno
         warning {
           assert_deny_previous_tls @instance.oauth_authorize_endpoint
         }
+
       end
 
       test 'OAuth server redirects client browser to app redirect URI' do
 
         metadata {
-          id '04'
+          id '02'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-           Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.
+            Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.
           )
         }
 
-        # construct querystring to oauth and redirect after
         @instance.state = SecureRandom.uuid
+        @instance.save!
 
         oauth2_params = {
             'response_type' => 'code',
             'client_id' => @instance.client_id,
             'redirect_uri' => @instance.redirect_uris,
             'scope' => @instance.scopes,
-            'launch' => @params['launch'],
             'state' => @instance.state,
-            'aud' => @params['iss']
+            'aud' => @instance.url
         }
 
-        oauth2_auth_query = @instance.oauth_authorize_endpoint + "?"
+        oauth2_auth_query = @instance.oauth_authorize_endpoint
+
+        if @instance.oauth_authorize_endpoint.include? '?'
+          oauth2_auth_query += "&"
+        else
+          oauth2_auth_query += "?"
+        end
+
         oauth2_params.each do |key,value|
-          oauth2_auth_query += "#{key}=#{CGI.escape(value)}&" unless value.nil? || key.nil?
+          oauth2_auth_query += "#{key}=#{CGI.escape(value)}&"
         end
 
         redirect oauth2_auth_query[0..-2], 'redirect'
       end
 
-
       test 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI' do
 
         metadata {
-          id '05'
+          id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             Code and state are required querystring parameters. State must be the exact value received from the client.
@@ -113,10 +86,10 @@ module Inferno
       test 'OAuth token exchange endpoint secured by transport layer security' do
 
         metadata {
-          id '06'
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-            Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
+            Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
           )
         }
 
@@ -130,12 +103,15 @@ module Inferno
       test 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID' do
 
         metadata {
-          id '07'
+          id '05'
           link 'https://tools.ietf.org/html/rfc6749'
           desc %(
             If the request failed verification or is invalid, the authorization server returns an error response.
           )
         }
+
+        headers = {'Content-Type' => 'application/x-www-form-urlencoded' }
+
         oauth2_params = {
             'grant_type' => 'authorization_code',
             'code' => 'INVALID_CODE',
@@ -143,7 +119,7 @@ module Inferno
             'client_id' => @instance.client_id
         }
 
-        token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+        token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
         assert_response_bad_or_unauthorized token_response
 
         oauth2_params = {
@@ -153,7 +129,7 @@ module Inferno
             'client_id' => 'INVALID_CLIENT_ID'
         }
 
-        token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+        token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
         assert_response_bad_or_unauthorized token_response
 
       end
@@ -161,12 +137,11 @@ module Inferno
       test 'OAuth token exchange request succeeds when supplied correct information' do
 
         metadata {
-          id '08'
+          id '06'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
-            After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the
-            EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded,
-            as described in section [4.1.3 of RFC6749](https://tools.ietf.org/html/rfc6749#section-4.1.3).          )
+            After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749.
+          )
         }
 
         oauth2_params = {
@@ -175,7 +150,6 @@ module Inferno
             'redirect_uri' => @instance.redirect_uris,
         }
         oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
-
         if @instance.confidential_client
           oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id +
                                                                                 ':' +
@@ -191,7 +165,7 @@ module Inferno
       test 'Data returned from token exchange contains required information encoded in JSON' do
 
         metadata {
-          id '09'
+          id '07'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The EHR authorization server shall return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
@@ -251,7 +225,7 @@ module Inferno
       test 'Response includes correct HTTP Cache-Control and Pragma headers' do
 
         metadata {
-          id '10'
+          id '08'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
@@ -267,5 +241,6 @@ module Inferno
       end
 
     end
+
   end
 end

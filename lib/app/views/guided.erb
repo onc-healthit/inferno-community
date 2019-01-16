@@ -1,15 +1,16 @@
+
 <div class="container-fluid server-info sticky-top" role='main'>
   <div class="row">
     <div class="col">
       <div class="container row row-no-padding align-items-center">
 
-        <div class="col-9">
+        <div class="col-7">
           <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo'></a>
           <span class="server-name">
             <%=instance.url%>
           </span>
         </div>
-        <div class="col-3 server-actions" style='text-align:right;'>
+        <div class="col-5 server-actions" style='text-align:right;'>
 
           <!--- not yet implemented -->
           <div style="display:none" data-toggle="tooltip" title="Print Results">
@@ -26,6 +27,21 @@
             <span id="save-test-button-text">Save</span>
           </button>
 
+          <% if instance.module.test_sets.length > 1 %>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <%= test_set.id.to_s.gsub(/_/, ' ').titlecase %>
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <% instance.module.test_sets.each do |key, value| %>
+                  <% if key.to_s != test_set.id.to_s %>
+                    <a class="dropdown-item" href="../<%=key.to_s%>/"><%= key.to_s.gsub(/_/, ' ').titlecase %></a>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
           <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#helpModal">
             <strong style='line-height:1em;font-size:1.3em'>?</strong>
             <span id="help-button-text">Help</span>
@@ -37,7 +53,7 @@
   </div>
 </div>
 
-<div class="container">
+<div class="container guided">
   <div class="main main-details" role='region'>
 
     <% unless locals[:error_code].nil? %>
@@ -51,36 +67,84 @@
         <% end %>
       </div>
     <% end %>
-    <div class="sequence-table">
-      <% instance.module.groups.each do |group| %>
-        <div class="sequence-group">
-          <div class="sequence-header">
-            <div class='row align-items-center'>
-              <div class='col'>
-                <% if group.sequences.length > 1 %>
-                  <a class="sequence-anchor" id="<%=group.sequences.map {|seq| seq.sequence_name}%>" name="<%=group.sequences.map {|seq| seq.sequence_name}.join(',')%>"></a>
+    <div class="group-nav">
+      <ul class="nav nav-pills">
+      <li class="nav-item" style='margin-bottom: 15px;'><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.name %> Overview</a></li>
+      <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
+        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
+      <%end%>
+      <li class="nav-item" style='margin-top: 15px;'><a class="nav-link" href="#group-report" data-toggle="tab">Test Report</a></li>
+      </ul>
+    </div>
 
-                <% end %>
+    <div class="row">
+      <div class="col-12 sequence-table">
+
+        <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
+          <div class="sequence-header">
+            <div class="row align-items-center">
+              <div class="col">
+                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
                 <h1>
-                  <%= group.name %>
-                  <% if group.run_all %>
-                    <button data-group="<%= group.name %>" class='sequence-group-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
-                      <span class="oi oi-media-play"></span> Run All
-                    </button>
-                  <% end %>
+                  <%= instance.module.name %>
                 </h1>
+                <div class="sequence-overview">
+                  <%= markdown_to_html(instance.module.description) %>
+                </div>
               </div>
             </div>
           </div>
-          <% group.sequences.each do |sequence_class| %>
-            <% unless sequence_class.inactive? %>
-              <%= erb(:sequence,{},{instance: instance, sequence_results: sequence_results, sequence_class: sequence_class}) %>
-            <% end %>
-          <% end %>
         </div>
-      <% end %>
+        
+        <% test_set.groups.each do |group| %>
+          <div class="sequence-group sequence-action-boundary tab-pane" data-group="<%= group.name %>" id="group-<%=group.id%>">
+            <div class="sequence-header">
+              <div class='row align-items-center'>
+                <div class='col'>
+                  <% if group.test_cases.length > 1 %>
+                    
+                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
 
-      <%# Removed total score for community edition. %>
+                  <% end %>
+                  <h1>
+                    <%= group.name %>
+                      <button class='sequence-button btn btn-info btn-sm' style='cursor:pointer; font-size: 1.0rem;margin-left:10px;' data-group-id='<%=group.id%>'>
+                        <span class="oi oi-media-play"></span> Begin Tests
+                      </button>
+                  </h1>
+                  <div class="sequence-overview">
+                    <%= markdown_to_html(group.overview) %>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+            <% group.test_cases.each do |tc| %>
+              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false}) %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="sequence-group sequence-action-boundary tab-pane" id="group-report">
+          <div class="sequence-header">
+            <div class="row align-items-center">
+              <div class="col">
+                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
+                <h1>
+                  <%= instance.module.name %> Test Report (not yet integrated)
+                </h1>
+                <button class="btn print-button" onclick="alert('print not yet enabled.')'">Print</button>
+                <div class="report">
+                
+              
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 </div>
@@ -98,19 +162,27 @@
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
+        <input type="hidden" name="test_case" value="" />
         <input type="hidden" name="required_fields" value="" />
         <div class="modal-body">
+          <% test_set.groups.each do |group| %>
+            <% unless group.input_instructions.nil? %>
+              <div class="input-instructions" id="input-instructions-<%=group.id%>">
+                <%= markdown_to_html(group.input_instructions) %>
+              </div>
+            <% end %>
+          <% end %>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
                                           instance: instance,
                                           label: 'Launch URI',
-                                          value: instance.initiate_login_uri || request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/launch',
+                                          value: instance.initiate_login_uri || request.base_url + base_path + '/oauth2/' +  instance.client_endpoint_key + '/launch',
                                           readonly: true })%>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
                                           instance: instance,
                                           label: 'Redirect URI',
-                                          value: instance.redirect_uris || request.base_url + base_path + '/' + instance.id + '/' + instance.client_endpoint_key + '/redirect',
+                                          value: instance.redirect_uris || request.base_url + base_path + '/oauth2/' +  instance.client_endpoint_key + '/redirect',
                                           readonly: true })%>
 
 
@@ -141,7 +213,7 @@
 
           <%# SPECIAL CASE: CLIENT SECRET %>
           <div class="form-group"
-               data-requiredby="<%= instance.module.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
+               data-requiredby="<%= test_set.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
                data-prerequisite="confidential_client"
                id="is_confidential"
                >
@@ -201,6 +273,18 @@
                                           value: instance.patient_id,
                                           })%>
 
+          <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_1,
+                                          label: 'First Unique Patient ID',
+                                          instance: instance,
+                                          value: instance.extra_patient_id_1,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_2,
+                                          label: 'Second Unique Patient ID',
+                                          instance: instance,
+                                          value: instance.extra_patient_id_2,
+                                          })%>
+
           <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
                                           label: 'OAuth 2.0 ID Token',
                                           instance: instance,
@@ -239,7 +323,7 @@
           <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
           <div class="modal-footer">
             <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
-            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
           </div>
         </div>
       </div>
@@ -278,136 +362,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="TokenIntrospectionModal" tabindex="-1" role="dialog" aria-labelledby="TokenIntrospectionModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="TokenIntrospectionModalLabel">Introspection Launch</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="TokenIntrospection">
-        <div class="modal-body">
-          <p>
-            Enter the introspection data
-          </p>
-          <div class="form-group">
-            <label for="access_token">Access Token</label>
-            <input type="text" class="form-control" name="access_token" id="access_token" value="<%= instance.token %>" required>
-          </div>
-          <div class="form-group">
-            <label for="access_token">Refresh Token</label>
-            <input type="text" class="form-control" name="refresh_token" id="refresh_token" value="<%= instance.refresh_token %>">
-          </div>
-          <div class="form-group">
-            <label for="oauth_introspection_endpoint">Introspection URI</label>
-            <input type="text" class="form-control" name="oauth_introspection_endpoint" id="oauth_introspection_endpoint" value="<%= instance.oauth_introspection_endpoint %>" required>
-          </div>
-          <div class="form-group">
-            <label for="client_name">Resource ID (defaults to client ID but may be different)</label>
-            <input type="text" class="form-control" name="resource_id" id="resource_id" value="<%= !instance.resource_id.nil? ? instance.resource_id : instance.client_id %>" required>
-          </div>
-          <div class="form-group">
-            <label for="client_name">Resource Secret (defaults to client secret but may be different)</label>
-            <input type="text" class="form-control" name="resource_secret" id="resource_secret" value="<%= instance.resource_secret %>" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Run Introspection Test</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="ArgonautDataQueryModal" tabindex="-1" role="dialog" aria-labelledby="ArgonautDataQueryModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="ArgonautDataQueryModalLabel">Argonaut Query Server</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="ArgonautDataQuery">
-        <div class="modal-body">
-          <p>
-          This sequence will perform queries in accordance with the Argonaut Data Query Server Guide.
-          </p>
-          <div class="form-group">
-            <label for="registration_url">Supported Resources</label>
-            <div class="form-row">
-              <% instance.supported_resources.in_groups(3) do |group| %>
-                <div class="col">
-                  <% group.each do |resource| %>
-                    <% next if resource.nil? %>
-                    <div class="form-check">
-                      <input class="form-check-input"
-                             type="checkbox"
-                             id="resource_supported_<%=resource.resource_type %>"
-                             name="resource_supported_<%=resource.resource_type %>"
-                             <% if resource.supported %>checked<%end%>
-                             disabled>
-                      <label class="form-check-label" for="resource_supported_<%=resource.resource_type %>">
-                        <%= resource.resource_type %>
-                      </label>
-                    </div>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="registration_url">Patient ID</label>
-            <input type="text" class="form-control" name="patient_id" id="patient_id" value="<%= instance.patient_id %>" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Run Tests</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="ArgonautProfilesModal" tabindex="-1" role="dialog" aria-labelledby="ArgonautProfilesModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="ArgonautProfilesModalLabel">Argonaut Data Profiles</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="POST" action="ArgonautProfiles">
-        <div class="modal-body">
-          <p>
-          This sequence will check the following resources returned by the Argonaut Query Sequence against
-          the relevant Argonaut profile.
-          </p>
-          <% if instance.resource_references.count > 0 %>
-            <!-- <h4>Authorized Resources</h4> -->
-            <%instance.resource_references.map(&:resource_type).uniq.each do |resource_type| %>
-              <div class="form-group row">
-                <label class="col-sm-3 col-form-label"><%=resource_type %></label>
-                <div class="col-sm-9">
-                  <textarea class="form-control" rows=3 readonly><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
-                </div>
-              </div>
-            <% end %>
-          <% end %>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Run Tests</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -436,9 +390,6 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Tests Running</h5>
-        <%# <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button> %>
       </div>
       <form method="POST" action="TokenIntrospection">
         <div class="modal-body">
@@ -496,3 +447,5 @@
     </div>
   </div>
 </div>
+
+<div class="guided-background-fill"></div>

@@ -62,55 +62,28 @@ $(function(){
      }
   });
 
-  $('.sequence-action button').click(function() {
-    var sequence = $(this).data('sequence');
-    let sequence_title = $(this).data('sequence-title');
-    $('#PrerequisitesModalTitle').html(sequence_title)
-    var requirements = []
-    $('#PrerequisitesModal .form-group').each(function(){
-      var requiredby = $(this).data('requiredby');
-      var prerequisite = $(this).data('prerequisite');
-      var show = false;
-      if(requiredby){
-        requiredby.split(',').forEach(function(item){
-          if(item === sequence){
-            show = true;
-            requirements.push(prerequisite)
-          }
-        })
-      }
-      if(show){
-        $(this).show()
-      } else {
-        $(this).hide();
-      }
-    });
+  $('.sequence-button').click(function(){
+    
+    var sequences = [],
+        test_cases = [],
+        requirements = [],
+        popupTitle = "";
 
-    $('#PrerequisitesModal input[name=sequence]').val(sequence);
-    $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
+    popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
-    // Confidential client special case
-    if($('#confidential_client_on')[0].checked){
-       $('.client-secret-container').show();
-    } else {
-       $('.client-secret-container').hide();
+    $('.input-instructions').hide();
+    if($(this).data('groupId')){
+      $('#input-instructions-' + $(this).data('groupId')).show();
     }
 
-    if(requirements.length === 0){
-      $('#PrerequisitesModal form').submit();
-    } else {
-      $('#PrerequisitesModal').modal('show');
-    }
-
-  });
-
-  $('.sequence-group-button').click(function(){
-    var group = $(this).data('group'),
-        sequences = [],
-        requirements = [];
-
-    $(this).closest('.sequence-group').find('.sequence-button').each(function(){
+    $(this).closest('.sequence-action-boundary').find('.test-case-data').each(function(){
       sequences.push($(this).data('sequence'));
+      test_cases.push($(this).data('testCase'));
+
+      if(!popupTitle){
+        popupTitle = $(this).data('testCaseTitle');
+      }
+
     });
 
     // FIXME: CONDENSE WITH THE INDIVIDUAL TEST RUN PORTION
@@ -119,6 +92,7 @@ $(function(){
       var requiredby = $(this).data('requiredby');
       var definedby = $(this).data('definedby');
       var prerequisite = $(this).data('prerequisite');
+
       var definedList = [];
       var show = false;
       if(definedby){
@@ -128,7 +102,6 @@ $(function(){
       }
       if(requiredby){
         requiredby.split(',').forEach(function(item){
-          console.log(definedList);
           if(sequences.includes(item)){
             // this field is required by one of the sequences I'm running
             // is it also defined by one of the sequences?
@@ -155,7 +128,7 @@ $(function(){
     });
 
     $('#PrerequisitesModal input[name=sequence]').val(sequences.join(','));
-    $('#PrerequisitesModal input[name=group]').val(group);
+    $('#PrerequisitesModal input[name=test_case]').val(test_cases.join(','));
     $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
 
     // Confidential client special case
@@ -170,7 +143,10 @@ $(function(){
     } else {
       $('#PrerequisitesModal').modal('show');
     }
-    $('#PrerequisitesModalTitle').html(group)
+
+    if(popupTitle){
+      $('#PrerequisitesModalTitle').html(popupTitle)
+    }
   })
 
 
@@ -217,11 +193,18 @@ $(function(){
   })
 
   if(window.location.hash.length > 0){
-    window.location.hash.split('#')[1].split(',').forEach(function(seq){
-      var sequence = $('#' + seq);
-      var details = $('#' + seq + '-details');
+    let hashParts = window.location.hash.split('#')[1].split('/');
+    let testCasePart = hashParts[0];
+
+    if(hashParts.length > 1) {
+      testCasePart = hashParts[1];
+      $('#group-link-' + hashParts[0]).tab('show');
+    }
+    testCasePart.split(',').forEach(function(tc){
+      var testCase = $('#' + tc);
+      var details = $('#' + tc + '-details');
       details.collapse('show')
-      sequence.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
+      testCase.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
     })
   }
 

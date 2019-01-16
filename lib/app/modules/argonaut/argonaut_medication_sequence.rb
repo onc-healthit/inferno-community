@@ -10,8 +10,6 @@ module Inferno
 
       test_id_prefix 'ARMP'
 
-      inactive
-
       requires :token, :patient_id
 
       @resources_found = false

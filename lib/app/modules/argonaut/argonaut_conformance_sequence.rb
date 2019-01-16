@@ -92,63 +92,10 @@ module Inferno
 
       end
 
-      test 'Conformance Statement provides OAuth 2.0 endpoints' do
-
-        metadata {
-          id '04'
-          link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
-          desc %(
-
-           If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
-
-          )
-        }
-
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
-        oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
-        assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
-        authorize_url = oauth_metadata[:authorize_url]
-        token_url = oauth_metadata[:token_url]
-        assert !authorize_url.blank?, 'No authorize URI provided in conformance statement.'
-        assert (authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{authorize_url}'"
-        assert !token_url.blank?, 'No token URI provided in conformance statement.'
-        assert (token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{token_url}'"
-
-        warning {
-          service = []
-          @conformance.try(:rest)&.each do |endpoint|
-              endpoint.try(:security).try(:service)&.each do |sec_service|
-                sec_service.try(:coding)&.each do |coding|
-                  service << coding.code
-                end
-              end
-            end
-
-          assert !service.empty?, 'No security services listed. Conformance.rest.security.service should be SMART-on-FHIR.'
-          assert service.any? {|any_service| any_service == 'SMART-on-FHIR'}, "Conformance.rest.security.service set to #{service.map{ |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
-        }
-
-        registration_url = nil
-
-        warning {
-          security_info = @conformance.rest.first.security.extension.find{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
-          registration_url = security_info.extension.find{|x| x.url == 'register'}
-          registration_url = registration_url.value if registration_url
-          assert !registration_url.blank?,  'No dynamic registration endpoint in conformance.'
-          assert (registration_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid registration url: '#{registration_url}'"
-
-          manage_url = security_info.extension.find{|x| x.url == 'manage'}
-          manage_url = manage_url.value if manage_url
-          assert !manage_url.blank?,  'No user-facing authorization management workflow entry point for this FHIR server.'
-        }
-
-        @instance.update(oauth_authorize_endpoint: authorize_url, oauth_token_endpoint: token_url, oauth_register_endpoint: registration_url)
-      end
-
       test 'Conformance Statement describes SMART on FHIR core capabilities' do
 
         metadata {
-          id '05'
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
           optional
           desc %(
@@ -185,7 +132,7 @@ module Inferno
       test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do
 
         metadata {
-          id '06'
+          id '05'
           link 'https://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
            The Argonaut Data Query Implementation Guide states:
