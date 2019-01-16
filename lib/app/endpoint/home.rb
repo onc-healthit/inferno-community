@@ -43,10 +43,13 @@ module Inferno
           sequence_result = instance.waiting_on_sequence
           test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
 
+          binding.pry
+
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
           else
             test_case = test_set.test_case_by_id(sequence_result.test_case_id)
+            test_group = test_case.test_group
             
             client = FHIR::Client.new(instance.url)
             client.use_dstu2 if instance.fhir_version == 'dstu2'
@@ -84,6 +87,8 @@ module Inferno
 
               submitted_test_cases = sequence_result.next_test_cases.split(',')
 
+              binding.pry
+
               next_test_case = submitted_test_cases.shift
               finished = next_test_case.nil?
               if sequence_result.redirect_to_url
@@ -101,6 +106,7 @@ module Inferno
 
               until next_test_case.nil?
                 test_case = test_set.test_case_by_id(next_test_case)
+                binding.pry
                 
                 next_test_case = submitted_test_cases.shift
                 if test_case.nil?
@@ -120,7 +126,7 @@ module Inferno
                 sequence_result.test_set_id = test_set.id
                 sequence_result.test_case_id = test_case.id
 
-                sequence_result.next_test_cases = submitted_test_cases.join(',')
+                sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
 
                 sequence_result.save!
                 if sequence_result.redirect_to_url
@@ -132,15 +138,14 @@ module Inferno
                   finished = true
                 end
               end
+              
+              query_target = "#{params[:test_case]}"
+              unless test_group.nil?
+                query_target = "#{test_group.id}/#{test_case.id}" 
+              end
+              
+              out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{query_target}") if finished
 
-              # todo: this doesn't open properly
-              out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{params[:test_case]}") if finished
-
-              #out << if sequence_result.redirect_to_url
-              #         js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
-               #      else
-              #         js_redirect("#{BASE_PATH}/#{instance.id}/#{test_set.id}/##{sequence_result.name}")
-               #      end
             end
           end
         end
@@ -179,7 +184,7 @@ module Inferno
 
                                                         
           
-           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
+          @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
           
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
@@ -208,29 +213,29 @@ module Inferno
 
         # Cancels the currently running test
         get '/:id/:test_set/sequence_result/:sequence_result_id/cancel' do
-          @sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
-          halt 404 if @sequence_result.testing_instance.id != params[:id]
-          test_set = @sequence_result.testing_instance.module.test_sets[params[:test_set].to_sym]
+          sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
+          halt 404 if sequence_result.testing_instance.id != params[:id]
+          test_set = sequence_result.testing_instance.module.test_sets[params[:test_set].to_sym]
           halt 404 if test_set.nil?
 
-          @sequence_result.result = 'cancel'
+          sequence_result.result = 'cancel'
           cancel_message = 'Test cancelled by user.'
 
-          unless @sequence_result.test_results.empty?
-            last_result = @sequence_result.test_results.last
+          unless sequence_result.test_results.empty?
+            last_result = sequence_result.test_results.last
             last_result.result = 'cancel'
             last_result.message = cancel_message
           end
 
-          sequence = @sequence_result.testing_instance.module.sequences.find do |x|
-            x.sequence_name == @sequence_result.name
+          sequence = sequence_result.testing_instance.module.sequences.find do |x|
+            x.sequence_name == sequence_result.name
           end
 
-          current_test_count = @sequence_result.test_results.length
+          current_test_count = sequence_result.test_results.length
 
           sequence.tests.each_with_index do |test, index|
             next if index < current_test_count
-            @sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test[:test_id],
+            sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test[:test_id],
                                                                              name: test[:name],
                                                                              result: 'cancel',
                                                                              url: test[:url],
@@ -239,9 +244,17 @@ module Inferno
                                                                              message: cancel_message)
           end
 
-          @sequence_result.save!
+          sequence_result.save!
 
-          redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/##{@sequence_result.test_case_id}"
+          test_group = nil
+          test_group = test_set.test_case_by_id(sequence_result.test_case_id).test_group
+
+          query_target = sequence_result.test_case_id
+          unless test_group.nil?
+            query_target = "#{test_group.id}/#{sequence_result.test_case_id}" 
+          end
+
+          redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}"
         end
 
         get '/:id/:test_set/sequence_result?' do
@@ -266,6 +279,8 @@ module Inferno
           client.use_dstu2 if instance.fhir_version == 'dstu2'
           client.default_json
           submitted_test_cases = params[:test_case].split(',')
+          test_group = nil
+          test_group = test_set.test_case_by_id(submitted_test_cases.first).test_group
 
           timer_count = 0
           stayalive_timer_seconds = 20
@@ -306,20 +321,29 @@ module Inferno
               sequence_result.test_set_id = test_set.id
               sequence_result.test_case_id = test_case.id
 
-              sequence_result.next_test_cases = submitted_test_cases.join(',')
+              sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
 
               sequence_result.save!
               if sequence_result.redirect_to_url
                 out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
                 next_test_case = nil
                 finished = false
+              elsif sequence_result.wait_at_endpoint
+                next_test_case = nil
+                finished = true
               elsif !submitted_test_cases.empty?
                 out << js_next_sequence(sequence_result.next_test_cases)
               else
                 finished = true
               end
             end
-            out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{params[:test_case]}") if finished
+
+            query_target = params[:test_case]
+            unless test_group.nil?
+              query_target = "#{test_group.id}/#{test_case.id}" 
+            end
+            
+            out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}") if finished
           end
         end
 

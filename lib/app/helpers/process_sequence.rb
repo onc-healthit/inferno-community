@@ -16,9 +16,12 @@ module Inferno
         end
 
         def js_update_result(sequence, result, count, total)
+
+          #{request.base_url}#{base_path}/#{instance.id}/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel
             cancelBtn = ""
-            cancelBtn = "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>" if(sequence.sequence_result)
-          "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');$('#testsRunningModal .modal-footer').html('#{cancelBtn}');</script>"
+          #cancelBtn = "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>" if(sequence.sequence_result)
+          cancelBtn = "<a href=\"#{base_path}/#{sequence_result.test_instance.id}/#{sequence_result.test_set_id}/sequence_result/#{sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>" if(sequence.sequence_result)
+          <script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');$('#testsRunningModal .modal-footer').html('#{cancelBtn}');</script>"
         end
 
         def js_redirect(location)

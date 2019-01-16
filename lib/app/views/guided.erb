@@ -71,7 +71,7 @@
       <ul class="nav nav-pills">
       <li class="nav-item"><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.name %></a></li>
       <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
-        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
+        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
       <%end%>
       </ul>
     </div>

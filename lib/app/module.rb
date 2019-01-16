@@ -86,14 +86,14 @@ module Inferno
 
     class TestCase
       attr_accessor :id
-      attr_accessor :group
+      attr_accessor :test_group
       attr_accessor :sequence
       attr_accessor :parameters
   
-      def initialize(id, test_case, sequence, parameters)
+      def initialize(id, test_group, sequence, parameters)
         @id = id
         @sequence = sequence
-        @test_case = test_case
+        @test_group = test_group
         @parameters = parameters
       end
   

@@ -97,7 +97,6 @@ $(function(){
       }
       if(requiredby){
         requiredby.split(',').forEach(function(item){
-          console.log(definedList);
           if(sequences.includes(item)){
             // this field is required by one of the sequences I'm running
             // is it also defined by one of the sequences?
@@ -189,7 +188,14 @@ $(function(){
   })
 
   if(window.location.hash.length > 0){
-    window.location.hash.split('#')[1].split(',').forEach(function(tc){
+    let hashParts = window.location.hash.split('#')[1].split('/');
+    let testCasePart = hashParts[0];
+
+    if(hashParts.length > 1) {
+      testCasePart = hashParts[1];
+      $('#group-link-' + hashParts[0]).tab('show');
+    }
+    testCasePart.split(',').forEach(function(tc){
       var testCase = $('#' + tc);
       var details = $('#' + tc + '-details');
       details.collapse('show')
