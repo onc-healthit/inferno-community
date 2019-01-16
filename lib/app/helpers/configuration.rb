@@ -25,6 +25,10 @@ module Inferno
           settings.app_name
         end
 
+        def developer_preview
+          settings.developer_preview
+        end
+
         def valid_json?(json)
           JSON.parse(json)
           return true

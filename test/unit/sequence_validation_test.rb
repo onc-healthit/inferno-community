@@ -40,10 +40,12 @@ class SequenceValidationTest < MiniTest::Test
     instance = get_test_instance
     instance.selected_module = 'uscdi'
     my_module = instance.module
-    my_module.groups.each do |group|
-      assert group.sequences.uniq.length == group.sequences.length, "There are duplicate sequences in the selected module: #{instance.selected_module}"
-      group.sequences.each do |sequence|
-        assert sequence.ancestors.include?(Inferno::Sequence::SequenceBase), "#{sequence} should be a subclass of SequenceBase"
+    my_module.test_sets.each do |key, test_set|
+      test_set.groups.each do |group|
+        assert group.test_cases.uniq.length == group.test_cases.length, "There are duplicate sequences in the selected module: #{instance.selected_module}"
+        group.test_cases.each do |test_case|
+          assert test_case.sequence.ancestors.include?(Inferno::Sequence::SequenceBase), "#{test_case.sequence} should be a subclass of SequenceBase"
+        end
       end
     end
   end
