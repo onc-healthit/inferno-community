@@ -69,10 +69,11 @@
     <% end %>
     <div class="group-nav">
       <ul class="nav nav-pills">
-      <li class="nav-item"><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.name %></a></li>
+      <li class="nav-item" style='margin-bottom: 15px;'><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.name %> Overview</a></li>
       <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
         <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
       <%end%>
+      <li class="nav-item" style='margin-top: 15px;'><a class="nav-link" href="#group-report" data-toggle="tab">Test Report</a></li>
       </ul>
     </div>
 
@@ -83,18 +84,15 @@
           <div class="sequence-header">
             <div class="row align-items-center">
               <div class="col">
-                
                   <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
-
-                
                 <h1>
                   <%= instance.module.name %>
                 </h1>
+                <div class="sequence-overview">
+                  <%= markdown_to_html(instance.module.description) %>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="sequence-overview">
-            <%= markdown_to_html(instance.module.description) %>
           </div>
         </div>
         
@@ -110,11 +108,15 @@
                   <% end %>
                   <h1>
                     <%= group.name %>
-                      <button class='sequence-button btn' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
-                        <span class="oi oi-media-play"></span> Start
+                      <button class='sequence-button btn btn-info btn-sm' style='cursor:pointer; font-size: 1.0rem;margin-left:10px;' data-group-id='<%=group.id%>'>
+                        <span class="oi oi-media-play"></span> Begin Tests
                       </button>
                   </h1>
+                  <div class="sequence-overview">
+                    <%= markdown_to_html(group.overview) %>
+                  </div>
                 </div>
+                
               </div>
             </div>
             <% group.test_cases.each do |tc| %>
@@ -122,6 +124,25 @@
             <% end %>
           </div>
         <% end %>
+
+        <div class="sequence-group sequence-action-boundary tab-pane" id="group-report">
+          <div class="sequence-header">
+            <div class="row align-items-center">
+              <div class="col">
+                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
+                <h1>
+                  <%= instance.module.name %> Test Report (not yet integrated)
+                </h1>
+                <button class="btn print-button" onclick="alert('print not yet enabled.')'">Print</button>
+                <div class="report">
+                
+              
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -144,6 +165,13 @@
         <input type="hidden" name="test_case" value="" />
         <input type="hidden" name="required_fields" value="" />
         <div class="modal-body">
+          <% test_set.groups.each do |group| %>
+            <% unless group.input_instructions.nil? %>
+              <div class="input-instructions" id="input-instructions-<%=group.id%>">
+                <%= markdown_to_html(group.input_instructions) %>
+              </div>
+            <% end %>
+          <% end %>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
                                           instance: instance,
@@ -243,6 +271,18 @@
                                           label: 'Patient ID',
                                           instance: instance,
                                           value: instance.patient_id,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_1,
+                                          label: 'First Unique Patient ID',
+                                          instance: instance,
+                                          value: instance.extra_patient_id_1,
+                                          })%>
+
+          <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_2,
+                                          label: 'Second Unique Patient ID',
+                                          instance: instance,
+                                          value: instance.extra_patient_id_2,
                                           })%>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :id_token,

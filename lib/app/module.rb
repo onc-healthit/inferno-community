@@ -44,11 +44,12 @@ module Inferno
       attr_accessor :test_set
       attr_accessor :name
       attr_accessor :overview
+      attr_accessor :input_instructions
       attr_accessor :id
       attr_accessor :test_cases
       attr_accessor :run_all
 
-      def initialize(test_set, name, overview, run_all)
+      def initialize(test_set, name, overview, input_instructions, run_all)
         @test_set = test_set
         @name = name
         @id = name.gsub(/[^0-9a-z]/i, '')
@@ -56,6 +57,7 @@ module Inferno
         @run_all = run_all
         @test_cases = []
         @test_case_names = {}
+        @input_instructions = input_instructions
       end
 
       def add_test_case(sequence_name, parameters = {})
@@ -71,6 +73,8 @@ module Inferno
         @test_case_names[current_name] = true
 
         sequence = Inferno::Sequence::SequenceBase.descendants.find {|seq| seq.sequence_name == sequence_name}
+
+        binding.pry if sequence.nil?
 
         new_test_case = TestCase.new(current_name, self, sequence, parameters)
 
@@ -163,7 +167,7 @@ module Inferno
         new_module.default_test_set = test_set_key.to_s if new_module.default_test_set.nil?
         new_test_set = TestSet.new(test_set_key, test_set[:view])
         all_groups = test_set[:tests].each do |group|
-          new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:run_all] || false)
+          new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:run_all] || false)
 
           group[:sequences].each do |sequence|
             test_case = nil

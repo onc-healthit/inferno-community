@@ -1,0 +1,110 @@
+
+  <% test_set.groups.each do |group| %>
+    <div class="sequence-group sequence-action-boundary">
+      <div class="sequence-header">
+        <div class='row align-items-center'>
+          <div class='col'>
+            <% if group.test_cases.length > 1 %>
+              
+              <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
+
+            <% end %>
+            <h3>
+              <%= group.name %>
+            </h3>
+            
+          </div>
+
+          
+        </div>
+      </div>
+      <% group.test_cases.each do |test_case| %>
+        
+        
+        <div class="sequence-row card sequence-action-boundary">
+        <div class="sequence-main test-case-data">
+          <a id="<%=test_case.id%>" name="<%=test_case.id%>" class='sequence-anchor'></a>
+          <div class='container'>
+            <div class='row align-items-center no-gutters'>
+              <div class='col-<%if show_button%>10<%else%>12<%end%>'>
+                <div class='row no-gutters'>
+                  <% case sequence_results[test_case.id].try(:result)
+                    when nil %>
+                    <div class='col-12'>
+                  <% when 'pass' %>
+                    <div class="sequence-score sequence-score-pass" data-toggle="tooltip" title="Sequence Passed">
+                      <span class="oi oi-check" aria-hidden="true"></span>
+                    </div>
+                    <div class='col-11'>
+                  <% when 'fail' %>
+                    <div class="sequence-score sequence-score-fail" data-toggle="tooltip" title="Sequence Failed">
+                      <span class="oi oi-x" aria-hidden="true"></span>
+                    </div>
+                    <div class='col-11'>
+                  <% when 'cancel' %>
+                    <div class="sequence-score sequence-score-fail" data-toggle="tooltip" title="Sequence Cancelled During Execution">
+                      <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+                    </div>
+                    <div class='col-11'>
+                  <% when 'error' %>
+                    <div class="sequence-score sequence-score-error" data-toggle="tooltip" title="Sequence Test System Error">
+                      !
+                    </div>
+                    <div class='col-11'>
+                  <% when 'wait' %>
+                    <div class="sequence-score sequence-score-wait" data-toggle="tooltip" title="Sequence is Awaiting Client Redirect or Launch">
+                      <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+                    </div>
+                    <div class='col-11'>
+                  <% when 'skip' %>
+                    <div class="sequence-score sequence-score-skip" data-toggle="tooltip" title="Sequence Skipped Due to Insufficient Information">
+                        <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
+                    </div>
+                    <div class='col-11'>
+                  <% end %>
+                    <div class="sequence-title">
+                      <span class="sequence-name">
+                        <%= test_case.title %>
+                      </span> - 
+                      <div class="sequence-out-of">
+                        <% if sequence_results[test_case.id].nil? %>
+                          <%= test_case.sequence.test_count %> tests
+                        <% else %>
+                          <%= sequence_results[test_case.id].passed_count %> Passed -
+                          <%= sequence_results[test_case.id].failed_count %> Failed
+                          <% if sequence_results[test_case.id].skip_count > 0 %> -
+                            <%= sequence_results[test_case.id].skip_count %> Skipped
+                          <% end %>
+      
+                        <% end %>
+                        -
+                        <button class='sequence-expand-button'
+                                href="#<%=test_case.id%>-details"
+                                data-toggle="collapse"
+                                data-result-details='<%=test_case.id%>-details'
+                                aria-controls="<%=test_case.id%>-details">
+                          Show Details
+                        </button>
+                      </div>
+                      <div class="sequence-details">
+                        <%= test_case.description %>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+            
+          </div>
+          </div>
+        </div>
+        <div class="result-details">
+          
+            <%= erb(:test_list,{},{instance: instance, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
+          
+        </div>
+      </div>
+      
+      <% end %>
+    </div>
+  <% end %>
+</div>

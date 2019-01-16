@@ -71,6 +71,11 @@ $(function(){
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
+    $('.input-instructions').hide();
+    if($(this).data('groupId')){
+      $('#input-instructions-' + $(this).data('groupId')).show();
+    }
+
     $(this).closest('.sequence-action-boundary').find('.test-case-data').each(function(){
       sequences.push($(this).data('sequence'));
       test_cases.push($(this).data('testCase'));

@@ -27,13 +27,19 @@ test_sets:
     tests:
       - name: Discovery and Registration
         overview: |
-          Demonstrate the server's ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
-          supported resources and searches.  If the server provides a dynamic registration endpoint, this will attempt to register Inferno's
-          test application.  Otherwise, the user must demonstrate the ability to manually register the application.
+          Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
+          registration information to be entered into the system under test.  Once registered, the tester should be provided
+          a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
+          the ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
+          supported resources and searches.
+        input_instructions: |
+          Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 
+          a confidential client or a public client.  Enter in the *Client ID*, and the *Client Secret* if applicable, from the system.
         sequences:
+          - sequence: ManualRegistrationSequence
+            title: Manual App Registration
           - ArgonautConformanceSequence
           - SMARTDiscoverySequence
-          - ManualRegistrationSequence
       - name: Standalone Patient App Launch
         overview: |
           Demonstrate the ability to support launching SMART on FHIR apps that are authorized to access a single patient using the standalone launch sequence.
@@ -41,7 +47,7 @@ test_sets:
           - sequence: StandaloneLaunchSequence
             title: Standalone Launch with Patient Scope
             description: Perform SMART launch sequence.  Patient, OpenID Connect and Token Refresh scopes required.
-          - sequence: ArgonautPatientSequence
+          - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
       - name: EHR Practitioner App Launch
@@ -51,11 +57,8 @@ test_sets:
           Note that this is not the same as the Population-level API, which requires the ability for transfering much larger quantities of data in a more efficient manner.
         sequences:
           - EHRLaunchSequence
-          - sequence: ArgonautPatientSequence
-            title: Retrieve first patient
-            description: retrieve second patient
-          - sequence: ArgonautPatientSequence
-            title: Retrieve second patient
+          - sequence: ArgonautReadTwoPatientsSequence
+            title: Read two separate patient records
             description: retrieve second patient
       - name: OpenID Connect (SSO)
         overview: >

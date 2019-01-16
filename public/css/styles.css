@@ -838,10 +838,26 @@ body {
   margin-left: -30px;
 }
 
+
+
 .tab-pane {
   display:none;
 }
 .tab-pane.active {
   display:inherit;
+}
+
+.input-instructions {
+
+
+}
+
+
+#group-report .print-button {
+
+  position:absolute;
+  top: 0;
+  right: 15px;
+  border: 1px solid #aaa;
 }
 
