@@ -7,8 +7,33 @@ require_relative 'utils/validation'
 require_relative 'utils/walk'
 require_relative 'utils/web_driver'
 
+require 'bloomer'
+require 'bloomer/msgpackable'
+require 'json'
+
 module Inferno
   module Sequence
+
+    bloomfilter_root = "data/umls-bloomer-bloom-filters"
+    vs_bloomfilter_manifest_path = "#{bloomfilter_root}/manifest.json"
+
+    if File.file? vs_bloomfilter_manifest_path
+      vs_bloomfilter_manifest = JSON.parse(File.read(vs_bloomfilter_manifest_path))
+      vs_bloomfilter_manifest["filters"].each do |filter_detail|
+        vs_url = filter_detail.fetch("valueSetUrl", nil)
+        next unless vs_url
+
+        filename = "#{bloomfilter_root}/#{filter_detail['file']}"
+        one_filter = Bloomer::Scalable.from_msgpack(open(filename).read())
+        validate_fn = lambda do |coding|
+          probe = "#{coding.system}|#{coding.code}"
+          one_filter.include? probe
+        end
+
+        FHIR::DSTU2::StructureDefinition.validates_vs(vs_url, &validate_fn)
+      end
+    end
+
     class SequenceBase
 
       include Assertions
@@ -615,6 +640,7 @@ module Inferno
             @profiles_encountered << p.url
             @profiles_encountered.uniq!
             errors = p.validate_resource(resource)
+            @test_warnings.concat(p.warnings.reject(&:empty?))
             unless errors.empty?
               errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
               @profiles_failed[p.url] = [] unless @profiles_failed[p.url]

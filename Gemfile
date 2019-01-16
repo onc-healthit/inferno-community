@@ -5,7 +5,7 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'addressable'
 gem 'fhir_client'
-# gem 'fhir_client', :path => '../fhir_client'
+gem 'fhir_dstu2_models', :git => 'https://github.com/fhir-crucible/fhir_dstu2_models.git', :branch => 'codewarn'
 gem 'rest-client'
 gem 'time_difference'
 gem 'pry'
@@ -21,5 +21,6 @@ gem 'colorize'
 gem 'kramdown'
 gem 'selenium-webdriver'
 gem 'rubocop', require: false
+gem 'bloomer'
 
 gem 'simplecov', require: false, group: :test
