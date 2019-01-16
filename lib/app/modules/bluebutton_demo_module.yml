@@ -1,6 +1,7 @@
-name: bluebutton
+name: bluebutton_demo
 description: this is a description
 fhir_version: stu3
+default_test_set: developer
 test_sets:
   developer:
     view: default
