@@ -72,8 +72,6 @@ module Inferno
 
         sequence = Inferno::Sequence::SequenceBase.descendants.find {|seq| seq.sequence_name == sequence_name}
 
-        binding.pry if sequence.nil?
-
         new_test_case = TestCase.new(current_name, self, sequence, parameters)
 
         @test_cases << new_test_case

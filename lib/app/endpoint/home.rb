@@ -43,8 +43,6 @@ module Inferno
           sequence_result = instance.waiting_on_sequence
           test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
 
-          binding.pry
-
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
           else
@@ -87,8 +85,6 @@ module Inferno
 
               submitted_test_cases = sequence_result.next_test_cases.split(',')
 
-              binding.pry
-
               next_test_case = submitted_test_cases.shift
               finished = next_test_case.nil?
               if sequence_result.redirect_to_url
@@ -106,7 +102,6 @@ module Inferno
 
               until next_test_case.nil?
                 test_case = test_set.test_case_by_id(next_test_case)
-                binding.pry
                 
                 next_test_case = submitted_test_cases.shift
                 if test_case.nil?
