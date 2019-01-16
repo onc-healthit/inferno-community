@@ -163,7 +163,7 @@ namespace :inferno do |argv|
       exit
     end
 
-    flat_tests = test_group.map  do |klass|
+    flat_tests = sequences.map  do |klass|
       klass.tests.map do |test|
         test[:sequence] = klass.to_s
         test[:sequence_required] = !klass.optional?
