@@ -110,10 +110,10 @@ module Inferno
         }
 
         assert !@well_known_authorize_url.blank? || !@conformance_authorize_url.blank?, 'Neither the well-known endpoint nor the conformance statement contained an authorization url'
-        assert @well_known_authorize_url == @conformance_authorize_url, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
+        assert @well_known_authorize_url == @conformance_authorize_url || @well_known_authorize_url.blank? || @conformance_authorize_url.blank?, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
       
         assert !@well_known_token_url.blank? || !@conformance_token_url.blank?, 'Neither the well-known endpoint nor the conformance statement contained a token url'
-        assert @well_known_token_url == @conformance_token_url, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
+        assert @well_known_token_url == @conformance_token_url || @well_known_token_url.blank? || @conformance_token_url.blank?, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
       end
 
 
