@@ -25,8 +25,8 @@ module Inferno
           settings.app_name
         end
 
-        def developer_preview
-          settings.developer_preview
+        def badge_text
+          settings.badge_text
         end
 
         def valid_json?(json)

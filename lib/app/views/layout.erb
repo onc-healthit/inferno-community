@@ -18,8 +18,8 @@
           <a class="navbar-brand" href="<%=base_path%>/">
             <img src='/images/inferno_logo.png' alt='Inferno Logo'>
           </a>
-          <% if developer_preview %>
-            <span class='badge badge-dark'>Developer Preview</span>
+          <% if badge_text.kind_of? String and !badge_text&.empty? %>
+            <span class='badge badge-dark'><%= badge_text %></span>
           <%end %>
         </div>
         <!-- Navbar content -->

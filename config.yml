@@ -38,7 +38,7 @@ autorun_capability: false
 # Include extra tests: true or false
 include_extras: true
 
-developer_preview: false
+badge_text: Community
 
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
