@@ -115,7 +115,7 @@ module Inferno
         assert @jwk_set.length > 0, 'JWK set is empty'
 
         begin
-          jwt = JSON::JWT.decode(@instance.id_token, @jwk_set)
+          jwt = JSON::JWT.decode(@instance.id_token, @jwk_set[0].to_key)
         rescue => e # Show validation error as failure
           assert false, e.message
         end
