@@ -313,9 +313,6 @@ module Inferno
                 out << js_update_result(sequence, test_set, result, count, sequence.test_count)
               end
 
-              #sequence_result.test_set_id = test_set.id
-              #sequence_result.test_case_id = test_case.id
-
               sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
 
               sequence_result.save!
