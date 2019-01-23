@@ -59,7 +59,7 @@ test_sets:
           - EHRLaunchSequence
           - sequence: ArgonautReadTwoPatientsSequence
             title: Read two separate patient records
-            description: retrieve second patient
+            description: Demonostrate that two distinct Patient resources can be retrieved.
       - name: OpenID Connect (SSO)
         overview: >
           Demonstrate OpenID Connect

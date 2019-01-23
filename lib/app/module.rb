@@ -136,7 +136,6 @@ module Inferno
       @test_sets[test_set.to_sym].view.to_sym
     end
 
-
     def sequence_by_name(sequence_name)
       sequences.find{|seq| seq.sequence_name == sequence_name}
     end

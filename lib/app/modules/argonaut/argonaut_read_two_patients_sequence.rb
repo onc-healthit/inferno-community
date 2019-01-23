@@ -11,7 +11,7 @@ module Inferno
       requires :token, :extra_patient_id_1, :extra_patient_id_2
       conformance_supports :Patient
 
-      test 'Patient IDs do not match' do
+      test 'Patient IDs should not match' do
 
         metadata {
           id '01'
