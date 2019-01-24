@@ -463,6 +463,74 @@ namespace :terminology do |argv|
     end
   end
 
+  desc 'download and execute UMLS terminology data'
+  task :download_umls, [:username, :password] do |t, args|
+    # Adapted from Josh Mandels UMLS python download
+    # https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
+    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2018AB/umls-2018AB-full.zip'
+
+    puts 'Getting Login Page'
+    response = RestClient.get default_target_file
+    # Get the final redirection URL
+    login_page = response.history.last.headers[:location]
+    action_base = login_page.split('/cas/')[0]
+    action_path = response.body.split('form id="fm1" action="')[1].split('"')[0]
+    execution = response.body.split('name="execution" value="')[1].split('"')[0]
+
+    begin
+      puts 'Getting Download Link'
+      response = RestClient::Request.execute(method: :post,
+                                             url: action_base + action_path,
+                                             payload: {
+                                                 username: args.username,
+                                                 password: args.password,
+                                                 execution: execution,
+                                                 _eventId: 'submit'
+                                             },
+                                             max_redirects: 0)
+    rescue RestClient::ExceptionWithResponse => err
+      follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
+    end
+    puts 'Finished Downloading!'
+  end
+
+
+  def follow_redirect(location, cookie = nil)
+    if location
+      size = 0
+      percent = 0
+      current_percent = 0
+      File.open('umls.zip', 'w') do |f|
+        block = proc do |response|
+          puts response.header['content-type']
+          if response.header['content-type'] == "application/zip"
+            total = response.header['content-length'].to_i
+            response.read_body do |chunk|
+              f.write chunk
+              size += chunk.size
+              percent = ((size * 100) / total).round unless total.zero?
+              if current_percent != percent
+                current_percent = percent
+                puts "#{percent}% complete"
+              end
+            end
+          else
+            follow_redirect(response.header['location'], response.header['set-cookie'])
+          end
+        end
+        RestClient::Request.execute(
+            method: :get,
+            url: location,
+            headers: {cookie: cookie},
+            block_response: block
+        )
+      end
+    end
+  end
+
+
+
+
   desc 'post-process UMLS terminology file'
   task :process_umls, [] do |t, args|
     require 'find'
