@@ -528,8 +528,67 @@ namespace :terminology do |argv|
     end
   end
 
+  desc 'unzip umls zip'
+  task :unzip_umls, [:umls_zip] do |t, args|
+    destination = 'resources/terminology/umls'
+    # https://stackoverflow.com/questions/19754883/how-to-unzip-a-zip-file-containing-folders-and-files-in-rails-while-keeping-the
+    Zip::File.open(args.umls_zip) do |zip_file|
+      # Handle entries one by one
+      zip_file.each do |entry|
+        # Extract to file/directory/symlink
+        puts "Extracting #{entry.name}"
+        f_path=File.join(destination, entry.name)
+        FileUtils.mkdir_p(File.dirname(f_path))
+        zip_file.extract(entry, f_path) unless File.exist?(f_path)
+      end
+    end
+    Dir["destination/20*"]
+    Zip::File.open(File.expand_path("#{Dir["#{destination}/20*"][0]}/mmsys.zip")) do |zip_file|
+      # Handle entries one by one
+      zip_file.each do |entry|
+        # Extract to file/directory/symlink
+        puts "Extracting #{entry.name}"
+        f_path=File.join("#{Dir["#{destination}/20*"][0]}", entry.name)
+        FileUtils.mkdir_p(File.dirname(f_path))
+        zip_file.extract(entry, f_path) unless File.exist?(f_path)
+      end
+    end
+  end
 
+  desc 'run umls jar'
+  task :run_umls, [:my_config] do |t, args|
+    jre_version = if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+                    'windows64'
+                  elsif (/darwin/ =~ RUBY_PLATFORM) != nil
+                    'macos'
+                  else linux?
+                    'linux'
+                  end
+    puts "#{jre_version} system detected"
+    config_file = Dir.pwd + "/resources/terminology/#{args.my_config}"
+    output_dir = Dir.pwd + '/resources/terminology/umls_subset'
+    FileUtils.mkdir(output_dir)
+    puts "Using #{config_file}"
+    Dir.chdir(Dir['resources/terminology/umls/20*'][0]) do
+      Dir['lib/*.jar'].each do |jar|
+        File.chmod(0555,jar)
+      end
+      puts 'Running MetamorphoSys (this may take a while)...'
+      output = system("./jre/#{jre_version}/bin/java " +
+                          '-Djava.awt.headless=true ' +
+                          '-cp .:lib/jpf-boot.jar ' +
+                          '-Djpf.boot.config=./etc/subset.boot.properties ' +
+                          '-Dlog4j.configuration=./etc/log4j.properties ' +
+                          '-Dinput.uri=. ' +
+                          "-Doutput.uri=#{output_dir} " +
+                          "-Dmmsys.config.uri=#{config_file} " +
+                          '-Xms300M -Xmx8G ' +
+                          'org.java.plugin.boot.Boot')
+      p output
+    end
+    puts 'done'
 
+  end
 
   desc 'post-process UMLS terminology file'
   task :process_umls, [] do |t, args|
