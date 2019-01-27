@@ -41,7 +41,7 @@ module Inferno
           # find the minimum non-zero spacing indent and reduce by that many for all lines (note, did't make work for tabs)
           natural_indent = markdown.lines.collect{|l| l.index(/[^ ]/)}.select{|l| !l.nil? && l> 0}.min || 0
           unindented_markdown = markdown.lines.map{|l| l[natural_indent..-1] || "\n"}.join
-          Kramdown::Document.new(unindented_markdown).to_html
+          Kramdown::Document.new(unindented_markdown, link_attributes: {target: "_blank"}).to_html
         end
       end
     end

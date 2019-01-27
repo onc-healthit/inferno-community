@@ -50,8 +50,14 @@ body {
 }
 */
 
+
 .main {
   margin: 20px 0;
+}
+
+.main a[target="_blank"]:after {
+  content: url(/images/external_link.svg);
+  padding: 0 5px;
 }
 
 .footer {
@@ -205,7 +211,34 @@ body {
 
 }
 
+#PrerequisitesModal label {
+  margin-bottom: .1rem;
+  text-transform: uppercase;
+  font-size: .9rem;
+  color: #666;
+}
 
+.prerequisite-group {
+  margin: -12px 0 30px 0;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+
+}
+
+.prerequisite-group-title {
+  display: inline-block;
+  margin-left: 20px;
+  background-color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+
+}
+.prerequisite-group-title .oi-lock-locked{
+  color: #e88a0f;
+  margin-right: 5px;
+
+}
 /* ------------------------- SEQUENCE -------------------------------- */
 
 .sequence-header h1 {

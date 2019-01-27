@@ -30,12 +30,12 @@ module Inferno
           end
           if params[:endpoint] == 'launch'
             recent_results = Inferno::Models::SequenceResult.all(:created_at.gte => 5.minutes.ago, :result => 'wait', :order => [:created_at.desc])
-            matching_results = recent_results.select{|sr| sr.testing_instance.url.downcase.chomp('/') == params[:iss].downcase.chomp('/')}
+            matching_results = recent_results.select{|sr| sr.testing_instance.url.downcase.split('://').last.chomp('/') == params[:iss].downcase.split('://').last.chomp('/')}
+            
             instance = matching_results.first.try(:testing_instance)
             halt 500, "Error: No actively running launch sequences found for iss #{params[:iss]}.  Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR." if instance.nil?
           end
-
-          halt 500, 'Error: No Could not find a running test that match this set of critera' unless !instance.nil? &&
+          halt 500, 'Error: Could not find a running test that match this set of critera' unless !instance.nil? &&
                           instance.client_endpoint_key == params[:key] &&
                           %w[launch redirect].include?(params[:endpoint])
 
@@ -206,14 +206,17 @@ module Inferno
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
           inferno_module = params['module']
+
           @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module)
 
 
-
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
+
+          @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
+          @instance.redirect_uris = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/redirect"
 
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if

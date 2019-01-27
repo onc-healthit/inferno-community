@@ -118,13 +118,13 @@
           <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
                                           instance: instance,
                                           label: 'Launch URI',
-                                          value: instance.initiate_login_uri || request.base_url + base_path + '/oauth2/' +  instance.client_endpoint_key + '/launch',
+                                          value: instance.initiate_login_uri,
                                           readonly: true })%>
 
           <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
                                           instance: instance,
                                           label: 'Redirect URI',
-                                          value: instance.redirect_uris || request.base_url + base_path + '/oauth2/' +  instance.client_endpoint_key + '/redirect',
+                                          value: instance.redirect_uris,
                                           readonly: true })%>
 
 
@@ -239,7 +239,8 @@
 
 <% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
-  <% redirect_to = "#{request.base_url}#{base_path}/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
+
+  <% redirect_to = "#{instance.initiate_login_uri.gsub('launch',waiting_on_sequence.wait_at_endpoint)}" %>
   <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="WaitModalLabel" data-show="true" data-backdrop="static">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
