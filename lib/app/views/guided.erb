@@ -73,7 +73,7 @@
       <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
         <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
       <%end%>
-      <li class="nav-item" style='margin-top: 15px;'><a class="nav-link" href="#group-report" data-toggle="tab">Test Report</a></li>
+      <li class="nav-item" style='margin-top: 15px;'><a id="report-link" class="nav-link" href="#group-report" data-toggle="tab">Report</a></li>
       </ul>
     </div>
 
@@ -131,12 +131,10 @@
               <div class="col">
                   <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
                 <h1>
-                  <%= instance.module.name %> Test Report (not yet integrated)
+                  <%= instance.module.name %> Report
                 </h1>
-                <button class="btn print-button" onclick="alert('print not yet enabled.')'">Print</button>
-                <div class="report">
-                
-              
+                <button class="btn print-button" onclick="window.print()">Print</button>
+                <div id="reportDiv">
                 </div>
               </div>
             </div>

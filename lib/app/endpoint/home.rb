@@ -167,6 +167,39 @@ module Inferno
                             error_code: params[:error]
         end
 
+        get '/:id/:test_set/report?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 if instance.nil?
+          test_set = instance.module.test_sets[params[:test_set].to_sym]
+          halt 404 if test_set.nil?
+          sequence_results = instance.latest_results_by_case
+          latest_sequence_time = nil
+
+          request_response_count = 0
+          instance.sequence_results.each do |sequence_result|
+            if latest_sequence_time == nil || latest_sequence_time < sequence_result.created_at then
+              latest_sequence_time = sequence_result.created_at
+            end
+            sequence_result.test_results.each do |test_result|
+              request_response_count = request_response_count + test_result.request_responses.count
+            end
+          end
+
+          if latest_sequence_time == nil then
+            latest_sequence_time = "No tests ran"
+          else
+            latest_sequence_time = latest_sequence_time.strftime("%m/%d/%Y %H:%M")
+          end
+          report_summary = {
+            resource_references: instance.resource_references.count,
+            supported_resources: instance.supported_resources.count,
+            request_response: request_response_count,
+            latest_sequence_time: latest_sequence_time
+          }
+          
+          erb :report, {:layout => false}, instance: instance,  test_set:test_set, show_button: false, sequence_results:sequence_results, report_summary:report_summary
+        end
+
         # Creates a new testing instance at the provided FHIR Server URL
         post '/?' do
           url = params['fhir_server']

@@ -1,3 +1,31 @@
+  <div class="container text-center report-summary">
+    <div>
+      <div class="row">
+        <div class="col-sm">
+          <div class="metrics-value"><%=report_summary[:latest_sequence_time]%></div>
+          <span class="text-muted"> Last Sequence Ran </span>
+        </div>
+        <div class="col-sm">
+          <div class="metrics-value">placeholder</div>
+          <span class="text-muted"> Final Result </span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <div class="metrics-value"><%=report_summary[:request_response]%></div>
+          <span class="text-muted"> Requests </span>
+        </div>
+        <div class="col-sm">
+          <div class="metrics-value"><%=report_summary[:supported_resources]%></div>
+          <span class="text-muted"> Supported Resources </span>
+        </div>
+        <div class="col-sm">
+          <div class="metrics-value"><%=report_summary[:resource_references]%></div>
+          <span class="text-muted"> Resource References </span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <% test_set.groups.each do |group| %>
     <div class="sequence-group sequence-action-boundary">
@@ -5,22 +33,15 @@
         <div class='row align-items-center'>
           <div class='col'>
             <% if group.test_cases.length > 1 %>
-              
               <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
-
             <% end %>
             <h3>
               <%= group.name %>
             </h3>
-            
           </div>
-
-          
         </div>
       </div>
       <% group.test_cases.each do |test_case| %>
-        
-        
         <div class="sequence-row card sequence-action-boundary">
         <div class="sequence-main test-case-data">
           <a id="<%=test_case.id%>" name="<%=test_case.id%>" class='sequence-anchor'></a>
@@ -77,14 +98,6 @@
                           <% end %>
       
                         <% end %>
-                        -
-                        <button class='sequence-expand-button'
-                                href="#<%=test_case.id%>-details"
-                                data-toggle="collapse"
-                                data-result-details='<%=test_case.id%>-details'
-                                aria-controls="<%=test_case.id%>-details">
-                          Show Details
-                        </button>
                       </div>
                       <div class="sequence-details">
                         <%= test_case.description %>
@@ -97,7 +110,7 @@
           </div>
           </div>
         </div>
-        <div class="result-details">
+        <div class="report-result-details">
           
             <%= erb(:test_list,{},{instance: instance, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
           
