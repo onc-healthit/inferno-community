@@ -22,6 +22,12 @@ $(function(){
     }
   }
 
+  $('#report-link').on('click', function(){
+    if($('#reportDiv')[0].innerHTML.trim().length === 0){
+      $('#reportDiv').load('report');
+    }
+  });
+
   $('input[type=radio][name=confidential_client]').on('change', function() {
    switch($(this).val()) {
      case 'true':

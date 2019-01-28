@@ -113,7 +113,7 @@ module Inferno
 
       def final_result
 
-        required_sequences = SequenceBase.subclasses.reject(&:optional?)
+        required_sequences = Inferno::Sequence::SequenceBase.subclasses.reject(&:optional?)
 
         all_passed = required_sequences.all? do |sequence|
           self.latest_results[sequence.name].try(:result) == 'pass'
