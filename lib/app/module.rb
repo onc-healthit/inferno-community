@@ -45,11 +45,12 @@ module Inferno
       attr_accessor :name
       attr_accessor :overview
       attr_accessor :input_instructions
+      attr_accessor :lock_variables
       attr_accessor :id
       attr_accessor :test_cases
       attr_accessor :run_all
 
-      def initialize(test_set, name, overview, input_instructions, run_all)
+      def initialize(test_set, name, overview, input_instructions, lock_variables, run_all)
         @test_set = test_set
         @name = name
         @id = name.gsub(/[^0-9a-z]/i, '')
@@ -58,6 +59,7 @@ module Inferno
         @test_cases = []
         @test_case_names = {}
         @input_instructions = input_instructions
+        @lock_variables = lock_variables || []
       end
 
       def add_test_case(sequence_name, parameters = {})
@@ -164,7 +166,7 @@ module Inferno
         new_module.default_test_set = test_set_key.to_s if new_module.default_test_set.nil?
         new_test_set = TestSet.new(test_set_key, test_set[:view])
         all_groups = test_set[:tests].each do |group|
-          new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:run_all] || false)
+          new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:lock_variables], group[:run_all] || false)
 
           group[:sequences].each do |sequence|
             test_case = nil

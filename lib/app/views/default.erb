@@ -109,124 +109,168 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+      <div class="prerequisites-forms" style="display:none">
+
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Dynamic Registration Endpoint',
+              value: instance.oauth_register_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Authorize Endpoint',
+              value: instance.oauth_authorize_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Token Endpoint',
+              value: instance.oauth_token_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
+              instance: instance,
+              label: 'Client ID',
+              value: instance.client_id}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
+              instance: instance,
+              label: 'OAuth 2.0 Dynamic Registration Bearer Token (optional)',
+              value: instance.dynamic_registration_token}); %>
+
+        <%# SPECIAL CASE: CLIENT SECRET %>
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="confidential_client"
+          id="is_confidential"
+          >
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="confidential_client_off_active">Public Client</label>
+          </div>
+          <div class="form-check form-check-inline" data-requiredby>
+            <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
+          </div>
+
+          <div class="client-secret-container">
+            <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+                  label: 'Client Secret',
+                  instance: instance,
+                  value: instance.client_secret}); %>
+          </div>
+          
+        </div>
+
+        
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
+              label: 'OAuth Client Name',
+              instance: instance,
+              value: instance.client_name}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
+              label: 'Scopes',
+              instance: instance,
+              value: instance.scopes || default_scopes,
+              required: true,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :token_endpoint_auth_method,
+              label: 'Token Endpoint Authorization Method',
+              instance: instance,
+              value: 'none',
+              readonly: true
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :grant_types,
+              label: 'Grant Type',
+              instance: instance,
+              value: 'authorization_code',
+              readonly: true
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :token,
+              label: 'Bearer Token',
+              instance: instance,
+              value: instance.token,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+              label: 'Patient ID',
+              instance: instance,
+              value: instance.patient_id,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_1,
+              label: 'First Unique Patient ID',
+              instance: instance,
+              value: instance.extra_patient_id_1,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_2,
+              label: 'Second Unique Patient ID',
+              instance: instance,
+              value: instance.extra_patient_id_2,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
+              label: 'OAuth 2.0 ID Token',
+              instance: instance,
+              value: instance.id_token,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :refresh_token,
+              label: 'Refresh Token',
+              instance: instance,
+              value: instance.refresh_token,
+              })%>
+      </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
         <input type="hidden" name="test_case" value="" />
         <input type="hidden" name="required_fields" value="" />
         <div class="modal-body">
+          <% test_set.groups.each do |group| %>
+            <% unless group.input_instructions.nil? %>
+              <div class="input-instructions" id="input-instructions-<%=group.id%>">
+                <%= markdown_to_html(group.input_instructions) %>
 
-          <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
-                                          instance: instance,
-                                          label: 'Launch URI',
-                                          value: instance.initiate_login_uri || request.base_url + base_path + '/oauth2/' +  instance.client_endpoint_key + '/launch',
-                                          readonly: true })%>
+                <% if group.id.downcase.include?('discoveryandregistration') %>
+            
+                  <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                    instance: instance,
+                    label: 'Launch URI',
+                    value: instance.initiate_login_uri,
+                    readonly: true })%>
+          
+                  <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                        instance: instance,
+                        label: 'Redirect URI',
+                        value: instance.redirect_uris,
+                        readonly: true })%>
+                <% end %>
+                
+              </div>
+            <% end %>
+            
 
-          <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                                          instance: instance,
-                                          label: 'Redirect URI',
-                                          value: instance.redirect_uris || request.base_url + base_path + '/oauth2/' +  instance.client_endpoint_key + '/redirect',
-                                          readonly: true })%>
-
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
-                                          instance: instance,
-                                          label: 'OAuth 2.0 Dynamic Registration Endpoint',
-                                          value: instance.oauth_register_endpoint}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
-                                          instance: instance,
-                                          label: 'OAuth 2.0 Authorize Endpoint',
-                                          value: instance.oauth_authorize_endpoint}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
-                                          instance: instance,
-                                          label: 'OAuth 2.0 Token Endpoint',
-                                          value: instance.oauth_token_endpoint}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
-                                          instance: instance,
-                                          label: 'Client ID',
-                                          value: instance.client_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
-                                          instance: instance,
-                                          label: 'OAuth 2.0 Dynamic Registration Bearer Token (optional)',
-                                          value: instance.dynamic_registration_token}); %>
-
-          <%# SPECIAL CASE: CLIENT SECRET %>
-          <div class="form-group"
-               data-requiredby="<%= test_set.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
-               data-prerequisite="confidential_client"
-               id="is_confidential"
-               >
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
-              <label class="form-check-label" for="confidential_client_off">Public Client</label>
-            </div>
-            <div class="form-check form-check-inline" data-requiredby>
-              <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
-              <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
-            </div>
+            <% unless group.lock_variables.empty? %>
+              <div style="display:none" class="group-lock-variables" id="group-lock-variables-<%=group.id%>"
+                 data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
+            <%end %>
+          <% end %>
+          <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
+            
+  
           </div>
 
-          <div class="client-secret-container">
-          <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
-                                          label: 'Client Secret',
-                                          instance: instance,
-                                          value: instance.client_secret}); %>
+          <div class="prerequisite-group-title enabled-prerequisite-group-title">Input Fields</div>
+          <div class="prerequisite-group enabled-prerequisites">
+
           </div>
-
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
-                                          label: 'OAuth Client Name',
-                                          instance: instance,
-                                          value: instance.client_name}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
-                                          label: 'Scopes',
-                                          instance: instance,
-                                          value: instance.scopes || default_scopes,
-                                          required: true,
-                                          })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :token_endpoint_auth_method,
-                                          label: 'Token Endpoint Authorization Method',
-                                          instance: instance,
-                                          value: 'none',
-                                          readonly: true
-                                          })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :grant_types,
-                                          label: 'Grant Type',
-                                          instance: instance,
-                                          value: 'authorization_code',
-                                          readonly: true
-                                          })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :token,
-                                          label: 'Bearer Token',
-                                          instance: instance,
-                                          value: instance.token,
-                                          })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
-                                          label: 'Patient ID',
-                                          instance: instance,
-                                          value: instance.patient_id,
-                                          })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
-                                          label: 'OAuth 2.0 ID Token',
-                                          instance: instance,
-                                          value: instance.id_token,
-                                          })%>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :refresh_token,
-                                          label: 'Refresh Token',
-                                          instance: instance,
-                                          value: instance.refresh_token,
-                                          })%>
-
+          <div class="prerequisite-group-title disabled-prerequisite-group-title">Predefined Test Parameters <span class="oi oi-lock-locked"></span></div>
+          <div class="prerequisite-group disabled-prerequisites">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -239,7 +283,8 @@
 
 <% waiting_on_sequence = instance.waiting_on_sequence %>
 <% unless waiting_on_sequence.nil? %>
-  <% redirect_to = "#{request.base_url}#{base_path}/#{instance.id}/#{instance.client_endpoint_key}/#{waiting_on_sequence.wait_at_endpoint}" %>
+
+  <% redirect_to = "#{instance.initiate_login_uri.gsub('launch',waiting_on_sequence.wait_at_endpoint)}" %>
   <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="WaitModalLabel" data-show="true" data-backdrop="static">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">

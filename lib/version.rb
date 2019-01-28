@@ -1,3 +1,3 @@
 module Inferno
-  VERSION = '1.0.5-rc1'
+  VERSION = '1.1.0-rc1'
 end

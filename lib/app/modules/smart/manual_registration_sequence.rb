@@ -10,7 +10,7 @@ module Inferno
 
       optional
 
-      requires :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris, :client_id, :client_secret
+      requires :initiate_login_uri, :redirect_uris, :confidential_client,:initiate_login_uri, :redirect_uris, :client_id, :client_secret
       # defines :client_id, :client_secret
 
       test 'User entered client id, and client secret if confidential client' do

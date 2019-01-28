@@ -7,18 +7,6 @@ description: |
 
   Note that this is a concept based on Argonaut and does not reflect actual program requirements.
 
-  For example:
-
-  * EHR and Standalone Launches
-  * Confidential OR Public clients
-  * OpenID Connect single sign on
-  * Resources
-  * Argonaut Data Queries
-
-  Descibe how to get started:
-
-  * click this button
-
 fhir_version: dstu2
 default_test_set: guided
 test_sets:
@@ -34,7 +22,8 @@ test_sets:
           supported resources and searches.
         input_instructions: |
           Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 
-          a confidential client or a public client.  Enter in the *Client ID*, and the *Client Secret* if applicable, from the system.
+          a confidential client or a public client.  Enter in the *Client ID*, and the *Client Secret* if applicable, as provided by the
+          authentication system through a manual registration process.
         sequences:
           - sequence: ManualRegistrationSequence
             title: Manual App Registration
@@ -42,43 +31,94 @@ test_sets:
           - SMARTDiscoverySequence
       - name: Standalone Patient App Launch
         overview: |
-          Demonstrate the ability to support launching SMART on FHIR apps that are authorized to access a single patient using the standalone launch sequence.
+          Servers must support the ability for an individual to access their medical record information
+          using an app that has been launched and authorized using the [SMART on FHIR Standalone Launch Sequence](https://www.hl7.org/fhir/smart-app-launch/#standalone-launch-sequence).
+          This test will initiate an authorization request and expects the [Patient Launch Context Parameter](https://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#launch-context-arrives-with-your-access_token).
+          It will then perform a simple read of the Patient resource to ensure proper authorization.
+        input_instructions: |
+          Enter in the appropriate scope to enable patient-level access.  The test expects the Patient Launch Context Parameter to be returned that provides information about which patient has access.
+          
+          Note: *either this launch sequence or the EHR Practitioner App Launch test must also include scopes that demonstrate token refresh and OpenID Connect authentication.*
+        lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
+          - redirect_uris
         sequences:
           - sequence: StandaloneLaunchSequence
             title: Standalone Launch with Patient Scope
-            description: Perform SMART launch sequence.  Patient, OpenID Connect and Token Refresh scopes required.
+            description: Perform Standalone SMART launch sequence.  Patient, OpenID Connect and Token Refresh scopes required.
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
       - name: EHR Practitioner App Launch
-        overview: >
+        overview: |
           Demonstrate the ability for an external launch with a user-level scope that is capable of accessing multiple patients.  This test requires the system to
           access multiple patient endpoints to demonstrate that a 3rd party app can interact with multiple patients without requiring re-authentication.
-          Note that this is not the same as the Population-level API, which requires the ability for transfering much larger quantities of data in a more efficient manner.
+          
+          *Note: this is not the same as the Population-level API, which requires the ability for transfering much larger quantities of data in a more efficient manner.*
         sequences:
-          - EHRLaunchSequence
+          - sequence: EHRLaunchSequence
+            title: EHR Launch with Practitioner Scope
+            description: Perform EHR SMART launch sequence.  User-level scope is required, while OpenID Connect and Token Refresh scopes are recommended.
           - sequence: ArgonautReadTwoPatientsSequence
-            title: Read two separate patient records
-            description: Demonstrate that two distinct Patient resources can be retrieved.
-      - name: OpenID Connect (SSO)
-        overview: >
-          Demonstrate OpenID Connect
+            title: Read two separate patient records.
+            description: Read two separate patient records.
+        input_instructions: |
+          Enter in the appropriate scope to enable user-level access, as well as two patient IDs to demonstrate that the app has access to more than one patient.
+
+          Note: *Either this launch sequence or the Standalone Patient App Launch test must also include scopes that demonstrate token refresh nd OpenID Connect authentication.*
+        lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
+          - redirect_uris
+      - name: OpenID Connect Authorization
+        overview: |
+          [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) provides authentication capabilities on top of OAuth 2.0 as described
+          in the [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/).  This test uses the last successfully initiated 
+          SMART on FHIR launch performed in Inferno using the [appropriate scopes](http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#scopes-for-requesting-identity-data) to return the `id_token`.
         sequences:
           - sequence: OpenIDConnectSequence
             title: Single Sign on using OpenID Connect
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
+        lock_variables: 
+          - client_id
+          - id_token
+        input_instructions: |
+          This test uses the `id_token` received along side the bearer token in the last successfully executed Launch Sequence.
       - name: Token Refresh Sequence
-        overview: >
-          Demonstrate Token Refresh Sequence
+        overview: |
+          This test attempts to refresh the bearer token as described in the [SMART App Launch Guide](http://www.hl7.org/fhir/smart-app-launch/index.html#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token).
+          This test uses the `refresh_token` provided in the most recently successful SMART App Launch to retrieve a new access token, and to attempt to retrieve a single patient to ensure that the new access token.
+        input_instructions: |
+          This test uses the `refresh token` to retrieve a new access token, and then attempts to read the Patient resource provided during the most recent launch sequence to verify that the new access token works.
         sequences:
           - TokenRefreshSequence
-          - sequence: ArgonautPatientSequence
-            title: Read Patient Resource Using New Token
+          - sequence: ArgonautPatientReadOnlySequence
+            title: Read Patient Resource
             description: Ensure new token is functional by performing a simple read of the Patient resource.
-      - name: USCDI Access
+        lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - refresh_token
+          - oauth_token_endpoint
+          - patient_id
+      - name: USCDI Access (Search and Read)
         run_all: true
         overview: >
-          Description of USCDI Data access.
+          For each of the relevant USCDI data elements provided in the conformance statement, this test executes the [required supported searches](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
+          as defined by the Argonaut Data Query Implementation Guide.  The test begins by searching by Patient provided in the most recent SMART App Launch performed by Inferno.  It uses results returned from that
+          query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
+          relevant [profile](http://www.fhir.org/guides/argonaut/r2/profiles.html) as currently defined in the Argonaut Data Query Implementation Guide.
+        lock_variables: 
+          - patient_id
+          - token
         sequences:
           - ArgonautPatientSequence
           - ArgonautAllergyIntoleranceSequence

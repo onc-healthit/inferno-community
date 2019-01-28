@@ -50,8 +50,14 @@ body {
 }
 */
 
+
 .main {
   margin: 20px 0;
+}
+
+.main a[target="_blank"]:after {
+  content: url(/images/external_link.svg);
+  padding: 0 5px;
 }
 
 .footer {
@@ -205,7 +211,34 @@ body {
 
 }
 
+#PrerequisitesModal label {
+  margin-bottom: .1rem;
+  text-transform: uppercase;
+  font-size: .9rem;
+  color: #666;
+}
 
+.prerequisite-group {
+  margin: -12px 0 30px 0;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+
+}
+
+.prerequisite-group-title {
+  display: inline-block;
+  margin-left: 20px;
+  background-color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+
+}
+.prerequisite-group-title .oi-lock-locked{
+  color: #e88a0f;
+  margin-right: 5px;
+
+}
 /* ------------------------- SEQUENCE -------------------------------- */
 
 .sequence-header h1 {
@@ -345,6 +378,63 @@ body {
 }
 
 .sequence-score-skip {
+  padding-left: 1px;
+  background-color: #00e1e1;
+  color: #FFF;
+  /* background-color: #28a745; */
+  border: 2px solid #fff;
+}
+
+
+.group-score {
+  font-size: 2rem;
+    color: white;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    padding-top: .5rem;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0;
+    vertical-align: -.125rem;
+}
+
+.group-score-pending {
+  /* background-color: #efefef; */
+  border: 4px solid #aaa;
+}
+
+.group-score-fail {
+  vertical-align: 0;
+  background-color: #cb2431;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 1.7rem;
+  padding: 8px 5px 8px 6px;
+}
+
+.group-score-error {
+  background-color: #f0f;
+  color: #fff;
+  border: 2px solid #fff;
+  padding-top: 3px;
+  padding: 3px 5px 8px 5px;
+  font-weight: bold;
+}
+
+.group-score-pass {
+  background-color: #28a745;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
+.group-score-wait {
+  background-color: #336699;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
+.group-score-skip {
   padding-left: 1px;
   background-color: #00e1e1;
   color: #FFF;
@@ -728,6 +818,16 @@ body {
   text-transform: uppercase;
 }
 
+.guided .group-overview {
+  padding-left: 25px;
+}
+
+.guided .group-message {
+  margin: 10px 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
 .guided .group-nav {
   position: absolute;
   width: 275px;
@@ -822,7 +922,7 @@ body {
 
 .guided .sequence-table {
   min-height: 100vh;
-  margin: 20px 30px;
+  margin: 20px 20px;
   padding-left: 290px;
   padding-top: 170px;
   background-color: #EEE;
@@ -830,7 +930,7 @@ body {
 }
 
 .guided .sequence-row{
-  margin: 10px 0;
+  margin: 10px 0 0 20px;
   padding: 8px 0;
 }
 
@@ -838,6 +938,22 @@ body {
   margin-left: -30px;
 }
 
+.guided .sequence-button {
+  cursor:pointer; 
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  margin-right: 10px;
+}
+.guided .sequence-button-next {
+  cursor:pointer; 
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  margin-right: 10px;
+}
+
+.guided .prerequisite-tooltip {
+  display: none;
+}
 
 
 .tab-pane {

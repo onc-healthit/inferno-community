@@ -28,16 +28,9 @@ $(function(){
     }
   });
 
-  $('input[type=radio][name=confidential_client]').on('change', function() {
-   switch($(this).val()) {
-     case 'true':
-       $('.client-secret-container').show();
-       break;
-     case 'false':
-       $('.client-secret-container').hide();
-       break;
-   }
-  });
+  $(document.links).filter(function() {
+    return this.hostname != window.location.hostname;
+  }).attr('target', '_blank');
 
   $('.sequence-expand-button').click(function (event) {
     let button = $(this);
@@ -73,14 +66,22 @@ $(function(){
     var sequences = [],
         test_cases = [],
         requirements = [],
-        popupTitle = "";
+        popupTitle = "",
+        lockedVariables = [];
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
     $('.input-instructions').hide();
     if($(this).data('groupId')){
       $('#input-instructions-' + $(this).data('groupId')).show();
+
+      let lockedVars = $('#group-lock-variables-' + $(this).data('groupId')).data('lockVariables');
+      
+      if(lockedVars){
+        lockedVariables = lockedVars.split(",")
+      }
     }
+    
 
     $(this).closest('.sequence-action-boundary').find('.test-case-data').each(function(){
       sequences.push($(this).data('sequence'));
@@ -92,9 +93,23 @@ $(function(){
 
     });
 
-    // FIXME: CONDENSE WITH THE INDIVIDUAL TEST RUN PORTION
-    //
-    $('#PrerequisitesModal .form-group').each(function(){
+    // clear out the existing contents
+    $('.prerequisite-group').empty();
+    $('.enabled-prerequisite-group-title').hide();
+    $('.disabled-prerequisite-group-title').hide();
+    $('.disabled-prerequisites').hide();
+    $('.enabled-prerequisites').hide();
+
+    //$('input[type=radio][name=confidential_client]').on('change', function() {
+    $('#PrerequisitesModal').on('change', function(e) {
+      if(e.target.id === 'confidential_client_on_active') {
+        $('.client-secret-container').show();
+      } else if (e.target.id === 'confidential_client_off_active'){
+        $('.client-secret-container').hide();
+      }
+    });
+
+    $('#PrerequisitesModal .prerequisites-forms > .form-group').each(function(){
       var requiredby = $(this).data('requiredby');
       var definedby = $(this).data('definedby');
       var prerequisite = $(this).data('prerequisite');
@@ -126,11 +141,33 @@ $(function(){
           }
         })
       }
+
       if(show){
-        $(this).show()
+        let formInput = $(this).clone();
+        if(lockedVariables.includes(prerequisite)){
+          formInput.find('input').attr('readonly', 'readonly');
+          formInput.find(':radio:not(:checked)').attr('disabled', true);
+          
+          $('.disabled-prerequisites').append(formInput);
+          $('.disabled-prerequisite-group-title').show();
+          $('.disabled-prerequisites').show();
+        } else {
+          formInput.find(':radio').each(function(){
+            $(this).attr('id', $(this)[0].id + '_active');
+          });
+        formInput.find('input')[0].removeAttribute('readonly');
+        formInput.find(':radio:not(:checked)').attr('disabled', false);
+        $('.enabled-prerequisites').append(formInput);
+        $('.enabled-prerequisite-group-title').show();
+        $('.enabled-prerequisites').show();
+        }
+        //$(this).show()
       } else {
-        $(this).hide();
+        //$(this).hide();
       }
+
+
+      
     });
 
     $('#PrerequisitesModal input[name=sequence]').val(sequences.join(','));
@@ -138,11 +175,13 @@ $(function(){
     $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
 
     // Confidential client special case
+    
     if($('#confidential_client_on')[0].checked){
        $('.client-secret-container').show();
     } else {
        $('.client-secret-container').hide();
     }
+    
 
     if(requirements.length === 0){
       $('#PrerequisitesModal form').submit();
