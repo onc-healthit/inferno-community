@@ -194,7 +194,8 @@ module Inferno
             resource_references: instance.resource_references.count,
             supported_resources: instance.supported_resources.count,
             request_response: request_response_count,
-            latest_sequence_time: latest_sequence_time
+            latest_sequence_time: latest_sequence_time,
+            final_result: instance.final_result
           }
           
           erb :report, {:layout => false}, instance: instance,  test_set:test_set, show_button: false, sequence_results:sequence_results, report_summary:report_summary
