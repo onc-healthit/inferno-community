@@ -405,11 +405,12 @@ body {
 }
 
 .group-score-fail {
+  vertical-align: 0;
   background-color: #cb2431;
   color: #fff;
   border: 2px solid #fff;
-  padding-top: 3px;
-  padding: 5px 5px 8px 6px;
+  font-size: 1.7rem;
+  padding: 8px 5px 8px 6px;
 }
 
 .group-score-error {
