@@ -102,9 +102,15 @@ module Inferno
         start(&block)
       end
 
-      def start
+      def start(test_set_id = nil, test_case_id = nil)
         if @sequence_result.nil?
-          @sequence_result = Models::SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance, required: !optional?, app_version: VERSION)
+          @sequence_result = Models::SequenceResult.new(name: sequence_name,
+                                                        result: STATUS[:pass],
+                                                        testing_instance: @instance,
+                                                        required: !optional?,
+                                                        test_set_id: test_set_id,
+                                                        test_case_id: test_case_id,
+                                                        app_version: VERSION)
           @sequence_result.save!
         end
 
