@@ -874,6 +874,10 @@ body {
   border: 1px solid gray;
 }
 
+.report-summary .col{
+  flex: 1;
+}
+
 .report-result-details .test-results-more, .report-result-details .test-list-more{
   display:none;
 }
@@ -883,19 +887,9 @@ body {
     display:none;
   }
 
-
   #group-report{
     position: absolute;
     left: 0;
     width: 11in;
-  }
-
-  .col-sm{
-    float:left !important
-  }
-
-  .container {
-    width: auto;
-    min-width: 750px;
   }
 }

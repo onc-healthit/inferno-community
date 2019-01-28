@@ -1,28 +1,26 @@
-  <div class="container text-center report-summary">
-    <div>
-      <div class="row">
-        <div class="col-sm">
-          <div class="metrics-value"><%=report_summary[:latest_sequence_time]%></div>
-          <span class="text-muted"> Last Sequence Ran </span>
-        </div>
-        <div class="col-sm">
-          <div class="metrics-value"><%=report_summary[:final_result]%></div>
-          <span class="text-muted"> Final Result </span>
-        </div>
+  <div class="text-center report-summary">
+    <div class="row">
+      <div class="col">
+        <div class="metrics-value"><%=report_summary[:latest_sequence_time]%></div>
+        <span class="text-muted"> Last Sequence Ran </span>
       </div>
-      <div class="row">
-        <div class="col-sm">
-          <div class="metrics-value"><%=report_summary[:request_response]%></div>
-          <span class="text-muted"> Requests </span>
-        </div>
-        <div class="col-sm">
-          <div class="metrics-value"><%=report_summary[:supported_resources]%></div>
-          <span class="text-muted"> Supported Resources </span>
-        </div>
-        <div class="col-sm">
-          <div class="metrics-value"><%=report_summary[:resource_references]%></div>
-          <span class="text-muted"> Resource References </span>
-        </div>
+      <div class="col">
+        <div class="metrics-value"><%=report_summary[:final_result]%></div>
+        <span class="text-muted"> Final Result </span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="metrics-value"><%=report_summary[:request_response]%></div>
+        <span class="text-muted"> Requests </span>
+      </div>
+      <div class="col">
+        <div class="metrics-value"><%=report_summary[:supported_resources]%></div>
+        <span class="text-muted"> Supported Resources </span>
+      </div>
+      <div class="col">
+        <div class="metrics-value"><%=report_summary[:resource_references]%></div>
+        <span class="text-muted"> Resource References </span>
       </div>
     </div>
   </div>
