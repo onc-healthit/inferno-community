@@ -1,28 +1,63 @@
 ## Optional Terminology Support
 
-The scorecard requires some terminology files to operate several rubrics related
-to codes. Download the files (requires accounts) and place them here in `./resources/terminology`
+In order to validate terminologies Inferno can be loaded with files generated from the 
+Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM)
+and requires an account to access.
 
-- https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html
- - When installing the metathesaurus, include the following sources:
-  `CVX|CVX;
-   ICD10CM|ICD10CM;
-   ICD10PCS|ICD10PCS;
-   ICD9CM|ICD9CM;
-   LNC|LNC;
-   MTHICD9|ICD9CM;
-   RXNORM|RXNORM;
-   SNOMEDCT_US|SNOMEDCT`
+Inferno provides some rake tasks which may make this process easier.
 
-- https://www.nlm.nih.gov/research/umls/Snomed/core_subset.html
-- https://loinc.org/download/loinc-top-2000-lab-observations-us-csv/
-- http://download.hl7.de/documents/ucum/concepts.tsv
+### Downloading the UMLS
 
-After downloading the files, run these rake tasks to post-process each terminology file:
+Inferno provides a task which attempts to download the UMLS for you:
 
+```sh
+bundle exec rake terminology:download_umls[username, password]
 ```
-> bundle exec rake terminology:process_umls
-> bundle exec rake terminology:process_snomed
-> bundle exec rake terminology:process_loinc
-> bundle exec rake terminology:process_ucum
+
+This command requires a valid UMLS `username` and `password`.  Inferno does not store this information and 
+only uses it to download the necessary files during this step.
+
+If this command fails, or you do not have a UMLS account, the file can be
+downloaded directly from the UMLS website.
+
+https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.htm
+
+### Unzipping the UMLS files
+The UMLS files should be decompressed for processing and use.  The metamorphoSys utility provided
+within the UMLS distribution must be unzipped as well.
+
+Inferno provides a task which will attempt to unzip the files into the correct location
+for further operation:
+
+```sh
+`bundle exec rake terminology:unzip_umls[umls.zip]`
+```
+
+Users can also manually unzip the files.  The mmsys.zip file should be unzipped to the same
+directory as the other downloaded files.
+
+See https://www.nlm.nih.gov/research/umls/implementation_resources/metamorphosys/help.html#screens_tabs
+for more details.
+
+### Creating a Subset
+
+The metamorphoSys tool can customize and install UMLS sources.  Inferno provides
+a configuration file and a task to help run the metamorphoSys tool.
+
+```sh
+`bundle exec rake terminology:run_umls[all-active-exportconfig.prop]`
+```
+
+The UMLS tool can also be manually executed.
+
+### Creating the Terminology Validators
+
+### Cleaning up
+The UMLS distribution is large and no longer required by Inferno after processing.
+
+Inferno provides a utility which removes the umls.zip file, the unzipped distribution, and the
+installed subset
+
+```sh
+bundle exec rake terminology:cleanup_umls
 ```
