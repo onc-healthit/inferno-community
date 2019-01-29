@@ -557,6 +557,8 @@ namespace :terminology do |argv|
 
   desc 'run umls jar'
   task :run_umls, [:my_config] do |t, args|
+    # More information on batch running UMLS
+    # https://www.nlm.nih.gov/research/umls/implementation_resources/community/mmsys/BatchMetaMorphoSys.html
     jre_version = if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
                     'windows64'
                   elsif (/darwin/ =~ RUBY_PLATFORM) != nil
@@ -681,7 +683,7 @@ namespace :terminology do |argv|
   task :process_umls_translations, [] do |t, args|
     require 'find'
     puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources/terminology').find{|f| f=='terminology/MRCONSO.RRF' }
+    input_file = Find.find('resources/terminology').find{|f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
       output_filename = 'resources/terminology/translations_umls.txt'
