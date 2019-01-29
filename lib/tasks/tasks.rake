@@ -542,7 +542,6 @@ namespace :terminology do |argv|
         zip_file.extract(entry, f_path) unless File.exist?(f_path)
       end
     end
-    Dir["destination/20*"]
     Zip::File.open(File.expand_path("#{Dir["#{destination}/20*"][0]}/mmsys.zip")) do |zip_file|
       # Handle entries one by one
       zip_file.each do |entry|
@@ -589,7 +588,16 @@ namespace :terminology do |argv|
       p output
     end
     puts 'done'
+  end
 
+  desc 'cleanup umls'
+  task :cleanup_umls, [] do |t, args|
+    puts 'removing umls.zip...'
+    File.delete('umls_zip') if File.exist?('umls.zip')
+    puts 'removing unzipped umls...'
+    FileUtils.remove_dir('resources/terminology/umls') if File.directory?('resources/terminology/umls')
+    puts 'removing umls subset...'
+    FileUtils.remove_dir('resources/terminology/umls_subset') if File.directory?('resources/terminology/umls_subset')
   end
 
   desc 'post-process UMLS terminology file'
