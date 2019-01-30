@@ -960,6 +960,9 @@ body {
   width: 0;
 }
 
+.guided .footer {
+  position: fixed;
+}
 
 .tab-pane {
   display:none;
