@@ -176,6 +176,16 @@ module Inferno
         @token_response_headers = @token_response.headers
         @token_response_body = JSON.parse(@token_response.body)
 
+        if @token_response_body.has_key?('id_token')
+          @instance.save!
+          @instance.update(id_token: @token_response_body['id_token'])
+        end
+
+        if @token_response_body.has_key?('refresh_token')
+          @instance.save!
+          @instance.update(refresh_token: @token_response_body['refresh_token'])
+        end
+
         assert @token_response_body.has_key?('access_token'), "Token response did not contain access_token as required"
 
         token_retrieved_at = DateTime.now
@@ -208,16 +218,6 @@ module Inferno
 
         @instance.save!
         @instance.update(scopes: scopes)
-
-        if @token_response_body.has_key?('id_token')
-          @instance.save!
-          @instance.update(id_token: @token_response_body['id_token'])
-        end
-
-        if @token_response_body.has_key?('refresh_token')
-          @instance.save!
-          @instance.update(refresh_token: @token_response_body['refresh_token'])
-        end
 
 
       end
