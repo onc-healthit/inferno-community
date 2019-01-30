@@ -61,7 +61,7 @@ body {
 }
 
 .footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   width: 100%;
   height: 60px; /* Set the fixed height of the footer here */
@@ -958,10 +958,6 @@ body {
 .guided span.oi.oi-warning.prerequisite-tooltip {
   display: none;
   width: 0;
-}
-
-.guided .footer {
-  position: fixed;
 }
 
 .tab-pane {
