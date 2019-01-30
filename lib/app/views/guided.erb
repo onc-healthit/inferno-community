@@ -143,9 +143,10 @@
                   </h1>
                   <div class="group-overview" <% if group_result.to_s == 'not_run' %>style='padding-left: 25px'<%end%>>
 
-                  <% if group_with_result[:missing_variables].length > 0 %>
+                  <% if group_with_result[:missing_variables].select{|v| v != "client_secret"}.length > 0 %>
+                  <!-- removing client secret because it is only necessary if a confidential client -->
                   <div class="group-message">
-                    Cannot execute this test because the following information was not collected during previously run tests: <%=group_with_result[:missing_variables].join(", ") %>.
+                    Cannot execute this test because the following information was not collected during previously run tests: <%=group_with_result[:missing_variables].select{|v| v != "client_secret"}.join(", ") %>.
                   </div>
 
                   <% end %>
