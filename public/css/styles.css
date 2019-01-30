@@ -804,7 +804,7 @@ body {
   top: 0;
   left: 0;
   height: 100%;
-  width: 50%;
+  width: 25%;
   z-index: -1;
   background-color: white;
 }
@@ -819,7 +819,11 @@ body {
 }
 
 .guided .group-overview {
+  font-size: 1.1rem;
   padding-left: 25px;
+}
+.guided .sequence-overview {
+  font-size: 1.1rem;
 }
 
 .guided .group-message {
@@ -921,12 +925,12 @@ body {
 }
 
 .guided .sequence-table {
-  min-height: 100vh;
+  min-height: 90vh;
   margin: 20px 20px;
   padding-left: 290px;
   padding-top: 170px;
   background-color: #EEE;
-  padding-bottom: 80px;
+  padding-bottom: 20px;
 }
 
 .guided .sequence-row{
@@ -951,8 +955,9 @@ body {
   margin-right: 10px;
 }
 
-.guided .prerequisite-tooltip {
+.guided span.oi.oi-warning.prerequisite-tooltip {
   display: none;
+  width: 0;
 }
 
 

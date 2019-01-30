@@ -96,7 +96,8 @@ module Inferno
           versions :dstu2
         }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
+        skip_if_not_supported(:Goal, [:search, :read])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@goal, versioned_resource_class('Goal'))
 

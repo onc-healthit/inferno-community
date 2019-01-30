@@ -11,10 +11,6 @@
         </div>
         <div class="col-5 server-actions" style='text-align:right;'>
 
-          <!--- not yet implemented -->
-          <div style="display:none" data-toggle="tooltip" title="Print Results">
-            <a href="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/print/" class="btn btn-outline-secondary"><span class="oi oi-print" aria-hidden="true"></span></a>
-          </div>
 
           <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
             <span class="oi oi-list" aria-hidden="true"></span>
@@ -68,7 +64,7 @@
     <% end %>
     <div class="group-nav">
       <ul class="nav nav-pills">
-      <li class="nav-item" style='margin-bottom: 15px;'><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.name %> Overview</a></li>
+      <li class="nav-item" style='margin-bottom: 15px;'><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.title %> Overview</a></li>
       <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
         <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
       <%end%>
@@ -82,14 +78,17 @@
         <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
           <div class="sequence-header">
             <div class="row align-items-center">
-              <div class="col">
+              <div class="col" style="margin-left: 20px;">
                   <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
                 <h1>
-                  <%= instance.module.name %>
+                  <%= instance.module.title %>
                 </h1>
                 <div class="sequence-overview">
                   <%= markdown_to_html(instance.module.description) %>
                 </div>
+
+                <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
+
               </div>
             </div>
           </div>
@@ -143,6 +142,13 @@
                       
                   </h1>
                   <div class="group-overview" <% if group_result.to_s == 'not_run' %>style='padding-left: 25px'<%end%>>
+
+                  <% if group_with_result[:missing_variables].length > 0 %>
+                  <div class="group-message">
+                    Cannot execute this test because the following information was not collected during previously run tests: <%=group_with_result[:missing_variables].join(", ") %>.
+                  </div>
+
+                  <% end %>
 
                   <% case group_result.to_s
                       when 'pass' %>

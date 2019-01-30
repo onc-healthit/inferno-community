@@ -117,17 +117,21 @@ module Inferno
     end 
 
     attr_accessor :name
+    attr_accessor :title
+    attr_accessor :hide_optional
     attr_accessor :description
     attr_accessor :default_test_set
     attr_accessor :fhir_version
     attr_accessor :test_sets
 
-    def initialize(name, description, default_test_set, fhir_version)
+    def initialize(name, description, default_test_set, fhir_version, title)
       @name = name
       @description = description
       @default_test_set = default_test_set
       @fhir_version = fhir_version
       @test_sets = {}
+      @title = title
+      @hide_optional = hide_optional
     end
 
     def sequences
@@ -160,7 +164,7 @@ module Inferno
 
     def self.load_module(module_hash)
 
-      new_module = self.new(module_hash[:name], module_hash[:description], module_hash[:default_test_set], module_hash[:fhir_version])
+      new_module = self.new(module_hash[:name], module_hash[:description], module_hash[:default_test_set], module_hash[:fhir_version], module_hash[:title] || module_hash[:name])
 
       module_hash[:test_sets].each do |test_set_key, test_set|
         new_module.default_test_set = test_set_key.to_s if new_module.default_test_set.nil?

@@ -202,6 +202,10 @@ $(function(){
                         .attr('data-toggle','tooltip');
   });
 
+  $('.get-started').click(function(){
+    $('#group-link-DiscoveryandRegistration').tab('show')
+  })
+
   $('.test-results-more').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
       var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_result/' + $(this).data('testResultId');

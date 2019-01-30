@@ -89,8 +89,10 @@ module Inferno
               hash[results[val.id].result.to_sym] += 1
               hash[:total] += 1
             end
+
             hash
           end
+
 
           result = :pass
           result = :skip if result_details[:skip] > 0
@@ -99,7 +101,7 @@ module Inferno
           result = :error if result_details[:error] > 0
           result = :not_run if result_details[:total] == 0
 
-          return_data << { group: group, result_details: result_details, result: result }
+          return_data << { group: group, result_details: result_details, result: result, missing_variables: group.lock_variables.select{|var| self.send(var.to_sym).nil?} }
 
           return_data
         end

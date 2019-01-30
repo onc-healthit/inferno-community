@@ -2,17 +2,25 @@
   <div class="row">
       <% modules = modules.flatten.compact %>
       <% if modules.length == 1 %>
-        <input type="hidden" name="module" value=<%=modules[0] %>>
+        <input type="hidden" name="module" value=<%=modules[0].name %>>
       <% else %>
+      
+
       <div class="col">
         <fieldset>
           <legend>What module would you like to run?</legend>
-          <input type="radio" name="module" value="<%=modules[0] %>" id="<%=modules[0] %>" checked>
-          <label for="<%=modules[0] %>"><%=modules[0] %></label>
-          <% modules.drop(1).each do |mod| %>
-            <input type="radio" name="module" value="<%=mod %>" id="<%=mod %>">
-            <label for="<%=mod %>"><%=mod %></label>
+          
+          <% modules.each_with_index do |mod, index| %>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="module" value="<%=mod.name %>" id="<%=mod.name %>" <% if index == 1 %>checked<% end %>>
+              <label class="form-check-label" for="<%=mod.name %>">
+              <%=mod.title %>
+              </label>
+            </div>
+
+         
           <% end %>
+          
         </fieldset>
       </div>
   <% end %>
