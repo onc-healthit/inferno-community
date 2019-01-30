@@ -663,6 +663,17 @@ module Inferno
         walk_resource(resource) do |value, meta, path|
           next if meta["type"] != "Reference"
           begin
+            # Should potentially update valid? method in fhir_dstu2_models
+            # to check for this type of thing
+            # e.g. "patient/54520" is invalid (fhir_client resource_class method would expect "Patient/54520")
+            if value.relative?
+              begin
+                value.resource_class
+              rescue NameError => e
+                problems << "#{path} has invalid resource type in reference: #{value.type}"
+                next
+              end
+            end
             value.read
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e.to_s}"
