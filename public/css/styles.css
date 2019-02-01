@@ -759,8 +759,8 @@ body {
   cursor: pointer;
   background-color: #eee;
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: auto;
+  text-overflow: clip;
   white-space: nowrap;
 }
 

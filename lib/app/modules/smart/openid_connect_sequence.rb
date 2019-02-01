@@ -136,6 +136,8 @@ module Inferno
 
         leeway = 30 # 30 seconds clock slip allowed
 
+        assert !@jwk_set.nil?, 'JWK set not present'
+        assert @jwk_set.length > 0, 'JWK set is empty'
         begin
           JWT.decode @instance.id_token, @jwk_set[0].to_key, true, {
               leeway: leeway,
