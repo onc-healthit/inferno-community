@@ -46,6 +46,7 @@ module Inferno
           if sequence_result.nil? || sequence_result.result != 'wait'
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
           else
+            failed_test_cases = []
             test_case = test_set.test_case_by_id(sequence_result.test_case_id)
             test_group = test_case.test_group
 
@@ -79,6 +80,9 @@ module Inferno
                 count += 1
                 out << js_update_result(sequence, test_set, result, count, sequence.test_count)
                 instance.save!
+              end
+              if sequence_result.result == 'fail' || sequence_result.result == 'error' then
+                failed_test_cases << test_case.id
               end
               instance.sequence_results.push(sequence_result)
               instance.save!
@@ -117,6 +121,9 @@ module Inferno
                   count += 1
                   out << js_update_result(sequence, test_set, result, count, sequence.test_count)
                 end
+                if sequence_result.result == 'fail' || sequence_result.result == 'error' then
+                  failed_test_cases << test_case.id
+                end
 
                 sequence_result.test_set_id = test_set.id
                 sequence_result.test_case_id = test_case.id
@@ -134,9 +141,9 @@ module Inferno
                 end
               end
 
-              query_target = "#{params[:test_case]}"
+              query_target = failed_test_cases.join(',')
               unless test_group.nil?
-                query_target = "#{test_group.id}/#{test_case.id}"
+                query_target = "#{test_group.id}/#{query_target}"
               end
 
               out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{query_target}") if finished
@@ -313,6 +320,7 @@ module Inferno
           submitted_test_cases = params[:test_case].split(',')
           test_group = nil
           test_group = test_set.test_case_by_id(submitted_test_cases.first).test_group
+          failed_test_cases = []
 
           timer_count = 0
           stayalive_timer_seconds = 20
@@ -351,6 +359,9 @@ module Inferno
               end
 
               sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
+              if sequence_result.result == 'fail' || sequence_result.result == 'error' then
+                failed_test_cases << test_case.id
+              end
 
               sequence_result.save!
               if sequence_result.redirect_to_url
@@ -367,9 +378,9 @@ module Inferno
               end
             end
 
-            query_target = params[:test_case]
+            query_target = failed_test_cases.join(',')
             unless test_group.nil?
-              query_target = "#{test_group.id}/#{test_case.id}"
+              query_target = "#{test_group.id}/#{query_target}"
             end
 
             out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}") if finished
