@@ -10,3 +10,4 @@ data/*
 .idea
 coverage
 tmp/*
+.vscode/*
