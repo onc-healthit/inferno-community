@@ -117,8 +117,8 @@ class OpenIDConnectSequenceTest < MiniTest::Test
     assert_requested(stub_jwks_register)
 
     assert sequence_result.result == 'fail'
-    # 1 test depends on proper signature
-    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 1
+    # 2 test depends on proper signature
+    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 2
   end
 
   def test_unsigned_token
@@ -140,8 +140,8 @@ class OpenIDConnectSequenceTest < MiniTest::Test
     assert_requested(stub_jwks_register)
 
     assert sequence_result.result == 'fail'
-    # 1 test depends on present signature
-    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 1
+    # 2 test depends on present signature
+    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 2
   end
 
   def test_expired_token
@@ -179,8 +179,8 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
     assert sequence_result.result == 'fail'
-    # 3 tests depend on openid-configuration information
-    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 3
+    # 4 tests depend on openid-configuration information
+    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 4
   end
 
   def test_no_jwks_uri
@@ -198,7 +198,7 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
     assert sequence_result.result == 'fail'
-    # 2 tests depend on jwks information
-    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 2
+    # 3 tests depend on jwks information
+    assert sequence_result.test_results.select { |r| r.result == 'fail' }.length == 3
   end
 end
