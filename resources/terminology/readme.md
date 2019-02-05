@@ -30,7 +30,7 @@ Inferno provides a task which will attempt to unzip the files into the correct l
 for further operation:
 
 ```sh
-`bundle exec rake terminology:unzip_umls[umls.zip]`
+bundle exec rake terminology:unzip_umls[umls.zip]
 ```
 
 Users can also manually unzip the files.  The mmsys.zip file should be unzipped to the same
@@ -45,10 +45,18 @@ The metamorphoSys tool can customize and install UMLS sources.  Inferno provides
 a configuration file and a task to help run the metamorphoSys tool.
 
 ```sh
-`bundle exec rake terminology:run_umls[all-active-exportconfig.prop]`
+bundle exec rake terminology:run_umls[all-active-exportconfig.prop]
 ```
 
 The UMLS tool can also be manually executed.
+
+### Loading Terminology into SQLite
+
+Inferno provides a script to load terminology data into a SQLite database for validation.
+
+```sh
+./create_umls.sh
+```
 
 ### Creating the Terminology Validators
 
