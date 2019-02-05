@@ -16,6 +16,8 @@ module Inferno
       property :error_count, Integer, default: 0
       property :todo_count, Integer, default: 0
       property :skip_count, Integer, default: 0
+      property :optional_failed_count, Integer, default: 0
+      property :optional_passed_count, Integer, default: 0
 
       property :app_version, String
 

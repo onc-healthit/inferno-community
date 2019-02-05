@@ -175,22 +175,16 @@ module Inferno
           sequence_results = instance.latest_results_by_case
           latest_sequence_time = nil
 
-          request_response_count = 0
-          instance.sequence_results.each do |sequence_result|
-            if latest_sequence_time == nil || latest_sequence_time < sequence_result.created_at then
-              latest_sequence_time = sequence_result.created_at
-            end
-            sequence_result.test_results.each do |test_result|
-              request_response_count = request_response_count + test_result.request_responses.count
-            end
-          end
-
-          if latest_sequence_time == nil then
-            latest_sequence_time = "No tests ran"
+          request_response_count = Inferno::Models::RequestResponse.all(:instance_id => instance.id).count
+          if instance.sequence_results.count > 0 then 
+            latest_sequence_time = Inferno::Models::SequenceResult.first(:testing_instance => instance).created_at.strftime("%m/%d/%Y %H:%M")
           else
-            latest_sequence_time = latest_sequence_time.strftime("%m/%d/%Y %H:%M")
+            latest_sequence_time = "No tests ran"
           end
+          
           report_summary = {
+            fhir_version: instance.fhir_version,
+            app_version: VERSION,
             resource_references: instance.resource_references.count,
             supported_resources: instance.supported_resources.count,
             request_response: request_response_count,

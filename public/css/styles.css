@@ -982,16 +982,22 @@ body {
 }
 
 .metrics-value{
-  font-size: 2.8em;
-  margin-bottom: -10px;
+  font-size: 6em;
+  margin-bottom: -30px;
+}
+
+.metrics-value-small{
+  font-size: 2.5em;
+  margin-bottom:-10px;
 }
 
 .report-summary{
-  margin-bottom: 20px;
-  padding: 10px 0;
-  background-color: rgba(255,255,255,.5);
-  border-radius: 5px;
-  border: 1px solid gray;
+  margin: 10px 0 10px 20px;
+  padding: 8px 0;
+}
+
+.result-column{
+  padding-left:50px;
 }
 
 .report-summary .col{
@@ -1002,6 +1008,9 @@ body {
   display:none;
 }
 
+.report-metadata .metrics-value{
+  font-size: 2em;
+}
 @media print{
   .guided-background-fill, .footer, .server-info, .group-nav, .inferno-header{
     display:none;
