@@ -74,7 +74,7 @@ Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and E
 Inferno contains a robust set of self-tests to ensure that the test clients conform to the specification and performs as intended.  To run these tests, execute the following command:
 
 ```sh
-bundle exec rake
+bundle exec rake test
 ```
 
 ## Inspecting and Exporting Tests
