@@ -131,12 +131,13 @@
                         <% if sequence_results[test_case.id].nil? %>
                           <%= test_case.sequence.test_count %> tests
                         <% else %>
-                          <%= sequence_results[test_case.id].passed_count %> Passed -
-                          <%= sequence_results[test_case.id].failed_count %> Failed
+                          <%= sequence_results[test_case.id].required_passed %>/<%= sequence_results[test_case.id].required_total%> Required
                           <% if sequence_results[test_case.id].skip_count > 0 %> -
                             <%= sequence_results[test_case.id].skip_count %> Skipped
                           <% end %>
-      
+                          <% if sequence_results[test_case.id].optional_total > 0%> -
+                            <%= sequence_results[test_case.id].optional_passed%>/<%= sequence_results[test_case.id].optional_total%> Optional
+                          <% end%>
                         <% end %>
                       </div>
                       <div class="sequence-details">

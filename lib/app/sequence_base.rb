@@ -89,8 +89,7 @@ module Inferno
               request_method: request.request_method.downcase,
               request_url: request.url,
               request_headers: headers.to_json,
-              request_payload: request.body.read,
-              instance_id: @instance.id
+              request_payload: request.body.read
           )
         end
 
@@ -111,8 +110,7 @@ module Inferno
                                                         required: !optional?,
                                                         test_set_id: test_set_id,
                                                         test_case_id: test_case_id,
-                                                        app_version: VERSION,
-                                                        instance_id: @instance.id)
+                                                        app_version: VERSION)
           @sequence_result.save!
         end
 
@@ -184,25 +182,27 @@ module Inferno
           end
         end
 
-        @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed_count = 0
+        @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
         @sequence_result.result = STATUS[:pass]
 
         @sequence_result.test_results.each do |result|
+          if result.required then
+            @sequence_result.required_total += 1
+          else
+            @sequence_result.optional_total += 1
+          end
           case result.result
           when STATUS[:pass]
             if result.required then
-              @sequence_result.passed_count += 1
+              @sequence_result.required_passed += 1
             else
-              @sequence_result.optional_passed_count += 1
+              @sequence_result.optional_passed += 1
             end
           when STATUS[:todo]
             @sequence_result.todo_count += 1
           when STATUS[:fail]
             if result.required
-              @sequence_result.failed_count += 1
               @sequence_result.result = result.result if @sequence_result.result != STATUS[:error]
-            else
-              @sequence_result.optional_failed_count += 1
             end
           when STATUS[:error]
             if result.required
