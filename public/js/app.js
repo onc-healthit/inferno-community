@@ -249,12 +249,15 @@ $(function(){
       testCasePart = hashParts[1];
       $('#group-link-' + hashParts[0]).tab('show');
     }
-    testCasePart.split(',').forEach(function(tc){
-      var testCase = $('#' + tc);
-      var details = $('#' + tc + '-details');
-      details.collapse('show')
-      testCase.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
-    })
+
+    if(testCasePart.length > 0){
+      testCasePart.split(',').forEach(function(tc){
+        var testCase = $('#' + tc);
+        var details = $('#' + tc + '-details');
+        details.collapse('show')
+        testCase.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
+      })
+    }
   }
 
   $('[data-toggle="tooltip"]').tooltip()

@@ -10,7 +10,6 @@ module Inferno
       defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
 
       description 'Retrieve authorization server endpoints for SMART on FHIR'
-      details 'Input Details TODO'
 
       test 'Retrieve Authorization from Well Known endpoint' do
 
