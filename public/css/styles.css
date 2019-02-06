@@ -1008,9 +1008,6 @@ body {
   display:none;
 }
 
-.report-metadata .metrics-value{
-  font-size: 2em;
-}
 @media print{
   .guided-background-fill, .footer, .server-info, .group-nav, .inferno-header{
     display:none;
