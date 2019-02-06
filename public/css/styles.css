@@ -36,20 +36,17 @@ body {
 }
 
 /* Effectively removing default breakpoints for repsonsive bootstrap container */
-/*
 @media (min-width: 576px) {
   .container {
-    max-width: 1000px;
+    max-width: 1200px;
   }
 }
 
 @media (min-width: 768px) {
   .container {
-    max-width: 1000px;
+    max-width: 1200px;
   }
 }
-*/
-
 
 .main {
   margin: 20px 0;
