@@ -115,7 +115,7 @@ module Inferno
         assert @jwk_set.length > 0, 'JWK set is empty'
 
         begin
-          jwt = JSON::JWT.decode(@instance.id_token, @jwk_set)
+          jwt = JSON::JWT.decode(@instance.id_token, @jwk_set[0].to_key)
         rescue => e # Show validation error as failure
           assert false, e.message
         end
@@ -136,25 +136,19 @@ module Inferno
 
         leeway = 30 # 30 seconds clock slip allowed
 
+        assert !@jwk_set.nil?, 'JWK set not present'
+        assert @jwk_set.length > 0, 'JWK set is empty'
         begin
-          decoder = JWT::Decode.new(@instance.id_token, nil, false,
-                                    {
-                                        leeway: leeway,
-                                        aud: @instance.client_id,
-                                        verify_aud: true,
-                                        verify_iat: true,
-                                        verify_expiration: true,
-                                        verify_not_before: true
-                                        # If we gain information about iss or sub, this information
-                                        # should go here, as below
-                                        # iss: 'foo', #issuer goes here
-                                        # verify_iss: true
-                                        #sub: subject goes here
-                                        #verify_sub: true
-                                    }
-          )
-          decoder.decode_segments
-          decoder.verify
+          JWT.decode @instance.id_token, @jwk_set[0].to_key, true, {
+              leeway: leeway,
+              algorithm: 'RS256',
+              aud: @instance.client_id,
+              verify_aud: true,
+              verify_iat: true,
+              verify_expiration: true,
+              verify_not_before: true
+          }
+
         rescue => e # Show validation error as failure
           assert false, e.message
         end

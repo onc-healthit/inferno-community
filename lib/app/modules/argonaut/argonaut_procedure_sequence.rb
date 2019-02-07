@@ -32,7 +32,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Procedure'), {patient: @instance.patient_id})
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-        save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
 
       end
 
@@ -62,6 +61,7 @@ module Inferno
 
         @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('Procedure'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
 
       end
 

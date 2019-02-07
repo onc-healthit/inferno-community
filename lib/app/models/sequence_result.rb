@@ -5,6 +5,8 @@ module Inferno
       property :id, String, key: true, default: proc { SecureRandom.uuid}
       property :name, String
       property :result, String
+      property :test_case_id, String
+      property :test_set_id, String
 
       property :redirect_to_url, String, length: 500
       property :wait_at_endpoint, String
@@ -20,6 +22,7 @@ module Inferno
       property :required, Boolean, default: true
 
       property :next_sequences, String
+      property :next_test_cases, String
 
       property :created_at, DateTime, default: proc { DateTime.now }
 

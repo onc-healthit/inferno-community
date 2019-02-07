@@ -6,7 +6,8 @@ module Inferno
       description 'Demonstrate token refresh capability'
       test_id_prefix 'TR'
 
-      requires :client_id, :confidential_client, :client_secret, :refresh_token, :client_id, :oauth_token_endpoint
+      requires :client_id, :confidential_client, :client_secret, :refresh_token, :oauth_token_endpoint
+      defines :token
 
       test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.' do
 

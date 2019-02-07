@@ -13,12 +13,12 @@ class InstancePageTest < MiniTest::Test
   def setup
     @fhir_server = "http://#{Inferno::SecureRandomBase62.generate(32)}.example.com/"
     post Inferno::BASE_PATH, {fhir_server: @fhir_server, module: "uscdi", fhir_version: "dstu2"}
-    assert last_response.redirect?
-    follow_redirect!
+    follow_redirect! while last_response.status == 302
     assert last_response.ok?
     @instance_path = last_request.url
-    instance_id = @instance_path.split('/').last
+    instance_id = @instance_path.split('/').last(2).first # second to last
     @instance = Inferno::Models::TestingInstance.get(instance_id)
+    assert !@instance.nil?, "No instance id #{instance_id}"
   end
 
   def instance_details_ok_test
@@ -37,13 +37,6 @@ class InstancePageTest < MiniTest::Test
   def test_not_found_key
     get "#{@instance_path}asdfasdf/launch/"
     assert last_response.not_found?
-  end
-
-  def test_launch_sequence_not_initiated
-    get "#{@instance_path}#{@instance.client_endpoint_key}/launch/"
-    assert last_response.redirect?
-    follow_redirect!
-    assert last_request.url.include? "error=no_launch"
   end
 
 end

@@ -69,7 +69,7 @@
       <% unless result.message.nil? %>
         <div class="result-details-message">
             Details: <%= result.message %>
-            <%# TODO: Make this dependent on a flag for community/program edition %>
+            <%# TODO: Make this dependent on a flag for community/guided edition %>
             <% unless result.required %> <br/>This optional test is not required for conformance. <% end %>
         </div>
       <% end %>

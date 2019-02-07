@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sinatra/base'
 require 'sinatra/custom_logger'
 require_relative 'helpers/configuration'
@@ -36,10 +38,10 @@ module Inferno
 
       helpers Helpers::Configuration
       helpers Helpers::BrowserLogic
-      
-      set :public_folder, Proc.new { File.join(root, '../../public') }
+
+      set :public_folder, (proc { File.join(root, '../../public') })
       set :static, true
-      set :views, File.expand_path('../views', __FILE__)
+      set :views, File.expand_path('views', __dir__)
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
     end
   end

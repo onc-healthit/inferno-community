@@ -7,8 +7,33 @@ require_relative 'utils/validation'
 require_relative 'utils/walk'
 require_relative 'utils/web_driver'
 
+require 'bloomer'
+require 'bloomer/msgpackable'
+require 'json'
+
 module Inferno
   module Sequence
+
+    bloomfilter_root = "data/umls-bloomer-bloom-filters"
+    vs_bloomfilter_manifest_path = "#{bloomfilter_root}/manifest.json"
+
+    if File.file? vs_bloomfilter_manifest_path
+      vs_bloomfilter_manifest = JSON.parse(File.read(vs_bloomfilter_manifest_path))
+      vs_bloomfilter_manifest["filters"].each do |filter_detail|
+        vs_url = filter_detail.fetch("valueSetUrl", nil)
+        next unless vs_url
+
+        filename = "#{bloomfilter_root}/#{filter_detail['file']}"
+        one_filter = Bloomer::Scalable.from_msgpack(open(filename).read())
+        validate_fn = lambda do |coding|
+          probe = "#{coding.system}|#{coding.code}"
+          one_filter.include? probe
+        end
+
+        FHIR::DSTU2::StructureDefinition.validates_vs(vs_url, &validate_fn)
+      end
+    end
+
     class SequenceBase
 
       include Assertions
@@ -40,8 +65,6 @@ module Inferno
       @@optional = []
 
       @@test_id_prefixes = {}
-
-      @@inactive = {}
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
         @client = client
@@ -79,9 +102,15 @@ module Inferno
         start(&block)
       end
 
-      def start
+      def start(test_set_id = nil, test_case_id = nil)
         if @sequence_result.nil?
-          @sequence_result = Models::SequenceResult.new(name: sequence_name, result: STATUS[:pass], testing_instance: @instance, required: !optional?, app_version: VERSION)
+          @sequence_result = Models::SequenceResult.new(name: sequence_name,
+                                                        result: STATUS[:pass],
+                                                        testing_instance: @instance,
+                                                        required: !optional?,
+                                                        test_set_id: test_set_id,
+                                                        test_case_id: test_case_id,
+                                                        app_version: VERSION)
           @sequence_result.save!
         end
 
@@ -283,14 +312,6 @@ module Inferno
       def self.test_id_prefix(test_id_prefix = nil)
         @@test_id_prefixes[self.sequence_name] = test_id_prefix unless test_id_prefix.nil?
         @@test_id_prefixes[self.sequence_name]
-      end
-
-      def self.inactive
-        @@inactive[self.sequence_name] = true
-      end
-
-      def self.inactive?
-        @@inactive.has_key?(self.sequence_name)
       end
 
       def self.tests
@@ -625,6 +646,7 @@ module Inferno
             @profiles_encountered << p.url
             @profiles_encountered.uniq!
             errors = p.validate_resource(resource)
+            @test_warnings.concat(p.warnings.reject(&:empty?))
             unless errors.empty?
               errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
               @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
@@ -647,6 +669,17 @@ module Inferno
         walk_resource(resource) do |value, meta, path|
           next if meta["type"] != "Reference"
           begin
+            # Should potentially update valid? method in fhir_dstu2_models
+            # to check for this type of thing
+            # e.g. "patient/54520" is invalid (fhir_client resource_class method would expect "Patient/54520")
+            if value.relative?
+              begin
+                value.resource_class
+              rescue NameError => e
+                problems << "#{path} has invalid resource type in reference: #{value.type}"
+                next
+              end
+            end
             value.read
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e.to_s}"

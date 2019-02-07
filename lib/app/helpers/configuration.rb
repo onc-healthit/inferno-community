@@ -25,6 +25,10 @@ module Inferno
           settings.app_name
         end
 
+        def badge_text
+          settings.badge_text
+        end
+
         def valid_json?(json)
           JSON.parse(json)
           return true

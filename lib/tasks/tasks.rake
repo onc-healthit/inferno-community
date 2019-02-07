@@ -162,22 +162,8 @@ namespace :inferno do |argv|
       puts "No sequence found for module: #{args.module}"
       exit
     end
-    case args.group
-    when 'active'
-      test_group = sequences.reject {|sb| sb.inactive?}
-    when 'inactive'
-      test_group = sequences.select {|sb| sb.inactive?}
-    when 'all'
-      test_group = sequences
-    else
-      puts "#{args.group} is not valid argument.  Valid arguments include:
-                  active
-                  inactive
-                  all"
-      exit
-    end
 
-    flat_tests = test_group.map  do |klass|
+    flat_tests = sequences.map  do |klass|
       klass.tests.map do |test|
         test[:sequence] = klass.to_s
         test[:sequence_required] = !klass.optional?

@@ -22,16 +22,15 @@ $(function(){
     }
   }
 
-  $('input[type=radio][name=confidential_client]').on('change', function() {
-   switch($(this).val()) {
-     case 'true':
-       $('.client-secret-container').show();
-       break;
-     case 'false':
-       $('.client-secret-container').hide();
-       break;
-   }
+  $('#report-link').on('click', function(){
+    if($('#reportDiv')[0].innerHTML.trim().length === 0){
+      $('#reportDiv').load('report');
+    }
   });
+
+  $(document.links).filter(function() {
+    return this.hostname != window.location.hostname;
+  }).attr('target', '_blank');
 
   $('.sequence-expand-button').click(function (event) {
     let button = $(this);
@@ -62,63 +61,59 @@ $(function(){
      }
   });
 
-  $('.sequence-action button').click(function() {
-    var sequence = $(this).data('sequence');
-    let sequence_title = $(this).data('sequence-title');
-    $('#PrerequisitesModalTitle').html(sequence_title)
-    var requirements = []
-    $('#PrerequisitesModal .form-group').each(function(){
-      var requiredby = $(this).data('requiredby');
-      var prerequisite = $(this).data('prerequisite');
-      var show = false;
-      if(requiredby){
-        requiredby.split(',').forEach(function(item){
-          if(item === sequence){
-            show = true;
-            requirements.push(prerequisite)
-          }
-        })
+  $('.sequence-button').click(function(){
+    
+    var sequences = [],
+        test_cases = [],
+        requirements = [],
+        popupTitle = "",
+        lockedVariables = [];
+
+    popupTitle = $(this).closest('.sequence-action-boundary').data('group');
+
+    $('.input-instructions').hide();
+    if($(this).data('groupId')){
+      $('#input-instructions-' + $(this).data('groupId')).show();
+
+      let lockedVars = $('#group-lock-variables-' + $(this).data('groupId')).data('lockVariables');
+      
+      if(lockedVars){
+        lockedVariables = lockedVars.split(",")
       }
-      if(show){
-        $(this).show()
-      } else {
-        $(this).hide();
-      }
-    });
-
-    $('#PrerequisitesModal input[name=sequence]').val(sequence);
-    $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
-
-    // Confidential client special case
-    if($('#confidential_client_on')[0].checked){
-       $('.client-secret-container').show();
-    } else {
-       $('.client-secret-container').hide();
     }
+    
 
-    if(requirements.length === 0){
-      $('#PrerequisitesModal form').submit();
-    } else {
-      $('#PrerequisitesModal').modal('show');
-    }
-
-  });
-
-  $('.sequence-group-button').click(function(){
-    var group = $(this).data('group'),
-        sequences = [],
-        requirements = [];
-
-    $(this).closest('.sequence-group').find('.sequence-button').each(function(){
+    $(this).closest('.sequence-action-boundary').find('.test-case-data').each(function(){
       sequences.push($(this).data('sequence'));
+      test_cases.push($(this).data('testCase'));
+
+      if(!popupTitle){
+        popupTitle = $(this).data('testCaseTitle');
+      }
+
     });
 
-    // FIXME: CONDENSE WITH THE INDIVIDUAL TEST RUN PORTION
-    //
-    $('#PrerequisitesModal .form-group').each(function(){
+    // clear out the existing contents
+    $('.prerequisite-group').empty();
+    $('.enabled-prerequisite-group-title').hide();
+    $('.disabled-prerequisite-group-title').hide();
+    $('.disabled-prerequisites').hide();
+    $('.enabled-prerequisites').hide();
+
+    //$('input[type=radio][name=confidential_client]').on('change', function() {
+    $('#PrerequisitesModal').on('change', function(e) {
+      if(e.target.id === 'confidential_client_on_active') {
+        $('.client-secret-container').show();
+      } else if (e.target.id === 'confidential_client_off_active'){
+        $('.client-secret-container').hide();
+      }
+    });
+
+    $('#PrerequisitesModal .prerequisites-forms > .form-group').each(function(){
       var requiredby = $(this).data('requiredby');
       var definedby = $(this).data('definedby');
       var prerequisite = $(this).data('prerequisite');
+
       var definedList = [];
       var show = false;
       if(definedby){
@@ -128,7 +123,6 @@ $(function(){
       }
       if(requiredby){
         requiredby.split(',').forEach(function(item){
-          console.log(definedList);
           if(sequences.includes(item)){
             // this field is required by one of the sequences I'm running
             // is it also defined by one of the sequences?
@@ -147,30 +141,57 @@ $(function(){
           }
         })
       }
+
       if(show){
-        $(this).show()
+        let formInput = $(this).clone();
+        if(lockedVariables.includes(prerequisite)){
+          formInput.find('input').attr('readonly', 'readonly');
+          formInput.find(':radio:not(:checked)').attr('disabled', true);
+          
+          $('.disabled-prerequisites').append(formInput);
+          $('.disabled-prerequisite-group-title').show();
+          $('.disabled-prerequisites').show();
+        } else {
+          formInput.find(':radio').each(function(){
+            $(this).attr('id', $(this)[0].id + '_active');
+          });
+        formInput.find('input')[0].removeAttribute('readonly');
+        formInput.find(':radio:not(:checked)').attr('disabled', false);
+        $('.enabled-prerequisites').append(formInput);
+        $('.enabled-prerequisite-group-title').show();
+        $('.enabled-prerequisites').show();
+        }
+        //$(this).show()
       } else {
-        $(this).hide();
+        //$(this).hide();
       }
+
+
+      
     });
 
     $('#PrerequisitesModal input[name=sequence]').val(sequences.join(','));
-    $('#PrerequisitesModal input[name=group]').val(group);
+    $('#PrerequisitesModal input[name=test_case]').val(test_cases.join(','));
     $('#PrerequisitesModal input[name=required_fields]').val(requirements.join(','));
 
     // Confidential client special case
+    
     if($('#confidential_client_on')[0].checked){
        $('.client-secret-container').show();
     } else {
        $('.client-secret-container').hide();
     }
+    
 
     if(requirements.length === 0){
       $('#PrerequisitesModal form').submit();
     } else {
       $('#PrerequisitesModal').modal('show');
     }
-    $('#PrerequisitesModalTitle').html(group)
+
+    if(popupTitle){
+      $('#PrerequisitesModalTitle').html(popupTitle)
+    }
   })
 
 
@@ -180,6 +201,10 @@ $(function(){
     $(this).attr('title', $(this).data('preconditionDescription'))
                         .attr('data-toggle','tooltip');
   });
+
+  $('.get-started').click(function(){
+    $('#group-link-DiscoveryandRegistration').tab('show')
+  })
 
   $('.test-results-more').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
@@ -217,12 +242,22 @@ $(function(){
   })
 
   if(window.location.hash.length > 0){
-    window.location.hash.split('#')[1].split(',').forEach(function(seq){
-      var sequence = $('#' + seq);
-      var details = $('#' + seq + '-details');
-      details.collapse('show')
-      sequence.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
-    })
+    let hashParts = window.location.hash.split('#')[1].split('/');
+    let testCasePart = hashParts[0];
+
+    if(hashParts.length > 1) {
+      testCasePart = hashParts[1];
+      $('#group-link-' + hashParts[0]).tab('show');
+    }
+
+    if(testCasePart.length > 0){
+      testCasePart.split(',').forEach(function(tc){
+        var testCase = $('#' + tc);
+        var details = $('#' + tc + '-details');
+        details.collapse('show')
+        testCase.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
+      })
+    }
   }
 
   $('[data-toggle="tooltip"]').tooltip()
