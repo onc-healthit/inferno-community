@@ -10,7 +10,7 @@
     data-parameter-<%=key.to_s%>="<%=value%>"
   <% end %>
   >
-    <a id="<%=test_case.id%>" name="<%=test_case.id%>" class='sequence-anchor'></a>
+    <a id="<%=test_case.test_group.id%>/<%=test_case.id%>" name="<%=test_case.test_group.id%>/<%=test_case.id%>" class='sequence-anchor'></a>
     <div class='container'>
       <div class='row align-items-center no-gutters'>
         <div class='col-<%if show_button%>10<%else%>12<%end%>'>

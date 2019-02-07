@@ -47,6 +47,7 @@ module Inferno
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
           else
             failed_test_cases = []
+            all_test_cases = []
             test_case = test_set.test_case_by_id(sequence_result.test_case_id)
             test_group = test_case.test_group
 
@@ -81,6 +82,7 @@ module Inferno
                 out << js_update_result(sequence, test_set, result, count, sequence.test_count)
                 instance.save!
               end
+              all_test_cases << test_case.id
               if sequence_result.result == 'fail' || sequence_result.result == 'error' then
                 failed_test_cases << test_case.id
               end
@@ -142,6 +144,8 @@ module Inferno
               end
 
               query_target = failed_test_cases.join(',')
+              query_target = all_test_cases.join(',') if all_test_cases.length == 1
+
               unless test_group.nil?
                 query_target = "#{test_group.id}/#{query_target}"
               end
@@ -321,6 +325,7 @@ module Inferno
           test_group = nil
           test_group = test_set.test_case_by_id(submitted_test_cases.first).test_group
           failed_test_cases = []
+          all_test_cases = []
 
           timer_count = 0
           stayalive_timer_seconds = 20
@@ -359,6 +364,8 @@ module Inferno
               end
 
               sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
+
+              all_test_cases << test_case.id
               if sequence_result.result == 'fail' || sequence_result.result == 'error' then
                 failed_test_cases << test_case.id
               end
@@ -379,6 +386,8 @@ module Inferno
             end
 
             query_target = failed_test_cases.join(',')
+            query_target = all_test_cases.join(',') if all_test_cases.length == 1
+
             unless test_group.nil?
               query_target = "#{test_group.id}/#{query_target}"
             end
