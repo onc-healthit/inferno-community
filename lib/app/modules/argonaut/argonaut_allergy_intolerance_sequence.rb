@@ -13,6 +13,31 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :AllergyIntolerance
 
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Allergy Intolerance Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-allergyintolerance.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it contains:
+
+        * The status of the allergy
+        * A code representing the substance responsible for the allergy
+        * A reference to the patient to whom the allergy belongs
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/medicationorder.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html)
+              )
+
       @resources_found = false
 
       test 'Server rejects AllergyIntolerance search without authorization' do

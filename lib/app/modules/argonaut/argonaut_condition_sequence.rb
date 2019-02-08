@@ -13,6 +13,33 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Condition
 
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it contains:
+
+        * A code representing the status of the #{title}
+        * A code representing the #{title}
+        * A reference to the patient to whom the #{title} belongs
+        * A code representing the category of the #{title}
+        * A code representing the verification status
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+              )
+
       @resources_found = false
 
       test 'Server rejects Condition search without authorization' do
