@@ -15,7 +15,7 @@ module Inferno
       details %(
         # Background
         The [EHR Launch](http://hl7.org/fhir/smart-app-launch/index.html#ehr-launch-sequence) is one of two ways in which
-        an App can be launched, the other being Standalone launch.  In an EHR launch, the app is launched from an existing EHR session
+        an app can be launched, the other being Standalone launch.  In an EHR launch, the app is launched from an existing EHR session
         or portal by a redirect to the registered launch URL.  The EHR provides the app two parameters:
 
         * `iss` - Which contains the FHIR server url
@@ -27,7 +27,7 @@ module Inferno
         check for the presence of the `iss` and `launch` parameters.  The security of the authorization endpoint is then checked
         and authorization is attempted using the provided `launch` identifier.
 
-        For more information on the EHR launch sequence see:
+        For more information on the #{title} see:
 
         * [SMART EHR Launch Sequence](http://hl7.org/fhir/smart-app-launch/index.html#ehr-launch-sequence)
               )

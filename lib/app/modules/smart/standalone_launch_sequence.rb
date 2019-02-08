@@ -9,6 +9,27 @@ module Inferno
       requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :redirect_uris
       defines :token, :id_token, :refresh_token, :patient_id
 
+      details %(
+        # Background
+
+        The [Standalone Launch](http://hl7.org/fhir/smart-app-launch/#standalone-launch-sequence) Sequence allows an app,
+        like Inferno, to be launched independent of an existing EHR session.  It is one of the two launch methods described in
+        the SMART App Launch Framework alongside EHR Launch.  The app will request authorization for the provided scope from the
+        authorization endpoint, ultimately receiving an authorization token which can be used to gain access to resources
+        on the FHIR server.
+
+        # Test Methodology
+
+        Inferno will redirect the user to the the authorization endpoint so that they may provide any required credentials
+        and authorize the application.  Upon successful authorization, Inferno will exchange the authorization code provided
+        for an access token.
+
+        For more information on the #{title}
+
+        * [Standalone Launch](http://hl7.org/fhir/smart-app-launch/#standalone-launch-sequence)
+
+              )
+
       preconditions 'Client must be registered' do
         !@instance.client_id.nil?
       end
