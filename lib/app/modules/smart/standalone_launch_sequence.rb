@@ -24,9 +24,9 @@ module Inferno
         and authorize the application.  Upon successful authorization, Inferno will exchange the authorization code provided
         for an access token.
 
-        For more information on the #{title}
+        For more information on the #{title}:
 
-        * [Standalone Launch](http://hl7.org/fhir/smart-app-launch/#standalone-launch-sequence)
+        * [Standalone Launch Sequence](http://hl7.org/fhir/smart-app-launch/#standalone-launch-sequence)
 
               )
 
