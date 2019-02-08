@@ -47,9 +47,9 @@ module Inferno
 
         For more information of the Conformance Statement, visit these links:
 
-        * Conformance
-        * Argonaut Conformance Requirements
-        * SMART on FHIR Conformance
+        * [Conformance](https://www.hl7.org/fhir/DSTU2/conformance.html)
+        * [Argonaut Conformance Requirements for Servers](https://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
+        * [SMART on FHIR Conformance](http://hl7.org/fhir/smart-app-launch/conformance/index.html)
       )
 
       test 'FHIR server secured by transport layer security' do
