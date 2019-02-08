@@ -9,14 +9,20 @@ test_sets:
     tests: 
       - name: Discovery
         overview: >
-          This is an overview of the Discovery group
+          This set of tests retrieves information about the supported capabilities and relevant endpoints of the server.
+          Requests for information from the `/metadata` and `/.well-known/smart-configuration` endpoints are made to get
+          information about supported capabilities and authorization endpoints.
         sequences:
           - ArgonautConformanceSequence
           - SMARTDiscoverySequence
         run_all: false
       - name: Authorization and Authentication
         overview: >
-          This an overview of the Authentication
+          These tests are primarily based on exercising the [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/index.html).
+          App Registration is typically done first and can be done Manually or Dynamically and as either a public or confidential client.
+          The app can then be launched as either a standalone a standalone app or from the EHR.
+          There are also tests for validating OAuth 2.0 id or refresh tokens if provided.
+
         sequences:
           - DynamicRegistrationSequence
           - ManualRegistrationSequence
@@ -26,7 +32,10 @@ test_sets:
           - TokenRefreshSequence
       - name: Argonaut Data Query Implementation Guide
         overview: >
-          This an overview of the Authentication
+          For each of the relevant USCDI data elements provided in the conformance statement, these test execute the [required supported searches](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
+          as defined by the Argonaut Data Query Implementation Guide.  The test defaults to using the Patient provided in the most recent SMART App Launch performed by Inferno.
+          The tests will perform searches and reads for the Resource selected and validate the response against the
+          relevant [profile](http://www.fhir.org/guides/argonaut/r2/profiles.html) as currently defined in the Argonaut Data Query Implementation Guide.
         sequences:
           - ArgonautPatientSequence
           - ArgonautAllergyIntoleranceSequence
@@ -46,7 +55,7 @@ test_sets:
         run_all: true
       - name: Additional Resources
         overview: >
-          This is an overview of additional resources
+          This section contains some additional tests for other resources or features.
         sequences:
           - DocumentReferenceSequence
           - ProvenanceSequence

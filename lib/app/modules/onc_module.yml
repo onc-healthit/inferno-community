@@ -84,7 +84,7 @@ test_sets:
         input_instructions: |
           Enter in the appropriate scope to enable user-level access, as well as two patient IDs to demonstrate that the app has access to more than one patient.
 
-          Note: *Either this launch sequence or the Standalone Patient App Launch test must also include scopes that demonstrate token refresh nd OpenID Connect authentication.*
+          Note: *Either this launch sequence or the Standalone Patient App Launch test must also include scopes that demonstrate token refresh and OpenID Connect authentication.*
         lock_variables: 
           - client_id
           - confidential_client
