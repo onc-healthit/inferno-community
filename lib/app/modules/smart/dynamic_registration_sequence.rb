@@ -18,6 +18,11 @@ module Inferno
         This sequence tests tests this functionality by dynamically an app for Inferno to use in later sequences.
         Inferno will make a `POST` request to the Dynamic Registration endpoint provided and validate the response.
 
+        For more information see:
+
+        * [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/)
+        * [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591)
+
       )
 
       test_id_prefix 'DR'
