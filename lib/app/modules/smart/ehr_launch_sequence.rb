@@ -12,6 +12,26 @@ module Inferno
 
       defines :token, :id_token, :refresh_token, :patient_id
 
+      details %(
+        # Background
+        The [EHR Launch](http://hl7.org/fhir/smart-app-launch/index.html#ehr-launch-sequence) is one of two ways in which
+        an App can be launched, the other being Standalone launch.  In an EHR launch, the app is launched from an existing EHR session
+        or portal by a redirect to the registered launch URL.  The EHR provides the app two parameters:
+
+        * `iss` - Which contains the FHIR server url
+        * `launch` - An identifier needed for authorization
+
+        # Test Methodology
+
+        Inferno will wait for the EHR server redirect upon execution.  When the redirect is received Inferno will
+        check for the presence of the `iss` and `launch` parameters.  The security of the authorization endpoint is then checked
+        and authorization is attempted using the provided `launch` identifier.
+
+        For more information on the EHR launch sequence see:
+
+        * [SMART EHR Launch Sequence](http://hl7.org/fhir/smart-app-launch/index.html#ehr-launch-sequence)
+              )
+
       test 'EHR server redirects client browser to app launch URI' do
 
         metadata {
