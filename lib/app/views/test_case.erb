@@ -5,6 +5,7 @@
   data-sequence="<%=test_case.sequence.sequence_name%>"
   data-test-case="<%=test_case.id%>"
   data-test-case-title="<%= test_case.title %>"
+  data-result="<%=sequence_results[test_case.id].try(:result)%>"
   <% test_case.parameters.reject{|key| ['description', 'title', 'sequence'].include?(key.to_s)}.each do |key, value| %>
     <%# Note: TODO: Use this data to hard code values to a given test case.   Not yet needed %>
     data-parameter-<%=key.to_s%>="<%=value%>"

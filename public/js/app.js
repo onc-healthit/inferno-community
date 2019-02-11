@@ -68,6 +68,7 @@ $(function(){
         requirements = [],
         popupTitle = "",
         lockedVariables = [];
+        skippedOnly = false;
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
@@ -82,13 +83,19 @@ $(function(){
       }
     }
     
+    if($(this).data('skippedOnly')){
+      skippedOnly = $(this).data('skippedOnly');
+    }
 
     $(this).closest('.sequence-action-boundary').find('.test-case-data').each(function(){
-      sequences.push($(this).data('sequence'));
-      test_cases.push($(this).data('testCase'));
-
-      if(!popupTitle){
-        popupTitle = $(this).data('testCaseTitle');
+      if(!skippedOnly || $(this).data('result') === 'skip')
+      {
+          sequences.push($(this).data('sequence'));
+          test_cases.push($(this).data('testCase'));
+    
+          if(!popupTitle){
+            popupTitle = $(this).data('testCaseTitle');
+          }
       }
 
     });
