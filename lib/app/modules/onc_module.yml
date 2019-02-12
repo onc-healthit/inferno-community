@@ -126,6 +126,7 @@ test_sets:
           - patient_id
       - name: USCDI Access (Search and Read)
         run_all: true
+        run_skipped: true
         overview: >
           For each of the relevant USCDI data elements provided in the conformance statement, this test executes the [required supported searches](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
           as defined by the Argonaut Data Query Implementation Guide.  The test begins by searching by Patient provided in the most recent SMART App Launch performed by Inferno.  It uses results returned from that
