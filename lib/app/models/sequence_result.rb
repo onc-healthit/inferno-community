@@ -11,11 +11,13 @@ module Inferno
       property :redirect_to_url, String, length: 500
       property :wait_at_endpoint, String
 
-      property :passed_count, Integer, default: 0
-      property :failed_count, Integer, default: 0
+      property :required_passed, Integer, default: 0
+      property :required_total, Integer, default: 0
       property :error_count, Integer, default: 0
       property :todo_count, Integer, default: 0
       property :skip_count, Integer, default: 0
+      property :optional_passed, Integer, default: 0
+      property :optional_total, Integer, default: 0
 
       property :app_version, String
 

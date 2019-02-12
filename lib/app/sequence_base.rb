@@ -153,7 +153,8 @@ module Inferno
                   request_payload: req.request[:payload],
                   response_code: req.response[:code],
                   response_headers: req.response[:headers].to_json,
-                  response_body: req.response[:body])
+                  response_body: req.response[:body],
+                  instance_id: @instance.id)
             end
           end
 
@@ -166,7 +167,8 @@ module Inferno
                 request_payload: req[:request][:payload].to_json,
                 response_code: req[:response][:code],
                 response_headers: req[:response][:headers].to_json,
-                response_body: req[:response][:body])
+                response_body: req[:response][:body],
+                instance_id: @instance.id)
           end
 
           yield result if block_given?
@@ -180,18 +182,26 @@ module Inferno
           end
         end
 
-        @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = @sequence_result.skip_count = 0
+        @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
         @sequence_result.result = STATUS[:pass]
 
         @sequence_result.test_results.each do |result|
+          if result.required then
+            @sequence_result.required_total += 1
+          else
+            @sequence_result.optional_total += 1
+          end
           case result.result
           when STATUS[:pass]
-            @sequence_result.passed_count += 1
+            if result.required then
+              @sequence_result.required_passed += 1
+            else
+              @sequence_result.optional_passed += 1
+            end
           when STATUS[:todo]
             @sequence_result.todo_count += 1
           when STATUS[:fail]
             if result.required
-              @sequence_result.failed_count += 1
               @sequence_result.result = result.result if @sequence_result.result != STATUS[:error]
             end
           when STATUS[:error]
