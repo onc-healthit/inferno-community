@@ -1,0 +1,19 @@
+<ul class='test-list'>
+  <% sequence_result && sequence_result.test_results.each do |result, index| %>
+    <% result.request_responses.each do |rr|%>
+      <li>
+        <span>
+          <strong>
+            <%= rr.request_method.upcase %> &nbsp;
+          </strong>
+          <%= rr.response_code %> &nbsp;
+          <%= rr.request_url %>
+        </span>
+        <span class="float-right">
+          <button class="log-request-more" data-request-id = "<%= rr.id %>" data-testing-instance-id="<%= instance.id %>">details</button>
+        </span>
+      </li>
+    <% end %>
+  <% end %>
+</ul>
+

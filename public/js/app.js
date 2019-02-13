@@ -235,6 +235,28 @@ $(function(){
     }
   })
 
+  $('.log-request-more').on('click', function() {
+    if($(this).data('testingInstanceId') && $(this).data('requestId')){
+      var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_request/' + $(this).data('requestId');
+      $("#testResultDetailsModal").find('.modal-content').load(url, function(value){
+        $(this).find("pre>code").each(function(el){
+          let $el = $(this)
+          let content = $el.html()
+          try{
+            if(content && content.length > 0){
+              content = indent($el.html())
+            }
+          } catch (ex) {
+            console.log('Error indenting: ' + ex)
+          }
+          $el.html(content)
+        });
+
+        $("#testResultDetailsModal").modal('show');
+      })
+    }
+  })
+  
   $('.test-list .test-list-more').on('click', function() {
     if($(this).data('sequenceName') && $(this).data('testIndex') !== undefined){
       var url = window.basePath + '/test_details/' + $(this).data('module') + '/' + $(this).data('sequenceName') + '/' + $(this).data('testIndex');
