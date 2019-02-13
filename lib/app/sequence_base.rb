@@ -89,7 +89,8 @@ module Inferno
               request_method: request.request_method.downcase,
               request_url: request.url,
               request_headers: headers.to_json,
-              request_payload: request.body.read
+              request_payload: request.body.read,
+              instance_id: @instance.id
           )
         end
 

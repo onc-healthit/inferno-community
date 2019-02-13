@@ -105,18 +105,20 @@
     </div>
     </div>
   </div>
+  <% show_log = sequence_results[test_case.id]&.test_results&.any?{ |result| result.request_responses.count > 0} %>
+  <% show_overview = !test_case.sequence.details.nil?%>
   <div class="result-details collapse" id="<%=test_case.id%>-details">
-    <% if !test_case.sequence.details.nil? || sequence_results[test_case.id]&.test_results&.any?{ |result| result.request_responses.count > 0 }%>
+    <% if show_log || show_overview %>
       <ul class="nav nav-tabs result-details-tabs" id="<%=test_case.id%>_result-details-tabs" role="tablist">
         <li class="nav-item">
           <a class="nav-link active" id="<%=test_case.id%>_test_list-tab" data-toggle="tab" href="#<%=test_case.id%>_test_list" role="tab" aria-controls="<%=test_case.id%>_test_list" aria-selected="true"><% if sequence_results[test_case.id].nil? %>Test List<% else %> Test Results<%end%></a>
         </li>
-        <% if sequence_results[test_case.id]&.test_results&.any?{ |result| result.request_responses.count > 0 }%>
+        <% if show_log %>
           <li class="nav-item">
             <a class="nav-link" id="<%=test_case.id%>_test-log-tab" data-toggle="tab" href="#<%=test_case.id%>_test-log" role="tab" aria-controls="<%=test_case.sequence.sequence_name%>_test-log" aria-selected="false">Detailed Logs</a>
           </li>
         <% end %>
-        <% if !test_case.sequence.details.nil? %>
+        <% if show_overview %>
           <li class="nav-item">
             <a class="nav-link" id="<%=test_case.id%>_more-information-tab" data-toggle="tab" href="#<%=test_case.id%>_more-information" role="tab" aria-controls="<%=test_case.sequence.sequence_name%>_more-information" aria-selected="false">Overview</a>
           </li>
@@ -126,12 +128,12 @@
         <div class="tab-pane fade show active" id="<%=test_case.id%>_test_list" role="tabpanel" aria-labelledby="<%=test_case.id%>_test_list-tab">
           <%= erb(:test_list,{},{instance: instance, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
         </div>
-        <% if sequence_results[test_case.id]&.test_results&.any?{ |result| result.request_responses.count > 0 } %>
+        <% if show_log %>
           <div class="tab-pane fade" id="<%=test_case.id%>_test-log" role="tabpanel" aria-labelledby="<%=test_case.id%>_test-log-tab">
             <%= erb(:test_log,{},{instance: instance, sequence_result: sequence_results[test_case.id] }) %>
           </div>
         <% end %>
-        <% if !test_case.sequence.details.nil? %>
+        <% if show_overview %>
           <div class="tab-pane fade more-information" id="<%=test_case.id%>_more-information" role="tabpanel" aria-labelledby="<%=test_case.id%>_more-information-tab">
             <%= markdown_to_html(test_case.sequence.details).html_safe %>
           </div>

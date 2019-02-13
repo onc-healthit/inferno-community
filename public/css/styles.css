@@ -768,8 +768,6 @@ body {
 .test-result-details-response-values ul{
   list-style: none;
   padding-left: 20px;
-  overflow-x: scroll;
-
 }
 
 .test-result-details-message-label {
