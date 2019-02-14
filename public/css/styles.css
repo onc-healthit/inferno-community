@@ -596,7 +596,7 @@ body {
   border-bottom: 1px solid #efefef;
 }
 
-.test-results-more {
+.test-results-more, .log-request-more {
   margin: 0;
   padding: 0;
   vertical-align: initial;
@@ -768,8 +768,6 @@ body {
 .test-result-details-response-values ul{
   list-style: none;
   padding-left: 20px;
-  overflow-x: scroll;
-
 }
 
 .test-result-details-message-label {

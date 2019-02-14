@@ -248,6 +248,14 @@ module Inferno
           erb :test_result_details, layout: false
         end
 
+        # Returns details for a specific request response
+        #   This route is typically used for retrieving test metadata and results after the test has been run.
+        get '/:id/test_request/:test_request_id/?' do
+          request_response = Inferno::Models::RequestResponse.get(params[:test_request_id])
+          halt 404 if request_response.instance_id != params[:id]
+          erb :request_details, {:layout => false}, rr: request_response
+        end
+
         # Cancels the currently running test
         get '/:id/:test_set/sequence_result/:sequence_result_id/cancel' do
           sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
