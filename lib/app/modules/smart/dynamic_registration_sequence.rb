@@ -11,11 +11,17 @@ module Inferno
 
         The #{title} Sequence tests the authorization server to dynamically register OAuth 2.0 clients using
         the [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591).  This
-        functionality is *OPTIONAL* but is recommended by the SMART App Launch framework.
+        functionality is *OPTIONAL* but is recommended by the [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/).
 
         # Test Methodology
 
         This sequence tests tests this functionality by dynamically an app for Inferno to use in later sequences.
+        Inferno will make a `POST` request to the Dynamic Registration endpoint provided and validate the response.
+
+        For more information see:
+
+        * [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/)
+        * [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591)
 
       )
 

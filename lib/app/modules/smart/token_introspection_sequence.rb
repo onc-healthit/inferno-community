@@ -10,6 +10,25 @@ module Inferno
 
       optional
 
+      details %(
+        # Background
+
+        Token Introspection allows client applications to get information about access or refresh tokens.  The authorization
+        service provides an endpoint for clients to make introspection requests and get metadata and state information about the token.
+        This functionality is *OPTIONAL* but is recommended by the [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/).
+
+        # Test Methodology
+
+        This sequence will use the provided token introspection to test both access and refresh tokens.  Inferno will verify
+        if the token is active, the matching scopes, and the lifetime of the token.
+
+        For more information see:
+
+        * [Using Refresh Tokens to obtain an Access Token](http://hl7.org/fhir/smart-app-launch/index.html#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
+        * [OAuth 2.0 Token Introspection](https://tools.ietf.org/html/rfc7662)
+
+              )
+
       test 'OAuth token introspection endpoint secured by transport layer security' do
 
         metadata {

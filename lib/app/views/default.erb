@@ -84,6 +84,11 @@
                     </button>
                   <% end %>
                 </h1>
+                <% unless group.overview.nil? %>
+                  <div class="group-overview">
+                    <%= markdown_to_html(group.overview) %>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
