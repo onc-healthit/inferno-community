@@ -42,7 +42,6 @@ module Inferno
 
         metadata {
           id '01'
-          optional
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
           desc %(
             The authorization endpoints accepted by a FHIR resource server can be exposed as a Well-Known Uniform Resource Identifier
@@ -72,7 +71,6 @@ module Inferno
 
         metadata {
           id '02'
-          optional
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
           desc %(
 
@@ -123,7 +121,7 @@ module Inferno
         @instance.update(oauth_authorize_endpoint: @conformance_authorize_url, oauth_token_endpoint: @conformance_token_url, oauth_register_endpoint: registration_url)
       end
 
-      test 'OAuth Endpoints must be either in conformance statement or well known endpoint' do
+      test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
 
         metadata {
           id '03'
@@ -135,11 +133,9 @@ module Inferno
           )
         }
 
-        assert !@well_known_authorize_url.blank? || !@conformance_authorize_url.blank?, 'Neither the well-known endpoint nor the conformance statement contained an authorization url'
-        assert @well_known_authorize_url == @conformance_authorize_url || @well_known_authorize_url.blank? || @conformance_authorize_url.blank?, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
+        assert @well_known_authorize_url == @conformance_authorize_url, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
       
-        assert !@well_known_token_url.blank? || !@conformance_token_url.blank?, 'Neither the well-known endpoint nor the conformance statement contained a token url'
-        assert @well_known_token_url == @conformance_token_url || @well_known_token_url.blank? || @conformance_token_url.blank?, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
+        assert @well_known_token_url == @conformance_token_url, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
       end
 
 
