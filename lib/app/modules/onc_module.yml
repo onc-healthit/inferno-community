@@ -63,7 +63,7 @@ test_sets:
         sequences:
           - sequence: StandaloneLaunchSequence
             title: Standalone Launch with Patient Scope
-            description: Perform Standalone SMART launch sequence.  Patient, OpenID Connect and Token Refresh scopes required.
+            description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
@@ -82,7 +82,7 @@ test_sets:
         sequences:
           - sequence: EHRLaunchSequence
             title: EHR Launch with Practitioner Scope
-            description: Perform EHR SMART launch sequence.  User-level scope is required, while OpenID Connect and Token Refresh scopes are recommended.
+            description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
