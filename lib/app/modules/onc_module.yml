@@ -68,7 +68,6 @@ test_sets:
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
           - sequence: OpenIDConnectSequence
-            title: Single Sign on using OpenID Connect
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - TokenRefreshSequence
           - sequence: ArgonautPatientReadOnlySequence
@@ -88,7 +87,6 @@ test_sets:
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
           - sequence: OpenIDConnectSequence
-            title: Single Sign on using OpenID Connect
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - TokenRefreshSequence
           - sequence: ArgonautPatientReadOnlySequence
