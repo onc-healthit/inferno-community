@@ -47,9 +47,6 @@ module Inferno
       property :initiate_login_uri, String
       property :redirect_uris, String
 
-      property :extra_patient_id_1, String
-      property :extra_patient_id_2, String
-
       property :dynamic_registration_token, String
 
       has n, :sequence_results
