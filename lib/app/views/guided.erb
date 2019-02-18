@@ -387,27 +387,11 @@
         <input type="hidden" name="sequence" value="" />
         <input type="hidden" name="test_case" value="" />
         <input type="hidden" name="required_fields" value="" />
-        <div class="modal-body">
+        <div class="modal-body"> 
           <% test_set.groups.each do |group| %>
             <% unless group.input_instructions.nil? %>
               <div class="input-instructions" id="input-instructions-<%=group.id%>">
                 <%= markdown_to_html(group.input_instructions) %>
-
-                <% if group.id.downcase.include?('discoveryandregistration') %>
-            
-                  <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
-                    instance: instance,
-                    label: 'Launch URI',
-                    value: instance.initiate_login_uri,
-                    readonly: true })%>
-          
-                  <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                        instance: instance,
-                        label: 'Redirect URI',
-                        value: instance.redirect_uris,
-                        readonly: true })%>
-                <% end %>
-                
               </div>
             <% end %>
             
@@ -417,6 +401,19 @@
                  data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
             <%end %>
           <% end %>
+          <div class="show-uris" style="display:none">
+            <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                    instance: instance,
+                    label: 'Launch URI',
+                    value: instance.initiate_login_uri,
+                    readonly: true })%>
+          
+                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                      instance: instance,
+                      label: 'Redirect URI',
+                      value: instance.redirect_uris,
+                      readonly: true })%>
+          </div>
           <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
             
   
