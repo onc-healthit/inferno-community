@@ -62,7 +62,7 @@ test_sets:
           - oauth_token_endpoint
           - redirect_uris
         sequences:
-          - sequence: StandaloneLaunchSequence
+          - sequence: OncStandaloneLaunchSequence
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence.  Patient, OpenID Connect and Token Refresh scopes required.
           - sequence: ArgonautPatientReadOnlySequence
@@ -75,7 +75,7 @@ test_sets:
           
           *Note: this is not the same as the Population-level API, which requires the ability for transfering much larger quantities of data in a more efficient manner.*
         sequences:
-          - sequence: EHRLaunchSequence
+          - sequence: OncEHRLaunchSequence
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence.  User-level scope is required, while OpenID Connect and Token Refresh scopes are recommended.
           - sequence: ArgonautReadTwoPatientsSequence
