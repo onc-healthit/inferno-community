@@ -50,19 +50,19 @@ module Inferno
         scopes.delete('openid')
         assert scopes.include?( 'fhirUser'), 'Scope did not include "fhirUser"'
         scopes.delete('fhirUser')
-        assert scopes.include?( 'launch'), 'Scope did not include "launch"'
-        scopes.delete('launch')
+        assert scopes.include?( 'launch/patient'), 'Scope did not include "launch/patient"'
+        scopes.delete('launch/patient')
         assert scopes.include?('offline_access'), 'Scope did not include "offline_access"'
         scopes.delete('offline_access')
 
         scopes.each do |scope|
           scope_pieces = scope.split('/')
-          assert scope_pieces.count == 2, "'#{scope}' does not match the expected resource format"
-          assert scope_pieces[0] == 'user', "Scope '#{scope}' does not follow the format 'user/[ resource | * ]'.[ read | write | *]"
+          assert scope_pieces.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
+          assert scope_pieces[0] == 'patient', "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
           resource_access = scope_pieces[1].split('.')
-          assert resource_access.count == 2, "'#{scope}' does not match the expected resource format"
+          assert resource_access.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
           assert resource_access[0] == '*' || @@resourceTypes.include?(resource_access[0]), "'#{resource_access[0]}' must be either a valid resource type or '*'"
-          assert resource_access[1] =~ /^(\*|read|write)/
+          assert resource_access[1] =~ /^(\*|read|write)/, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
         end
       end
 

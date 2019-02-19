@@ -57,12 +57,12 @@ module Inferno
 
         scopes.each do |scope|
           scope_pieces = scope.split('/')
-          assert scope_pieces.count == 2, "'#{scope}' does not match the expected resource format"
-          assert scope_pieces[0] == 'user', "Scope '#{scope}' does not follow the format 'user/[ resource | * ]'.[ read | write | *]"
+          assert scope_pieces.count == 2, "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | write | * ]"
+          assert scope_pieces[0] == 'user', "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | write | * ]"
           resource_access = scope_pieces[1].split('.')
-          assert resource_access.count == 2, "'#{scope}' does not match the expected resource format"
+          assert resource_access.count == 2, "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | write | * ]"
           assert resource_access[0] == '*' || @@resourceTypes.include?(resource_access[0]), "'#{resource_access[0]}' must be either a valid resource type or '*'"
-          assert resource_access[1] =~ /^(\*|read|write)/
+          assert resource_access[1] =~ /^(\*|read|write)/, "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | write | * ]"
         end
       end
 
