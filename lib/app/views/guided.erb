@@ -359,18 +359,6 @@
               value: instance.patient_id,
               })%>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_1,
-              label: 'First Unique Patient ID',
-              instance: instance,
-              value: instance.extra_patient_id_1,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_2,
-              label: 'Second Unique Patient ID',
-              instance: instance,
-              value: instance.extra_patient_id_2,
-              })%>
-
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,

@@ -3,7 +3,7 @@ module Inferno
     class TokenRefreshSequence < SequenceBase
 
       title 'Token Refresh'
-      description 'Demonstrate token refresh capability'
+      description 'Demonstrate token refresh capability.'
       test_id_prefix 'TR'
 
       requires :client_id, :confidential_client, :client_secret, :refresh_token, :oauth_token_endpoint
