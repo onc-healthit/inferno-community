@@ -73,7 +73,7 @@ test_sets:
           Demonstrate the ability for an external launch with a user-level scope that is capable of accessing multiple patients.  This test requires the system to
           access multiple patient endpoints to demonstrate that a 3rd party app can interact with multiple patients without requiring re-authentication.
           
-          *Note: this is not the same as the Population-level API, which requires the ability for transfering much larger quantities of data in a more efficient manner.*
+          *Note: this is not the same as the Population-level API, which requires the ability for transferring much larger quantities of data in a more efficient manner.*
         sequences:
           - sequence: EHRLaunchSequence
             title: EHR Launch with Practitioner Scope
