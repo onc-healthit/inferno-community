@@ -136,7 +136,7 @@ $(function(){
             })
             if(!alreadyDefined){
               show = true;
-              requirements.push(prerequisite)
+              requirements = requirements.concat(prerequisite.split(','));
             }
           }
         })
@@ -155,11 +155,11 @@ $(function(){
           formInput.find(':radio').each(function(){
             $(this).attr('id', $(this)[0].id + '_active');
           });
-        formInput.find('input')[0].removeAttribute('readonly');
-        formInput.find(':radio:not(:checked)').attr('disabled', false);
-        $('.enabled-prerequisites').append(formInput);
-        $('.enabled-prerequisite-group-title').show();
-        $('.enabled-prerequisites').show();
+          formInput.find('input')[0].removeAttribute('readonly');
+          formInput.find(':radio:not(:checked)').attr('disabled', false);
+          $('.enabled-prerequisites').append(formInput);
+          $('.enabled-prerequisite-group-title').show();
+          $('.enabled-prerequisites').show();
         }
         //$(this).show()
       } else {

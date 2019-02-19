@@ -283,7 +283,7 @@
         <%# SPECIAL CASE: CLIENT SECRET %>
         <div class="form-group"
           data-requiredby="<%= test_set.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
-          data-prerequisite="confidential_client"
+          data-prerequisite="confidential_client,client_secret"
           id="is_confidential"
           >
           <div class="form-check form-check-inline">
