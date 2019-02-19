@@ -29,6 +29,8 @@ module Inferno
 
       optional
 
+      show_uris
+
       requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris, :dynamic_registration_token
       defines :client_id, :client_secret
 

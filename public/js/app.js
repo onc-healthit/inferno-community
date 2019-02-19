@@ -69,6 +69,7 @@ $(function(){
         popupTitle = "",
         lockedVariables = [];
         skippedOnly = false;
+        show_uris = false;
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
@@ -96,12 +97,17 @@ $(function(){
           if(!popupTitle){
             popupTitle = $(this).data('testCaseTitle');
           }
+
+          if(!show_uris){
+            show_uris = $(this).data('showUris');
+          }
       }
 
     });
 
     // clear out the existing contents
     $('.prerequisite-group').empty();
+    $('.show-uris').hide();
     $('.enabled-prerequisite-group-title').hide();
     $('.disabled-prerequisite-group-title').hide();
     $('.disabled-prerequisites').hide();
@@ -198,6 +204,10 @@ $(function(){
 
     if(popupTitle){
       $('#PrerequisitesModalTitle').html(popupTitle)
+    }
+
+    if(show_uris){
+      $('.show-uris').show();
     }
   })
 

@@ -63,6 +63,7 @@ module Inferno
       @@test_metadata = {}
 
       @@optional = []
+      @@show_uris = []
 
       @@test_id_prefixes = {}
 
@@ -339,6 +340,14 @@ module Inferno
 
       def self.optional?
         @@optional.include?(self.sequence_name)
+      end
+
+      def self.show_uris
+        @@show_uris << self.sequence_name
+      end
+
+      def self.show_uris?
+        @@show_uris.include?(self.sequence_name)
       end
 
       def self.preconditions(description, &block)
