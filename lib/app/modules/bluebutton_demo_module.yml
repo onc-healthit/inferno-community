@@ -11,6 +11,7 @@ test_sets:
           This is an overview of the Discovery group
         sequences:
           - CapabilityStatementSequence
+          - SMARTDiscoverySequence
         run_all: false
       - name: Authorization and Authentication
         overview: >
