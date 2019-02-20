@@ -179,19 +179,19 @@ module Inferno
 
       end
 
-      test 'Profile claim in ID token is represented as a resource URI' do
+      test 'fhirUser claim in ID token is represented as a resource URI' do
 
         metadata {
           id '07'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
           desc %(
-            Extract the profile claim and treat it as the URL of a FHIR resource.
+            Extract the fhirUser claim and treat it as the URL of a FHIR resource.
           )
         }
 
         assert !@decoded_payload.nil?, 'no id_token payload available'
         assert !@decoded_header.nil?, 'no id_token header available'
-        assert !@decoded_payload['profile'].nil?, 'no id_token profile claim'
+        assert !@decoded_payload['fhirUser'].nil?, 'no id_token fhirUser claim'
 
         # How should we validate this profile id?
         # Does this have to be a URI, or is a fragment ok?
