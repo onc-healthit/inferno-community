@@ -1,0 +1,38 @@
+<div class="modal-header">
+  <h5 class="modal-title" id="exampleModalLabel">
+    Request Response Details
+  </h5>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="test-result-details-response-values">
+    <div class="test-result-details-header">Request</div>
+    <div class="test-result-details-subheader">Headers</div>
+    <ul>
+      <% valid_json?(rr.request_headers) && JSON.parse(rr.request_headers).each do |header_name, header_value| %>
+        <li><strong><%=header_name%></strong>: <code><%=header_value%></code><br/></li>
+      <% end %>
+    </ul>
+
+    <% unless rr.request_payload.nil? %>
+      <div class="test-result-details-subheader">Payload</div>
+      <div><pre><code><%=CGI.escapeHTML rr.request_payload%></code></pre></div>
+    <% end %>
+
+    <% if rr.direction == 'outbound' %>
+      <div class="test-result-details-header">Response</div>
+      <div class="test-result-details-subheader">Headers</div>
+      <ul>
+        <% valid_json?(rr.response_headers) && JSON.parse(rr.response_headers).each do |header_name, header_value| %>
+          <li><strong><%=header_name%></strong>: <code><%=header_value%></code></li>
+        <% end %>
+      </ul>
+      <% unless rr.response_body.nil? %>
+        <div class="test-result-details-subheader">Body</div>
+        <div><pre><code><%=CGI.escapeHTML rr.response_body%></code></pre></div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

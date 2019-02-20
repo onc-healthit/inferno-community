@@ -11,6 +11,27 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Observation
 
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?category=laboratory&patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it conforms to the profile.
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html)
+              )
+
       @resources_found = false
 
       test 'Observation Results search without authorization' do

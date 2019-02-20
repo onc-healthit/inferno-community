@@ -8,15 +8,11 @@ test_sets:
     view: default
     tests: 
       - name: Discovery
-        overview: >
-          This is an overview of the Discovery group
         sequences:
           - ArgonautConformanceSequence
           - SMARTDiscoverySequence
         run_all: false
       - name: Authorization and Authentication
-        overview: >
-          This an overview of the Authentication
         sequences:
           - DynamicRegistrationSequence
           - ManualRegistrationSequence
@@ -25,8 +21,6 @@ test_sets:
           - OpenIDConnectSequence
           - TokenRefreshSequence
       - name: Argonaut Data Query Implementation Guide
-        overview: >
-          This an overview of the Authentication
         sequences:
           - ArgonautPatientSequence
           - ArgonautAllergyIntoleranceSequence
@@ -45,8 +39,6 @@ test_sets:
           - ArgonautVitalSignsSequence
         run_all: true
       - name: Additional Resources
-        overview: >
-          This is an overview of additional resources
         sequences:
           - DocumentReferenceSequence
           - ProvenanceSequence

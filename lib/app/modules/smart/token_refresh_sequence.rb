@@ -3,11 +3,29 @@ module Inferno
     class TokenRefreshSequence < SequenceBase
 
       title 'Token Refresh'
-      description 'Demonstrate token refresh capability'
+      description 'Demonstrate token refresh capability.'
       test_id_prefix 'TR'
 
       requires :client_id, :confidential_client, :client_secret, :refresh_token, :oauth_token_endpoint
       defines :token
+
+      details %(
+      # Background
+
+      The #{title} Sequence tests the ability of the system to successfuly exchange a refresh token for an access token.
+      Refresh tokens are typically longer lived than access tokens and allow client applications to obtain a new access token
+      Refresh tokens themselves cannot provide access to resources on the server.
+
+      # Test Methodology
+
+      Inferno will attempt to exchange the refresh token for a new access token and verify that the information returned
+      contains the required fields and uses the proper headers.
+
+      For more information see:
+
+      * [The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
+      * [Using a refresh token to obtain a new access token](http://hl7.org/fhir/smart-app-launch/#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
+              )
 
       test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.' do
 

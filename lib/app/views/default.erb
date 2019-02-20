@@ -84,6 +84,11 @@
                     </button>
                   <% end %>
                 </h1>
+                <% unless group.overview.nil? %>
+                  <div class="group-overview">
+                    <%= markdown_to_html(group.overview) %>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
@@ -201,18 +206,6 @@
               value: instance.patient_id,
               })%>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_1,
-              label: 'First Unique Patient ID',
-              instance: instance,
-              value: instance.extra_patient_id_1,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_2,
-              label: 'Second Unique Patient ID',
-              instance: instance,
-              value: instance.extra_patient_id_2,
-              })%>
-
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,
@@ -235,20 +228,6 @@
               <div class="input-instructions" id="input-instructions-<%=group.id%>">
                 <%= markdown_to_html(group.input_instructions) %>
 
-                <% if group.id.downcase.include?('discoveryandregistration') %>
-            
-                  <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
-                    instance: instance,
-                    label: 'Launch URI',
-                    value: instance.initiate_login_uri,
-                    readonly: true })%>
-          
-                  <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                        instance: instance,
-                        label: 'Redirect URI',
-                        value: instance.redirect_uris,
-                        readonly: true })%>
-                <% end %>
                 
               </div>
             <% end %>
@@ -259,6 +238,19 @@
                  data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
             <%end %>
           <% end %>
+          <div class="show-uris" style="display:none">
+            <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                    instance: instance,
+                    label: 'Launch URI',
+                    value: instance.initiate_login_uri,
+                    readonly: true })%>
+          
+                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                      instance: instance,
+                      label: 'Redirect URI',
+                      value: instance.redirect_uris,
+                      readonly: true })%>
+          </div>
           <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
             
   

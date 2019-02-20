@@ -63,6 +63,7 @@ module Inferno
       @@test_metadata = {}
 
       @@optional = []
+      @@show_uris = []
 
       @@test_id_prefixes = {}
 
@@ -89,7 +90,8 @@ module Inferno
               request_method: request.request_method.downcase,
               request_url: request.url,
               request_headers: headers.to_json,
-              request_payload: request.body.read
+              request_payload: request.body.read,
+              instance_id: @instance.id
           )
         end
 
@@ -338,6 +340,14 @@ module Inferno
 
       def self.optional?
         @@optional.include?(self.sequence_name)
+      end
+
+      def self.show_uris
+        @@show_uris << self.sequence_name
+      end
+
+      def self.show_uris?
+        @@show_uris.include?(self.sequence_name)
       end
 
       def self.preconditions(description, &block)
