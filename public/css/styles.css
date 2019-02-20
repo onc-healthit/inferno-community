@@ -768,6 +768,7 @@ body {
 .test-result-details-response-values ul{
   list-style: none;
   padding-left: 20px;
+  overflow: auto;
 }
 
 .test-result-details-message-label {
