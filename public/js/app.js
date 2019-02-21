@@ -125,9 +125,9 @@ $(function(){
     //$('input[type=radio][name=confidential_client]').on('change', function() {
     $('#PrerequisitesModal').on('change', function(e) {
       if(e.target.id === 'confidential_client_on_active') {
-        $('.client-secret-container').show();
+        $('div[data-prerequisite="client_secret"]').show();
       } else if (e.target.id === 'confidential_client_off_active'){
-        $('.client-secret-container').hide();
+        $('div[data-prerequisite="client_secret"]').hide();
       }
     });
 
@@ -202,9 +202,9 @@ $(function(){
     // Confidential client special case
     
     if($('#confidential_client_on')[0].checked){
-       $('.client-secret-container').show();
+       $('div[data-prerequisite="client_secret"]').show();
     } else {
-       $('.client-secret-container').hide();
+       $('div[data-prerequisite="client_secret"]').hide();
     }
     
 
