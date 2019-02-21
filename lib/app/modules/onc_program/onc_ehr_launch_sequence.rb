@@ -1,4 +1,4 @@
-require_relative './ehr_launch_sequence'
+require_relative '../smart/ehr_launch_sequence'
 
 module Inferno
   module Sequence

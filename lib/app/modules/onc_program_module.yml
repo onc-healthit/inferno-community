@@ -1,23 +1,13 @@
 name: onc
-title: ONC Testing
+title: ONC Program
 description: |
 
-  This set of tests verifies that a provider supports the requirements of the 
-  Argonaut Data Query Implementation Guide, including resources defined by
-  US Core for Data Interoperability (USCDI).
+  This set of tests verifies that a provider supports the API requirements of the 
+  ONC 21<sup>st</sup> Century Cures NPRM.
 
   This test set is  designed to mimic the capabilities of SMART on FHIR app that
   progressively gathers data from the server through queries executed by the
-  various steps.  Data that is collected is validated against relevant profiles
-  and checked to see if they are match the queries being returned. In order to pass the tests, 
-  the server must provide test data for at least two
-  patients that each represent a complete patient medical record.
-  
-  There are five major test steps, each containing a number of tests.  In 'strict' mode, 
-  later test steps rely on input from earlier test steps, and the testing user cannot
-  alter this information.  In 'Unlocked' mode, the test user has complete control of the inputs
-  to each test step.  A fully conformant implementation should be able to complete all tests in 'strict'
-  mode.
+  various steps.  
   
 fhir_version: dstu2
 hide_optional: true

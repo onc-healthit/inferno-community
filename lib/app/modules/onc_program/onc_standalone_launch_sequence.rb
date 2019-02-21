@@ -1,4 +1,4 @@
-require_relative './standalone_launch_sequence'
+require_relative '../smart/standalone_launch_sequence'
 
 module Inferno
   module Sequence
