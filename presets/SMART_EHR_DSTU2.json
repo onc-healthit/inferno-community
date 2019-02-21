@@ -1,0 +1,24 @@
+{
+  "server": "https://portal.demo.syncfor.science/api/fhir",
+  "module": "onc",
+  "preset_name": "S4S Reference Server",
+  "arguments": {
+    "client_id": "test-suite",
+    "confidential_client": "true",
+    "client_secret": "demo-secret-s4s",
+    "scopes": "launch/patient patient/*.read offline_access",
+    "redirect_uris": "https://tests.demo.syncfor.science/authorized/",
+    "standalone_launch_script": [
+      {"cmd": "click", "type": "id", "find_value": "sign-in"},
+      {"cmd": "click", "type": "css", "find_value": "[data-patient-id=smart-1288992]"},
+      {"cmd": "click", "type": "css", "find_value": "[data-slide=next]", "index": 0},
+      {"cmd": "click", "type": "css", "find_value": "[rel=confirm]", "index": 0},
+      {"cmd": "click", "type": "css", "find_value": "[rel=confirm]", "index": 1},
+      {"cmd": "click", "type": "css", "find_value": "[rel=confirm]", "index": 2},
+      {"cmd": "click", "type": "css", "find_value": "[rel=confirm]", "index": 3},
+      {"cmd": "click", "type": "css", "find_value": "[rel=confirm]", "index": 4},
+      {"cmd": "click", "type": "css", "find_value": "[data-slide=next]", "index": 1},
+      {"cmd": "click", "type": "id", "find_value": "authorize"}
+    ]
+  }
+}

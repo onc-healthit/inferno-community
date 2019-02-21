@@ -10,6 +10,7 @@ require_relative '../app/endpoint'
 require_relative '../app/helpers/configuration'
 require_relative '../app/sequence_base'
 require_relative '../app/models'
+require_relative '../app/utils/instance_config'
 
 include Inferno
 
@@ -328,19 +329,7 @@ namespace :inferno do |argv|
     client.use_dstu2 if instance.module.fhir_version == 'dstu2'
     client.default_json
 
-    config['arguments'].each do |key, val|
-      if instance.respond_to?(key)
-        if val.is_a?(Array) || val.is_a?(Hash)
-          instance.send("#{key.to_s}=", val.to_json) if instance.respond_to? key.to_s
-        elsif val.is_a?(String) && val.downcase == 'true'
-          instance.send("#{key.to_s}=", true) if instance.respond_to? key.to_s
-        elsif val.is_a?(String) && val.downcase == 'false'
-          instance.send("#{key.to_s}=", false) if instance.respond_to? key.to_s
-        else
-          instance.send("#{key.to_s}=", val) if instance.respond_to? key.to_s
-        end
-      end
-    end
+    configure_instance(instance, config['arguments'])
 
     sequences = config['sequences'].map do |sequence|
       sequence_name = sequence

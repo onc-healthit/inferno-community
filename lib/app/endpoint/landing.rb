@@ -11,8 +11,7 @@ module Inferno
 
         # Return the index page of the application
         get '/' do
-          logger.info 'loading index page.'
-          erb :index, {}, modules: settings.modules.map{|m| Inferno::Module.get(m)}.select{|m| !m.nil?}
+          redirect BASE_PATH
         end
 
         get '/landing/?' do

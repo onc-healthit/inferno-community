@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative '../utils/instance_config'
+
 module Inferno
   class App
     class Endpoint
@@ -11,7 +13,14 @@ module Inferno
 
         # Return the index page of the application
         get '/?' do
-          erb :index, {}, modules: settings.modules.map{|m| Inferno::Module.get(m)}.select{|m| !m.nil?}
+          logger.info 'loading index page.'
+          presets = Dir.glob('presets/*.json').map do |file|
+            config = JSON.parse(File.read(file))
+            bare_filename = File.basename(file, '.json')
+            name = config.fetch('preset_name', bare_filename)
+            {uri: config['server'], name: name, file: bare_filename}
+          end
+          erb :index, {}, modules: settings.modules.map{|m| Inferno::Module.get(m)}.select{|m| !m.nil?}, presets: presets
         end
 
         # Returns the static files associated with web app
@@ -228,6 +237,14 @@ module Inferno
 
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
           @instance.redirect_uris = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/redirect"
+
+          preset = params['preset']
+          if !preset.empty?
+            config = JSON.parse(File.read("presets/#{preset}.json"))
+            @instance.url = config['server']
+            @instance.selected_module = config['module']
+            configure_instance(@instance, config['arguments'])
+          end
 
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if

@@ -27,6 +27,17 @@
       </div>
 
     </div>
+    <% if !presets.empty? %>
+      <div class="form-group">
+        <span class="oi oi-lightbulb"></span> Optionally, choose a preset vendor configuration to test:
+        <select class="custom-select custom-select-lg" name="preset" style="margin-left: 10px;" id="preset-select">
+          <option value="" data-uri="">None</option>
+          <% presets.each do |preset| %>
+            <option value="<%=preset[:file] %>" data-uri="<%=preset[:uri] %>"><%=preset[:name] %></option>
+          <% end %>
+        </select>
+      </div>
+    <% end %>
   </form>
 
   <div class='alert alert-warning'>

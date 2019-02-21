@@ -291,4 +291,11 @@ $(function(){
   // Then register the handler
   $(window).on('scroll', handleScroll)
 
+  $('#preset-select').on('change', function() {
+    var uri = $('#preset-select option:selected').data('uri');
+    $el = $('input[name=fhir_server]');
+    $el.val(uri);
+    $el.prop('readonly', uri !== '');
+  });
+
 }); 
