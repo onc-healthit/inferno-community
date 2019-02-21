@@ -3,6 +3,10 @@
   data-defines= "<%= test_case.sequence.defines.join(',') %>"
   data-requires= "<%= test_case.sequence.requires.join(',') %>"
   data-sequence="<%=test_case.sequence.sequence_name%>"
+  data-variable-defaults="<%=test_case.variable_defaults&.keys&.join(',')%>"
+  <% test_case.variable_defaults&.each do |key, value| %>
+     data-variable-default<%=key%>="<%=value%>"
+  <% end %>
   data-test-case="<%=test_case.id%>"
   data-test-case-title="<%= test_case.title %>"
   data-result="<%=sequence_results[test_case.id].try(:result)%>"

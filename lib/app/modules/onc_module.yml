@@ -59,9 +59,11 @@ test_sets:
           - oauth_token_endpoint
           - redirect_uris
         sequences:
-          - sequence: StandaloneLaunchSequence
+          - sequence: OncStandaloneLaunchSequence
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
+            variable_defaults:
+              scopes: launch/patient patient/*.read openid fhirUser offline_access
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
@@ -78,9 +80,11 @@ test_sets:
           on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
           access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
         sequences:
-          - sequence: EHRLaunchSequence
+          - sequence: OncEHRLaunchSequence
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
+            variable_defaults:
+              scopes: launch user/*.read openid fhirUser offline_access
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
