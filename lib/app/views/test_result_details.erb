@@ -47,7 +47,7 @@
 
     <% unless @test_result.message.nil? %>
       <div class="test-result-details-message">
-        <span class="test-result-details-message-label">Error Message:</span> <%= @test_result.message %>
+        <span class="test-result-details-message-label">Error Message:</span> <%= CGI.escapeHTML @test_result.message %>
       </div>
     <% end %>
 
@@ -61,7 +61,7 @@
       <div class="test-result-details-warnings">
         <% @test_result.test_warnings.each do |w| %>
           <div class="test-result-details-warning">
-            <span class="oi oi-warning" title="Warning" aria-hidden="true"></span> <%= w.message %>
+            <span class="oi oi-warning" title="Warning" aria-hidden="true"></span> <%=CGI.escapeHTML w.message %>
           </div>
         <% end %>
       </div>
