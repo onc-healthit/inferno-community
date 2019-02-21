@@ -65,6 +65,7 @@ $(function(){
     
     var sequences = [],
         test_cases = [],
+        variable_defaults = {},
         requirements = [],
         popupTitle = "",
         lockedVariables = [];
@@ -93,6 +94,14 @@ $(function(){
       {
           sequences.push($(this).data('sequence'));
           test_cases.push($(this).data('testCase'));
+          if($(this).data('variableDefaults')){
+            let _this = $(this);
+            $(this).data('variableDefaults').split(",").forEach(function(variable){
+              if(_this.data('variableDefault'+variable) !== undefined){
+                variable_defaults[variable] = _this.data('variableDefault'+variable);
+              }
+            })
+          }
     
           if(!popupTitle){
             popupTitle = $(this).data('testCaseTitle');
@@ -157,6 +166,9 @@ $(function(){
 
       if(show){
         let formInput = $(this).clone();
+        if(variable_defaults[prerequisite] !== undefined){
+          formInput.find('input').val(variable_defaults[prerequisite]);
+        }
         if(lockedVariables.includes(prerequisite)){
           formInput.find('input').attr('readonly', 'readonly');
           formInput.find(':radio:not(:checked)').attr('disabled', true);

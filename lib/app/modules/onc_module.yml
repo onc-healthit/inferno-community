@@ -62,6 +62,8 @@ test_sets:
           - sequence: OncStandaloneLaunchSequence
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
+            variable_defaults:
+              scopes: launch/patient patient/*.read openid fhirUser offline_access
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
@@ -81,6 +83,8 @@ test_sets:
           - sequence: OncEHRLaunchSequence
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
+            variable_defaults:
+              scopes: launch user/*.read openid fhirUser offline_access
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.

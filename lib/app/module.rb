@@ -116,6 +116,10 @@ module Inferno
           sequence.description
         end
       end
+
+      def variable_defaults
+        @parameters[:variable_defaults]
+      end
     end 
 
     attr_accessor :name
