@@ -36,9 +36,9 @@ module Inferno
       'DocumentReference',
       'Provenance']
 
-      test 'Scopes follow Smart App Launch Guidelines' do
+      test 'Patient-level access with OpenID Connect and Refresh Token scopes used.' do
         metadata {
-          id '9'
+          id '09'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           desc %(
             The scopes being input must follow the guidelines specified in the smart-app-launch guide
@@ -55,15 +55,25 @@ module Inferno
         assert scopes.include?('offline_access'), 'Scope did not include "offline_access"'
         scopes.delete('offline_access')
 
+        # Other 'okay' scopes
+        scopes.delete('online_access')
+
+        patient_scope_found = false
+
         scopes.each do |scope|
           scope_pieces = scope.split('/')
-          assert scope_pieces.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
-          assert scope_pieces[0] == 'patient', "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
+          assert scope_pieces.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
+          assert scope_pieces[0] == 'patient', "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
           resource_access = scope_pieces[1].split('.')
-          assert resource_access.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
+          assert resource_access.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
           assert resource_access[0] == '*' || @@resourceTypes.include?(resource_access[0]), "'#{resource_access[0]}' must be either a valid resource type or '*'"
-          assert resource_access[1] =~ /^(\*|read|write)/, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | write | * ]"
+          assert resource_access[1] =~ /^(\*|read)/, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
+
+          patient_scope_found = true
+
         end
+
+        assert patient_scope_found, "Must contain a patient-level scope in the format: patient/[ resource | * ].[ read | *]."
       end
 
     end
