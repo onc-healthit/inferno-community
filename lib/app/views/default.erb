@@ -155,17 +155,13 @@
           <div class="form-check form-check-inline" data-requiredby>
             <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
             <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
-          </div>
-
-          <div class="client-secret-container">
-            <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
-                  label: 'Client Secret',
-                  instance: instance,
-                  value: instance.client_secret}); %>
-          </div>
-          
+          </div>          
         </div>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+              label: 'Client Secret',
+              instance: instance,
+              value: instance.client_secret}); %>
         
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
