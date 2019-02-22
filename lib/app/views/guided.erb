@@ -295,16 +295,12 @@
             <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
           </div>
 
-          <div class="client-secret-container">
-            <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
-                  label: 'Client Secret',
-                  instance: instance,
-                  value: instance.client_secret}); %>
-          </div>
-          
         </div>
 
-        
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+              label: 'Client Secret',
+              instance: instance,
+              value: instance.client_secret}); %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
               label: 'OAuth Client Name',
