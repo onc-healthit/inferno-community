@@ -345,6 +345,14 @@ body {
   border: 4px solid #aaa;
 }
 
+.sequence-score-index {
+  background-color: white;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 3px;
+  font-weight: bold;
+}
+
 .sequence-score-fail {
   background-color: #cb2431;
   color: #fff;
@@ -809,9 +817,11 @@ body {
   margin-top: -160px;
 
 }
-.guided h1 {
-  margin-top: 0;
+.guided .sequence-group h1 {
+  margin: 0;
+  padding: 10px;
   text-transform: uppercase;
+  background-color: #ddd;
 }
 
 .group-overview {
@@ -839,6 +849,10 @@ body {
   border-right: 1px solid #d2ccbe;
   box-shadow: 4px 0 5px 0 #ddd;
   z-index: 10;
+}
+
+.guided .group-overview{
+  padding: 10px 25px;
 }
 
 
@@ -930,12 +944,12 @@ body {
 }
 
 .guided .sequence-row{
-  margin: 10px 0 0 20px;
-  padding: 8px 0;
+  margin: 13px 0 0 40px;
+  padding: 8px 0 4px;
 }
 
 .guided .sequence-score {
-  margin-left: -30px;
+  margin-left: -34px;
 }
 
 .guided .sequence-button {
@@ -954,6 +968,19 @@ body {
 .guided span.oi.oi-warning.prerequisite-tooltip {
   display: none;
   width: 0;
+}
+
+.guided .group-overview-box {
+  border: 1px solid #ddd;
+  background-color: white;
+  margin-left: 35px;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.guided .sequence-group {
+  background-repeat: repeat-y;
+  background-image: url("../images/guided-background.png");
 }
 
 .tab-pane {
