@@ -23,7 +23,7 @@
           <div class='row no-gutters'>
             <% case sequence_results[test_case.id].try(:result)
               when nil %>
-              <% if index.nil? %>
+              <% if !defined?(index) %>
                 <div class='col-12'>
               <% else %>
                 <div class="sequence-score sequence-score-index" data-toggle="tooltip" title="Sequence Passed">
