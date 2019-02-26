@@ -595,7 +595,7 @@ namespace :terminology do |argv|
   desc 'cleanup umls'
   task :cleanup_umls, [] do |t, args|
     puts 'removing umls.zip...'
-    File.delete('umls_zip') if File.exist?('umls.zip')
+    File.delete('umls.zip') if File.exist?('umls.zip')
     puts 'removing unzipped umls...'
     FileUtils.remove_dir('resources/terminology/umls') if File.directory?('resources/terminology/umls')
     puts 'removing umls subset...'
@@ -603,9 +603,9 @@ namespace :terminology do |argv|
     puts 'removing umls.db'
     File.delete('umls.db') if File.exists?('umls.db')
     puts 'removing MRCONSO.pipe'
-    File.delete('MRCONSO.pipe') if FIle.exists?('MRCONSO.pipe')
+    File.delete('MRCONSO.pipe') if File.exists?('MRCONSO.pipe')
     puts 'removing MRREL.pipe'
-    File.delete('MRREL.pipe') if FIle.exists?('MRREL.pipe')
+    File.delete('MRREL.pipe') if File.exists?('MRREL.pipe')
   end
 
   desc 'post-process UMLS terminology file'
