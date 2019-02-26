@@ -32,7 +32,7 @@ test_sets:
             title: Manual App Registration
           - ArgonautConformanceSequence
           - SMARTDiscoverySequence
-      - name: Standalone Patient App Launch
+      - name: Standalone Patient App
         overview: |
           Demonstrate the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
@@ -63,7 +63,7 @@ test_sets:
           - sequence: ArgonautPatientReadOnlySequence
             title: Read Patient Resource
             description: Ensure new token is functional by performing a simple read of the Patient resource.
-      - name: EHR Practitioner App Launch
+      - name: EHR Practitioner App
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
@@ -97,7 +97,7 @@ test_sets:
           - oauth_authorize_endpoint
           - oauth_token_endpoint
           - redirect_uris
-      - name: USCDI Access (Search and Read)
+      - name: USCDI Access
         run_all: true
         run_skipped: true
         overview: >
