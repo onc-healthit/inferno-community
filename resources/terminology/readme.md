@@ -55,6 +55,8 @@ bundle exec rake terminology:run_umls
 
 The UMLS tool can also be manually executed.
 
+*Note: This step can take a while to finish*
+
 ### Loading the subset
 
 Inferno loads the UMLS subset into a SQLite database for executing the queries which support creating the terminology validators.
