@@ -600,6 +600,12 @@ namespace :terminology do |argv|
     FileUtils.remove_dir('resources/terminology/umls') if File.directory?('resources/terminology/umls')
     puts 'removing umls subset...'
     FileUtils.remove_dir('resources/terminology/umls_subset') if File.directory?('resources/terminology/umls_subset')
+    puts 'removing umls.db'
+    File.delete('umls.db') if File.exists?('umls.db')
+    puts 'removing MRCONSO.pipe'
+    File.delete('MRCONSO.pipe') if FIle.exists?('MRCONSO.pipe')
+    puts 'removing MRREL.pipe'
+    File.delete('MRREL.pipe') if FIle.exists?('MRREL.pipe')
   end
 
   desc 'post-process UMLS terminology file'

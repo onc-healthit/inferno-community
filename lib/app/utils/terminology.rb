@@ -158,7 +158,7 @@ module Inferno
           puts "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(/[.\/]/,'_')}.msgpack"
           save_bloom_to_file(vs.valueset, filename)
-          validators << {url: k, file: filename, count: vs.count, type: 'bloom'}
+          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'bloom'}
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, v|
@@ -166,7 +166,7 @@ module Inferno
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(/[.\/]/,'_')}.msgpack"
           save_bloom_to_file(cs, filename)
-          validators << {url: k, file: filename, count: cs.length, type: 'bloom'}
+          validators << {url: k, file: File.basename(filename), count: cs.length, type: 'bloom'}
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
@@ -180,7 +180,7 @@ module Inferno
           puts "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(/[.\/]/,'_')}.csv"
           save_csv_to_file(vs.valueset, filename)
-          validators << {url: k, file: filename, count: vs.count, type: 'csv'}
+          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'csv'}
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, v|
@@ -188,7 +188,7 @@ module Inferno
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(/[.\/]/,'_')}.csv"
           save_csv_to_file(cs, filename)
-          validators << {url: k, file: filename, count: cs.length, type: 'csv'}
+          validators << {url: k, file: File.basename(filename), count: cs.length, type: 'csv'}
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
