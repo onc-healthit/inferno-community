@@ -45,7 +45,7 @@ The metamorphoSys tool can customize and install UMLS sources.  Inferno provides
 a configuration file and a task to help run the metamorphoSys tool.
 
 ```sh
-bundle exec rake terminology:run_umls[all-active-exportconfig.prop]
+bundle exec rake terminology:run_umls
 ```
 
 The UMLS tool can also be manually executed.
