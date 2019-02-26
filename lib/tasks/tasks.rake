@@ -771,6 +771,5 @@ namespace :terminology do |argv|
     Inferno::Terminology.register_umls_db args.database
     Inferno::Terminology.load_valuesets_from_directory('resources', true)
     Inferno::Terminology.create_validators(args.type)
-    end
   end
 end
