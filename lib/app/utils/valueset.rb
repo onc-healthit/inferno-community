@@ -52,6 +52,10 @@ module Inferno
         @valueset_model = FHIR::Json.from_json(File.read(filename))
       end
 
+      def code_system_set(code_system)
+        filter_code_set(code_system)
+      end
+
       # Return the url of the valueset
       def url
         @valueset_model.url
@@ -119,7 +123,7 @@ module Inferno
       # Saves the valueset to a csv
       # @param [String] filename the name of the file
       def save_csv_to_file(filename = "resources/validators/csv/#{(URI(url).host + URI(url).path).gsub(/[.\/]/,'_')}.csv")
-        CSV.open(filename, wb) do |csv|
+        CSV.open(filename, 'wb') do |csv|
           valueset.each do |code|
             csv << [code[:system], code[:code]]
           end

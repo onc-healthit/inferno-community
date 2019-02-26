@@ -74,7 +74,7 @@ sqlite3 umls.db "create index  idx_tty on mrconso (tty);"
 echo 'Indexing mrrel(rel,sab)'
 sqlite3 umls.db "create index idx_isa on mrrel(REL,SAB);"
 
-echo 'Indexing mrconso'
+echo 'Indexing mrconso(aui)'
 sqlite3 umls.db "CREATE INDEX idx_aui ON mrconso(AUI);"
 
 echo 'Analyzing Database'

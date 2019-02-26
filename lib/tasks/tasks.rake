@@ -769,9 +769,10 @@ namespace :terminology do |argv|
 
   desc 'Create ValueSet Validators'
   task :create_vs_validators, [:database, :type] do |t, args|
-    args.with_defaults(database: 'umls.db', type: :bloom)
+    args.with_defaults(database: 'umls.db', type: 'bloom')
+    validator_type = args.type.to_sym
     Inferno::Terminology.register_umls_db args.database
     Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.create_validators(args.type)
+    Inferno::Terminology.create_validators(validator_type)
   end
 end

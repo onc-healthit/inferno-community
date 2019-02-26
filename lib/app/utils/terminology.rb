@@ -149,25 +149,74 @@ module Inferno
       validators = []
       case type
       when :bloom
+        root_dir = 'resources/terminology/validators/bloom'
+        unless File.directory?(root_dir)
+          FileUtils.mkdir_p(root_dir)
+        end
         @known_valuesets.each do |k, vs|
           next if k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem' or k == 'http://fhir.org/guides/argonaut/ValueSet/languages'
           puts "Processing #{k}"
-          vs.valueset
-          filename = vs.save_bloom_to_file
-          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'bloom'}
+          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(/[.\/]/,'_')}.msgpack"
+          save_bloom_to_file(vs.valueset, filename)
+          validators << {url: k, file: filename, count: vs.count, type: 'bloom'}
+        end
+        vs = Inferno::Terminology::Valueset.new(@db)
+        Inferno::Terminology::Valueset::SAB.each do |k, v|
+          puts "Processing #{k}"
+          cs = vs.code_system_set(k)
+          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(/[.\/]/,'_')}.msgpack"
+          save_bloom_to_file(cs, filename)
+          validators << {url: k, file: filename, count: cs.length, type: 'bloom'}
         end
         # Write manifest for loading later
-        File.write('resources/terminology/validators/bloom/manifest.yml', validators.to_yaml)
+        File.write("#{root_dir}/manifest.yml", validators.to_yaml)
       when :csv
+        root_dir = 'resources/terminology/validators/csv'
+        unless File.directory?(root_dir)
+          FileUtils.mkdir_p(root_dir)
+        end
         @known_valuesets.each do |k, vs|
           next if k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem' or k == 'http://fhir.org/guides/argonaut/ValueSet/languages'
           puts "Processing #{k}"
-          vs.valueset
-          filename = vs.save_csv_to_file
-          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'bloom'}
+          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(/[.\/]/,'_')}.csv"
+          save_csv_to_file(vs.valueset, filename)
+          validators << {url: k, file: filename, count: vs.count, type: 'csv'}
+        end
+        vs = Inferno::Terminology::Valueset.new(@db)
+        Inferno::Terminology::Valueset::SAB.each do |k, v|
+          puts "Processing #{k}"
+          cs = vs.code_system_set(k)
+          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(/[.\/]/,'_')}.csv"
+          save_csv_to_file(cs, filename)
+          validators << {url: k, file: filename, count: cs.length, type: 'csv'}
         end
         # Write manifest for loading later
-        File.write('resources/terminology/validators/csv/manifest.yml', validators.to_yaml)
+        File.write("#{root_dir}/manifest.yml", validators.to_yaml)
+      else
+        raise 'Unknown Validator Type!'
+      end
+    end
+
+    # Saves the valueset bloomfilter to a msgpack file
+    #
+    # @param [String] filename the name of the file
+    def self.save_bloom_to_file(codeset, filename)
+      require 'bloomer'
+      bf = Bloomer::Scalable.new
+      codeset.each do |cc|
+        bf.add("#{cc[:system]}|#{cc[:code]}")
+      end
+      bf
+      File.write(filename, bf.to_msgpack) unless bf.nil?
+    end
+
+    # Saves the valueset to a csv
+    # @param [String] filename the name of the file
+    def self.save_csv_to_file(codeset, filename)
+      CSV.open(filename, 'wb') do |csv|
+        codeset.each do |code|
+          csv << [code[:system], code[:code]]
+        end
       end
     end
 
