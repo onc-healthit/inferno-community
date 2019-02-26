@@ -465,8 +465,7 @@ namespace :terminology do |argv|
 
   desc 'download and execute UMLS terminology data'
   task :download_umls, [:username, :password] do |t, args|
-    # Adapted from Josh Mandels UMLS python download
-    # https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
+    # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
     default_target_file = 'https://download.nlm.nih.gov/umls/kss/2018AB/umls-2018AB-full.zip'
 
     puts 'Getting Login Page'
