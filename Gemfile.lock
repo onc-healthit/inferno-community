@@ -97,7 +97,7 @@ GEM
       rack (>= 1.5)
       rest-client (~> 2.0)
       tilt (>= 1.1)
-    fhir_dstu2_models (1.0.5)
+    fhir_dstu2_models (1.0.7)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 1.16, < 3)
