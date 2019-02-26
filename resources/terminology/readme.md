@@ -30,7 +30,7 @@ Inferno provides a task which will attempt to unzip the files into the correct l
 for further operation:
 
 ```sh
-bundle exec rake terminology:unzip_umls[umls.zip]
+bundle exec rake terminology:unzip_umls
 ```
 
 Users can also manually unzip the files.  The mmsys.zip file should be unzipped to the same

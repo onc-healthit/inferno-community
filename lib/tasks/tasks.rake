@@ -530,6 +530,7 @@ namespace :terminology do |argv|
 
   desc 'unzip umls zip'
   task :unzip_umls, [:umls_zip] do |t, args|
+    args.with_defaults(umls_zip: 'umls.zip')
     destination = 'resources/terminology/umls'
     # https://stackoverflow.com/questions/19754883/how-to-unzip-a-zip-file-containing-folders-and-files-in-rails-while-keeping-the
     Zip::File.open(args.umls_zip) do |zip_file|
