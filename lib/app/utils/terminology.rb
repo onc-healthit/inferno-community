@@ -1,3 +1,4 @@
+require_relative 'valueset'
 module Inferno
   class Terminology
 
@@ -23,6 +24,8 @@ module Inferno
     @@known_codes = {}
     @@core_snomed = {}
     @@common_ucum = []
+
+    @known_valuesets = {}
 
     def self.reset
       @@loaded = false
@@ -132,6 +135,81 @@ module Inferno
     def self.lab_description(code)
       load_terminology
       @@top_lab_code_descriptions[code]
+    end
+
+    def self.load_valuesets_from_directory(directory, include_subdirectories = false)
+      directory += '/**/' if include_subdirectories
+      valueset_files = Dir["#{directory}/ValueSet*"]
+      valueset_files.each do |vs_file|
+        add_valueset_from_file(vs_file)
+      end
+    end
+
+    def self.create_validators(type)
+      validators = []
+      case type
+      when :bloom
+        @known_valuesets.each do |k, vs|
+          next if k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem' or k == 'http://fhir.org/guides/argonaut/ValueSet/languages'
+          puts "Processing #{k}"
+          vs.valueset
+          filename = vs.save_bloom_to_file
+          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'bloom'}
+        end
+        # Write manifest for loading later
+        File.write('resources/terminology/validators/bloom/manifest.yml', validators.to_yaml)
+      when :csv
+        @known_valuesets.each do |k, vs|
+          next if k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem' or k == 'http://fhir.org/guides/argonaut/ValueSet/languages'
+          puts "Processing #{k}"
+          vs.valueset
+          filename = vs.save_csv_to_file
+          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'bloom'}
+        end
+        # Write manifest for loading later
+        File.write('resources/terminology/validators/csv/manifest.yml', validators.to_yaml)
+      end
+    end
+
+    def self.register_umls_db(database)
+      @db = SQLite3::Database.new database
+    end
+
+
+    def self.add_valueset_from_file(vs_file)
+      vs = Inferno::Terminology::Valueset.new(@db)
+      vs.read_valueset(vs_file)
+      vs.vsa = self
+      @known_valuesets[vs.url] = vs
+      vs
+    end
+
+    # Load the validators into FHIR::Models
+    def self.load_validators(directory = 'resources/terminology/validators/bloom')
+      validator_files = Dir["#{directory}/*"]
+      manifest_file = "#{directory}/manifest.yml"
+      return unless File.file? manifest_file
+
+      validators = YAML.load_file("#{directory}/manifest.yml")
+      validators.each do |validator|
+        bfilter = Bloomer::Scalable.from_msgpack(open("#{directory}/#{validator[:file]}").read())
+        validate_fn = lambda do |coding|
+          puts "Testing CODE #{coding.system}|#{coding.code}"
+          probe = "#{coding.system}|#{coding.code}"
+          bfilter.include? probe
+        end
+        FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
+      end
+    end
+
+    def self.get_valueset(url)
+      @known_valuesets[url].valueset || raise(UnknownValueSetException, url)
+    end
+
+    class UnknownValueSetException < StandardError
+      def initialize(valueSet)
+        super("Unknown ValueSet: #{valueSet}")
+      end
     end
   end
 end

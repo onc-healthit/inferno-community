@@ -764,4 +764,13 @@ namespace :terminology do |argv|
       download_umls_notice
     end
   end
+
+  desc 'Create ValueSet Validators'
+  task :create_vs_validators, [:database, :type] do |t, args|
+    args.with_defaults(database: 'umls.db', type: :bloom)
+    Inferno::Terminology.register_umls_db args.database
+    Inferno::Terminology.load_valuesets_from_directory('resources', true)
+    Inferno::Terminology.create_validators(args.type)
+    end
+  end
 end

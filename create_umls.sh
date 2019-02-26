@@ -36,7 +36,7 @@ echo 'Populating mrconso table'
 sqlite3 umls.db ".import MRCONSO.pipe mrconso"
 
 echo 'Dropping existing mrrel table'
-sqlite3 umls.db "drop table if exists mrrel"
+sqlite3 umls.db "drop table if exists mrrel;"
 
 echo 'Creating mrrel table'
 sqlite3 umls.db "create table mrrel (
@@ -67,3 +67,15 @@ fi
 
 echo 'Populating mrrel table'
 sqlite3 umls.db ".import MRREL.pipe mrrel"
+
+echo 'Indexing mrconso(tty)'
+sqlite3 umls.db "create index  idx_tty on mrconso (tty);"
+
+echo 'Indexing mrrel(rel,sab)'
+sqlite3 umls.db "create index idx_isa on mrrel(REL,SAB);"
+
+echo 'Indexing mrconso'
+sqlite3 umls.db "CREATE INDEX idx_aui ON mrconso(AUI);"
+
+echo 'Analyzing Database'
+sqlite3 umls.db "ANALYZE;"
