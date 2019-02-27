@@ -89,19 +89,20 @@
     <div class="row">
       <div class="col-12 sequence-table">
 
-        <div class="sequence-action-boundary tab-pane active" id="group-overview">
-          <div class="sequence-landing">
-            <div class="row align-items-center">
-              <div class="col" style="margin-left: 20px;">
+        <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
+          <div class="sequence-header">
+            <div class="align-items-center">
+              <div class="group-overview-box">
                   <a class="sequence-anchor"></a>
                 <h1>
-                  <%= instance.module.title %>
+                  <%= instance.module.title %> Setup
+                  <div class="group-steps"> Step <span class="group-step-number">1</span> of <%= instance.group_results(test_set.id).length + 2 %></div>
                 </h1>
-                <div>
+                <div class="group-overview" style='padding-left: 25px'>
                   <%= markdown_to_html(instance.module.description) %>
+                  <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
                 </div>
 
-                <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
 
               </div>
             </div>
@@ -252,20 +253,19 @@
 
         <div class="sequence-group sequence-action-boundary tab-pane" id="group-report">
           <div class="sequence-header">
-            <div class="row align-items-center">
-              <div class="col">
-                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
+            <div class="align-items-center">
+              <div class="group-overv-ew-box">
+                  <a class="sequence-anchor"></a>
                 <h1>
-                  <%= instance.module.name %> Report
+                  <%= instance.module.title %> Report
+                  <div class="group-steps"> Step <span class="group-step-number"><%=instance.group_results(test_set.id).length + 2 %></span> of <%= instance.group_results(test_set.id).length + 2 %></div>
                 </h1>
-                <button class="btn print-button" onclick="window.print()">Print</button>
                 <div id="reportDiv">
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
     </div>

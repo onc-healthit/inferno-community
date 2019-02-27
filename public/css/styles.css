@@ -1143,7 +1143,7 @@ body {
 #group-report .print-button {
 
   position:absolute;
-  top: 0;
+  top: 10px;
   right: 15px;
   border: 1px solid #aaa;
 }
