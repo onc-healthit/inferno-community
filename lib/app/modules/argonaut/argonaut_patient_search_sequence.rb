@@ -177,7 +177,15 @@ module Inferno
         gender = @patient.try(:gender)
         assert !gender.nil?, "Patient gender not returned"
         reply = get_resource_by_params(versioned_resource_class('Patient'), {family: family, given: given, gender: gender})
-        validate_search_reply(versioned_resource_class('Patient'), reply)
+        validate_search_reply(versioned_resource_class('Patient'), reply) do |resource|
+          family_received = resource.try(:name).try(:first).try(:family).try(:first)
+          given_received = resource.try(:name).try(:first).try(:given).try(:first)
+          gender_received = resource.try(:gender)
+
+          assert !family_received.nil? && family_received = family
+          assert !given_received.nil? && given_received = given
+          assert !gender_received.nil? && gender_received = gender
+        end
 
       end
 
@@ -200,7 +208,15 @@ module Inferno
         birthdate = @patient.try(:birthDate)
         assert !birthdate.nil?, "Patient birthDate not returned"
         reply = get_resource_by_params(versioned_resource_class('Patient'), {family: family, given: given, birthdate: birthdate})
-        validate_search_reply(versioned_resource_class('Patient'), reply)
+        validate_search_reply(versioned_resource_class('Patient'), reply) do |resource|
+          family_received = resource.try(:name).try(:first).try(:family).try(:first)
+          given_received = resource.try(:name).try(:first).try(:given).try(:first)
+          birthdate_received = resource.try(:birthDate)
+
+          assert !family_received.nil? && family_received = family
+          assert !given_received.nil? && given_received = given
+          assert !birthdate_received.nil? && birthdate_received = birthdate
+        end
 
       end
 
@@ -221,7 +237,13 @@ module Inferno
         birthdate = @patient.try(:birthDate)
         assert !birthdate.nil?, "Patient birthDate not returned"
         reply = get_resource_by_params(versioned_resource_class('Patient'), {gender: gender, birthdate: birthdate})
-        validate_search_reply(versioned_resource_class('Patient'), reply)
+        validate_search_reply(versioned_resource_class('Patient'), reply) do |resource|
+          gender_received = resource.try(:gender)
+          birthdate_received = resource.try(:birthDate)
+
+          assert !gender_received.nil? && gender_received = gender
+          assert !birthdate_received.nil? && birthdate_received = birthdate
+        end
 
       end
 

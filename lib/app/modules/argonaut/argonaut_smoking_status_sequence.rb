@@ -66,8 +66,10 @@ module Inferno
         }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
-        # TODO check for 72166-2
+        validate_search_reply(versioned_resource_class('Observation'), reply) do |resource|
+          code_received = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code_received.nil? && code_received = "72166-2"
+        end
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end

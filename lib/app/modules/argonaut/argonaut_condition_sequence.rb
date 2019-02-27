@@ -108,7 +108,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        validate_search_reply(versioned_resource_class('Condition'), reply) do |resource|
+          #todo
+          
+        end
 
       end
 
@@ -128,7 +131,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, category: "problem"})
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        validate_search_reply(versioned_resource_class('Condition'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "problem", "Category on resource did not match category requested"
+        end
 
       end
 
@@ -148,7 +154,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, category: "health-concern"})
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        validate_search_reply(versioned_resource_class('Condition'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "health-concern", "Category on resource did not match category requested"
+        end
 
       end
 

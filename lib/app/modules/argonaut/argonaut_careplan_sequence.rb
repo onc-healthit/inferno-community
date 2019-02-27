@@ -87,7 +87,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "assess-plan", "Category on resource did not match category requested"
+        end
         save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
       end
@@ -112,7 +115,11 @@ module Inferno
         date = @careplan.try(:period).try(:start)
         assert !date.nil?, "CarePlan period not returned"
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan", date: date})
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "assess-plan", "Category on resource did not match category requested"
+          # todo: date
+        end
 
       end
 
@@ -132,7 +139,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan", status: "active"})
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "assess-plan", "Category on resource did not match category requested"
+          status = resource.try(:status).try(:code)
+          assert !status.nil? && status == "active"
+        end
 
       end
 
@@ -155,7 +167,13 @@ module Inferno
         date = @careplan.try(:period).try(:start)
         assert !date.nil?, "CarePlan period not returned"
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date})
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "assess-plan", "Category on resource did not match category requested"
+          status = resource.try(:status).try(:code)
+          assert !status.nil? && status == "active"
+          # todo: date
+        end
 
       end
 

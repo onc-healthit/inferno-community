@@ -102,7 +102,10 @@ module Inferno
         date = @goal.try(:statusDate) || @goal.try(:targetDate) || @goal.try(:startDate)
         assert !date.nil?, "Goal statusDate, targetDate, nor startDate returned"
         reply = get_resource_by_params(versioned_resource_class('Goal'), {patient: @instance.patient_id, date: date})
-        validate_search_reply(versioned_resource_class('Goal'), reply)
+        validate_search_reply(versioned_resource_class('Goal'), reply) do |resource|
+          date_received = resource.try(:statusDate) || resource.try(:targetDate) || resource.try(:startDate)
+          assert !date_received.nil? && date_received == date
+        end
 
       end
 

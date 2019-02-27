@@ -104,7 +104,9 @@ module Inferno
         date = @procedure.try(:performedDateTime) || @procedure.try(:performedPeriod).try(:start)
         assert !date.nil?, "Procedure performedDateTime or performedPeriod not returned"
         reply = get_resource_by_params(versioned_resource_class('Procedure'), {patient: @instance.patient_id, date: date})
-        validate_search_reply(versioned_resource_class('Procedure'), reply)
+        validate_search_reply(versioned_resource_class('Procedure'), reply)do |resource|
+          assert resource.performedDateTime && resource.performedDateTime == date, "performedDateTime on resource did not match date requested"
+        end
 
       end
 

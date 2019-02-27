@@ -77,7 +77,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "vital-signs", "Category on resource did not match category requested"
+        end
         # TODO check for `vital-signs` category
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
@@ -101,7 +104,11 @@ module Inferno
         date = @vitalsigns.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
         reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs", date: date})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+          assert resource.effectiveDateTime && resource.effectiveDateTime == date, "EffectiveDateTime on resource did not match date requested"
+        end
 
       end
 
@@ -123,7 +130,12 @@ module Inferno
         code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
         assert !code.nil?, "Observation code not returned"
         reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs", code: code})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+          code_received = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code.nil? && code_received = code
+        end
 
       end
 
@@ -147,7 +159,13 @@ module Inferno
         date = @vitalsigns.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
         reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs", code: code, date: date})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+          code_received = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code.nil? && code_received = code
+          assert resource.effectiveDateTime && resource.effectiveDateTime == date, "EffectiveDateTime on resource did not match date requested"
+        end
 
       end
 

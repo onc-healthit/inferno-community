@@ -55,7 +55,10 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "careteam"})
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "assess-plan", "Category on resource did not match category requested"
+        end
         # save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
       end

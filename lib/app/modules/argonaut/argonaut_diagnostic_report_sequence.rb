@@ -81,7 +81,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+        end
 
       end
 
@@ -103,8 +106,11 @@ module Inferno
         date = @diagnosticreport.try(:effectiveDateTime)
         assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), {patient: @instance.patient_id, category: "LAB", date: date})
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply)
-
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+          assert resource.effectiveDateTime && resource.effectiveDateTime == date, "EffectiveDateTime on resource did not match date requested"
+        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient + category + code' do
@@ -124,11 +130,16 @@ module Inferno
         code = @diagnosticreport.try(:code).try(:coding).try(:first).try(:code)
         assert !code.nil?, "DiagnosticReport code not returned"
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), {patient: @instance.patient_id, category: "LAB", code: code})
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+          code_received = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code_received.nil? && code_received == code, "Category on resource did not match category requested"
+        end
 
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient + category + code' do
+      test 'Server returns expected results from DiagnosticReport search by patient + category + code + date' do
 
         metadata {
           id '05'
@@ -149,7 +160,13 @@ module Inferno
         date = @diagnosticreport.try(:effectiveDateTime)
         assert !date.nil?, "DiagnosticReport effectiveDateTime not returned"
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), {patient: @instance.patient_id, category: "LAB", code: code, date: date})
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply) do |resource|
+          category  = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == "LAB", "Category on resource did not match category requested"
+          code_received = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code_received.nil? && code_received == code, "Category on resource did not match category requested"
+          assert resource.effectiveDateTime && resource.effectiveDateTime == date, "EffectiveDateTime on resource did not match date requested"
+        end
 
       end
 

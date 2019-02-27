@@ -7,32 +7,32 @@ require_relative 'utils/validation'
 require_relative 'utils/walk'
 require_relative 'utils/web_driver'
 
-require 'bloomer'
-require 'bloomer/msgpackable'
-require 'json'
+# require 'bloomer'
+# require 'bloomer/msgpackable'
+# require 'json'
 
 module Inferno
   module Sequence
 
-    bloomfilter_root = "data/umls-bloomer-bloom-filters"
-    vs_bloomfilter_manifest_path = "#{bloomfilter_root}/manifest.json"
+    # bloomfilter_root = "data/umls-bloomer-bloom-filters"
+    # vs_bloomfilter_manifest_path = "#{bloomfilter_root}/manifest.json"
 
-    if File.file? vs_bloomfilter_manifest_path
-      vs_bloomfilter_manifest = JSON.parse(File.read(vs_bloomfilter_manifest_path))
-      vs_bloomfilter_manifest["filters"].each do |filter_detail|
-        vs_url = filter_detail.fetch("valueSetUrl", nil)
-        next unless vs_url
+    # if File.file? vs_bloomfilter_manifest_path
+    #   vs_bloomfilter_manifest = JSON.parse(File.read(vs_bloomfilter_manifest_path))
+    #   vs_bloomfilter_manifest["filters"].each do |filter_detail|
+    #     vs_url = filter_detail.fetch("valueSetUrl", nil)
+    #     next unless vs_url
 
-        filename = "#{bloomfilter_root}/#{filter_detail['file']}"
-        one_filter = Bloomer::Scalable.from_msgpack(open(filename).read())
-        validate_fn = lambda do |coding|
-          probe = "#{coding.system}|#{coding.code}"
-          one_filter.include? probe
-        end
+    #     filename = "#{bloomfilter_root}/#{filter_detail['file']}"
+    #     one_filter = Bloomer::Scalable.from_msgpack(open(filename).read())
+    #     validate_fn = lambda do |coding|
+    #       probe = "#{coding.system}|#{coding.code}"
+    #       one_filter.include? probe
+    #     end
 
-        FHIR::DSTU2::StructureDefinition.validates_vs(vs_url, &validate_fn)
-      end
-    end
+    #     FHIR::DSTU2::StructureDefinition.validates_vs(vs_url, &validate_fn)
+    #   end
+    # end
 
     class SequenceBase
 
@@ -579,6 +579,7 @@ module Inferno
         elsif ['CarePlan', 'Goal', 'DiagnosticReport', 'Observation', 'Procedure', 'DocumentReference', 'Composition'].map{|type| versioned_resource_class(type)}.include?(klass)
           entries.each do |entry|
             assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
+            yield entry.resource if block_given?
           end
         else
           entries.each do |entry|
