@@ -41,11 +41,12 @@ module Inferno
 
 
           sequence_result = instance.waiting_on_sequence
-          test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
-
           if sequence_result.nil? || sequence_result.result != 'wait'
-            redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
+            latest_sequence_result = Inferno::Models::SequenceResult.first(:testing_instance => instance)
+            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
+            redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
           else
+            test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
             failed_test_cases = []
             all_test_cases = []
             test_case = test_set.test_case_by_id(sequence_result.test_case_id)
