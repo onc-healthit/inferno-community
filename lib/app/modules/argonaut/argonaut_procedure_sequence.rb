@@ -13,6 +13,15 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Procedure
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "date"
+          assert resource.performedDateTime && resource.performedDateTime == value, "performedDateTime on resource did not match date requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -69,7 +78,8 @@ module Inferno
 
 
 
-        reply = get_resource_by_params(versioned_resource_class('Procedure'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -81,7 +91,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Procedure'), reply)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
 
       end
@@ -103,10 +113,9 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
         date = @procedure.try(:performedDateTime) || @procedure.try(:performedPeriod).try(:start)
         assert !date.nil?, "Procedure performedDateTime or performedPeriod not returned"
-        reply = get_resource_by_params(versioned_resource_class('Procedure'), {patient: @instance.patient_id, date: date})
-        validate_search_reply(versioned_resource_class('Procedure'), reply)do |resource|
-          assert resource.performedDateTime && resource.performedDateTime == date, "performedDateTime on resource did not match date requested"
-        end
+        search_params = {patient: @instance.patient_id, date: date}
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
 
       end
 

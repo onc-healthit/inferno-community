@@ -12,6 +12,13 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :MedicationStatement
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -66,7 +73,8 @@ module Inferno
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
 
-        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -80,7 +88,7 @@ module Inferno
         @medication_statements = reply&.resource&.entry&.map do |med_statement|
           med_statement&.resource
         end
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationStatement'), reply)
       end
 

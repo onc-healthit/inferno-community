@@ -13,6 +13,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Observation
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        when "code"
+          code = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code.nil? && code == value, "Code on resource did not match code requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -65,11 +75,9 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
-        validate_search_reply(versioned_resource_class('Observation'), reply) do |resource|
-          code_received = resource.try(:code).try(:coding).try(:first).try(:code)
-          assert !code_received.nil? && code_received = "72166-2"
-        end
+        search_params = {patient: @instance.patient_id, code: "72166-2"}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end

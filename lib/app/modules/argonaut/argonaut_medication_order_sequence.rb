@@ -13,6 +13,13 @@ module Inferno
 
       conformance_supports :MedicationOrder
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
       details %(
         # Background
          The #{title} Sequence tests the [#{title}](https://www.hl7.org/fhir/DSTU2/medicationorder.html)
@@ -74,7 +81,8 @@ module Inferno
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
 
-        reply = get_resource_by_params(versioned_resource_class('MedicationOrder'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('MedicationOrder'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -88,7 +96,7 @@ module Inferno
         @medication_orders = reply&.resource&.entry&.map do |med_order|
           med_order&.resource
         end
-        validate_search_reply(versioned_resource_class('MedicationOrder'), reply)
+        validate_search_reply(versioned_resource_class('MedicationOrder'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationOrder'), reply)
       end
 

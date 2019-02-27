@@ -13,6 +13,13 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :AllergyIntolerance
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -71,7 +78,8 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -83,7 +91,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
 
       end

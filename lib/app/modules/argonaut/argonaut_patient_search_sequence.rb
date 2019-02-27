@@ -11,6 +11,28 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Patient
 
+      def validate_resource_item(resource, property, value)
+        case property
+        when "identifier"
+          identifier = resource.try(:identifier).try(:first).try(:value)
+          assert !identifier.nil? && identifier == value, "Identifier on resource did not match identifier requested"
+        when "family"
+          family = resource.try(:name).try(:first).try(:family).try(:first)
+          assert !family.nil? && family == value, "Family on resource did not match family requested"
+        when "given"
+          given = resource.try(:name).try(:first).try(:given).try(:first)
+          assert !given.nil? && given == value, "Given name on resource did not match given name requested"
+        when "birthdate"
+          birthdate = resource.try(:birthDate)
+          assert !birthdate.nil? && birthdate == value, "Birthdate on resource did not match birthdate requested"
+        when "gender"
+          gender = resource.try(:gender)
+          assert !gender.nil? && gender = value, "Gnder on resource did not match gender requested"
+        else
+          assert false, property
+        end
+      end
+
       test 'Server rejects patient read without proper authorization' do
 
         metadata {
@@ -153,8 +175,9 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         identifier = @patient.try(:identifier).try(:first).try(:value)
         assert !identifier.nil?, "Patient identifier not returned"
-        reply = get_resource_by_params(versioned_resource_class('Patient'), {identifier: identifier})
-        validate_search_reply(versioned_resource_class('Patient'), reply)
+        search_params = {identifier: identifier}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
 
       end
 
@@ -176,17 +199,9 @@ module Inferno
         assert !given.nil?, "Patient given name not returned"
         gender = @patient.try(:gender)
         assert !gender.nil?, "Patient gender not returned"
-        reply = get_resource_by_params(versioned_resource_class('Patient'), {family: family, given: given, gender: gender})
-        validate_search_reply(versioned_resource_class('Patient'), reply) do |resource|
-          family_received = resource.try(:name).try(:first).try(:family).try(:first)
-          given_received = resource.try(:name).try(:first).try(:given).try(:first)
-          gender_received = resource.try(:gender)
-
-          assert !family_received.nil? && family_received = family
-          assert !given_received.nil? && given_received = given
-          assert !gender_received.nil? && gender_received = gender
-        end
-
+        search_params = {family: family, given: given, gender: gender}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
 
       test 'Server returns expected results from Patient search by name + birthdate' do
@@ -207,16 +222,9 @@ module Inferno
         assert !given.nil?, "Patient given name not returned"
         birthdate = @patient.try(:birthDate)
         assert !birthdate.nil?, "Patient birthDate not returned"
-        reply = get_resource_by_params(versioned_resource_class('Patient'), {family: family, given: given, birthdate: birthdate})
-        validate_search_reply(versioned_resource_class('Patient'), reply) do |resource|
-          family_received = resource.try(:name).try(:first).try(:family).try(:first)
-          given_received = resource.try(:name).try(:first).try(:given).try(:first)
-          birthdate_received = resource.try(:birthDate)
-
-          assert !family_received.nil? && family_received = family
-          assert !given_received.nil? && given_received = given
-          assert !birthdate_received.nil? && birthdate_received = birthdate
-        end
+        search_params = {family: family, given: given, birthdate: birthdate}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
 
       end
 
@@ -236,14 +244,9 @@ module Inferno
         assert !gender.nil?, "Patient gender not returned"
         birthdate = @patient.try(:birthDate)
         assert !birthdate.nil?, "Patient birthDate not returned"
-        reply = get_resource_by_params(versioned_resource_class('Patient'), {gender: gender, birthdate: birthdate})
-        validate_search_reply(versioned_resource_class('Patient'), reply) do |resource|
-          gender_received = resource.try(:gender)
-          birthdate_received = resource.try(:birthDate)
-
-          assert !gender_received.nil? && gender_received = gender
-          assert !birthdate_received.nil? && birthdate_received = birthdate
-        end
+        search_params = {gender: gender, birthdate: birthdate}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
 
       end
 

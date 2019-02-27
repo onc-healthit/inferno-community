@@ -12,6 +12,13 @@ module Inferno
 
       requires :token, :patient_id
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
       test 'Server rejects ExplanationOfBenefit search without authorization' do
 
         metadata {
@@ -45,8 +52,9 @@ module Inferno
 
         skip_if_not_supported(:ExplanationOfBenefit, [:search, :read])
 
-        reply = get_resource_by_params(versioned_resource_class('ExplanationOfBenefit'), {patient: @instance.patient_id})
-        validate_search_reply(versioned_resource_class('ExplanationOfBenefit'), reply)
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('ExplanationOfBenefit'), search_params)
+        validate_search_reply(versioned_resource_class('ExplanationOfBenefit'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('ExplanationOfBenefit'), reply)
 
       end
