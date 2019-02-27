@@ -21,5 +21,6 @@ gem 'kramdown'
 gem 'selenium-webdriver'
 gem 'rubocop', require: false
 gem 'bloomer'
+gem 'sqlite3'
 
 gem 'simplecov', require: false, group: :test
