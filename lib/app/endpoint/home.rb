@@ -26,7 +26,18 @@ module Inferno
           instance = nil
           if params[:endpoint] == 'redirect' && !params[:state].nil?
             instance = Inferno::Models::TestingInstance.first(state: params[:state])
-            halt 500, "Error: No actively running launch sequences found with a state of #{params[:state]}." if instance.nil?
+            if instance.nil?
+              error_message = "<p>Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of #{params[:state]}. " +
+                        "The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test. " +
+                        "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
+
+              if !params[:error_description].nil?
+                error_message = error_message + "<p>The server returned the following error description that may have contributed to this issue: <strong>#{params[:error_description]}</strong>.</p>"
+              end
+
+              halt 500, error_message
+            end
+
           end
           if params[:endpoint] == 'launch'
             recent_results = Inferno::Models::SequenceResult.all(:created_at.gte => 5.minutes.ago, :result => 'wait', :order => [:created_at.desc])
