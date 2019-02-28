@@ -63,12 +63,26 @@
       </div>
     <% end %>
     <div class="group-nav">
-      <ul class="nav nav-pills">
-      <li class="nav-item" style='margin-bottom: 15px;'><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.title %> Overview</a></li>
+      <ul class="nav nav-pills nav-fill">
+      <li class="nav-item"><a class="nav-link active" href="#group-overview" data-toggle="tab">Setup</a></li>
       <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
-        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
+        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>">
+          <a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
+            <% case group_with_result[:result].to_s
+              when 'pass' %>
+              <div class="group-nav-score group-nav-score-pass" data-toggle="tooltip" title="Test Passed">
+                <span class="oi oi-check" aria-hidden="true"></span>
+              </div>
+            <% when 'fail' %>
+              <div class="group-nav-score group-nav-score-fail" data-toggle="tooltip" title="Test Failed">
+                <span class="oi oi-x" aria-hidden="true"></span>
+              </div>
+            <% end %>
+            <div class="group-nav-label"><%= group_with_result[:group].name %></div>
+          </a>
+        </li>
       <%end%>
-      <li class="nav-item" style='margin-top: 15px;'><a id="report-link" class="nav-link" href="#group-report" data-toggle="tab">Report</a></li>
+      <li class="nav-item nav-item-last"><a id="report-link" class="nav-link" href="#group-report" data-toggle="tab">Report</a></li>
       </ul>
     </div>
 
@@ -77,30 +91,31 @@
 
         <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
           <div class="sequence-header">
-            <div class="row align-items-center">
-              <div class="col" style="margin-left: 20px;">
+            <div class="align-items-center">
+              <div class="group-overview-box">
                   <a class="sequence-anchor"></a>
                 <h1>
-                  <%= instance.module.title %>
+                  <%= instance.module.title %> Setup
+                  <div class="group-steps"> Step <span class="group-step-number">1</span> of <%= instance.group_results(test_set.id).length + 2 %></div>
                 </h1>
-                <div class="sequence-overview">
+                <div class="group-overview" style='padding-left: 25px'>
                   <%= markdown_to_html(instance.module.description) %>
+                  <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
                 </div>
 
-                <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
 
               </div>
             </div>
           </div>
         </div>
         
-        <% instance.group_results(test_set.id).each do |group_with_result| %>
+        <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
           <% group = group_with_result[:group] %>
           <% group_result = group_with_result[:result] %>
           <div class="sequence-group sequence-action-boundary tab-pane" data-group="<%= group.name %>" id="group-<%=group.id%>">
             <div class="sequence-header">
-              <div class='row align-items-center'>
-                <div class='col'>
+              <div class='align-items-center'>
+                <div class='group-overview-box'>
                   <% if group.test_cases.length > 1 %>
                     
                     <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
@@ -139,6 +154,8 @@
 
                     
                     <%= group.name %>
+
+                    <div class="group-steps"> Step <span class="group-step-number"><%=index + 2%></span> of <%= instance.group_results(test_set.id).length + 2 %></div>
                       
                   </h1>
                   <div class="group-overview" <% if group_result.to_s == 'not_run' %>style='padding-left: 25px'<%end%>>
@@ -228,28 +245,27 @@
                 
               </div>
             </div>
-            <% group.test_cases.each do |tc| %>
-              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false}) %>
+            <% group.test_cases.each_with_index do |tc, index| %>
+              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false, index: index}) %>
             <% end %>
           </div>
         <% end %>
 
         <div class="sequence-group sequence-action-boundary tab-pane" id="group-report">
           <div class="sequence-header">
-            <div class="row align-items-center">
-              <div class="col">
-                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
+            <div class="align-items-center">
+              <div class="group-overv-ew-box">
+                  <a class="sequence-anchor"></a>
                 <h1>
-                  <%= instance.module.name %> Report
+                  <%= instance.module.title %> Report
+                  <div class="group-steps"> Step <span class="group-step-number"><%=instance.group_results(test_set.id).length + 2 %></span> of <%= instance.group_results(test_set.id).length + 2 %></div>
                 </h1>
-                <button class="btn print-button" onclick="window.print()">Print</button>
                 <div id="reportDiv">
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
     </div>
@@ -560,5 +576,3 @@
     </div>
   </div>
 </div>
-
-<div class="guided-background-fill"></div>
