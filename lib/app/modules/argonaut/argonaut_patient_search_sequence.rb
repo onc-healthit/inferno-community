@@ -17,19 +17,19 @@ module Inferno
           identifier = resource.try(:identifier).try(:first).try(:value)
           assert !identifier.nil? && identifier == value, "Identifier on resource did not match identifier requested"
         when "family"
-          family = resource.try(:name).try(:first).try(:family).try(:first)
-          assert !family.nil? && family == value, "Family on resource did not match family requested"
+          names = resource.try(:name)
+          assert !names.nil? && names.length > 0, "No names found in patient resource"
+          assert names.any?{|name| name.family.include?(value)}, "Family name on resource did not match family name requested"
         when "given"
-          given = resource.try(:name).try(:first).try(:given).try(:first)
-          assert !given.nil? && given == value, "Given name on resource did not match given name requested"
+          names = resource.try(:name)
+          assert !names.nil? && names.length > 0, "No names found in patient resource"
+          assert names.any?{|name| name.given.include?(value)}, "Family name on resource did not match family name requested"
         when "birthdate"
           birthdate = resource.try(:birthDate)
           assert !birthdate.nil? && birthdate == value, "Birthdate on resource did not match birthdate requested"
         when "gender"
           gender = resource.try(:gender)
-          assert !gender.nil? && gender = value, "Gnder on resource did not match gender requested"
-        else
-          assert false, property
+          assert !gender.nil? && gender == value, "Gender on resource did not match gender requested"
         end
       end
 

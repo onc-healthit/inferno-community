@@ -17,7 +17,6 @@ module Inferno
         case property
         when "patient"
           assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
-      
         end
       end
 

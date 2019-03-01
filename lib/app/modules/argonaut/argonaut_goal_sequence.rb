@@ -18,7 +18,7 @@ module Inferno
         when "patient"
           assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
         when "date"
-          date = resource.try(:statusDate) || resource.try(:targetDate) || resource.try(:startDate)
+          date = resource.try(:statusDate) || resource.try(:targetDate) || resource.try(:startDate) #should be targetdate?
           assert !date.nil? && date == value
         end
       end
@@ -110,7 +110,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
-        date = @goal.try(:statusDate) || @goal.try(:targetDate) || @goal.try(:startDate)
+        date = @goal.try(:statusDate) || @goal.try(:targetDate) || @goal.try(:startDate) #should be targetDate?
         assert !date.nil?, "Goal statusDate, targetDate, nor startDate returned"
         search_params = {patient: @instance.patient_id, date: date}
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)

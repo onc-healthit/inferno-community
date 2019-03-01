@@ -21,7 +21,8 @@ module Inferno
           category = resource.try(:category).try(:coding).try(:first).try(:code)
           assert !category.nil? && category == value, "Category on resource did not match category requested"
         when "clinicalstatus"
-          #todo
+          clinicalstatus = resource.try(:clinicalStatus).try(:code) #.code?
+          assert !clinicalstatus.nil? && value.split(',').include?(clinicalstatus), "Clinical status on resource did not match the clinical status requested"
         end
       end
 

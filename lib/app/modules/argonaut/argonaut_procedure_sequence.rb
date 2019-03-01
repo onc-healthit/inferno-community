@@ -18,7 +18,7 @@ module Inferno
         when "patient"
           assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
         when "date"
-          assert resource.performedDateTime && resource.performedDateTime == value, "performedDateTime on resource did not match date requested"
+          #todo
         end
       end
 

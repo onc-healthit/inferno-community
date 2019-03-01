@@ -21,10 +21,10 @@ module Inferno
           category = resource.try(:category).try(:coding).try(:first).try(:code)
           assert !category.nil? && category == value, "Category on resource did not match category requested"
         when "date"
-          #todo
+          # todo
         when "status"
           status = resource.try(:status).try(:code)
-          assert !status.nil? && status == value
+          assert !status.nil? && status == value, "Status on resource did not match status requested"
         end
       end
 

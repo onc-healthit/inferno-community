@@ -21,7 +21,7 @@ module Inferno
           category = resource.try(:category).try(:coding).try(:first).try(:code)
           assert !category.nil? && category == value, "Category on resource did not match category requested"
         when "date"
-          assert resource.effectiveDateTime && resource.effectiveDateTime == value, "EffectiveDateTime on resource did not match date requested"
+          # todo
         when "code"
           code = resource.try(:code).try(:coding).try(:first).try(:code)
           assert !code.nil? && code == value, "Code on resource did not match code requested"
