@@ -16,12 +16,11 @@ module Inferno
       def validate_resource_item (resource, property, value)
         case property
         when "patient"
-          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+          assert resource&.patient&.reference&.include?(value), "Patient on resource does not match patient requested"
         when "category"
-          category = resource.try(:category).try(:coding).try(:first).try(:code)
-          assert !category.nil? && category == value, "Category on resource did not match category requested"
+          assert resource&.category&.coding&.any?{|coding| coding.code == value}, "Category on resource did not match category requested"
         when "clinicalstatus"
-          clinicalstatus = resource.try(:clinicalStatus).try(:code) #.code?
+          clinicalstatus = resource&.clinicalStatus
           assert !clinicalstatus.nil? && value.split(',').include?(clinicalstatus), "Clinical status on resource did not match the clinical status requested"
         end
       end
@@ -135,6 +134,11 @@ module Inferno
           optional
           desc %(
             A server SHOULD be capable returning all of a patients problems or all of patients health concerns.
+
+            This test will fail unless the server returns at least one `Condition` in the `problem`
+            category for this patient.  This may be the result of data completeness, and not a true
+            server error.  However, this test is optionalt wi so a test failure will not affect the overall
+            test pass or fail status.
           )
           versions :dstu2
         }
@@ -156,6 +160,11 @@ module Inferno
           optional
           desc %(
             A server SHOULD be capable returning all of a patients problems or all of patients health concerns.
+
+            This test will fail unless the server returns at least one `Condition` in the `health-concern`
+            category for this patient.  This may be the result of data completeness, and not a true
+            server error.  However, this test is optional so a test failure will not affect the overall
+            test pass or fail status.
           )
           versions :dstu2
         }
