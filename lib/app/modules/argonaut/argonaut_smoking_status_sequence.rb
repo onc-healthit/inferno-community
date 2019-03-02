@@ -64,6 +64,9 @@ module Inferno
 
       end
 
+
+      @resources_found = false
+
       test 'Server returns expected results from Smoking Status search by patient + code' do
 
         metadata {
@@ -77,6 +80,13 @@ module Inferno
 
         search_params = {patient: @instance.patient_id, code: "72166-2"}
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count > 0
+          @resources_found = true
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
