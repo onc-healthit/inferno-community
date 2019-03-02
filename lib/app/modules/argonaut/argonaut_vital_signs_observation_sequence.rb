@@ -11,6 +11,21 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Observation
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "category"
+          category = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == value, "Category on resource did not match category requested"
+        when "date"
+          # todo
+        when "code"
+          code = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code.nil? && code == value, "Code on resource did not match code requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -65,7 +80,8 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs"})
+        search_params = {patient: @instance.patient_id, category: "vital-signs"}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -77,8 +93,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Observation'), reply)
-        # TODO check for `vital-signs` category
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end
@@ -100,8 +115,9 @@ module Inferno
         assert !@vitalsigns.nil?, 'Expected valid Observation resource to be present'
         date = @vitalsigns.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs", date: date})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        search_params = {patient: @instance.patient_id, category: "vital-signs", date: date}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
       end
 
@@ -122,8 +138,9 @@ module Inferno
         assert !@vitalsigns.nil?, 'Expected valid Observation resource to be present'
         code = @vitalsigns.try(:code).try(:coding).try(:first).try(:code)
         assert !code.nil?, "Observation code not returned"
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs", code: code})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        search_params = {patient: @instance.patient_id, category: "vital-signs", code: code}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
       end
 
@@ -146,9 +163,9 @@ module Inferno
         assert !code.nil?, "Observation code not returned"
         date = @vitalsigns.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "vital-signs", code: code, date: date})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
-
+        search_params = {patient: @instance.patient_id, category: "vital-signs", code: code, date: date}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
       test 'Vital Signs resources associated with Patient conform to Argonaut profiles' do

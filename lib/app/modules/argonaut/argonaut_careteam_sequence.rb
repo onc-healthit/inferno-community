@@ -13,6 +13,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :CarePlan
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "category"
+          category = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == value, "Category on resource did not match category requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -53,9 +63,10 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "careteam"})
+        search_params = {patient: @instance.patient_id, category: "careteam"}
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         # save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
       end

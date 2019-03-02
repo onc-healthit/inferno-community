@@ -13,6 +13,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Goal
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "date"
+          date = resource.try(:statusDate) || resource.try(:targetDate) || resource.try(:startDate) #should be targetdate?
+          assert !date.nil? && date == value
+        end
+      end
+
       details %(
         # Background
 
@@ -67,7 +77,8 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -79,7 +90,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Goal'), reply)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
 
       end
@@ -99,10 +110,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
-        date = @goal.try(:statusDate) || @goal.try(:targetDate) || @goal.try(:startDate)
+        date = @goal.try(:statusDate) || @goal.try(:targetDate) || @goal.try(:startDate) #should be targetDate?
         assert !date.nil?, "Goal statusDate, targetDate, nor startDate returned"
-        reply = get_resource_by_params(versioned_resource_class('Goal'), {patient: @instance.patient_id, date: date})
-        validate_search_reply(versioned_resource_class('Goal'), reply)
+        search_params = {patient: @instance.patient_id, date: date}
+        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
 
       end
 

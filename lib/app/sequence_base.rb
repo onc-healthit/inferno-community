@@ -545,27 +545,25 @@ module Inferno
         end
       end
 
-      def validate_search_reply(klass, reply)
+      def validate_resource_item (resource, property, value)
+        assert false, "Could not validate resource"
+      end
+
+      def validate_search_reply(klass, reply, search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
         assert entries.length > 0, 'No resources of this type were returned'
 
-        if klass == versioned_resource_class('Patient')
+        if klass == versioned_resource_class('Patient') then
           assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
           assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
-        elsif klass == versioned_resource_class('Provenance')
-          entries.each do |entry|
-            assert (entry.resource.target && entry.resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
-          end
-        elsif ['CarePlan', 'Goal', 'DiagnosticReport', 'Observation', 'Procedure', 'DocumentReference', 'Composition'].map{|type| versioned_resource_class(type)}.include?(klass)
-          entries.each do |entry|
-            assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
-          end
-        else
-          entries.each do |entry|
-            assert (entry.resource.patient && entry.resource.patient.reference.include?(@instance.patient_id)), "Patient on resource does not match patient requested"
+        end 
+
+        entries.each do |entry|
+          search_params.each do |key, value|
+            validate_resource_item(entry.resource, key.to_s, value)
           end
         end
       end

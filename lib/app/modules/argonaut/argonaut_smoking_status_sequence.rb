@@ -13,6 +13,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Observation
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Patient on resource does not match patient requested"
+        when "code"
+          code = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code.nil? && code == value, "Code on resource did not match code requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -54,6 +64,9 @@ module Inferno
 
       end
 
+
+      @resources_found = false
+
       test 'Server returns expected results from Smoking Status search by patient + code' do
 
         metadata {
@@ -65,9 +78,16 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
-        # TODO check for 72166-2
+        search_params = {patient: @instance.patient_id, code: "72166-2"}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count > 0
+          @resources_found = true
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end

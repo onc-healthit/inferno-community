@@ -13,6 +13,18 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Condition
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert resource&.patient&.reference&.include?(value), "Patient on resource does not match patient requested"
+        when "category"
+          assert resource&.category&.coding&.any?{|coding| coding.code == value}, "Category on resource did not match category requested"
+        when "clinicalstatus"
+          clinicalstatus = resource&.clinicalStatus
+          assert !clinicalstatus.nil? && value.split(',').include?(clinicalstatus), "Clinical status on resource did not match the clinical status requested"
+        end
+      end
+
       details %(
         # Background
 
@@ -75,7 +87,8 @@ module Inferno
 
 
 
-        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -87,7 +100,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
 
       end
@@ -107,8 +120,9 @@ module Inferno
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"})
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        search_params = {patient: @instance.patient_id, clinicalstatus: "active,recurrance,remission"}
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
 
       end
 
@@ -120,6 +134,11 @@ module Inferno
           optional
           desc %(
             A server SHOULD be capable returning all of a patients problems or all of patients health concerns.
+
+            This test will fail unless the server returns at least one `Condition` in the `problem`
+            category for this patient.  This may be the result of data completeness, and not a true
+            server error.  However, this test is optionalt wi so a test failure will not affect the overall
+            test pass or fail status.
           )
           versions :dstu2
         }
@@ -127,8 +146,9 @@ module Inferno
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, category: "problem"})
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        search_params = {patient: @instance.patient_id, category: "problem"}
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
 
       end
 
@@ -140,6 +160,11 @@ module Inferno
           optional
           desc %(
             A server SHOULD be capable returning all of a patients problems or all of patients health concerns.
+
+            This test will fail unless the server returns at least one `Condition` in the `health-concern`
+            category for this patient.  This may be the result of data completeness, and not a true
+            server error.  However, this test is optional so a test failure will not affect the overall
+            test pass or fail status.
           )
           versions :dstu2
         }
@@ -147,8 +172,9 @@ module Inferno
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(versioned_resource_class('Condition'), {patient: @instance.patient_id, category: "health-concern"})
-        validate_search_reply(versioned_resource_class('Condition'), reply)
+        search_params = {patient: @instance.patient_id, category: "health-concern"}
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
 
       end
 

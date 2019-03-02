@@ -14,6 +14,13 @@ module Inferno
 
       description 'Tests for Provenance resources'
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "target"
+          assert (resource.target && resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
+        end
+      end
+
       test 'Server rejects Provenance search without authorization' do
         metadata do
           id '01'
@@ -45,8 +52,9 @@ module Inferno
           )
         end
 
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, target: "Patient/" + @instance.patient_id)
-        validate_search_reply(FHIR::DSTU2::Provenance, reply)
+        search_params = {target: "Patient/" + @instance.patient_id}
+        reply = get_resource_by_params(FHIR::DSTU2::Provenance, search_params)
+        validate_search_reply(FHIR::DSTU2::Provenance, reply, search_params)
         @provenance = reply.try(:resource).try(:entry).try(:first).try(:resource)
 
         assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
