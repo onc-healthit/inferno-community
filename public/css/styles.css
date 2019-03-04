@@ -1084,6 +1084,22 @@ body {
   padding: 8px 0 4px;
 }
 
+.guided .sequence-row-input{
+  margin: 15px 5px -15px 20px;
+  padding: 10px 0 5px 20px;
+  background-color: whitesmoke;
+}
+
+.input-list{
+  overflow: auto;
+  white-space: nowrap;
+}
+
+.input-list li{
+  padding: 0px 15px;
+}
+
+
 .guided .sequence-score {
   margin-left: -34px;
 }

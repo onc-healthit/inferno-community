@@ -1,0 +1,13 @@
+<ul class='input-list test-list'>
+  <% sequence_result && sequence_result.input_params.split(',').each do |input| %>
+    <li>
+    <span>
+        <strong>
+        <%= input.split(':').first.sub('_', ' ').titlecase %> &nbsp;
+        </strong>
+        <%= input.split(':').last %>
+    </span>
+    </li>
+  <% end %>
+</ul>
+
