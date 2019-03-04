@@ -31,14 +31,34 @@ module Inferno
                         "The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test. " +
                         "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
 
+            if !params[:error].nil?
+              error_message = error_message + "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
+            end
+
               if !params[:error_description].nil?
-                error_message = error_message + "<p>The server returned the following error description that may have contributed to this issue: <strong>#{params[:error_description]}</strong>.</p>"
+                error_message = error_message + "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
               end
 
               halt 500, error_message
             end
-
           end
+
+          if params[:endpoint] == 'redirect' && params[:state].nil?
+            error_message = "<p>No state parameter was provided to the redirect URI as required by OAuth2.0. " +
+                      "Inferno is unable to identify the currently running test session without the state parameter. " +
+                      "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
+
+            if !params[:error].nil?
+              error_message = error_message + "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
+            end
+
+            if !params[:error_description].nil?
+              error_message = error_message + "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
+            end
+
+            halt 500, error_message
+          end
+
           if params[:endpoint] == 'launch'
             recent_results = Inferno::Models::SequenceResult.all(:created_at.gte => 5.minutes.ago, :result => 'wait', :order => [:created_at.desc])
             matching_results = recent_results.select{|sr| sr.testing_instance.url.downcase.split('://').last.chomp('/') == params[:iss].downcase.split('://').last.chomp('/')}
