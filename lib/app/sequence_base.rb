@@ -104,7 +104,9 @@ module Inferno
         input_parameters = ""
         @@requires[sequence_name].each do |requirement|
           if @instance.respond_to? requirement then
-            input_parameters += requirement.to_s + ":" + @instance.send(requirement).to_s + ","
+            input_value = @instance.send(requirement).to_s
+            input_value = "none" if input_value.empty?
+            input_parameters += requirement.to_s + ":" + input_value + ","
           end
         end
         @sequence_result.input_params = input_parameters

@@ -119,7 +119,7 @@
   </div>
   <% show_log = sequence_results[test_case.id]&.test_results&.any?{ |result| result.request_responses.count > 0} %>
   <% show_overview = !test_case.sequence.details.nil?%>
-  <% show_inputs = !sequence_results[test_case.id].nil? && !sequence_results[test_case.id].nil? && sequence_results[test_case.id].input_params.length > 0 %>
+  <% show_inputs = !sequence_results[test_case.id].nil? && !sequence_results[test_case.id].input_params.nil? && sequence_results[test_case.id].input_params.length > 0 %>
   <div class="result-details collapse" id="<%=test_case.id%>-details">
     <% if show_log || show_overview || show_inputs %>
       <ul class="nav nav-tabs result-details-tabs" id="<%=test_case.id%>_result-details-tabs" role="tablist">
