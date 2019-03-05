@@ -1099,6 +1099,10 @@ body {
   padding: 0px 15px;
 }
 
+.input-list li:first-child{
+  padding-top: 5px;
+}
+
 
 .guided .sequence-score {
   margin-left: -34px;

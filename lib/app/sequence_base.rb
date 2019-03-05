@@ -101,15 +101,15 @@ module Inferno
 
         start_at = @sequence_result.test_results.length
 
-        input_parameters = ""
+        input_parameters = {}
         @@requires[sequence_name].each do |requirement|
           if @instance.respond_to? requirement then
             input_value = @instance.send(requirement).to_s
             input_value = "none" if input_value.empty?
-            input_parameters += requirement.to_s + ":" + input_value + ","
+            input_parameters[requirement.to_sym] = input_value
           end
         end
-        @sequence_result.input_params = input_parameters
+        @sequence_result.input_params = input_parameters.to_json
 
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|

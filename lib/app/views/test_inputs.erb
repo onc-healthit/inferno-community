@@ -1,11 +1,11 @@
 <ul class='input-list test-list'>
-  <% sequence_result && sequence_result.input_params.split(',').each do |input| %>
+  <% JSON.parse(sequence_result.input_params).each do |type, value| %>
     <li>
     <span>
         <strong>
-        <%= input.split(':').first.sub('_', ' ').titlecase %> &nbsp;
+        <%= type.sub('_', ' ').titlecase %> &nbsp;
         </strong>
-        <%= input.split(':').last %>
+        <%= value %>
     </span>
     </li>
   <% end %>
