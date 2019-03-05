@@ -166,6 +166,7 @@ $(function(){
 
       if(show){
         let formInput = $(this).clone();
+        formInput.find('[data-toggle="tooltip"]').tooltip()
         if(variable_defaults[prerequisite] !== undefined){
           formInput.find('input').val(variable_defaults[prerequisite]);
         }
