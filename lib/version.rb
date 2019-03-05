@@ -1,3 +1,3 @@
 module Inferno
-  VERSION = '2.0.0-pre3'
+  VERSION = '2.0.0'
 end

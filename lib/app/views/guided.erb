@@ -325,6 +325,7 @@
             <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
             <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
           </div>
+
         </div>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
