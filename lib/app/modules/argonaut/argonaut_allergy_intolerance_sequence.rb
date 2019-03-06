@@ -13,6 +13,38 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :AllergyIntolerance
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Allergy Intolerance Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-allergyintolerance.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it contains:
+
+        * The status of the allergy
+        * A code representing the substance responsible for the allergy
+        * A reference to the patient to whom the allergy belongs
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/medicationorder.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html)
+              )
+
       @resources_found = false
 
       test 'Server rejects AllergyIntolerance search without authorization' do
@@ -46,7 +78,8 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -58,7 +91,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
 
       end

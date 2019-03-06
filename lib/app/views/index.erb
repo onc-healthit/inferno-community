@@ -1,82 +1,50 @@
 
 <div class="container">
-<div class="main">
+  <div class="main index-page">
 
-  <% unless tls_testing_supported? %>
-    <div class="alert alert-warning" role="alert">
-      TLS testing does not appear to be available on this platform.
-      Please read the installation instructions for more information.
-    </div>
-  <% end %>
-
-  <p class='headline'>
-    Inferno is an open source tool that tests whether patients can access their health data. It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
-  </p>
-
-  <h2>Start Testing</h2>
-  <form method="POST" action="<%=base_path%>/">
-    <input type="hidden" name="client_endpoint_key" value="static" />
-    <%= erb(:module_options,{},modules: modules) %>
-    <div class="form-group">
-      <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
-      <div class="input-group">
-        <input type="url" class="form-control form-control-lg" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
-        <div class="input-group-btn">
-          <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
-        </div>
+    <% unless tls_testing_supported? %>
+      <div class="alert alert-warning" role="alert">
+        TLS testing does not appear to be available on this platform.
+        Please read the installation instructions for more information.
       </div>
+    <% end %>
 
+    <% if modules.length == 1%>
+      <div class="index-description">
+        <h2><%=modules.first.title%></h2>
+        <%= markdown_to_html(modules.first.description) %>
+      </div>
+    <% else %>
+      <p class='headline'>
+          Inferno is an open source tool that tests whether patients can access their health data. It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
+          <br><br>
+          Please choose a test set and enter a FHIR URI to begin testing.
+      </p>
+
+    <% end%>
+
+    <h2>Start Testing</h2>
+
+    <form method="POST" action="<%=base_path%>/">
+      <input type="hidden" name="client_endpoint_key" value="static" />
+      <%= erb(:module_options,{},modules: modules) %>
+      <div class="form-group">
+        <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
+        <div class="input-group">
+          <input type="url" class="form-control form-control-lg" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
+          <div class="input-group-btn">
+            <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+    <div class='alert alert-warning'>
+      <span class="oi oi-wrench "></span> This software is under active development.  Please report bugs and submit feature requests as <a href='https://github.com/siteadmin/inferno/issues' target="_blank">GitHub issues</a>.
     </div>
-  </form>
 
-  <div class='alert alert-warning'>
-    <span class="oi oi-wrench "></span> This software is under active development.  Please report bugs and submit feature requests as <a href='https://github.com/siteadmin/inferno/issues' target="_blank">GitHub issues</a>.
+
+
   </div>
-
-  <div class='whitespace'></div>
-
-  <h2>What does Inferno test?</h2>
-  <div class="container" style='padding:0;'>
-    <div class="card-deck">
-      <div class="card">
-        <div class='card-body'>
-          <div class='logo smart'></div>
-          <p>
-            Inferno tests conformance to <a href="https://smarthealthit.org/" target="_blank">SMART on FHIR</a> requirements for authentication and authorization of FHIR servers, including:
-            <ul>
-              <li><strong>App Registration</strong> through either manual client registration or the <a href="https://tools.ietf.org/html/rfc7591" target="_blank">OAuth 2.0 Dynamic Client Registration Protocol</a>
-              <li><strong>App Launch</strong> using the <a href="http://www.hl7.org/fhir/smart-app-launch/" target="_blank">SMART App Launch Framework</a> with support for both the <a href="http://www.hl7.org/fhir/smart-app-launch/#standalone-launch-sequence" target="_blank">Standalone Launch</a> and <a href="http://www.hl7.org/fhir/smart-app-launch/#ehr-launch-sequence" target="_blank">EHR Launch</a> sequences</li>
-              <li><strong>Authentication</strong>, which must conform to <a href="http://openid.net/specs/openid-connect-core-1_0.html" target="_blank">OpenID Connect Core 1.0 incorporating errata set 1</a></li>
-            </ul>
-          </p>
-        </div>
-      </div>
-      <div class="card">
-        <div class='card-body'>
-          <div class='logo argonaut'></div>
-          <p>
-            Inferno also tests conformance to the <a href="http://www.fhir.org/guides/argonaut/r2" target="_blank">Argonaut Data Query Implementation Guide</a>.  Specifically, Inferno requires a publicly accessible <a href="https://www.hl7.org/fhir/DSTU2/conformance.html" target="_blank">conformance statement with OAuth endpoints</a>, support for the <a href='http://www.fhir.org/guides/argonaut/r2/Conformance-server.html' target="_blank">Data Query Server capabilities</a>, and support for the following <a href='http://www.fhir.org/guides/argonaut/r2/profiles.html' target='_blank'>Argonaut Data Query Profiles</a>:
-          </p>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-allergyintolerance.html" target="_blank"><code>AllergyIntolerance</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html" target="_blank"><code>CarePlan</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careteam.html" target="_blank"><code>CareTeam</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-condition.html" target="_blank"><code>Condition</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-device.html" target="_blank"><code>Device</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-diagnosticreport.html" target="_blank"><code>DiagnosticReport</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-documentreference.html" target="_blank"><code>DocumentReference</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-goal.html" target="_blank"><code>Goal</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-immunization.html" target="_blank"><code>Immunization</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html" target="_blank"><code>Medication</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html" target="_blank"><code>MedicationOrder</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html" target="_blank"><code>MedicationStatement</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html" target="_blank"><code>Observation Results</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html" target="_blank"><code>Patient</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-procedure.html" target="_blank"><code>Procedure</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html" target="_blank"><code>Smoking Status Observation</code></a>
-            <a class='badge badge-info fhir-resource-badge' href="http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-vitalsigns.html" target="_blank"><code>Vital Signs Observation</code></a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 </div>

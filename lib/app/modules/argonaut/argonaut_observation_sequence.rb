@@ -11,6 +11,42 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Observation
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "category"
+          category = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == value, "Category on resource did not match category requested"
+        when "date"
+          # todo
+        when "code"
+          code = resource.try(:code).try(:coding).try(:first).try(:code)
+          assert !code.nil? && code == value, "Code on resource did not match code requested"
+        end
+      end
+
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?category=laboratory&patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it conforms to the profile.
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html)
+              )
+
       @resources_found = false
 
       test 'Observation Results search without authorization' do
@@ -44,7 +80,8 @@ module Inferno
           versions :dstu2
         }
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory"})
+        search_params = {patient: @instance.patient_id, category: "laboratory"}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -56,7 +93,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @observationresults = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end
@@ -78,8 +115,9 @@ module Inferno
         assert !@observationresults.nil?, 'Expected valid Observation resource to be present'
         date = @observationresults.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory", date: date})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        search_params = {patient: @instance.patient_id, category: "laboratory", date: date}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
       end
 
@@ -100,8 +138,9 @@ module Inferno
         assert !@observationresults.nil?, 'Expected valid Observation resource to be present'
         code = @observationresults.try(:code).try(:coding).try(:first).try(:code)
         assert !code.nil?, "Observation code not returned"
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory", code: code})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        search_params = {patient: @instance.patient_id, category: "laboratory", code: code}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
       end
 
@@ -125,8 +164,9 @@ module Inferno
         assert !code.nil?, "Observation code not returned"
         date = @observationresults.try(:effectiveDateTime)
         assert !date.nil?, "Observation effectiveDateTime not returned"
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, category: "laboratory", code: code, date: date})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
+        search_params = {patient: @instance.patient_id, category: "laboratory", code: code, date: date}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
       end
 
@@ -167,9 +207,9 @@ module Inferno
         skip_if_not_supported(:Observation, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), {patient: @instance.patient_id, code: "72166-2"})
-        validate_search_reply(versioned_resource_class('Observation'), reply)
-        # TODO check for 72166-2
+        search_params = {patient: @instance.patient_id, code: "72166-2"}
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
       end

@@ -65,9 +65,12 @@ $(function(){
     
     var sequences = [],
         test_cases = [],
+        variable_defaults = {},
         requirements = [],
         popupTitle = "",
         lockedVariables = [];
+        skippedOnly = false;
+        show_uris = false;
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
@@ -82,19 +85,38 @@ $(function(){
       }
     }
     
+    if($(this).data('skippedOnly')){
+      skippedOnly = $(this).data('skippedOnly');
+    }
 
     $(this).closest('.sequence-action-boundary').find('.test-case-data').each(function(){
-      sequences.push($(this).data('sequence'));
-      test_cases.push($(this).data('testCase'));
+      if(!skippedOnly || $(this).data('result') === 'skip')
+      {
+          sequences.push($(this).data('sequence'));
+          test_cases.push($(this).data('testCase'));
+          if($(this).data('variableDefaults')){
+            let _this = $(this);
+            $(this).data('variableDefaults').split(",").forEach(function(variable){
+              if(_this.data('variableDefault'+variable) !== undefined){
+                variable_defaults[variable] = _this.data('variableDefault'+variable);
+              }
+            })
+          }
+    
+          if(!popupTitle){
+            popupTitle = $(this).data('testCaseTitle');
+          }
 
-      if(!popupTitle){
-        popupTitle = $(this).data('testCaseTitle');
+          if(!show_uris){
+            show_uris = $(this).data('showUris');
+          }
       }
 
     });
 
     // clear out the existing contents
     $('.prerequisite-group').empty();
+    $('.show-uris').hide();
     $('.enabled-prerequisite-group-title').hide();
     $('.disabled-prerequisite-group-title').hide();
     $('.disabled-prerequisites').hide();
@@ -144,6 +166,10 @@ $(function(){
 
       if(show){
         let formInput = $(this).clone();
+        formInput.find('[data-toggle="tooltip"]').tooltip()
+        if(variable_defaults[prerequisite] !== undefined){
+          formInput.find('input').val(variable_defaults[prerequisite]);
+        }
         if(lockedVariables.includes(prerequisite)){
           formInput.find('input').attr('readonly', 'readonly');
           formInput.find(':radio:not(:checked)').attr('disabled', true);
@@ -177,9 +203,9 @@ $(function(){
     // Confidential client special case
     
     if($('#confidential_client_on')[0].checked){
-      $('div[data-prerequisite="client_secret"]').show();
+       $('div[data-prerequisite="client_secret"]').show();
     } else {
-      $('div[data-prerequisite="client_secret"]').hide();
+       $('div[data-prerequisite="client_secret"]').hide();
     }
     
 
@@ -192,6 +218,10 @@ $(function(){
     if(popupTitle){
       $('#PrerequisitesModalTitle').html(popupTitle)
     }
+
+    if(show_uris){
+      $('.show-uris').show();
+    }
   })
 
 
@@ -201,10 +231,6 @@ $(function(){
     $(this).attr('title', $(this).data('preconditionDescription'))
                         .attr('data-toggle','tooltip');
   });
-
-  $('.get-started').click(function(){
-    $('#group-link-DiscoveryandRegistration').tab('show')
-  })
 
   $('.test-results-more').on('click', function() {
     if($(this).data('testingInstanceId') && $(this).data('testResultId')){
@@ -228,6 +254,28 @@ $(function(){
     }
   })
 
+  $('.log-request-more').on('click', function() {
+    if($(this).data('testingInstanceId') && $(this).data('requestId')){
+      var url = window.basePath + '/' + $(this).data('testingInstanceId') + '/test_request/' + $(this).data('requestId');
+      $("#testResultDetailsModal").find('.modal-content').load(url, function(value){
+        $(this).find("pre>code").each(function(el){
+          let $el = $(this)
+          let content = $el.html()
+          try{
+            if(content && content.length > 0){
+              content = indent($el.html())
+            }
+          } catch (ex) {
+            console.log('Error indenting: ' + ex)
+          }
+          $el.html(content)
+        });
+
+        $("#testResultDetailsModal").modal('show');
+      })
+    }
+  })
+  
   $('.test-list .test-list-more').on('click', function() {
     if($(this).data('sequenceName') && $(this).data('testIndex') !== undefined){
       var url = window.basePath + '/test_details/' + $(this).data('module') + '/' + $(this).data('sequenceName') + '/' + $(this).data('testIndex');

@@ -63,44 +63,39 @@
       </div>
     <% end %>
     <div class="group-nav">
-      <ul class="nav nav-pills">
-      <li class="nav-item" style='margin-bottom: 15px;'><a class="nav-link active" href="#group-overview" data-toggle="tab"><%= instance.module.title %> Overview</a></li>
-      <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
-        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>"><a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab"><%= group_with_result[:group].name %></a></li>
+      <ul class="nav nav-pills nav-fill">
+      <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
+        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>">
+          <a class="nav-link<%= if index == 0 then ' active' end %>" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
+            <% case group_with_result[:result].to_s
+              when 'pass' %>
+              <div class="group-nav-score group-nav-score-pass" data-toggle="tooltip" title="Test Passed">
+                <span class="oi oi-check" aria-hidden="true"></span>
+              </div>
+            <% when 'fail' %>
+              <div class="group-nav-score group-nav-score-fail" data-toggle="tooltip" title="Test Failed">
+                <span class="oi oi-x" aria-hidden="true"></span>
+              </div>
+            <% end %>
+            <div class="group-nav-label"><%= group_with_result[:group].name %></div>
+          </a>
+        </li>
       <%end%>
-      <li class="nav-item" style='margin-top: 15px;'><a id="report-link" class="nav-link" href="#group-report" data-toggle="tab">Report</a></li>
+      <li class="nav-item nav-item-no-chevron">
+        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span> Report</a>
+        </li>
       </ul>
     </div>
 
     <div class="row">
       <div class="col-12 sequence-table">
-
-        <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
-          <div class="sequence-header">
-            <div class="row align-items-center">
-              <div class="col" style="margin-left: 20px;">
-                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
-                <h1>
-                  <%= instance.module.title %>
-                </h1>
-                <div class="sequence-overview">
-                  <%= markdown_to_html(instance.module.description) %>
-                </div>
-
-                <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
-
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <% instance.group_results(test_set.id).each do |group_with_result| %>
+        <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
           <% group = group_with_result[:group] %>
           <% group_result = group_with_result[:result] %>
-          <div class="sequence-group sequence-action-boundary tab-pane" data-group="<%= group.name %>" id="group-<%=group.id%>">
+          <div class="sequence-group sequence-action-boundary tab-pane<%= if index == 0 then ' active' end %>" data-group="<%= group.name %>" id="group-<%=group.id%>">
             <div class="sequence-header">
-              <div class='row align-items-center'>
-                <div class='col'>
+              <div class='align-items-center'>
+                <div class='group-overview-box'>
                   <% if group.test_cases.length > 1 %>
                     
                     <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
@@ -139,6 +134,8 @@
 
                     
                     <%= group.name %>
+
+                    <div class="group-steps"> Step <span class="group-step-number"><%=index + 1%></span> of <%= instance.group_results(test_set.id).length %></div>
                       
                   </h1>
                   <div class="group-overview" <% if group_result.to_s == 'not_run' %>style='padding-left: 25px'<%end%>>
@@ -158,15 +155,20 @@
                       </div>
                       <%= markdown_to_html(group.overview) %>
                       <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Rerun Tests
+                        <span class="oi oi-media-play"></span> Rerun All Tests
                       </button>
                     <% when 'fail' %>
                       <div class="group-message">
                         Result: Fail. One or more tests have failed, please see below for failure details.
                       </div>
                       <%= markdown_to_html(group.overview) %>
+                      <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                          <span class="oi oi-media-play"></span> Rerun Skipped Tests
+                        </button>
+                      <% end %>
                       <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Rerun Tests
+                        <span class="oi oi-media-play"></span> Rerun All Tests
                       </button>
                     <% when 'cancel' %>
                       <div class="group-message">
@@ -181,8 +183,13 @@
                         Errored
                       </div>
                       <%= markdown_to_html(group.overview) %>
+                      <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                          <span class="oi oi-media-play"></span> Rerun Skipped Tests
+                        </button>
+                      <% end %>
                       <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Begin Tests
+                        <span class="oi oi-media-play"></span> Rerun All Tests
                       </button>
                     <% when 'wait' %>
                       <div class="group-message">
@@ -197,8 +204,13 @@
                         Skipped
                       </div>
                       <%= markdown_to_html(group.overview) %>
+                      <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                          <span class="oi oi-media-play"></span> Rerun Skipped Tests
+                        </button>
+                      <% end %>
                       <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Begin Tests
+                        <span class="oi oi-media-play"></span> Rerun All Tests
                       </button>
                     <% else %>
                       <%= markdown_to_html(group.overview) %>
@@ -213,28 +225,27 @@
                 
               </div>
             </div>
-            <% group.test_cases.each do |tc| %>
-              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false}) %>
+            <% group.test_cases.each_with_index do |tc, index| %>
+              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false, index: index}) %>
             <% end %>
           </div>
         <% end %>
 
         <div class="sequence-group sequence-action-boundary tab-pane" id="group-report">
           <div class="sequence-header">
-            <div class="row align-items-center">
-              <div class="col">
-                  <a class="sequence-anchor" id="[" argonautconformancesequence",="" "argonautconformancesequence"]"="" name="ArgonautConformanceSequence,ArgonautConformanceSequence"></a>
+            <div class="align-items-center">
+              <div class="group-overv-ew-box">
+                  <a class="sequence-anchor"></a>
                 <h1>
-                  <%= instance.module.name %> Report
+                  <%= instance.module.title %> Report
+                  <div class="group-steps"> Step <span class="group-step-number"><%=instance.group_results(test_set.id).length %></span> of <%= instance.group_results(test_set.id).length %></div>
                 </h1>
-                <button class="btn print-button" onclick="window.print()">Print</button>
                 <div id="reportDiv">
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
     </div>
@@ -340,18 +351,6 @@
               value: instance.patient_id,
               })%>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_1,
-              label: 'First Unique Patient ID',
-              instance: instance,
-              value: instance.extra_patient_id_1,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :extra_patient_id_2,
-              label: 'Second Unique Patient ID',
-              instance: instance,
-              value: instance.extra_patient_id_2,
-              })%>
-
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,
@@ -368,27 +367,11 @@
         <input type="hidden" name="sequence" value="" />
         <input type="hidden" name="test_case" value="" />
         <input type="hidden" name="required_fields" value="" />
-        <div class="modal-body">
+        <div class="modal-body"> 
           <% test_set.groups.each do |group| %>
             <% unless group.input_instructions.nil? %>
               <div class="input-instructions" id="input-instructions-<%=group.id%>">
                 <%= markdown_to_html(group.input_instructions) %>
-
-                <% if group.id.downcase.include?('discoveryandregistration') %>
-            
-                  <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
-                    instance: instance,
-                    label: 'Launch URI',
-                    value: instance.initiate_login_uri,
-                    readonly: true })%>
-          
-                  <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                        instance: instance,
-                        label: 'Redirect URI',
-                        value: instance.redirect_uris,
-                        readonly: true })%>
-                <% end %>
-                
               </div>
             <% end %>
             
@@ -398,6 +381,19 @@
                  data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
             <%end %>
           <% end %>
+          <div class="show-uris" style="display:none">
+            <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                    instance: instance,
+                    label: 'Launch URI',
+                    value: instance.initiate_login_uri,
+                    readonly: true })%>
+          
+                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                      instance: instance,
+                      label: 'Redirect URI',
+                      value: instance.redirect_uris,
+                      readonly: true })%>
+          </div>
           <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
             
   
@@ -561,5 +557,3 @@
     </div>
   </div>
 </div>
-
-<div class="guided-background-fill"></div>

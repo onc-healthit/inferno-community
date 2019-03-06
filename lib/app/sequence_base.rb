@@ -6,6 +6,7 @@ require_relative 'utils/exceptions'
 require_relative 'utils/validation'
 require_relative 'utils/walk'
 require_relative 'utils/web_driver'
+require_relative 'utils/terminology'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -14,25 +15,7 @@ require 'json'
 module Inferno
   module Sequence
 
-    bloomfilter_root = "data/umls-bloomer-bloom-filters"
-    vs_bloomfilter_manifest_path = "#{bloomfilter_root}/manifest.json"
-
-    if File.file? vs_bloomfilter_manifest_path
-      vs_bloomfilter_manifest = JSON.parse(File.read(vs_bloomfilter_manifest_path))
-      vs_bloomfilter_manifest["filters"].each do |filter_detail|
-        vs_url = filter_detail.fetch("valueSetUrl", nil)
-        next unless vs_url
-
-        filename = "#{bloomfilter_root}/#{filter_detail['file']}"
-        one_filter = Bloomer::Scalable.from_msgpack(open(filename).read())
-        validate_fn = lambda do |coding|
-          probe = "#{coding.system}|#{coding.code}"
-          one_filter.include? probe
-        end
-
-        FHIR::DSTU2::StructureDefinition.validates_vs(vs_url, &validate_fn)
-      end
-    end
+    Inferno::Terminology.load_validators
 
     class SequenceBase
 
@@ -63,6 +46,7 @@ module Inferno
       @@test_metadata = {}
 
       @@optional = []
+      @@show_uris = []
 
       @@test_id_prefixes = {}
 
@@ -89,7 +73,8 @@ module Inferno
               request_method: request.request_method.downcase,
               request_url: request.url,
               request_headers: headers.to_json,
-              request_payload: request.body.read
+              request_payload: request.body.read,
+              instance_id: @instance.id
           )
         end
 
@@ -115,6 +100,16 @@ module Inferno
         end
 
         start_at = @sequence_result.test_results.length
+
+        input_parameters = {}
+        @@requires[sequence_name].each do |requirement|
+          if @instance.respond_to? requirement then
+            input_value = @instance.send(requirement).to_s
+            input_value = "none" if input_value.empty?
+            input_parameters[requirement.to_sym] = input_value
+          end
+        end
+        @sequence_result.input_params = input_parameters.to_json
 
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|
@@ -153,7 +148,8 @@ module Inferno
                   request_payload: req.request[:payload],
                   response_code: req.response[:code],
                   response_headers: req.response[:headers].to_json,
-                  response_body: req.response[:body])
+                  response_body: req.response[:body],
+                  instance_id: @instance.id)
             end
           end
 
@@ -166,7 +162,8 @@ module Inferno
                 request_payload: req[:request][:payload].to_json,
                 response_code: req[:response][:code],
                 response_headers: req[:response][:headers].to_json,
-                response_body: req[:response][:body])
+                response_body: req[:response][:body],
+                instance_id: @instance.id)
           end
 
           yield result if block_given?
@@ -180,18 +177,26 @@ module Inferno
           end
         end
 
-        @sequence_result.passed_count = @sequence_result.todo_count = @sequence_result.failed_count = @sequence_result.error_count = @sequence_result.skip_count = 0
+        @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
         @sequence_result.result = STATUS[:pass]
 
         @sequence_result.test_results.each do |result|
+          if result.required then
+            @sequence_result.required_total += 1
+          else
+            @sequence_result.optional_total += 1
+          end
           case result.result
           when STATUS[:pass]
-            @sequence_result.passed_count += 1
+            if result.required then
+              @sequence_result.required_passed += 1
+            else
+              @sequence_result.optional_passed += 1
+            end
           when STATUS[:todo]
             @sequence_result.todo_count += 1
           when STATUS[:fail]
             if result.required
-              @sequence_result.failed_count += 1
               @sequence_result.result = result.result if @sequence_result.result != STATUS[:error]
             end
           when STATUS[:error]
@@ -328,6 +333,14 @@ module Inferno
 
       def self.optional?
         @@optional.include?(self.sequence_name)
+      end
+
+      def self.show_uris
+        @@show_uris << self.sequence_name
+      end
+
+      def self.show_uris?
+        @@show_uris.include?(self.sequence_name)
       end
 
       def self.preconditions(description, &block)
@@ -542,27 +555,25 @@ module Inferno
         end
       end
 
-      def validate_search_reply(klass, reply)
+      def validate_resource_item (resource, property, value)
+        assert false, "Could not validate resource"
+      end
+
+      def validate_search_reply(klass, reply, search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
         assert entries.length > 0, 'No resources of this type were returned'
 
-        if klass == versioned_resource_class('Patient')
+        if klass == versioned_resource_class('Patient') then
           assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
           assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
-        elsif klass == versioned_resource_class('Provenance')
-          entries.each do |entry|
-            assert (entry.resource.target && entry.resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
-          end
-        elsif ['CarePlan', 'Goal', 'DiagnosticReport', 'Observation', 'Procedure', 'DocumentReference', 'Composition'].map{|type| versioned_resource_class(type)}.include?(klass)
-          entries.each do |entry|
-            assert (entry.resource.subject && entry.resource.subject.reference.include?(@instance.patient_id)), "Subject on resource does not match patient requested"
-          end
-        else
-          entries.each do |entry|
-            assert (entry.resource.patient && entry.resource.patient.reference.include?(@instance.patient_id)), "Patient on resource does not match patient requested"
+        end 
+
+        entries.each do |entry|
+          search_params.each do |key, value|
+            validate_resource_item(entry.resource, key.to_s, value)
           end
         end
       end

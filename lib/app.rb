@@ -20,6 +20,7 @@ require_relative 'app/sequence_base'
 require_relative 'app/module'
 require_relative 'version'
 require_relative 'app/models'
+require_relative 'app/utils/terminology'
 
 module Inferno
   class App

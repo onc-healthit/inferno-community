@@ -26,8 +26,39 @@ module Inferno
           instance = nil
           if params[:endpoint] == 'redirect' && !params[:state].nil?
             instance = Inferno::Models::TestingInstance.first(state: params[:state])
-            halt 500, "Error: No actively running launch sequences found with a state of #{params[:state]}." if instance.nil?
+            if instance.nil?
+              error_message = "<p>Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of #{params[:state]}. " +
+                        "The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test. " +
+                        "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
+
+            if !params[:error].nil?
+              error_message = error_message + "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
+            end
+
+              if !params[:error_description].nil?
+                error_message = error_message + "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
+              end
+
+              halt 500, error_message
+            end
           end
+
+          if params[:endpoint] == 'redirect' && params[:state].nil?
+            error_message = "<p>No state parameter was provided to the redirect URI as required by OAuth2.0. " +
+                      "Inferno is unable to identify the currently running test session without the state parameter. " +
+                      "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
+
+            if !params[:error].nil?
+              error_message = error_message + "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
+            end
+
+            if !params[:error_description].nil?
+              error_message = error_message + "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
+            end
+
+            halt 500, error_message
+          end
+
           if params[:endpoint] == 'launch'
             recent_results = Inferno::Models::SequenceResult.all(:created_at.gte => 5.minutes.ago, :result => 'wait', :order => [:created_at.desc])
             matching_results = recent_results.select{|sr| sr.testing_instance.url.downcase.split('://').last.chomp('/') == params[:iss].downcase.split('://').last.chomp('/')}
@@ -41,11 +72,12 @@ module Inferno
 
 
           sequence_result = instance.waiting_on_sequence
-          test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
-
           if sequence_result.nil? || sequence_result.result != 'wait'
-            redirect "#{BASE_PATH}/#{instance.id}/#{test_set.id}/?error=no_#{params[:endpoint]}"
+            latest_sequence_result = Inferno::Models::SequenceResult.first(:testing_instance => instance)
+            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
+            redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
           else
+            test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
             failed_test_cases = []
             all_test_cases = []
             test_case = test_set.test_case_by_id(sequence_result.test_case_id)
@@ -186,22 +218,16 @@ module Inferno
           sequence_results = instance.latest_results_by_case
           latest_sequence_time = nil
 
-          request_response_count = 0
-          instance.sequence_results.each do |sequence_result|
-            if latest_sequence_time == nil || latest_sequence_time < sequence_result.created_at then
-              latest_sequence_time = sequence_result.created_at
-            end
-            sequence_result.test_results.each do |test_result|
-              request_response_count = request_response_count + test_result.request_responses.count
-            end
-          end
-
-          if latest_sequence_time == nil then
-            latest_sequence_time = "No tests ran"
+          request_response_count = Inferno::Models::RequestResponse.all(:instance_id => instance.id).count
+          if instance.sequence_results.count > 0 then 
+            latest_sequence_time = Inferno::Models::SequenceResult.first(:testing_instance => instance).created_at.strftime("%m/%d/%Y %H:%M")
           else
-            latest_sequence_time = latest_sequence_time.strftime("%m/%d/%Y %H:%M")
+            latest_sequence_time = "No tests ran"
           end
+          
           report_summary = {
+            fhir_version: instance.fhir_version,
+            app_version: VERSION,
             resource_references: instance.resource_references.count,
             supported_resources: instance.supported_resources.count,
             request_response: request_response_count,
@@ -252,6 +278,14 @@ module Inferno
           @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
           halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
           erb :test_result_details, layout: false
+        end
+
+        # Returns details for a specific request response
+        #   This route is typically used for retrieving test metadata and results after the test has been run.
+        get '/:id/test_request/:test_request_id/?' do
+          request_response = Inferno::Models::RequestResponse.get(params[:test_request_id])
+          halt 404 if request_response.instance_id != params[:id]
+          erb :request_details, {:layout => false}, rr: request_response
         end
 
         # Cancels the currently running test

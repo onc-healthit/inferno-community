@@ -13,6 +13,36 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Procedure
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "date"
+          #todo
+        end
+      end
+
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it conforms to the profile.
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+              )
+
       @resources_found = false
 
       test 'Server rejects Procedure search without authorization' do
@@ -48,7 +78,8 @@ module Inferno
 
 
 
-        reply = get_resource_by_params(versioned_resource_class('Procedure'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -60,7 +91,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Procedure'), reply)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
 
       end
@@ -82,8 +113,9 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
         date = @procedure.try(:performedDateTime) || @procedure.try(:performedPeriod).try(:start)
         assert !date.nil?, "Procedure performedDateTime or performedPeriod not returned"
-        reply = get_resource_by_params(versioned_resource_class('Procedure'), {patient: @instance.patient_id, date: date})
-        validate_search_reply(versioned_resource_class('Procedure'), reply)
+        search_params = {patient: @instance.patient_id, date: date}
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
 
       end
 

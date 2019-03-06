@@ -2,7 +2,7 @@ module Inferno
   module Sequence
     class DynamicRegistrationSequence < SequenceBase
 
-      title 'Dynamic Registration (Optional)'
+      title 'Dynamic Registration'
 
       description 'Verify that the server supports the OAuth 2.0 Dynamic Client Registration Protocol.'
 
@@ -11,17 +11,25 @@ module Inferno
 
         The #{title} Sequence tests the authorization server to dynamically register OAuth 2.0 clients using
         the [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591).  This
-        functionality is *OPTIONAL* but is recommended by the SMART App Launch framework.
+        functionality is *OPTIONAL* but is recommended by the [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/).
 
         # Test Methodology
 
         This sequence tests tests this functionality by dynamically an app for Inferno to use in later sequences.
+        Inferno will make a `POST` request to the Dynamic Registration endpoint provided and validate the response.
+
+        For more information see:
+
+        * [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/)
+        * [OAuth 2.0 Dynamic Client Registration Protocol](https://tools.ietf.org/html/rfc7591)
 
       )
 
       test_id_prefix 'DR'
 
       optional
+
+      show_uris
 
       requires :oauth_register_endpoint, :client_name, :initiate_login_uri, :redirect_uris, :scopes, :confidential_client,:initiate_login_uri, :redirect_uris, :dynamic_registration_token
       defines :client_id, :client_secret

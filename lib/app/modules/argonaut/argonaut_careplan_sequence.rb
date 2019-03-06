@@ -13,6 +13,47 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :CarePlan
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
+        when "category"
+          category = resource.try(:category).try(:coding).try(:first).try(:code)
+          assert !category.nil? && category == value, "Category on resource did not match category requested"
+        when "date"
+          # todo
+        when "status"
+          status = resource.try(:status).try(:code)
+          assert !status.nil? && status == value, "Status on resource did not match status requested"
+        end
+      end
+
+      details %(
+        # Background
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?category=assess-plan&patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it contains:
+
+        * A narrative of the patient assessment and treatment plan
+        * A code representing the status of the care plan
+        * A reference to the patient to whom the #{title} belongs
+        * A code representing the category of the "assess plan"
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+              )
+
       @resources_found = false
 
       test 'Server rejects CarePlan search without authorization' do
@@ -49,7 +90,8 @@ module Inferno
 
 
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan"})
+        search_params = {patient: @instance.patient_id, category: "assess-plan"}
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -61,7 +103,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
       end
@@ -85,8 +127,9 @@ module Inferno
 
         date = @careplan.try(:period).try(:start)
         assert !date.nil?, "CarePlan period not returned"
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan", date: date})
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        search_params = {patient: @instance.patient_id, category: "assess-plan", date: date}
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
 
       end
 
@@ -105,8 +148,9 @@ module Inferno
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan", status: "active"})
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        search_params = {patient: @instance.patient_id, category: "assess-plan", status: "active"}
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
 
       end
 
@@ -128,8 +172,9 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
         date = @careplan.try(:period).try(:start)
         assert !date.nil?, "CarePlan period not returned"
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date})
-        validate_search_reply(versioned_resource_class('CarePlan'), reply)
+        search_params = {patient: @instance.patient_id, category: "assess-plan", status: "active", date: date}
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
 
       end
 

@@ -1,0 +1,21 @@
+<ul class='test-list'>
+  <% sequence_result && sequence_result.test_results.each do |result, index| %>
+    <% result.request_responses.each do |rr|%>
+      <li>
+        <span>
+          <strong>
+            <%= rr.request_method.upcase %> &nbsp;
+          </strong>
+          <% if rr.direction == 'inbound' %>
+            INBOUND &nbsp;
+          <% else %>
+            <%= rr.response_code %> &nbsp;
+          <% end %>
+          <%= rr.request_url %>
+        </span>
+        <button class="log-request-more" data-request-id = "<%= rr.id %>" data-testing-instance-id="<%= instance.id %>">details...</button>
+      </li>
+    <% end %>
+  <% end %>
+</ul>
+

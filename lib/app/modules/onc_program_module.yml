@@ -1,0 +1,127 @@
+name: onc
+title: ONC 21st Century Cures API Testing
+description: |
+
+  This set of tests verifies support of the API requirements of the 
+  [ONC 21<sup>st</sup> Century Cures NPRM](https://healthit.gov/nprm).  The tests are designed to mimic the capabilities of a 
+  [SMART on FHIR app](http://www.hl7.org/fhir/smart-app-launch/) that progressively gathers data from a DSTU2 FHIR server through a sequence of 
+  queries as defined by the [Argonaut Data Query Implementation Guide](https://www.fhir.org/guides/argonaut/r2/).
+  It assumes that the server under test provides a representative set of synthetic testing data that contains all required data elements.
+
+fhir_version: dstu2
+hide_optional: true
+default_test_set: strict
+test_sets:
+  strict:
+    view: guided
+    tests:
+      - name: Discovery and Registration
+        overview: |
+          Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
+          registration information to be entered into the system under test.  Once registered, the tester should be provided
+          a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
+          the ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
+          supported resources and searches.
+        input_instructions: |
+          Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 
+          a confidential client or a public client.  Enter in the *Client ID*, and the *Client Secret* if applicable, as provided by the
+          authentication system through a manual registration process.
+        sequences:
+          - sequence: ManualRegistrationSequence
+            title: Manual App Registration
+          - ArgonautConformanceSequence
+          - SMARTDiscoverySequence
+      - name: Standalone Patient App
+        overview: |
+          Demonstrate the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
+          refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
+          on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
+          access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
+        input_instructions: |
+          Enter in the appropriate scope to enable patient-level access to all relevant resources.  In addition, support for the 
+          OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and patient context (`launch/patient`) are required.
+        lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
+          - redirect_uris
+        sequences:
+          - sequence: OncStandaloneLaunchSequence
+            title: Standalone Launch with Patient Scope
+            description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
+            variable_defaults:
+              scopes: launch/patient patient/*.read openid fhirUser offline_access
+          - sequence: ArgonautPatientReadOnlySequence
+            title: Read Patient Resource
+            description: Demonstrate successful authorization by reading Patient resource.
+          - sequence: OpenIDConnectSequence
+            description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
+          - TokenRefreshSequence
+          - sequence: ArgonautPatientReadOnlySequence
+            title: Read Patient Resource
+            description: Ensure new token is functional by performing a simple read of the Patient resource.
+      - name: EHR Practitioner App
+        overview: |
+          Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
+          refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
+          on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
+          access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
+        sequences:
+          - sequence: OncEHRLaunchSequence
+            title: EHR Launch with Practitioner Scope
+            description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
+            variable_defaults:
+              scopes: launch user/*.read openid fhirUser offline_access
+          - sequence: ArgonautPatientReadOnlySequence
+            title: Read Patient Resource
+            description: Demonstrate successful authorization by reading Patient resource.
+          - sequence: OpenIDConnectSequence
+            description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
+          - TokenRefreshSequence
+          - sequence: ArgonautPatientReadOnlySequence
+            title: Read Patient Resource
+            description: Ensure new token is functional by performing a simple read of the Patient resource.
+        input_instructions: |
+          Enter in the appropriate scope to enable user-level access to all relevant resources.  In addition, support for the 
+          OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and EHR context (`launch`) are required.  This test
+          expects that the EHR will launch the application with a patient context.
+
+          After `execute` is pressed, Inferno will wait for the system under test to launch the application.
+        lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
+          - redirect_uris
+      - name: Data Access
+        run_all: true
+        run_skipped: true
+        overview: >
+          For each of the relevant USCDI data elements provided in the conformance statement, this test executes the [required supported searches](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
+          as defined by the Argonaut Data Query Implementation Guide.  The test begins by searching by Patient provided in the most recent SMART App Launch performed by Inferno.  It uses results returned from that
+          query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
+          relevant [profile](http://www.fhir.org/guides/argonaut/r2/profiles.html) as currently defined in the Argonaut Data Query Implementation Guide.
+        lock_variables: 
+          - patient_id
+          - token
+        sequences:
+          - ArgonautPatientSequence
+          - ArgonautAllergyIntoleranceSequence
+          - ArgonautCarePlanSequence
+          - ArgonautCareTeamSequence
+          - ArgonautConditionSequence
+          - ArgonautDeviceSequence
+          - ArgonautDiagnosticReportSequence
+          - ArgonautObservationSequence
+          - ArgonautGoalSequence
+          - ArgonautImmunizationSequence
+          - ArgonautMedicationStatementSequence
+          - ArgonautMedicationOrderSequence
+          - ArgonautProcedureSequence
+          - ArgonautSmokingStatusSequence
+          - ArgonautVitalSignsSequence
+          - DocumentReferenceSequence
+          - ProvenanceSequence

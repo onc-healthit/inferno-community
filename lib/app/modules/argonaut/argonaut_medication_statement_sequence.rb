@@ -12,13 +12,33 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :MedicationStatement
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
       details %(
         # Background
-        The #{title} Sequence tests the [#{title}](https://www.hl7.org/fhir/DSTU2/medicationstatement.html)
-        resource provided by a FHIR server.  The #{title} provided must be consistent with the [#{title}
-        Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html).
 
-        )
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+
+        # Test Methodology
+
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
+        It parses the #{title} and verifies that it conforms to the profile.
+
+        It collects the following information that is saved in the testing session for use by later tests:
+
+        * List of `#{title.gsub(/\s+/,"")}` resources
+
+        For more information on the #{title}, visit these links:
+
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+              )
       @resources_found = false
 
       test 'Server rejects MedicationStatement search without authorization' do
@@ -53,7 +73,8 @@ module Inferno
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
 
-        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), {patient: @instance.patient_id})
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -67,7 +88,7 @@ module Inferno
         @medication_statements = reply&.resource&.entry&.map do |med_statement|
           med_statement&.resource
         end
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationStatement'), reply)
       end
 

@@ -11,6 +11,7 @@ module Inferno
       property :response_headers, String, length: 1000
       property :response_body, Text
       property :direction, String
+      property :instance_id, String
 
       has n, :test_results, :through => Resource
     end

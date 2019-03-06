@@ -14,6 +14,13 @@ module Inferno
 
       description 'Tests for DocumentReference resources'
 
+      def validate_resource_item (resource, property, value)
+        case property
+        when "patient"
+          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        end
+      end
+
       test 'Server rejects DocumentReference search without authorization' do
         metadata do
           id '01'
@@ -41,9 +48,10 @@ module Inferno
           )
         end
 
-        reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, patient: @instance.patient_id)
+        search_params = {patient: @instance.patient_id}
+        reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, search_params)
         @document_reference = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(FHIR::DSTU2::DocumentReference, reply)
+        validate_search_reply(FHIR::DSTU2::DocumentReference, reply, search_params)
       end
 
       test 'DocumentReference read resource supported' do

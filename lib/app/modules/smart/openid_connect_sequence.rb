@@ -2,13 +2,37 @@ module Inferno
   module Sequence
     class OpenIDConnectSequence < SequenceBase
 
-      title 'OpenID Connect (Optional)'
+      title 'OpenID Connect'
       description 'Authenticate users with OpenID Connect for OAuth 2.0.'
 
       test_id_prefix 'OIDC'
 
       requires :id_token, :client_id
       defines :oauth_introspection_endpoint
+
+      details %(
+        # Background
+
+        OpenID Connect provides the ability to verify the identity of the authorizing user.This
+        functionality is treated as *OPTIONAL* within Inferno, but is required within the [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/).
+        Applications can request an `id_token` be provided with by including the `openid fhirUser` scopes when requesting
+        authorization.
+
+        # Test Methodology
+
+        This sequence requires an OAuth 2.0 id token to verify the user.  Inferno will inspect the id token, including
+        the return payload and headers.  Inferno will request the OpenID Connect configuration information from the server
+        in order to retrieve the JSON Web Token information from the provider.  The JSON Web Token is then used to decode
+        and verify the id token
+
+
+        For more information see:
+
+        * [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/)
+        * [Scopes for requesting identity data](http://hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#scopes-for-requesting-identity-data)
+        * [Apps Requesting Authorization](http://hl7.org/fhir/smart-app-launch/#step-1-app-asks-for-authorization)
+        * [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)
+              )
 
       test 'ID token is valid jwt token' do
 
@@ -155,19 +179,19 @@ module Inferno
 
       end
 
-      test 'Profile claim in ID token is represented as a resource URI' do
+      test 'fhirUser claim in ID token is represented as a resource URI' do
 
         metadata {
           id '07'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
           desc %(
-            Extract the profile claim and treat it as the URL of a FHIR resource.
+            Extract the fhirUser claim and treat it as the URL of a FHIR resource.
           )
         }
 
         assert !@decoded_payload.nil?, 'no id_token payload available'
         assert !@decoded_header.nil?, 'no id_token header available'
-        assert !@decoded_payload['profile'].nil?, 'no id_token profile claim'
+        assert !@decoded_payload['fhirUser'].nil?, 'no id_token fhirUser claim'
 
         # How should we validate this profile id?
         # Does this have to be a URI, or is a fragment ok?
