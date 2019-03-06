@@ -1,28 +1,13 @@
-<div class="container">
-  <div class="row">
-      <% modules = modules.flatten.compact %>
-      <% if modules.length == 1 %>
-        <input type="hidden" name="module" value=<%=modules[0].name %>>
-      <% else %>
-      
-
-      <div class="col">
-        <fieldset>
-          <legend>What module would you like to run?</legend>
-          
-          <% modules.each_with_index do |mod, index| %>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="module" value="<%=mod.name %>" id="<%=mod.name %>" <% if index == 1 %>checked<% end %>>
-              <label class="form-check-label" for="<%=mod.name %>">
-              <%=mod.title %>
-              </label>
-            </div>
-
-         
-          <% end %>
-          
-        </fieldset>
-      </div>
+<% modules = modules.flatten.compact %>
+<% if modules.length == 1 %>
+  <input type="hidden" name="module" value=<%=modules[0].name %>>
+<% else %>
+  <% modules.each_with_index do |mod, index| %>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="module" value="<%=mod.name %>" id="<%=mod.name %>" <% if index == 0 %>checked<% end %>>
+      <label class="form-check-label" for="<%=mod.name %>">
+      <%=mod.title %>
+      </label>
+    </div>
   <% end %>
-  </div>
-</div>
+<% end %>
