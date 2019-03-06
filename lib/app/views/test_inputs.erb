@@ -1,0 +1,13 @@
+<ul class='input-list test-list'>
+  <% JSON.parse(sequence_result.input_params).each do |type, value| %>
+    <li>
+    <span>
+        <strong>
+        <%= type.sub('_', ' ').titlecase %> &nbsp;
+        </strong>
+        <%= value %>
+    </span>
+    </li>
+  <% end %>
+</ul>
+

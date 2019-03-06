@@ -22,6 +22,7 @@ module Inferno
       property :app_version, String
 
       property :required, Boolean, default: true
+      property :input_params, String
 
       property :next_sequences, String
       property :next_test_cases, String

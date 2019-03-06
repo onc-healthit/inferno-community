@@ -653,6 +653,7 @@ body {
 }
 
 .nav.nav-tabs.result-details-tabs .nav-link{
+  color: #007bff;
   padding: .25rem .8rem;
 }
 
@@ -1085,6 +1086,26 @@ body {
   margin: 13px 0 0 15px;
   padding: 8px 0 4px;
 }
+
+.guided .sequence-row-input{
+  margin: 15px 5px -15px 20px;
+  padding: 10px 0 5px 20px;
+  background-color: whitesmoke;
+}
+
+.input-list{
+  overflow: auto;
+  white-space: nowrap;
+}
+
+.input-list li{
+  padding: 5px 15px;
+}
+
+.input-list li:first-child{
+  padding-top: 5px;
+}
+
 
 .guided .sequence-score {
   margin-left: -34px;
