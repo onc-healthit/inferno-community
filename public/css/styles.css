@@ -653,6 +653,7 @@ body {
 }
 
 .nav.nav-tabs.result-details-tabs .nav-link{
+  color: #007bff;
   padding: .25rem .8rem;
 }
 
@@ -1096,7 +1097,7 @@ body {
 }
 
 .input-list li{
-  padding: 0px 15px;
+  padding: 5px 15px;
 }
 
 .input-list li:first-child{
