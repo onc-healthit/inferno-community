@@ -1,6 +1,6 @@
-name: uscdi
-title: USCDI
-description: this is a description
+name: argonaut
+title: Argonaut Data Query Implementation Guide v1.0.0
+description: Argonaut Data Query Implementation Guide v1.0.0
 fhir_version: dstu2
 default_test_set: developer
 test_sets:
@@ -37,9 +37,4 @@ test_sets:
           - ArgonautProcedureSequence
           - ArgonautSmokingStatusSequence
           - ArgonautVitalSignsSequence
-        run_all: true
-      - name: Additional Resources
-        sequences:
-          - DocumentReferenceSequence
-          - ProvenanceSequence
         run_all: true
