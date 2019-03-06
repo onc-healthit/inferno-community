@@ -64,10 +64,9 @@
     <% end %>
     <div class="group-nav">
       <ul class="nav nav-pills nav-fill">
-      <li class="nav-item"><a class="nav-link active" href="#group-overview" data-toggle="tab">Setup</a></li>
-      <% instance.group_results(test_set.id).each_with_index do |group_with_result| %>
+      <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
         <li class="nav-item group-result-<%= group_with_result[:result].to_s %>">
-          <a class="nav-link" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
+          <a class="nav-link<%= if index == 0 then ' active' end %>" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
             <% case group_with_result[:result].to_s
               when 'pass' %>
               <div class="group-nav-score group-nav-score-pass" data-toggle="tooltip" title="Test Passed">
@@ -82,37 +81,18 @@
           </a>
         </li>
       <%end%>
-      <li class="nav-item nav-item-last"><a id="report-link" class="nav-link" href="#group-report" data-toggle="tab">Report</a></li>
+      <li class="nav-item nav-item-no-chevron">
+        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span> Report</a>
+        </li>
       </ul>
     </div>
 
     <div class="row">
       <div class="col-12 sequence-table">
-
-        <div class="sequence-group sequence-action-boundary tab-pane active" id="group-overview">
-          <div class="sequence-header">
-            <div class="align-items-center">
-              <div class="group-overview-box">
-                  <a class="sequence-anchor"></a>
-                <h1>
-                  <%= instance.module.title %> Setup
-                  <div class="group-steps"> Step <span class="group-step-number">1</span> of <%= instance.group_results(test_set.id).length + 2 %></div>
-                </h1>
-                <div class="group-overview" style='padding-left: 25px'>
-                  <%= markdown_to_html(instance.module.description) %>
-                  <a class="get-started btn btn-info" href="#group-DiscoveryandRegistration">Start: Discovery and Registration</a>
-                </div>
-
-
-              </div>
-            </div>
-          </div>
-        </div>
-        
         <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
           <% group = group_with_result[:group] %>
           <% group_result = group_with_result[:result] %>
-          <div class="sequence-group sequence-action-boundary tab-pane" data-group="<%= group.name %>" id="group-<%=group.id%>">
+          <div class="sequence-group sequence-action-boundary tab-pane<%= if index == 0 then ' active' end %>" data-group="<%= group.name %>" id="group-<%=group.id%>">
             <div class="sequence-header">
               <div class='align-items-center'>
                 <div class='group-overview-box'>
@@ -155,7 +135,7 @@
                     
                     <%= group.name %>
 
-                    <div class="group-steps"> Step <span class="group-step-number"><%=index + 2%></span> of <%= instance.group_results(test_set.id).length + 2 %></div>
+                    <div class="group-steps"> Step <span class="group-step-number"><%=index + 1%></span> of <%= instance.group_results(test_set.id).length %></div>
                       
                   </h1>
                   <div class="group-overview" <% if group_result.to_s == 'not_run' %>style='padding-left: 25px'<%end%>>
