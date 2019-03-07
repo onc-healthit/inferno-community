@@ -3,13 +3,13 @@
     <div class="col">
       <div class="container row row-no-padding align-items-center">
 
-        <div class="col-7">
+        <div class="col-8">
           <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo'></a>
           <span class="server-name">
             <%=instance.url%>
           </span>
         </div>
-        <div class="col-5 server-actions" style='text-align:right;'>
+        <div class="col-4 server-actions">
 
 
           <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
@@ -82,8 +82,8 @@
         </li>
       <%end%>
       <li class="nav-item nav-item-no-chevron">
-        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span> Report</a>
-        </li>
+        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span><div class="group-nav-label">Report</div></a>
+      </li>
       </ul>
     </div>
 
