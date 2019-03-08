@@ -571,6 +571,7 @@ body {
 .sequence-out-of {
   display: inline-block;
   color: #666;
+  font-size: .9rem;
 }
 
 .sequence-details {
@@ -1137,7 +1138,8 @@ body {
 
 .report-url {
   float: right;
-  font-size: .8rem;
+  font-size: .9rem;
+  color: #666;
 }
 
 #reportDiv h3 {
