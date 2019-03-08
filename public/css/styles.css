@@ -48,24 +48,6 @@ body {
   }
 }
 
-.index-page .form-check{
-  font-size: 1.3rem;
-}
-
-.index-page h2 {
-  margin: 30px 0 10px;
-
-}
-
-.index-page .index-descripton h2 {
-
-}
-.index-page .index-description p {
-  font-size: 1.4rem;
-  margin: 40px 0;
-
-}
-
 .main {
   margin: 20px 0;
 }
@@ -88,6 +70,7 @@ body {
 .footer .container {
   margin: auto;
 }
+
 
 .inferno-header {
   padding: 0;
@@ -151,6 +134,21 @@ body {
 .whitespace {
   display: block;
   height: 60px;
+}
+
+.index-page .form-check{
+  font-size: 1.3rem;
+}
+
+.index-page h2 {
+  margin: 30px 0 10px;
+
+}
+
+.index-page .index-description p {
+  font-size: 1.4rem;
+  margin: 40px 0;
+
 }
 
 /* ------------------------- MAIN -------------------------------- */
@@ -903,6 +901,10 @@ body {
   padding: 10px 25px;
 }
 
+.guided .group-nav {
+  height: 40px;
+  overflow: hidden;
+}
 
 .guided .group-nav ul {
   list-style: none;
