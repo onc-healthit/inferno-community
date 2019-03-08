@@ -571,6 +571,7 @@ body {
 .sequence-out-of {
   display: inline-block;
   color: #666;
+  font-size: .9rem;
 }
 
 .sequence-details {
@@ -1103,7 +1104,7 @@ body {
 
   position:absolute;
   top: 10px;
-  right: 15px;
+  right: 25px;
   border: 1px solid #aaa;
 }
 
@@ -1135,6 +1136,12 @@ body {
   display:none;
 }
 
+.report-url {
+  float: right;
+  font-size: .9rem;
+  color: #666;
+}
+
 #reportDiv h3 {
   margin-top: 20px;
   margin-top: 10px;
@@ -1145,7 +1152,7 @@ body {
 }
 
 @media print{
-  .guided-background-fill, .footer, .server-info, .group-nav, .inferno-header{
+  .guided-background-fill, .footer, .server-info, .group-nav, .inferno-header, .print-button{
     display:none;
   }
 

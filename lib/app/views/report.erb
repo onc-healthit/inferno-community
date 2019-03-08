@@ -3,11 +3,13 @@
     <div class="sequence-title container">
       <span class="sequence-name">
         Report Summary
-        </span>
-        <span class="sequence-out-of">
-          - <%=report_summary[:latest_sequence_time] %>
-        </span>
-        <button class="btn print-button" onclick="window.print()">Print</button>
+      </span>
+      <span class="sequence-out-of">
+        - <%=report_summary[:latest_sequence_time] %>
+      </span>
+      <div class="report-url">
+        <%= "#{report_summary[:inferno_url]}" %>
+      </div>
     </div>
     <div class="container text-center">
       <div class="row">

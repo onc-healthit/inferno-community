@@ -238,7 +238,10 @@
                   <a class="sequence-anchor"></a>
                 <h1>
                   <%= instance.module.title %> Report
-                  <div class="group-steps"> Step <span class="group-step-number"><%=instance.group_results(test_set.id).length %></span> of <%= instance.group_results(test_set.id).length %></div>
+                  <button class="btn print-button" onclick="window.print()">
+                    <span class="oi oi-print" aria-hidden="true"></span>
+                    Print
+                  </button>
                 </h1>
                 <div id="reportDiv">
                 </div>
