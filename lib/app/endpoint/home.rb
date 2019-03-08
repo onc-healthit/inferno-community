@@ -155,6 +155,7 @@ module Inferno
                   count += 1
                   out << js_update_result(sequence, test_set, result, count, sequence.test_count)
                 end
+                all_test_cases << test_case.id
                 if sequence_result.result == 'fail' || sequence_result.result == 'error' then
                   failed_test_cases << test_case.id
                 end
