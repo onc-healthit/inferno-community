@@ -1,13 +1,15 @@
 name: onc
-title: ONC 21st Century Cures API Testing
+title: Inferno “Program” Mode
 description: |
 
-  This set of tests verifies support of the API requirements of the 
-  [ONC 21<sup>st</sup> Century Cures NPRM](https://healthit.gov/nprm).  The tests are designed to mimic the capabilities of a 
-  [SMART on FHIR app](http://www.hl7.org/fhir/smart-app-launch/) that progressively gathers data from a DSTU2 FHIR server through a sequence of 
-  queries as defined by the [Argonaut Data Query Implementation Guide](https://www.fhir.org/guides/argonaut/r2/).
-  It assumes that the server under test provides a representative set of synthetic testing data that contains all required data elements.
+  The “Program” mode is designed to verify that the developers’ FHIR server meet the standards requirements currently
+  proposed in the Application Programming Interface (API) Conditions of Certification in the [21<sup>st</sup> Century Cures Act:
+  Interoperability, Information Blocking, and the ONC Health IT Certification Program Proposed Rule](https://www.healthit.gov/sites/default/files/nprm/ONCCuresActNPRM.pdf)
 
+  More specifically, the testing suite helps developers’ test their FHIR servers for conformance to the
+  [Argonaut Implementation Guide](http://www.fhir.org/guides/argonaut/r2/),
+  [SMART Application Launch Framework](http://hl7.org/fhir/smart-app-launch/),
+  and [OpenID Connect](http://openid.net/specs/openid-connect-core-1_0.html) standards specified in the proposed rule.
 fhir_version: dstu2
 hide_optional: true
 default_test_set: strict
