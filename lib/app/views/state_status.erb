@@ -15,18 +15,19 @@
     </div>
 
     <h4>Conformance Statement Resource Support</h4>
-
     <% if instance.supported_resources.count > 0%>
-    <h4>Conformance Statement Resource Support</h4>
     <ul>
       <% instance.supported_resources.each do |resource| %>
         <% if resource.supported %>
           <li><%= resource.resource_type %>
             <%= "[ #{resource.supported_interactions.join(', ')} ]" unless resource.supported_interactions.nil?%>
-          <% end %>
+          </li>
         <% end %>
-      </ul>
       <% end %>
+    </ul>
+    <% else %>
+      Resource support not identified.
+    <% end %>
 
     <h4>OAuth Server Endpoints</h4>
 
