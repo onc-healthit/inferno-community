@@ -51,8 +51,8 @@ class MedicationStatementSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::ArgonautMedicationStatementSequence.new(@instance, client)
 
     @request_headers = { 'Accept' => 'application/json+fhir',
-                         'Accept-Charset' => 'UTF-8',
-                         'Content-Type' => 'application/json+fhir;charset=UTF-8',
+                         'Accept-Charset' => 'utf-8',
+                         'User-Agent' => 'Ruby FHIR Client',
                          'Authorization' => "Bearer #{@instance.token}" }
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end

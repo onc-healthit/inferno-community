@@ -38,7 +38,7 @@ class SequenceValidationTest < MiniTest::Test
   def test_ordered_sequences
 
     instance = get_test_instance
-    instance.selected_module = 'uscdi'
+    instance.selected_module = 'argonaut'
     my_module = instance.module
     my_module.test_sets.each do |key, test_set|
       test_set.groups.each do |group|

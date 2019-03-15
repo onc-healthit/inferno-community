@@ -102,11 +102,13 @@ module Inferno
         start_at = @sequence_result.test_results.length
 
         input_parameters = {}
-        @@requires[sequence_name].each do |requirement|
-          if @instance.respond_to? requirement then
-            input_value = @instance.send(requirement).to_s
-            input_value = "none" if input_value.empty?
-            input_parameters[requirement.to_sym] = input_value
+        if !@@requires[sequence_name].nil?
+          @@requires[sequence_name].each do |requirement|
+            if @instance.respond_to? requirement then
+              input_value = @instance.send(requirement).to_s
+              input_value = "none" if input_value.empty?
+              input_parameters[requirement.to_sym] = input_value
+            end
           end
         end
         @sequence_result.input_params = input_parameters.to_json
