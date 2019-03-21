@@ -8,6 +8,12 @@ class PatientSequenceTest < MiniTest::Test
   def setup
     @bundle = FHIR::DSTU2.from_contents(load_fixture(:sample_record))
     @patient = get_resources_from_bundle(@bundle,'Patient').first
+
+    @bundle.entry.each do |entry|
+      entry.resource.meta = FHIR::DSTU2::Meta.new unless entry.resource.meta
+      entry.resource.meta.versionId = '1'
+    end
+
     @instance = get_test_instance
 
     @patient_id = @patient.id
@@ -82,7 +88,7 @@ class PatientSequenceTest < MiniTest::Test
       with(headers: @history_request_headers).
       to_return(status: 200, body: patient_history_bundle.to_json, headers: @response_headers)
 
-    uri_template = Addressable::Template.new "http://www.example.com/Patient/#{patient_history_bundle.id}/_history/1"
+    uri_template = Addressable::Template.new "http://www.example.com/Patient/#{@patient_id}/_history/1"
     stub_request(:get, uri_template).
       with(headers: @history_request_headers).
       to_return(status: 200, body: patient.to_json, headers: @response_headers)

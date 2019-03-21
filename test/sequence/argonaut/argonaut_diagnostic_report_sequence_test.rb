@@ -1,19 +1,15 @@
-sequence_dir = './lib/app/modules'
-tests_dir = './test/sequence'
 
-def generate_base_test(file, sequence_file)
-    file.puts %(
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class DiagnosticReportTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "diagnostic_report" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautDiagnosticReportSequence.new(@instance, client) #put sequence here
+        @resource_type = "DiagnosticReport"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
         @resource_bundle = wrap_resources_in_bundle(@resource)
@@ -22,7 +18,7 @@ class _________ < MiniTest::Test
             entry.resource.meta.versionId = '1'
         end
 
-        @patient_id = @resource.patient.reference
+        @patient_id = @resource.subject.reference
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -36,7 +32,7 @@ class _________ < MiniTest::Test
 
         # Register that the server supports MedicationStatement
         @instance.supported_resources << Inferno::Models::SupportedResource.create(
-            resource_type: "\#{@resource_type}",
+            resource_type: "#{@resource_type}",
             testing_instance_id: @instance.id,
             supported: true,
             read_supported: true,
@@ -50,21 +46,21 @@ class _________ < MiniTest::Test
         @request_headers = { 'Accept' => 'application/json+fhir',
             'Accept-Charset' => 'utf-8',
             'User-Agent' => 'Ruby FHIR Client',
-            'Authorization' => "Bearer \#{@instance.token}"}
+            'Authorization' => "Bearer #{@instance.token}"}
 
         @history_request_headers = { 'Accept' => 'application/json+fhir',
             'Accept-Charset' => 'utf-8',
             'User-Agent' => 'Ruby FHIR Client',
             'Accept-Encoding' => 'gzip, deflate',
             'Host' => 'www.example.com',
-            'Authorization' => "Bearer \#{@instance.token}"}
+            'Authorization' => "Bearer #{@instance.token}"}
 
         @response_headers = { 'content-type' => 'application/json+fhir' }
     end
 
     def full_sequence_stubs
         # Return 401 if no Authorization Header
-        uri_template = Addressable::Template.new "http://www.example.com/\#{@resource_type}{?patient,target,start,end,userid,agent}"
+        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
         stub_request(:get, uri_template).to_return(status: 401)
 
         # Search Resources
@@ -75,21 +71,21 @@ class _________ < MiniTest::Test
             )
 
         # Read Resources
-        stub_request(:get, "http://www.example.com/\#{@resource_type}/\#{@resource.id}")
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
             .with(headers: @request_headers)
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
         # history should return a history bundle
-        stub_request(:get, "http://www.example.com/\#{@resource_type}/\#{@resource.id}/_history")
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
             .with(headers: @history_request_headers)
             .to_return(status: 200,
                         body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
         # vread should return an instance
-        stub_request(:get, "http://www.example.com/\#{@resource_type}/\#{@resource.id}/_history/1")
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
             .with(headers: @history_request_headers)
             .to_return(status: 200,
                         body: @resource.to_json,
@@ -99,7 +95,7 @@ class _________ < MiniTest::Test
         # Stub Patient for Reference Resolution Tests
         stub_request(:get, %r{example.com/Patient/})
             .with(headers: {
-                'Authorization' => "Bearer \#{@instance.token}"
+                'Authorization' => "Bearer #{@instance.token}"
             })
             .to_return(status: 200,
                         body: @patient_resource.to_json,
@@ -112,26 +108,10 @@ class _________ < MiniTest::Test
         sequence_result = @sequence.start
 
         failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
-        assert failures.empty?, "All tests should pass.  First error: \#{!failures.empty? && failures.first.message}"
-        assert sequence_result.result == 'pass', "The sequence should be marked as pass. \#{sequence_result.result}"
+        assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
+        assert sequence_result.result == 'pass', "The sequence should be marked as pass. #{sequence_result.result}"
         assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
     end
 end
         
-        )
-end
-
-# assumes sequences are only one folder deep
-Dir.entries(sequence_dir).each do |file|
-    if File.directory?("#{sequence_dir}/#{file}") && file != '.' && file != '..'
-        Dir.mkdir(File.join(tests_dir, file)) unless File.exists?("#{tests_dir}/#{file}")
-        Dir.entries(File.join(sequence_dir, file)).each do |sequence_file|
-            newFileName = File.join(tests_dir, file, "#{File.basename(sequence_file, ".rb")}_test.rb")
-            if sequence_file.end_with?(".rb") && !File.exist?(newFileName) then
-                File.open(newFileName, "w") do |f|
-                    generate_base_test(f, sequence_file)
-                end
-            end
-        end
-    end
-end
+        

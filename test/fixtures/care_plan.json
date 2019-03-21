@@ -1,0 +1,160 @@
+{
+  "resourceType": "CarePlan",
+  "id": "example",
+  "text": {
+    "status": "additional",
+    "div": "<div>\n      <p> A simple care plan to indicate a patient taking their weight once a day because of obesity.\n            Some Notes: </p>\n      <ul>\n        <li>It would be good to have some way of specifying/coding a goal; e.g. what the target weight is</li>\n        <li>In the codeable concepts I've been lazy and just put the text. There should, of course, be a code behind these</li>\n      </ul>\n    </div>"
+  },
+  "status": "active",
+  "category": [
+    {
+      "coding": [
+        {
+          "code": "assess-plan"
+        }
+      ]
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "Condition",
+      "id": "p1",
+      "patient": {
+        "reference": "Patient/example",
+        "display": "Peter James Chalmers"
+      },
+      "code": {
+        "text": "Obesity"
+      },
+      "verificationStatus": "confirmed"
+    },
+    {
+      "resourceType": "Practitioner",
+      "id": "pr1",
+      "name": {
+        "family": [
+          "Dietician"
+        ],
+        "given": [
+          "Dorothy"
+        ]
+      },
+      "practitionerRole": [
+        {
+          "specialty": [
+            {
+              "text": "Dietician"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resourceType": "Goal",
+      "id": "goal",
+      "extension": [
+        {
+          "extension": [
+            {
+              "url": "goal-target.measure",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "29463-7",
+                    "display": "Body weight"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "goal-target.detail",
+              "valueQuantity": {
+                "value": 80,
+                "system": "http://units-of-measure.org",
+                "code": "kg"
+              }
+            }
+          ],
+          "url": "http://hl7.org/fhir/StructureDefinition/goal-target"
+        }
+      ],
+      "subject": {
+        "reference": "Patient/example",
+        "display": "Peter James Chalmers"
+      },
+      "description": "Target weight is 80 kg",
+      "status": "planned"
+    }
+  ],
+  "subject": {
+    "reference": "Patient/example",
+    "display": "Peter James Chalmers"
+  },
+  "period": {
+    "start": "2013-01-01",
+    "end": "2013-05-01"
+  },
+  "addresses": [
+    {
+      "reference": "#p1",
+      "display": "obesity"
+    }
+  ],
+  "participant": [
+    {
+      "role": {
+        "text": "responsiblePerson"
+      },
+      "member": {
+        "reference": "Patient/example",
+        "display": "Peter James Chalmers"
+      }
+    },
+    {
+      "role": {
+        "text": "adviser"
+      },
+      "member": {
+        "reference": "#pr1",
+        "display": "Dorothy Dietition"
+      }
+    }
+  ],
+  "goal": [
+    {
+      "reference": "#goal"
+    }
+  ],
+  "activity": [
+    {
+      "detail": {
+        "category": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/care-plan-activity-category",
+              "code": "observation"
+            }
+          ]
+        },
+        "code": {
+          "text": "a code for weight measurement"
+        },
+        "prohibited": false,
+        "scheduledTiming": {
+          "repeat": {
+            "frequency": 1,
+            "period": 1,
+            "periodUnits": "d"
+          }
+        },
+        "performer": [
+          {
+            "reference": "Patient/example",
+            "display": "Peter James Chalmers"
+          }
+        ]
+      }
+    }
+  ]
+  }
