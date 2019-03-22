@@ -62,6 +62,7 @@ class ArgonautPatientReadOnlySequenceTest < MiniTest::Test
         # Return 401 if no Authorization Header
         uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
         stub_request(:get, uri_template).to_return(status: 401)
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}").to_return(status: 401)
 
         # Search Resources
         stub_request(:get, uri_template)
@@ -98,7 +99,7 @@ class ArgonautPatientReadOnlySequenceTest < MiniTest::Test
                 'Authorization' => "Bearer #{@instance.token}"
             })
             .to_return(status: 200,
-                        body: @patient_resource.to_json,
+                        body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8'})
     end
     

@@ -69,15 +69,6 @@ class ArgonautSmokingStatusSequenceTest < MiniTest::Test
             .to_return(
             status: 200, body: @resource_bundle.to_json, headers: @response_headers
             )
-        stub_request(:get, uri_template)
-            .with(headers: { 'Accept' => 'application/json+fhir',
-                'Accept-Charset' => 'utf-8',
-                'User-Agent' => 'Ruby FHIR Client',
-                'Accept-Encoding' => 'gzip, deflate',
-                'Host' => 'www.example.com'})
-            .to_return(
-            status: 200, body: @resource_bundle.to_json, headers: @response_headers
-            )
 
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")

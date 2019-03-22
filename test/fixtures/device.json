@@ -1,35 +1,28 @@
 {
-    "resourceType": "Device",
-    "id": "example-pacemaker",
-    "text": {
-      "status": "generated",
-      "div": "<div><p><b>Generated Narrative with Details</b></p><p><b>id</b>: example-pacemaker</p><p><b>identifier</b>: 1234-5678-90AB-CDEF</p><p><b>type</b>: Performance pace maker for high octane patients <span>(Details : {http://acme.com/devices code 'octane2014' = '??', given as 'Performance pace maker for high octane patients'})</span></p><p><b>manufacturer</b>: Acme Devices, Inc</p><p><b>model</b>: PM/Octane 2014</p><p><b>lotNumber</b>: 1234-5678</p><p><b>patient</b>: <a>Patient/example</a></p><p><b>contact</b>: ph: ext 4352</p></div>"
-    },
-    "identifier": [
+  "id": "8eb18b30-103b-0136-6943-60f81dc2d82a",
+  "meta": {
+    "profile": [
+      "http://fhir.org/guides/argonaut/StructureDefinition/argo-device"
+    ]
+  },
+  "text": {
+    "status": "generated",
+    "div": "This example is modified from the Official Argonaut Implementation Guide at http://www.fhir.org/guides/argonaut/r2/Device-udi-1.html"
+  },
+  "type": {
+    "coding": [
       {
-        "system": "http://acme.com/devices/pacemakers/octane/serial",
-        "value": "1234-5678-90AB-CDEF"
-      }
-    ],
-    "type": {
-      "coding": [
-        {
-          "system": "http://acme.com/devices",
-          "code": "octane2014",
-          "display": "Performance pace maker for high octane patients"
-        }
-      ]
-    },
-    "manufacturer": "Acme Devices, Inc",
-    "model": "PM/Octane 2014",
-    "lotNumber": "1234-5678",
-    "patient": {
-      "reference": "Patient/example"
-    },
-    "contact": [
-      {
-        "system": "phone",
-        "value": "ext 4352"
+        "system": "http://snomed.info/sct",
+        "code": "468063009",
+        "display": "Coated femoral stem prosthesis, modular"
       }
     ]
-  }
+  },
+  "status": "available",
+  "udi": "{01}09504000059118{17}141120{10}7654321D{21}10987654d321",
+  "patient": {
+    "reference": "Patient/7ec866ca-4130-4a40-82a9-b67f2626a5df",
+    "display": "Mrs. Rhea34 Ernser583"
+  },
+  "resourceType": "Device"
+}

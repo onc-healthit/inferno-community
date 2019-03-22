@@ -18,8 +18,9 @@ module Inferno
         when "patient"
           assert (resource.subject && resource.subject.reference.include?(value)), "Patient on resource does not match patient requested"
         when "code"
-          code = resource.try(:code).try(:coding).try(:first).try(:code)
-          assert !code.nil? && code == value, "Code on resource did not match code requested"
+          codings = resource.try(:code).try(:coding)
+          assert !codings.nil?, "Code on resource did not match code requested"
+          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "Code on resource did not match code requested #{codings}"
         end
       end
 

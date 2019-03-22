@@ -18,7 +18,7 @@ class ArgonautObservationSequenceTest < MiniTest::Test
             entry.resource.meta.versionId = '1'
         end
 
-        @patient_id = @resource.patient.reference
+        @patient_id = @resource.subject.reference
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -60,7 +60,7 @@ class ArgonautObservationSequenceTest < MiniTest::Test
 
     def full_sequence_stubs
         # Return 401 if no Authorization Header
-        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,start,end,userid,agent}"
+        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,laboratory,date}"
         stub_request(:get, uri_template).to_return(status: 401)
 
         # Search Resources
@@ -69,13 +69,6 @@ class ArgonautObservationSequenceTest < MiniTest::Test
             .to_return(
             status: 200, body: @resource_bundle.to_json, headers: @response_headers
             )
-        stub_request(:get, uri_template)
-        .with(heads: { 'Accept' => 'application/json+fhir',
-            'Accept-Charset' => 'utf-8',
-            'User-Agent' => 'Ruby FHIR Client',
-            'Accept-Encoding' => 'gzip, deflate',
-            'Host' => 'www.example.com'})
-            .to_return( status: 200, body: @resource_bundle.to_json, headers: @response_headers )
 
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")

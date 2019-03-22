@@ -16,13 +16,15 @@ module Inferno
         when "patient"
           assert (resource.subject && resource.subject.reference.include?(value)), "Subject on resource does not match patient requested"
         when "category"
-          category = resource.try(:category).try(:coding).try(:first).try(:code)
-          assert !category.nil? && category == value, "Category on resource did not match category requested"
+          codings = resource.try(:category).try(:coding)
+          assert !codings.nil?, "Category on resource did not match category requested 1"
+          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "Category on resource did not match category requested #{codings}"
         when "date"
           # todo
         when "code"
-          code = resource.try(:code).try(:coding).try(:first).try(:code)
-          assert !code.nil? && code == value, "Code on resource did not match code requested"
+          codings = resource.try(:code).try(:coding)
+          assert !codings.nil?, "Code on resource did not match code requested"
+          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "Code on resource did not match code requested #{value}"
         end
       end
 

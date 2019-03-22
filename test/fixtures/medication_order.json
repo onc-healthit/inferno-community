@@ -22,10 +22,6 @@
       "reference": "Practitioner/f006",
       "display": "R.A. van den Berk"
     },
-    "encounter": {
-      "reference": "Encounter/f001",
-      "display": "visit who leads to this priscription"
-    },
     "reasonCodeableConcept": {
       "coding": [
         {

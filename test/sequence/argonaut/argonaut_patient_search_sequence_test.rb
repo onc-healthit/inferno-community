@@ -63,6 +63,7 @@ class ArgonautPatientSearchSequenceTest < MiniTest::Test
         # Return 401 if no Authorization Header
         uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
         stub_request(:get, uri_template).to_return(status: 401)
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}").to_return(status: 401)
 
         # Search Resources
         stub_request(:get, uri_template)
@@ -74,15 +75,6 @@ class ArgonautPatientSearchSequenceTest < MiniTest::Test
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
             .with(headers: @request_headers)
-            .to_return(status: 200,
-                        body: @resource.to_json,
-                        headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
-            .with(headers: { 'Accept' => 'application/json+fhir',
-                'Accept-Charset' => 'utf-8',
-                'User-Agent' => 'Ruby FHIR Client',
-                'Accept-Encoding' => 'gzip, deflate',
-                'Host' => 'www.example.com'})
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
@@ -108,7 +100,7 @@ class ArgonautPatientSearchSequenceTest < MiniTest::Test
                 'Authorization' => "Bearer #{@instance.token}"
             })
             .to_return(status: 200,
-                        body: @patient_resource.to_json,
+                        body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8'})
     end
     

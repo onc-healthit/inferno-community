@@ -68,7 +68,7 @@ module Inferno
         assert_response_ok patient_read_response
         @patient = patient_read_response.resource
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
+        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient read'
 
       end
 
@@ -84,7 +84,7 @@ module Inferno
         }
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
+        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient argonaut profie'
         profile = Inferno::ValidationUtil.guess_profile(@patient, @instance.fhir_version.to_sym)
         errors = profile.validate_resource(@patient)
         assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
@@ -101,7 +101,7 @@ module Inferno
         }
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
+        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient address'
         address = @patient.try(:address).try(:first)
         assert !address.nil?, 'Patient address not returned'
       end
@@ -117,7 +117,7 @@ module Inferno
         }
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
+        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient telecom'
         telecom = @patient.try(:telecom).try(:first)
         assert !telecom.nil?, 'Patient telecom not returned'
       end

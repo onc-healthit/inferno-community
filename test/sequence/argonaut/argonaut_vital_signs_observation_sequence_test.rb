@@ -60,21 +60,12 @@ class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
 
     def full_sequence_stubs
         # Return 401 if no Authorization Header
-        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category}"
+        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,date,code}"
         stub_request(:get, uri_template).to_return(status: 401)
 
         # Search Resources
         stub_request(:get, uri_template)
             .with(headers: @request_headers)
-            .to_return(
-            status: 200, body: @resource_bundle.to_json, headers: @response_headers
-            )
-        stub_request(:get, uri_template)
-            .with(headers: { 'Accept' => 'application/json+fhir',
-                'Accept-Charset' => 'utf-8',
-                'User-Agent' => 'Ruby FHIR Client',
-                'Accept-Encoding' => 'gzip, deflate',
-                'Host' => 'www.example.com'})
             .to_return(
             status: 200, body: @resource_bundle.to_json, headers: @response_headers
             )

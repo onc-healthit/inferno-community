@@ -1,7 +1,7 @@
 
 
 require_relative '../../test_helper'      
-class MedicationOrderTest < MiniTest::Test 
+class ArgonautMedicationOrderSequenceTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
@@ -24,6 +24,7 @@ class MedicationOrderTest < MiniTest::Test
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
         @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
+        @medication_reference = load_json_fixture(:medication_reference)
         # Assume we already have a patient
         @instance.resource_references << Inferno::Models::ResourceReference.new(
         resource_type: 'Patient',
@@ -106,6 +107,22 @@ class MedicationOrderTest < MiniTest::Test
             .to_return(status: 200,
                         body: @patient_resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+        # Return Medication from a reference
+        stub_request(:get, %r{example.com/Medication/})
+            .with(headers: {
+                    'Authorization' => "Bearer #{@instance.token}"
+                })
+            .to_return(status: 200,
+                    body: @medication_reference.to_json,
+                    headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+        # Stub Practitioner for Reference Resolution Tests
+        stub_request(:get, %r{example.com/Practitioner/})
+            .with(headers: {
+                'Authorization' => "Bearer #{@instance.token}"
+            })
+            .to_return(status: 200,
+                    body: @practitioner_resource.to_json,
+                    headers: { content_type: 'application/json+fhir; charset=UTF-8'})
     end
     
     def test_all_pass
