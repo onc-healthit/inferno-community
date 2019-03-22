@@ -1,15 +1,15 @@
 
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class ArgonautImmunizationTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "immunization" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautImmunizationSequence.new(@instance, client) #put sequence here
+        @resource_type = "Immunization"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
         @resource_bundle = wrap_resources_in_bundle(@resource)

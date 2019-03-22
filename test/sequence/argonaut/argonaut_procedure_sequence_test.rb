@@ -1,15 +1,15 @@
 
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class ArgonautProcedureSequenceTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "procedure" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautProcedureSequence.new(@instance, client) #put sequence here
+        @resource_type = "Procedure"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
         @resource_bundle = wrap_resources_in_bundle(@resource)
@@ -18,7 +18,7 @@ class _________ < MiniTest::Test
             entry.resource.meta.versionId = '1'
         end
 
-        @patient_id = @resource.patient.reference
+        @patient_id = @resource.subject.reference
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -60,6 +60,7 @@ class _________ < MiniTest::Test
 
     def full_sequence_stubs
         # Return 401 if no Authorization Header
+        WebMock.reset!
         uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
         stub_request(:get, uri_template).to_return(status: 401)
 

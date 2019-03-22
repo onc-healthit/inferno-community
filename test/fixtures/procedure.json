@@ -1,0 +1,25 @@
+{
+    "id": "92134275-3ce9-4867-a2e9-49d712f91a1e",
+    "subject": {
+      "reference": "urn:uuid:7ec866ca-4130-4a40-82a9-b67f2626a5df"
+    },
+    "status": "completed",
+    "code": {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "755621000000101",
+          "display": "Replacement of subcutaneous contraceptive"
+        }
+      ],
+      "text": "Replacement of subcutaneous contraceptive"
+    },
+    "performedPeriod": {
+      "start": "2010-08-09T16:15:00-04:00",
+      "end": "2010-08-09T16:48:00-04:00"
+    },
+    "encounter": {
+      "reference": "urn:uuid:1acc17d0-57f7-4a69-953c-c965b48565d1"
+    },
+    "resourceType": "Procedure"
+  }

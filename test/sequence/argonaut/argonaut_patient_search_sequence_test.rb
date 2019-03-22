@@ -1,15 +1,15 @@
 
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class ArgonautPatientSearchSequenceTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "patient" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautPatientSequence.new(@instance, client) #put sequence here
+        @resource_type = "Patient"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
         @resource_bundle = wrap_resources_in_bundle(@resource)
@@ -18,7 +18,7 @@ class _________ < MiniTest::Test
             entry.resource.meta.versionId = '1'
         end
 
-        @patient_id = @resource.patient.reference
+        @patient_id = @resource.id
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -46,7 +46,8 @@ class _________ < MiniTest::Test
         @request_headers = { 'Accept' => 'application/json+fhir',
             'Accept-Charset' => 'utf-8',
             'User-Agent' => 'Ruby FHIR Client',
-            'Authorization' => "Bearer #{@instance.token}"}
+            'Authorization' => "Bearer #{@instance.token}",
+            'Host' => 'www.example.com'}
 
         @history_request_headers = { 'Accept' => 'application/json+fhir',
             'Accept-Charset' => 'utf-8',
@@ -76,7 +77,16 @@ class _________ < MiniTest::Test
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
+            .with(headers: { 'Accept' => 'application/json+fhir',
+                'Accept-Charset' => 'utf-8',
+                'User-Agent' => 'Ruby FHIR Client',
+                'Accept-Encoding' => 'gzip, deflate',
+                'Host' => 'www.example.com'})
+            .to_return(status: 200,
+                        body: @resource.to_json,
+                        headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+            
         # history should return a history bundle
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
             .with(headers: @history_request_headers)

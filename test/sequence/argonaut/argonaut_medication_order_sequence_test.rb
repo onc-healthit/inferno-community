@@ -1,15 +1,15 @@
 
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class MedicationOrderTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "medication_order" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautMedicationOrderSequence.new(@instance, client) #put sequence here
+        @resource_type = "MedicationOrder"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
         @resource_bundle = wrap_resources_in_bundle(@resource)
@@ -73,6 +73,12 @@ class _________ < MiniTest::Test
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
             .with(headers: @request_headers)
+            .to_return(status: 200,
+                        body: @resource.to_json,
+                        headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+                        
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
+            .with(headers: @history_request_headers)
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })

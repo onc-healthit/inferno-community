@@ -1,0 +1,39 @@
+{
+    "id": "1ce7d12f-09eb-49b0-b4c4-7870ce3236b5",
+    "status": "final",
+    "category": {
+    "coding": [
+        {
+        "system": "http://hl7.org/fhir/observation-category",
+        "code": "72166-2",
+        "display": "vital-signs"
+        }
+    ],
+    "text": "vital-signs"
+    },
+    "code": {
+    "coding": [
+        {
+        "system": "http://loinc.org",
+        "code": "29463-7",
+        "display": "Body Weight"
+        }
+    ],
+    "text": "Body Weight"
+    },
+    "subject": {
+    "reference": "urn:uuid:7ec866ca-4130-4a40-82a9-b67f2626a5df"
+    },
+    "encounter": {
+    "reference": "urn:uuid:593685e0-ba12-4b0d-9233-7b7772c8cc7e"
+    },
+    "effectiveDateTime": "2010-03-01T15:15:00-05:00",
+    "issued": "2010-03-01T15:15:00.091-05:00",
+    "valueQuantity": {
+    "value": 98.40375802839971,
+    "unit": "kg",
+    "system": "http://unitsofmeasure.org",
+    "code": "kg"
+    },
+    "resourceType": "Observation"
+}

@@ -1,17 +1,18 @@
 
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class ArgonautMedicationStatementSequenceTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "medication_statement" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautMedicationStatementSequence.new(@instance, client) #put sequence here
+        @resource_type = "MedicationStatement"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
+        @medication_reference = load_json_fixture(:medication_reference)
         @resource_bundle = wrap_resources_in_bundle(@resource)
         @resource_bundle.entry.each do |entry|
             entry.resource.meta = FHIR::DSTU2::Meta.new unless entry.resource.meta
@@ -76,6 +77,11 @@ class _________ < MiniTest::Test
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+        stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
+            .with(headers: @history_request_headers)
+            .to_return(status: 200,
+                        body: @resource.to_json,
+                        headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
         # history should return a history bundle
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
@@ -100,6 +106,14 @@ class _________ < MiniTest::Test
             .to_return(status: 200,
                         body: @patient_resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+         # Return Medication from a reference
+        stub_request(:get, %r{example.com/Medication/})
+            .with(headers: {
+                    'Authorization' => "Bearer #{@instance.token}"
+                })
+            .to_return(status: 200,
+                    body: @medication_reference.to_json,
+                    headers: { content_type: 'application/json+fhir; charset=UTF-8' })
     end
     
     def test_all_pass

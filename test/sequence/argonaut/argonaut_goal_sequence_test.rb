@@ -18,7 +18,7 @@ class ArgonautGoalSequenceTest < MiniTest::Test
             entry.resource.meta.versionId = '1'
         end
 
-        @patient_id = @resource.patient.reference
+        @patient_id = @resource.subject.reference
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)

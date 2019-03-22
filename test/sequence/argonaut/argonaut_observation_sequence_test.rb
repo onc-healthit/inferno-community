@@ -1,15 +1,15 @@
 
 
 require_relative '../../test_helper'      
-class _________ < MiniTest::Test 
+class ArgonautObservationSequenceTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "" #put fixture file name here
-        @sequence = Inferno::Sequence::________.new(@instance, client) #put sequence here
-        @resource_type = ""
+        @fixture = "observation" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautObservationSequence.new(@instance, client) #put sequence here
+        @resource_type = "Observation"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
         @resource_bundle = wrap_resources_in_bundle(@resource)
@@ -60,7 +60,7 @@ class _________ < MiniTest::Test
 
     def full_sequence_stubs
         # Return 401 if no Authorization Header
-        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
+        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,start,end,userid,agent}"
         stub_request(:get, uri_template).to_return(status: 401)
 
         # Search Resources
@@ -69,6 +69,13 @@ class _________ < MiniTest::Test
             .to_return(
             status: 200, body: @resource_bundle.to_json, headers: @response_headers
             )
+        stub_request(:get, uri_template)
+        .with(heads: { 'Accept' => 'application/json+fhir',
+            'Accept-Charset' => 'utf-8',
+            'User-Agent' => 'Ruby FHIR Client',
+            'Accept-Encoding' => 'gzip, deflate',
+            'Host' => 'www.example.com'})
+            .to_return( status: 200, body: @resource_bundle.to_json, headers: @response_headers )
 
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")

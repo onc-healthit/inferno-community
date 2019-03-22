@@ -109,6 +109,7 @@ class ArgonautConditionSequenceTest < MiniTest::Test
     end
     
     def test_all_pass
+        WebMock.reset!
         full_sequence_stubs
 
         sequence_result = @sequence.start
