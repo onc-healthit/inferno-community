@@ -1,5 +1,10 @@
 {
   "id": "a421b98b-5fd7-4595-9a12-486a1aa41e67",
+  "meta": {
+    "profile": [
+      "http://fhir.org/guides/argonaut/StructureDefinition/argo-observationresults"
+    ]
+  },
   "status": "final",
   "category": {
     "coding": [

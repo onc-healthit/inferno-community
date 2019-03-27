@@ -92,16 +92,6 @@ class ArgonautPatientSearchSequenceTest < MiniTest::Test
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-
-        # Stub Patient for Reference Resolution Tests
-        stub_request(:get, %r{example.com/Patient/})
-            .with(headers: {
-                'Authorization' => "Bearer #{@instance.token}"
-            })
-            .to_return(status: 200,
-                        body: @resource.to_json,
-                        headers: { content_type: 'application/json+fhir; charset=UTF-8'})
     end
     
     def test_all_pass

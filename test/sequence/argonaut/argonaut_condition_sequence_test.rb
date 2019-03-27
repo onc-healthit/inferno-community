@@ -70,6 +70,12 @@ class ArgonautConditionSequenceTest < MiniTest::Test
             status: 200, body: @resource_bundle.to_json, headers: @response_headers
             )
 
+        stub_request(:get, /http\:\/\/www\.example\.com\/Condition\?clinicalstatus\=[^&]*\&patient\=[0-9a-zA-Z]+/)
+            .with(headers: @request_headers)
+            .to_return(
+            status: 200, body: @resource_bundle.to_json, headers: @response_headers
+            )
+
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
             .with(headers: @request_headers)

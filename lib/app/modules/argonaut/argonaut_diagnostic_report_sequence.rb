@@ -98,6 +98,7 @@ module Inferno
 
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply)
 
       end
 

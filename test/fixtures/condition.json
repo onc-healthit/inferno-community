@@ -35,6 +35,10 @@
         {
           "system": "http://hl7.org/fhir/condition-category",
           "code": "problem"
+        },
+        {
+          "system": "http://hl7.org/fhir/condition-category",
+          "code": "health-concern"
         }
       ]
     },

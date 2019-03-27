@@ -22,6 +22,7 @@ class DiagnosticReportTest < MiniTest::Test
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
+        @encounter_resource = FHIR::DSTU2::Encounter.new(id: 432)
         @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
         # Assume we already have a patient
@@ -70,6 +71,12 @@ class DiagnosticReportTest < MiniTest::Test
             status: 200, body: @resource_bundle.to_json, headers: @response_headers
             )
 
+        stub_request(:get, /http\:\/\/www\.example\.com\/DiagnosticReport\?.*date\=.*/)
+            .with(headers: @history_request_headers)
+            .to_return(
+            status: 200, body: @resource_bundle.to_json, headers: @response_headers
+            )
+
         # Read Resources
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
             .with(headers: @request_headers)
@@ -99,6 +106,21 @@ class DiagnosticReportTest < MiniTest::Test
             })
             .to_return(status: 200,
                         body: @patient_resource.to_json,
+                        headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+
+        stub_request(:get, %r{example.com/Practitioner/})
+            .with(headers: {
+                'Authorization' => "Bearer #{@instance.token}"
+            })
+            .to_return(status: 200,
+                        body: @patient_resource.to_json,
+                        headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+        stub_request(:get, %r{example.com/Encounter/})
+            .with(headers: {
+                'Authorization' => "Bearer #{@instance.token}"
+            })
+            .to_return(status: 200,
+                        body: @encounter_resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8'})
     end
     
