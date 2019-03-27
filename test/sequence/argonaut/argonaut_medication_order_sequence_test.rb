@@ -49,7 +49,7 @@ class ArgonautMedicationOrderSequenceTest < MiniTest::Test
             'User-Agent' => 'Ruby FHIR Client',
             'Authorization' => "Bearer #{@instance.token}"}
 
-        @history_request_headers = { 'Accept' => 'application/json+fhir',
+        @extended_request_headers = { 'Accept' => 'application/json+fhir',
             'Accept-Charset' => 'utf-8',
             'User-Agent' => 'Ruby FHIR Client',
             'Accept-Encoding' => 'gzip, deflate',
@@ -79,21 +79,21 @@ class ArgonautMedicationOrderSequenceTest < MiniTest::Test
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
                         
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
-            .with(headers: @history_request_headers)
+            .with(headers: @extended_request_headers)
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
         # history should return a history bundle
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
-            .with(headers: @history_request_headers)
+            .with(headers: @extended_request_headers)
             .to_return(status: 200,
                         body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
         # vread should return an instance
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
-            .with(headers: @history_request_headers)
+            .with(headers: @extended_request_headers)
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })

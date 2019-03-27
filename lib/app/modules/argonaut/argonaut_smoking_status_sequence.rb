@@ -20,7 +20,7 @@ module Inferno
         when "code"
           codings = resource.try(:code).try(:coding)
           assert !codings.nil?, "Code on resource did not match code requested"
-          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "Code on resource did not match code requested #{codings}"
+          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "Code on resource did not match code requested"
         end
       end
 

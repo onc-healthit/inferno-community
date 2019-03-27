@@ -22,7 +22,6 @@ class CarePlanSequenceTest < MiniTest::Test
         @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
         @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
-        @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
         # Assume we already have a patient
         @instance.resource_references << Inferno::Models::ResourceReference.new(
@@ -48,7 +47,7 @@ class CarePlanSequenceTest < MiniTest::Test
             'User-Agent' => 'Ruby FHIR Client',
             'Authorization' => "Bearer #{@instance.token}"}
 
-        @history_request_headers = { 'Accept' => 'application/json+fhir',
+        @extended_request_headers = { 'Accept' => 'application/json+fhir',
             'Accept-Charset' => 'utf-8',
             'User-Agent' => 'Ruby FHIR Client',
             'Accept-Encoding' => 'gzip, deflate',
@@ -79,14 +78,14 @@ class CarePlanSequenceTest < MiniTest::Test
 
         # history should return a history bundle
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
-            .with(headers: @history_request_headers)
+            .with(headers: @extended_request_headers)
             .to_return(status: 200,
                         body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
         # vread should return an instance
         stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
-            .with(headers: @history_request_headers)
+            .with(headers: @extended_request_headers)
             .to_return(status: 200,
                         body: @resource.to_json,
                         headers: { content_type: 'application/json+fhir; charset=UTF-8' })
