@@ -107,6 +107,7 @@ class ArgonautImmunizationTest < MiniTest::Test
 
         sequence_result = @sequence.start
 
+        # Currently will have a warning about not finding the valueset
         failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
         assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
         assert sequence_result.result == 'pass', "The sequence should be marked as pass. #{sequence_result.result}"
