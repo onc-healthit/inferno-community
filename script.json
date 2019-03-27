@@ -1,0 +1,89 @@
+{
+  "server": "https://my-server.org/data",
+  "module": "uscdi",
+  "arguments": {
+    "client_name": "test",
+    "initiate_login_uri": "http://localhost:4568/launch",
+    "redirect_uris": "http://localhost:4568/redirect",
+    "scopes": "test",
+    "confidential_client": "test",
+    "dynamic_registration_token": ""
+  },
+  "sequences": [
+    {
+      "sequence": "ArgonautConformanceSequence"
+    },
+    {
+      "sequence": "SMARTDiscoverySequence"
+    },
+    {
+      "sequence": "DynamicRegistrationSequence"
+    },
+    {
+      "sequence": "ManualRegistrationSequence"
+    },
+    {
+      "sequence": "StandaloneLaunchSequence"
+    },
+    {
+      "sequence": "EHRLaunchSequence"
+    },
+    {
+      "sequence": "OpenIDConnectSequence"
+    },
+    {
+      "sequence": "TokenRefreshSequence"
+    },
+    {
+      "sequence": "ArgonautPatientSequence"
+    },
+    {
+      "sequence": "ArgonautAllergyIntoleranceSequence"
+    },
+    {
+      "sequence": "ArgonautCarePlanSequence"
+    },
+    {
+      "sequence": "ArgonautCareTeamSequence"
+    },
+    {
+      "sequence": "ArgonautConditionSequence"
+    },
+    {
+      "sequence": "ArgonautDeviceSequence"
+    },
+    {
+      "sequence": "ArgonautDiagnosticReportSequence"
+    },
+    {
+      "sequence": "ArgonautObservationSequence"
+    },
+    {
+      "sequence": "ArgonautGoalSequence"
+    },
+    {
+      "sequence": "ArgonautImmunizationSequence"
+    },
+    {
+      "sequence": "ArgonautMedicationStatementSequence"
+    },
+    {
+      "sequence": "ArgonautMedicationOrderSequence"
+    },
+    {
+      "sequence": "ArgonautProcedureSequence"
+    },
+    {
+      "sequence": "ArgonautSmokingStatusSequence"
+    },
+    {
+      "sequence": "ArgonautVitalSignsSequence"
+    },
+    {
+      "sequence": "DocumentReferenceSequence"
+    },
+    {
+      "sequence": "ProvenanceSequence"
+    }
+  ]
+}
