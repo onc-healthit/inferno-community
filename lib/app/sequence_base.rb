@@ -574,6 +574,12 @@ module Inferno
         end 
 
         entries.each do |entry|
+
+          # This checks to see if the base resource conforms to the specification
+          # It does not validate any profiles.
+          base_resource_validation_errors = entry.resource.validate
+          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
           end
