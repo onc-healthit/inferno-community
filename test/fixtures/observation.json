@@ -35,7 +35,7 @@
     "reference": "Patient/example"
   },
   "effectiveDateTime": "2010-03-01",
-  "issued": "2010-03-01",
+  "issued": "2010-03-01T15:30:10+01:00",
   "valueQuantity": {
     "value": 150.43678997612926,
     "unit": "cm",
