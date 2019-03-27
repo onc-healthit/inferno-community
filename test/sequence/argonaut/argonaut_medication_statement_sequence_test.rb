@@ -12,6 +12,8 @@ class ArgonautMedicationStatementSequenceTest < MiniTest::Test
         @resource_type = "MedicationStatement"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
+        assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
+
         @medication_reference = load_json_fixture(:medication_reference)
         @resource_bundle = wrap_resources_in_bundle(@resource)
         @resource_bundle.entry.each do |entry|

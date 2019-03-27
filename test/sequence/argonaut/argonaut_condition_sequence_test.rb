@@ -12,6 +12,8 @@ class ArgonautConditionSequenceTest < MiniTest::Test
         @resource_type = "Condition"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
+        assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
+
         @resource_bundle = wrap_resources_in_bundle(@resource)
         @resource_bundle.entry.each do |entry|
             entry.resource.meta = FHIR::DSTU2::Meta.new unless entry.resource.meta
