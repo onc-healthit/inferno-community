@@ -11,3 +11,4 @@ data/*
 coverage
 tmp/*
 .vscode/*
+resources/terminology/*
