@@ -22,7 +22,7 @@ class OpenIDConnectSequenceTest < MiniTest::Test
       iat: Time.now,
       aud: client_id,
       sub: SecureRandom.uuid,
-      profile: 'https://www.example.com/profile_url/'
+      fhirUser: 'https://www.example.com/profile_url/'
     )
 
     jwk = @key_pair.to_jwk(kid: 'internal_testing', alg: 'RS256')

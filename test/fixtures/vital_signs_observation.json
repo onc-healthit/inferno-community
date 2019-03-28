@@ -1,0 +1,39 @@
+{
+    "id": "a421b98b-5fd7-4595-9a12-486a1aa41e67",
+    "status": "final",
+    "category": {
+        "coding": [
+        {
+            "system": "http://hl7.org/fhir/observation-category",
+            "code": "vital-signs",
+            "display": "vital-signs"
+        }
+        ],
+        "text": "vital-signs"
+    },
+    "code": {
+        "coding": [
+        {
+            "system": "http://loinc.org",
+            "code": "8302-2",
+            "display": "Body Height"
+        }
+        ],
+        "text": "Body Height"
+    },
+    "subject": {
+        "reference": "Patient/example"
+    },
+    "encounter": {
+        "reference": "593685e0-ba12-4b0d-9233-7b7772c8cc7e"
+    },
+    "effectiveDateTime": "2010-03-01",
+    "issued": "2010-03-01T15:30:10+01:00",
+    "valueQuantity": {
+        "value": 150.43678997612926,
+        "unit": "cm",
+        "system": "http://unitsofmeasure.org",
+        "code": "cm"
+    },
+    "resourceType": "Observation"
+}

@@ -102,11 +102,13 @@ module Inferno
         start_at = @sequence_result.test_results.length
 
         input_parameters = {}
-        @@requires[sequence_name].each do |requirement|
-          if @instance.respond_to? requirement then
-            input_value = @instance.send(requirement).to_s
-            input_value = "none" if input_value.empty?
-            input_parameters[requirement.to_sym] = input_value
+        if !@@requires[sequence_name].nil?
+          @@requires[sequence_name].each do |requirement|
+            if @instance.respond_to? requirement then
+              input_value = @instance.send(requirement).to_s
+              input_value = "none" if input_value.empty?
+              input_parameters[requirement.to_sym] = input_value
+            end
           end
         end
         @sequence_result.input_params = input_parameters.to_json
@@ -572,6 +574,12 @@ module Inferno
         end 
 
         entries.each do |entry|
+
+          # This checks to see if the base resource conforms to the specification
+          # It does not validate any profiles.
+          base_resource_validation_errors = entry.resource.validate
+          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
           end

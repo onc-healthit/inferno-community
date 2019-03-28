@@ -6,8 +6,10 @@ require File.expand_path '../test_helper.rb', __dir__
 # Note: This test currently only considers dstu2
 class ConformanceSequenceTest < MiniTest::Test
   REQUEST_HEADERS = { 'Accept' => 'application/json+fhir',
-                      'Accept-Charset' => 'UTF-8',
-                      'Content-Type' => 'application/json+fhir;charset=UTF-8' }.freeze
+                      'Accept-Charset' => 'utf-8',
+                      'Accept-Encoding' => 'gzip, deflate',
+                      'Host' => 'www.example.com',
+                      'User-Agent' => 'Ruby FHIR Client' }.freeze
 
   RESPONSE_HEADERS = { 'content-type' => 'application/json+fhir;charset=UTF-8' }.freeze
 
