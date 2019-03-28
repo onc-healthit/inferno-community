@@ -1,0 +1,13 @@
+<ul class='input-list test-list'>
+  <% JSON.parse(sequence_result.output_results).each do |output_name, output_value| %>
+    <li>
+    <span>
+        <strong>
+        <%= output_name.sub('_', ' ').titlecase %> &nbsp;
+        </strong>
+        <%= output_value["original"] %> &rarr; <%= output_value["updated"] %>
+    </span>
+    </li>
+  <% end %>
+</ul>
+

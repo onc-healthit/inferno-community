@@ -23,6 +23,7 @@ module Inferno
 
       property :required, Boolean, default: true
       property :input_params, String
+      property :output_results, String
 
       property :next_sequences, String
       property :next_test_cases, String
