@@ -1030,6 +1030,14 @@ body {
   background-color: whitesmoke;
 }
 
+.guided .sequence-row-output{
+  margin: 0px 5px 0px 20px;
+  padding: 0px 0 5px 20px;
+  background-color: whitesmoke;
+  border-radius: 0 0 .25em .25em;
+  border-top: none;
+}
+
 .input-list{
   overflow: auto;
   white-space: nowrap;

@@ -170,6 +170,18 @@
           
         </div>
         </div>
+        <% if !sequence_results[test_case.id].nil? && !sequence_results[test_case.id].output_results.blank? %>
+        <div class="sequence-row-output card" >
+          <div class="sequence-title">
+            <span class="sequence-name">
+              Outputs
+            </span>
+          </div>
+          <div class="sequence-details">
+            <%= erb(:test_outputs,{},{instance: instance, sequence_result: sequence_results[test_case.id] }) %>
+          </div>
+        </div>
+        <% end %>
       </div>
       
       <% end %>
