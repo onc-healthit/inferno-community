@@ -193,11 +193,7 @@ module Inferno
             if @instance.respond_to? output then
               output_value = @instance.send(output).to_s
               output_value = "none" if output_value.empty?
-              if output_results[output.to_sym][:original] != output_value then
-                output_results[output.to_sym][:updated] = output_value
-              else
-                output_results.delete(output)
-              end
+              output_results[output.to_sym][:updated] = output_value
             end
           end
         end
