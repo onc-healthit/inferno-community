@@ -11,8 +11,8 @@ module Inferno
       optional
 
       requires :initiate_login_uri, :redirect_uris, :confidential_client,:initiate_login_uri, :redirect_uris, :client_id, :client_secret
-      # defines :client_id, :client_secret
-      #
+      defines :client_id, :client_secret
+      
       show_uris
 
       details %(
