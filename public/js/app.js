@@ -150,9 +150,13 @@ $(function(){
             // is it also defined by one of the sequences?
             var alreadyDefined = false;
             definedList.forEach(function(defined){
+              let beforeSequenceThatRequires = false;
               sequences.forEach(function(seq){
-                if(defined === seq){
-                  alreadyDefined = true;
+                beforeSequenceThatRequires = beforeSequenceThatRequires || (seq == item);
+                if(!beforeSequenceThatRequires){
+                  if(defined === seq){
+                    alreadyDefined = true;
+                  }
                 }
               })
             })
