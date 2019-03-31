@@ -876,6 +876,13 @@ body {
   background-color: #ddd;
 }
 
+.guided .sequence-group .more-information h1 {
+  margin: 0;
+  padding: 10px 0;
+  text-transform: uppercase;
+  background-color: #fff;
+}
+
 .guided .group-steps {
   float: right;
   font-size: 1.3rem;
