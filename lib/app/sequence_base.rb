@@ -102,14 +102,27 @@ module Inferno
         start_at = @sequence_result.test_results.length
 
         input_parameters = {}
-        @@requires[sequence_name].each do |requirement|
-          if @instance.respond_to? requirement then
-            input_value = @instance.send(requirement).to_s
-            input_value = "none" if input_value.empty?
-            input_parameters[requirement.to_sym] = input_value
+        if !@@requires[sequence_name].nil?
+          @@requires[sequence_name].each do |requirement|
+            if @instance.respond_to? requirement then
+              input_value = @instance.send(requirement).to_s
+              input_value = "none" if input_value.empty?
+              input_parameters[requirement.to_sym] = input_value
+            end
           end
         end
         @sequence_result.input_params = input_parameters.to_json
+
+        output_results = {}
+        if !@@defines[sequence_name].nil? then 
+          @@defines[sequence_name].each do |output|
+            if @instance.respond_to? output then
+              output_value = @instance.send(output).to_s
+              output_value = "none" if output_value.empty?
+              output_results[output.to_sym] = {original: output_value}
+            end
+          end
+        end
 
         methods = self.methods.grep(/_test$/).sort
         methods.each_with_index do |test_method, index|
@@ -176,6 +189,18 @@ module Inferno
             break
           end
         end
+
+        if !@@defines[sequence_name].nil? then 
+          @@defines[sequence_name].each do |output|
+            if @instance.respond_to? output then
+              output_value = @instance.send(output).to_s
+              output_value = "none" if output_value.empty?
+              output_results[output.to_sym][:updated] = output_value
+            end
+          end
+        end
+
+        @sequence_result.output_results = output_results.to_json if !output_results.nil? && output_results.size > 0
 
         @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
         @sequence_result.result = STATUS[:pass]
@@ -572,6 +597,12 @@ module Inferno
         end 
 
         entries.each do |entry|
+
+          # This checks to see if the base resource conforms to the specification
+          # It does not validate any profiles.
+          base_resource_validation_errors = entry.resource.validate
+          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
           end

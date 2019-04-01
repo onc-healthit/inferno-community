@@ -18,7 +18,9 @@ module Inferno
         when "patient"
           assert resource&.patient&.reference&.include?(value), "Patient on resource does not match patient requested"
         when "category"
-          assert resource&.category&.coding&.any?{|coding| coding.code == value}, "Category on resource did not match category requested"
+          codings = resource.try(:category).try(:coding)
+          assert !codings.nil?, "Category on resource did not match category requested"
+          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "Category on resource did not match category requested"
         when "clinicalstatus"
           clinicalstatus = resource&.clinicalStatus
           assert !clinicalstatus.nil? && value.split(',').include?(clinicalstatus), "Clinical status on resource did not match the clinical status requested"

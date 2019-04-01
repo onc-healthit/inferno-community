@@ -38,6 +38,14 @@ def wrap_resources_in_bundle(resources, type: 'searchset')
   bundle
 end
 
+def get_resources_from_bundle(bundle,resourceType)
+  resources = []
+  bundle.entry.each do |entry|
+    resources << entry.resource if entry.resource.resourceType == resourceType
+  end
+  resources
+end
+
 def get_test_instance(url: 'http://www.example.com',
                       client_name: 'Inferno',
                       base_url: 'http://localhost:4567',

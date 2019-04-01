@@ -1,0 +1,42 @@
+{
+    "id": "1ce7d12f-09eb-49b0-b4c4-7870ce3236b5",
+    "status": "final",
+    "category": {
+    "coding": [
+        {
+        "system": "http://hl7.org/fhir/observation-category",
+        "code": "72166-2",
+        "display": "vital-signs"
+        }
+    ],
+    "text": "vital-signs"
+    },
+    "code": {
+    "coding": [
+        {
+        "system": "http://loinc.org",
+        "code": "72166-2",
+        "display": "Vital Signs"
+        }
+    ],
+    "text": "Vital Signs"
+    },
+    "subject": {
+    "reference": "7ec866ca-4130-4a40-82a9-b67f2626a5df"
+    },
+    "encounter": {
+    "reference": "593685e0-ba12-4b0d-9233-7b7772c8cc7e"
+    },
+    "effectiveDateTime": "2010-03-01T15:15:00-05:00",
+    "issued": "2010-03-01T15:15:00.091-05:00",
+    "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "29463-7",
+            "display": "Body weight"
+          }
+        ]
+      },
+    "resourceType": "Observation"
+}

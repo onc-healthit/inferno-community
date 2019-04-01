@@ -1,0 +1,76 @@
+{
+    "resourceType": "Condition",
+    "id": "f202",
+    "text": {
+      "status": "generated",
+      "div": "<div><p><b>Generated Narrative with Details</b></p><p><b>id</b>: f202</p><p><b>patient</b>: <a>Roel</a></p><p><b>dateRecorded</b>: 01/12/2012</p><p><b>code</b>: Malignant neoplastic disease <span>(Details : {SNOMED CT code '363346000' = '363346000', given as 'Malignant neoplastic disease'})</span></p><p><b>category</b>: Diagnosis <span>(Details : {http://hl7.org/fhir/condition-category code 'diagnosis' = 'Diagnosis)</span></p><p><b>clinicalStatus</b>: active</p><p><b>verificationStatus</b>: confirmed</p><p><b>severity</b>: Severe <span>(Details : {SNOMED CT code '24484000' = '24484000', given as 'Severe'})</span></p><p><b>onset</b>: 52 years<span> (Details: SNOMED CT code 258707000 = '258707000')</span></p><h3>Evidences</h3><table><tr><td>-</td><td><b>Detail</b></td></tr><tr><td>*</td><td><a>Erasmus' diagnostic report of Roel's tumor</a></td></tr></table><p><b>bodySite</b>: Entire head and neck <span>(Details : {SNOMED CT code '361355005' = '361355005', given as 'Entire head and neck'})</span></p></div>"
+    },
+    "patient": {
+      "reference": "Patient/f201",
+      "display": "Roel"
+    },
+    "dateRecorded": "2012-12-01",
+    "_dateRecorded": {
+      "fhir_comments": [
+        "  It was not established during an encounter, but through a diagnostic report of december 2012  "
+      ]
+    },
+    "code": {
+      "fhir_comments": [
+        "  The problem was asserted at December first  "
+      ],
+      "coding": [
+        {
+          "fhir_comments": [
+            "  The problem is a malignant tumor  "
+          ],
+          "system": "http://snomed.info/sct",
+          "code": "363346000",
+          "display": "Malignant neoplastic disease"
+        }
+      ]
+    },
+    "category": {
+      "coding": [
+        {
+          "system": "http://hl7.org/fhir/condition-category",
+          "code": "problem"
+        },
+        {
+          "system": "http://hl7.org/fhir/condition-category",
+          "code": "health-concern"
+        }
+      ]
+    },
+    "clinicalStatus": "active",
+    "verificationStatus": "confirmed",
+    "severity": {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "24484000",
+          "display": "Severe"
+        }
+      ]
+    },
+    "onsetQuantity": {
+      "value": 52,
+      "unit": "years",
+      "system": "http://snomed.info/sct",
+      "code": "258707000"
+    },
+    "bodySite": [
+      {
+        "coding": [
+          {
+            "fhir_comments": [
+              "  Head and neck malignancy  "
+            ],
+            "system": "http://snomed.info/sct",
+            "code": "361355005",
+            "display": "Entire head and neck"
+          }
+        ]
+      }
+    ]
+  }
