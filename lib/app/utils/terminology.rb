@@ -243,8 +243,7 @@ module Inferno
       validators.each do |validator|
         bfilter = Bloomer::Scalable.from_msgpack(open("#{directory}/#{validator[:file]}").read())
         validate_fn = lambda do |coding|
-          puts "Testing CODE #{coding.system}|#{coding.code}"
-          probe = "#{coding.system}|#{coding.code}"
+          probe = "#{coding['system']}|#{coding['code']}"
           bfilter.include? probe
         end
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
