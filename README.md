@@ -1,6 +1,6 @@
 <img src="https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
 
-<img src="https://travis-ci.org/siteadmin/inferno.svg?branch=master" alt="build:">
+[![Build Status](https://travis-ci.org/siteadmin/inferno.svg?branch=master)](https://travis-ci.org/siteadmin/inferno)
 
 Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
 It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.

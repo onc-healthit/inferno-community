@@ -75,3 +75,5 @@ def get_client(instance)
   client.default_json
   client
 end
+
+FHIR::DSTU2::StructureDefinition.clear_all_validates_vs()
