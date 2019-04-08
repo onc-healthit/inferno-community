@@ -6,7 +6,7 @@ require 'version'
 Gem::Specification.new do |spec|
   spec.name          = 'inferno-fhir'
   spec.version       = Inferno::VERSION
-  spec.authors       = ['Rob Scanlon', 'Reece Adamson', 'Chase Zhou']]
+  spec.authors       = ['Rob Scanlon', 'Reece Adamson', 'Chase Zhou']
   spec.email         = ['rscanlon@mitre.org']
 
   spec.summary       = %q{Inferno}
