@@ -201,11 +201,13 @@ module Inferno
 
     end
 
-    Dir.glob(File.join(__dir__, 'modules', '*_module.yml')).each do |file|
-      this_module = YAML.load_file(file).deep_symbolize_keys
-      self.load_module(this_module)
+    def self.load_modules(dir)
+      Dir.glob(File.join(dir, 'modules', '*_module.yml')).each do |file|
+        this_module = YAML.load_file(file).deep_symbolize_keys
+        self.load_module(this_module)
+      end
     end
 
-
+    load_modules(__dir__)
   end
 end
