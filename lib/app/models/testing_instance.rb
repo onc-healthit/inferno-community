@@ -53,7 +53,7 @@ module Inferno
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references
 
-      def add_property(name, type)
+      def self.add_property(name, type)
         property name, type
       end
 

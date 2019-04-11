@@ -756,7 +756,11 @@ module Inferno
 
     end
 
-    Dir.glob(File.join(__dir__, 'modules', '**', '*_sequence.rb')).each{|file| require file}
+    def self.load_sequences(dir)
+      Dir.glob(File.join(dir, 'modules', '**', '*_sequence.rb')).each{|file| require file}
+    end
+
+    load_sequences(__dir__)
   end
 end
 
