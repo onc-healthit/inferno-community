@@ -1,3 +1,50 @@
+GIT
+  remote: https://github.com/fhir-crucible/fhir_client.git
+  revision: c5696220938dfc2e448dc90068ad151ccebf72a9
+  branch: r4
+  specs:
+    fhir_client (3.1.2)
+      activesupport (>= 3)
+      addressable (>= 2.3)
+      nokogiri (>= 1.8.2)
+      oauth2 (~> 1.1)
+      rack (>= 1.5)
+      rest-client (~> 2.0)
+      tilt (>= 1.1)
+
+GIT
+  remote: https://github.com/fhir-crucible/fhir_dstu2_models.git
+  revision: d303870580c9f9c3e5023aff7c278c07eece4a6d
+  branch: update_dep
+  specs:
+    fhir_dstu2_models (1.0.8)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.8.2)
+
+GIT
+  remote: https://github.com/fhir-crucible/fhir_models.git
+  revision: af58c175ada5c7e62c2f2e188d46d46465e1098b
+  branch: master
+  specs:
+    fhir_models (4.0.0)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.8.2)
+
+GIT
+  remote: https://github.com/fhir-crucible/fhir_stu3_models.git
+  revision: 1da42bf57165e00ddcccd7cc26f8d316a3e55fff
+  branch: master
+  specs:
+    fhir_stu3_models (3.0.4)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.8.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -10,7 +57,7 @@ GEM
       public_suffix (>= 2.0.2, < 4.0)
     aes_key_wrap (1.0.1)
     ast (2.4.0)
-    backports (3.11.4)
+    backports (3.13.0)
     base62-rb (0.3.1)
     bcp47 (0.3.3)
       i18n
@@ -87,32 +134,12 @@ GEM
       multipart-post (>= 1.2, < 3)
     fastercsv (1.5.5)
     ffi (1.10.0)
-    fhir_client (3.1.2)
-      activesupport (>= 3)
-      addressable (>= 2.3)
-      fhir_dstu2_models (>= 1.0.4)
-      fhir_models (>= 3.0.3)
-      nokogiri (>= 1.8.2)
-      oauth2 (~> 1.1)
-      rack (>= 1.5)
-      rest-client (~> 2.0)
-      tilt (>= 1.1)
-    fhir_dstu2_models (1.0.8)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 1.16, < 3)
-      nokogiri (>= 1.8.2)
-    fhir_models (3.0.3)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 1.16, < 3)
-      nokogiri (>= 1.8.2)
     hashdiff (0.3.8)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
-    jaro_winkler (1.5.1)
+    jaro_winkler (1.5.2)
     json (1.8.6)
     json-jwt (1.10.0)
       activesupport (>= 4.2)
@@ -120,12 +147,14 @@ GEM
       bindata
     json_pure (1.8.6)
     jwt (2.1.0)
-    kramdown (1.17.0)
+    kramdown (2.1.0)
     method_source (0.9.2)
-    mime-types (2.99.3)
+    mime-types (3.2.2)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2019.0331)
     mini_portile2 (2.4.0)
     minitest (5.11.3)
-    msgpack (1.2.6)
+    msgpack (1.2.9)
     multi_json (1.13.1)
     multi_xml (0.6.0)
     multipart-post (2.0.0)
@@ -139,13 +168,13 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
-    parallel (1.12.1)
-    parser (2.5.3.0)
+    parallel (1.17.0)
+    parser (2.6.2.1)
       ast (~> 2.4.0)
-    powerpack (0.1.2)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
+    psych (3.1.0)
     public_suffix (3.0.3)
     rack (2.0.7)
     rack-protection (2.0.5)
@@ -159,17 +188,17 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rubocop (0.61.1)
+    rubocop (0.67.2)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.5, != 2.5.1.1)
-      powerpack (~> 0.1)
+      psych (>= 3.1.0)
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (~> 1.4.0)
+      unicode-display_width (>= 1.4.0, < 1.6)
     ruby-progressbar (1.10.0)
     rubyzip (1.2.2)
-    safe_yaml (1.0.4)
+    safe_yaml (1.0.5)
     selenium-webdriver (3.141.0)
       childprocess (~> 0.5)
       rubyzip (~> 1.2, >= 1.2.2)
@@ -205,7 +234,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.5)
-    unicode-display_width (1.4.0)
+    unicode-display_width (1.5.0)
     uuidtools (2.1.5)
     webmock (3.5.1)
       addressable (>= 2.3.6)
@@ -222,7 +251,10 @@ DEPENDENCIES
   colorize
   data_mapper
   dm-sqlite-adapter
-  fhir_client
+  fhir_client!
+  fhir_dstu2_models!
+  fhir_models!
+  fhir_stu3_models!
   json-jwt
   kramdown
   pry

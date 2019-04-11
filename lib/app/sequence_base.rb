@@ -737,7 +737,7 @@ module Inferno
         elsif @instance.fhir_version == 'stu3'
           FHIR::STU3::CapabilityStatement
         else
-          @instance.fhir_version == 'r4'
+          FHIR::CapabilityStatement
         end
       end
 
