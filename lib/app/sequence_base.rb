@@ -731,6 +731,16 @@ module Inferno
         assert(problems.empty?, problems.join("<br/>\n"))
       end
 
+      def versioned_conformance_class
+        if @instance.fhir_version == 'dstu2'
+          FHIR::DSTU2::Conformance
+        elsif @instance.fhir_version == 'stu3'
+          FHIR::STU3::CapabilityStatement
+        else
+          @instance.fhir_version == 'r4'
+        end
+      end
+
       def check_resource_against_profile(resource, resource_type, specified_profile=nil)
         assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
                "Expected resource to be of type #{resource_type}"

@@ -137,18 +137,6 @@ module Inferno
       
         assert @well_known_token_url == @conformance_token_url, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
       end
-
-
-
-
-      def versioned_conformance_class
-        if @instance.fhir_version == 'dstu2'
-          FHIR::DSTU2::Conformance
-        elsif @instance.fhir_version == 'stu3'
-          FHIR::CapabilityStatement
-        end
-      end
-
     end
   end
 end
