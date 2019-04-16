@@ -12,7 +12,7 @@ show_tutorial: true
 purge_database_on_reload: false
 
 # Disable peer SSL verification for environments that use SSL inspection
-disable_verify_peer: true
+disable_verify_peer: false
 
 # When running in a docker container, we have to listen to other than just 'localhost' which is the default
 bind: '0.0.0.0'
@@ -42,4 +42,6 @@ badge_text: Community
 
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
-  - onc
+- onc
+- smart
+- argonaut
