@@ -1,0 +1,12 @@
+name: empty
+title: Empty Module
+description: This base implementation of inferno does not contain any sequences. Add your own sequences and modules to start testing. 
+fhir_version: dstu2
+hide_optional: true
+default_test_set: strict
+test_sets:
+  strict:
+    view: default
+    tests:
+      - name: Empty
+        sequences:
