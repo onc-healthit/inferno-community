@@ -119,6 +119,13 @@ module Inferno
       def module
         Inferno::Module.get(self.selected_module)
       end
+
+      def fhir_version
+        self.module.fhir_version
+      end
+      def patient_id
+        
+      end
     end
   end
 end

@@ -177,15 +177,15 @@ module Inferno
         new_test_set = TestSet.new(test_set_key, test_set[:view])
         all_groups = test_set[:tests].each do |group|
           new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:lock_variables], group[:run_all] || false, group[:run_skipped] || false)
-
-          group[:sequences].each do |sequence|
-            test_case = nil
-            if sequence.instance_of?(String)
-              test_case = new_group.add_test_case(sequence)
-            else
-              test_case = new_group.add_test_case(sequence[:sequence], sequence)
+          if !group[:sequences].nil? then
+            group[:sequences].each do |sequence|
+              test_case = nil
+              if sequence.instance_of?(String)
+                test_case = new_group.add_test_case(sequence)
+              else
+                test_case = new_group.add_test_case(sequence[:sequence], sequence)
+              end
             end
-    
           end
 
           new_test_set.groups << new_group
