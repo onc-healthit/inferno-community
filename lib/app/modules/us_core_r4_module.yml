@@ -1,0 +1,33 @@
+name: us_core_r4
+title: US Core R4
+description : |
+
+  The US Core R4 Test verifies conformance to the US Core R4 Implementation Guide.
+
+  This section is under development and tested against the CI Build of the IG.
+
+  [US Core R4 Implementation Guide CI Build](https://build.fhir.org/ig/HL7/US-Core-R4/index.html)
+
+fhir_version: r4
+default_test_set: developer
+hide_optional: true
+test_sets:
+  developer:
+    view: default
+    tests:
+      - name: Discovery
+        sequences:
+        - ArgonautConformanceSequence
+        - SMARTDiscoverySequence
+        run_all: false
+      - name: Authorization and Authentication
+        sequences:
+        - DynamicRegistrationSequence
+        - ManualRegistrationSequence
+        - StandaloneLaunchSequence
+        - EHRLaunchSequence
+        - OpenIDConnectSequence
+        - TokenRefreshSequence
+      - name: US Core R4 Testing
+        sequences:
+          - USCoreR4PatientSequence
