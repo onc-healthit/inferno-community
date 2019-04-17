@@ -1,26 +1,10 @@
 source 'https://rubygems.org'
 
-gem 'thin'
-gem 'sinatra'
-gem 'sinatra-contrib'
-gem 'addressable'
-gem 'fhir_client'
-gem 'rest-client'
-gem 'time_difference'
-gem 'pry'
-gem 'rb-readline'
-gem 'data_mapper'
-gem 'dm-sqlite-adapter'
-gem 'base62-rb'
-gem 'rake'
-gem 'webmock'
-gem 'rack-test'
-gem 'json-jwt'
-gem 'colorize'
-gem 'kramdown'
-gem 'selenium-webdriver'
-gem 'rubocop', require: false
-gem 'bloomer'
-gem 'sqlite3'
+# gem 'fhir_models', :path => '../fhir_models'
+# gem 'fhir_dstu2_models', :path => '../fhir_dstu2_models'
 
-gem 'simplecov', require: false, group: :test
+gemspec
+
+group :test do
+  gem 'simplecov', require: nil
+end
