@@ -245,6 +245,3 @@ PLATFORMS
 DEPENDENCIES
   inferno-core!
   simplecov
-
-BUNDLED WITH
-   2.0.1
