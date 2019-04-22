@@ -1,9 +1,12 @@
 language: ruby
+services:
+  - docker
 rvm:
   - 2.5
   - 2.6
 script:
   - bundle exec rake
+  - docker-compose run ruby_server bundle exec rake
 notifications:
   email:
     recipients:
@@ -12,3 +15,4 @@ notifications:
 before_install:
   - gem update --system
   - gem install bundler
+  - docker-compose build
