@@ -45,3 +45,4 @@ modules:
   - onc
   - smart
   - argonaut
+  - us_core_r4
