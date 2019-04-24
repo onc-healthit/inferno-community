@@ -1,50 +1,3 @@
-GIT
-  remote: https://github.com/fhir-crucible/fhir_client.git
-  revision: c5696220938dfc2e448dc90068ad151ccebf72a9
-  branch: r4
-  specs:
-    fhir_client (3.1.2)
-      activesupport (>= 3)
-      addressable (>= 2.3)
-      nokogiri (>= 1.8.2)
-      oauth2 (~> 1.1)
-      rack (>= 1.5)
-      rest-client (~> 2.0)
-      tilt (>= 1.1)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_dstu2_models.git
-  revision: d303870580c9f9c3e5023aff7c278c07eece4a6d
-  branch: update_dep
-  specs:
-    fhir_dstu2_models (1.0.8)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 3.0)
-      nokogiri (>= 1.8.2)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_models.git
-  revision: af58c175ada5c7e62c2f2e188d46d46465e1098b
-  branch: master
-  specs:
-    fhir_models (4.0.0)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 3.0)
-      nokogiri (>= 1.8.2)
-
-GIT
-  remote: https://github.com/fhir-crucible/fhir_stu3_models.git
-  revision: 1da42bf57165e00ddcccd7cc26f8d316a3e55fff
-  branch: master
-  specs:
-    fhir_stu3_models (3.0.4)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 3.0)
-      nokogiri (>= 1.8.2)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -69,8 +22,8 @@ GEM
     bloomer (1.0.0)
       bitarray
       msgpack
-    childprocess (0.9.0)
-      ffi (~> 1.0, >= 1.0.11)
+    childprocess (1.0.1)
+      rake (< 13.0)
     coderay (1.1.2)
     colorize (0.8.1)
     concurrent-ruby (1.1.5)
@@ -133,8 +86,33 @@ GEM
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
     fastercsv (1.5.5)
-    ffi (1.10.0)
-    hashdiff (0.3.8)
+    fhir_client (4.0.0)
+      activesupport (>= 3)
+      addressable (>= 2.3)
+      fhir_dstu2_models (>= 1.0.9)
+      fhir_models (>= 4.0.0)
+      fhir_stu3_models (>= 3.0.0)
+      nokogiri (>= 1.8.2)
+      oauth2 (~> 1.1)
+      rack (>= 1.5)
+      rest-client (~> 2.0)
+      tilt (>= 1.1)
+    fhir_dstu2_models (1.0.9)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.8.5)
+    fhir_models (4.0.0)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.8.2)
+    fhir_stu3_models (3.0.0)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.8.2)
+    hashdiff (0.3.9)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (1.6.0)
@@ -154,13 +132,13 @@ GEM
     mime-types-data (3.2019.0331)
     mini_portile2 (2.4.0)
     minitest (5.11.3)
-    msgpack (1.2.9)
+    msgpack (1.2.10)
     multi_json (1.13.1)
     multi_xml (0.6.0)
     multipart-post (2.0.0)
     mustermann (1.0.3)
     netrc (0.11.0)
-    nokogiri (1.10.2)
+    nokogiri (1.10.3)
       mini_portile2 (~> 2.4.0)
     oauth2 (1.4.1)
       faraday (>= 0.8, < 0.16.0)
@@ -199,8 +177,8 @@ GEM
     ruby-progressbar (1.10.0)
     rubyzip (1.2.2)
     safe_yaml (1.0.5)
-    selenium-webdriver (3.141.0)
-      childprocess (~> 0.5)
+    selenium-webdriver (3.141.5926)
+      childprocess (>= 0.5, < 2.0)
       rubyzip (~> 1.2, >= 1.2.2)
     simplecov (0.16.1)
       docile (~> 1.1)
@@ -233,7 +211,7 @@ GEM
       thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.5)
+    unf_ext (0.0.7.6)
     unicode-display_width (1.5.0)
     uuidtools (2.1.5)
     webmock (3.5.1)
@@ -251,10 +229,7 @@ DEPENDENCIES
   colorize
   data_mapper
   dm-sqlite-adapter
-  fhir_client!
-  fhir_dstu2_models!
-  fhir_models!
-  fhir_stu3_models!
+  fhir_client
   json-jwt
   kramdown
   pry
@@ -271,3 +246,6 @@ DEPENDENCIES
   thin
   time_difference
   webmock
+
+BUNDLED WITH
+   2.0.1
