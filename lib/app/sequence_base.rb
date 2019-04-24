@@ -696,7 +696,7 @@ module Inferno
             end
             all_errors.concat(errors)
           else
-            errors = entry.resource.validate
+            errors = resource.validate
             all_errors.concat(errors.values)
           end
         end
