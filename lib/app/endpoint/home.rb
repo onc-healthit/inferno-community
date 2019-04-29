@@ -149,6 +149,7 @@ module Inferno
 
                 out << js_show_test_modal
 
+                instance.reload # ensure that we have all the latest data
                 sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
                 count = 0
                 sequence_result = sequence.start do |result|
@@ -392,6 +393,7 @@ module Inferno
 
               out << js_show_test_modal
 
+              instance.reload # ensure that we have all the latest data
               sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
               count = 0
               sequence_result = sequence.start(test_set.id, test_case.id) do |result|
