@@ -1,7 +1,7 @@
 module Inferno
   module Sequence
     class USCoreR4PatientSequence < SequenceBase
-      title 'Patient'
+      title 'US Core R4 Patient Tests'
 
       description 'Verify that the Patient resources on the FHIR server follow the US Core R4 Implementation Guide'
 
@@ -12,34 +12,71 @@ module Inferno
       #TODO: Should this change to capability_supports?  CapabilityStatement is Normative after all
       conformance_supports :Patient
 
+      details %(
+
+        Patient profile requirements from [US Core R4 Server Capability Statement](http://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-r4-server.html#patient).
+
+        Search requirements (as of 1 May 19):
+
+        | Conformance | Parameter         | Type           |
+        |-------------|-------------------|----------------|
+        | SHALL       | name              | string         |
+        | SHALL       | identifier        | token          |
+        | SHALL       | family + gender   | string + token |
+        | SHALL       | given + gender    | string + token |
+        | SHALL       | name + gender     | string + token |
+        | SHALL       | name + birthdate  | string + date  |
+
+        Note: Terminology validation currently disabled.
+
+      )
+
       def validate_resource_item(resource, property, value)
         case property
+        when "name"
+          names = resource&.name
+          assert !names.nil? && names.length > 0, "No names found in patient resource"
+          assert names.any?{|name| name&.family&.include?(value)}, "Family name on resource did not match name search parameter (#{value})."
         when "identifier"
-          identifier = resource.try(:identifier).try(:first).try(:value)
-          assert !identifier.nil? && identifier == value, "Identifier on resource did not match identifier requested"
+          identifier = resource&.identifier&.first
+
+          if value.include?("|")
+            # Using the | format
+            id_system = value.split("|").first
+            id_value = value.split("|")[1]
+
+            assert identifier&.value == id_value, "Identifier value on resource (#{identifier&.value}) did not match search parameter (#{id_value})"
+            assert identifier&.system == id_system, "Identifier system on resource (#{identifier&.system}) did not match search parameter (#{id_system})"
+
+          else
+            assert identifier&.value == value, "Identifier value on resource (#{identifier&.value}) did not match search parameter (#{value})"
+          end
+
         when "family"
           names = resource.try(:name)
           assert !names.nil? && names.length > 0, "No names found in patient resource"
-          assert names.any?{|name| name.family.include?(value)}, "Family name on resource did not match family name requested"
+          assert names.any?{|name| name.family.include?(value)}, "No family names in resource matched family name search parameter (#{value})."
         when "given"
           names = resource.try(:name)
           assert !names.nil? && names.length > 0, "No names found in patient resource"
-          assert names.any?{|name| name.given.include?(value)}, "Family name on resource did not match family name requested"
+          assert names.any?{|name| name.given.include?(value)}, "Given name on resource did not match given name search parameter (#{value})."
         when "birthdate"
           birthdate = resource.try(:birthDate)
-          assert !birthdate.nil? && birthdate == value, "Birthdate on resource did not match birthdate requested"
+          assert !birthdate.nil? && birthdate == value, "Birthdate on resource did not match birthdate search parameter (#{value})."
         when "gender"
           gender = resource.try(:gender)
-          assert !gender.nil? && gender == value, "Gender on resource did not match gender requested"
+          assert !gender.nil? && gender == value, "Gender on resource did not match gender search parameter (#{value})."
         end
       end
 
-      test 'Server returns expected results from Patient read resource' do
+      test 'Server supports fetching a patient using a read' do
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
             Servers return a patient resource
+
+            ` GET [base]/Patient/[id]`
                )
           versions :r4
         end
@@ -54,6 +91,8 @@ module Inferno
         assert @patient.is_a?(FHIR::Patient), 'Not the right fhir model type'
 
       end
+
+      # PROFILE CHECKING #
 
       test 'Patient validates against US Core R4 Profile' do
         metadata do
@@ -76,11 +115,33 @@ module Inferno
       end
 
 
+      # SEARCHING
+
+      test 'Server returns expected results from Patient search by name' do
+
+        metadata {
+          id '03'
+          link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
+          desc %(
+            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: name.
+          )
+          versions :r4
+        }
+
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        family = @patient&.name&.first&.family
+        assert !family.nil?, "Patient family name not returned"
+        search_params = {name: family}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+
+      end
+      
       test 'Server returns expected results from Patient search by identifier' do
 
         metadata {
-          id '07'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          id '04'
+          link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.
           )
@@ -88,33 +149,86 @@ module Inferno
         }
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        identifier = @patient.try(:identifier).try(:first).try(:value)
+        identifier = @patient&.identifier&.first
         assert !identifier.nil?, "Patient identifier not returned"
-        search_params = {identifier: identifier}
+        assert !identifier.value.nil?, "No value provided in Patient identifier"
+        search_params = {identifier: identifier.value}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+
+        assert !identifier.system.nil?, "No system provided in Patient identifier"
+        search_params = {identifier: "#{identifier.system}|#{identifier.value}"}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+        
+        search_params = {_id: @patient.id}
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
 
       end
 
-      test 'Server returns expected results from Patient search by name + gender' do
+      test 'Server returns expected results from Patient search by family + gender' do
 
         metadata {
-          id '08'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          id '05'
+          link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
-            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
           )
           versions :r4
         }
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        family = @patient.try(:name).try(:first).try(:family).try(:first)
+        family = @patient&.name&.first&.family
         assert !family.nil?, "Patient family name not returned"
-        given = @patient.try(:name).try(:first).try(:given).try(:first)
+        given = @patient&.name&.first&.given&.first
         assert !given.nil?, "Patient given name not returned"
-        gender = @patient.try(:gender)
+        gender = @patient&.gender
         assert !gender.nil?, "Patient gender not returned"
-        search_params = {family: family, given: given, gender: gender}
+        search_params = {family: family, gender: gender}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+      end
+
+      test 'Server returns expected results from Patient search by given + gender' do
+
+        metadata {
+          id '06'
+          link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
+          desc %(
+          )
+          versions :r4
+        }
+
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        family = @patient&.name&.first&.family
+        assert !family.nil?, "Patient family name not returned"
+        given = @patient&.name&.first&.given&.first
+        assert !given.nil?, "Patient given name not returned"
+        gender = @patient&.gender
+        assert !gender.nil?, "Patient gender not returned"
+        search_params = {given: given, gender: gender}
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+      end
+
+      test 'Server returns expected results from Patient search by name + gender' do
+
+        metadata {
+          id '07'
+          link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
+          desc %(
+          )
+          versions :r4
+        }
+
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        family = @patient&.name&.first&.family
+        assert !family.nil?, "Patient family name not returned"
+        given = @patient&.name&.first&.given&.first
+        assert !given.nil?, "Patient given name not returned"
+        gender = @patient&.gender
+        assert !gender.nil?, "Patient gender not returned"
+        search_params = {name: family, gender: gender}
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
@@ -122,8 +236,8 @@ module Inferno
       test 'Server returns expected results from Patient search by name + birthdate' do
 
         metadata {
-          id '09'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          id '08'
+          link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
           )
@@ -131,35 +245,13 @@ module Inferno
         }
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        family = @patient.try(:name).try(:first).try(:family).try(:first)
+        family = @patient&.name&.first&.family
         assert !family.nil?, "Patient family name not returned"
-        given = @patient.try(:name).try(:first).try(:given).try(:first)
+        given = @patient&.name&.first&.given&.first
         assert !given.nil?, "Patient given name not returned"
-        birthdate = @patient.try(:birthDate)
+        birthdate = @patient&.birthDate
         assert !birthdate.nil?, "Patient birthDate not returned"
-        search_params = {family: family, given: given, birthdate: birthdate}
-        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-
-      end
-
-      test 'Server returns expected results from Patient search by gender + birthdate' do
-
-        metadata {
-          id '10'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
-            A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
-          )
-          versions :r4
-        }
-
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        gender = @patient.try(:gender)
-        assert !gender.nil?, "Patient gender not returned"
-        birthdate = @patient.try(:birthDate)
-        assert !birthdate.nil?, "Patient birthDate not returned"
-        search_params = {gender: gender, birthdate: birthdate}
+        search_params = {name: family, birthdate: birthdate}
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
 
@@ -168,7 +260,7 @@ module Inferno
       test 'Server returns expected results from Patient history resource' do
 
         metadata {
-          id '11'
+          id '09'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
           desc %(
@@ -199,7 +291,7 @@ module Inferno
       test 'All references can be resolved' do
 
         metadata {
-          id '13'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the Patient resource should be resolveable.

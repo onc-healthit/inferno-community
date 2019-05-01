@@ -4,7 +4,7 @@ module Inferno
 
       group 'US Core R4 Profile Conformance'
 
-      title 'Encounter'
+      title 'US Core R4 Encounter Profile Tests'
 
       description 'Verify that Encounter resources on the FHIR server follow US Core R4.'
 

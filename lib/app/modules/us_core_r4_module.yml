@@ -1,5 +1,5 @@
 name: us_core_r4
-title: US Core R4
+title: ONC Health IT Program (US Core R4)
 description : |
 
   The US Core R4 Test verifies conformance to the US Core R4 Implementation Guide.
@@ -17,7 +17,7 @@ test_sets:
     tests:
       - name: Discovery
         sequences:
-        - ArgonautConformanceSequence
+        - USCoreR4CapabilityStatementSequence
         - SMARTDiscoverySequence
         run_all: false
       - name: Authorization and Authentication
@@ -31,3 +31,16 @@ test_sets:
           - USCoreR4PatientSequence
           - USCoreR4AllergyIntoleranceSequence
           - USCoreR4EncounterSequence
+          - USCoreR4CarePlanSequence
+          - USCoreR4CareTeamSequence
+          - USCoreR4ConditionSequence
+          - USCoreR4DeviceSequence
+          - USCoreR4DiagnosticReportSequence
+          - USCoreR4ObservationSequence
+          - USCoreR4GoalSequence
+          - USCoreR4ImmunizationSequence
+          - USCoreR4MedicationStatementSequence
+          - USCoreR4MedicationOrderSequence
+          - USCoreR4ProcedureSequence
+          - USCoreR4SmokingStatusSequence
+          - USCoreR4VitalSignsSequence

@@ -114,7 +114,7 @@ module Inferno
         @sequence_result.input_params = input_parameters.to_json
 
         output_results = {}
-        if !@@defines[sequence_name].nil? then 
+        if !@@defines[sequence_name].nil? then
           @@defines[sequence_name].each do |output|
             if @instance.respond_to? output then
               output_value = @instance.send(output).to_s
@@ -190,7 +190,7 @@ module Inferno
           end
         end
 
-        if !@@defines[sequence_name].nil? then 
+        if !@@defines[sequence_name].nil? then
           @@defines[sequence_name].each do |output|
             if @instance.respond_to? output then
               output_value = @instance.send(output).to_s
@@ -594,7 +594,7 @@ module Inferno
         if klass == versioned_resource_class('Patient') then
           assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
           assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
-        end 
+        end
 
         entries.each do |entry|
 
