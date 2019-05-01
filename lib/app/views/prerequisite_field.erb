@@ -1,27 +1,43 @@
 <%# FIXME: This is ugly, but it works for now %>
 <% prerequisite_sequences = "<ul><li>" + instance.module.variable_defined_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</li></ul>" %>
+<%if !instance.input_booleans[prerequisite] then %>
+  <div class="form-group"
+      data-requiredby="<%=instance.module.variable_required_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
+      data-definedby="<%=instance.module.variable_defined_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
+      data-prerequisite="<%=prerequisite.to_s%>"
+      >
 
-<div class="form-group"
-     data-requiredby="<%=instance.module.variable_required_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
-     data-definedby="<%=instance.module.variable_defined_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
-     data-prerequisite="<%=prerequisite.to_s%>"
-     >
+      <label for="<%=prerequisite.to_s%>"><%=label%>
+        <% unless instance.module.variable_defined_by(prerequisite).empty? || value %>
+          <span class="oi oi-warning prerequisite-tooltip"
+                data-toggle='tooltip'
+                data-html='true'
+                title='You can enter this manually or populate it by running: <%=prerequisite_sequences%>'></span>
+        <% end %>
+      </label>
+      <input type="text"
+            class="form-control"
+            name="<%=prerequisite.to_s%>"
+            id="<%=prerequisite.to_s%>"
+            placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
+            value="<%=value%>"
+            <%if defined?(readonly) && readonly %>readonly<%end%>
+            <%if defined?(required) && required %>required<%end%>
+            />
+  </div>
+<%else%>
+  <div class="form-group"
+    data-requiredby="<%= instance.module.variable_required_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
+    data-prerequisite="<%=prerequisite.to_s%>"
+    >
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
+      <label class="form-check-label" for="confidential_client_off_active">Public Client</label>
+    </div>
+    <div class="form-check form-check-inline" data-requiredby>
+      <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
+      <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
+    </div>
 
-    <label for="<%=prerequisite.to_s%>"><%=label%>
-      <% unless instance.module.variable_defined_by(prerequisite).empty? || value %>
-        <span class="oi oi-warning prerequisite-tooltip"
-              data-toggle='tooltip'
-              data-html='true'
-              title='You can enter this manually or populate it by running: <%=prerequisite_sequences%>'></span>
-      <% end %>
-    </label>
-    <input type="text"
-          class="form-control"
-          name="<%=prerequisite.to_s%>"
-          id="<%=prerequisite.to_s%>"
-          placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
-          value="<%=value%>"
-          <%if defined?(readonly) && readonly %>readonly<%end%>
-          <%if defined?(required) && required %>required<%end%>
-          />
-</div>
+  </div>
+<%end%>

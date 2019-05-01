@@ -5,6 +5,7 @@ module Inferno
   module Models
     class TestingInstance
       include DataMapper::Resource
+
       property :id, String, key: true, default: proc { Inferno::SecureRandomBase62.generate(64) }
       property :url, String
       property :name, String
@@ -12,37 +13,59 @@ module Inferno
       property :client_id, String
       property :client_secret, String
       property :base_url, String
-
+      
       property :client_name, String, default: 'Inferno'
       property :scopes, String
       property :launch_type, String
       property :state, String
       property :selected_module, String
-
+      
       property :oauth_authorize_endpoint, String
       property :oauth_token_endpoint, String
       property :oauth_register_endpoint, String
-
+      
       property :client_endpoint_key, String, default: proc { Inferno::SecureRandomBase62.generate(32) }
-
+      
       property :token, String
       property :id_token, String
       property :refresh_token, String
       property :created_at, DateTime, default: proc { DateTime.now }
-
+      
       property :standalone_launch_script, String
       property :ehr_launch_script, String
       property :manual_registration_script, String
-
+      
       property :initiate_login_uri, String
       property :redirect_uris, String
-
+      
       property :dynamic_registration_token, String
-
+      
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references
 
+      @@input_labels = {}
+      @@input_read_only = {}
+      @@input_booleans = {}
+
+      def input_labels
+        @@input_labels
+      end
+      
+      def input_read_only
+        @@input_read_only
+      end
+
+      def input_booleans
+        @@input_booleans
+      end
+
+      def self.add_property_input(name, input_label, read_only=false, is_bool=false)
+        @@input_labels[name] = input_label
+        @@input_read_only[name] = read_only
+        @@input_booleans[name] = is_bool
+      end
+      
       def latest_results
         self.sequence_results.reduce({}) do |hash, result|
           if hash[result.name].nil? || hash[result.name].created_at < result.created_at

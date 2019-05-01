@@ -267,104 +267,14 @@
         </button>
       </div>
       <div class="prerequisites-forms" style="display:none">
-
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
-              instance: instance,
-              label: 'OAuth 2.0 Dynamic Registration Endpoint',
-              value: instance.oauth_register_endpoint}); %>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
-              instance: instance,
-              label: 'OAuth 2.0 Authorize Endpoint',
-              value: instance.oauth_authorize_endpoint}); %>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
-              instance: instance,
-              label: 'OAuth 2.0 Token Endpoint',
-              value: instance.oauth_token_endpoint}); %>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
-              instance: instance,
-              label: 'Client ID',
-              value: instance.client_id}); %>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
-              instance: instance,
-              label: 'OAuth 2.0 Dynamic Registration Bearer Token (optional)',
-              value: instance.dynamic_registration_token}); %>
-
-        <%# SPECIAL CASE: CLIENT SECRET %>
-        <div class="form-group"
-          data-requiredby="<%= test_set.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
-          data-prerequisite="confidential_client"
-          id="is_confidential"
-          >
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
-            <label class="form-check-label" for="confidential_client_off_active">Public Client</label>
-          </div>
-          <div class="form-check form-check-inline" data-requiredby>
-            <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
-            <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
-          </div>
-
-        </div>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
-              label: 'Client Secret',
-              instance: instance,
-              value: instance.client_secret}); %>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
-              label: 'OAuth Client Name',
-              instance: instance,
-              value: instance.client_name}); %>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
-              label: 'Scopes',
-              instance: instance,
-              value: instance.scopes || default_scopes,
-              required: true,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :token_endpoint_auth_method,
-              label: 'Token Endpoint Authorization Method',
-              instance: instance,
-              value: 'none',
-              readonly: true
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :grant_types,
-              label: 'Grant Type',
-              instance: instance,
-              value: 'authorization_code',
-              readonly: true
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :token,
-              label: 'Bearer Token',
-              instance: instance,
-              value: instance.token,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
-              label: 'Patient ID',
-              instance: instance,
-              value: instance.patient_id,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
-              label: 'OAuth 2.0 ID Token',
-              instance: instance,
-              value: instance.id_token,
-              })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :refresh_token,
-              label: 'Refresh Token',
-              instance: instance,
-              value: instance.refresh_token,
-              })%>
+        <% instance.input_labels.each do |name, label| %>
+          <% if !instance.input_read_only[name] then %>
+            <%= erb(:prerequisite_field,{},{prerequisite: name.to_sym,
+                instance: instance,
+                label: label,
+                value: instance.send(name)}); %>
+          <%end %>
+        <% end %>
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
@@ -385,18 +295,13 @@
             <%end %>
           <% end %>
           <div class="show-uris" style="display:none">
-            <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+            <% instance.input_read_only.each do |name, value| %>
+              <%= erb(:prerequisite_field,{},{prerequisite: name.to_sym,
                     instance: instance,
-                    label: 'Launch URI',
-                    value: instance.initiate_login_uri,
+                    label: instance.input_labels[name],
+                    value: instance.send(name),
                     readonly: true })%>
-          
-                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                      instance: instance,
-                      label: 'Redirect URI',
-                      value: instance.redirect_uris,
-                      readonly: true })%>
-          </div>
+            <% end %>
           <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
             
   
