@@ -1,5 +1,6 @@
 name: us_core_r4
-title: ONC Health IT Program (US Core R4)
+title: ONC Health IT Certification Program (FHIR R4)
+
 description : |
 
   The US Core R4 Test verifies conformance to the US Core R4 Implementation Guide.
@@ -19,14 +20,15 @@ test_sets:
         sequences:
         - USCoreR4CapabilityStatementSequence
         - SMARTDiscoverySequence
-        run_all: false
+        run_all: true
       - name: Authorization and Authentication
         sequences:
         - DynamicRegistrationSequence
         - ManualRegistrationSequence
         - StandaloneLaunchSequence
         - EHRLaunchSequence
-      - name: US Core R4 Testing
+      - name: USCDI Access (FHIR R4 / US Core R4 Profiles & Server Conformance)
+        run_all: true
         sequences:
           - USCoreR4PatientSequence
           - USCoreR4AllergyIntoleranceSequence

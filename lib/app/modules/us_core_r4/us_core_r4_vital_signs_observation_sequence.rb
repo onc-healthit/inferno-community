@@ -59,7 +59,7 @@ module Inferno
           desc %(
             A Vital Signs search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @client.set_no_auth
@@ -79,7 +79,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's vital signs that it supports.
           )
-          versions :dstu2
+          versions :r4
         }
 
         search_params = {patient: @instance.patient_id, category: "vital-signs"}
@@ -108,7 +108,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's vital signs queried by date range.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -131,7 +131,7 @@ module Inferno
           desc %(
             A server is capable of returning any of a patient's vital signs queried by one or more of the specified codes.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -154,7 +154,7 @@ module Inferno
           desc %(
             A server SHOULD be capable of returning any of a patient's vital signs queried by one or more of the codes listed below and date range.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -178,7 +178,7 @@ module Inferno
           desc %(
             Vital Signs resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
 
         test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:vital_signs])

@@ -72,14 +72,14 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         if resource_count > 0
           @resources_found = true
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @allergyintolerance = reply&.resource&.entry&.first&.resource
         validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
 

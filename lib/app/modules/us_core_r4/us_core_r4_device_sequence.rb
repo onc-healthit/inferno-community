@@ -55,7 +55,7 @@ module Inferno
           desc %(
             A Device search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @client.set_no_auth
@@ -75,7 +75,7 @@ module Inferno
           desc %(
             A server is capable of returning all Unique device identifier(s)(UDI) for a patient's implanted device(s).
           )
-          versions :dstu2
+          versions :r4
         }
 
 
@@ -106,7 +106,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Device, [:search, :read])
@@ -125,7 +125,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Device, [:history])
@@ -144,7 +144,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Device, [:vread])
@@ -162,7 +162,7 @@ module Inferno
           desc %(
             Device resources associated with Patient conform to Argonaut profiles
           )
-          versions :dstu2
+          versions :r4
         }
         test_resources_against_profile('Device')
       end
@@ -175,7 +175,7 @@ module Inferno
           desc %(
             All references in the Device resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Device, [:search, :read])

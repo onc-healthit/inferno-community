@@ -48,7 +48,7 @@ module Inferno
           desc %(
             A MedicationStatement search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         end
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -68,7 +68,7 @@ module Inferno
           desc %(
             A server is capable of returning a patient's medications.
           )
-          versions :dstu2
+          versions :r4
         end
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -99,7 +99,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         end
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -119,7 +119,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         end
 
         skip_if_not_supported(:MedicationStatement, [:history])
@@ -139,7 +139,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         end
 
         skip_if_not_supported(:MedicationStatement, [:vread])
@@ -158,7 +158,7 @@ module Inferno
           desc %(
             MedicationStatement resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -170,7 +170,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
-          versions :dstu2
+          versions :r4
           desc %(
             Medication resources must conform to the Argonaut profile
                )
@@ -197,7 +197,7 @@ module Inferno
           desc %(
             All references in the MedicationStatement resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -214,7 +214,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
-          versions :dstu2
+          versions :r4
           desc %(
             Medication resources must conform to the Argonaut profile
                )

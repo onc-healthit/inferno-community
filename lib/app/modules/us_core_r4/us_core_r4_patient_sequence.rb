@@ -53,18 +53,18 @@ module Inferno
           end
 
         when "family"
-          names = resource.try(:name)
+          names = resource&.name
           assert !names.nil? && names.length > 0, "No names found in patient resource"
           assert names.any?{|name| name.family.include?(value)}, "No family names in resource matched family name search parameter (#{value})."
         when "given"
-          names = resource.try(:name)
+          names = resource&.name
           assert !names.nil? && names.length > 0, "No names found in patient resource"
           assert names.any?{|name| name.given.include?(value)}, "Given name on resource did not match given name search parameter (#{value})."
         when "birthdate"
-          birthdate = resource.try(:birthDate)
+          birthdate = resource&.birthDate
           assert !birthdate.nil? && birthdate == value, "Birthdate on resource did not match birthdate search parameter (#{value})."
         when "gender"
-          gender = resource.try(:gender)
+          gender = resource&.gender
           assert !gender.nil? && gender == value, "Gender on resource did not match gender search parameter (#{value})."
         end
       end
@@ -114,13 +114,30 @@ module Inferno
         assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
       end
 
+      test 'All references within patient can be resolved' do
+
+        metadata {
+          id '03'
+          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          desc %(
+            All references in the Patient resource should be resolveable.
+          )
+          versions :r4
+        }
+
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+
+        validate_reference_resolutions(@patient)
+
+      end
+
 
       # SEARCHING
 
       test 'Server returns expected results from Patient search by name' do
 
         metadata {
-          id '03'
+          id '04'
           link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: name.
@@ -140,7 +157,7 @@ module Inferno
       test 'Server returns expected results from Patient search by identifier' do
 
         metadata {
-          id '04'
+          id '05'
           link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.
@@ -170,7 +187,7 @@ module Inferno
       test 'Server returns expected results from Patient search by family + gender' do
 
         metadata {
-          id '05'
+          id '06'
           link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
           )
@@ -192,7 +209,7 @@ module Inferno
       test 'Server returns expected results from Patient search by given + gender' do
 
         metadata {
-          id '06'
+          id '07'
           link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
           )
@@ -214,7 +231,7 @@ module Inferno
       test 'Server returns expected results from Patient search by name + gender' do
 
         metadata {
-          id '07'
+          id '08'
           link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
           )
@@ -236,7 +253,7 @@ module Inferno
       test 'Server returns expected results from Patient search by name + birthdate' do
 
         metadata {
-          id '08'
+          id '09'
           link 'http://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.html'
           desc %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
@@ -260,7 +277,7 @@ module Inferno
       test 'Server returns expected results from Patient history resource' do
 
         metadata {
-          id '09'
+          id '10'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
           desc %(
@@ -275,7 +292,7 @@ module Inferno
       test 'Server returns expected results from Patient vread resource' do
 
         metadata {
-          id '12'
+          id '11'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
           desc %(
@@ -288,22 +305,6 @@ module Inferno
 
       end
 
-      test 'All references can be resolved' do
-
-        metadata {
-          id '10'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
-            All references in the Patient resource should be resolveable.
-          )
-          versions :r4
-        }
-
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
-
-        validate_reference_resolutions(@patient)
-
-      end
     end
   end
 end

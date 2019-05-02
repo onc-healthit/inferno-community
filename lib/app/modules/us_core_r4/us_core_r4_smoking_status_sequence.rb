@@ -53,7 +53,7 @@ module Inferno
           desc %(
             A Smoking Status search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @client.set_no_auth
@@ -76,7 +76,7 @@ module Inferno
           desc %(
             A server is capable of returning a patient's smoking status.
           )
-          versions :dstu2
+          versions :r4
         }
 
         search_params = {patient: @instance.patient_id, code: "72166-2"}
@@ -101,7 +101,7 @@ module Inferno
           desc %(
             Smoking Status resources associated with Patient conform to Argonaut profiles
           )
-          versions :dstu2
+          versions :r4
         }
         test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status])
         skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]), 'No Smoking Status Observations found.'

@@ -59,7 +59,7 @@ module Inferno
           desc %(
             An Observation Results search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @client.set_no_auth
@@ -79,7 +79,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory results queried by category.
           )
-          versions :dstu2
+          versions :r4
         }
 
         search_params = {patient: @instance.patient_id, category: "laboratory"}
@@ -108,7 +108,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory results queried by category code and date range.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -131,7 +131,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory results queried by category and code.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -155,7 +155,7 @@ module Inferno
           desc %(
             A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -180,7 +180,7 @@ module Inferno
           desc %(
             A Smoking Status search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -203,7 +203,7 @@ module Inferno
           desc %(
             A server is capable of returning a patient's smoking status.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -224,7 +224,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])
@@ -243,7 +243,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:history])
@@ -262,7 +262,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:vread])
@@ -280,7 +280,7 @@ module Inferno
           desc %(
             Observation Result resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
 
         test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results])
@@ -296,7 +296,7 @@ module Inferno
           desc %(
             All references in the Observation resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Observation, [:search, :read])

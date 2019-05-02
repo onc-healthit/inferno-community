@@ -50,7 +50,7 @@ module Inferno
           desc %(
             An MedicationStatement search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -72,7 +72,7 @@ module Inferno
           desc %(
             A server is capable of returning a patient's medications.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -103,7 +103,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
@@ -122,7 +122,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:history])
@@ -141,7 +141,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:vread])
@@ -159,7 +159,7 @@ module Inferno
           desc %(
             MedicationSatement resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
         test_resources_against_profile('MedicationStatement')
       end
@@ -172,7 +172,7 @@ module Inferno
           desc %(
             All references in the MedicationStatement resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])

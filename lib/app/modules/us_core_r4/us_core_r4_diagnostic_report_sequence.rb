@@ -61,7 +61,7 @@ module Inferno
           desc %(
             A DiagnosticReport search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @client.set_no_auth
@@ -81,7 +81,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory diagnostic reports queried by category.
           )
-          versions :dstu2
+          versions :r4
         }
 
 
@@ -112,7 +112,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory diagnostic reports queried by category code and date range.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
@@ -134,7 +134,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's laboratory diagnostic reports queried by category and code.
           )
-          versions :dstu2
+          versions :r4
         }
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -157,7 +157,7 @@ module Inferno
           desc %(
             A server SHOULD be capable of returning all of a patient's laboratory diagnostic reports queried by category and one or more codes and date range.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
@@ -182,7 +182,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
@@ -201,7 +201,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:DiagnosticReport, [:history])
@@ -220,7 +220,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:DiagnosticReport, [:vread])
@@ -238,7 +238,7 @@ module Inferno
           desc %(
             DiagnosticReport resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
         test_resources_against_profile('DiagnosticReport')
 
@@ -252,7 +252,7 @@ module Inferno
           desc %(
             All references in the DiagnosticReport resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])

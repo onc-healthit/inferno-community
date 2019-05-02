@@ -21,29 +21,22 @@ module Inferno
       end
 
       details %(
-        # Background
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Encounter Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-encounter.html)
+        Encounter profile requirements from [US Core R4 Server Capability Statement](http://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-r4-server.html#encounter).
 
-        # Test Methodology
+        Search requirements (as of 1 May 19):
 
-        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
-        It parses the #{title} and verifies that it contains:
+        | Conformance | Parameter         | Type             | Modifiers
+        |-------------|-------------------|------------------|----------------------
+        | SHALL       | patient           | reference        |
+        | SHALL       | patient + date    | reference + date | date modifiers: ge, le, gt, lt
 
-        * The status of the encounter
-        * A code representing the substance responsible for the encounter
-        * A reference to the patient to whom the encounter belongs
+        Note: Terminology validation currently disabled.
 
-        It collects the following information that is saved in the testing session for use by later tests:
-
-        * List of `#{title.gsub(/\s+/,"")}` resources
-
-        For more information on the #{title}, visit these links:
-
-        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/medicationorder.html)
-        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html)
-              )
+        TODO:
+        * Validating responses are between correct dates
+        * date modifiers
+      )
 
       @resources_found = false
 
@@ -112,9 +105,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         assert !@encounter.nil?, 'Expected valid Observation resource to be present'
-        date = @encounter.try(:period).try(:start)
+        date = @encounter&.period&.start
         assert !date.nil?, "Encounter period not returned"
-        search_params = {patient: @instance.patient_id, period: date}
+        search_params = {patient: @instance.patient_id, date: date}
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
 

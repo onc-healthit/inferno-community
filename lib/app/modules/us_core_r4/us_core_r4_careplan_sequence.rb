@@ -34,29 +34,24 @@ module Inferno
       end
 
       details %(
-        # Background
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html)
+        CarePlan profile requirements from [US Core R4 Server Capability Statement](http://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-r4-server.html#encounter).
 
-        # Test Methodology
+        Search requirements (as of 1 May 19):
 
-        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?category=assess-plan&patient={id}` using a `GET` request.
-        It parses the #{title} and verifies that it contains:
+        | Conformance | Parameter                          | Type                     | Modifiers                         |
+        |-------------|------------------------------------|--------------------------|-----------------------------------|
+        | SHALL       | patient + category                 | reference + token        |                                   |
+        | SHALL       | patient + category + date          | reference + token + date | date modifiers‘ge’,‘le’,’gt’,’lt’ |
+        | SHOULD      | patient + category + status        | reference + token        |                                   |
+        | SHOULD      | patient + category + date + status | reference + token + date | date modifiers‘ge’,‘le’,’gt’,’lt’ |
 
-        * A narrative of the patient assessment and treatment plan
-        * A code representing the status of the care plan
-        * A reference to the patient to whom the #{title} belongs
-        * A code representing the category of the "assess plan"
+        Note: Terminology validation currently disabled.
 
-        It collects the following information that is saved in the testing session for use by later tests:
-
-        * List of `#{title.gsub(/\s+/,"")}` resources
-
-        For more information on the #{title}, visit these links:
-
-        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
-        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+        TODO:
+        * Validating responses are between correct dates
+        * date modifiers
+     
               )
 
       @resources_found = false
@@ -69,7 +64,7 @@ module Inferno
           desc %(
             A CarePlan search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
 
@@ -90,7 +85,8 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
           )
-          versions :dstu2
+          optional
+          versions :r4
         }
 
 
@@ -122,7 +118,7 @@ module Inferno
           desc %(
             A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
@@ -147,7 +143,7 @@ module Inferno
           desc %(
             A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
@@ -168,7 +164,7 @@ module Inferno
           desc %(
             A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
@@ -191,7 +187,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:search, :read])
@@ -210,7 +206,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:history])
@@ -229,7 +225,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:vread])
@@ -247,11 +243,9 @@ module Inferno
           desc %(
             CarePlan resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
-        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]), 'No CarePlans found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]), "CarePlans failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]]}"
+        test_resources_against_profile('CarePlan')
       end
 
       test 'All references can be resolved' do
@@ -262,7 +256,7 @@ module Inferno
           desc %(
             All references in the CarePlan resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:CarePlan, [:search, :read])

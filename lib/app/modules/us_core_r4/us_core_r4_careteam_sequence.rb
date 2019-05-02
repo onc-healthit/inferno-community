@@ -11,7 +11,7 @@ module Inferno
       test_id_prefix 'R4CT'
 
       requires :token, :patient_id
-      conformance_supports :CarePlan
+      conformance_supports :CareTeam
 
       def validate_resource_item (resource, property, value)
         case property
@@ -29,35 +29,17 @@ module Inferno
       end
 
       details %(
-        # Background
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
 
-        # Test Methodology
+        | Conformance | Parameter        | Type              |
+        |-------------|------------------|-------------------|
+        | SHALL       | patient + status | reference + token |
 
-        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?category=careteam&patient={id}` using a `GET` request.
-        It parses the #{title} and verifies that it contains:
-
-        * A code representing the status of the #{title}
-        * A reference to the patient to whom the #{title} belongs
-        * A code representing the category of the #{title}
-        * A participant role for each member of the #{title}
-        * Names for certain #{title} members
-
-        It collects the following information that is saved in the testing session for use by later tests:
-
-        * List of `#{title.gsub(/\s+/,"")}` resources
-
-        For more information on the #{title}, visit these links:
-
-        * [FHIR DSTU2 Care Plan](https://www.hl7.org/fhir/DSTU2/careplan.html)
-        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
-              )
+            )
 
       @resources_found = false
 
-      test 'Server returns expected CareTeam results from CarePlan search by patient + category' do
+      test 'Server returns expected CareTeam results from CareTeam search by patient + status' do
 
         metadata {
           id '01'
@@ -65,13 +47,13 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
           )
-          versions :dstu2
+          versions :r4
         }
 
-        search_params = {patient: @instance.patient_id, category: "careteam"}
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        search_params = {patient: @instance.patient_id, status: "active"}
+        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
         # save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
       end
@@ -84,11 +66,9 @@ module Inferno
           desc %(
             CareTeam resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
-        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::ARGONAUT_URIS[:care_team])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]), 'No CareTeams found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]]}"
+        test_resources_against_profile('CareTeam')
       end
 
       test 'All references can be resolved' do

@@ -55,7 +55,7 @@ module Inferno
           desc %(
             An MedicationOrder search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @resources_found = false
@@ -76,7 +76,7 @@ module Inferno
           desc %(
             A server is capable of returning a patient's medications.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
@@ -107,7 +107,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
@@ -129,7 +129,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationOrder, [:history])
@@ -148,7 +148,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationOrder, [:vread])
@@ -166,7 +166,7 @@ module Inferno
           desc %(
             MedicationOrder resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
         test_resources_against_profile('MedicationOrder')
       end
@@ -205,7 +205,7 @@ module Inferno
           desc %(
             All references in the MedicationOrder resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])

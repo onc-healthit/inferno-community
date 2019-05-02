@@ -54,7 +54,7 @@ module Inferno
           desc %(
             A Goal search does not work without proper authorization.
           )
-          versions :dstu2
+          versions :r4
         }
 
         @client.set_no_auth
@@ -74,7 +74,7 @@ module Inferno
           desc %(
             A server is capable of returning all of a patient's goals.
           )
-          versions :dstu2
+          versions :r4
         }
 
         search_params = {patient: @instance.patient_id}
@@ -103,7 +103,7 @@ module Inferno
           desc %(
             A server is capable of returning all of all of a patient's goals over a specified time period.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Goal, [:search, :read])
@@ -126,7 +126,7 @@ module Inferno
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Goal, [:search, :read])
@@ -145,7 +145,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Goal, [:history])
@@ -164,7 +164,7 @@ module Inferno
           desc %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Goal, [:vread])
@@ -182,7 +182,7 @@ module Inferno
           desc %(
             Goal resources associated with Patient conform to Argonaut profiles.
           )
-          versions :dstu2
+          versions :r4
         }
         test_resources_against_profile('Goal')
       end
@@ -195,7 +195,7 @@ module Inferno
           desc %(
             All references in the Goal resource should be resolveable.
           )
-          versions :dstu2
+          versions :r4
         }
 
         skip_if_not_supported(:Goal, [:search, :read])
