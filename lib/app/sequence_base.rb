@@ -433,6 +433,7 @@ module Inferno
           begin
 
             skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version.to_sym), 'This test does not run with this FHIR version')
+            Inferno.logger.info "Starting Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
             instance_eval &block
 
           rescue AssertionException, ClientException => e
@@ -463,10 +464,13 @@ module Inferno
             result.details = e.details
 
           rescue => e
+            Inferno.logger.error "Fatal Error: #{e.message}"
+            Inferno.logger.error e.backtrace
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end
           result.test_warnings = @test_warnings.map{ |w| Models::TestWarning.new(message: w)} unless @test_warnings.empty?
+          Inferno.logger.info "Finished Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{result.result}]"
           result
         end
 
@@ -682,6 +686,7 @@ module Inferno
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if specified_profile
+            warn { assert false, "No #{specified_profile} found for this Resource" }
             next unless p.url == specified_profile
           end
           if p
@@ -696,6 +701,7 @@ module Inferno
             end
             all_errors.concat(errors)
           else
+            warn { assert false, "No profiles found for this Resource" }
             errors = resource.validate
             all_errors.concat(errors.values)
           end
