@@ -114,7 +114,7 @@ module Inferno
         @sequence_result.input_params = input_parameters.to_json
 
         output_results = {}
-        if !@@defines[sequence_name].nil? then 
+        if !@@defines[sequence_name].nil? then
           @@defines[sequence_name].each do |output|
             if @instance.respond_to? output then
               output_value = @instance.send(output).to_s
@@ -190,7 +190,7 @@ module Inferno
           end
         end
 
-        if !@@defines[sequence_name].nil? then 
+        if !@@defines[sequence_name].nil? then
           @@defines[sequence_name].each do |output|
             if @instance.respond_to? output then
               output_value = @instance.send(output).to_s
@@ -433,6 +433,7 @@ module Inferno
           begin
 
             skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version.to_sym), 'This test does not run with this FHIR version')
+            Inferno.logger.info "Starting Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
             instance_eval &block
 
           rescue AssertionException, ClientException => e
@@ -463,10 +464,13 @@ module Inferno
             result.details = e.details
 
           rescue => e
+            Inferno.logger.error "Fatal Error: #{e.message}"
+            Inferno.logger.error e.backtrace
             result.result = STATUS[:error]
             result.message = "Fatal Error: #{e.message}"
           end
           result.test_warnings = @test_warnings.map{ |w| Models::TestWarning.new(message: w)} unless @test_warnings.empty?
+          Inferno.logger.info "Finished Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{result.result}]"
           result
         end
 
@@ -594,7 +598,7 @@ module Inferno
         if klass == versioned_resource_class('Patient') then
           assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
           assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
-        end 
+        end
 
         entries.each do |entry|
 
@@ -682,6 +686,7 @@ module Inferno
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if specified_profile
+            warn { assert false, "No #{specified_profile} found for this Resource" }
             next unless p.url == specified_profile
           end
           if p
@@ -696,7 +701,8 @@ module Inferno
             end
             all_errors.concat(errors)
           else
-            errors = entry.resource.validate
+            warn { assert false, "No profiles found for this Resource" }
+            errors = resource.validate
             all_errors.concat(errors.values)
           end
         end
@@ -729,6 +735,16 @@ module Inferno
         end
 
         assert(problems.empty?, problems.join("<br/>\n"))
+      end
+
+      def versioned_conformance_class
+        if @instance.fhir_version == 'dstu2'
+          FHIR::DSTU2::Conformance
+        elsif @instance.fhir_version == 'stu3'
+          FHIR::STU3::CapabilityStatement
+        else
+          FHIR::CapabilityStatement
+        end
       end
 
       def check_resource_against_profile(resource, resource_type, specified_profile=nil)

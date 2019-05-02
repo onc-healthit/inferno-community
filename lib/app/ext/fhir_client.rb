@@ -1,6 +1,6 @@
 module FHIR
 
-  VERSIONS = [:dstu2, :stu3]
+  VERSIONS = [:dstu2, :stu3, :r4]
 
   class Client
 

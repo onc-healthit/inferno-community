@@ -14,10 +14,10 @@ module Inferno
     validation_packs = File.join('resources', '*', '*.json')
 
     DEFINITIONS = {}
-    RESOURCES = {dstu2: {}, stu3: {}}
+    RESOURCES = {dstu2: {}, stu3: {}, r4: {}}
     VALUESETS = {}
 
-    VERSION_MAP = {"1.0.2" => :dstu2, "3.0.1" => :stu3}
+    VERSION_MAP = {"1.0.2" => :dstu2, "3.0.1" => :stu3, "4.0.0" => :r4}
 
     Dir.glob(validation_packs).each do |definition|
       json = File.read(definition)
@@ -55,8 +55,10 @@ module Inferno
     def self.guess_profile(resource, version)
       if version == :dstu2
         self.guess_dstu2_profile(resource)
-      else
+      elsif version == :stu3
         self.guess_stu3_profile(resource)
+      elsif version == :r4
+        self.guess_r4_profile(resource)
       end
     end
 
@@ -124,6 +126,22 @@ module Inferno
             end
           end
           # Otherwise, guess the first profile that matches on resource type
+          return candidates.first
+        end
+      end
+      nil
+    end
+
+    def self.guess_r4_profile(resource)
+      if resource
+        # if the profile is given, we don't need to guess
+        if resource.meta && resource.meta.profile && !resource.meta.profile.empty?
+          resource.meta.profile.each do |uri|
+            return DEFINITIONS[uri] if DEFINITIONS[uri]
+          end
+        end
+        candidates = RESOURCES[:r4][resource.resourceType]
+        if candidates && !candidates.empty?
           return candidates.first
         end
       end

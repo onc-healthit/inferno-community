@@ -20,13 +20,21 @@ module Inferno
 
       if settings.logging_enabled
         Inferno.logger = if settings.log_to_file
-                           ::Logger.new('logs.log', level: settings.log_level.to_sym)
+                           ::Logger.new('logs.log', level: settings.log_level.to_sym, progname: 'Inferno')
                          else
-                           ::Logger.new(STDOUT, level: settings.log_level.to_sym)
+                           l = ::Logger.new(STDOUT, level: settings.log_level.to_sym, progname: 'Inferno')
+                           l.formatter = proc do |severity, datetime, progname, msg|
+                             "#{severity} | #{progname} | #{msg}\n"
+                           end
+                           l
                          end
 
         # FIXME: Really don't want a direct dependency to DataMapper here
         DataMapper.logger = Inferno.logger if Inferno::ENVIRONMENT == :development
+
+        FHIR.logger = Inferno.logger
+
+        Inferno.logger.info "Environment: #{Inferno::ENVIRONMENT}"
 
         helpers Sinatra::CustomLogger
 

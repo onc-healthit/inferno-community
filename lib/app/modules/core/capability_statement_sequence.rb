@@ -107,16 +107,6 @@ module Inferno
 
         assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
       end
-
-
-      def versioned_conformance_class
-        if @instance.fhir_version == 'dstu2'
-          FHIR::DSTU2::Conformance
-        elsif @instance.fhir_version == 'stu3'
-          FHIR::CapabilityStatement
-        end
-      end
-
     end
   end
 end
