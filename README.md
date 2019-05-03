@@ -82,7 +82,7 @@ bundle exec rake test
 ## Inspecting and Exporting Tests
 
 Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
-viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/app/sequences).
+viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/app/modules).
 
 Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
