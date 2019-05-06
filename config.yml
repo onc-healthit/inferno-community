@@ -46,3 +46,4 @@ modules:
   - onc_r4
   - smart
   - argonaut
+  - bdt

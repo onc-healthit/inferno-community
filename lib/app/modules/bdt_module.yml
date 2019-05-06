@@ -1,0 +1,24 @@
+name: bdt
+title: Bulk Data Testing (under development)
+description: BDT Integration
+fhir_version: r4
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: Authorization
+        run_all: true
+        sequences:
+          - BDTAuthSystemLevelSequence
+          - BDTAuthPatientLevelSequence
+          - BDTAuthGroupLevelSequence
+          - BDTAuthTokenEndpointSequence
+      - name: Bulk Transfer
+        run_all: true
+        sequences:
+          - BDTDownloadSequence
+          - BDTPatientSequence
+          - BDTSystemSequence
+          - BDTGroupSequence
+          - BDTStatusSequence
