@@ -31,7 +31,7 @@ module Inferno
         every FHIR API.
 
         Note that the name of this resource changed to 'Capability Statement' in STU3 to better describe the intent of this resource.
-        This test refers to it as the Capability Statement as that is what it was called in DSTU2.
+        This test refers to it as the Conformance Statement as that is what it was called in DSTU2.
 
         # Test Methodology
 
