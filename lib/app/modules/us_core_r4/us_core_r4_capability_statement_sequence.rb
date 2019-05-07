@@ -51,9 +51,9 @@ module Inferno
 
         For more information of the Conformance Statement, visit these links:
 
-        * Conformance
-        * Argonaut Conformance Requirements
-        * SMART on FHIR Conformance
+        * [Conformance](http://hl7.org/fhir/conformance-module.html)
+        * [Argonaut Conformance Requirements](https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html)
+        * [SMART on FHIR Conformance](http://hl7.org/fhir/smart-app-launch/conformance/index.html)
       )
 
 
