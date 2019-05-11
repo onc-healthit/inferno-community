@@ -78,6 +78,8 @@ module Inferno
 
         sequence = Inferno::Sequence::SequenceBase.descendants.find {|seq| seq.sequence_name == sequence_name}
 
+        raise "No such sequence: #{sequence_name}" if sequence.nil?
+
         new_test_case = TestCase.new(current_name, self, sequence, parameters)
 
         @test_cases << new_test_case

@@ -2,13 +2,13 @@ require_relative '../core/capability_statement_sequence'
 
 module Inferno
   module Sequence
-    class ArgonautConformanceSequence < CapabilityStatementSequence
+    class USCoreR4CapabilityStatementSequence < CapabilityStatementSequence
 
       extends_sequence CapabilityStatementSequence
 
       title 'Conformance Statement'
 
-      test_id_prefix 'C'
+      test_id_prefix 'R4C'
 
       requires :url
       defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
@@ -31,7 +31,7 @@ module Inferno
         every FHIR API.
 
         Note that the name of this resource changed to 'Capability Statement' in STU3 to better describe the intent of this resource.
-        This test refers to it as the Capability Statement as that is what it was called in DSTU2.
+        This test refers to it as the Conformance Statement as that is what it was called in DSTU2.
 
         # Test Methodology
 
@@ -51,8 +51,8 @@ module Inferno
 
         For more information of the Conformance Statement, visit these links:
 
-        * [Conformance](https://www.hl7.org/fhir/DSTU2/conformance.html)
-        * [Argonaut Conformance Requirements](https://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
+        * [Conformance](http://hl7.org/fhir/conformance-module.html)
+        * [Argonaut Conformance Requirements](https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html)
         * [SMART on FHIR Conformance](http://hl7.org/fhir/smart-app-launch/conformance/index.html)
       )
 

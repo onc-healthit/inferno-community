@@ -84,7 +84,14 @@ module Inferno
             test_group = test_case.test_group
 
             client = FHIR::Client.new(instance.url)
-            client.use_dstu2 if instance.fhir_version == 'dstu2'
+            case instance.fhir_version
+            when 'stu3'
+              client.use_stu3
+            when 'dstu2'
+              client.use_dstu2
+            else
+              client.use_r4
+            end
             client.default_json
             sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests, sequence_result)
 
@@ -149,6 +156,7 @@ module Inferno
 
                 out << js_show_test_modal
 
+                instance.reload # ensure that we have all the latest data
                 sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
                 count = 0
                 sequence_result = sequence.start do |result|
@@ -355,7 +363,14 @@ module Inferno
           instance.save!
 
           client = FHIR::Client.new(instance.url)
-          client.use_dstu2 if instance.fhir_version == 'dstu2'
+          case instance.fhir_version
+          when 'stu3'
+            client.use_stu3
+          when 'dstu2'
+            client.use_dstu2
+          else
+            client.use_r4
+          end
           client.default_json
           submitted_test_cases = params[:test_case].split(',')
           test_group = nil
@@ -392,6 +407,7 @@ module Inferno
 
               out << js_show_test_modal
 
+              instance.reload # ensure that we have all the latest data
               sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
               count = 0
               sequence_result = sequence.start(test_set.id, test_case.id) do |result|

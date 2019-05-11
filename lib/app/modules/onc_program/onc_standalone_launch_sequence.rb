@@ -19,6 +19,7 @@ module Inferno
       @@resourceTypes = [
       'Patient',
       'AllergyIntolerance',
+      'Encounter',
       'CarePlan',
       'Condition',
       'Device',

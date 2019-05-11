@@ -162,6 +162,7 @@ module Inferno
                      'Device',
                      'DiagnosticReport',
                      'DocumentReference',
+                     'Encounter',
                      'ExplanationOfBenefit',
                      'Goal',
                      'Immunization',
