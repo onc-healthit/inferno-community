@@ -88,6 +88,17 @@ body {
   padding-right: 0 !important;
 }
 
+#header-module-name{
+  height: 0;
+  position: relative;
+  top: -55px;
+  z-index: 1001;
+  text-align: right;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #444;
+}
+
 .server-actions {
   text-align: right;
 }
@@ -885,7 +896,7 @@ body {
 
 .guided .group-steps {
   float: right;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   color: #666;
   padding-top: .25rem;
 }

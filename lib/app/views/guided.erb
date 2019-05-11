@@ -1,3 +1,9 @@
+<div class="container" role='main'>
+  <div id="header-module-name">
+  <%=instance.module.title%>
+  </div>
+</div>
+
 <div class="container-fluid server-info sticky-top" role='main'>
   <div class="row">
     <div class="col">
@@ -12,19 +18,10 @@
         <div class="col-4 server-actions">
 
 
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
-            <span class="oi oi-list" aria-hidden="true"></span>
-            <span id="client-status-button-text">Client State</span>
-          </button>
-
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
-            <span class="oi oi-link-intact" aria-hidden="true"></span>
-            <span id="save-test-button-text">Save</span>
-          </button>
-
           <% if instance.module.test_sets.length > 1 %>
             <div class="dropdown">
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="oi oi-eye" aria-hidden="true"></span>
                 <%= test_set.id.to_s.gsub(/_/, ' ').titlecase %>
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -36,6 +33,16 @@
               </div>
             </div>
           <% end %>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+            <span class="oi oi-list" aria-hidden="true"></span>
+            <span id="client-status-button-text">State</span>
+          </button>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+            <span class="oi oi-link-intact" aria-hidden="true"></span>
+            <span id="save-test-button-text">Save</span>
+          </button>
 
           <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#helpModal">
             <strong style='line-height:1em;font-size:1.3em'>?</strong>
