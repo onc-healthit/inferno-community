@@ -34,6 +34,7 @@ def extract_metadata(resources)
       new_sequence = {
         name: supportedProfile.split('StructureDefinition/')[1].gsub('-','_'),
         resource: resource['type'],
+        profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supportedProfile.split('StructureDefinition/')[1]}.json", #links in capability statement currently incorrect
         interactions: [],
         search_params: [],
         search_combos: [],
@@ -142,20 +143,18 @@ def generate_sequence(sequence)
 end
 
 def get_search_param_json(resource, param)
-  uri = "https://build.fhir.org/ig/HL7/US-Core-R4/SearchParameter-us-core-#{resource}-#{param}.json"
-  get_json_from_uri(uri)
+  begin
+    uri = "https://build.fhir.org/ig/HL7/US-Core-R4/SearchParameter-us-core-#{resource}-#{param}.json"
+    get_json_from_uri(uri)
+  rescue
+  end
 end
 
-def get_structure_def_json(resource)
-  uri = "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-#{resource}.json"
-  get_json_from_uri(uri)
-end
-
-def get_variable_type_from_structure_def(resource, var)
-  resource_struct_def = get_structure_def_json(resource.downcase)
-  element_def = resource_struct_def['snapshot']['element'].select{|el| el['id'] == "#{resource}.#{var}"}.first
-  print "#{resource}.#{var}"
-  return element_def['type'].first['code']
+def get_variable_type_from_structure_def(resource, profile, var)
+  resource_struct_def = get_json_from_uri(profile)
+  element_def = resource_struct_def['snapshot']['element'].select{|el| el['id'] == "#{resource}.#{var}"}.first if !resource_struct_def.nil?
+  return element_def['type'].first['code'] if !element_def.nil?
+  return 'test'
 end
 
 def create_authorization_test(sequence)
@@ -223,7 +222,7 @@ def create_search_combo_test(sequence, search_combo)
     search_params << ("'#{param}': ") 
   end
   search_combo_test[:test_code] = %(
-        search_params = {#{search_params.join(', ')}} # FILL THIS IN
+        #{get_search_params(sequence[:resource], sequence[:profile], search_combo[:names])}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
   )
@@ -288,28 +287,32 @@ def create_references_resolved_test(sequence)
 end
 
 
-def get_search_params(resource, search_params)
- return "@instance.patient_id" if search_params == 'patient'
-
-  search_param_thing = []
+def get_search_params(resource, profile, search_combo)
+  search_param = []
   accessCode = ""
-  search_params.each do |param|
+  search_combo.each do |param|
+    if param == 'patient' then
+      accessCode += %(
+        patient_val = @instance.patient_id)
+        search_param << ("'#{param}': #{param.gsub('-','_')}_val") 
+      next
+    end
     search_param_struct = get_search_param_json(resource.downcase, param)
     path = search_param_struct['xpath']
     path_parts = path.split('/f:')
     element_name = path_parts[1] # assume this for now
-    type = get_variable_type_from_structure_def(resource, element_name)
-    accessCode = "#{param.gsub('-','_')}_val = @#{resource.downcase}.try(:#{element_name})"
+    type = get_variable_type_from_structure_def(resource, profile, element_name)
+    accessCode += %(
+        #{param.gsub('-','_')}_val = @#{resource.downcase}.try(:#{element_name}))
     if type == 'CodeableConcept' then
       accessCode += ".try(:coding).try(:first).try(:code)"
     end
-    search_param_thing << ("'#{param}': #{param.gsub('-','_')}_val") 
+    search_param << ("'#{param}': #{param.gsub('-','_')}_val") 
   end
 
 
-  return %(
-    #{accessCode}
-    search_params = {#{search_param_thing.join(', ')}}
+  return %(#{accessCode}
+        search_params = {#{search_param.join(', ')}}
   )
 end
 
