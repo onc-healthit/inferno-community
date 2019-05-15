@@ -14,12 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :<%=resource%>
 
-      def validate_resource_item (resource, property, value)
-        case property
-        when "patient"
-          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
-        end
-      end
+      <%=search_validator%>
 
       details %(
       )

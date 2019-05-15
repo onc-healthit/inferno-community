@@ -13,6 +13,7 @@ def run()
   resources = capability_statement_json['rest'][0]['resource']
   metadata = extract_metadata(resources)
   generate_tests(metadata)
+  generate_search_validators(metadata)
   metadata[:sequences].each do |sequence|
     generate_sequence(sequence)
   end
@@ -84,6 +85,12 @@ def extract_metadata(resources)
     end
   end
   data
+end
+
+def generate_search_validators(metadata)
+  metadata[:sequences].each do |sequence|
+    sequence[:search_validator] = create_search_validation(sequence[:resource], sequence[:profile], sequence[:search_params])
+  end
 end
 
 def generate_tests(metadata)
@@ -189,11 +196,6 @@ def create_search_test(sequence, search_param)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count > 0
-          @resources_found = true
-        end
-
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
@@ -202,6 +204,10 @@ def create_search_test(sequence, search_param)
   if search_test[:index] == 2 then
     # if first search - fix this check later
     search_test[:test_code] += %(
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count > 0
+          @resources_found = true
+        end
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
     )
@@ -230,8 +236,13 @@ def create_search_combo_test(sequence, search_combo)
   if search_combo_test[:index] == 2 then
     # if first search - fix this check later
     search_combo_test[:test_code] += %(
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count > 0
+          @resources_found = true
+        end
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
+
     )
   end
 
@@ -316,4 +327,46 @@ def get_search_params(resource, profile, search_combo)
   )
 end
 
+def create_search_validation(resource, profile, search_params)
+
+  search_validators = ""
+  search_params.each do |search_param|
+    begin
+      param = search_param[:name]
+      search_param_struct = get_search_param_json(resource.downcase, param)
+      path = search_param_struct['xpath']
+      path_parts = path.split('/f:')
+      element_name = path_parts[1] # assume this for now
+      type = get_variable_type_from_structure_def(resource, profile, element_name)
+      case type
+      when 'CodeableConcept'
+        search_validators += %(
+          when '#{param}'
+            codings = resource.try(:#{element_name}).try(:coding)
+            assert !codings.nil?, "#{param} on resource did not match #{param} requested"
+            assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "#{param} on resource did not match #{param} requested"
+        )
+      when 'Reference'
+        search_validators += %(
+          when '#{param}'
+            assert (resource.#{param} && resource.#{param}.reference.include?(value)), "#{param} on resource does not match #{param} requested"
+        ) 
+      end
+    rescue
+      print "#{resource} - #{param}" # gets here if param is '_id' because it fails to get the search param definition
+    end
+
+
+  end
+
+  return %(
+      def validate_resource_item (resource, property, value)
+        case property
+        #{search_validators}
+        end
+      end
+  )
+end
+
 run()
+# print create_search_validation('AllergyIntolerance', 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance.json', [{name:'patient'}, {name:'clinical-status'}])
