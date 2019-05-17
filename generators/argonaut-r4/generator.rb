@@ -2,13 +2,20 @@ require 'erb'
 require 'pry'
 require 'fileutils'
 require 'net/http'
+require 'fhir_models'
 
-GEN_PATH = './generators/argonaut-r4'
 OUT_PATH = '../../lib/app/modules'
+RESOURCE_PATH = '../../resources/us_core_r4/'
 
 search_parameter_combination_url = "http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination"
 
 def run()
+
+  redownload_files = (ARGV&.first == '-d')
+  if redownload_files
+    FileUtils.rm Dir.glob("#{RESOURCE_PATH}*")
+  end
+
   capability_statement_json = get_json_from_uri('https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.json')
   resources = capability_statement_json['rest'][0]['resource']
   metadata = extract_metadata(resources)
@@ -17,11 +24,19 @@ def run()
   metadata[:sequences].each do |sequence|
     generate_sequence(sequence)
   end
+  generate_module(metadata)
 end
 
 def get_json_from_uri(uri)
+  filename = RESOURCE_PATH + uri.split('/').last
+  if !File.exists?(filename)
+    puts "Downloading #{uri}\n"
     json_result = Net::HTTP.get(URI(uri))
     JSON.parse(json_result)
+    File.write(filename, json_result)
+  end
+
+  JSON.parse(File.read(filename))
 end 
 
 def extract_metadata(resources)
@@ -34,6 +49,7 @@ def extract_metadata(resources)
     resource['supportedProfile'].each do |supportedProfile|
       new_sequence = {
         name: supportedProfile.split('StructureDefinition/')[1].gsub('-','_'),
+        classname: supportedProfile.split('StructureDefinition/')[1].split('-').map(&:capitalize).join.gsub('UsCore','UsCoreR4') + 'Sequence',
         resource: resource['type'],
         profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supportedProfile.split('StructureDefinition/')[1]}.json", #links in capability statement currently incorrect
         interactions: [],
@@ -95,6 +111,7 @@ end
 
 def generate_tests(metadata)
   metadata[:sequences].each do |sequence|
+    puts "Generating test #{sequence[:name]}"
     # authorization test
     create_authorization_test(sequence)
 
@@ -139,12 +156,13 @@ def generate_tests(metadata)
 end
 
 def generate_sequence(sequence)
-  file_name = OUT_PATH + '/r4_test/'+ sequence[:name].downcase + '_sequence.rb'
+  puts "Generating #{sequence[:name]}\n"
+  file_name = OUT_PATH + '/us_core_r4/'+ sequence[:name].downcase + '_sequence.rb'
 
   template = ERB.new(File.read('./templates/sequence.rb.erb'))
   output =   template.result_with_hash(sequence)
-  unless File.directory?(OUT_PATH + '/r4_test')
-    FileUtils.mkdir_p(OUT_PATH + '/r4_test')
+  unless File.directory?(OUT_PATH + '/us_core_r4')
+    FileUtils.mkdir_p(OUT_PATH + '/us_core_r4')
   end
   File.write(file_name, output)
 end
@@ -329,6 +347,7 @@ end
 
 def create_search_validation(resource, profile, search_params)
 
+  
   search_validators = ""
   search_params.each do |search_param|
     begin
@@ -338,6 +357,8 @@ def create_search_validation(resource, profile, search_params)
       path_parts = path.split('/f:')
       element_name = path_parts[1] # assume this for now
       type = get_variable_type_from_structure_def(resource, profile, element_name)
+      resource_metadata = FHIR.const_get(resource).const_get('METADATA')
+      binding.pry if resource == 'Medication'
       case type
       when 'CodeableConcept'
         search_validators += %(
@@ -351,22 +372,73 @@ def create_search_validation(resource, profile, search_params)
           when '#{param}'
             assert (resource.#{param} && resource.#{param}.reference.include?(value)), "#{param} on resource does not match #{param} requested"
         ) 
+      when 'HumanName'
+        # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
+        # https://www.hl7.org/fhir/search.html#string
+        if resource_metadata[param]['max'] > 1
+          search_validators += %(
+            when '#{param}'
+              found = resource.#{param}.any? do |name|
+                name&.text&.include?(value) ||
+                  name&.family.include?(value) || 
+                  name&.given.any{|given| given&.include?(value)} ||
+                  name&.prefix.any{|prefix| prefix&.include?(value)} ||
+                  name&.suffix.any{|suffix| suffix&.include?(value)}
+              end
+              assert found, "#{param} on resource does not match #{param} requested"
+          ) 
+
+        else
+          search_validators += %(
+            when '#{param}'
+              name = resource.#{param}
+              found = name&.text&.include?(value) ||
+                name&.family.include?(value) ||
+                name&.given.any{|given| given&.include?(value)} ||
+                name&.prefix.any{|prefix| prefix&.include?(value)} ||
+                name&.suffix.any{|suffix| suffix&.include?(value)}
+
+              assert found, "#{param} on resource does not match #{param} requested"
+          ) 
+
+        end
+      
       end
-    rescue
+    rescue => e
       print "#{resource} - #{param}" # gets here if param is '_id' because it fails to get the search param definition
     end
 
 
   end
 
-  return %(
-      def validate_resource_item (resource, property, value)
-        case property
-        #{search_validators}
+  validate_function = ''
+
+  if !search_validators.empty?
+    validate_function =  %(
+        def validate_resource_item (resource, property, value)
+          case property
+          #{search_validators}
+          end
         end
-      end
-  )
+    )
+  end
+
+  binding.pry if resource == 'Medication'
+
+  validate_function
 end
+
+def generate_module(module_info)
+
+  file_name = OUT_PATH + '/us_core_module.yml'
+
+  template = ERB.new(File.read('./templates/module.yml.erb'))
+  output = template.result_with_hash(module_info)
+
+  File.write(file_name, output)
+
+end
+
 
 run()
 # print create_search_validation('AllergyIntolerance', 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance.json', [{name:'patient'}, {name:'clinical-status'}])
