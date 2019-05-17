@@ -211,10 +211,6 @@ def create_search_test(sequence, search_param)
   search_test[:test_code] = %(
         search_params = {patient: @instance.patient_id}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
   )
@@ -222,6 +218,9 @@ def create_search_test(sequence, search_param)
   if search_test[:index] == 2 then
     # if first search - fix this check later
     search_test[:test_code] += %(
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
@@ -230,6 +229,9 @@ def create_search_test(sequence, search_param)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
     )
   end
+  search_test[:test_code] += %(
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+  )
 
   sequence[:tests] << search_test
 end
@@ -254,6 +256,8 @@ def create_search_combo_test(sequence, search_combo)
   if search_combo_test[:index] == 2 then
     # if first search - fix this check later
     search_combo_test[:test_code] += %(
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
@@ -336,6 +340,7 @@ def get_search_params(resource, profile, search_combo)
     if type == 'CodeableConcept' then
       accessCode += ".try(:coding).try(:first).try(:code)"
     end
+    accessCode += "&.reference.first" if type == 'Reference'
     search_param << ("'#{param}': #{param.gsub('-','_')}_val") 
   end
 
@@ -346,8 +351,7 @@ def get_search_params(resource, profile, search_combo)
 end
 
 def create_search_validation(resource, profile, search_params)
-
-  
+  return if search_params.empty?
   search_validators = ""
   search_params.each do |search_param|
     begin
@@ -402,6 +406,20 @@ def create_search_validation(resource, profile, search_params)
           ) 
 
         end
+      when 'code','string'
+        search_validators += %(
+          when '#{param}'
+            assert resource&.#{param} != nil && resource&.#{param} == value, "#{param} on resource did not match #{param} requested"
+        )
+      when 'Coding'
+        search_validators += %(
+          when '#{param}'
+            assert !coding&.code.nil? && coding&.code == value}, "#{param} on resource did not match #{param} requested"
+        )
+      else
+        search_validators += %(
+          when '#{param}'
+        )
       
       end
     rescue => e
