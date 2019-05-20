@@ -19,7 +19,12 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
+        
+          when 'date'
         
           end
         end
@@ -57,25 +62,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Immunization'), reply)
     
       end
       
-      test 'Server returns expected results from Immunization search by patient + date' do
+      test 'Server returns expected results from Immunization search by patient+date' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -84,17 +92,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
         
         patient_val = @instance.patient_id
-        date_val = @immunization.try(:occurrenceDateTime)
+        date_val = @immunization&.occurrenceDateTime
         search_params = {'patient': patient_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
-        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Immunization search by patient + status' do
+      test 'Server returns expected results from Immunization search by patient+status' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -103,14 +113,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
         
         patient_val = @instance.patient_id
-        status_val = @immunization.try(:status)
+        status_val = @immunization&.status
         search_params = {'patient': patient_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
-        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Immunization read resource supported' do

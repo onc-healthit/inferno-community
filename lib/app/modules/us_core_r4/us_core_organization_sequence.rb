@@ -15,6 +15,17 @@ module Inferno
       conformance_supports :Organization
 
       
+        def validate_resource_item (resource, property, value)
+          case property
+          
+          when 'name'
+            assert resource&.name != nil && resource&.name == value, "name on resource did not match name requested"
+        
+          when 'address'
+        
+          end
+        end
+    
 
       details %(
       )
@@ -48,20 +59,23 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        name_val = @organization&.name
+        search_params = {'name': name_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @organization = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
     
       end
@@ -75,15 +89,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@organization.nil?, 'Expected valid Organization resource to be present'
+        
+        address_val = @organization&.address.first
+        search_params = {'address': address_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
-  
+    
       end
       
       test 'Organization read resource supported' do

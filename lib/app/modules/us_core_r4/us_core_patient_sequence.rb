@@ -18,6 +18,20 @@ module Inferno
         def validate_resource_item (resource, property, value)
           case property
           
+          when '_id'
+            assert resource&.id != nil && resource&.id == value, "_id on resource did not match _id requested"
+        
+          when 'birthdate'
+        
+          when 'family'
+            assert resource&.name&.family != nil && resource&.name&.family == value, "family on resource did not match family requested"
+        
+          when 'gender'
+            assert resource&.gender != nil && resource&.gender == value, "gender on resource did not match gender requested"
+        
+          when 'given'
+            assert resource&.name&.given != nil && resource&.name&.given == value, "given on resource did not match given requested"
+        
             when 'name'
               found = resource.name.any? do |name|
                 name&.text&.include?(value) ||
@@ -64,20 +78,23 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        _id_val = @patient&.id
+        search_params = {'_id': _id_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @patient = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
     
       end
@@ -91,15 +108,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        
+        identifier_val = @patient&.identifier.first&.first&.value
+        search_params = {'identifier': identifier_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
+    
       end
       
       test 'Server returns expected results from Patient search by name' do
@@ -111,18 +128,18 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        
+        name_val = @patient&.name.first
+        search_params = {'name': name_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
+    
       end
       
-      test 'Server returns expected results from Patient search by birthdate + name' do
+      test 'Server returns expected results from Patient search by birthdate+name' do
         metadata {
           id '5'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -131,17 +148,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        birthdate_val = @patient.try(:birthDate)
-        name_val = @patient.try(:name)
+        birthdate_val = @patient&.birthDate
+        name_val = @patient&.name.first
         search_params = {'birthdate': birthdate_val, 'name': name_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Patient search by gender + name' do
+      test 'Server returns expected results from Patient search by gender+name' do
         metadata {
           id '6'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -150,17 +169,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        gender_val = @patient.try(:gender)
-        name_val = @patient.try(:name)
+        gender_val = @patient&.gender
+        name_val = @patient&.name.first
         search_params = {'gender': gender_val, 'name': name_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Patient search by family + gender' do
+      test 'Server returns expected results from Patient search by family+gender' do
         metadata {
           id '7'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -169,17 +190,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        family_val = @patient.try(:name)
-        gender_val = @patient.try(:gender)
+        family_val = @patient&.name&.family
+        gender_val = @patient&.gender
         search_params = {'family': family_val, 'gender': gender_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Patient search by birthdate + family' do
+      test 'Server returns expected results from Patient search by birthdate+family' do
         metadata {
           id '8'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -188,14 +211,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        birthdate_val = @patient.try(:birthDate)
-        family_val = @patient.try(:name)
+        birthdate_val = @patient&.birthDate
+        family_val = @patient&.name&.family
         search_params = {'birthdate': birthdate_val, 'family': family_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Patient read resource supported' do

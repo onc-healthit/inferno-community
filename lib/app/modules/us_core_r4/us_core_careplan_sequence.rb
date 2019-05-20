@@ -18,13 +18,18 @@ module Inferno
         def validate_resource_item (resource, property, value)
           case property
           
+          when 'patient'
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
           when 'category'
-            codings = resource.try(:category).try(:coding)
+            codings = resource&.category.first&.coding
             assert !codings.nil?, "category on resource did not match category requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "category on resource did not match category requested"
         
-          when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+          when 'date'
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
         
           end
         end
@@ -53,7 +58,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from CarePlan search by patient + category' do
+      test 'Server returns expected results from CarePlan search by patient+category' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -64,23 +69,27 @@ module Inferno
         
         
         patient_val = @instance.patient_id
-        category_val = @careplan.try(:category).try(:coding).try(:first).try(:code)
+        category_val = @careplan&.category.first&.coding&.first&.code
         search_params = {'patient': patient_val, 'category': category_val}
   
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-  
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
-        @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
     
       end
       
-      test 'Server returns expected results from CarePlan search by patient + category + status' do
+      test 'Server returns expected results from CarePlan search by patient+category+status' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -89,18 +98,20 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @careplan.try(:category).try(:coding).try(:first).try(:code)
-        status_val = @careplan.try(:status)
+        category_val = @careplan&.category.first&.coding&.first&.code
+        status_val = @careplan&.status
         search_params = {'patient': patient_val, 'category': category_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from CarePlan search by patient + category + status + date' do
+      test 'Server returns expected results from CarePlan search by patient+category+status+date' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -109,19 +120,21 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @careplan.try(:category).try(:coding).try(:first).try(:code)
-        status_val = @careplan.try(:status)
-        date_val = @careplan.try(:period)
+        category_val = @careplan&.category.first&.coding&.first&.code
+        status_val = @careplan&.status
+        date_val = @careplan&.period&.start
         search_params = {'patient': patient_val, 'category': category_val, 'status': status_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from CarePlan search by patient + category + date' do
+      test 'Server returns expected results from CarePlan search by patient+category+date' do
         metadata {
           id '5'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -130,15 +143,17 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @careplan.try(:category).try(:coding).try(:first).try(:code)
-        date_val = @careplan.try(:period)
+        category_val = @careplan&.category.first&.coding&.first&.code
+        date_val = @careplan&.period&.start
         search_params = {'patient': patient_val, 'category': category_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'CarePlan read resource supported' do

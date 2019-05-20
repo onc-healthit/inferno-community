@@ -18,13 +18,13 @@ module Inferno
         def validate_resource_item (resource, property, value)
           case property
           
+          when 'patient'
+            assert (resource&.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+        
           when 'clinical-status'
-            codings = resource.try(:clinicalStatus).try(:coding)
+            codings = resource&.clinicalStatus&.coding
             assert !codings.nil?, "clinical-status on resource did not match clinical-status requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "clinical-status on resource did not match clinical-status requested"
-        
-          when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
         
           end
         end
@@ -62,25 +62,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
     
       end
       
-      test 'Server returns expected results from AllergyIntolerance search by patient + clinical-status' do
+      test 'Server returns expected results from AllergyIntolerance search by patient+clinical-status' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -89,14 +92,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@allergyintolerance.nil?, 'Expected valid AllergyIntolerance resource to be present'
         
         patient_val = @instance.patient_id
-        clinical_status_val = @allergyintolerance.try(:clinicalStatus).try(:coding).try(:first).try(:code)
+        clinical_status_val = @allergyintolerance&.clinicalStatus&.coding&.first&.code
         search_params = {'patient': patient_val, 'clinical-status': clinical_status_val}
   
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'AllergyIntolerance read resource supported' do

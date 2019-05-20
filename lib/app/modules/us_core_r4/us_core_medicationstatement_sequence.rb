@@ -19,7 +19,12 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
+        
+          when 'effective'
         
           end
         end
@@ -57,25 +62,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationStatement'), reply)
     
       end
       
-      test 'Server returns expected results from MedicationStatement search by patient + effective' do
+      test 'Server returns expected results from MedicationStatement search by patient+effective' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -84,17 +92,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@medicationstatement.nil?, 'Expected valid MedicationStatement resource to be present'
         
         patient_val = @instance.patient_id
-        effective_val = @medicationstatement.try(:effectiveDateTime)
+        effective_val = @medicationstatement&.effectiveDateTime
         search_params = {'patient': patient_val, 'effective': effective_val}
   
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from MedicationStatement search by patient + status' do
+      test 'Server returns expected results from MedicationStatement search by patient+status' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -103,14 +113,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@medicationstatement.nil?, 'Expected valid MedicationStatement resource to be present'
         
         patient_val = @instance.patient_id
-        status_val = @medicationstatement.try(:status)
+        status_val = @medicationstatement&.status
         search_params = {'patient': patient_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'MedicationStatement read resource supported' do

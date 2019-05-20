@@ -19,7 +19,10 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
         
           end
         end
@@ -48,7 +51,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from CareTeam search by patient + status' do
+      test 'Server returns expected results from CareTeam search by patient+status' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -59,19 +62,23 @@ module Inferno
         
         
         patient_val = @instance.patient_id
-        status_val = @careteam.try(:status)
+        status_val = @careteam&.status
         search_params = {'patient': patient_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-  
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
-        @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+        save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
     
       end
       

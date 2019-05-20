@@ -18,18 +18,23 @@ module Inferno
         def validate_resource_item (resource, property, value)
           case property
           
+          when 'patient'
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
+        
           when 'category'
-            codings = resource.try(:category).try(:coding)
+            codings = resource&.category.first&.coding
             assert !codings.nil?, "category on resource did not match category requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "category on resource did not match category requested"
         
           when 'code'
-            codings = resource.try(:code).try(:coding)
+            codings = resource&.code&.coding
             assert !codings.nil?, "code on resource did not match code requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "code on resource did not match code requested"
         
-          when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+          when 'date'
         
           end
         end
@@ -58,7 +63,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from Observation search by patient + code' do
+      test 'Server returns expected results from Observation search by patient+code' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -69,23 +74,27 @@ module Inferno
         
         
         patient_val = @instance.patient_id
-        code_val = @observation.try(:code).try(:coding).try(:first).try(:code)
+        code_val = @observation&.code&.coding&.first&.code
         search_params = {'patient': patient_val, 'code': code_val}
   
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-  
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
-        @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
     
       end
       
-      test 'Server returns expected results from Observation search by patient + category' do
+      test 'Server returns expected results from Observation search by patient+category' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -94,17 +103,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @observation.try(:category).try(:coding).try(:first).try(:code)
+        category_val = @observation&.category.first&.coding&.first&.code
         search_params = {'patient': patient_val, 'category': category_val}
   
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Observation search by patient + category + date' do
+      test 'Server returns expected results from Observation search by patient+category+date' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -113,18 +124,20 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @observation.try(:category).try(:coding).try(:first).try(:code)
-        date_val = @observation.try(:effectiveDateTime)
+        category_val = @observation&.category.first&.coding&.first&.code
+        date_val = @observation&.effectiveDateTime
         search_params = {'patient': patient_val, 'category': category_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Observation search by patient + code + date' do
+      test 'Server returns expected results from Observation search by patient+code+date' do
         metadata {
           id '5'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -133,18 +146,20 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
         
         patient_val = @instance.patient_id
-        code_val = @observation.try(:code).try(:coding).try(:first).try(:code)
-        date_val = @observation.try(:effectiveDateTime)
+        code_val = @observation&.code&.coding&.first&.code
+        date_val = @observation&.effectiveDateTime
         search_params = {'patient': patient_val, 'code': code_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Observation search by patient + category + status' do
+      test 'Server returns expected results from Observation search by patient+category+status' do
         metadata {
           id '6'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -153,15 +168,17 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @observation.try(:category).try(:coding).try(:first).try(:code)
-        status_val = @observation.try(:status)
+        category_val = @observation&.category.first&.coding&.first&.code
+        status_val = @observation&.status
         search_params = {'patient': patient_val, 'category': category_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Observation read resource supported' do

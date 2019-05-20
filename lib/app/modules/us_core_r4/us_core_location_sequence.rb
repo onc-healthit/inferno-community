@@ -15,6 +15,26 @@ module Inferno
       conformance_supports :Location
 
       
+        def validate_resource_item (resource, property, value)
+          case property
+          
+          when 'name'
+            assert resource&.name != nil && resource&.name == value, "name on resource did not match name requested"
+        
+          when 'address'
+        
+          when 'address-city'
+            assert resource&.address&.city != nil && resource&.address&.city == value, "address-city on resource did not match address-city requested"
+        
+          when 'address-state'
+            assert resource&.address&.state != nil && resource&.address&.state == value, "address-state on resource did not match address-state requested"
+        
+          when 'address-postalcode'
+            assert resource&.address&.postalCode != nil && resource&.address&.postalCode == value, "address-postalcode on resource did not match address-postalcode requested"
+        
+          end
+        end
+    
 
       details %(
       )
@@ -48,20 +68,23 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        name_val = @location&.name
+        search_params = {'name': name_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @location = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
     
       end
@@ -75,15 +98,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@location.nil?, 'Expected valid Location resource to be present'
+        
+        address_val = @location&.address
+        search_params = {'address': address_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-  
+    
       end
       
       test 'Server returns expected results from Location search by address-city' do
@@ -95,15 +118,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@location.nil?, 'Expected valid Location resource to be present'
+        
+        address_city_val = @location&.address&.city
+        search_params = {'address-city': address_city_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-  
+    
       end
       
       test 'Server returns expected results from Location search by address-state' do
@@ -115,15 +138,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@location.nil?, 'Expected valid Location resource to be present'
+        
+        address_state_val = @location&.address&.state
+        search_params = {'address-state': address_state_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-  
+    
       end
       
       test 'Server returns expected results from Location search by address-postalcode' do
@@ -135,15 +158,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@location.nil?, 'Expected valid Location resource to be present'
+        
+        address_postalcode_val = @location&.address&.postalCode
+        search_params = {'address-postalcode': address_postalcode_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-  
+    
       end
       
       test 'Location read resource supported' do

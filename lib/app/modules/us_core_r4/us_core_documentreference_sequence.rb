@@ -19,17 +19,27 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when '_id'
+            assert resource&.id != nil && resource&.id == value, "_id on resource did not match _id requested"
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
         
           when 'category'
-            codings = resource.try(:category).try(:coding)
+            codings = resource&.category.first&.coding
             assert !codings.nil?, "category on resource did not match category requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "category on resource did not match category requested"
         
           when 'type'
-            codings = resource.try(:type).try(:coding)
+            codings = resource&.type&.coding
             assert !codings.nil?, "type on resource did not match type requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "type on resource did not match type requested"
+        
+          when 'date'
+        
+          when 'period'
         
           end
         end
@@ -58,7 +68,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from DocumentReference search by _id' do
+      test 'Server returns expected results from DocumentReference search by patient' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -67,25 +77,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @documentreference = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('DocumentReference'), reply)
     
       end
       
-      test 'Server returns expected results from DocumentReference search by patient' do
+      test 'Server returns expected results from DocumentReference search by _id' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -94,18 +107,18 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
+        
+        _id_val = @documentreference&.id
+        search_params = {'_id': _id_val}
+  
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
+    
       end
       
-      test 'Server returns expected results from DocumentReference search by patient + category' do
+      test 'Server returns expected results from DocumentReference search by patient+category' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -114,17 +127,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @documentreference.try(:category).try(:coding).try(:first).try(:code)
+        category_val = @documentreference&.category.first&.coding&.first&.code
         search_params = {'patient': patient_val, 'category': category_val}
   
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from DocumentReference search by patient + category + date' do
+      test 'Server returns expected results from DocumentReference search by patient+category+date' do
         metadata {
           id '5'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -133,18 +148,20 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @documentreference.try(:category).try(:coding).try(:first).try(:code)
-        date_val = @documentreference.try(:date)
+        category_val = @documentreference&.category.first&.coding&.first&.code
+        date_val = @documentreference&.date
         search_params = {'patient': patient_val, 'category': category_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from DocumentReference search by patient + type' do
+      test 'Server returns expected results from DocumentReference search by patient+type' do
         metadata {
           id '6'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -153,17 +170,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
         
         patient_val = @instance.patient_id
-        type_val = @documentreference.try(:type).try(:coding).try(:first).try(:code)
+        type_val = @documentreference&.type&.coding&.first&.code
         search_params = {'patient': patient_val, 'type': type_val}
   
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from DocumentReference search by patient + status' do
+      test 'Server returns expected results from DocumentReference search by patient+status' do
         metadata {
           id '7'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -172,17 +191,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
         
         patient_val = @instance.patient_id
-        status_val = @documentreference.try(:status)
+        status_val = @documentreference&.status
         search_params = {'patient': patient_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from DocumentReference search by patient + type + period' do
+      test 'Server returns expected results from DocumentReference search by patient+type+period' do
         metadata {
           id '8'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -191,15 +212,17 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
         
         patient_val = @instance.patient_id
-        type_val = @documentreference.try(:type).try(:coding).try(:first).try(:code)
-        period_val = @documentreference.try(:context)
+        type_val = @documentreference&.type&.coding&.first&.code
+        period_val = @documentreference&.context&.period&.start
         search_params = {'patient': patient_val, 'type': type_val, 'period': period_val}
   
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'DocumentReference create resource supported' do

@@ -19,7 +19,12 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when 'lifecycle-status'
+            assert resource&.lifecycleStatus != nil && resource&.lifecycleStatus == value, "lifecycle-status on resource did not match lifecycle-status requested"
+        
+          when 'target-date'
         
           end
         end
@@ -57,25 +62,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
     
       end
       
-      test 'Server returns expected results from Goal search by patient + target-date' do
+      test 'Server returns expected results from Goal search by patient+target-date' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -84,17 +92,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@goal.nil?, 'Expected valid Goal resource to be present'
         
         patient_val = @instance.patient_id
-        target_date_val = @goal.try(:target)
+        target_date_val = @goal&.target&.dueDate
         search_params = {'patient': patient_val, 'target-date': target_date_val}
   
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Goal search by patient + lifecycle-status' do
+      test 'Server returns expected results from Goal search by patient+lifecycle-status' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -103,14 +113,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@goal.nil?, 'Expected valid Goal resource to be present'
         
         patient_val = @instance.patient_id
-        lifecycle_status_val = @goal.try(:lifecycleStatus)
+        lifecycle_status_val = @goal&.lifecycleStatus
         search_params = {'patient': patient_val, 'lifecycle-status': lifecycle_status_val}
   
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Goal read resource supported' do

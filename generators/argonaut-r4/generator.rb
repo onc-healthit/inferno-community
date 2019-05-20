@@ -61,10 +61,14 @@ def extract_metadata(resources)
       if !searchParams.nil? then 
         searchParams.each do |searchParam|
           new_search_param = {
-            name: searchParam['name'],
+            names: [searchParam['name']],
             expectation: searchParam['extension'][0]['valueCode']
           }
-          new_sequence[:search_params] << new_search_param
+          if searchParam['name'] == "patient" then # move patient search first
+            new_sequence[:search_params].insert(0,new_search_param)
+          else
+            new_sequence[:search_params] << new_search_param
+          end
         end
       end
       # assume extension is just the search combinations
@@ -83,7 +87,7 @@ def extract_metadata(resources)
                 new_search_combo[:names] << param['valueString']
               end
             end
-            new_sequence[:search_combos] << new_search_combo
+            new_sequence[:search_params] << new_search_combo
           end
         end
       end
@@ -128,18 +132,6 @@ def generate_tests(metadata)
       end
     end
 
-    sequence[:search_combos].each do |search_combo|
-      if search_combo[:expectation] == "SHALL" then
-        create_search_combo_test(sequence, search_combo)
-      end
-    end
-
-    sequence[:search_combos].each do |search_combo|
-      if search_combo[:expectation] == "SHOULD" then
-        create_search_combo_test(sequence, search_combo)
-      end
-    end
-
     # make tests for each SHALL and SHOULD interaction
     sequence[:interactions].each do |interaction|
       if interaction[:expectation] == "SHALL" ||  interaction[:expectation] == "SHOULD" then
@@ -169,6 +161,7 @@ end
 
 def get_search_param_json(resource, param)
   begin
+    param = "id" if param == "_id" # special case for _id
     uri = "https://build.fhir.org/ig/HL7/US-Core-R4/SearchParameter-us-core-#{resource}-#{param}.json"
     get_json_from_uri(uri)
   rescue
@@ -180,6 +173,12 @@ def get_variable_type_from_structure_def(resource, profile, var)
   element_def = resource_struct_def['snapshot']['element'].select{|el| el['id'] == "#{resource}.#{var}"}.first if !resource_struct_def.nil?
   return element_def['type'].first['code'] if !element_def.nil?
   return 'test'
+end
+
+def get_variable_contains_multiple(resource, profile, var)
+  resource_struct_def = get_json_from_uri(profile)
+  element_def = resource_struct_def['snapshot']['element'].select{|el| el['id'] == "#{resource}.#{var}"}.first if !resource_struct_def.nil?
+  return element_def['max'] == "*" if !element_def.nil?
 end
 
 def create_authorization_test(sequence)
@@ -203,21 +202,16 @@ end
 
 def create_search_test(sequence, search_param)
   search_test = {
-    tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:name]}",
+    tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
     index: sequence[:tests].length + 1,
     link: "https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html"
   }
 
-  search_test[:test_code] = %(
-        search_params = {patient: @instance.patient_id}
+  is_first_search = search_test[:index] == 2 # if first search - fix this check later
+  if is_first_search then
+    search_test[:test_code] = %(
+        #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-
-        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-  )
-
-  if search_test[:index] == 2 then
-    # if first search - fix this check later
-    search_test[:test_code] += %(
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -225,50 +219,23 @@ def create_search_test(sequence, search_param)
         if resource_count > 0
           @resources_found = true
         end
-        @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
-    )
-  end
-  search_test[:test_code] += %(
+
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-  )
 
-  sequence[:tests] << search_test
-end
-
-def create_search_combo_test(sequence, search_combo)
-  search_combo_test = {
-    tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_combo[:names].join(' + ')}",
-    index: sequence[:tests].length + 1,
-    link: "https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html"
-  }
-
-  search_params = []
-  search_combo[:names].each do |param|
-    search_params << ("'#{param}': ") 
-  end
-  search_combo_test[:test_code] = %(
-        #{get_search_params(sequence[:resource], sequence[:profile], search_combo[:names])}
-        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-  )
-
-  if search_combo_test[:index] == 2 then
-    # if first search - fix this check later
-    search_combo_test[:test_code] += %(
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count > 0
-          @resources_found = true
-        end
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
-
+    )
+  else
+    search_test[:test_code] = %(
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
+        #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
+        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+        assert_response_ok(reply)
     )
   end
-
-  sequence[:tests] << search_combo_test
+  sequence[:tests] << search_test
 end
 
 def create_interaction_test(sequence, interaction)
@@ -333,14 +300,21 @@ def get_search_params(resource, profile, search_combo)
     search_param_struct = get_search_param_json(resource.downcase, param)
     path = search_param_struct['xpath']
     path_parts = path.split('/f:')
-    element_name = path_parts[1] # assume this for now
+    path_parts.delete_at(0)
+    path_parts = ['id'] if param == '_id' # xpath for id doesn't follow the format of others
+    element_name = path_parts.join('.')
     type = get_variable_type_from_structure_def(resource, profile, element_name)
+    contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
     accessCode += %(
-        #{param.gsub('-','_')}_val = @#{resource.downcase}.try(:#{element_name}))
+        #{param.gsub('-','_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
+    accessCode += ".first" if contains_multiple
     if type == 'CodeableConcept' then
-      accessCode += ".try(:coding).try(:first).try(:code)"
+      accessCode += "&.coding&.first&.code"
     end
     accessCode += "&.reference.first" if type == 'Reference'
+    accessCode += "&.start" if type == "Period"
+    accessCode += "&.first&.value" if type == "Identifier"
+    accessCode += "&.code" if type=="Coding"
     search_param << ("'#{param}': #{param.gsub('-','_')}_val") 
   end
 
@@ -355,26 +329,30 @@ def create_search_validation(resource, profile, search_params)
   search_validators = ""
   search_params.each do |search_param|
     begin
-      param = search_param[:name]
+      next if search_param[:names].length != 1
+      param = search_param[:names].first
       search_param_struct = get_search_param_json(resource.downcase, param)
       path = search_param_struct['xpath']
       path_parts = path.split('/f:')
-      element_name = path_parts[1] # assume this for now
+      path_parts.delete_at(0)
+      path_parts = ['id'] if param == '_id' # xpath for id doesn't follow the format of others
+      element_name = path_parts.join('.')
       type = get_variable_type_from_structure_def(resource, profile, element_name)
+      contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
       resource_metadata = FHIR.const_get(resource).const_get('METADATA')
       binding.pry if resource == 'Medication'
       case type
       when 'CodeableConcept'
         search_validators += %(
           when '#{param}'
-            codings = resource.try(:#{element_name}).try(:coding)
+            codings = resource&.#{path_parts.join('&.')}#{".first" if contains_multiple}&.coding
             assert !codings.nil?, "#{param} on resource did not match #{param} requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "#{param} on resource did not match #{param} requested"
         )
       when 'Reference'
         search_validators += %(
           when '#{param}'
-            assert (resource.#{param} && resource.#{param}.reference.include?(value)), "#{param} on resource does not match #{param} requested"
+            assert (resource&.#{path_parts.join('&.')} && resource.#{path_parts.join('&.')}.reference.include?(value)), "#{param} on resource does not match #{param} requested"
         ) 
       when 'HumanName'
         # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
@@ -382,7 +360,7 @@ def create_search_validation(resource, profile, search_params)
         if resource_metadata[param]['max'] > 1
           search_validators += %(
             when '#{param}'
-              found = resource.#{param}.any? do |name|
+              found = resource.#{path_parts.join('&.')}.any? do |name|
                 name&.text&.include?(value) ||
                   name&.family.include?(value) || 
                   name&.given.any{|given| given&.include?(value)} ||
@@ -391,11 +369,10 @@ def create_search_validation(resource, profile, search_params)
               end
               assert found, "#{param} on resource does not match #{param} requested"
           ) 
-
         else
           search_validators += %(
             when '#{param}'
-              name = resource.#{param}
+              name = resource&.#{path_parts.join('&.')}
               found = name&.text&.include?(value) ||
                 name&.family.include?(value) ||
                 name&.given.any{|given| given&.include?(value)} ||
@@ -406,15 +383,21 @@ def create_search_validation(resource, profile, search_params)
           ) 
 
         end
-      when 'code','string'
+      when 'code','string','id'
         search_validators += %(
           when '#{param}'
-            assert resource&.#{param} != nil && resource&.#{param} == value, "#{param} on resource did not match #{param} requested"
+            assert resource&.#{path_parts.join('&.')} != nil && resource&.#{path_parts.join('&.')} == value, "#{param} on resource did not match #{param} requested"
         )
       when 'Coding'
         search_validators += %(
           when '#{param}'
-            assert !coding&.code.nil? && coding&.code == value}, "#{param} on resource did not match #{param} requested"
+            assert !resource&.#{path_parts.join('&.')}&.code.nil? && resource&.#{path_parts.join('&.')}&.code == value, "#{param} on resource did not match #{param} requested"
+        )
+        
+      when 'Identifier'
+        search_validator += %(
+          when '#{param}'
+            assert resource&.#{path_parts.join('&.')} != nil && resource.#{path_parts.join('&.')}.any?{|identifier| identifier.value == value}, "#{param} on resource did not match #{param} requested"
         )
       else
         search_validators += %(

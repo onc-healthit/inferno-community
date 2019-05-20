@@ -64,20 +64,23 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        name_val = @practitioner&.name.first
+        search_params = {'name': name_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @practitioner = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
     
       end
@@ -91,15 +94,15 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
+        
+        identifier_val = @practitioner&.identifier.first&.first&.value
+        search_params = {'identifier': identifier_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
-  
+    
       end
       
       test 'Practitioner read resource supported' do

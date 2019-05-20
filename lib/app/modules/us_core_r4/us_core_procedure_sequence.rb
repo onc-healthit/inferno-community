@@ -19,10 +19,15 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
+        
+          when 'date'
         
           when 'code'
-            codings = resource.try(:code).try(:coding)
+            codings = resource&.code&.coding
             assert !codings.nil?, "code on resource did not match code requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "code on resource did not match code requested"
         
@@ -62,25 +67,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
     
       end
       
-      test 'Server returns expected results from Procedure search by patient + date' do
+      test 'Server returns expected results from Procedure search by patient+date' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -89,17 +97,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
         
         patient_val = @instance.patient_id
-        date_val = @procedure.try(:occurrenceDateTime)
+        date_val = @procedure&.occurrenceDateTime
         search_params = {'patient': patient_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
-        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Procedure search by patient + code + date' do
+      test 'Server returns expected results from Procedure search by patient+code+date' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -108,18 +118,20 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
         
         patient_val = @instance.patient_id
-        code_val = @procedure.try(:code).try(:coding).try(:first).try(:code)
-        date_val = @procedure.try(:occurrenceDateTime)
+        code_val = @procedure&.code&.coding&.first&.code
+        date_val = @procedure&.occurrenceDateTime
         search_params = {'patient': patient_val, 'code': code_val, 'date': date_val}
   
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
-        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Procedure search by patient + status' do
+      test 'Server returns expected results from Procedure search by patient+status' do
         metadata {
           id '5'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -128,14 +140,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
         
         patient_val = @instance.patient_id
-        status_val = @procedure.try(:status)
+        status_val = @procedure&.status
         search_params = {'patient': patient_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
-        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Procedure read resource supported' do

@@ -19,10 +19,10 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
         
           when 'type'
-            codings = resource.try(:type).try(:coding)
+            codings = resource&.type&.coding
             assert !codings.nil?, "type on resource did not match type requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "type on resource did not match type requested"
         
@@ -62,25 +62,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
     
       end
       
-      test 'Server returns expected results from Device search by patient + type' do
+      test 'Server returns expected results from Device search by patient+type' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -89,14 +92,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@device.nil?, 'Expected valid Device resource to be present'
         
         patient_val = @instance.patient_id
-        type_val = @device.try(:type).try(:coding).try(:first).try(:code)
+        type_val = @device&.type&.coding&.first&.code
         search_params = {'patient': patient_val, 'type': type_val}
   
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
-        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Device read resource supported' do

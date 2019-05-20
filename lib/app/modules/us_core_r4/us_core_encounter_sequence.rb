@@ -19,10 +19,21 @@ module Inferno
           case property
           
           when 'patient'
-            assert (resource.patient && resource.patient.reference.include?(value)), "patient on resource does not match patient requested"
+            assert (resource&.subject && resource.subject.reference.include?(value)), "patient on resource does not match patient requested"
+        
+          when '_id'
+            assert resource&.id != nil && resource&.id == value, "_id on resource did not match _id requested"
+        
+          when 'class'
+            assert !resource&.class&.code.nil? && resource&.class&.code == value, "class on resource did not match class requested"
+        
+          when 'date'
+        
+          when 'status'
+            assert resource&.status != nil && resource&.status == value, "status on resource did not match status requested"
         
           when 'type'
-            codings = resource.try(:type).try(:coding)
+            codings = resource&.type.first&.coding
             assert !codings.nil?, "type on resource did not match type requested"
             assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "type on resource did not match type requested"
         
@@ -53,7 +64,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from Encounter search by _id' do
+      test 'Server returns expected results from Encounter search by patient' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -62,25 +73,28 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        
+        patient_val = @instance.patient_id
+        search_params = {'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         if resource_count > 0
           @resources_found = true
         end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
         @encounter = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Encounter'), reply)
     
       end
       
-      test 'Server returns expected results from Encounter search by patient' do
+      test 'Server returns expected results from Encounter search by _id' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -89,18 +103,18 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
+        
+        _id_val = @encounter&.id
+        search_params = {'_id': _id_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
+    
       end
       
-      test 'Server returns expected results from Encounter search by identifier' do
+      test 'Server returns expected results from Encounter search by date+patient' do
         metadata {
           id '4'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -109,18 +123,19 @@ module Inferno
           versions :r4
         }
         
-        search_params = {patient: @instance.patient_id}
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
+        
+        date_val = @encounter&.period&.start
+        patient_val = @instance.patient_id
+        search_params = {'date': date_val, 'patient': patient_val}
+  
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
+    
       end
       
-      test 'Server returns expected results from Encounter search by date + patient' do
+      test 'Server returns expected results from Encounter search by identifier' do
         metadata {
           id '5'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -129,17 +144,18 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
         
-        date_val = @encounter.try(:period)
-        patient_val = @instance.patient_id
-        search_params = {'date': date_val, 'patient': patient_val}
+        identifier_val = @encounter&.identifier.first&.first&.value
+        search_params = {'identifier': identifier_val}
   
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Encounter search by patient + status' do
+      test 'Server returns expected results from Encounter search by patient+status' do
         metadata {
           id '6'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -148,17 +164,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
         
         patient_val = @instance.patient_id
-        status_val = @encounter.try(:status)
+        status_val = @encounter&.status
         search_params = {'patient': patient_val, 'status': status_val}
   
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Encounter search by class + patient' do
+      test 'Server returns expected results from Encounter search by class+patient' do
         metadata {
           id '7'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -167,17 +185,19 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
         
-        class_val = @encounter.try(:class)
+        class_val = @encounter&.class&.code
         patient_val = @instance.patient_id
         search_params = {'class': class_val, 'patient': patient_val}
   
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
-      test 'Server returns expected results from Encounter search by patient + type' do
+      test 'Server returns expected results from Encounter search by patient+type' do
         metadata {
           id '8'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -186,14 +206,16 @@ module Inferno
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
         
         patient_val = @instance.patient_id
-        type_val = @encounter.try(:type).try(:coding).try(:first).try(:code)
+        type_val = @encounter&.type.first&.coding&.first&.code
         search_params = {'patient': patient_val, 'type': type_val}
   
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-  
+        assert_response_ok(reply)
+    
       end
       
       test 'Encounter read resource supported' do
