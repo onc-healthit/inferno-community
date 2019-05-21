@@ -63,7 +63,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from DiagnosticReport search by patient+code' do
+      test 'Server returns expected results from DiagnosticReport search by patient+category' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -73,10 +73,8 @@ module Inferno
         }
         
         
-        patient_val = @instance.patient_id
-        code_val = @diagnosticreport&.code&.coding&.first&.code
-        search_params = {'patient': patient_val, 'code': code_val}
-  
+        search_params = {patient: @instance.patient_id, category: "LAB"}
+      
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -94,7 +92,7 @@ module Inferno
     
       end
       
-      test 'Server returns expected results from DiagnosticReport search by patient+category' do
+      test 'Server returns expected results from DiagnosticReport search by patient+code' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -107,8 +105,8 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @diagnosticreport&.category&.coding&.first&.code
-        search_params = {'patient': patient_val, 'category': category_val}
+        code_val = @diagnosticreport&.code&.coding&.first&.code
+        search_params = {'patient': patient_val, 'code': code_val}
   
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)
@@ -137,9 +135,28 @@ module Inferno
     
       end
       
-      test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
+      test 'Server returns expected results from DiagnosticReport search by patient+category' do
         metadata {
           id '5'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        }
+        
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
+        
+        search_params = {patient: @instance.patient_id, category: "LAB"}
+      
+        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        assert_response_ok(reply)
+    
+      end
+      
+      test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
+        metadata {
+          id '6'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -161,7 +178,7 @@ module Inferno
       
       test 'Server returns expected results from DiagnosticReport search by patient+status' do
         metadata {
-          id '6'
+          id '7'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -174,27 +191,6 @@ module Inferno
         patient_val = @instance.patient_id
         status_val = @diagnosticreport&.status
         search_params = {'patient': patient_val, 'status': status_val}
-  
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
-        assert_response_ok(reply)
-    
-      end
-      
-      test 'Server returns expected results from DiagnosticReport search by patient+category' do
-        metadata {
-          id '7'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        }
-        
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
-        patient_val = @instance.patient_id
-        category_val = @diagnosticreport&.category&.coding&.first&.code
-        search_params = {'patient': patient_val, 'category': category_val}
   
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)

@@ -73,10 +73,8 @@ module Inferno
         }
         
         
-        patient_val = @instance.patient_id
-        code_val = @diagnosticreport&.code&.coding&.first&.code
-        search_params = {'patient': patient_val, 'code': code_val}
-  
+        search_params = {patient: @instance.patient_id, code: "final"}
+      
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)

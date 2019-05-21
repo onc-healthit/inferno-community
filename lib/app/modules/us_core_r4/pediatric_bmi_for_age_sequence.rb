@@ -73,10 +73,8 @@ module Inferno
         }
         
         
-        patient_val = @instance.patient_id
-        code_val = @observation&.code&.coding&.first&.code
-        search_params = {'patient': patient_val, 'code': code_val}
-  
+        search_params = {patient: @instance.patient_id, code: "59576-9"}
+      
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)

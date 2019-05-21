@@ -87,7 +87,12 @@ def extract_metadata(resources)
                 new_search_combo[:names] << param['valueString']
               end
             end
-            new_sequence[:search_params] << new_search_combo
+            # special case - set search by category first for these two profiles
+            if new_search_combo[:names] == ['patient','category'] && (new_sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json' || new_sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json') then
+              new_sequence[:search_params].insert(0,new_search_combo)
+            else
+              new_sequence[:search_params] << new_search_combo
+            end
           end
         end
       end
@@ -291,6 +296,52 @@ def get_search_params(resource, profile, search_combo)
   search_param = []
   accessCode = ""
   search_combo.each do |param|
+    # manually set for now - try to find in metadata if available later
+    if resource == 'CarePlan' && search_combo == ['patient', 'category'] then
+      return %(
+        search_params = {patient: @instance.patient_id, category: "assess-plan"}
+      )
+    end
+    if resource == 'CareTeam' && search_combo == ['patient', 'status'] then
+      return %(
+        search_params = {patient: @instance.patient_id, status: "active"}
+      )
+    end
+    if (resource == 'Location' || resource == 'Organization') && search_combo == ['name']
+      return %(
+        search_params = {patient: @instance.patient_id, name: "Boston"}
+      )
+    end
+    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json' && search_combo == ['patient', 'code'] then
+      return %(
+        search_params = {patient: @instance.patient_id, code: "72166-2"}
+      )
+    end
+    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json' && search_combo == ['patient', 'category'] then
+      return %(
+        search_params = {patient: @instance.patient_id, category: "laboratory"}
+      )
+    end
+    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json' && search_combo == ['patient', 'code'] then
+      return %(
+        search_params = {patient: @instance.patient_id, code: "77606-2"}
+      )
+    end
+    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json' && search_combo == ['patient', 'code'] then
+      return %(
+        search_params = {patient: @instance.patient_id, code: "59576-9"}
+      )
+    end
+    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json' && search_combo == ['patient', 'category'] then
+      return %(
+        search_params = {patient: @instance.patient_id, category: "LAB"}
+      )
+    end
+    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json' && search_combo == ['patient', 'code'] then
+      return %(
+        search_params = {patient: @instance.patient_id, code: "final"}
+      )
+    end
     if param == 'patient' then
       accessCode += %(
         patient_val = @instance.patient_id)
@@ -308,16 +359,20 @@ def get_search_params(resource, profile, search_combo)
     accessCode += %(
         #{param.gsub('-','_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
     accessCode += ".first" if contains_multiple
-    if type == 'CodeableConcept' then
+    case type
+    when 'CodeableConcept'
       accessCode += "&.coding&.first&.code"
+    when 'Reference'
+      accessCode += "&.reference.first"
+    when 'Period'
+      accessCode += "&.start"
+    when 'Identifier'
+      accessCode += "&.first&.value"
+    when 'Coding'
+      accessCode += "&.code"
     end
-    accessCode += "&.reference.first" if type == 'Reference'
-    accessCode += "&.start" if type == "Period"
-    accessCode += "&.first&.value" if type == "Identifier"
-    accessCode += "&.code" if type=="Coding"
     search_param << ("'#{param}': #{param.gsub('-','_')}_val") 
   end
-
 
   return %(#{accessCode}
         search_params = {#{search_param.join(', ')}}
@@ -340,7 +395,6 @@ def create_search_validation(resource, profile, search_params)
       type = get_variable_type_from_structure_def(resource, profile, element_name)
       contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
       resource_metadata = FHIR.const_get(resource).const_get('METADATA')
-      binding.pry if resource == 'Medication'
       case type
       when 'CodeableConcept'
         search_validators += %(
@@ -423,8 +477,6 @@ def create_search_validation(resource, profile, search_params)
         end
     )
   end
-
-  binding.pry if resource == 'Medication'
 
   validate_function
 end

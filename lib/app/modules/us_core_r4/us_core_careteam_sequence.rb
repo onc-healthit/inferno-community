@@ -61,10 +61,8 @@ module Inferno
         }
         
         
-        patient_val = @instance.patient_id
-        status_val = @careteam&.status
-        search_params = {'patient': patient_val, 'status': status_val}
-  
+        search_params = {patient: @instance.patient_id, status: "active"}
+      
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)

@@ -69,9 +69,8 @@ module Inferno
         }
         
         
-        name_val = @location&.name
-        search_params = {'name': name_val}
-  
+        search_params = {patient: @instance.patient_id, name: "Boston"}
+      
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)

@@ -63,7 +63,7 @@ module Inferno
   
       end
       
-      test 'Server returns expected results from Observation search by patient+code' do
+      test 'Server returns expected results from Observation search by patient+category' do
         metadata {
           id '2'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -73,10 +73,8 @@ module Inferno
         }
         
         
-        patient_val = @instance.patient_id
-        code_val = @observation&.code&.coding&.first&.code
-        search_params = {'patient': patient_val, 'code': code_val}
-  
+        search_params = {patient: @instance.patient_id, category: "laboratory"}
+      
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -94,7 +92,7 @@ module Inferno
     
       end
       
-      test 'Server returns expected results from Observation search by patient+category' do
+      test 'Server returns expected results from Observation search by patient+code' do
         metadata {
           id '3'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -107,8 +105,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
         
         patient_val = @instance.patient_id
-        category_val = @observation&.category.first&.coding&.first&.code
-        search_params = {'patient': patient_val, 'category': category_val}
+        code_val = @observation&.code&.coding&.first&.code
+        search_params = {'patient': patient_val, 'code': code_val}
   
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
