@@ -42,6 +42,10 @@ module Inferno
     
 
       details %(
+        
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Encounter Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-encounter)
+
       )
 
       @resources_found = false
@@ -147,7 +151,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
         
-        identifier_val = @encounter&.identifier.first&.first&.value
+        identifier_val = @encounter&.identifier.first&.value
         search_params = {'identifier': identifier_val}
   
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)

@@ -5,7 +5,7 @@ module Inferno
 
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 PractitionerRole Tests'
+      title 'US Core R4 Practitionerrole Tests'
 
       description 'Verify that PractitionerRole resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -31,6 +31,10 @@ module Inferno
     
 
       details %(
+        
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Practitionerrole Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitionerrole)
+
       )
 
       @resources_found = false

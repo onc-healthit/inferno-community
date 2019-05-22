@@ -30,6 +30,7 @@ test_sets:
       - name: USCDI Access (FHIR R4 / US Core R4 Profiles & Server Conformance)
         run_all: true
         sequences:
+          - UsCoreR4PatientSequence
           - UsCoreR4AllergyintoleranceSequence
           - UsCoreR4CareplanSequence
           - UsCoreR4CareteamSequence
@@ -41,7 +42,7 @@ test_sets:
           - UsCoreR4EncounterSequence
           - UsCoreR4GoalSequence
           - UsCoreR4ImmunizationSequence
-          - UsCoreR4LocationSequence
+          # - UsCoreR4LocationSequence
           - UsCoreR4MedicationSequence
           - UsCoreR4MedicationrequestSequence
           - UsCoreR4MedicationstatementSequence
@@ -49,10 +50,9 @@ test_sets:
           - PediatricWeightForHeightSequence
           - UsCoreR4ObservationLabSequence
           - PediatricBmiForAgeSequence
-          - UsCoreR4OrganizationSequence
-          - UsCoreR4PatientSequence
-          - UsCoreR4PractitionerSequence
-          - UsCoreR4PractitionerroleSequence
+          # - UsCoreR4OrganizationSequence
+          # - UsCoreR4PractitionerSequence
+          # - UsCoreR4PractitionerroleSequence
           - UsCoreR4ProcedureSequence
   test_procedure:
     view: default

@@ -5,7 +5,7 @@ module Inferno
 
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Observation Tests'
+      title 'US Core R4 ObservationLab Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -41,6 +41,10 @@ module Inferno
     
 
       details %(
+        
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [ObservationLab Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab)
+
       )
 
       @resources_found = false

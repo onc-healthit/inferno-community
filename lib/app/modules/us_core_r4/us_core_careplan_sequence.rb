@@ -5,7 +5,7 @@ module Inferno
 
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 CarePlan Tests'
+      title 'US Core R4 Careplan Tests'
 
       description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -36,6 +36,10 @@ module Inferno
     
 
       details %(
+        
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Careplan Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careplan)
+
       )
 
       @resources_found = false

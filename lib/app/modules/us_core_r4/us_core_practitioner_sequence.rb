@@ -33,6 +33,10 @@ module Inferno
     
 
       details %(
+        
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Practitioner Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitioner)
+
       )
 
       @resources_found = false
@@ -65,7 +69,7 @@ module Inferno
         }
         
         
-        name_val = @practitioner&.name.first
+        name_val = @practitioner&.name.first&.family
         search_params = {'name': name_val}
   
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -97,7 +101,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
         
-        identifier_val = @practitioner&.identifier.first&.first&.value
+        identifier_val = @practitioner&.identifier.first&.value
         search_params = {'identifier': identifier_val}
   
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)

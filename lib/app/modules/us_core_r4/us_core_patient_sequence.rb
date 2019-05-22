@@ -47,6 +47,10 @@ module Inferno
     
 
       details %(
+        
+        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [Patient Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient)
+
       )
 
       @resources_found = false
@@ -79,9 +83,8 @@ module Inferno
         }
         
         
-        _id_val = @patient&.id
-        search_params = {'_id': _id_val}
-  
+        search_params = {'_id': @instance.patient_id}
+      
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -111,7 +114,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        identifier_val = @patient&.identifier.first&.first&.value
+        identifier_val = @patient&.identifier.first&.value
         search_params = {'identifier': identifier_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -131,7 +134,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        name_val = @patient&.name.first
+        name_val = @patient&.name.first&.family
         search_params = {'name': name_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -152,7 +155,7 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
         birthdate_val = @patient&.birthDate
-        name_val = @patient&.name.first
+        name_val = @patient&.name.first&.family
         search_params = {'birthdate': birthdate_val, 'name': name_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -173,7 +176,7 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
         gender_val = @patient&.gender
-        name_val = @patient&.name.first
+        name_val = @patient&.name.first&.family
         search_params = {'gender': gender_val, 'name': name_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -193,7 +196,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
-        family_val = @patient&.name&.family
+        family_val = @patient&.name.first&.family
         gender_val = @patient&.gender
         search_params = {'family': family_val, 'gender': gender_val}
   
@@ -215,7 +218,7 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         
         birthdate_val = @patient&.birthDate
-        family_val = @patient&.name&.family
+        family_val = @patient&.name.first&.family
         search_params = {'birthdate': birthdate_val, 'family': family_val}
   
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
