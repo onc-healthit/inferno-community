@@ -102,7 +102,6 @@ body {
 #header-module-name .badge{
   font-size: 0.75rem;
   background-color: #999;
-  top: -60px;
 }
 
 .server-actions {
@@ -155,6 +154,11 @@ body {
 
 .index-page .form-check{
   font-size: 1.3rem;
+}
+
+.form-check .badge{
+  font-size: 0.75rem;
+  background-color: #999;
 }
 
 .index-page h2 {

@@ -1,7 +1,9 @@
 <div class="container" role='main'>
   <div id="header-module-name">
   <%=instance.module.title%>
-  <span class='badge badge-dark'><%=instance.module.fhir_version.upcase%></span>
+  <% if instance.module.title != "SMART Application Launch Framework Implementation Guide v1.0.0" %>
+    <span class='badge badge-dark'><%=instance.module.fhir_version.upcase%></span>
+  <% end %>
   </div>
 </div>
 
