@@ -99,6 +99,12 @@ body {
   color: #444;
 }
 
+#header-module-name .badge{
+  font-size: 0.75rem;
+  background-color: #999;
+  top: -60px;
+}
+
 .server-actions {
   text-align: right;
 }
