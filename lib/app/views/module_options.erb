@@ -7,7 +7,7 @@
       <input class="form-check-input" type="radio" name="module" value="<%=mod.name %>" id="<%=mod.name %>" <% if index == 0 %>checked<% end %>>
       <label class="form-check-label" for="<%=mod.name %>">
       <%=mod.title %>
-      <% if mod.title != "SMART Application Launch Framework Implementation Guide v1.0.0" %>
+      <% if mod.fhir_version != nil %>
         <span class='badge badge-dark'>FHIR <%=mod.fhir_version.upcase%></span>
       <% end %>
       </label>
