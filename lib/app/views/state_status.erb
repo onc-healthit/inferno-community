@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <% if instance.fhir_version != nil %>
+    <% unless instance.fhir_version.nil? %>
       <div class="form-group row">
         <label class="col-sm-2 col-form-label">FHIR Version</label>
         <div class="col-sm-10">
