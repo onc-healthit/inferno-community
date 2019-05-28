@@ -31,15 +31,17 @@ class CarePlanSequenceTest < MiniTest::Test
     )
 
     # Register that the server supports MedicationStatement
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: @resource_type.to_s,
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true,
-      vread_supported: true,
-      search_supported: true,
-      history_supported: true
-    )
+    if !@instance.resource_references.any? {|r| r.resource_type == @resource_type }
+      @instance.supported_resources << Inferno::Models::SupportedResource.create(
+        resource_type: @resource_type.to_s,
+        testing_instance_id: @instance.id,
+        supported: true,
+        read_supported: true,
+        vread_supported: true,
+        search_supported: true,
+        history_supported: true
+      )
+    end
 
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
 
