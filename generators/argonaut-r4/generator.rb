@@ -212,7 +212,7 @@ def create_search_test(sequence, search_param)
     link: "https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html"
   }
 
-  is_first_search = search_test[:index] == 2 # if first search - fix this check later
+  is_first_search = search_test[:index] == '02' # if first search - fix this check later
   if is_first_search then
     search_test[:test_code] = %(
         #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}

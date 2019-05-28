@@ -71,14 +71,24 @@ module Inferno
           versions :r4
         }
         
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
         
         patient_val = @instance.patient_id
         search_params = {'patient': patient_val}
   
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        if resource_count > 0
+          @resources_found = true
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+        save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
     
       end
       
