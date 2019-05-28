@@ -432,7 +432,7 @@ module Inferno
                                           test_index: test_index)
           begin
 
-            skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version.to_sym), 'This test does not run with this FHIR version')
+            skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym), 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
             Inferno.logger.info "Starting Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
             instance_eval &block
 
