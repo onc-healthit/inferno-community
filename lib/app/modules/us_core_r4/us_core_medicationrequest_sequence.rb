@@ -41,7 +41,7 @@ module Inferno
       
       test 'Server rejects MedicationRequest search without authorization' do
         metadata {
-          id '1'
+          id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -59,37 +59,27 @@ module Inferno
       
       test 'Server returns expected results from MedicationRequest search by patient' do
         metadata {
-          id '2'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
         
         patient_val = @instance.patient_id
         search_params = {'patient': patient_val}
   
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count > 0
-          @resources_found = true
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @medicationrequest = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
     
       end
       
       test 'Server returns expected results from MedicationRequest search by patient+status' do
         metadata {
-          id '3'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -110,7 +100,7 @@ module Inferno
       
       test 'Server returns expected results from MedicationRequest search by patient+authoredon' do
         metadata {
-          id '4'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -131,7 +121,7 @@ module Inferno
       
       test 'MedicationRequest read resource supported' do
         metadata {
-          id '5'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -147,7 +137,7 @@ module Inferno
       
       test 'MedicationRequest vread resource supported' do
         metadata {
-          id '6'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -163,7 +153,7 @@ module Inferno
       
       test 'MedicationRequest history resource supported' do
         metadata {
-          id '7'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -179,8 +169,8 @@ module Inferno
       
       test 'MedicationRequest resources associated with Patient conform to Argonaut profiles' do
         metadata {
-          id '8'
-          link ''
+          id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medicationrequest.json'
           desc %(
           )
           versions :r4
@@ -193,7 +183,7 @@ module Inferno
       
       test 'All references can be resolved' do
         metadata {
-          id '9'
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

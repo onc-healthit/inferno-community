@@ -189,7 +189,7 @@ end
 def create_authorization_test(sequence)
   authorization_test = {
     tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-    index: sequence[:tests].length + 1,
+    index:  '%02d' % (sequence[:tests].length + 1),
     link: "http://www.fhir.org/guides/argonaut/r2/Conformance-server.html"
   }
 
@@ -208,7 +208,7 @@ end
 def create_search_test(sequence, search_param)
   search_test = {
     tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
-    index: sequence[:tests].length + 1,
+    index: '%02d' % (sequence[:tests].length + 1),
     link: "https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html"
   }
 
@@ -247,7 +247,7 @@ def create_interaction_test(sequence, interaction)
 
   interaction_test = {
     tests_that: "#{sequence[:resource]} #{interaction[:code]} resource supported",
-    index: sequence[:tests].length + 1,
+    index: '%02d' % (sequence[:tests].length + 1),
     link: "https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html"
   }
 
@@ -264,8 +264,8 @@ end
 def create_resource_profile_test(sequence)
   test = {
     tests_that: "#{sequence[:resource]} resources associated with Patient conform to Argonaut profiles",
-    index: sequence[:tests].length + 1,
-    link: ''
+    index: '%02d' % (sequence[:tests].length + 1),
+    link: sequence[:profile]
   }
   test[:test_code] = %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -278,7 +278,7 @@ end
 def create_references_resolved_test(sequence)
   test = {
     tests_that: "All references can be resolved",
-    index: sequence[:tests].length + 1,
+    index:  '%02d' % (sequence[:tests].length + 1),
     link: 'https://www.hl7.org/fhir/DSTU2/references.html'
   }
 

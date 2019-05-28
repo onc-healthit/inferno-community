@@ -47,7 +47,7 @@ module Inferno
       
       test 'Server rejects Location search without authorization' do
         metadata {
-          id '1'
+          id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -65,36 +65,26 @@ module Inferno
       
       test 'Server returns expected results from Location search by name' do
         metadata {
-          id '2'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         }
         
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@location.nil?, 'Expected valid Location resource to be present'
         
         search_params = {patient: @instance.patient_id, name: "Boston"}
       
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count > 0
-          @resources_found = true
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @location = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
     
       end
       
       test 'Server returns expected results from Location search by address' do
         metadata {
-          id '3'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -114,7 +104,7 @@ module Inferno
       
       test 'Server returns expected results from Location search by address-city' do
         metadata {
-          id '4'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -134,7 +124,7 @@ module Inferno
       
       test 'Server returns expected results from Location search by address-state' do
         metadata {
-          id '5'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -154,7 +144,7 @@ module Inferno
       
       test 'Server returns expected results from Location search by address-postalcode' do
         metadata {
-          id '6'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -174,7 +164,7 @@ module Inferno
       
       test 'Location read resource supported' do
         metadata {
-          id '7'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -190,7 +180,7 @@ module Inferno
       
       test 'Location vread resource supported' do
         metadata {
-          id '8'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -206,7 +196,7 @@ module Inferno
       
       test 'Location history resource supported' do
         metadata {
-          id '9'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -223,7 +213,7 @@ module Inferno
       test 'Location resources associated with Patient conform to Argonaut profiles' do
         metadata {
           id '10'
-          link ''
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-location.json'
           desc %(
           )
           versions :r4
