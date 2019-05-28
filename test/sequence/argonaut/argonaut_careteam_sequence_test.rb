@@ -1,14 +1,14 @@
 
 
 require_relative '../../test_helper'      
-class CarePlanSequenceTest < MiniTest::Test 
+class CareTeamSequenceTest < MiniTest::Test 
     
     def setup
         @instance = get_test_instance
         client = get_client(@instance)
 
-        @fixture = "care_plan" #put fixture file name here
-        @sequence = Inferno::Sequence::ArgonautCarePlanSequence.new(@instance, client) #put sequence here
+        @fixture = "care_team" #put fixture file name here
+        @sequence = Inferno::Sequence::ArgonautCareTeamSequence.new(@instance, client) #put sequence here
         @resource_type = "CarePlan"
 
         @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
@@ -30,7 +30,7 @@ class CarePlanSequenceTest < MiniTest::Test
         resource_type: 'Patient',
         resource_id: @patient_id
         )
-
+        
         # Register that the server supports MedicationStatement
         if !@instance.resource_references.any? {|r| r.resource_type == @resource_type }
             @instance.supported_resources << Inferno::Models::SupportedResource.create(
@@ -63,7 +63,7 @@ class CarePlanSequenceTest < MiniTest::Test
 
     def full_sequence_stubs
         # Return 401 if no Authorization Header
-        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
+        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category}"
         stub_request(:get, uri_template).to_return(status: 401)
 
         # Search Resources
