@@ -7,6 +7,9 @@
       <input class="form-check-input" type="radio" name="module" value="<%=mod.name %>" id="<%=mod.name %>" <% if index == 0 %>checked<% end %>>
       <label class="form-check-label" for="<%=mod.name %>">
       <%=mod.title %>
+      <% unless mod.fhir_version.nil? %>
+        <span class='badge badge-dark'>FHIR <%=mod.fhir_version.upcase%></span>
+      <% end %>
       </label>
     </div>
   <% end %>

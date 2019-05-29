@@ -1,5 +1,5 @@
 name: onc_r4
-title: Preliminary ONC Health IT Certification Tests (FHIR R4)
+title: Preliminary ONC Health IT Certification Tests
 
 description : |
 
@@ -10,75 +10,9 @@ description : |
   [US Core R4 Implementation Guide CI Build](https://build.fhir.org/ig/HL7/US-Core-R4/index.html)
 
 fhir_version: r4
-default_test_set: ad_hoc_testing
+default_test_set: test_procedure
 hide_optional: true
 test_sets:
-  ad_hoc_testing:
-    view: default
-    tests:
-      - name: Discovery
-        sequences:
-        - USCoreR4CapabilityStatementSequence
-        - SMARTDiscoverySequence
-        run_all: true
-      - name: Authorization and Authentication
-        sequences:
-        - DynamicRegistrationSequence
-        - ManualRegistrationSequence
-        - StandaloneLaunchSequence
-        - EHRLaunchSequence
-      - name: USCDI Access (FHIR R4 / US Core R4 Profiles & Server Conformance)
-        run_all: true
-        sequences:
-          - USCoreR4PatientSequence
-          - USCoreR4AllergyIntoleranceSequence
-          - USCoreR4EncounterSequence
-          - USCoreR4CarePlanSequence
-          - USCoreR4CareTeamSequence
-          - USCoreR4ConditionSequence
-          - USCoreR4DeviceSequence
-          - USCoreR4DiagnosticReportSequence
-          - USCoreR4ObservationSequence
-          - USCoreR4GoalSequence
-          - USCoreR4ImmunizationSequence
-          - USCoreR4MedicationStatementSequence
-          - USCoreR4MedicationOrderSequence
-          - USCoreR4ProcedureSequence
-          - USCoreR4SmokingStatusSequence
-          - USCoreR4VitalSignsSequence
-  test_procedure:
-    view: default
-    tests:
-      - name: Discovery
-        sequences:
-        - USCoreR4CapabilityStatementSequence
-        - SMARTDiscoverySequence
-        run_all: true
-      - name: Authorization and Authentication
-        sequences:
-        - DynamicRegistrationSequence
-        - ManualRegistrationSequence
-        - StandaloneLaunchSequence
-        - EHRLaunchSequence
-      - name: USCDI Access (FHIR R4 / US Core R4 Profiles & Server Conformance)
-        run_all: true
-        sequences:
-          - USCoreR4PatientSequence
-          - USCoreR4AllergyIntoleranceSequence
-          - USCoreR4EncounterSequence
-          - USCoreR4CarePlanSequence
-          - USCoreR4CareTeamSequence
-          - USCoreR4ConditionSequence
-          - USCoreR4DeviceSequence
-          - USCoreR4DiagnosticReportSequence
-          - USCoreR4ObservationSequence
-          - USCoreR4GoalSequence
-          - USCoreR4ImmunizationSequence
-          - USCoreR4MedicationStatementSequence
-          - USCoreR4MedicationOrderSequence
-          - USCoreR4ProcedureSequence
-          - USCoreR4SmokingStatusSequence
-          - USCoreR4VitalSignsSequence
   test_procedure:
     view: guided
     tests:
@@ -120,13 +54,13 @@ test_sets:
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch/patient patient/*.read openid fhirUser offline_access
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: USCoreR4PatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
           - sequence: OpenIDConnectSequence
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - TokenRefreshSequence
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: USCoreR4PatientReadOnlySequence
             title: Read Patient Resource
             description: Ensure new token is functional by performing a simple read of the Patient resource.
       - name: EHR Practitioner App
@@ -141,13 +75,13 @@ test_sets:
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch user/*.read openid fhirUser offline_access
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: USCoreR4PatientReadOnlySequence
             title: Read Patient Resource
             description: Demonstrate successful authorization by reading Patient resource.
           - sequence: OpenIDConnectSequence
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - TokenRefreshSequence
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: USCoreR4PatientReadOnlySequence
             title: Read Patient Resource
             description: Ensure new token is functional by performing a simple read of the Patient resource.
         input_instructions: |
@@ -175,19 +109,43 @@ test_sets:
           - patient_id
           - token
         sequences:
-          - USCoreR4PatientSequence
-          - USCoreR4AllergyIntoleranceSequence
-          - USCoreR4EncounterSequence
-          - USCoreR4CarePlanSequence
-          - USCoreR4CareTeamSequence
-          - USCoreR4ConditionSequence
-          - USCoreR4DeviceSequence
-          - USCoreR4DiagnosticReportSequence
-          - USCoreR4ObservationSequence
-          - USCoreR4GoalSequence
-          - USCoreR4ImmunizationSequence
-          - USCoreR4MedicationStatementSequence
-          - USCoreR4MedicationOrderSequence
-          - USCoreR4ProcedureSequence
-          - USCoreR4SmokingStatusSequence
-          - USCoreR4VitalSignsSequence
+          - sequence: UsCoreR4PatientSequence
+            title: Patient
+          - sequence: UsCoreR4AllergyintoleranceSequence
+            title: Allergy Intolerance
+          - sequence: UsCoreR4CareplanSequence
+            title: Careplan
+          - sequence: UsCoreR4CareteamSequence
+            title: Careteam
+          - sequence: UsCoreR4ConditionSequence
+            title: Condition
+          - sequence: UsCoreR4DeviceSequence
+            title: Device
+          - sequence: UsCoreR4DiagnosticreportNoteSequence
+            title: Diagnostic Report Note
+          - sequence: UsCoreR4DiagnosticreportLabSequence
+            title: Diagnostic Report Lab
+          - sequence: UsCoreR4DocumentreferenceSequence
+            title: Document Reference
+          - sequence: UsCoreR4EncounterSequence
+            title: Encounter
+          - sequence: UsCoreR4GoalSequence
+            title: Goal
+          - sequence: UsCoreR4ImmunizationSequence
+            title: Immunization
+          - sequence: UsCoreR4MedicationSequence
+            title: Medication
+          - sequence: UsCoreR4MedicationrequestSequence
+            title: Medication Request
+          - sequence: UsCoreR4MedicationstatementSequence
+            title: Medication Statement
+          - sequence: UsCoreR4SmokingstatusSequence
+            title: Smoking Status
+          - sequence: PediatricWeightForHeightSequence
+            title: Pediatric Weight for Height
+          - sequence: UsCoreR4ObservationLabSequence
+            title: Observation Lab
+          - sequence: PediatricBmiForAgeSequence
+            title: BMI For Age
+          - sequence: UsCoreR4ProcedureSequence
+            title: Procedure

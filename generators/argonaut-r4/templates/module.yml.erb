@@ -1,0 +1,24 @@
+name: us_core_r4
+title: US Core R4 Tests
+description : US Core R4 Tests
+fhir_version: r4
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests:
+      - name: Discovery
+        sequences:
+        - USCoreR4CapabilityStatementSequence
+        - SMARTDiscoverySequence
+        run_all: true
+      - name: Authorization and Authentication
+        sequences:
+        - DynamicRegistrationSequence
+        - ManualRegistrationSequence
+        - StandaloneLaunchSequence
+        - EHRLaunchSequence
+      - name: US Core R4
+        run_all: true
+        sequences:<% sequences.each do |sequence| %>
+          - <%=sequence[:classname]%><% end %>
