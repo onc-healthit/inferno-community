@@ -441,6 +441,14 @@
         </div>
         <div class="modal-body">
           <p>
+          <strong>
+          To continue the test, initiate an app launch outside of Inferno from the EHR. 
+          </strong>
+          </p>
+          <p>
+          Inferno is waiting at the specified launch point for the launch sequence to be initiated. The test will continue running with the information provided during the launch from the EHR.
+          </p>
+          <p>
           Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI:
           </p>
           <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
