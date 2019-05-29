@@ -67,7 +67,7 @@ module Inferno
         assert capabilities.kind_of?(Array), 'The capabilities response is not an array'
       end
 
-      test 'Conformance Statement provides OAuth 2.0 endpoints' do
+      test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
 
         metadata {
           id '02'
@@ -80,12 +80,11 @@ module Inferno
         }
 
         @conformance = @client.conformance_statement
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
-        assert !oauth_metadata.nil?, 'No OAuth Metadata in conformance statement'
+        assert !oauth_metadata.nil?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
         @conformance_authorize_url = oauth_metadata[:authorize_url]
         @conformance_token_url = oauth_metadata[:token_url]
-        assert !@conformance_authorize_url.blank?, 'No authorize URI provided in conformance statement.'
+        assert !@conformance_authorize_url.blank?, 'No authorize URI provided in Conformance/CapabilityStatement resource'
         assert (@conformance_authorize_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid authorize url: '#{@conformance_authorize_url}'"
         assert !@conformance_token_url.blank?, 'No token URI provided in conformance statement.'
         assert (@conformance_token_url =~ /\A#{URI::regexp(['http', 'https'])}\z/) == 0, "Invalid token url: '#{@conformance_token_url}'"
@@ -100,8 +99,8 @@ module Inferno
               end
             end
 
-          assert !service.empty?, 'No security services listed. Conformance.rest.security.service should be SMART-on-FHIR.'
-          assert service.any? {|any_service| any_service == 'SMART-on-FHIR'}, "Conformance.rest.security.service set to #{service.map{ |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
+          assert !service.empty?, 'No security services listed. Conformance/CapabilityStatement.rest.security.service should be SMART-on-FHIR.'
+          assert service.any? {|any_service| any_service == 'SMART-on-FHIR'}, "Conformance/CapabilityStatement.rest.security.service set to #{service.map{ |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
         }
 
         registration_url = nil
