@@ -44,6 +44,6 @@ badge_text: Community
 modules:
   - onc
   - onc_r4
-  - us_core_r4
   - smart
+  - us_core_r4
   - argonaut
