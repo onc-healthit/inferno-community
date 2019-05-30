@@ -83,7 +83,7 @@ module Inferno
             elsif resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'vital-signs' }
               return DEFINITIONS[ARGONAUT_URIS[:vital_signs]]
             end
-          elsif resource.resourceType == 'CareTeam'
+          elsif resource.resourceType == 'CarePlan'
             if resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'careteam' }
               return DEFINITIONS[ARGONAUT_URIS[:care_team]]
             else

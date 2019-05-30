@@ -2,7 +2,7 @@
   "id": "85e027e0-103b-0136-6943-60f81dc2d82a",
   "meta": {
     "profile": [
-      "http://fhir.org/guides/argonaut/StructureDefinition/argo-careplan"
+      "http://fhir.org/guides/argonaut/StructureDefinition/argo-careteam"
     ]
   },
   "text": {
