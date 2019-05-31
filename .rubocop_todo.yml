@@ -145,13 +145,6 @@ Style/MutableConstant:
   Exclude:
     - 'lib/app/utils/validation.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: IncludeSemanticChanges.
-Style/NonNilCheck:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
 # Offense count: 54
 # Cop supports --auto-correct.
 # Configuration parameters: AutoCorrect, EnforcedStyle, IgnoredMethods.
