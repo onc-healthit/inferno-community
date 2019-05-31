@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 require 'rake/testtask'
 require 'rubocop/rake_task'
-
 
 task :default do
   ENV['RACK_ENV'] = 'test'

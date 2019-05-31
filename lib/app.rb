@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'yaml'
 require 'sinatra/base'
 require 'sinatra/config_file'

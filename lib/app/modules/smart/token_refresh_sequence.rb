@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Inferno
   module Sequence
     class TokenRefreshSequence < SequenceBase
-
       title 'Token Refresh'
       description 'Demonstrate token refresh capability.'
       test_id_prefix 'TR'
@@ -28,47 +29,44 @@ module Inferno
               )
 
       test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.' do
-
-        metadata {
+        metadata do
           id '01'
           link 'https://tools.ietf.org/html/rfc6749'
           desc %(
             If the request failed verification or is invalid, the authorization server returns an error response.          )
-        }
+        end
 
         oauth2_params = {
-            'grant_type' => 'refresh_token',
-            'refresh_token' => 'INVALID REFRESH TOKEN',
-            'client_id' => @instance.client_id
+          'grant_type' => 'refresh_token',
+          'refresh_token' => 'INVALID REFRESH TOKEN',
+          'client_id' => @instance.client_id
         }
 
         token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
         assert_response_bad_or_unauthorized token_response
 
         oauth2_params = {
-            'grant_type' => 'refresh_token',
-            'refresh_token' => @instance.refresh_token,
-            'client_id' => 'INVALID_CLIENT_ID'
+          'grant_type' => 'refresh_token',
+          'refresh_token' => @instance.refresh_token,
+          'client_id' => 'INVALID_CLIENT_ID'
         }
 
         token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
         assert_response_bad_or_unauthorized token_response
-
       end
 
       test 'Server successfully exchanges refresh token at OAuth token endpoint.' do
-
-        metadata {
+        metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc6749'
           desc %(
             Server successfully exchanges refresh token at OAuth token endpoint.
           )
-        }
+        end
 
         oauth2_params = {
-            'grant_type' => 'refresh_token',
-            'refresh_token' => @instance.refresh_token,
+          'grant_type' => 'refresh_token',
+          'refresh_token' => @instance.refresh_token
         }
         oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
@@ -82,87 +80,81 @@ module Inferno
 
         @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
         assert_response_ok(@token_response)
-
       end
 
       test 'Data returned from refresh token exchange contains required information encoded in JSON.' do
-
-        metadata {
+        metadata do
           id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
            The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
            access_token, token_type, and scope are required. access_token must be Bearer.
           )
-        }
+        end
 
         @token_response_headers = @token_response.headers
         @token_response_body = JSON.parse(@token_response.body)
 
-        assert @token_response_body.has_key?('access_token'), "Token response did not contain access_token as required"
+        assert @token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
 
         token_retrieved_at = DateTime.now
 
         @instance.resource_references.each(&:destroy)
-        @instance.resource_references << Inferno::Models::ResourceReference.new({resource_type: 'Patient', resource_id: @token_response_body['patient']}) if @token_response_body.key?('patient')
+        @instance.resource_references << Inferno::Models::ResourceReference.new(resource_type: 'Patient', resource_id: @token_response_body['patient']) if @token_response_body.key?('patient')
 
         @instance.save!
 
         @instance.update(token: @token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
 
         ['token_type', 'scope'].each do |key|
-          assert @token_response_body.has_key?(key), "Token response did not contain #{key} as required"
+          assert @token_response_body.key?(key), "Token response did not contain #{key} as required"
         end
 
-        #case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
-        assert @token_response_body['token_type'].downcase == 'bearer', 'Token type must be Bearer.'
+        # case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
+        assert @token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
 
         expected_scopes = @instance.scopes.split(' ')
         actual_scopes = @token_response_body['scope'].split(' ')
 
-        warning {
+        warning do
           missing_scopes = (expected_scopes - actual_scopes)
           assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
 
-          assert @token_response_body.has_key?('patient'), 'No patient id provided in token exchange.'
-        }
+          assert @token_response_body.key?('patient'), 'No patient id provided in token exchange.'
+        end
 
         scopes = @token_response_body['scope'] || @instance.scopes
 
         @instance.save!
         @instance.update(scopes: scopes)
 
-        if @token_response_body.has_key?('id_token')
+        if @token_response_body.key?('id_token')
           @instance.save!
           @instance.update(id_token: @token_response_body['id_token'])
         end
 
-        if @token_response_body.has_key?('refresh_token')
+        if @token_response_body.key?('refresh_token')
           @instance.save!
           @instance.update(refresh_token: @token_response_body['refresh_token'])
         end
-
       end
 
       test 'Response includes correct HTTP Cache-Control and Pragma headers' do
-
-        metadata {
+        metadata do
           id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
           )
-        }
+        end
 
         [:cache_control, :pragma].each do |key|
-          assert @token_response_headers.has_key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
+          assert @token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
         end
 
         assert @token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
         assert @token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
       end
-
     end
-
   end
 end

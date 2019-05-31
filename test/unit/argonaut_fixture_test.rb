@@ -3,10 +3,9 @@
 require_relative '../test_helper'
 
 class ArgonautFixtureTest < MiniTest::Test
-
   def setup
     @bundle = FHIR::DSTU2.from_contents(load_fixture('sample_record'))
-    @invalid = FHIR::DSTU2.from_contents(load_fixture('sample_invalid_record'))    
+    @invalid = FHIR::DSTU2.from_contents(load_fixture('sample_invalid_record'))
   end
 
   def test_argonaut_fixture_validates_against_profiles
@@ -14,7 +13,7 @@ class ArgonautFixtureTest < MiniTest::Test
       profile = Inferno::ValidationUtil.guess_profile(entry.resource, :dstu2)
       unless profile.nil?
         errors = profile.validate_resource(entry.resource)
-        assert errors.empty?, "#{entry.resource.resourceType} did not validate against profile: #{errors.join(", ")}"
+        assert errors.empty?, "#{entry.resource.resourceType} did not validate against profile: #{errors.join(', ')}"
       end
     end
   end
@@ -23,11 +22,8 @@ class ArgonautFixtureTest < MiniTest::Test
     errors = []
     @invalid.entry.each do |entry|
       profile = Inferno::ValidationUtil.guess_profile(entry.resource, :dstu2)
-      unless profile.nil?
-        errors += profile.validate_resource(entry.resource)
-      end
+      errors += profile.validate_resource(entry.resource) unless profile.nil?
     end
-    assert !errors.empty?, "Expected numerous validation errors."
+    assert !errors.empty?, 'Expected numerous validation errors.'
   end
-
 end

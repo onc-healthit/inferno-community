@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 module Inferno
   class LoggedRestClient
-
     @@requests = []
 
     def self.clear_log
@@ -17,8 +18,12 @@ module Inferno
         headers: response.headers,
         body: response.body
       }
-      request[:payload] = JSON.parse(request[:payload]) rescue nil
-      @@requests << {direction: :outbound, request: request, response: reply}
+      request[:payload] = begin
+                            JSON.parse(request[:payload])
+                          rescue StandardError
+                            nil
+                          end
+      @@requests << { direction: :outbound, request: request, response: reply }
     end
 
     def post(url, payload, headers = {})
@@ -30,20 +35,21 @@ module Inferno
         payload: payload
       }
 
-      #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+      # request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
       request[:payload] = payload.to_json if payload.is_a?(Hash)
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.get(url, headers={}, &block)
+    def self.get(url, headers = {}, &block)
       begin
         reply = RestClient.get(url, headers, &block)
-      rescue => e
+      rescue StandardError => e
         unless e.response
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end
+
         reply = e.response if e.response
       end
 
@@ -52,18 +58,19 @@ module Inferno
         url: url,
         headers: headers
       }
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.post(url, payload, headers={}, &block)
+    def self.post(url, payload, headers = {}, &block)
       begin
         reply = RestClient.post(url, payload, headers, &block)
-      rescue => e
+      rescue StandardError => e
         unless e.response
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end
+
         reply = e.response if e.response
       end
 
@@ -74,13 +81,13 @@ module Inferno
         payload: payload
       }
 
-      #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+      # request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
       request[:payload] = payload.to_json if payload.is_a?(Hash)
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.patch(url, payload, headers={}, &block)
+    def self.patch(url, payload, headers = {}, &block)
       reply = RestClient.patch(url, payload, headers, &block)
       request = {
         method: :patch,
@@ -89,13 +96,13 @@ module Inferno
         payload: payload
       }
 
-      #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+      # request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
       request[:payload] = payload.to_json if payload.is_a?(Hash)
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.put(url, payload, headers={}, &block)
+    def self.put(url, payload, headers = {}, &block)
       reply = RestClient.put(url, payload, headers, &block)
       request = {
         method: :put,
@@ -104,43 +111,43 @@ module Inferno
         payload: payload
       }
 
-      #request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
+      # request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
       request[:payload] = payload.to_json if payload.is_a?(Hash)
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.delete(url, headers={}, &block)
+    def self.delete(url, headers = {}, &block)
       reply = RestClient.delete(url, headers, &block)
       request = {
         method: :delete,
         url: url,
         headers: headers
       }
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.head(url, headers={}, &block)
+    def self.head(url, headers = {}, &block)
       reply = RestClient.delete(url, headers, &block)
       request = {
         method: :delete,
         url: url,
         headers: headers
       }
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
 
-    def self.options(url, headers={}, &block)
+    def self.options(url, headers = {}, &block)
       reply = RestClient.options(url, headers, &block)
       request = {
         method: :options,
         url: url,
         headers: headers
       }
-      self.record_response(request, reply)
-      return reply
+      record_response(request, reply)
+      reply
     end
   end
 end

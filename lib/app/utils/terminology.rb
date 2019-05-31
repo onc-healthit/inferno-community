@@ -1,22 +1,23 @@
+# frozen_string_literal: true
+
 require_relative 'valueset'
 module Inferno
   class Terminology
-
     CODE_SYSTEMS = {
-      'http://snomed.info/sct'=>'SNOMED',
-      'http://loinc.org'=>'LOINC',
-      'http://www.nlm.nih.gov/research/umls/rxnorm'=>'RXNORM',
-      'http://hl7.org/fhir/sid/icd-10'=>'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-de'=>'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-nl'=>'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-us'=>'ICD10',
-      'http://www.icd10data.com/icd10pcs'=>'ICD10',
-      'http://hl7.org/fhir/sid/icd-9-cm'=>'ICD9',
-      'http://hl7.org/fhir/sid/icd-9-cm/diagnosis'=>'ICD9',
-      'http://hl7.org/fhir/sid/icd-9-cm/procedure'=>'ICD9',
-      'http://hl7.org/fhir/sid/cvx'=>'CVX'
-    }
-    
+      'http://snomed.info/sct' => 'SNOMED',
+      'http://loinc.org' => 'LOINC',
+      'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
+      'http://hl7.org/fhir/sid/icd-10' => 'ICD10',
+      'http://hl7.org/fhir/sid/icd-10-de' => 'ICD10',
+      'http://hl7.org/fhir/sid/icd-10-nl' => 'ICD10',
+      'http://hl7.org/fhir/sid/icd-10-us' => 'ICD10',
+      'http://www.icd10data.com/icd10pcs' => 'ICD10',
+      'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9',
+      'http://hl7.org/fhir/sid/icd-9-cm/diagnosis' => 'ICD9',
+      'http://hl7.org/fhir/sid/icd-9-cm/procedure' => 'ICD9',
+      'http://hl7.org/fhir/sid/cvx' => 'CVX'
+    }.freeze
+
     @@term_root = File.join('resources', 'terminology')
 
     @@loaded = false
@@ -41,14 +42,14 @@ module Inferno
     end
 
     def self.load_terminology
-      if !@@loaded
+      unless @@loaded
         begin
           # load the top lab codes
-          filename = File.join(@@term_root,'terminology_loinc_2000.txt')
-          raw = File.open(filename,'r:UTF-8',&:read)
+          filename = File.join(@@term_root, 'terminology_loinc_2000.txt')
+          raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
-            @@top_lab_code_descriptions[row[0]] = row[1] if !row[1].nil?
+            @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
           end
         rescue Exception => error
           FHIR.logger.error error
@@ -56,8 +57,8 @@ module Inferno
 
         begin
           # load the known codes
-          filename = File.join(@@term_root,'terminology_umls.txt')
-          raw = File.open(filename,'r:UTF-8',&:read)
+          filename = File.join(@@term_root, 'terminology_umls.txt')
+          raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
             codeSystem = row[0]
@@ -79,23 +80,23 @@ module Inferno
           # load the core snomed codes
           @@known_codes['SNOMED'] = {} if @@known_codes['SNOMED'].nil?
           codeSystemHash = @@known_codes['SNOMED']
-          filename = File.join(@@term_root,'terminology_snomed_core.txt')
-          raw = File.open(filename,'r:UTF-8',&:read)
+          filename = File.join(@@term_root, 'terminology_snomed_core.txt')
+          raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
             code = row[0]
             description = row[1]
             codeSystemHash[code] = description if codeSystemHash[code].nil?
             @@core_snomed[code] = description
-          end   
+          end
         rescue Exception => error
           FHIR.logger.error error
         end
 
         begin
           # load common UCUM codes
-          filename = File.join(@@term_root,'terminology_ucum.txt')
-          raw = File.open(filename,'r:UTF-8',&:read)
+          filename = File.join(@@term_root, 'terminology_ucum.txt')
+          raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |code|
             @@common_ucum << code
           end
@@ -108,13 +109,9 @@ module Inferno
       end
     end
 
-    def self.get_description(system,code)
+    def self.get_description(system, code)
       load_terminology
-      if @@known_codes[system]
-        @@known_codes[system][code]
-      else
-        nil
-      end
+      @@known_codes[system][code] if @@known_codes[system]
     end
 
     def self.is_core_snomed?(code)
@@ -150,45 +147,43 @@ module Inferno
       case type
       when :bloom
         root_dir = 'resources/terminology/validators/bloom'
-        unless File.directory?(root_dir)
-          FileUtils.mkdir_p(root_dir)
-        end
+        FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
         @known_valuesets.each do |k, vs|
-          next if k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem' or k == 'http://fhir.org/guides/argonaut/ValueSet/languages'
+          next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
+
           puts "Processing #{k}"
-          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(/[.\/]/,'_')}.msgpack"
+          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
           save_bloom_to_file(vs.valueset, filename)
-          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'bloom'}
+          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom' }
         end
         vs = Inferno::Terminology::Valueset.new(@db)
-        Inferno::Terminology::Valueset::SAB.each do |k, v|
+        Inferno::Terminology::Valueset::SAB.each do |k, _v|
           puts "Processing #{k}"
           cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(/[.\/]/,'_')}.msgpack"
+          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(%r{[./]}, '_')}.msgpack"
           save_bloom_to_file(cs, filename)
-          validators << {url: k, file: File.basename(filename), count: cs.length, type: 'bloom'}
+          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom' }
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
       when :csv
         root_dir = 'resources/terminology/validators/csv'
-        unless File.directory?(root_dir)
-          FileUtils.mkdir_p(root_dir)
-        end
+        FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
         @known_valuesets.each do |k, vs|
-          next if k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem' or k == 'http://fhir.org/guides/argonaut/ValueSet/languages'
+          next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
+
           puts "Processing #{k}"
-          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(/[.\/]/,'_')}.csv"
+          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.csv"
           save_csv_to_file(vs.valueset, filename)
-          validators << {url: k, file: File.basename(filename), count: vs.count, type: 'csv'}
+          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv' }
         end
         vs = Inferno::Terminology::Valueset.new(@db)
-        Inferno::Terminology::Valueset::SAB.each do |k, v|
+        Inferno::Terminology::Valueset::SAB.each do |k, _v|
           puts "Processing #{k}"
           cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(/[.\/]/,'_')}.csv"
+          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(%r{[./]}, '_')}.csv"
           save_csv_to_file(cs, filename)
-          validators << {url: k, file: File.basename(filename), count: cs.length, type: 'csv'}
+          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv' }
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
@@ -224,7 +219,6 @@ module Inferno
       @db = SQLite3::Database.new database
     end
 
-
     def self.add_valueset_from_file(vs_file)
       vs = Inferno::Terminology::Valueset.new(@db)
       vs.read_valueset(vs_file)
@@ -241,7 +235,7 @@ module Inferno
 
       validators = YAML.load_file("#{directory}/manifest.yml")
       validators.each do |validator|
-        bfilter = Bloomer::Scalable.from_msgpack(open("#{directory}/#{validator[:file]}").read())
+        bfilter = Bloomer::Scalable.from_msgpack(open("#{directory}/#{validator[:file]}").read)
         validate_fn = lambda do |coding|
           probe = "#{coding['system']}|#{coding['code']}"
           bfilter.include? probe
