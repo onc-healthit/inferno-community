@@ -95,7 +95,7 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     assert sequence_result.result == 'fail'
     # all tests depend on valid token
-    assert sequence_result.test_results.all? { |r| r.result == 'fail' }
+    assert(sequence_result.test_results.all? { |r| r.result == 'fail' })
   end
 
   def test_bad_signature_token
