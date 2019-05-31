@@ -67,7 +67,7 @@ def get_test_instance(url: 'http://www.example.com',
                                                    oauth_authorize_endpoint: oauth_authorize_endpoint,
                                                    oauth_token_endpoint: oauth_token_endpoint,
                                                    scopes: scopes,
-                                                   selected_module: 'argonaut',
+                                                   selected_module: selected_module,
                                                    token: token)
 end
 

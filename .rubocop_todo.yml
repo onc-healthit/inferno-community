@@ -48,13 +48,6 @@ Lint/ShadowingOuterLocalVariable:
     - 'lib/app/utils/terminology.rb'
     - 'lib/app/utils/valueset.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods.
-Lint/UnusedMethodArgument:
-  Exclude:
-    - 'test/test_helper.rb'
-
 # Offense count: 32
 Lint/UselessAssignment:
   Exclude:
