@@ -2,6 +2,11 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   TargetRubyVersion: 2.5
+  Exclude:
+    - 'config.ru'
+    - 'vendor/**/*'
+    - 'node_modules/**/*'
+    - '.git/**/*'
 
 Style/WordArray:
   Enabled: false
