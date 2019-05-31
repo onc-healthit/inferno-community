@@ -31,7 +31,7 @@ class CarePlanSequenceTest < MiniTest::Test
     )
 
     # Register that the server supports MedicationStatement
-    if !@instance.resource_references.any? {|r| r.resource_type == @resource_type }
+    if @instance.resource_references.none? { |r| r.resource_type == @resource_type }
       @instance.supported_resources << Inferno::Models::SupportedResource.create(
         resource_type: @resource_type.to_s,
         testing_instance_id: @instance.id,
