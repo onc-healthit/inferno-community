@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../../test_helper'
-class CarePlanSequenceTest < MiniTest::Test
+class CareTeamSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'care_plan' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautCarePlanSequence.new(@instance, client) # put sequence here
+    @fixture = 'care_team' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautCareTeamSequence.new(@instance, client) # put sequence here
     @resource_type = 'CarePlan'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
@@ -62,7 +62,7 @@ class CarePlanSequenceTest < MiniTest::Test
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources
@@ -101,6 +101,11 @@ class CarePlanSequenceTest < MiniTest::Test
       .to_return(status: 200,
                  body: @patient_resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+    stub_request(:get, %r{example.com/Practitioner/1})
+      .with(headers: @extended_request_headers)
+      .to_return(status: 200,
+                 body: @patient_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 
   def test_all_pass
@@ -110,6 +115,9 @@ class CarePlanSequenceTest < MiniTest::Test
 
     failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
+    sequence_result.test_results.each do |test_result|
+      assert test_result.result == 'pass', "#{test_result.name} - #{test_result.result}"
+    end
     assert sequence_result.result == 'pass', "The sequence should be marked as pass. #{sequence_result.result}"
     assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
