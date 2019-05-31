@@ -93,7 +93,7 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        target_date_val = @goal&.target.first&.dueDate
+        target_date_val = @goal&.target&.first&.dueDate
         search_params = { 'patient': patient_val, 'target-date': target_date_val }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)

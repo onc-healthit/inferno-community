@@ -20,10 +20,10 @@ module Inferno
         when 'name'
           found = resource.name.any? do |name|
             name&.text&.include?(value) ||
-              name&.family.include?(value) ||
-              name&.given.any { |given| given&.include?(value) } ||
-              name&.prefix.any { |prefix| prefix&.include?(value) } ||
-              name&.suffix.any { |suffix| suffix&.include?(value) }
+              name&.family&.include?(value) ||
+              name&.given&.any { |given| given&.include?(value) } ||
+              name&.prefix&.any { |prefix| prefix&.include?(value) } ||
+              name&.suffix&.any { |suffix| suffix&.include?(value) }
           end
           assert found, 'name on resource does not match name requested'
 
@@ -65,7 +65,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = @practitioner&.name.first&.family
+        name_val = @practitioner&.name&.first&.family
         search_params = { 'name': name_val }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -94,7 +94,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
 
-        identifier_val = @practitioner&.identifier.first&.value
+        identifier_val = @practitioner&.identifier&.first&.value
         search_params = { 'identifier': identifier_val }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)

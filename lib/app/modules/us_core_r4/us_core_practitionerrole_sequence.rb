@@ -92,7 +92,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitionerrole.nil?, 'Expected valid PractitionerRole resource to be present'
 
-        practitioner_val = @practitionerrole&.practitioner&.reference.first
+        practitioner_val = @practitionerrole&.practitioner&.reference&.first
         search_params = { 'practitioner': practitioner_val }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)

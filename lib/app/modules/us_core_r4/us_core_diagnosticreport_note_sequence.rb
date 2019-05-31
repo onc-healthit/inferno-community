@@ -24,7 +24,7 @@ module Inferno
           assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
 
         when 'category'
-          codings = resource&.category.first&.coding
+          codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
@@ -122,7 +122,7 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @diagnosticreport&.category.first&.coding&.first&.code
+        category_val = @diagnosticreport&.category&.first&.coding&.first&.code
         date_val = @diagnosticreport&.effectiveDateTime
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
 
@@ -202,7 +202,7 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @diagnosticreport&.category.first&.coding&.first&.code
+        category_val = @diagnosticreport&.category&.first&.coding&.first&.code
         date_val = @diagnosticreport&.effectiveDateTime
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
 

@@ -27,7 +27,7 @@ module Inferno
           assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
 
         when 'category'
-          codings = resource&.category.first&.coding
+          codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
@@ -126,7 +126,7 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @documentreference&.category.first&.coding&.first&.code
+        category_val = @documentreference&.category&.first&.coding&.first&.code
         search_params = { 'patient': patient_val, 'category': category_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -146,7 +146,7 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @documentreference&.category.first&.coding&.first&.code
+        category_val = @documentreference&.category&.first&.coding&.first&.code
         date_val = @documentreference&.date
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
 

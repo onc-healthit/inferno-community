@@ -21,7 +21,7 @@ module Inferno
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'category'
-          codings = resource&.category.first&.coding
+          codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
@@ -97,7 +97,7 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @careplan&.category.first&.coding&.first&.code
+        category_val = @careplan&.category&.first&.coding&.first&.code
         status_val = @careplan&.status
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
 
@@ -118,7 +118,7 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @careplan&.category.first&.coding&.first&.code
+        category_val = @careplan&.category&.first&.coding&.first&.code
         status_val = @careplan&.status
         date_val = @careplan&.period&.start
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': date_val }
@@ -140,7 +140,7 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @careplan&.category.first&.coding&.first&.code
+        category_val = @careplan&.category&.first&.coding&.first&.code
         date_val = @careplan&.period&.start
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
 

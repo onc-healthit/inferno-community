@@ -21,27 +21,6 @@ Lint/NonLocalExitFromIterator:
   Exclude:
     - 'lib/app/sequence_base.rb'
 
-# Offense count: 50
-# Configuration parameters: Whitelist.
-# Whitelist: present?, blank?, presence, try, try!
-Lint/SafeNavigationChain:
-  Exclude:
-    - 'lib/app/modules/onc_program/document_reference_sequence.rb'
-    - 'lib/app/modules/us_core_r4/pediatric_bmi_for_age_sequence.rb'
-    - 'lib/app/modules/us_core_r4/pediatric_weight_for_height_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_careplan_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_condition_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_diagnosticreport_note_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_documentreference_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_encounter_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_goal_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_observation_lab_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_organization_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_patient_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_practitioner_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_practitionerrole_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_smokingstatus_sequence.rb'
-
 # Offense count: 3
 Lint/ShadowingOuterLocalVariable:
   Exclude:

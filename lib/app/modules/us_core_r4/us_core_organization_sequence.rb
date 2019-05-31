@@ -88,7 +88,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
-        address_val = @organization&.address.first
+        address_val = @organization&.address&.first
         search_params = { 'address': address_val }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
