@@ -21,12 +21,6 @@ Lint/NonLocalExitFromIterator:
   Exclude:
     - 'lib/app/sequence_base.rb'
 
-# Offense count: 10
-Lint/RescueException:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/tasks/tasks.rake'
-
 # Offense count: 50
 # Configuration parameters: Whitelist.
 # Whitelist: present?, blank?, presence, try, try!

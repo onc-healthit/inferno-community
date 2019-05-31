@@ -22,7 +22,7 @@ def suppress_output
     $stderr.reopen(File.new('/dev/null', 'w'))
     $stdout.reopen(File.new('/dev/null', 'w'))
     retval = yield
-  rescue Exception => e
+  rescue StandardError => e
     $stdout.reopen(original_stdout)
     $stderr.reopen(original_stderr)
     raise e
@@ -375,7 +375,7 @@ namespace :terminology do |_argv|
           #              CODE    | DESC
           output.write("#{row[0]}|#{row[1]}\n")
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -409,7 +409,7 @@ namespace :terminology do |_argv|
           #              CODE    | DESC
           output.write("#{row[0]}|#{row[1]}\n")
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -443,7 +443,7 @@ namespace :terminology do |_argv|
           output.write("#{row[0]}\n") # code
           output.write("#{row[5]}\n") if row[0] != row[5] # synonym
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -661,7 +661,7 @@ namespace :terminology do |_argv|
             excluded += 1
           end
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -748,7 +748,7 @@ namespace :terminology do |_argv|
             excluded_systems[codeSystem] += 1
           end
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
