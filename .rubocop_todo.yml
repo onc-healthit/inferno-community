@@ -21,12 +21,6 @@ Lint/AmbiguousOperator:
     - 'lib/app/sequence_base.rb'
 
 # Offense count: 1
-# Configuration parameters: AllowSafeAssignment.
-Lint/AssignmentInCondition:
-  Exclude:
-    - 'lib/app/utils/validation.rb'
-
-# Offense count: 1
 Lint/Debugger:
   Exclude:
     - 'lib/app/utils/web_driver.rb'
