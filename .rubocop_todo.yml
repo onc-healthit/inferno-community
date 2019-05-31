@@ -7,11 +7,6 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 1
-Lint/Debugger:
-  Exclude:
-    - 'lib/app/utils/web_driver.rb'
-
-# Offense count: 1
 Lint/ElseLayout:
   Exclude:
     - 'lib/tasks/tasks.rake'
