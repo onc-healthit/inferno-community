@@ -23,7 +23,7 @@ module Inferno
       !(defined? OpenSSL::SSL::TLS1_2_VERSION).nil?
     end
 
-    def verifyEnsureProtocol(ssl_version)
+    def verify_ensure_protocol(ssl_version)
       http = Net::HTTP.new(@host, @port)
       http.use_ssl = true
       http.min_version = ssl_version
@@ -50,7 +50,7 @@ module Inferno
       [true, 'Allowed Connection with TLSv1_2']
     end
 
-    def verifyDenyProtocol(ssl_version, readable_version)
+    def verify_deny_protocol(ssl_version, readable_version)
       http = Net::HTTP.new(@host, @port)
       http.use_ssl = true
       http.min_version = ssl_version
@@ -64,20 +64,20 @@ module Inferno
       [false, "Should not allow connections with #{readable_version}"]
     end
 
-    def verifyEnsureTLSv1_2
-      verifyEnsureProtocol(OpenSSL::SSL::TLS1_2_VERSION)
+    def verify_ensure_tls_v1_2
+      verify_ensure_protocol(OpenSSL::SSL::TLS1_2_VERSION)
     end
 
-    def verifyDenyTLSv1
-      verifyDenyProtocol(OpenSSL::SSL::TLS1_VERSION, 'TLSv1.0')
+    def verify_deny_tls_v1
+      verify_deny_protocol(OpenSSL::SSL::TLS1_VERSION, 'TLSv1.0')
     end
 
-    def verifyDenySSLv3
-      verifyDenyProtocol(OpenSSL::SSL::SSL3_VERSION, 'SSLv3.0')
+    def verify_deny_ssl_v3
+      verify_deny_protocol(OpenSSL::SSL::SSL3_VERSION, 'SSLv3.0')
     end
 
-    def verifyDenyTLSv1_1
-      verifyDenyProtocol(OpenSSL::SSL::TLS1_1_VERSION, 'TLSv1.1')
+    def verify_deny_tls_v1_1
+      verify_deny_protocol(OpenSSL::SSL::TLS1_1_VERSION, 'TLSv1.1')
     end
   end
 end
