@@ -90,8 +90,6 @@ module Inferno
           result = :not_run if result_details[:total] == 0
 
           return_data << { group: group, result_details: result_details, result: result, missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? } }
-
-          return_data
         end
 
         return_data

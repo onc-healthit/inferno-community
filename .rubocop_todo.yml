@@ -53,13 +53,6 @@ Lint/UselessAssignment:
   Exclude:
     - 'lib/tasks/tasks.rake'
 
-# Offense count: 2
-# Configuration parameters: CheckForMethodsWithNoSideEffects.
-Lint/Void:
-  Exclude:
-    - 'lib/app/models/testing_instance.rb'
-    - 'lib/app/utils/terminology.rb'
-
 # Offense count: 150
 Metrics/AbcSize:
   Max: 174

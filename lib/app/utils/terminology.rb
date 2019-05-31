@@ -201,7 +201,6 @@ module Inferno
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
       end
-      bf
       File.write(filename, bf.to_msgpack) unless bf.nil?
     end
 
