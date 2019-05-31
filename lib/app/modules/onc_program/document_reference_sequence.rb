@@ -105,7 +105,7 @@ module Inferno
         assert !@document_reference.nil?, 'Expected valid DSTU2 DocumentReference resource to be present'
         assert @document_reference.is_a?(FHIR::DSTU2::DocumentReference),
                'Expected resource to be valid DSTU2 DocumentReference'
-        text = @document_reference&.content[0]&.attachment
+        text = @document_reference&.content&.first&.attachment
         assert !text.nil?, 'DocumentReference section text not returned'
       end
     end

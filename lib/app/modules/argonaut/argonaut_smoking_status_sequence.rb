@@ -80,7 +80,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count > 0
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)

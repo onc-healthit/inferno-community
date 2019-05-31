@@ -79,7 +79,7 @@ module Inferno
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count > 0
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -181,7 +181,7 @@ module Inferno
 
         pass 'Test passes because medication resource references are not used in any medication statements.' if @medication_references.nil? || @medication_references.empty?
 
-        not_contained_refs = @medication_references&.select { |ref| !ref.contained? }
+        @medication_references&.select { |ref| !ref.contained? }
       end
 
       test 'All references can be resolved' do

@@ -217,14 +217,14 @@ module Inferno
           test_set = instance.module.test_sets[params[:test_set].to_sym]
           halt 404 if test_set.nil?
           sequence_results = instance.latest_results_by_case
-          latest_sequence_time = nil
 
           request_response_count = Inferno::Models::RequestResponse.all(instance_id: instance.id).count
-          if instance.sequence_results.count > 0
-            latest_sequence_time = Inferno::Models::SequenceResult.first(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
-          else
-            latest_sequence_time = 'No tests ran'
-          end
+          latest_sequence_time =
+            if instance.sequence_results.count.positive?
+              Inferno::Models::SequenceResult.first(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
+            else
+              'No tests ran'
+            end
 
           report_summary = {
             fhir_version: instance.fhir_version,
@@ -325,7 +325,6 @@ module Inferno
 
           sequence_result.save!
 
-          test_group = nil
           test_group = test_set.test_case_by_id(sequence_result.test_case_id).test_group
 
           query_target = sequence_result.test_case_id

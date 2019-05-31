@@ -34,10 +34,10 @@ module Inferno
         when 'name'
           found = resource.name.any? do |name|
             name&.text&.include?(value) ||
-              name&.family.include?(value) ||
-              name&.given.any { |given| given&.include?(value) } ||
-              name&.prefix.any { |prefix| prefix&.include?(value) } ||
-              name&.suffix.any { |suffix| suffix&.include?(value) }
+              name&.family&.include?(value) ||
+              name&.given&.any { |given| given&.include?(value) } ||
+              name&.prefix&.any { |prefix| prefix&.include?(value) } ||
+              name&.suffix&.any { |suffix| suffix&.include?(value) }
           end
           assert found, 'name on resource does not match name requested'
 
@@ -86,7 +86,7 @@ module Inferno
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count > 0
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -107,7 +107,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        identifier_val = @patient&.identifier.first&.value
+        identifier_val = @patient&.identifier&.first&.value
         search_params = { 'identifier': identifier_val }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -126,7 +126,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        name_val = @patient&.name.first&.family
+        name_val = @patient&.name&.first&.family
         search_params = { 'name': name_val }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -146,7 +146,7 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         birthdate_val = @patient&.birthDate
-        name_val = @patient&.name.first&.family
+        name_val = @patient&.name&.first&.family
         search_params = { 'birthdate': birthdate_val, 'name': name_val }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -166,7 +166,7 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         gender_val = @patient&.gender
-        name_val = @patient&.name.first&.family
+        name_val = @patient&.name&.first&.family
         search_params = { 'gender': gender_val, 'name': name_val }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -185,7 +185,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        family_val = @patient&.name.first&.family
+        family_val = @patient&.name&.first&.family
         gender_val = @patient&.gender
         search_params = { 'family': family_val, 'gender': gender_val }
 
@@ -206,7 +206,7 @@ module Inferno
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         birthdate_val = @patient&.birthDate
-        family_val = @patient&.name.first&.family
+        family_val = @patient&.name&.first&.family
         search_params = { 'birthdate': birthdate_val, 'family': family_val }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)

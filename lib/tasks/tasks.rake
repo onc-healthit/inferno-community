@@ -22,7 +22,7 @@ def suppress_output
     $stderr.reopen(File.new('/dev/null', 'w'))
     $stdout.reopen(File.new('/dev/null', 'w'))
     retval = yield
-  rescue Exception => e
+  rescue StandardError => e
     $stdout.reopen(original_stdout)
     $stderr.reopen(original_stderr)
     raise e
@@ -65,8 +65,8 @@ def execute(instance, sequences)
           instance.send("#{key}=", true) if instance.respond_to? key.to_s
         elsif val.is_a?(String) && val.casecmp('false').zero?
           instance.send("#{key}=", false) if instance.respond_to? key.to_s
-        else
-          instance.send("#{key}=", val) if instance.respond_to? key.to_s
+        elsif instance.respond_to? key.to_s
+          instance.send("#{key}=", val)
         end
       end
     end
@@ -135,11 +135,11 @@ def execute(instance, sequences)
   passed_count = '' + sequence_results.select { |s| s.result == 'pass' }.count.to_s
   skip_count = '' + sequence_results.select { |s| s.result == 'skip' }.count.to_s
   print ' Result: ' + failures_count.red + ' failed, ' + passed_count.green + ' passed'
-  if sequence_results.select { |s| s.result == 'skip' }.count > 0
-    print (', ' + sequence_results.select { |s| s.result == 'skip' }.count.to_s).yellow + ' skipped'
+  if sequence_results.select { |s| s.result == 'skip' }.count.positive?
+    print(', ' + sequence_results.select { |s| s.result == 'skip' }.count.to_s).yellow + ' skipped'
   end
-  if sequence_results.select { |s| s.result == 'error' }.count > 0
-    print (', ' + sequence_results.select { |s| s.result == 'error' }.count.to_s).yellow + ' error'
+  if sequence_results.select { |s| s.result == 'error' }.count.positive?
+    print(', ' + sequence_results.select { |s| s.result == 'error' }.count.to_s).yellow + ' error'
   end
   puts "\n=============================================\n"
 
@@ -201,7 +201,7 @@ namespace :inferno do |_argv|
         input = STDIN.gets.chomp
       end
 
-      next unless input == 'a' || input == 'y'
+      next unless ['a', 'y'].include? input
 
       output[:sequences].push(sequence: seq.sequence_name)
       sequences << seq
@@ -247,7 +247,6 @@ namespace :inferno do |_argv|
       next unless args.extras.empty? || args.extras.include?(seq.sequence_name.split('Sequence')[0])
 
       seq.requires.each do |req|
-        oauth_required ||= (req == :initiate_login_uri)
         requires << req unless requires.include?(req) || defines.include?(req) || req == :url
       end
       defines.push(*seq.defines)
@@ -330,8 +329,8 @@ namespace :inferno do |_argv|
           instance.send("#{key}=", true) if instance.respond_to? key.to_s
         elsif val.is_a?(String) && val.casecmp('false').zero?
           instance.send("#{key}=", false) if instance.respond_to? key.to_s
-        else
-          instance.send("#{key}=", val) if instance.respond_to? key.to_s
+        elsif instance.respond_to? key.to_s
+          instance.send("#{key}=", val)
         end
       end
     end
@@ -375,7 +374,7 @@ namespace :terminology do |_argv|
           #              CODE    | DESC
           output.write("#{row[0]}|#{row[1]}\n")
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -409,7 +408,7 @@ namespace :terminology do |_argv|
           #              CODE    | DESC
           output.write("#{row[0]}|#{row[1]}\n")
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -443,7 +442,7 @@ namespace :terminology do |_argv|
           output.write("#{row[0]}\n") # code
           output.write("#{row[5]}\n") if row[0] != row[5] # synonym
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -472,15 +471,15 @@ namespace :terminology do |_argv|
 
     begin
       puts 'Getting Download Link'
-      response = RestClient::Request.execute(method: :post,
-                                             url: action_base + action_path,
-                                             payload: {
-                                               username: args.username,
-                                               password: args.password,
-                                               execution: execution,
-                                               _eventId: 'submit'
-                                             },
-                                             max_redirects: 0)
+      RestClient::Request.execute(method: :post,
+                                  url: action_base + action_path,
+                                  payload: {
+                                    username: args.username,
+                                    password: args.password,
+                                    execution: execution,
+                                    _eventId: 'submit'
+                                  },
+                                  max_redirects: 0)
     rescue RestClient::ExceptionWithResponse => err
       follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
     end
@@ -552,12 +551,12 @@ namespace :terminology do |_argv|
     # More information on batch running UMLS
     # https://www.nlm.nih.gov/research/umls/implementation_resources/community/mmsys/BatchMetaMorphoSys.html
     args.with_defaults(my_config: 'all-active-exportconfig.prop')
-    jre_version = if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+    jre_version = if !(/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM).nil?
                     'windows64'
-                  elsif (/darwin/ =~ RUBY_PLATFORM) != nil
+                  elsif !(/darwin/ =~ RUBY_PLATFORM).nil?
                     'macos'
-                  else linux?
-                       'linux'
+                  else
+                    'linux'
                   end
     puts "#{jre_version} system detected"
     config_file = Dir.pwd + "/resources/terminology/#{args.my_config}"
@@ -618,31 +617,31 @@ namespace :terminology do |_argv|
         CSV.foreach(input_file, headers: false, col_sep: '|', quote_char: "\x00") do |row|
           line += 1
           include_code = false
-          codeSystem = row[11]
+          code_system = row[11]
           code = row[13]
           description = row[14]
-          case codeSystem
+          case code_system
           when 'SNOMEDCT_US'
-            codeSystem = 'SNOMED'
+            code_system = 'SNOMED'
             include_code = (row[4] == 'PF' && ['FN', 'OAF'].include?(row[12]))
           when 'LNC'
-            codeSystem = 'LOINC'
+            code_system = 'LOINC'
             include_code = true
           when 'ICD10CM'
-            codeSystem = 'ICD10'
+            code_system = 'ICD10'
             include_code = (row[12] == 'PT')
           when 'ICD10PCS'
-            codeSystem = 'ICD10'
+            code_system = 'ICD10'
             include_code = (row[12] == 'PT')
           when 'ICD9CM'
-            codeSystem = 'ICD9'
+            code_system = 'ICD9'
             include_code = (row[12] == 'PT')
           when 'CPT'
             include_code = (row[12] == 'PT')
           when 'HCPCS'
             include_code = (row[12] == 'PT')
           when 'MTHICD9'
-            codeSystem = 'ICD9'
+            code_system = 'ICD9'
             include_code = true
           when 'RXNORM'
             include_code = true
@@ -653,15 +652,15 @@ namespace :terminology do |_argv|
             include_code = false
           else
             include_code = false
-            excluded_systems[codeSystem] += 1
+            excluded_systems[code_system] += 1
           end
           if include_code
-            output.write("#{codeSystem}|#{code}|#{description}\n")
+            output.write("#{code_system}|#{code}|#{description}\n")
           else
             excluded += 1
           end
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end
@@ -697,7 +696,6 @@ namespace :terminology do |_argv|
       output_filename = 'resources/terminology/translations_umls.txt'
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
-      excluded = 0
       excluded_systems = Hash.new(0)
       begin
         entire_file = File.read(input_file)
@@ -707,7 +705,6 @@ namespace :terminology do |_argv|
         entire_file.split("\n").each do |l|
           row = l.split('|')
           line += 1
-          include_code = false
           concept = row[0]
           if concept != current_umls_concept && !current_umls_concept.nil?
             output.write("#{translation.join('|')}\n") unless translation[1..-2].reject(&:nil?).length < 2
@@ -718,10 +715,10 @@ namespace :terminology do |_argv|
             current_umls_concept = concept
             translation[0] = current_umls_concept
           end
-          codeSystem = row[11]
+          code_system = row[11]
           code = row[13]
           translation[9] = row[14]
-          case codeSystem
+          case code_system
           when 'SNOMEDCT_US'
             translation[1] = code if row[4] == 'PF' && ['FN', 'OAF'].include?(row[12])
           when 'LNC'
@@ -745,10 +742,10 @@ namespace :terminology do |_argv|
           when 'SRC'
             # 'SRC' rows define the data sources in the file
           else
-            excluded_systems[codeSystem] += 1
+            excluded_systems[code_system] += 1
           end
         end
-      rescue Exception => e
+      rescue StandardError => e
         puts "Error at line #{line}"
         puts e.message
       end

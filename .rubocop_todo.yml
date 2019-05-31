@@ -6,26 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 1
-Lint/AmbiguousBlockAssociation:
-  Exclude:
-    - 'test/sequence/openid_connect_test.rb'
-
-# Offense count: 3
-Lint/AmbiguousOperator:
-  Exclude:
-    - 'lib/app/sequence_base.rb'
-
-# Offense count: 1
-Lint/Debugger:
-  Exclude:
-    - 'lib/app/utils/web_driver.rb'
-
-# Offense count: 1
-Lint/ElseLayout:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
 # Offense count: 25
 Lint/EmptyWhen:
   Enabled: false
@@ -41,85 +21,20 @@ Lint/NonLocalExitFromIterator:
   Exclude:
     - 'lib/app/sequence_base.rb'
 
-# Offense count: 2
-Lint/ParenthesesAsGroupedExpression:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
-# Offense count: 10
-Lint/RescueException:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/tasks/tasks.rake'
-
-# Offense count: 50
-# Configuration parameters: Whitelist.
-# Whitelist: present?, blank?, presence, try, try!
-Lint/SafeNavigationChain:
-  Exclude:
-    - 'lib/app/modules/onc_program/document_reference_sequence.rb'
-    - 'lib/app/modules/us_core_r4/pediatric_bmi_for_age_sequence.rb'
-    - 'lib/app/modules/us_core_r4/pediatric_weight_for_height_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_careplan_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_condition_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_diagnosticreport_note_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_documentreference_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_encounter_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_goal_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_observation_lab_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_organization_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_patient_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_practitioner_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_practitionerrole_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_smokingstatus_sequence.rb'
-
 # Offense count: 3
 Lint/ShadowingOuterLocalVariable:
   Exclude:
     - 'lib/app/utils/terminology.rb'
     - 'lib/app/utils/valueset.rb'
 
-# Offense count: 2
-Lint/UnderscorePrefixedVariableName:
-  Exclude:
-    - 'lib/app/modules/us_core_r4/us_core_documentreference_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_encounter_sequence.rb'
-
 # Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods.
-Lint/UnusedMethodArgument:
-  Exclude:
-    - 'test/test_helper.rb'
-
-# Offense count: 32
 Lint/UselessAssignment:
   Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/app/endpoint/home.rb'
-    - 'lib/app/helpers/configuration.rb'
-    - 'lib/app/models/testing_instance.rb'
-    - 'lib/app/module.rb'
-    - 'lib/app/modules/argonaut/argonaut_conformance_sequence.rb'
-    - 'lib/app/modules/argonaut/argonaut_medication_statement_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_r4_capability_statement_sequence.rb'
-    - 'lib/app/sequence_base.rb'
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/app/utils/tls_tester.rb'
     - 'lib/tasks/tasks.rake'
-    - 'test/sequence/openid_connect_test.rb'
-    - 'test/sequence/token_introspection_test.rb'
-
-# Offense count: 2
-# Configuration parameters: CheckForMethodsWithNoSideEffects.
-Lint/Void:
-  Exclude:
-    - 'lib/app/models/testing_instance.rb'
-    - 'lib/app/utils/terminology.rb'
 
 # Offense count: 150
 Metrics/AbcSize:
-  Max: 174
+  Max: 176
 
 # Offense count: 38
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -160,77 +75,6 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 32
 
-# Offense count: 1
-Naming/AccessorMethodName:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-
-# Offense count: 6
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: snake_case, camelCase
-Naming/MethodName:
-  Exclude:
-    - 'lib/app/utils/tls_tester.rb'
-
-# Offense count: 3
-# Configuration parameters: NamePrefix, NamePrefixBlacklist, NameWhitelist, MethodDefinitionMacros.
-# NamePrefix: is_, has_, have_
-# NamePrefixBlacklist: is_, has_, have_
-# NameWhitelist: is_a?
-# MethodDefinitionMacros: define_method, define_singleton_method
-Naming/PredicateName:
-  Exclude:
-    - 'spec/**/*'
-    - 'lib/app/utils/terminology.rb'
-
-# Offense count: 2
-# Configuration parameters: PreferredName.
-Naming/RescuedExceptionsVariableName:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/app/utils/tls_tester.rb'
-
-# Offense count: 3
-# Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
-Naming/UncommunicativeBlockParamName:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'test/sequence/argonaut_query_test.rb'
-
-# Offense count: 3
-# Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
-# AllowedNames: io, id, to, by, on, in, at, ip, db
-Naming/UncommunicativeMethodParamName:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-    - 'test/sequence/argonaut_query_test.rb'
-    - 'test/test_helper.rb'
-
-# Offense count: 39
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: snake_case, camelCase
-Naming/VariableName:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/app/helpers/browser_logic.rb'
-    - 'lib/app/modules/onc_program/onc_ehr_launch_sequence.rb'
-    - 'lib/app/modules/onc_program/onc_standalone_launch_sequence.rb'
-    - 'lib/app/utils/assertions.rb'
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/tasks/tasks.rake'
-    - 'test/sequence/argonaut_query_test.rb'
-    - 'test/test_helper.rb'
-
-# Offense count: 1
-Performance/UnfreezeString:
-  Exclude:
-    - 'lib/app/utils/valueset.rb'
-
-# Offense count: 1
-Security/Open:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-
 # Offense count: 33
 Style/ClassVars:
   Exclude:
@@ -241,23 +85,9 @@ Style/ClassVars:
     - 'lib/app/utils/logged_rest_client.rb'
     - 'lib/app/utils/terminology.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SingleLineConditionsOnly, IncludeTernaryExpressions.
-# SupportedStyles: assign_to_condition, assign_inside_condition
-Style/ConditionalAssignment:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/app/endpoint/home.rb'
-
 # Offense count: 95
 Style/Documentation:
   Enabled: false
-
-# Offense count: 1
-Style/EvalWithLocation:
-  Exclude:
-    - 'lib/app/ext/fhir_client.rb'
 
 # Offense count: 22
 # Configuration parameters: MinBodyLength.
@@ -271,11 +101,7 @@ Style/GuardClause:
     - 'lib/app/utils/validation.rb'
     - 'lib/tasks/tasks.rake'
 
-# Offense count: 2
-Style/IfInsideElse:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
+# Max line length needs to be reduced before fixing these
 # Offense count: 14
 # Cop supports --auto-correct.
 Style/IfUnlessModifier:
@@ -290,12 +116,6 @@ Style/MixinUsage:
   Exclude:
     - 'lib/tasks/tasks.rake'
 
-# Offense count: 2
-Style/MultipleComparison:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/tasks/tasks.rake'
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.
@@ -303,20 +123,6 @@ Style/MultipleComparison:
 Style/MutableConstant:
   Exclude:
     - 'lib/app/utils/validation.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: IncludeSemanticChanges.
-Style/NonNilCheck:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
-# Offense count: 54
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, EnforcedStyle, IgnoredMethods.
-# SupportedStyles: predicate, comparison
-Style/NumericPredicate:
-  Enabled: false
 
 # Offense count: 1
 # Cop supports --auto-correct.
@@ -329,4 +135,4 @@ Style/Semicolon:
 # Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
 # URISchemes: http, https
 Metrics/LineLength:
-  Max: 530
+  Max: 532

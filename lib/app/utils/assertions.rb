@@ -143,7 +143,7 @@ module Inferno
     end
 
     def assert_tls_1_2(uri)
-      tlsTester = TlsTester.new(uri: uri)
+      tls_tester = TlsTester.new(uri: uri)
 
       unless uri.downcase.start_with?('https')
         raise AssertionException.new "URI is not HTTPS: #{uri}", %(
@@ -172,7 +172,7 @@ module Inferno
       end
 
       begin
-        passed, msg, details = tlsTester.verifyEnsureTLSv1_2
+        passed, msg, details = tls_tester.verify_ensure_tls_v1_2
         raise AssertionException.new msg, details unless passed
       rescue SocketError => e
         raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", %(
@@ -209,16 +209,16 @@ module Inferno
     end
 
     def assert_deny_previous_tls(uri)
-      tlsTester = TlsTester.new(uri: uri)
+      tls_tester = TlsTester.new(uri: uri)
 
       begin
-        passed, msg, details = tlsTester.verifyDenySSLv3
+        passed, msg, details = tls_tester.verify_deny_ssl_v3
         raise AssertionException.new msg, details unless passed
 
-        passed, msg, details = tlsTester.verifyDenyTLSv1_1
+        passed, msg, details = tls_tester.verify_deny_tls_v1_1
         raise AssertionException.new msg, details unless passed
 
-        passed, msg, details = tlsTester.verifyDenyTLSv1
+        passed, msg, details = tls_tester.verify_deny_tls_v1
         raise AssertionException.new msg, details unless passed
       rescue SocketError => e
         raise AssertionException.new "Unable to connect to #{uri}: #{e.message}", %(

@@ -17,7 +17,7 @@ module Inferno
 
       defines :token, :id_token, :refresh_token, :patient_id
 
-      @@resourceTypes = [
+      @@resource_types = [
         'Patient',
         'AllergyIntolerance',
         'Encounter',
@@ -69,7 +69,7 @@ module Inferno
           assert scope_pieces[0] == 'patient', "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
           resource_access = scope_pieces[1].split('.')
           assert resource_access.count == 2, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
-          assert resource_access[0] == '*' || @@resourceTypes.include?(resource_access[0]), "'#{resource_access[0]}' must be either a valid resource type or '*'"
+          assert resource_access[0] == '*' || @@resource_types.include?(resource_access[0]), "'#{resource_access[0]}' must be either a valid resource type or '*'"
           assert resource_access[1] =~ /^(\*|read)/, "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
 
           patient_scope_found = true

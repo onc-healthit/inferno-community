@@ -78,7 +78,7 @@ class ValueSetTest < Minitest::Test
       hits += 1 if bf.include?(n)
       total += 1
     end
-    assert hits == 0, 'Expected to invalid codes to match'
+    assert hits.zero?, 'Expected to invalid codes to match'
     puts "Hits: #{hits}, Total: #{total}"
     assert !bf.include?('9999'), 'Expected 9999 to fail'
   end

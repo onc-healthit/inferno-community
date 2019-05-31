@@ -24,7 +24,7 @@ module Inferno
           assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
 
         when 'category'
-          codings = resource&.category.first&.coding
+          codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
@@ -80,7 +80,7 @@ module Inferno
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count > 0
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -102,7 +102,7 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @observation&.category.first&.coding&.first&.code
+        category_val = @observation&.category&.first&.coding&.first&.code
         search_params = { 'patient': patient_val, 'category': category_val }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -122,7 +122,7 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @observation&.category.first&.coding&.first&.code
+        category_val = @observation&.category&.first&.coding&.first&.code
         date_val = @observation&.effectiveDateTime
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
 
@@ -164,7 +164,7 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @observation&.category.first&.coding&.first&.code
+        category_val = @observation&.category&.first&.coding&.first&.code
         status_val = @observation&.status
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
 

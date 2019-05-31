@@ -45,7 +45,7 @@ module Inferno
         when 'send_keys'
           current_element.send_keys(command['value'])
         when 'debugger'
-          binding.pry
+          binding.pry # rubocop:disable Lint/Debugger
         when 'wait'
           sleep command['value']
         when 'navigate'

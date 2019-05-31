@@ -71,7 +71,7 @@ module Inferno
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count > 0
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -93,7 +93,7 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        target_date_val = @goal&.target.first&.dueDate
+        target_date_val = @goal&.target&.first&.dueDate
         search_params = { 'patient': patient_val, 'target-date': target_date_val }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)

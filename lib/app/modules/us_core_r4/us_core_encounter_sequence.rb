@@ -32,7 +32,7 @@ module Inferno
           assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
 
         when 'type'
-          codings = resource&.type.first&.coding
+          codings = resource&.type&.first&.coding
           assert !codings.nil?, 'type on resource did not match type requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'type on resource did not match type requested'
 
@@ -82,7 +82,7 @@ module Inferno
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count > 0
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -103,8 +103,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        _id_val = @encounter&.id
-        search_params = { '_id': _id_val }
+        search_params = { '_id': @encounter&.id }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
@@ -142,7 +141,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        identifier_val = @encounter&.identifier.first&.value
+        identifier_val = @encounter&.identifier&.first&.value
         search_params = { 'identifier': identifier_val }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -202,7 +201,7 @@ module Inferno
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = @encounter&.type.first&.coding&.first&.code
+        type_val = @encounter&.type&.first&.coding&.first&.code
         search_params = { 'patient': patient_val, 'type': type_val }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)

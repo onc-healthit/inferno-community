@@ -74,9 +74,6 @@ module Inferno
         results = latest_results_by_case
 
         self.module.test_sets[test_set_id.to_sym].groups.each do |group|
-          pass_count = 0
-          failure_count = 0
-          total_count = 0
           result_details = group.test_cases.each_with_object(cancel: 0, pass: 0, skip: 0, fail: 0, error: 0, total: 0) do |val, hash|
             next unless results.key?(val.id)
 
@@ -86,15 +83,13 @@ module Inferno
           end
 
           result = :pass
-          result = :skip if result_details[:skip] > 0
-          result = :fail if result_details[:fail] > 0
-          result = :fail if result_details[:cancel] > 0
-          result = :error if result_details[:error] > 0
-          result = :not_run if result_details[:total] == 0
+          result = :skip if result_details[:skip].positive?
+          result = :fail if result_details[:fail].positive?
+          result = :fail if result_details[:cancel].positive?
+          result = :error if result_details[:error].positive?
+          result = :not_run if result_details[:total].zero?
 
           return_data << { group: group, result_details: result_details, result: result, missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? } }
-
-          return_data
         end
 
         return_data
@@ -133,7 +128,7 @@ module Inferno
       def patient_id=(patient_id)
         return if patient_id.to_s == self.patient_id.to_s
 
-        existing_patients = resource_references.select { |ref| ref.resource_type == 'Patient' }
+        resource_references.select { |ref| ref.resource_type == 'Patient' }
         # Use destroy directly (instead of on each, so we don't have to reload)
         resource_references.destroy
         save!

@@ -37,10 +37,6 @@ module Inferno
     end
     private_class_method :reset
 
-    def self.set_terminology_root(root)
-      @@term_root = root
-    end
-
     def self.load_terminology
       unless @@loaded
         begin
@@ -51,8 +47,8 @@ module Inferno
             row = line.split('|')
             @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
           end
-        rescue Exception => error
-          FHIR.logger.error error
+        rescue StandardError => e
+          FHIR.logger.error e
         end
 
         begin
@@ -61,35 +57,35 @@ module Inferno
           raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
-            codeSystem = row[0]
+            code_system = row[0]
             code = row[1]
             description = row[2]
-            if @@known_codes[codeSystem]
-              codeSystemHash = @@known_codes[codeSystem]
+            if @@known_codes[code_system]
+              code_system_hash = @@known_codes[code_system]
             else
-              codeSystemHash = {}
-              @@known_codes[codeSystem] = codeSystemHash
+              code_system_hash = {}
+              @@known_codes[code_system] = code_system_hash
             end
-            codeSystemHash[code] = description
+            code_system_hash[code] = description
           end
-        rescue Exception => error
+        rescue StandardError => error
           FHIR.logger.error error
         end
 
         begin
           # load the core snomed codes
           @@known_codes['SNOMED'] = {} if @@known_codes['SNOMED'].nil?
-          codeSystemHash = @@known_codes['SNOMED']
+          code_system_hash = @@known_codes['SNOMED']
           filename = File.join(@@term_root, 'terminology_snomed_core.txt')
           raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
             code = row[0]
             description = row[1]
-            codeSystemHash[code] = description if codeSystemHash[code].nil?
+            code_system_hash[code] = description if code_system_hash[code].nil?
             @@core_snomed[code] = description
           end
-        rescue Exception => error
+        rescue StandardError => error
           FHIR.logger.error error
         end
 
@@ -101,7 +97,7 @@ module Inferno
             @@common_ucum << code
           end
           @@common_ucum.uniq!
-        rescue Exception => error
+        rescue StandardError => error
           FHIR.logger.error error
         end
 
@@ -112,21 +108,6 @@ module Inferno
     def self.get_description(system, code)
       load_terminology
       @@known_codes[system][code] if @@known_codes[system]
-    end
-
-    def self.is_core_snomed?(code)
-      load_terminology
-      !@@core_snomed[code].nil?
-    end
-
-    def self.is_top_lab_code?(code)
-      load_terminology
-      !@@top_lab_code_descriptions[code].nil?
-    end
-
-    def self.is_known_ucum?(units)
-      load_terminology
-      @@common_ucum.include?(units)
     end
 
     def self.lab_description(code)
@@ -201,7 +182,6 @@ module Inferno
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
       end
-      bf
       File.write(filename, bf.to_msgpack) unless bf.nil?
     end
 
@@ -229,13 +209,12 @@ module Inferno
 
     # Load the validators into FHIR::Models
     def self.load_validators(directory = 'resources/terminology/validators/bloom')
-      validator_files = Dir["#{directory}/*"]
       manifest_file = "#{directory}/manifest.yml"
       return unless File.file? manifest_file
 
       validators = YAML.load_file("#{directory}/manifest.yml")
       validators.each do |validator|
-        bfilter = Bloomer::Scalable.from_msgpack(open("#{directory}/#{validator[:file]}").read)
+        bfilter = Bloomer::Scalable.from_msgpack(File.open("#{directory}/#{validator[:file]}").read)
         validate_fn = lambda do |coding|
           probe = "#{coding['system']}|#{coding['code']}"
           bfilter.include? probe
@@ -249,8 +228,8 @@ module Inferno
     end
 
     class UnknownValueSetException < StandardError
-      def initialize(valueSet)
-        super("Unknown ValueSet: #{valueSet}")
+      def initialize(value_set)
+        super("Unknown ValueSet: #{value_set}")
       end
     end
   end

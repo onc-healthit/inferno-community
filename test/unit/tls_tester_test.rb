@@ -11,7 +11,7 @@ class TlsTesterTest < MiniTest::Test
     WebMock.reset!
     stub_request(:any, 'https://www.example.org/')
 
-    result, msg = @tester_under_test.verifyEnsureTLSv1_2
+    result, msg = @tester_under_test.verify_ensure_tls_v1_2
     assert result, msg
   end
 
@@ -19,7 +19,7 @@ class TlsTesterTest < MiniTest::Test
     WebMock.reset!
     stub_request(:any, 'https://www.example.org/')
 
-    result, msg = @tester_under_test.verifyDenyTLSv1
+    result, msg = @tester_under_test.verify_deny_tls_v1
     assert result, msg
   end
 
@@ -27,7 +27,7 @@ class TlsTesterTest < MiniTest::Test
     WebMock.reset!
     stub_request(:any, 'https://www.example.org/')
 
-    result, msg = @tester_under_test.verifyDenyTLSv1_1
+    result, msg = @tester_under_test.verify_deny_tls_v1_1
     assert result, msg
   end
 
@@ -35,7 +35,7 @@ class TlsTesterTest < MiniTest::Test
     WebMock.reset!
     stub_request(:any, 'https://www.example.org/')
 
-    result, msg = @tester_under_test.verifyDenySSLv3
+    result, msg = @tester_under_test.verify_deny_ssl_v3
     assert result, msg
   end
 
@@ -43,7 +43,7 @@ class TlsTesterTest < MiniTest::Test
     WebMock.reset!
     stub_request(:any, 'https://www.example.org/').to_timeout
 
-    result, msg = @tester_under_test.verifyEnsureTLSv1_2
+    result, msg = @tester_under_test.verify_ensure_tls_v1_2
     assert !result, msg
   end
 end
