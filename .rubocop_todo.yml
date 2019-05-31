@@ -96,11 +96,6 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 32
 
-# Offense count: 1
-Security/Open:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-
 # Offense count: 33
 Style/ClassVars:
   Exclude:

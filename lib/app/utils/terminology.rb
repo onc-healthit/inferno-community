@@ -214,7 +214,7 @@ module Inferno
 
       validators = YAML.load_file("#{directory}/manifest.yml")
       validators.each do |validator|
-        bfilter = Bloomer::Scalable.from_msgpack(open("#{directory}/#{validator[:file]}").read)
+        bfilter = Bloomer::Scalable.from_msgpack(File.open("#{directory}/#{validator[:file]}").read)
         validate_fn = lambda do |coding|
           probe = "#{coding['system']}|#{coding['code']}"
           bfilter.include? probe
