@@ -65,8 +65,8 @@ def execute(instance, sequences)
           instance.send("#{key}=", true) if instance.respond_to? key.to_s
         elsif val.is_a?(String) && val.casecmp('false').zero?
           instance.send("#{key}=", false) if instance.respond_to? key.to_s
-        else
-          instance.send("#{key}=", val) if instance.respond_to? key.to_s
+        elsif instance.respond_to? key.to_s
+          instance.send("#{key}=", val)
         end
       end
     end
@@ -329,8 +329,8 @@ namespace :inferno do |_argv|
           instance.send("#{key}=", true) if instance.respond_to? key.to_s
         elsif val.is_a?(String) && val.casecmp('false').zero?
           instance.send("#{key}=", false) if instance.respond_to? key.to_s
-        else
-          instance.send("#{key}=", val) if instance.respond_to? key.to_s
+        elsif instance.respond_to? key.to_s
+          instance.send("#{key}=", val)
         end
       end
     end

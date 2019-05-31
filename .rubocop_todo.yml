@@ -122,11 +122,6 @@ Style/GuardClause:
     - 'lib/app/utils/validation.rb'
     - 'lib/tasks/tasks.rake'
 
-# Offense count: 2
-Style/IfInsideElse:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
 # Offense count: 14
 # Cop supports --auto-correct.
 Style/IfUnlessModifier:
