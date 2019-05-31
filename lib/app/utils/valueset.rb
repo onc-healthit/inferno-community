@@ -173,7 +173,7 @@ module Inferno
       # @return [Set] the filtered set of codes
       def filter_code_set(system, filter = nil, _version = nil)
         filter_clause = lambda do |filter|
-          where = ''.dup
+          where = +''
           if filter.op == 'in'
             col = filter.property
             vals = filter.value.split(',')

@@ -97,11 +97,6 @@ Metrics/PerceivedComplexity:
   Max: 32
 
 # Offense count: 1
-Performance/UnfreezeString:
-  Exclude:
-    - 'lib/app/utils/valueset.rb'
-
-# Offense count: 1
 Security/Open:
   Exclude:
     - 'lib/app/utils/terminology.rb'
