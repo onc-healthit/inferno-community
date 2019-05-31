@@ -15,11 +15,11 @@ module Inferno
     # Cache the Argonaut IG definitions
     validation_packs = File.join('resources', '*', '*.json')
 
-    DEFINITIONS = {}.freeze
-    RESOURCES = { dstu2: {}, stu3: {}, r4: {} }.freeze
-    VALUESETS = {}.freeze
+    DEFINITIONS = {}
+    RESOURCES = { dstu2: {}, stu3: {}, r4: {} }
+    VALUESETS = {}
 
-    VERSION_MAP = { '1.0.2' => :dstu2, '3.0.1' => :stu3, '4.0.0' => :r4 }.freeze
+    VERSION_MAP = { '1.0.2' => :dstu2, '3.0.1' => :stu3, '4.0.0' => :r4 }
 
     Dir.glob(validation_packs).each do |definition|
       json = File.read(definition)
