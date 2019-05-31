@@ -106,15 +106,6 @@ Style/ClassVars:
     - 'lib/app/utils/logged_rest_client.rb'
     - 'lib/app/utils/terminology.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SingleLineConditionsOnly, IncludeTernaryExpressions.
-# SupportedStyles: assign_to_condition, assign_inside_condition
-Style/ConditionalAssignment:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/app/endpoint/home.rb'
-
 # Offense count: 95
 Style/Documentation:
   Enabled: false

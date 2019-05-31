@@ -196,8 +196,9 @@ def create_search_test(sequence, search_param)
   }
 
   is_first_search = search_test[:index] == '02' # if first search - fix this check later
-  if is_first_search
-    search_test[:test_code] = %(
+  search_test[:test_code] =
+    if is_first_search
+      %(
         #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         assert_response_ok(reply)
@@ -213,16 +214,16 @@ def create_search_test(sequence, search_param)
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
-    )
-  else
-    search_test[:test_code] = %(
+      )
+    else
+      %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
         #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         assert_response_ok(reply)
-    )
-  end
+      )
+    end
   sequence[:tests] << search_test
 end
 
