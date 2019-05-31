@@ -110,11 +110,6 @@ Style/ClassVars:
 Style/Documentation:
   Enabled: false
 
-# Offense count: 1
-Style/EvalWithLocation:
-  Exclude:
-    - 'lib/app/ext/fhir_client.rb'
-
 # Offense count: 22
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
