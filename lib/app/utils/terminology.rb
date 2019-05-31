@@ -37,10 +37,6 @@ module Inferno
     end
     private_class_method :reset
 
-    def self.set_terminology_root(root)
-      @@term_root = root
-    end
-
     def self.load_terminology
       unless @@loaded
         begin

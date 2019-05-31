@@ -96,11 +96,6 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 32
 
-# Offense count: 1
-Naming/AccessorMethodName:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-
 # Offense count: 3
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
 Naming/UncommunicativeBlockParamName:
