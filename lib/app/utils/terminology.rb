@@ -114,21 +114,6 @@ module Inferno
       @@known_codes[system][code] if @@known_codes[system]
     end
 
-    def self.is_core_snomed?(code)
-      load_terminology
-      !@@core_snomed[code].nil?
-    end
-
-    def self.is_top_lab_code?(code)
-      load_terminology
-      !@@top_lab_code_descriptions[code].nil?
-    end
-
-    def self.is_known_ucum?(units)
-      load_terminology
-      @@common_ucum.include?(units)
-    end
-
     def self.lab_description(code)
       load_terminology
       @@top_lab_code_descriptions[code]
