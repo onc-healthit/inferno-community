@@ -171,16 +171,15 @@ module Inferno
       module_hash[:test_sets].each do |test_set_key, test_set|
         new_module.default_test_set = test_set_key.to_s if new_module.default_test_set.nil?
         new_test_set = TestSet.new(test_set_key, test_set[:view])
-        all_groups = test_set[:tests].each do |group|
+        test_set[:tests].each do |group|
           new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:lock_variables], group[:run_all] || false, group[:run_skipped] || false)
 
           group[:sequences].each do |sequence|
-            test_case = nil
-            test_case = if sequence.instance_of?(String)
-                          new_group.add_test_case(sequence)
-                        else
-                          new_group.add_test_case(sequence[:sequence], sequence)
-                        end
+            if sequence.instance_of?(String)
+              new_group.add_test_case(sequence)
+            else
+              new_group.add_test_case(sequence[:sequence], sequence)
+            end
           end
 
           new_test_set.groups << new_group

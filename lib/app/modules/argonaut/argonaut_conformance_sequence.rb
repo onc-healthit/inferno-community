@@ -143,7 +143,7 @@ module Inferno
 
         begin
           @instance.save_supported_resources(@conformance)
-        rescue StandardError => e
+        rescue StandardError
           assert false, 'Conformance Statement could not be parsed.'
         end
 

@@ -9,8 +9,6 @@ require 'fhir_models'
 OUT_PATH = '../../lib/app/modules'
 RESOURCE_PATH = '../../resources/us_core_r4/'
 
-search_parameter_combination_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
-
 def run
   redownload_files = (ARGV&.first == '-d')
   FileUtils.rm Dir.glob("#{RESOURCE_PATH}*") if redownload_files
@@ -440,7 +438,7 @@ def create_search_validation(resource, profile, search_params)
       )
 
     when 'Identifier'
-      search_validator += %(
+      search_validators += %(
         when '#{param}'
           assert resource&.#{path_parts.join('&.')} != nil && resource.#{path_parts.join('&.')}.any?{|identifier| identifier.value == value}, "#{param} on resource did not match #{param} requested"
       )
@@ -450,7 +448,7 @@ def create_search_validation(resource, profile, search_params)
       )
 
     end
-  rescue StandardError => e
+  rescue StandardError
     print "#{resource} - #{param}" # gets here if param is '_id' because it fails to get the search param definition
   end
 

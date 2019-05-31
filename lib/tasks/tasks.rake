@@ -247,7 +247,6 @@ namespace :inferno do |_argv|
       next unless args.extras.empty? || args.extras.include?(seq.sequence_name.split('Sequence')[0])
 
       seq.requires.each do |req|
-        oauth_required ||= (req == :initiate_login_uri)
         requires << req unless requires.include?(req) || defines.include?(req) || req == :url
       end
       defines.push(*seq.defines)
@@ -472,15 +471,15 @@ namespace :terminology do |_argv|
 
     begin
       puts 'Getting Download Link'
-      response = RestClient::Request.execute(method: :post,
-                                             url: action_base + action_path,
-                                             payload: {
-                                               username: args.username,
-                                               password: args.password,
-                                               execution: execution,
-                                               _eventId: 'submit'
-                                             },
-                                             max_redirects: 0)
+      RestClient::Request.execute(method: :post,
+                                  url: action_base + action_path,
+                                  payload: {
+                                    username: args.username,
+                                    password: args.password,
+                                    execution: execution,
+                                    _eventId: 'submit'
+                                  },
+                                  max_redirects: 0)
     rescue RestClient::ExceptionWithResponse => err
       follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
     end
@@ -697,7 +696,6 @@ namespace :terminology do |_argv|
       output_filename = 'resources/terminology/translations_umls.txt'
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
-      excluded = 0
       excluded_systems = Hash.new(0)
       begin
         entire_file = File.read(input_file)
@@ -707,7 +705,6 @@ namespace :terminology do |_argv|
         entire_file.split("\n").each do |l|
           row = l.split('|')
           line += 1
-          include_code = false
           concept = row[0]
           if concept != current_umls_concept && !current_umls_concept.nil?
             output.write("#{translation.join('|')}\n") unless translation[1..-2].reject(&:nil?).length < 2

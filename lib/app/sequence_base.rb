@@ -463,7 +463,7 @@ module Inferno
         instance = new(nil, nil, nil, nil, true)
         begin
           instance.send(test_method)
-        rescue MetadataException => e
+        rescue MetadataException
         end
       end
 
@@ -702,7 +702,7 @@ module Inferno
             if value.relative?
               begin
                 value.resource_class
-              rescue NameError => e
+              rescue NameError
                 problems << "#{path} has invalid resource type in reference: #{value.type}"
                 next
               end

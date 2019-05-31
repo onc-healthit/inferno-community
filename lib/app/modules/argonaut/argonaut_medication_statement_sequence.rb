@@ -181,7 +181,7 @@ module Inferno
 
         pass 'Test passes because medication resource references are not used in any medication statements.' if @medication_references.nil? || @medication_references.empty?
 
-        not_contained_refs = @medication_references&.select { |ref| !ref.contained? }
+        @medication_references&.select { |ref| !ref.contained? }
       end
 
       test 'All references can be resolved' do

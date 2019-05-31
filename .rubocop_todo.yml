@@ -48,23 +48,10 @@ Lint/ShadowingOuterLocalVariable:
     - 'lib/app/utils/terminology.rb'
     - 'lib/app/utils/valueset.rb'
 
-# Offense count: 32
+# Offense count: 1
 Lint/UselessAssignment:
   Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/app/endpoint/home.rb'
-    - 'lib/app/helpers/configuration.rb'
-    - 'lib/app/models/testing_instance.rb'
-    - 'lib/app/module.rb'
-    - 'lib/app/modules/argonaut/argonaut_conformance_sequence.rb'
-    - 'lib/app/modules/argonaut/argonaut_medication_statement_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_r4_capability_statement_sequence.rb'
-    - 'lib/app/sequence_base.rb'
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/app/utils/tls_tester.rb'
     - 'lib/tasks/tasks.rake'
-    - 'test/sequence/openid_connect_test.rb'
-    - 'test/sequence/token_introspection_test.rb'
 
 # Offense count: 2
 # Configuration parameters: CheckForMethodsWithNoSideEffects.

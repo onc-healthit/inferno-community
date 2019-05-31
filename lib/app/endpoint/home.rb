@@ -325,7 +325,6 @@ module Inferno
 
           sequence_result.save!
 
-          test_group = nil
           test_group = test_set.test_case_by_id(sequence_result.test_case_id).test_group
 
           query_target = sequence_result.test_case_id

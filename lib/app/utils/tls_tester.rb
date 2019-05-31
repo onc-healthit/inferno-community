@@ -30,7 +30,7 @@ module Inferno
       http.max_version = ssl_version
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
-        response = http.request_get(@uri)
+        http.request_get(@uri)
       rescue StandardError => ex
         return false, "Caught TLS Error: #{ex.message}", %(
           The following error was returned when the application attempted to connect to the server:
@@ -57,7 +57,7 @@ module Inferno
       http.max_version = ssl_version
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
-        response = http.request_get(@host)
+        http.request_get(@host)
       rescue StandardError => ex
         return true, "Correctly denied connection error of type #{ex.class} happened, message is #{ex.message}"
       end

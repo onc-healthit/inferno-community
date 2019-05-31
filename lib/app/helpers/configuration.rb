@@ -33,7 +33,7 @@ module Inferno
         def valid_json?(json)
           JSON.parse(json)
           true
-        rescue JSON::ParserError => e
+        rescue JSON::ParserError
           false
         end
 

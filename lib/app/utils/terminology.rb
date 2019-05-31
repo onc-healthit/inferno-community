@@ -229,7 +229,6 @@ module Inferno
 
     # Load the validators into FHIR::Models
     def self.load_validators(directory = 'resources/terminology/validators/bloom')
-      validator_files = Dir["#{directory}/*"]
       manifest_file = "#{directory}/manifest.yml"
       return unless File.file? manifest_file
 
