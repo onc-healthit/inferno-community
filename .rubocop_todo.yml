@@ -122,6 +122,7 @@ Style/GuardClause:
     - 'lib/app/utils/validation.rb'
     - 'lib/tasks/tasks.rake'
 
+# Max line length needs to be reduced before fixing these
 # Offense count: 14
 # Cop supports --auto-correct.
 Style/IfUnlessModifier:
@@ -134,12 +135,6 @@ Style/IfUnlessModifier:
 # Offense count: 1
 Style/MixinUsage:
   Exclude:
-    - 'lib/tasks/tasks.rake'
-
-# Offense count: 2
-Style/MultipleComparison:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
     - 'lib/tasks/tasks.rake'
 
 # Offense count: 4

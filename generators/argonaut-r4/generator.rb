@@ -289,7 +289,7 @@ def get_search_params(resource, profile, search_combo)
         search_params = {patient: @instance.patient_id, status: "active"}
       )
     end
-    if (resource == 'Location' || resource == 'Organization') && search_combo == ['name']
+    if (['Location', 'Organization'].include? resource) && search_combo == ['name']
       return %(
         search_params = {patient: @instance.patient_id, name: "Boston"}
       )

@@ -201,7 +201,7 @@ namespace :inferno do |_argv|
         input = STDIN.gets.chomp
       end
 
-      next unless input == 'a' || input == 'y'
+      next unless ['a', 'y'].include? input
 
       output[:sequences].push(sequence: seq.sequence_name)
       sequences << seq
