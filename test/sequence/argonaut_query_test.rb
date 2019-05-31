@@ -81,38 +81,38 @@ class ArgonautQueryTest < MiniTest::Test
       'DiagnosticReport', 'DocumentReference', 'Goal', 'Immunization',
       'MedicationStatement', 'MedicationOrder', 'Observation', 'Procedure'
     ]
-    resources.each do |resourceType|
-      bundle = wrap_resources_in_bundle(get_resources_from_bundle(@bundle, resourceType))
-      uri_template = Addressable::Template.new "http://www.example.com/#{resourceType}{?patient,category,status,clinicalstatus}"
+    resources.each do |resource_type|
+      bundle = wrap_resources_in_bundle(get_resources_from_bundle(@bundle, resource_type))
+      uri_template = Addressable::Template.new "http://www.example.com/#{resource_type}{?patient,category,status,clinicalstatus}"
       stub_request(:get, uri_template)
         .with(headers: REQUEST_HEADERS)
         .to_return(
           { status: 406, body: nil, headers: RESPONSE_HEADERS },
           status: 200, body: bundle.to_json, headers: RESPONSE_HEADERS
         )
-      uri_template = Addressable::Template.new "http://www.example.com/#{resourceType}/{id}"
+      uri_template = Addressable::Template.new "http://www.example.com/#{resource_type}/{id}"
       stub_request(:get, uri_template).to_return do |request|
         id = request.headers['Id']
-        resourceType = request.headers['Resource'].split('::').last
-        result = get_resources_from_bundle(@bundle, resourceType).find { |r| r.id == id }
+        resource_type = request.headers['Resource'].split('::').last
+        result = get_resources_from_bundle(@bundle, resource_type).find { |r| r.id == id }
         { status: 200, body: result.to_json, headers: RESPONSE_HEADERS }
       end
       # history should return a history bundle
-      uri_template = Addressable::Template.new "http://www.example.com/#{resourceType}/{id}/_history"
+      uri_template = Addressable::Template.new "http://www.example.com/#{resource_type}/{id}/_history"
       stub_request(:get, uri_template).to_return do |request|
         id = request.headers['Id']
-        resourceType = request.headers['Resource'].split('::').last
-        results = get_resources_from_bundle(@bundle, resourceType).find { |r| r.id == id }
+        resource_type = request.headers['Resource'].split('::').last
+        results = get_resources_from_bundle(@bundle, resource_type).find { |r| r.id == id }
         results = wrap_resources_in_bundle([results])
         results.type = 'history'
         { status: 200, body: results.to_json, headers: RESPONSE_HEADERS }
       end
       # vread should return an instance
-      uri_template = Addressable::Template.new "http://www.example.com/#{resourceType}/{id}/_history/1"
+      uri_template = Addressable::Template.new "http://www.example.com/#{resource_type}/{id}/_history/1"
       stub_request(:get, uri_template).to_return do |request|
         id = request.headers['Id']
-        resourceType = request.headers['Resource'].split('::').last
-        result = get_resources_from_bundle(@bundle, resourceType).find { |r| r.id == id }
+        resource_type = request.headers['Resource'].split('::').last
+        result = get_resources_from_bundle(@bundle, resource_type).find { |r| r.id == id }
         { status: 200, body: result.to_json, headers: RESPONSE_HEADERS }
       end
     end
@@ -208,10 +208,10 @@ class ArgonautQueryTest < MiniTest::Test
     assert sequence_result.skip_count == 0
   end
 
-  def get_resources_from_bundle(bundle, resourceType)
+  def get_resources_from_bundle(bundle, resource_type)
     resources = []
     bundle.entry.each do |entry|
-      resources << entry.resource if entry.resource.resourceType == resourceType
+      resources << entry.resource if entry.resource.resourceType == resource_type
     end
     resources
   end

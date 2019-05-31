@@ -98,13 +98,6 @@ Metrics/PerceivedComplexity:
 
 # Offense count: 3
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
-Naming/UncommunicativeBlockParamName:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'test/sequence/argonaut_query_test.rb'
-
-# Offense count: 3
-# Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
 # AllowedNames: io, id, to, by, on, in, at, ip, db
 Naming/UncommunicativeMethodParamName:
   Exclude:

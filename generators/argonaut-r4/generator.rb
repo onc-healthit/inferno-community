@@ -43,24 +43,24 @@ def extract_metadata(resources)
   }
 
   resources.each do |resource|
-    resource['supportedProfile'].each do |supportedProfile|
+    resource['supportedProfile'].each do |supported_profile|
       new_sequence = {
-        name: supportedProfile.split('StructureDefinition/')[1].tr('-', '_'),
-        classname: supportedProfile.split('StructureDefinition/')[1].split('-').map(&:capitalize).join.gsub('UsCore', 'UsCoreR4') + 'Sequence',
+        name: supported_profile.split('StructureDefinition/')[1].tr('-', '_'),
+        classname: supported_profile.split('StructureDefinition/')[1].split('-').map(&:capitalize).join.gsub('UsCore', 'UsCoreR4') + 'Sequence',
         resource: resource['type'],
-        profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supportedProfile.split('StructureDefinition/')[1]}.json", # links in capability statement currently incorrect
+        profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supported_profile.split('StructureDefinition/')[1]}.json", # links in capability statement currently incorrect
         interactions: [],
         search_params: [],
         search_combos: [],
         tests: []
       }
-      searchParams = resource['searchParam']
-      searchParams&.each do |searchParam|
+      search_params = resource['searchParam']
+      search_params&.each do |search_param|
         new_search_param = {
-          names: [searchParam['name']],
-          expectation: searchParam['extension'][0]['valueCode']
+          names: [search_param['name']],
+          expectation: search_param['extension'][0]['valueCode']
         }
-        if searchParam['name'] == 'patient' # move patient search first
+        if search_param['name'] == 'patient' # move patient search first
           new_sequence[:search_params].insert(0, new_search_param)
         else
           new_sequence[:search_params] << new_search_param
