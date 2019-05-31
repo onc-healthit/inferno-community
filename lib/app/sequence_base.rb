@@ -372,7 +372,7 @@ module Inferno
         return true unless @@preconditions.key?(sequence_name)
 
         block = @@preconditions[sequence_name][:block]
-        new(instance, nil).instance_eval &block
+        new(instance, nil).instance_eval(&block)
       end
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
@@ -404,7 +404,7 @@ module Inferno
         test_index_in_sequence = @@test_metadata[sequence_name].length - 1
 
         wrapped = lambda do
-          instance_eval &block if @metadata_only # just run the test to hit the metadata block
+          instance_eval(&block) if @metadata_only # just run the test to hit the metadata block
 
           @test_warnings = []
           @links = []
@@ -422,7 +422,7 @@ module Inferno
           begin
             skip_unless((@@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym), 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
             Inferno.logger.info "Starting Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
-            instance_eval &block
+            instance_eval(&block)
           rescue AssertionException, ClientException => e
             result.result = STATUS[:fail]
             result.message = e.message
