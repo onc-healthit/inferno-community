@@ -31,11 +31,11 @@ module Inferno
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
         http.request_get(@uri)
-      rescue StandardError => ex
-        return false, "Caught TLS Error: #{ex.message}", %(
+      rescue StandardError => e
+        return false, "Caught TLS Error: #{e.message}", %(
           The following error was returned when the application attempted to connect to the server:
 
-          #{ex.message}
+          #{e.message}
 
           The following parameters were used:
 
@@ -58,8 +58,8 @@ module Inferno
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
         http.request_get(@host)
-      rescue StandardError => ex
-        return true, "Correctly denied connection error of type #{ex.class} happened, message is #{ex.message}"
+      rescue StandardError => e
+        return true, "Correctly denied connection error of type #{e.class} happened, message is #{e.message}"
       end
       [false, "Should not allow connections with #{readable_version}"]
     end

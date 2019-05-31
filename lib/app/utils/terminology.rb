@@ -51,8 +51,8 @@ module Inferno
             row = line.split('|')
             @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
           end
-        rescue StandardError => error
-          FHIR.logger.error error
+        rescue StandardError => e
+          FHIR.logger.error e
         end
 
         begin

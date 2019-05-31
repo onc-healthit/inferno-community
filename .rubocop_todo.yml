@@ -101,13 +101,6 @@ Naming/AccessorMethodName:
   Exclude:
     - 'lib/app/utils/terminology.rb'
 
-# Offense count: 2
-# Configuration parameters: PreferredName.
-Naming/RescuedExceptionsVariableName:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/app/utils/tls_tester.rb'
-
 # Offense count: 3
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
 Naming/UncommunicativeBlockParamName:
