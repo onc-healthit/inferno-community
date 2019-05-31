@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Inferno
   module Sequence
     class TokenIntrospectionSequence < SequenceBase
-
       title 'OAuth 2.0 Token Introspection'
 
       description 'Verify token properties using token introspection at the authorization server.'
@@ -30,38 +31,36 @@ module Inferno
               )
 
       test 'OAuth token introspection endpoint secured by transport layer security' do
-
-        metadata {
+        metadata do
           id '01'
           link 'https://tools.ietf.org/html/rfc7662'
           desc %(
             The server MUST support Transport Layer Security (TLS) 1.2.
           )
-        }
+        end
 
         skip_if_tls_disabled
         assert_tls_1_2 @instance.oauth_introspection_endpoint
-        warning {
+        warning do
           assert_deny_previous_tls @instance.oauth_introspection_endpoint
-        }
+        end
       end
 
       test 'Token introspection endpoint responds properly to introspection request for access token' do
-
-        metadata {
+        metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc7662'
           desc %(
             A resource server is capable of calling the introspection endpoint.
           )
-        }
+        end
 
         headers = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }
 
         params = {
-            'token' => @instance.introspect_token,
-            'client_id' => @instance.resource_id,
-            'client_secret' => @instance.resource_secret
+          'token' => @instance.introspect_token,
+          'client_id' => @instance.resource_id,
+          'client_secret' => @instance.resource_secret
         }
 
         @introspection_response = LoggedRestClient.post(@instance.oauth_introspection_endpoint, params, headers)
@@ -74,18 +73,16 @@ module Inferno
         FHIR.logger.debug "Introspection response: #{@introspection_response}"
 
         assert !(@introspection_response['error'] || @introspection_response['error_description']), 'Got an error from the introspection endpoint'
-
       end
 
       test 'Token introspection response confirms that Access token is active' do
-
-        metadata {
+        metadata do
           id '03'
           link 'https://tools.ietf.org/html/rfc7662'
           desc %(
             A current access token is listed as active.
           )
-        }
+        end
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -95,21 +92,19 @@ module Inferno
       end
 
       test 'Scopes returned by token introspection request match expected scopes' do
-
-        metadata {
+        metadata do
           id '04'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
           desc %(
             The scopes we received alongside the Access token match those from the introspection response.
           )
-        }
+        end
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
         expected_scopes = @instance.scopes.split(' ')
         actual_scopes = @introspection_response_body['scope'].split(' ')
-
 
         FHIR.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"
 
@@ -118,19 +113,17 @@ module Inferno
         extra_scopes = (actual_scopes - expected_scopes)
 
         assert extra_scopes.empty?, "Introspection response included additional scopes: #{extra_scopes}"
-
       end
 
-      # TODO verify timeout requirements
+      # TODO: verify timeout requirements
       test 'Token introspection response confirms Access token has appropriate lifetime' do
-
-        metadata {
+        metadata do
           id '05'
           link 'https://tools.ietf.org/html/rfc7662'
           desc %(
             The Access token should have a lifetime of at least 60 minutes.
           )
-        }
+        end
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
@@ -144,29 +137,27 @@ module Inferno
 
         assert (expiration - token_retrieved_at) < max_token_seconds, "Access token does not have adequate lifetime of at least #{max_token_seconds} seconds"
 
-        assert (now + Rational(clock_slip, (24 * 60 * 60))) < expiration, "Access token has expired"
-
+        assert (now + Rational(clock_slip, (24 * 60 * 60))) < expiration, 'Access token has expired'
       end
 
       test 'Token introspection endpoint responds properly to introspection request for refresh token' do
-
-        metadata {
+        metadata do
           id '06'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
           desc %(
             A resource server is capable of calling the introspection endpoint.
           )
-        }
+        end
 
         assert !@instance.introspect_refresh_token.blank?, 'Refresh Token not supplied'
 
         headers = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }
 
         params = {
-            'token' => @instance.introspect_refresh_token,
-            'client_id' => @instance.resource_id,
-            'client_secret' => @instance.resource_secret
+          'token' => @instance.introspect_refresh_token,
+          'client_id' => @instance.resource_id,
+          'client_secret' => @instance.resource_secret
         }
 
         @introspection_response = LoggedRestClient.post(@instance.oauth_introspection_endpoint, params, headers)
@@ -179,19 +170,17 @@ module Inferno
         FHIR.logger.debug "Refresh Token Introspection response: #{@introspection_response}"
 
         assert !(@introspection_response['error'] || @introspection_response['error_description']), 'Got an error from the introspection endpoint'
-
       end
 
       test 'Token introspection response confirms that Refresh token is active' do
-
-        metadata {
+        metadata do
           id '07'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
           desc %(
             A current access token is listed as active.
           )
-        }
+        end
 
         assert !@instance.introspect_refresh_token.blank?, 'Refresh Token not supplied'
 
@@ -201,8 +190,6 @@ module Inferno
 
         assert active, 'Refresh Token is not active, try the test again with a valid token'
       end
-
     end
-
   end
 end

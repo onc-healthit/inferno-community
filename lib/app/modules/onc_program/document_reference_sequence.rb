@@ -14,10 +14,10 @@ module Inferno
 
       description 'Tests for DocumentReference resources'
 
-      def validate_resource_item (resource, property, value)
+      def validate_resource_item(resource, property, value)
         case property
-        when "patient"
-          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        when 'patient'
+          assert (resource.patient&.reference&.include?(value)), 'Patient on resource does not match patient requested'
         end
       end
 
@@ -48,7 +48,7 @@ module Inferno
           )
         end
 
-        search_params = {patient: @instance.patient_id}
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(FHIR::DSTU2::DocumentReference, search_params)
         @document_reference = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(FHIR::DSTU2::DocumentReference, reply, search_params)

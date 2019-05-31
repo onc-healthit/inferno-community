@@ -35,13 +35,13 @@ class MedicationStatementSequenceTest < MiniTest::Test
 
     # Register that the server supports MedicationStatement
     @instance.supported_resources << Inferno::Models::SupportedResource.create(
-        resource_type: 'MedicationStatement',
-        testing_instance_id: @instance.id,
-        supported: true,
-        read_supported: true,
-        vread_supported: true,
-        search_supported: true,
-        history_supported: true
+      resource_type: 'MedicationStatement',
+      testing_instance_id: @instance.id,
+      supported: true,
+      read_supported: true,
+      vread_supported: true,
+      search_supported: true,
+      history_supported: true
     )
 
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
@@ -102,22 +102,21 @@ class MedicationStatementSequenceTest < MiniTest::Test
 
     # Stub Patient for Reference Resolution Tests
     stub_request(:get, %r{example.com/Patient/})
-        .with(headers: {
-            'Authorization' => "Bearer #{@instance.token}"
-        })
-        .to_return(status: 200,
-                   body: @patient_resource.to_json,
-                   headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+      .with(headers: {
+              'Authorization' => "Bearer #{@instance.token}"
+            })
+      .to_return(status: 200,
+                 body: @patient_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     # Stub Practitioner for Reference Resolution Tests
     stub_request(:get, %r{example.com/Practitioner/})
-        .with(headers: {
-            'Authorization' => "Bearer #{@instance.token}"
-        })
-        .to_return(status: 200,
-                   body: @practitioner_resource.to_json,
-                   headers: { content_type: 'application/json+fhir; charset=UTF-8'})
-
+      .with(headers: {
+              'Authorization' => "Bearer #{@instance.token}"
+            })
+      .to_return(status: 200,
+                 body: @practitioner_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 
   def test_all_pass

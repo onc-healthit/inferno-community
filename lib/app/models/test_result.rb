@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Inferno
   module Models
     class TestResult
       include DataMapper::Resource
-      property :id, String, key: true, default: proc { SecureRandom.uuid}
+      property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :test_id, String
       property :ref, String
       property :name, String
@@ -20,10 +22,9 @@ module Inferno
       property :wait_at_endpoint, String
       property :redirect_to_url, String
 
-      has n, :request_responses, :through => Resource
+      has n, :request_responses, through: Resource
       has n, :test_warnings
       belongs_to :sequence_result
     end
   end
 end
-

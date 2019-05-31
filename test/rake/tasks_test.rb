@@ -9,7 +9,6 @@ class TasksTest < MiniTest::Test
   def setup
     Rake.application.load_rakefile
     @conformance = load_json_fixture(:conformance_statement)
-
   end
 
   def test_csv_export

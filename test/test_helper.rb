@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'simplecov'
 SimpleCov.start
 
@@ -7,30 +9,30 @@ require 'webmock/minitest'
 require 'rack/test'
 require 'json/jwt'
 
-#require File.expand_path '../../app.rb', __FILE__
+# require File.expand_path '../../app.rb', __FILE__
 require_relative '../lib/app'
 
 def load_json_fixture(file)
-   JSON.parse(load_fixture(file))
+  JSON.parse(load_fixture(file))
 end
 
 def load_fixture(file)
-   root = File.dirname(File.absolute_path(__FILE__))
-   File.read(File.join(root, 'fixtures', "#{file.to_s}.json"))
+  root = File.dirname(File.absolute_path(__FILE__))
+  File.read(File.join(root, 'fixtures', "#{file}.json"))
 end
 
-def save_fixture(file_name, content)
-   root = File.dirname(File.absolute_path(__FILE__))
-   File.write(File.join(root, 'fixtures', file.to_s), content)
+def save_fixture(_file_name, content)
+  root = File.dirname(File.absolute_path(__FILE__))
+  File.write(File.join(root, 'fixtures', file.to_s), content)
 end
 
 def valid_uri?(uri)
-  !(uri =~ /\A#{URI::regexp(['http', 'https'])}\z/).nil?
+  !(uri =~ /\A#{URI.regexp(['http', 'https'])}\z/).nil?
 end
 
 def wrap_resources_in_bundle(resources, type: 'searchset')
   bundle = FHIR::DSTU2::Bundle.new('id': 'foo', 'type': type)
-  resources  = [resources].flatten.compact
+  resources = [resources].flatten.compact
   resources.each do |resource|
     bundle.entry << FHIR::DSTU2::Bundle::Entry.new
     bundle.entry.last.resource = resource
@@ -38,7 +40,7 @@ def wrap_resources_in_bundle(resources, type: 'searchset')
   bundle
 end
 
-def get_resources_from_bundle(bundle,resourceType)
+def get_resources_from_bundle(bundle, resourceType)
   resources = []
   bundle.entry.each do |entry|
     resources << entry.resource if entry.resource.resourceType == resourceType
@@ -55,7 +57,7 @@ def get_test_instance(url: 'http://www.example.com',
                       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                       scopes: 'launch openid patient/*.* profile',
                       selected_module: 'argonaut',
-                      token: JSON::JWT.new({iss: 'foo'}))
+                      token: JSON::JWT.new(iss: 'foo'))
 
   @instance = Inferno::Models::TestingInstance.new(url: url,
                                                    client_name: client_name,
@@ -76,4 +78,4 @@ def get_client(instance)
   client
 end
 
-FHIR::DSTU2::StructureDefinition.clear_all_validates_vs()
+FHIR::DSTU2::StructureDefinition.clear_all_validates_vs

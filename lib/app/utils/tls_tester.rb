@@ -1,11 +1,12 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'openssl'
 module Inferno
   class TlsTester
-
     def initialize(params)
       if params[:uri].nil?
-        if not (params[:host].nil? or params[:port].nil?)
+        if !(params[:host].nil? || params[:port].nil?)
           @host = params[:host]
           @port = params[:port]
         else
@@ -31,7 +32,6 @@ module Inferno
       begin
         response = http.request_get(@uri)
       rescue StandardError => ex
-
         return false, "Caught TLS Error: #{ex.message}", %(
           The following error was returned when the application attempted to connect to the server:
 
@@ -47,7 +47,7 @@ module Inferno
           ```
         )
       end
-      return true, "Allowed Connection with TLSv1_2"
+      [true, 'Allowed Connection with TLSv1_2']
     end
 
     def verifyDenyProtocol(ssl_version, readable_version)
@@ -61,24 +61,23 @@ module Inferno
       rescue StandardError => ex
         return true, "Correctly denied connection error of type #{ex.class} happened, message is #{ex.message}"
       end
-      return false, "Should not allow connections with #{readable_version}"
+      [false, "Should not allow connections with #{readable_version}"]
     end
 
     def verifyEnsureTLSv1_2
-      return verifyEnsureProtocol(OpenSSL::SSL::TLS1_2_VERSION)
+      verifyEnsureProtocol(OpenSSL::SSL::TLS1_2_VERSION)
     end
 
-    def verifyDenyTLSv1()
-      return verifyDenyProtocol(OpenSSL::SSL::TLS1_VERSION, 'TLSv1.0')
+    def verifyDenyTLSv1
+      verifyDenyProtocol(OpenSSL::SSL::TLS1_VERSION, 'TLSv1.0')
     end
 
-    def verifyDenySSLv3()
-      return verifyDenyProtocol(OpenSSL::SSL::SSL3_VERSION, 'SSLv3.0')
+    def verifyDenySSLv3
+      verifyDenyProtocol(OpenSSL::SSL::SSL3_VERSION, 'SSLv3.0')
     end
 
-    def verifyDenyTLSv1_1()
-      return verifyDenyProtocol(OpenSSL::SSL::TLS1_1_VERSION, 'TLSv1.1')
+    def verifyDenyTLSv1_1
+      verifyDenyProtocol(OpenSSL::SSL::TLS1_1_VERSION, 'TLSv1.1')
     end
-
   end
 end

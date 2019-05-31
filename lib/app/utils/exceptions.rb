@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 module Inferno
-  class AssertionException < Exception
+  class AssertionException < RuntimeError
     attr_accessor :details
     def initialize(message, details = nil)
       super(message)
@@ -8,7 +10,7 @@ module Inferno
     end
   end
 
-  class SkipException < Exception
+  class SkipException < RuntimeError
     attr_accessor :details
     def initialize(message = '', details = nil)
       super(message)
@@ -17,21 +19,21 @@ module Inferno
     end
   end
 
-  class TodoException < Exception
+  class TodoException < RuntimeError
     def initialize(message = '')
       super(message)
       FHIR.logger.info "TodoException: #{message}"
     end
   end
 
-  class PassException < Exception
+  class PassException < RuntimeError
     def initialize(message = '')
       super(message)
       FHIR.logger.info "PassException: #{message}"
     end
   end
 
-  class WaitException < Exception
+  class WaitException < RuntimeError
     attr_accessor :endpoint
     def initialize(endpoint)
       super("Waiting at endpoint #{endpoint}")
@@ -39,7 +41,7 @@ module Inferno
     end
   end
 
-  class RedirectException < Exception
+  class RedirectException < RuntimeError
     attr_accessor :endpoint
     attr_accessor :url
     def initialize(url, endpoint)
@@ -49,6 +51,6 @@ module Inferno
     end
   end
 
-  class MetadataException < Exception
+  class MetadataException < RuntimeError
   end
 end

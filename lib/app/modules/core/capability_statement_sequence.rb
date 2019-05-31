@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Inferno
   module Sequence
     class CapabilityStatementSequence < SequenceBase
-
       title 'Capability Statement'
 
       test_id_prefix 'C'
@@ -53,27 +54,25 @@ module Inferno
       )
 
       test 'FHIR server secured by transport layer security' do
-
-        metadata {
+        metadata do
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
           desc %(
             All exchange of production data should be secured with TLS/SSL v1.2.
           )
-        }
+        end
 
         skip_if_tls_disabled
 
         assert_tls_1_2 @instance.url
 
-        warning {
+        warning do
           assert_deny_previous_tls @instance.url
-        }
+        end
       end
 
       test 'FHIR server supports the conformance interaction that defines how it supports resources' do
-
-        metadata {
+        metadata do
           id '02'
           link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
           desc %(
@@ -99,7 +98,7 @@ module Inferno
             this as a second method to retrieve the Conformance for the server.  It is not expected that clients
             will broadly support this method, so this test does not cover this option.
           )
-        }
+        end
 
         @client.set_no_auth
         @conformance = @client.conformance_statement

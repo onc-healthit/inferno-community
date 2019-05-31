@@ -1,6 +1,7 @@
-require File.expand_path '../../test_helper.rb', __FILE__
-class HomePageTest < MiniTest::Test
+# frozen_string_literal: true
 
+require File.expand_path '../test_helper.rb', __dir__
+class HomePageTest < MiniTest::Test
   include Rack::Test::Methods
 
   def app
@@ -17,5 +18,4 @@ class HomePageTest < MiniTest::Test
     get '/asdfasdf'
     assert last_response.not_found?
   end
-
 end
