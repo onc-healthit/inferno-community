@@ -628,7 +628,7 @@ module Inferno
         assert_equal 'history', history_response.try(:resource).try(:type)
         entries = history_response.try(:resource).try(:entry)
         assert entries, 'No bundle entries returned'
-        assert entries.try(:length) > 0, 'No resources of this type were returned'
+        assert entries.try(:length).positive?, 'No resources of this type were returned'
         check_sort_order entries
       end
 

@@ -203,9 +203,9 @@ class ArgonautQueryTest < MiniTest::Test
     sequence_result = @sequence.start
 
     assert sequence_result.result = 'pass', 'Sequence did not pass all tests.'
-    assert sequence_result.error_count == 0
-    assert sequence_result.todo_count == 0
-    assert sequence_result.skip_count == 0
+    assert sequence_result.error_count.zero?
+    assert sequence_result.todo_count.zero?
+    assert sequence_result.skip_count.zero?
   end
 
   def get_resources_from_bundle(bundle, resource_type)

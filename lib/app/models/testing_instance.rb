@@ -83,11 +83,11 @@ module Inferno
           end
 
           result = :pass
-          result = :skip if result_details[:skip] > 0
-          result = :fail if result_details[:fail] > 0
-          result = :fail if result_details[:cancel] > 0
-          result = :error if result_details[:error] > 0
-          result = :not_run if result_details[:total] == 0
+          result = :skip if result_details[:skip].positive?
+          result = :fail if result_details[:fail].positive?
+          result = :fail if result_details[:cancel].positive?
+          result = :error if result_details[:error].positive?
+          result = :not_run if result_details[:total].zero?
 
           return_data << { group: group, result_details: result_details, result: result, missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? } }
         end

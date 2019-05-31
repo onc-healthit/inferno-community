@@ -55,7 +55,7 @@ Lint/UselessAssignment:
 
 # Offense count: 150
 Metrics/AbcSize:
-  Max: 174
+  Max: 176
 
 # Offense count: 38
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -144,13 +144,6 @@ Style/MixinUsage:
 Style/MutableConstant:
   Exclude:
     - 'lib/app/utils/validation.rb'
-
-# Offense count: 54
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, EnforcedStyle, IgnoredMethods.
-# SupportedStyles: predicate, comparison
-Style/NumericPredicate:
-  Enabled: false
 
 # Offense count: 1
 # Cop supports --auto-correct.

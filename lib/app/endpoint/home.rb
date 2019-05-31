@@ -220,7 +220,7 @@ module Inferno
 
           request_response_count = Inferno::Models::RequestResponse.all(instance_id: instance.id).count
           latest_sequence_time =
-            if instance.sequence_results.count > 0
+            if instance.sequence_results.count.positive?
               Inferno::Models::SequenceResult.first(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
             else
               'No tests ran'

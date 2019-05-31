@@ -135,10 +135,10 @@ def execute(instance, sequences)
   passed_count = '' + sequence_results.select { |s| s.result == 'pass' }.count.to_s
   skip_count = '' + sequence_results.select { |s| s.result == 'skip' }.count.to_s
   print ' Result: ' + failures_count.red + ' failed, ' + passed_count.green + ' passed'
-  if sequence_results.select { |s| s.result == 'skip' }.count > 0
+  if sequence_results.select { |s| s.result == 'skip' }.count.positive?
     print(', ' + sequence_results.select { |s| s.result == 'skip' }.count.to_s).yellow + ' skipped'
   end
-  if sequence_results.select { |s| s.result == 'error' }.count > 0
+  if sequence_results.select { |s| s.result == 'error' }.count.positive?
     print(', ' + sequence_results.select { |s| s.result == 'error' }.count.to_s).yellow + ' error'
   end
   puts "\n=============================================\n"
