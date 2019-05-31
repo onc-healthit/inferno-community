@@ -107,8 +107,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        _id_val = @documentreference&.id
-        search_params = { '_id': _id_val }
+        search_params = { '_id': @documentreference&.id }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)

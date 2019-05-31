@@ -48,12 +48,6 @@ Lint/ShadowingOuterLocalVariable:
     - 'lib/app/utils/terminology.rb'
     - 'lib/app/utils/valueset.rb'
 
-# Offense count: 2
-Lint/UnderscorePrefixedVariableName:
-  Exclude:
-    - 'lib/app/modules/us_core_r4/us_core_documentreference_sequence.rb'
-    - 'lib/app/modules/us_core_r4/us_core_encounter_sequence.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods.
