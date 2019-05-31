@@ -21,11 +21,6 @@ Lint/NonLocalExitFromIterator:
   Exclude:
     - 'lib/app/sequence_base.rb'
 
-# Offense count: 2
-Lint/ParenthesesAsGroupedExpression:
-  Exclude:
-    - 'lib/tasks/tasks.rake'
-
 # Offense count: 10
 Lint/RescueException:
   Exclude:
