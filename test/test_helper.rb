@@ -40,10 +40,10 @@ def wrap_resources_in_bundle(resources, type: 'searchset')
   bundle
 end
 
-def get_resources_from_bundle(bundle, resourceType)
+def get_resources_from_bundle(bundle, resource_type)
   resources = []
   bundle.entry.each do |entry|
-    resources << entry.resource if entry.resource.resourceType == resourceType
+    resources << entry.resource if entry.resource.resourceType == resource_type
   end
   resources
 end

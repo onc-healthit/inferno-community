@@ -96,15 +96,6 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 32
 
-# Offense count: 3
-# Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
-# AllowedNames: io, id, to, by, on, in, at, ip, db
-Naming/UncommunicativeMethodParamName:
-  Exclude:
-    - 'lib/app/utils/terminology.rb'
-    - 'test/sequence/argonaut_query_test.rb'
-    - 'test/test_helper.rb'
-
 # Offense count: 39
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: snake_case, camelCase

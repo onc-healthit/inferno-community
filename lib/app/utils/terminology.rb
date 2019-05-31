@@ -228,8 +228,8 @@ module Inferno
     end
 
     class UnknownValueSetException < StandardError
-      def initialize(valueSet)
-        super("Unknown ValueSet: #{valueSet}")
+      def initialize(value_set)
+        super("Unknown ValueSet: #{value_set}")
       end
     end
   end
