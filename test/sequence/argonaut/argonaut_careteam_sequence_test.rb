@@ -123,39 +123,6 @@ class CareTeamSequenceTest < MiniTest::Test
         assert sequence_result.result == 'pass', "The sequence should be marked as pass. #{sequence_result.result}"
         assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
     end
-
-    # Return a careplan profiled resource even though we are asking for a careteam profile
-    # This should have at least one failure
-    def test_fail_on_wrong_profile
-        full_sequence_stubs
-
-        # Return the wrong profile
-        uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category}"
-        wrong_resource = FHIR::DSTU2.from_contents(load_fixture("care_plan"))
-
-        # set the careteam category, even though this is a careplan profiled resource
-        wrong_resource.category.first.coding.first.code = 'careteam'
-        
-        wrong_resource_bundle = wrap_resources_in_bundle(wrong_resource)
-
-        wrong_resource_bundle.entry.each do |entry|
-            entry.resource.meta = FHIR::DSTU2::Meta.new unless entry.resource.meta
-            entry.resource.meta.versionId = '1'
-        end
-
-        stub_request(:get, uri_template)
-            .with(headers: @request_headers)
-            .to_return(
-            status: 200, body: wrong_resource_bundle.to_json, headers: @response_headers
-            )
-
-        sequence_result = @sequence.start
-
-        failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
-        assert !failures.empty?, "Expecting at least one failure because we are returning a resource stating conformance to the wrong profile"
-        assert sequence_result.result == 'fail', "The sequence should be marked as fail. #{sequence_result.result}"
-        assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
-    end
 end
         
         
