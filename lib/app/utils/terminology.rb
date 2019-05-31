@@ -57,16 +57,16 @@ module Inferno
           raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
-            codeSystem = row[0]
+            code_system = row[0]
             code = row[1]
             description = row[2]
-            if @@known_codes[codeSystem]
-              codeSystemHash = @@known_codes[codeSystem]
+            if @@known_codes[code_system]
+              code_system_hash = @@known_codes[code_system]
             else
-              codeSystemHash = {}
-              @@known_codes[codeSystem] = codeSystemHash
+              code_system_hash = {}
+              @@known_codes[code_system] = code_system_hash
             end
-            codeSystemHash[code] = description
+            code_system_hash[code] = description
           end
         rescue StandardError => error
           FHIR.logger.error error
@@ -75,14 +75,14 @@ module Inferno
         begin
           # load the core snomed codes
           @@known_codes['SNOMED'] = {} if @@known_codes['SNOMED'].nil?
-          codeSystemHash = @@known_codes['SNOMED']
+          code_system_hash = @@known_codes['SNOMED']
           filename = File.join(@@term_root, 'terminology_snomed_core.txt')
           raw = File.open(filename, 'r:UTF-8', &:read)
           raw.split("\n").each do |line|
             row = line.split('|')
             code = row[0]
             description = row[1]
-            codeSystemHash[code] = description if codeSystemHash[code].nil?
+            code_system_hash[code] = description if code_system_hash[code].nil?
             @@core_snomed[code] = description
           end
         rescue StandardError => error

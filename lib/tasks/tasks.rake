@@ -617,31 +617,31 @@ namespace :terminology do |_argv|
         CSV.foreach(input_file, headers: false, col_sep: '|', quote_char: "\x00") do |row|
           line += 1
           include_code = false
-          codeSystem = row[11]
+          code_system = row[11]
           code = row[13]
           description = row[14]
-          case codeSystem
+          case code_system
           when 'SNOMEDCT_US'
-            codeSystem = 'SNOMED'
+            code_system = 'SNOMED'
             include_code = (row[4] == 'PF' && ['FN', 'OAF'].include?(row[12]))
           when 'LNC'
-            codeSystem = 'LOINC'
+            code_system = 'LOINC'
             include_code = true
           when 'ICD10CM'
-            codeSystem = 'ICD10'
+            code_system = 'ICD10'
             include_code = (row[12] == 'PT')
           when 'ICD10PCS'
-            codeSystem = 'ICD10'
+            code_system = 'ICD10'
             include_code = (row[12] == 'PT')
           when 'ICD9CM'
-            codeSystem = 'ICD9'
+            code_system = 'ICD9'
             include_code = (row[12] == 'PT')
           when 'CPT'
             include_code = (row[12] == 'PT')
           when 'HCPCS'
             include_code = (row[12] == 'PT')
           when 'MTHICD9'
-            codeSystem = 'ICD9'
+            code_system = 'ICD9'
             include_code = true
           when 'RXNORM'
             include_code = true
@@ -652,10 +652,10 @@ namespace :terminology do |_argv|
             include_code = false
           else
             include_code = false
-            excluded_systems[codeSystem] += 1
+            excluded_systems[code_system] += 1
           end
           if include_code
-            output.write("#{codeSystem}|#{code}|#{description}\n")
+            output.write("#{code_system}|#{code}|#{description}\n")
           else
             excluded += 1
           end
@@ -715,10 +715,10 @@ namespace :terminology do |_argv|
             current_umls_concept = concept
             translation[0] = current_umls_concept
           end
-          codeSystem = row[11]
+          code_system = row[11]
           code = row[13]
           translation[9] = row[14]
-          case codeSystem
+          case code_system
           when 'SNOMEDCT_US'
             translation[1] = code if row[4] == 'PF' && ['FN', 'OAF'].include?(row[12])
           when 'LNC'
@@ -742,7 +742,7 @@ namespace :terminology do |_argv|
           when 'SRC'
             # 'SRC' rows define the data sources in the file
           else
-            excluded_systems[codeSystem] += 1
+            excluded_systems[code_system] += 1
           end
         end
       rescue StandardError => e

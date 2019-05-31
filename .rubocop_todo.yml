@@ -96,21 +96,6 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 32
 
-# Offense count: 39
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: snake_case, camelCase
-Naming/VariableName:
-  Exclude:
-    - 'generators/argonaut-r4/generator.rb'
-    - 'lib/app/helpers/browser_logic.rb'
-    - 'lib/app/modules/onc_program/onc_ehr_launch_sequence.rb'
-    - 'lib/app/modules/onc_program/onc_standalone_launch_sequence.rb'
-    - 'lib/app/utils/assertions.rb'
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/tasks/tasks.rake'
-    - 'test/sequence/argonaut_query_test.rb'
-    - 'test/test_helper.rb'
-
 # Offense count: 1
 Performance/UnfreezeString:
   Exclude:
@@ -219,4 +204,4 @@ Style/Semicolon:
 # Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
 # URISchemes: http, https
 Metrics/LineLength:
-  Max: 530
+  Max: 532

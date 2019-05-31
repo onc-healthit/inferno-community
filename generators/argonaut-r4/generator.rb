@@ -275,7 +275,7 @@ end
 
 def get_search_params(resource, profile, search_combo)
   search_param = []
-  accessCode = ''
+  access_code = ''
   search_combo.each do |param|
     # manually set for now - try to find in metadata if available later
     if resource == 'CarePlan' && search_combo == ['patient', 'category']
@@ -329,7 +329,7 @@ def get_search_params(resource, profile, search_combo)
       )
     end
     if param == 'patient'
-      accessCode += %(
+      access_code += %(
         patient_val = @instance.patient_id)
       search_param << "'#{param}': #{param.tr('-', '_')}_val"
       next
@@ -343,26 +343,26 @@ def get_search_params(resource, profile, search_combo)
     type = get_variable_type_from_structure_def(resource, profile, element_name)
     contains_multiple = get_variable_contains_multiple(resource, profile, path_parts[0])
     path_parts[0] += '.first' if contains_multiple
-    accessCode += %(
+    access_code += %(
         #{param.tr('-', '_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
     case type
     when 'CodeableConcept'
-      accessCode += '&.coding&.first&.code'
+      access_code += '&.coding&.first&.code'
     when 'Reference'
-      accessCode += '&.reference.first'
+      access_code += '&.reference.first'
     when 'Period'
-      accessCode += '&.start'
+      access_code += '&.start'
     when 'Identifier'
-      accessCode += '&.value'
+      access_code += '&.value'
     when 'Coding'
-      accessCode += '&.code'
+      access_code += '&.code'
     when 'HumanName'
-      accessCode += '&.family'
+      access_code += '&.family'
     end
     search_param << "'#{param}': #{param.tr('-', '_')}_val"
   end
 
-  %(#{accessCode}
+  %(#{access_code}
         search_params = {#{search_param.join(', ')}}
   )
 end
