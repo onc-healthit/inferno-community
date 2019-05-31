@@ -556,8 +556,8 @@ namespace :terminology do |_argv|
                     'windows64'
                   elsif (/darwin/ =~ RUBY_PLATFORM) != nil
                     'macos'
-                  else linux?
-                       'linux'
+                  else
+                    'linux'
                   end
     puts "#{jre_version} system detected"
     config_file = Dir.pwd + "/resources/terminology/#{args.my_config}"
