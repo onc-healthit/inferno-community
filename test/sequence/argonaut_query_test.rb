@@ -202,7 +202,7 @@ class ArgonautQueryTest < MiniTest::Test
 
     sequence_result = @sequence.start
 
-    assert sequence_result.result = 'pass', 'Sequence did not pass all tests.'
+    assert sequence_result.pass?, 'Sequence did not pass all tests.'
     assert sequence_result.error_count.zero?
     assert sequence_result.todo_count.zero?
     assert sequence_result.skip_count.zero?

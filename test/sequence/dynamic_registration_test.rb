@@ -58,10 +58,10 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
-    assert sequence_result.result == 'pass', 'Sequence should pass'
+    assert sequence_result.pass?, 'Sequence should pass'
     assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 

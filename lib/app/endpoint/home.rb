@@ -70,7 +70,7 @@ module Inferno
                                                                                                  %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
-          if sequence_result.nil? || sequence_result.result != 'wait'
+          if !sequence_result.wait?
             latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
             test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
@@ -120,7 +120,7 @@ module Inferno
                 instance.save!
               end
               all_test_cases << test_case.id
-              failed_test_cases << test_case.id if sequence_result.result == 'fail' || sequence_result.result == 'error'
+              failed_test_cases << test_case.id if sequence_result.fail?
               instance.sequence_results.push(sequence_result)
               instance.save!
 
@@ -159,9 +159,7 @@ module Inferno
                   out << js_update_result(sequence, test_set, result, count, sequence.test_count)
                 end
                 all_test_cases << test_case.id
-                if sequence_result.result == 'fail' || sequence_result.result == 'error'
-                  failed_test_cases << test_case.id
-                end
+                failed_test_cases << test_case.id if sequence_result.fail?
 
                 sequence_result.test_set_id = test_set.id
                 sequence_result.test_case_id = test_case.id
@@ -407,7 +405,7 @@ module Inferno
               sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
 
               all_test_cases << test_case.id
-              failed_test_cases << test_case.id if sequence_result.result == 'fail' || sequence_result.result == 'error'
+              failed_test_cases << test_case.id if sequence_result.fail?
 
               sequence_result.save!
               if sequence_result.redirect_to_url

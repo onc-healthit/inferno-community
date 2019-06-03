@@ -82,14 +82,14 @@ def execute(instance, sequences)
     puts "\n" + sequence.sequence_name + " Sequence: \n"
     sequence_result.test_results.each do |result|
       print ' '
-      if result.result == 'pass'
+      if result.pass?
         print "#{checkmark.encode('utf-8')} pass".green
         print " - #{result.test_id} #{result.name}\n"
-      elsif result.result == 'skip'
+      elsif result.skip?
         print '* skip'.yellow
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
-      elsif result.result == 'fail'
+      elsif result.fail?
         if result.required
           print 'X fail'.red
           print " - #{result.test_id} #{result.name}\n"
@@ -106,7 +106,7 @@ def execute(instance, sequences)
             puts "    #{req}"
           end
         end
-      elsif sequence_result.result == 'error'
+      elsif sequence_result.error?
         print 'X error'.magenta
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
@@ -117,29 +117,30 @@ def execute(instance, sequences)
       end
     end
     print "\n" + sequence.sequence_name + ' Sequence Result: '
-    if sequence_result.result == 'pass'
+    if sequence_result.pass?
       puts 'pass '.green + checkmark.encode('utf-8').green
-    elsif sequence_result.result == 'fail'
+    elsif sequence_result.fail?
       puts 'fail '.red + 'X'.red
       fails = true
-    elsif sequence_result.result == 'error'
+    elsif sequence_result.error?
       puts 'error '.magenta + 'X'.magenta
       fails = true
-    elsif sequence_result.result == 'skip'
+    elsif sequence_result.skip?
       puts 'skip '.yellow + '*'.yellow
     end
     puts "---------------------------------------------\n"
   end
 
-  failures_count = '' + sequence_results.select { |s| s.result == 'fail' }.count.to_s
-  passed_count = '' + sequence_results.select { |s| s.result == 'pass' }.count.to_s
-  skip_count = '' + sequence_results.select { |s| s.result == 'skip' }.count.to_s
+  failures_count = sequence_results.count(&:fail?).to_s
+  passed_count = sequence_results.count(&:pass?).to_s
   print ' Result: ' + failures_count.red + ' failed, ' + passed_count.green + ' passed'
-  if sequence_results.select { |s| s.result == 'skip' }.count.positive?
-    print(', ' + sequence_results.select { |s| s.result == 'skip' }.count.to_s).yellow + ' skipped'
+  if sequence_results.any?(&:skip)
+    skip_count = sequence_results.count(&:skip?).to_s
+    print(', ' + skip_count.yellow + ' skipped')
   end
-  if sequence_results.select { |s| s.result == 'error' }.count.positive?
-    print(', ' + sequence_results.select { |s| s.result == 'error' }.count.to_s).yellow + ' error'
+  if sequence_results.any?(&:error)
+    error_count = sequence_results.count(&:error?).to_s
+    print(', ' + error_count.yellow + ' error')
   end
   puts "\n=============================================\n"
 

@@ -180,9 +180,9 @@ class MedicationOrderSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
-    assert sequence_result.result == 'pass', 'The sequence should be marked as pass.'
+    assert sequence_result.pass?, 'The sequence should be marked as pass.'
   end
 
   def test_no_duplicate_orders

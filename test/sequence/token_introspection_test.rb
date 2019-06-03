@@ -63,10 +63,10 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
-    assert sequence_result.result == 'pass', 'Sequence should pass.'
+    assert sequence_result.pass?, 'Sequence should pass.'
     assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 
@@ -96,8 +96,8 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    assert sequence_result.result == 'fail', 'Sequence should fail.'
-    assert sequence_result.test_results.select { |r| r.result == 'pass' }.length == 1, 'Only one test should pass (the tls testing sequence).'
+    assert sequence_result.fail?, 'Sequence should fail.'
+    assert sequence_result.test_results.select(&:pass?).length == 1, 'Only one test should pass (the tls testing sequence).'
   end
 
   def test_inactive
@@ -133,11 +133,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     # 1 test depends on active being true
     assert failures.length == 1, 'One test should fail.'
-    assert sequence_result.result == 'fail', 'Sequence should fail.'
+    assert sequence_result.fail?, 'Sequence should fail.'
   end
 
   def test_refresh_inactive
@@ -173,12 +173,12 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     # 1 optional test depends on active being true
     assert failures.length == 1 && !failures.first.required, 'One optional test should fail.'
     # This should still pass because the one failing test is optional
-    assert sequence_result.result == 'pass', 'Sequence should pass.'
+    assert sequence_result.pass?, 'Sequence should pass.'
   end
 
   def test_insufficient_scopes
@@ -214,11 +214,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     # 1 optional test depends on correct scopes
     assert failures.length == 1, 'One test should fail.'
-    assert sequence_result.result == 'pass', 'Sequence should pass.'
+    assert sequence_result.pass?, 'Sequence should pass.'
   end
 
   def test_additional_scopes
@@ -254,11 +254,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     # 1 optional test depends on correct scopes
     assert failures.length == 1, 'One test should fail.'
-    assert sequence_result.result == 'pass', 'Sequence should pass.'
+    assert sequence_result.pass?, 'Sequence should pass.'
   end
 
   def test_expiration
@@ -294,10 +294,10 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     # 1 test depends on expiration being at least 60 minutes
     assert failures.length == 1, 'One test should fail.'
-    assert sequence_result.result == 'fail', 'Sequence should fail.'
+    assert sequence_result.fail?, 'Sequence should fail.'
   end
 end
