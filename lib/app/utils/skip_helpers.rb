@@ -1,10 +1,9 @@
+# frozen_string_literal: true
+
 module Inferno
   module SkipHelpers
-
     def skip_if_not_supported(resource, methods)
-
-      skip "This server does not support #{resource.to_s} #{methods.join(',').to_s} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
-
+      skip "This server does not support #{resource} #{methods.join(',')} operation(s) according to conformance statement." unless @instance.conformance_supported?(resource, methods)
     end
 
     def skip_if_tls_disabled
@@ -14,10 +13,9 @@ module Inferno
     def skip_if_url_invalid(url, url_name, details = nil)
       if url.blank?
         skip "The #{url_name} URI is empty.", details
-      elsif !(url =~ URI::regexp)
+      elsif !url&.match?(URI::DEFAULT_PARSER.make_regexp)
         skip "Invalid #{url_name} URI: '#{url}'", details
       end
     end
-
   end
 end

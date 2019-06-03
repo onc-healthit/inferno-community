@@ -1,7 +1,8 @@
-require File.expand_path '../../test_helper.rb', __FILE__
+# frozen_string_literal: true
+
+require File.expand_path '../test_helper.rb', __dir__
 
 class TestInstanceTest < MiniTest::Test
-
   def setup
     @instance = Inferno::Models::TestingInstance.create
   end
@@ -18,19 +19,18 @@ class TestInstanceTest < MiniTest::Test
 
   def test_conformance_supported_no_patient
     conformance = FHIR::DSTU2.from_contents(load_fixture(:conformance_statement))
-    conformance.rest.first.resource.reject!{|r| r.type == 'Patient'}
+    conformance.rest.first.resource.reject! { |r| r.type == 'Patient' }
     @instance.save_supported_resources(conformance)
 
     assert !@instance.conformance_supported?(:Patient, [:read])
     assert !@instance.conformance_supported?(:Patient, [:read, :search, :history])
     assert !@instance.conformance_supported?(:Patient)
     assert @instance.conformance_supported?(:Observation, [:read])
-
   end
 
   def test_conformance_supported_no_patient_read
     conformance = FHIR::DSTU2.from_contents(load_fixture(:conformance_statement))
-    conformance.rest.first.resource.find{|r| r.type == 'Patient'}.interaction.reject!{|i| i.code == 'read'}
+    conformance.rest.first.resource.find { |r| r.type == 'Patient' }.interaction.reject! { |i| i.code == 'read' }
     @instance.save_supported_resources(conformance)
 
     assert @instance.conformance_supported?(:Patient)
@@ -38,6 +38,5 @@ class TestInstanceTest < MiniTest::Test
     assert !@instance.conformance_supported?(:Patient, [:read])
     assert !@instance.conformance_supported?(:Patient, [:read, :search])
     assert @instance.conformance_supported?(:Observation, [:read])
-
   end
 end

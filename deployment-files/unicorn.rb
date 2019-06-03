@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 # set path to app that will be used to configure unicorn,
 # note the trailing slash in this example
-@dir = "/var/www/inferno/"
-@log_dir = "/var/unicorn/"
+@dir = '/var/www/inferno/'
+@log_dir = '/var/unicorn/'
 
 worker_processes 2
 working_directory @dir
@@ -12,7 +14,7 @@ timeout 300
 # Specify path to socket unicorn listens to,
 # we will use this in our nginx.conf later
 # listen "#{@dir}tmp/sockets/unicorn.sock", :backlog => 64
-listen 8080, :tcp_nopush => true
+listen 8080, tcp_nopush: true
 
 # Set process id path
 pid "#{@log_dir}pids/unicorn.pid"

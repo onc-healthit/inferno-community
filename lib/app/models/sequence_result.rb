@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Inferno
   module Models
     class SequenceResult
       include DataMapper::Resource
-      property :id, String, key: true, default: proc { SecureRandom.uuid}
+      property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :name, String
       property :result, String
       property :test_case_id, String
@@ -32,8 +34,6 @@ module Inferno
 
       has n, :test_results, order: [:test_index.asc]
       belongs_to :testing_instance
-
     end
   end
 end
-

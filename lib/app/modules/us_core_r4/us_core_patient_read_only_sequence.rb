@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Inferno
   module Sequence
     class USCoreR4PatientReadOnlySequence < SequenceBase
-
       title 'Patient'
 
       description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
@@ -12,14 +13,14 @@ module Inferno
       conformance_supports :Patient
 
       test 'Server rejects patient read without proper authorization' do
-
-        metadata {
+        metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             A patient read does not work without authorization.
           )
-          versions :r4}
+          versions :r4
+        end
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
@@ -27,52 +28,50 @@ module Inferno
         reply = @client.read(versioned_resource_class('Patient'), @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from Patient read resource' do
-
-        metadata {
+        metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
-          versions :r4}
+          versions :r4
+        end
 
         patient_read_response = @client.read(versioned_resource_class('Patient'), @instance.patient_id)
         assert_response_ok patient_read_response
         @patient = patient_read_response.resource
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
-
       end
 
       test 'Patient validates against Argonaut Profile' do
-
-        metadata {
+        metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             A server returns valid FHIR Patient resources according to the [Data Access Framework (DAF) Patient Profile](http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).
           )
-          versions :r4}
+          versions :r4
+        end
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
         profile = Inferno::ValidationUtil.guess_profile(@patient, @instance.fhir_version.to_sym)
         errors = profile.validate_resource(@patient)
-        assert errors.empty?, "Patient did not validate against profile: #{errors.join(", ")}"
+        assert errors.empty?, "Patient did not validate against profile: #{errors.join(', ')}"
       end
 
       test 'Patient has address' do
-
-        metadata {
+        metadata do
           id '04'
           desc %(
             Additional Patient resource requirement
           )
-          versions :r4}
+          versions :r4
+        end
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
@@ -81,13 +80,13 @@ module Inferno
       end
 
       test 'Patient has telecom' do
-
-        metadata {
+        metadata do
           id '05'
           desc %(
             Additional Patient resource requirement
           )
-          versions :r4}
+          versions :r4
+        end
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
         assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
@@ -112,24 +111,20 @@ module Inferno
       #   assert @everything.is_a?(versioned_resource_class('Bundle')), 'Expected resource to be valid Bundle'
       # end
 
-
       test 'All references can be resolved' do
-
-        metadata {
+        metadata do
           id '06'
           link 'https://www.hl7.org/fhir/r4references.html'
           desc %(
             All references in the Patient resource should be resolveable.
           )
-          versions :r4}
+          versions :r4
+        end
 
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         validate_reference_resolutions(@patient)
-
       end
-
     end
-
   end
 end

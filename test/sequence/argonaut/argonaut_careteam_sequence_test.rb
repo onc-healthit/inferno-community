@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 require_relative '../../test_helper'
-class ArgonautSmokingStatusSequenceTest < MiniTest::Test
+class CareTeamSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'smoking_status' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautSmokingStatusSequence.new(@instance, client) # put sequence here
-    @resource_type = 'Observation'
+    @fixture = 'care_team' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautCareTeamSequence.new(@instance, client) # put sequence here
+    @resource_type = 'CarePlan'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
@@ -23,7 +23,6 @@ class ArgonautSmokingStatusSequenceTest < MiniTest::Test
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
-    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
     # Assume we already have a patient
     @instance.resource_references << Inferno::Models::ResourceReference.new(
@@ -32,15 +31,17 @@ class ArgonautSmokingStatusSequenceTest < MiniTest::Test
     )
 
     # Register that the server supports MedicationStatement
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: @resource_type.to_s,
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true,
-      vread_supported: true,
-      search_supported: true,
-      history_supported: true
-    )
+    if @instance.resource_references.none? { |r| r.resource_type == @resource_type }
+      @instance.supported_resources << Inferno::Models::SupportedResource.create(
+        resource_type: @resource_type.to_s,
+        testing_instance_id: @instance.id,
+        supported: true,
+        read_supported: true,
+        vread_supported: true,
+        search_supported: true,
+        history_supported: true
+      )
+    end
 
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
 
@@ -61,7 +62,7 @@ class ArgonautSmokingStatusSequenceTest < MiniTest::Test
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,code}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources
@@ -100,6 +101,11 @@ class ArgonautSmokingStatusSequenceTest < MiniTest::Test
       .to_return(status: 200,
                  body: @patient_resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+    stub_request(:get, %r{example.com/Practitioner/1})
+      .with(headers: @extended_request_headers)
+      .to_return(status: 200,
+                 body: @patient_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 
   def test_all_pass
@@ -109,6 +115,9 @@ class ArgonautSmokingStatusSequenceTest < MiniTest::Test
 
     failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
+    sequence_result.test_results.each do |test_result|
+      assert test_result.result == 'pass', "#{test_result.name} - #{test_result.result}"
+    end
     assert sequence_result.result == 'pass', "The sequence should be marked as pass. #{sequence_result.result}"
     assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end

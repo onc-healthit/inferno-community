@@ -23,7 +23,7 @@ module Inferno
                            ::Logger.new('logs.log', level: settings.log_level.to_sym, progname: 'Inferno')
                          else
                            l = ::Logger.new(STDOUT, level: settings.log_level.to_sym, progname: 'Inferno')
-                           l.formatter = proc do |severity, datetime, progname, msg|
+                           l.formatter = proc do |severity, _datetime, progname, msg|
                              "#{severity} | #{progname} | #{msg}\n"
                            end
                            l

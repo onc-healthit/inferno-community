@@ -14,10 +14,10 @@ module Inferno
 
       description 'Tests for Provenance resources'
 
-      def validate_resource_item (resource, property, value)
+      def validate_resource_item(resource, property, _value)
         case property
-        when "target"
-          assert (resource.target && resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
+        when 'target'
+          assert (resource.target && resource.target.any? { |t| t.reference.include?(@instance.patient_id) }), 'No target on resource matches patient requested'
         end
       end
 
@@ -52,7 +52,7 @@ module Inferno
           )
         end
 
-        search_params = {target: "Patient/" + @instance.patient_id}
+        search_params = { target: 'Patient/' + @instance.patient_id }
         reply = get_resource_by_params(FHIR::DSTU2::Provenance, search_params)
         validate_search_reply(FHIR::DSTU2::Provenance, reply, search_params)
         @provenance = reply.try(:resource).try(:entry).try(:first).try(:resource)

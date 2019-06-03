@@ -215,7 +215,6 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_refresh_register)
 
     failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
-    warnings = sequence_result.test_results.reject { |r| r.test_warnings.empty? }
 
     # 1 optional test depends on correct scopes
     assert failures.length == 1, 'One test should fail.'
@@ -256,7 +255,6 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_refresh_register)
 
     failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
-    warnings = sequence_result.test_results.reject { |r| r.test_warnings.empty? }
 
     # 1 optional test depends on correct scopes
     assert failures.length == 1, 'One test should fail.'
