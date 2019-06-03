@@ -316,7 +316,12 @@ namespace :inferno do |_argv|
     file = File.read(args.config)
     config = JSON.parse(file)
 
-    instance = Inferno::Models::TestingInstance.new(url: config['server'], selected_module: config['module'], initiate_login_uri: 'http://localhost:4568/launch', redirect_uris: 'http://localhost:4568/redirect')
+    instance = Inferno::Models::TestingInstance.new(
+      url: config['server'],
+      selected_module: config['module'],
+      initiate_login_uri: 'http://localhost:4568/launch',
+      redirect_uris: 'http://localhost:4568/redirect'
+    )
     instance.save!
     client = FHIR::Client.new(config['server'])
     client.use_dstu2 if instance.module.fhir_version == 'dstu2'

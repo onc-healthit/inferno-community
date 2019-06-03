@@ -31,15 +31,18 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 
+  def confidential_correct?(confidential, body)
+    (!confidential && body['token_endpoint_auth_method'] == 'none') ||
+      (confidential && body['token_endpoint_auth_method'] == 'client_secret_basic')
+  end
+
   def validate_register_payload(req, confidential)
     body = JSON.parse(req.body)
 
     required_fields = %w[client_name initiate_login_uri redirect_uris token_endpoint_auth_method grant_types scope].all? { |k| body.key?(k) }
     all_uris = [body['initiate_login_uri'], body['redirect_uris']].flatten.all? { |uri| valid_uri?(uri) }
 
-    confidential_correct = (!confidential && body['token_endpoint_auth_method'] == 'none') || (confidential && body['token_endpoint_auth_method'] == 'client_secret_basic')
-
-    required_fields && all_uris && confidential_correct
+    required_fields && all_uris && confidential_correct?(confidential, body)
   end
 
   def all_pass(bearer_present, confidential)

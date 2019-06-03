@@ -58,6 +58,17 @@ module Inferno
       def failures
         test_results.select(&:fail?)
       end
+
+      def reset
+        [
+          'required_passed',
+          'required_total',
+          'error_count',
+          'skip_count',
+          'optional_passed',
+          'optional_total'
+        ].each { |field| send("#{field}=", 0) }
+      end
     end
   end
 end

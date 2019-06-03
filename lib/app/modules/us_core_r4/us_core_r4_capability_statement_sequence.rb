@@ -87,7 +87,8 @@ module Inferno
         end
 
         assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
-        assert @conformance.format.include?('json') || @conformance.format.include?('application/json') || @conformance.format.include?('application/json+fhir') || @conformance.format.include?('application/fhir+json'), 'Conformance does not state support for json.'
+        formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
+        assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'Capability Statement describes SMART on FHIR core capabilities' do

@@ -19,4 +19,3 @@ if Inferno::PURGE_ON_RELOAD || Inferno::ENVIRONMENT == :test
 else
   DataMapper.auto_upgrade!
 end
-# DataMapper.auto_upgrade!

@@ -4,17 +4,19 @@ require_relative '../test_helper'
 
 class StandaloneLaunchSequenceTest < MiniTest::Test
   def setup
-    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                                     client_name: 'Inferno',
-                                                     base_url: 'http://localhost:4567',
-                                                     client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-                                                     client_id: SecureRandom.uuid,
-                                                     selected_module: 'argonaut',
-                                                     oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
-                                                     oauth_token_endpoint: 'http://oauth_reg.example.com/token',
-                                                     initiate_login_uri: 'http://localhost:4567/launch',
-                                                     redirect_uris: 'http://localhost:4567/redirect',
-                                                     scopes: 'launch openid patient/*.* profile')
+    @instance = Inferno::Models::TestingInstance.new(
+      url: 'http://www.example.com',
+      client_name: 'Inferno',
+      base_url: 'http://localhost:4567',
+      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
+      client_id: SecureRandom.uuid,
+      selected_module: 'argonaut',
+      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
+      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
+      initiate_login_uri: 'http://localhost:4567/launch',
+      redirect_uris: 'http://localhost:4567/redirect',
+      scopes: 'launch openid patient/*.* profile'
+    )
 
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
@@ -30,28 +32,45 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
     if confidential
       # Responses Must Contain Authorization Header
       stub_request(:post, @instance.oauth_token_endpoint)
-        .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded',
-                         'Authorization' =>
-                             "Basic #{Base64.strict_encode64(@instance.client_id +
-                                                                 ':' +
-                                                                 @instance.client_secret)}" })
-        .to_return(status: 200,
-                   body: @standalone_token_exchange.to_json,
-                   headers: { content_type: 'application/json; charset=UTF-8',
-                              cache_control: 'no-store',
-                              pragma: 'no-cache' })
+        .with(
+          headers: {
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
+          }
+        )
+        .to_return(
+          status: 200,
+
+          body: @standalone_token_exchange.to_json,
+          headers: {
+            content_type: 'application/json; charset=UTF-8',
+            cache_control: 'no-store',
+            pragma: 'no-cache'
+          }
+        )
 
       # Responses must NOT contain client_id in the body or the client secret in any situation
       stub_request(:post, @instance.oauth_token_endpoint)
-        .with(body: /client_id|client_secret/,
-              headers: { 'Content-Type' => 'application/x-www-form-urlencoded',
-                         'Authorization' =>
-                             "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}" })
+        .with(
+          body: /client_id|client_secret/,
+          headers: {
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
+          }
+        )
         .to_return(status: 401)
     else
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
-        .to_return(status: 200, body: @standalone_token_exchange.to_json, headers: { content_type: 'application/json; charset=UTF-8', cache_control: 'no-store', pragma: 'no-cache' })
+        .to_return(
+          status: 200,
+          body: @standalone_token_exchange.to_json,
+          headers: {
+            content_type: 'application/json; charset=UTF-8',
+            cache_control: 'no-store',
+            pragma: 'no-cache'
+          }
+        )
     end
     # To test rejection of invalid client_id
     stub_request(:post, @instance.oauth_token_endpoint)

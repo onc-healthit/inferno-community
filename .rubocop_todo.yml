@@ -50,7 +50,7 @@ Metrics/BlockNesting:
 # Offense count: 60
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 593
+  Max: 594
 
 # Offense count: 38
 Metrics/CyclomaticComplexity:
@@ -135,4 +135,4 @@ Style/Semicolon:
 # Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
 # URISchemes: http, https
 Metrics/LineLength:
-  Max: 532
+  Max: 180

@@ -16,3 +16,8 @@ Style/WordArray:
 
 Style/SymbolArray:
   Enabled: false
+
+Metrics/LineLength:
+  Exclude:
+    - 'lib/app/modules/**/*'
+    - 'lib/app/helpers/browser_logic.rb'

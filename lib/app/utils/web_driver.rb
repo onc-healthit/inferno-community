@@ -29,13 +29,11 @@ module Inferno
       script.each do |command|
         unless command['find_value'].nil?
           current_element = wait.until do
-            current = if !command['index'].nil?
-                        driver.find_elements(command['type'].to_sym => command['find_value'])
-                      else
-                        driver.find_element(command['type'].to_sym => command['find_value'])
-                      end
-
-            current if (current.is_a?(Array) && current.length >= (command['index'] || 0) && current[command['index']].displayed?) || (!current.is_a?(Array) && current.displayed?)
+            if !command['index'].nil?
+              driver.find_elements(command['type'].to_sym => command['find_value'])
+            else
+              driver.find_element(command['type'].to_sym => command['find_value'])
+            end
           end
         end
 

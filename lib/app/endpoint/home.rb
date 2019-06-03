@@ -59,11 +59,24 @@ module Inferno
           end
 
           if params[:endpoint] == 'launch'
-            recent_results = Inferno::Models::SequenceResult.all(:created_at.gte => 5.minutes.ago, :result => 'wait', :order => [:created_at.desc])
-            matching_results = recent_results.select { |sr| sr.testing_instance.url.downcase.split('://').last.chomp('/') == params[:iss].downcase.split('://').last.chomp('/') }
+            recent_results = Inferno::Models::SequenceResult.all(
+              :created_at.gte => 5.minutes.ago,
+              :result => 'wait',
+              :order => [:created_at.desc]
+            )
+            iss_url = params[:iss].downcase.split('://').last.chomp('/')
+
+            matching_results = recent_results.select do |sr|
+              testing_instance_url = sr.testing_instance.url.downcase.split('://').last.chomp('/')
+              testing_instance_url == iss_url
+            end
 
             instance = matching_results.first.try(:testing_instance)
-            halt 500, "Error: No actively running launch sequences found for iss #{params[:iss]}.  Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR." if instance.nil?
+            if instance.nil?
+              message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
+                        'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
+              halt 500, message
+            end
           end
           halt 500, 'Error: Could not find a running test that match this set of critera' unless !instance.nil? &&
                                                                                                  instance.client_endpoint_key == params[:key] &&

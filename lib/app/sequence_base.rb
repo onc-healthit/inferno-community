@@ -196,7 +196,7 @@ module Inferno
 
         @sequence_result.output_results = output_results.to_json if !output_results.nil? && !output_results.empty?
 
-        @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
+        @sequence_result.reset
         @sequence_result.result = STATUS[:pass]
 
         @sequence_result.test_results.each do |result|
@@ -420,7 +420,8 @@ module Inferno
                                           result: STATUS[:pass],
                                           test_index: test_index)
           begin
-            skip_unless((@@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym), 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
+            fhir_version_included = @@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym
+            skip_unless(fhir_version_included, 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
             Inferno.logger.info "Starting Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
             instance_eval(&block)
           rescue AssertionException, ClientException => e

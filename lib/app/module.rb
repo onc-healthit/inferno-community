@@ -166,13 +166,27 @@ module Inferno
     end
 
     def self.load_module(module_hash)
-      new_module = new(module_hash[:name], module_hash[:description], module_hash[:default_test_set], module_hash[:fhir_version], module_hash[:title] || module_hash[:name])
+      new_module = new(
+        module_hash[:name],
+        module_hash[:description],
+        module_hash[:default_test_set],
+        module_hash[:fhir_version],
+        module_hash[:title] || module_hash[:name]
+      )
 
       module_hash[:test_sets].each do |test_set_key, test_set|
         new_module.default_test_set = test_set_key.to_s if new_module.default_test_set.nil?
         new_test_set = TestSet.new(test_set_key, test_set[:view])
         test_set[:tests].each do |group|
-          new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:lock_variables], group[:run_all] || false, group[:run_skipped] || false)
+          new_group = TestGroup.new(
+            new_test_set,
+            group[:name],
+            group[:overview],
+            group[:input_instructions],
+            group[:lock_variables],
+            group[:run_all] || false,
+            group[:run_skipped] || false
+          )
 
           group[:sequences].each do |sequence|
             if sequence.instance_of?(String)

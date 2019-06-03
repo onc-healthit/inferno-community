@@ -44,11 +44,18 @@ def extract_metadata(resources)
 
   resources.each do |resource|
     resource['supportedProfile'].each do |supported_profile|
+      # links in capability statement currently incorrect
+      profile = "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supported_profile.split('StructureDefinition/')[1]}.json"
       new_sequence = {
         name: supported_profile.split('StructureDefinition/')[1].tr('-', '_'),
-        classname: supported_profile.split('StructureDefinition/')[1].split('-').map(&:capitalize).join.gsub('UsCore', 'UsCoreR4') + 'Sequence',
+        classname: supported_profile
+          .split('StructureDefinition/')[1]
+          .split('-')
+          .map(&:capitalize)
+          .join
+          .gsub('UsCore', 'UsCoreR4') + 'Sequence',
         resource: resource['type'],
-        profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supported_profile.split('StructureDefinition/')[1]}.json", # links in capability statement currently incorrect
+        profile: profile,
         interactions: [],
         search_params: [],
         search_combos: [],
@@ -81,7 +88,12 @@ def extract_metadata(resources)
           new_search_combo[:names] << param['valueString'] if param.key?('valueString')
         end
         # special case - set search by category first for these two profiles
-        if new_search_combo[:names] == ['patient', 'category'] && (new_sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json' || new_sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json' || new_sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json')
+        observation_profiles = [
+          'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
+          'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
+          'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+        ]
+        if new_search_combo[:names] == ['patient', 'category'] && observation_profiles.include?(new_sequence[:profile])
           new_sequence[:search_params].insert(0, new_search_combo)
         else
           new_sequence[:search_params] << new_search_combo
@@ -435,7 +447,6 @@ def create_search_validation(resource, profile, search_params)
         when '#{param}'
           assert resource&.#{path_parts.join('&.')}&.code == value, '#{param} on resource did not match #{param} requested'
 )
-
     when 'Identifier'
       search_validators += %(
         when '#{param}'
@@ -476,4 +487,3 @@ def generate_module(module_info)
 end
 
 run
-# print create_search_validation('AllergyIntolerance', 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance.json', [{name:'patient'}, {name:'clinical-status'}])
