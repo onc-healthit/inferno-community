@@ -89,7 +89,12 @@ module Inferno
           result = :error if result_details[:error].positive?
           result = :not_run if result_details[:total].zero?
 
-          return_data << { group: group, result_details: result_details, result: result, missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? } }
+          return_data << {
+            group: group,
+            result_details: result_details,
+            result: result,
+            missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? }
+          }
         end
 
         return_data
@@ -99,18 +104,16 @@ module Inferno
         sequence_results.first(result: 'wait')
       end
 
-      def final_result
+      def all_passed?
         required_sequences = Inferno::Sequence::SequenceBase.subclasses.reject(&:optional?)
 
-        all_passed = required_sequences.all? do |sequence|
+        required_sequences.all? do |sequence|
           latest_results[sequence.name].try(:result) == 'pass'
         end
+      end
 
-        if all_passed
-          return 'pass'
-        else
-          return 'fail'
-        end
+      def final_result
+        all_passed? ? 'pass' : 'fail'
       end
 
       def fhir_version
@@ -128,9 +131,10 @@ module Inferno
       def patient_id=(patient_id)
         return if patient_id.to_s == self.patient_id.to_s
 
-        resource_references.select { |ref| ref.resource_type == 'Patient' }
-        # Use destroy directly (instead of on each, so we don't have to reload)
-        resource_references.destroy
+        resource_references
+          .select { |ref| ref.resource_type == 'Patient' }
+          .destroy # Use destroy directly (instead of on each, so we don't have to reload)
+
         save!
 
         resource_references << ResourceReference.new(
@@ -160,25 +164,28 @@ module Inferno
                      'DocumentReference',
                      'Provenance']
 
-        supported_resources = conformance.rest.first.resource.select { |r| resources.include? r.type }.each_with_object({}) { |k, a| a[k.type] = k; }
+        supported_resource_capabilities =
+          conformance.rest.first.resource
+            .select { |resource| resources.include? resource.type }
+            .each_with_object({}) { |resource, hash| hash[resource.type] = resource }
 
-        self.supported_resources.each(&:destroy)
+        supported_resources.each(&:destroy)
         save!
 
         resources.each_with_index do |resource_name, index|
-          resource = supported_resources[resource_name]
+          capabilities = supported_resource_capabilities[resource_name]
 
-          read_supported = resource&.interaction && resource.interaction.any? { |i| i.code == 'read' }
+          read_supported = capabilities&.interaction&.any? { |i| i.code == 'read' }
 
-          self.supported_resources << SupportedResource.create(
+          supported_resources << SupportedResource.create(
             resource_type: resource_name,
             index: index,
             testing_instance_id: id,
-            supported: !resource.nil?,
+            supported: !capabilities.nil?,
             read_supported: read_supported,
-            vread_supported: resource && resource.interaction && resource.interaction.any? { |i| i.code == 'vread' },
-            search_supported: resource && resource.interaction && resource.interaction.any? { |i| i.code == 'search-type' },
-            history_supported: resource && resource.interaction && resource.interaction.any? { |i| i.code == 'history-instance' }
+            vread_supported: capabilities&.interaction&.any? { |i| i.code == 'vread' },
+            search_supported: capabilities&.interaction&.any? { |i| i.code == 'search-type' },
+            history_supported: capabilities&.interaction&.any? { |i| i.code == 'history-instance' }
           )
         end
 
