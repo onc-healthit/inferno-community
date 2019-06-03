@@ -235,7 +235,15 @@ module Inferno
             inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/#{params[:test_set]}/"
           }
 
-          erb :report, { layout: false }, instance: instance, test_set: test_set, show_button: false, sequence_results: sequence_results, report_summary: report_summary
+          erb(
+            :report,
+            { layout: false },
+            instance: instance,
+            test_set: test_set,
+            show_button: false,
+            sequence_results: sequence_results,
+            report_summary: report_summary
+          )
         end
 
         # Creates a new testing instance at the provided FHIR Server URL
