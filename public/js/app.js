@@ -62,7 +62,13 @@ $(function(){
   });
 
   $('.sequence-button').click(function(){
+    var preset_json = JSON.parse(localStorage.getItem('preset_json'));
+    localStorage.removeItem('preset_json');
     
+    if ((preset_json != null) && (preset_json.preset_on)) {
+      document.getElementById('client_id').value = preset_json.preset.client_id;
+    }
+
     var sequences = [],
         test_cases = [],
         variable_defaults = {},
@@ -343,4 +349,24 @@ $(function(){
   // Then register the handler
   $(window).on('scroll', handleScroll)
 
+  $('#preset-select').on('change', function() {
+    var preset = $('#preset-select option:selected').data('selected');
+    var modules = $('#preset-select option:selected').data('module_names').split(",");
+
+    $el = $('input[name=fhir_server]');
+    $el.val(preset.uri);
+    $el.prop('readonly', preset !== '');
+    var preset_on = $el.val() == '' ? false : true;
+
+    var preset_json = { 'preset_on': preset_on, 'preset': preset };
+    localStorage.setItem('preset_json', JSON.stringify(preset_json));
+
+    if (preset_on) {
+      modules.forEach(mod => document.getElementById(mod).disabled = true);
+      document.getElementById(preset.module).checked = true;
+      document.getElementById(preset.module).disabled = false;
+    } else {
+      modules.forEach(mod => document.getElementById(mod).disabled = false);
+    }
+  });
 }); 

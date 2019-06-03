@@ -47,3 +47,11 @@ modules:
   - smart
   - us_core_r4
   - argonaut
+
+#preset fhir servers, optional
+presets:
+  local_dstu2: 
+    name: Smart DSTU2 Sandbox
+    uri: https://launch.smarthealthit.org/v/r2/sim/eyJoIjoiMSIsImIiOiI0OTM5OTIiLCJqIjoiMSJ9/fhir
+    module: onc
+    client_id: smart-5555001
