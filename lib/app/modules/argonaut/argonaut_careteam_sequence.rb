@@ -71,7 +71,7 @@ module Inferno
         search_params = { patient: @instance.patient_id, category: 'careteam' }
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)

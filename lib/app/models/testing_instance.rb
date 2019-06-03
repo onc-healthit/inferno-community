@@ -165,7 +165,8 @@ module Inferno
                      'Provenance']
 
         supported_resource_capabilities =
-          conformance.rest.first.resource
+          conformance
+            .rest.first.resource
             .select { |resource| resources.include? resource.type }
             .each_with_object({}) { |resource, hash| hash[resource.type] = resource }
 

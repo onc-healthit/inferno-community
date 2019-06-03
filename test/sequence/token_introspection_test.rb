@@ -51,12 +51,12 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 200, body: response.to_json)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 200, body: response.to_json)
 
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 200, body: refresh_response.to_json)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
@@ -84,12 +84,12 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 404)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 404)
 
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 404)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 404)
 
     sequence_result = @sequence.start
 
@@ -122,11 +122,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 200, body: response.to_json)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 200, body: response.to_json)
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 200, body: refresh_response.to_json)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
@@ -162,11 +162,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 200, body: response.to_json)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 200, body: response.to_json)
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 200, body: refresh_response.to_json)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
@@ -203,11 +203,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 200, body: response.to_json)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 200, body: response.to_json)
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 200, body: refresh_response.to_json)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
@@ -243,11 +243,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 200, body: response.to_json)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 200, body: response.to_json)
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 200, body: refresh_response.to_json)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 
@@ -283,11 +283,11 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
 
     stub_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                    .with(headers: REQUEST_HEADERS, body: params)
-                    .to_return(status: 200, body: response.to_json)
+      .with(headers: REQUEST_HEADERS, body: params)
+      .to_return(status: 200, body: response.to_json)
     stub_refresh_register = stub_request(:post, @instance.oauth_introspection_endpoint)
-                            .with(headers: REQUEST_HEADERS, body: refresh_params)
-                            .to_return(status: 200, body: refresh_response.to_json)
+      .with(headers: REQUEST_HEADERS, body: refresh_params)
+      .to_return(status: 200, body: refresh_response.to_json)
 
     sequence_result = @sequence.start
 

@@ -48,8 +48,8 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
     headers['Authorization'] = "Bearer #{DYNAMIC_REGISTRATION_TOKEN}" if bearer_present
 
     stub_register = stub_request(:post, @instance.oauth_register_endpoint)
-                    .with(headers: headers) { |req| validate_register_payload(req, confidential) }
-                    .to_return(status: 201, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
+      .with(headers: headers) { |req| validate_register_payload(req, confidential) }
+      .to_return(status: 201, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
 
     @instance.dynamic_registration_token = (DYNAMIC_REGISTRATION_TOKEN if bearer_present)
 

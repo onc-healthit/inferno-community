@@ -61,10 +61,10 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
     stub_openid_register = stub_request(:get, openid_configuration_url)
-                           .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
 
     stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-                         .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
 
@@ -106,10 +106,10 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
     stub_openid_register = stub_request(:get, openid_configuration_url)
-                           .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
 
     stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-                         .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
 
@@ -129,10 +129,10 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
     stub_openid_register = stub_request(:get, openid_configuration_url)
-                           .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
 
     stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-                         .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
 
@@ -152,10 +152,10 @@ class OpenIDConnectSequenceTest < MiniTest::Test
 
     openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
     stub_openid_register = stub_request(:get, openid_configuration_url)
-                           .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
 
     stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-                         .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
 

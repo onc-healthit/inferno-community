@@ -8,6 +8,9 @@ AllCops:
     - 'node_modules/**/*'
     - '.git/**/*'
 
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: 'indented'
+
 Style/WordArray:
   Enabled: false
 
