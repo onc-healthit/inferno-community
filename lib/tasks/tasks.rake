@@ -493,35 +493,35 @@ namespace :terminology do |_argv|
   end
 
   def follow_redirect(location, cookie = nil)
-    if location
-      size = 0
-      percent = 0
-      current_percent = 0
-      File.open('umls.zip', 'w') do |f|
-        block = proc do |response|
-          puts response.header['content-type']
-          if response.header['content-type'] == 'application/zip'
-            total = response.header['content-length'].to_i
-            response.read_body do |chunk|
-              f.write chunk
-              size += chunk.size
-              percent = ((size * 100) / total).round unless total.zero?
-              if current_percent != percent
-                current_percent = percent
-                puts "#{percent}% complete"
-              end
+    return unless location
+
+    size = 0
+    percent = 0
+    current_percent = 0
+    File.open('umls.zip', 'w') do |f|
+      block = proc do |response|
+        puts response.header['content-type']
+        if response.header['content-type'] == 'application/zip'
+          total = response.header['content-length'].to_i
+          response.read_body do |chunk|
+            f.write chunk
+            size += chunk.size
+            percent = ((size * 100) / total).round unless total.zero?
+            if current_percent != percent
+              current_percent = percent
+              puts "#{percent}% complete"
             end
-          else
-            follow_redirect(response.header['location'], response.header['set-cookie'])
           end
+        else
+          follow_redirect(response.header['location'], response.header['set-cookie'])
         end
-        RestClient::Request.execute(
-          method: :get,
-          url: location,
-          headers: { cookie: cookie },
-          block_response: block
-        )
       end
+      RestClient::Request.execute(
+        method: :get,
+        url: location,
+        headers: { cookie: cookie },
+        block_response: block
+      )
     end
   end
 

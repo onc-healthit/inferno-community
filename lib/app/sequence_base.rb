@@ -285,22 +285,18 @@ module Inferno
 
         # move this into a hash so things are duplicated.
 
-        if recurse
+        return dependencies[self] unless recurse
 
-          linked_dependencies = {}
-          dependencies[self].each do |dep|
-            return if linked_dependencies.key? dep
+        linked_dependencies = {}
+        dependencies[self].each do |dep|
+          return if linked_dependencies.key? dep
 
-            dep[1].each do |seq|
-              linked_dependencies.merge! seq.missing_requirements(instance, true)
-            end
+          dep[1].each do |seq|
+            linked_dependencies.merge! seq.missing_requirements(instance, true)
           end
-
-          dependencies.merge! linked_dependencies
-
-        else
-          return dependencies[self]
         end
+
+        dependencies.merge! linked_dependencies
 
         dependencies
       end
@@ -451,10 +447,10 @@ module Inferno
       end
 
       def metadata
-        if @metadata_only
-          yield
-          raise MetadataException
-        end
+        return unless @metadata_only
+
+        yield
+        raise MetadataException
       end
 
       def id(test_id)

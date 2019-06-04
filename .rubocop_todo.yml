@@ -93,13 +93,8 @@ Style/Documentation:
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
   Exclude:
-    - 'lib/app/models/testing_instance.rb'
-    - 'lib/app/sequence_base.rb'
-    - 'lib/app/utils/assertions.rb'
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/app/utils/tls_tester.rb'
     - 'lib/app/utils/validation.rb'
-    - 'lib/tasks/tasks.rake'
+    - 'lib/app/utils/tls_tester.rb'
 
 # Max line length needs to be reduced before fixing these
 # Offense count: 14
