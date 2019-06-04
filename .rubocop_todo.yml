@@ -106,7 +106,6 @@ Style/GuardClause:
 # Cop supports --auto-correct.
 Style/IfUnlessModifier:
   Exclude:
-    - 'lib/app/endpoint/home.rb'
     - 'lib/app/models/testing_instance.rb'
     - 'lib/app/utils/assertions.rb'
     - 'lib/tasks/tasks.rake'

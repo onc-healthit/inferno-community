@@ -30,13 +30,9 @@ module Inferno
                               'The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test. ' \
                               "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
 
-              unless params[:error].nil?
-                error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
-              end
+              error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
 
-              unless params[:error_description].nil?
-                error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
-              end
+              error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
 
               halt 500, error_message
             end
@@ -47,13 +43,9 @@ module Inferno
                             'Inferno is unable to identify the currently running test session without the state parameter. ' \
                             "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
 
-            unless params[:error].nil?
-              error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
-            end
+            error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
 
-            unless params[:error_description].nil?
-              error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
-            end
+            error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
 
             halt 500, error_message
           end
