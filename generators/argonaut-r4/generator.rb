@@ -343,6 +343,7 @@ def get_search_params(resource, profile, search_combo)
     element_name = path_parts.join('.')
     type = get_variable_type_from_structure_def(resource, profile, element_name)
     contains_multiple = get_variable_contains_multiple(resource, profile, path_parts[0])
+    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part}
     path_parts[0] += '.first' if contains_multiple
     access_code += %(
         #{param.tr('-', '_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
@@ -385,6 +386,8 @@ def create_search_validation(resource, profile, search_params)
     type = get_variable_type_from_structure_def(resource, profile, element_name)
     contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
     resource_metadata = FHIR.const_get(resource).const_get('METADATA')
+    
+    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part}
     case type
     when 'CodeableConcept'
       search_validators += %(

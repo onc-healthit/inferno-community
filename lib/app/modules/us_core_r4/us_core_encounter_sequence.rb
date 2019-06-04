@@ -25,7 +25,7 @@ module Inferno
           assert resource&.id != nil && resource&.id == value, "_id on resource did not match _id requested"
       
         when 'class'
-          assert !resource&.class&.code.nil? && resource&.class&.code == value, "class on resource did not match class requested"
+          assert !resource&.local_class&.code.nil? && resource&.local_class&.code == value, "class on resource did not match class requested"
       
         when 'date'
       
@@ -195,7 +195,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
         
-        class_val = @encounter&.class&.code
+        class_val = @encounter&.local_class&.code
         patient_val = @instance.patient_id
         search_params = {'class': class_val, 'patient': patient_val}
   
