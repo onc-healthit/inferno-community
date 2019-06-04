@@ -7,6 +7,12 @@ module Inferno
       raise AssertionException.new message, data unless test
     end
 
+    def assert_valid_json(json)
+      JSON.parse(json)
+    rescue JSON::ParserError
+      raise AssertionException, 'Invalid JSON'
+    end
+
     def assert_equal(expected, actual, message = '', data = '')
       unless assertion_negated(expected == actual)
         message += " Expected: #{expected}, but found: #{actual}."

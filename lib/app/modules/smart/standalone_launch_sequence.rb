@@ -186,6 +186,7 @@ module Inferno
         end
 
         @token_response_headers = @token_response.headers
+        assert_valid_json(@token_response.body)
         @token_response_body = JSON.parse(@token_response.body)
 
         if @token_response_body.key?('id_token')
