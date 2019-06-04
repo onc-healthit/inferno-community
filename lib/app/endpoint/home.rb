@@ -75,11 +75,7 @@ module Inferno
                                                                                                  %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
-          if !sequence_result&.wait?
-            latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
-            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
-            redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
-          else
+          if sequence_result&.wait?
             test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
             failed_test_cases = []
             all_test_cases = []
@@ -111,10 +107,12 @@ module Inferno
 
               # finish the inprocess stream
 
-              out << erb(instance.module.view_by_test_set(test_set.id), {}, instance: instance,
-                                                                            test_set: test_set,
-                                                                            sequence_results: instance.latest_results_by_case,
-                                                                            tests_running: true)
+              out << erb(instance.module.view_by_test_set(test_set.id),
+                         {},
+                         instance: instance,
+                         test_set: test_set,
+                         sequence_results: instance.latest_results_by_case,
+                         tests_running: true)
 
               out << js_hide_wait_modal
               out << js_show_test_modal
@@ -189,6 +187,10 @@ module Inferno
 
               out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{query_target}") if finished
             end
+          else
+            latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
+            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
+            redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
           end
         end
 
