@@ -83,7 +83,7 @@ module Inferno
                                                                                                  %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
-          if !sequence_result.wait?
+          if !sequence_result&.wait?
             latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
             test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"

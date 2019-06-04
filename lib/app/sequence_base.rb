@@ -88,13 +88,15 @@ module Inferno
 
       def start(test_set_id = nil, test_case_id = nil)
         if @sequence_result.nil?
-          @sequence_result = Models::SequenceResult.new(name: sequence_name,
-                                                        result: STATUS[:pass],
-                                                        testing_instance: @instance,
-                                                        required: !optional?,
-                                                        test_set_id: test_set_id,
-                                                        test_case_id: test_case_id,
-                                                        app_version: VERSION)
+          @sequence_result = Models::SequenceResult.new(
+            name: sequence_name,
+            result: STATUS[:pass],
+            testing_instance: @instance,
+            required: !optional?,
+            test_set_id: test_set_id,
+            test_case_id: test_case_id,
+            app_version: VERSION
+          )
           @sequence_result.save!
         end
 
@@ -148,31 +150,11 @@ module Inferno
           end
 
           @client&.requests&.each do |req|
-            result.request_responses << Models::RequestResponse.new(
-              direction: 'outbound',
-              request_method: req.request[:method],
-              request_url: req.request[:url],
-              request_headers: req.request[:headers].to_json,
-              request_payload: req.request[:payload],
-              response_code: req.response[:code],
-              response_headers: req.response[:headers].to_json,
-              response_body: req.response[:body],
-              instance_id: @instance.id
-            )
+            result.request_responses << Models::RequestResponse.from_request(req, @instance.id, 'outbound')
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Models::RequestResponse.new(
-              direction: req[:direction],
-              request_method: req[:request][:method].to_s,
-              request_url: req[:request][:url],
-              request_headers: req[:request][:headers].to_json,
-              request_payload: req[:request][:payload].to_json,
-              response_code: req[:response][:code],
-              response_headers: req[:response][:headers].to_json,
-              response_body: req[:response][:body],
-              instance_id: @instance.id
-            )
+            result.request_responses << Models::RequestResponse.from_request(OpenStruct.new(req), @instance.id)
           end
 
           yield result if block_given?
