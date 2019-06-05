@@ -11,7 +11,7 @@ module Inferno
 
         # Return the index page of the application
         get '/?' do
-          erb :index, {}, modules: settings.modules.map { |m| Inferno::Module.get(m) }.reject(&:nil?), presets: settings.presets
+          erb :index, {}, modules: settings.modules.map { |m| Inferno::Module.get(m) }.compact, presets: defined?(settings.presets).nil? ? nil : settings.presets
         end
 
         # Returns the static files associated with web app
@@ -252,6 +252,16 @@ module Inferno
                                                            selected_module: inferno_module)
 
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
+
+          unless params['preset'].blank?
+            preset = JSON.parse(params['preset']) unless params['preset'].nil?
+            @instance.client_id = preset['client_id'] unless preset['client_id'].nil?
+            @instance.scopes = preset['scopes'] unless preset['scopes'].nil?
+            unless preset['client_secret'].nil?
+              @instance.confidential_client = true
+              @instance.client_secret = preset['client_secret']
+            end
+          end
 
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
           @instance.redirect_uris = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/redirect"
