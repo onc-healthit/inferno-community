@@ -126,24 +126,24 @@ def generate_tests(metadata)
     create_authorization_test(sequence)
 
     # make tests for each SHALL and SHOULD search param, SHALL's first
-    sequence[:search_params].each do |search_param|
-      create_search_test(sequence, search_param) if search_param[:expectation] == 'SHALL'
-    end
+    sequence[:search_params]
+      .select { |search_param| search_param[:expectation] == 'SHALL' }
+      .each { |search_param| create_search_test(sequence, search_param) }
 
-    sequence[:search_params].each do |search_param|
-      create_search_test(sequence, search_param) if search_param[:expectation] == 'SHOULD'
-    end
+    sequence[:search_params]
+      .select { |search_param| search_param[:expectation] == 'SHOULD' }
+      .each { |search_param| create_search_test(sequence, search_param) }
 
     # make tests for each SHALL and SHOULD interaction
-    sequence[:interactions].each do |interaction|
-      next unless interaction[:expectation] == 'SHALL' ||  interaction[:expectation] == 'SHOULD'
+    sequence[:interactions]
+      .select { |interaction| ['SHALL', 'SHOULD'].include? interaction[:expectation] }
+      .reject { |interaction| interaction[:code] == 'search-type' }
+      .each do |interaction|
+        # specific edge cases
+        interaction[:code] = 'history' if interaction[:code] == 'history-instance'
 
-      # specific edge cases
-      interaction[:code] = 'history' if interaction[:code] == 'history-instance'
-      next if interaction[:code] == 'search-type'
-
-      create_interaction_test(sequence, interaction)
-    end
+        create_interaction_test(sequence, interaction)
+      end
 
     create_resource_profile_test(sequence)
     create_references_resolved_test(sequence)
