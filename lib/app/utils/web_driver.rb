@@ -29,10 +29,10 @@ module Inferno
       script.each do |command|
         unless command['find_value'].nil?
           current_element = wait.until do
-            if !command['index'].nil?
-              driver.find_elements(command['type'].to_sym => command['find_value'])
-            else
+            if command['index'].nil?
               driver.find_element(command['type'].to_sym => command['find_value'])
+            else
+              driver.find_elements(command['type'].to_sym => command['find_value'])
             end
           end
         end
@@ -49,12 +49,12 @@ module Inferno
         when 'navigate'
           driver.navigate.to command['value']
         when 'click'
-          if !command['index'].nil?
-            driver.action.move_to current_element[command['index']]
-            current_element[command['index']].click
-          else
+          if command['index'].nil?
             driver.action.move_to current_element
             current_element.click
+          else
+            driver.action.move_to current_element[command['index']]
+            current_element[command['index']].click
           end
         end
       end
