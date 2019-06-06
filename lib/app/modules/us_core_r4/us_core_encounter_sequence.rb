@@ -29,7 +29,7 @@ module Inferno
         when 'date'
 
         when 'identifier'
-          assert resource.identifier.any?{ |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          assert resource.identifier.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
 
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'
@@ -106,8 +106,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        _id_val = @encounter&.id
-        search_params = { '_id': _id_val }
+        id_val = @encounter&.id
+        search_params = { '_id': id_val }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)

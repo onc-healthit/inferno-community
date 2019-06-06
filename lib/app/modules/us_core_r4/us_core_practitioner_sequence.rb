@@ -17,18 +17,17 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-                               when 'name'
-                                 found = resource.name.any? do |name|
-                                   name&.text&.include?(value) ||
-                                     name&.family.include?(value) ||
-                                     name&.given.any{|given| given&.include?(value)} ||
-                                     name&.prefix.any{|prefix| prefix&.include?(value)} ||
-                                     name&.suffix.any{|suffix| suffix&.include?(value)}
-                                 end
-                                 assert found, 'name on resource does not match name requested'
-                             
+        when 'name'
+          found = resource.name.any? do |name|
+            name.text&.include?(value) ||
+              name.family.include?(value) ||
+              name.given.any{ |given| given&.include?(value)} ||
+              name.prefix.any{ |prefix| prefix.include?(value) } ||
+              name.suffix.any{ |suffix| suffix.include?(value) }
+          end
+          assert found, 'name on resource does not match name requested'
         when 'identifier'
-          assert resource.identifier.any?{ |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          assert resource.identifier.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
 
         end
       end

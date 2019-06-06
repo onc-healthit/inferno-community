@@ -326,6 +326,12 @@ def get_search_params(resource, profile, search_combo)
       search_param << "'#{param}': #{param.tr('-', '_')}_val"
       next
     end
+    if param == '_id'
+      access_code += %(
+        id_val = @#{resource.downcase}&.id)
+      search_param << "'#{param}': id_val"
+      next
+    end
     search_param_struct = get_search_param_json(resource.downcase, param)
     path = search_param_struct['xpath']
     path_parts = path.split('/f:')
@@ -334,7 +340,7 @@ def get_search_params(resource, profile, search_combo)
     element_name = path_parts.join('.')
     type = get_variable_type_from_structure_def(resource, profile, element_name)
     contains_multiple = get_variable_contains_multiple(resource, profile, path_parts[0])
-    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part}
+    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
     path_parts[0] += '&.first' if contains_multiple
     access_code += %(
         #{param.tr('-', '_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
@@ -378,7 +384,7 @@ def create_search_validation(resource, profile, search_params)
     contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
     resource_metadata = FHIR.const_get(resource).const_get('METADATA')
     
-    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part}
+    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
     case type
     when 'CodeableConcept'
       search_validators += %(
@@ -397,30 +403,27 @@ def create_search_validation(resource, profile, search_params)
       # https://www.hl7.org/fhir/search.html#string
       search_validators += if resource_metadata[param]['max'] > 1
                              %(
-                               when '#{param}'
-                                 found = resource.#{path_parts.join('&.')}.any? do |name|
-                                   name&.text&.include?(value) ||
-                                     name&.family.include?(value) ||
-                                     name&.given.any{|given| given&.include?(value)} ||
-                                     name&.prefix.any{|prefix| prefix&.include?(value)} ||
-                                     name&.suffix.any{|suffix| suffix&.include?(value)}
-                                 end
-                                 assert found, '#{param} on resource does not match #{param} requested'
-                             )
-                           else
-                             %(
-                               when '#{param}'
-                                 name = resource&.#{path_parts.join('&.')}
-                                 found = name&.text&.include?(value) ||
-                                   name&.family.include?(value) ||
-                                   name&.given.any{|given| given&.include?(value)} ||
-                                   name&.prefix.any{|prefix| prefix&.include?(value)} ||
-                                   name&.suffix.any{|suffix| suffix&.include?(value)}
+        when '#{param}'
+          found = resource.#{path_parts.join('&.')}.any? do |name|
+            name.text&.include?(value) ||
+              name.family.include?(value) ||
+              name.given.any{ |given| given&.include?(value)} ||
+              name.prefix.any{ |prefix| prefix.include?(value) } ||
+              name.suffix.any{ |suffix| suffix.include?(value) }
+          end
+          assert found, '#{param} on resource does not match #{param} requested')
+       else %(
+        when '#{param}'
+          name = resource&.#{path_parts.join('&.')}
+          found = name&.text&.include?(value) ||
+            name.family.include?(value) ||
+            name.given.any{ |given| given&.include?(value) } ||
+            name.prefix.any{ |prefix| prefix.include?(value) } ||
+            name.suffix.any{ |suffix| suffix.include?(value) }
 
-                                 assert found, '#{param} on resource does not match #{param} requested'
+          assert found, '#{param} on resource does not match #{param} requested'
 )
-
-                           end
+       end
     when 'code', 'string', 'id'
       search_validators += %(
         when '#{param}'
@@ -435,7 +438,7 @@ def create_search_validation(resource, profile, search_params)
     when 'Identifier'
       search_validators += %(
         when '#{param}'
-          assert resource.#{path_parts.join('&.')}.any?{ |identifier| identifier.value == value }, '#{param} on resource did not match #{param} requested'
+          assert resource.#{path_parts.join('&.')}.any? { |identifier| identifier.value == value }, '#{param} on resource did not match #{param} requested'
 )
     else
       search_validators += %(
