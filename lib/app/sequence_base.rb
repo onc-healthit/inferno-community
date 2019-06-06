@@ -178,7 +178,7 @@ module Inferno
 
         @sequence_result.output_results = output_results.to_json if !output_results.nil? && !output_results.empty?
 
-        @sequence_result.reset
+        @sequence_result.reset!
         @sequence_result.result = STATUS[:pass]
 
         @sequence_result.test_results.each do |result|

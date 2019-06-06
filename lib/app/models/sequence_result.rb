@@ -59,7 +59,7 @@ module Inferno
         test_results.select(&:fail?)
       end
 
-      def reset
+      def reset!
         [
           'required_passed',
           'required_total',

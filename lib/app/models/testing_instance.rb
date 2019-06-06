@@ -126,9 +126,7 @@ module Inferno
       def patient_id=(patient_id)
         return if patient_id.to_s == self.patient_id.to_s
 
-        resource_references
-          .select { |ref| ref.resource_type == 'Patient' }
-          .destroy # Use destroy directly (instead of on each, so we don't have to reload)
+        resource_references.destroy
 
         save!
 
@@ -136,6 +134,8 @@ module Inferno
           resource_type: 'Patient',
           resource_id: patient_id
         )
+
+        reload
       end
 
       def save_supported_resources(conformance)
