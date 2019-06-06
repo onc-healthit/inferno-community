@@ -13,10 +13,10 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :Goal
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
@@ -28,10 +28,9 @@ module Inferno
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [Goal Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-goal)
 
       )
@@ -53,7 +52,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Goal'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from Goal search by patient' do
@@ -65,7 +63,6 @@ module Inferno
           versions :r4
         end
 
-        
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
 
@@ -81,7 +78,6 @@ module Inferno
         @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
-      
       end
 
       test 'Server returns expected results from Goal search by patient+target-date' do
@@ -95,7 +91,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
-        
+
         patient_val = @instance.patient_id
         target_date_val = @goal&.target&.first&.dueDate
         search_params = { 'patient': patient_val, 'target-date': target_date_val }
@@ -115,7 +111,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
-        
+
         patient_val = @instance.patient_id
         lifecycle_status_val = @goal&.lifecycleStatus
         search_params = { 'patient': patient_val, 'lifecycle-status': lifecycle_status_val }
@@ -137,7 +133,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@goal, versioned_resource_class('Goal'))
-  
       end
 
       test 'Goal vread resource supported' do
@@ -153,7 +148,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@goal, versioned_resource_class('Goal'))
-  
       end
 
       test 'Goal history resource supported' do
@@ -169,7 +163,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@goal, versioned_resource_class('Goal'))
-  
       end
 
       test 'Goal resources associated with Patient conform to Argonaut profiles' do
@@ -183,7 +176,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Goal')
-  
       end
 
       test 'All references can be resolved' do

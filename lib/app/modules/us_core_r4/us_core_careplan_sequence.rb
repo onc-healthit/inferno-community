@@ -13,17 +13,17 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :CarePlan
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'category'
-          codings = resource&.category.first&.coding
+          codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'category on resource did not match category requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
         when 'date'
 
@@ -33,10 +33,9 @@ module Inferno
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [Careplan Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careplan)
 
       )
@@ -58,7 +57,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from CarePlan search by patient+category' do
@@ -70,7 +68,6 @@ module Inferno
           versions :r4
         end
 
-        
         search_params = { patient: @instance.patient_id, category: "assess-plan" }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
@@ -85,7 +82,6 @@ module Inferno
         @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-      
       end
 
       test 'Server returns expected results from CarePlan search by patient+category+status' do
@@ -99,7 +95,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
-        
+
         patient_val = @instance.patient_id
         category_val = @careplan&.category&.first&.coding&.first&.code
         status_val = @careplan&.status
@@ -120,7 +116,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
-        
+
         patient_val = @instance.patient_id
         category_val = @careplan&.category&.first&.coding&.first&.code
         status_val = @careplan&.status
@@ -142,7 +138,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
-        
+
         patient_val = @instance.patient_id
         category_val = @careplan&.category&.first&.coding&.first&.code
         date_val = @careplan&.period&.start
@@ -165,7 +161,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@careplan, versioned_resource_class('CarePlan'))
-  
       end
 
       test 'CarePlan vread resource supported' do
@@ -181,7 +176,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@careplan, versioned_resource_class('CarePlan'))
-  
       end
 
       test 'CarePlan history resource supported' do
@@ -197,7 +191,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@careplan, versioned_resource_class('CarePlan'))
-  
       end
 
       test 'CarePlan resources associated with Patient conform to Argonaut profiles' do
@@ -211,7 +204,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('CarePlan')
-  
       end
 
       test 'All references can be resolved' do

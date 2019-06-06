@@ -13,37 +13,36 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :Condition
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'category'
-          codings = resource&.category.first&.coding
+          codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'category on resource did not match category requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
         when 'clinical-status'
           codings = resource&.clinicalStatus&.coding
           assert !codings.nil?, 'clinical-status on resource did not match clinical-status requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'clinical-status on resource did not match clinical-status requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'clinical-status on resource did not match clinical-status requested'
 
         when 'onset-date'
 
         when 'code'
           codings = resource&.code&.coding
           assert !codings.nil?, 'code on resource did not match code requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'code on resource did not match code requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'code on resource did not match code requested'
 
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [Condition Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-condition)
 
       )
@@ -65,7 +64,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Condition'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from Condition search by patient' do
@@ -77,7 +75,6 @@ module Inferno
           versions :r4
         end
 
-        
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
 
@@ -93,7 +90,6 @@ module Inferno
         @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
-      
       end
 
       test 'Server returns expected results from Condition search by patient+onset-date' do
@@ -107,7 +103,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
-        
+
         patient_val = @instance.patient_id
         onset_date_val = @condition&.onsetDateTime
         search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
@@ -127,7 +123,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
-        
+
         patient_val = @instance.patient_id
         category_val = @condition&.category&.first&.coding&.first&.code
         search_params = { 'patient': patient_val, 'category': category_val }
@@ -147,7 +143,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
-        
+
         patient_val = @instance.patient_id
         code_val = @condition&.code&.coding&.first&.code
         search_params = { 'patient': patient_val, 'code': code_val }
@@ -167,7 +163,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
-        
+
         patient_val = @instance.patient_id
         clinical_status_val = @condition&.clinicalStatus&.coding&.first&.code
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
@@ -189,7 +185,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@condition, versioned_resource_class('Condition'))
-  
       end
 
       test 'Condition vread resource supported' do
@@ -205,7 +200,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@condition, versioned_resource_class('Condition'))
-  
       end
 
       test 'Condition history resource supported' do
@@ -221,7 +215,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@condition, versioned_resource_class('Condition'))
-  
       end
 
       test 'Condition resources associated with Patient conform to Argonaut profiles' do
@@ -235,7 +228,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Condition')
-  
       end
 
       test 'All references can be resolved' do

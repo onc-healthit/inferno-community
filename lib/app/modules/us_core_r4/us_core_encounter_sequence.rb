@@ -13,10 +13,10 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :Encounter
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
@@ -29,23 +29,22 @@ module Inferno
         when 'date'
 
         when 'identifier'
-          assert resource.identifier.any?{ |identifier| identifier.value == value}, 'identifier on resource did not match identifier requested'
+          assert resource.identifier.any?{ |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
 
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'
 
         when 'type'
-          codings = resource&.type.first&.coding
+          codings = resource&.type&.first&.coding
           assert !codings.nil?, 'type on resource did not match type requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'type on resource did not match type requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'type on resource did not match type requested'
 
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [Encounter Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-encounter)
 
       )
@@ -67,7 +66,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Encounter'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from Encounter search by patient' do
@@ -79,7 +77,6 @@ module Inferno
           versions :r4
         end
 
-        
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
 
@@ -95,7 +92,6 @@ module Inferno
         @encounter = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Encounter'), reply)
-      
       end
 
       test 'Server returns expected results from Encounter search by _id' do
@@ -109,7 +105,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-        
+
         _id_val = @encounter&.id
         search_params = { '_id': _id_val }
 
@@ -128,7 +124,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-        
+
         date_val = @encounter&.period&.start
         patient_val = @instance.patient_id
         search_params = { 'date': date_val, 'patient': patient_val }
@@ -148,7 +144,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-        
+
         identifier_val = @encounter&.identifier&.first&.value
         search_params = { 'identifier': identifier_val }
 
@@ -167,7 +163,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-        
+
         patient_val = @instance.patient_id
         status_val = @encounter&.status
         search_params = { 'patient': patient_val, 'status': status_val }
@@ -187,7 +183,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-        
+
         class_val = @encounter&.local_class&.code
         patient_val = @instance.patient_id
         search_params = { 'class': class_val, 'patient': patient_val }
@@ -207,7 +203,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-        
+
         patient_val = @instance.patient_id
         type_val = @encounter&.type&.first&.coding&.first&.code
         search_params = { 'patient': patient_val, 'type': type_val }
@@ -229,7 +225,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@encounter, versioned_resource_class('Encounter'))
-  
       end
 
       test 'Encounter vread resource supported' do
@@ -245,7 +240,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
-  
       end
 
       test 'Encounter history resource supported' do
@@ -261,7 +255,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
-  
       end
 
       test 'Encounter resources associated with Patient conform to Argonaut profiles' do
@@ -275,7 +268,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Encounter')
-  
       end
 
       test 'All references can be resolved' do

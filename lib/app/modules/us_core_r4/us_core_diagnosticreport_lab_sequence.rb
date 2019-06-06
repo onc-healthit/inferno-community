@@ -13,10 +13,10 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :DiagnosticReport
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
@@ -26,22 +26,21 @@ module Inferno
         when 'category'
           codings = resource&.category&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'category on resource did not match category requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
         when 'code'
           codings = resource&.code&.coding
           assert !codings.nil?, 'code on resource did not match code requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, 'code on resource did not match code requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'code on resource did not match code requested'
 
         when 'date'
 
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [DiagnosticreportLab Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab)
 
       )
@@ -63,7 +62,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+category' do
@@ -75,7 +73,6 @@ module Inferno
           versions :r4
         end
 
-        
         search_params = { patient: @instance.patient_id, category: "LAB" }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
@@ -90,7 +87,6 @@ module Inferno
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply)
-      
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+code' do
@@ -104,7 +100,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
+
         patient_val = @instance.patient_id
         code_val = @diagnosticreport&.code&.coding&.first&.code
         search_params = { 'patient': patient_val, 'code': code_val }
@@ -124,7 +120,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
+
         patient_val = @instance.patient_id
         category_val = @diagnosticreport&.category&.coding&.first&.code
         date_val = @diagnosticreport&.effectiveDateTime
@@ -145,7 +141,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
+
         search_params = { patient: @instance.patient_id, category: "LAB" }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
@@ -163,7 +159,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
+
         patient_val = @instance.patient_id
         code_val = @diagnosticreport&.code&.coding&.first&.code
         date_val = @diagnosticreport&.effectiveDateTime
@@ -184,7 +180,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
+
         patient_val = @instance.patient_id
         status_val = @diagnosticreport&.status
         search_params = { 'patient': patient_val, 'status': status_val }
@@ -204,7 +200,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-        
+
         patient_val = @instance.patient_id
         category_val = @diagnosticreport&.category&.coding&.first&.code
         date_val = @diagnosticreport&.effectiveDateTime
@@ -227,7 +223,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_create_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
-  
       end
 
       test 'DiagnosticReport read resource supported' do
@@ -243,7 +238,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
-  
       end
 
       test 'DiagnosticReport vread resource supported' do
@@ -259,7 +253,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
-  
       end
 
       test 'DiagnosticReport history resource supported' do
@@ -275,7 +268,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
-  
       end
 
       test 'DiagnosticReport resources associated with Patient conform to Argonaut profiles' do
@@ -289,7 +281,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('DiagnosticReport')
-  
       end
 
       test 'All references can be resolved' do

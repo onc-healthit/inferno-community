@@ -182,8 +182,7 @@ def create_authorization_test(sequence)
 
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
-)
+        assert_response_unauthorized reply)
 
   sequence[:tests] << authorization_test
 end
@@ -198,8 +197,7 @@ def create_search_test(sequence, search_param)
   is_first_search = search_test[:index] == '02' # if first search - fix this check later
   search_test[:test_code] =
     if is_first_search
-      %(
-        #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
+      %(#{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -211,13 +209,12 @@ def create_search_test(sequence, search_param)
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
-      )
+        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply))
     else
       %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
-        #{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
+#{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         assert_response_ok(reply))
     end
@@ -235,8 +232,7 @@ def create_interaction_test(sequence, interaction)
         skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_#{interaction[:code]}_reply(@#{sequence[:resource].downcase}, versioned_resource_class('#{sequence[:resource]}'))
-  )
+        validate_#{interaction[:code]}_reply(@#{sequence[:resource].downcase}, versioned_resource_class('#{sequence[:resource]}')))
 
   sequence[:tests] << interaction_test
 end
@@ -249,8 +245,7 @@ def create_resource_profile_test(sequence)
   }
   test[:test_code] = %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('#{sequence[:resource]}')
-  )
+        test_resources_against_profile('#{sequence[:resource]}'))
 
   sequence[:tests] << test
 end
@@ -388,9 +383,9 @@ def create_search_validation(resource, profile, search_params)
     when 'CodeableConcept'
       search_validators += %(
         when '#{param}'
-          codings = resource&.#{path_parts.join('&.')}#{'.first' if contains_multiple}&.coding
+          codings = resource&.#{path_parts.join('&.')}#{'&.first' if contains_multiple}&.coding
           assert !codings.nil?, '#{param} on resource did not match #{param} requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, '#{param} on resource did not match #{param} requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, '#{param} on resource did not match #{param} requested'
 )
     when 'Reference'
       search_validators += %(
@@ -440,7 +435,7 @@ def create_search_validation(resource, profile, search_params)
     when 'Identifier'
       search_validators += %(
         when '#{param}'
-          assert resource.#{path_parts.join('&.')}.any?{ |identifier| identifier.value == value}, '#{param} on resource did not match #{param} requested'
+          assert resource.#{path_parts.join('&.')}.any?{ |identifier| identifier.value == value }, '#{param} on resource did not match #{param} requested'
 )
     else
       search_validators += %(
@@ -458,7 +453,7 @@ def create_search_validation(resource, profile, search_params)
     validate_function = %(
       def validate_resource_item(resource, property, value)
         case property
-          #{search_validators}
+#{search_validators}
         end
       end
     )

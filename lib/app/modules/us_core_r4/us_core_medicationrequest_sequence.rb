@@ -13,10 +13,10 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :MedicationRequest
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
@@ -28,10 +28,9 @@ module Inferno
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [Medicationrequest Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medicationrequest)
 
       )
@@ -53,7 +52,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from MedicationRequest search by patient' do
@@ -65,7 +63,6 @@ module Inferno
           versions :r4
         end
 
-        
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
 
@@ -81,7 +78,6 @@ module Inferno
         @medicationrequest = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
-      
       end
 
       test 'Server returns expected results from MedicationRequest search by patient+status' do
@@ -95,7 +91,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
-        
+
         patient_val = @instance.patient_id
         status_val = @medicationrequest&.status
         search_params = { 'patient': patient_val, 'status': status_val }
@@ -115,7 +111,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
-        
+
         patient_val = @instance.patient_id
         authoredon_val = @medicationrequest&.authoredOn
         search_params = { 'patient': patient_val, 'authoredon': authoredon_val }
@@ -137,7 +133,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@medicationrequest, versioned_resource_class('MedicationRequest'))
-  
       end
 
       test 'MedicationRequest vread resource supported' do
@@ -153,7 +148,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@medicationrequest, versioned_resource_class('MedicationRequest'))
-  
       end
 
       test 'MedicationRequest history resource supported' do
@@ -169,7 +163,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@medicationrequest, versioned_resource_class('MedicationRequest'))
-  
       end
 
       test 'MedicationRequest resources associated with Patient conform to Argonaut profiles' do
@@ -183,7 +176,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('MedicationRequest')
-  
       end
 
       test 'All references can be resolved' do

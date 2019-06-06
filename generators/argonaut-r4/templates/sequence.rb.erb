@@ -13,11 +13,10 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :<%=resource%>
-      <%=search_validator%>
-
+<%=search_validator%>
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [<%= classname.gsub('UsCoreR4','').gsub('Sequence','') %> Argonaut Profile](<%=profile.gsub('.json','')%>)
 
       )

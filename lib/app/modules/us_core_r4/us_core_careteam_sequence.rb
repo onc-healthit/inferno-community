@@ -13,10 +13,10 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :CareTeam
-      
+
       def validate_resource_item(resource, property, value)
         case property
-          
+
         when 'patient'
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
@@ -26,10 +26,9 @@ module Inferno
         end
       end
     
-
       details %(
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [Careteam Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam)
 
       )
@@ -51,7 +50,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
-
       end
 
       test 'Server returns expected results from CareTeam search by patient+status' do
@@ -63,7 +61,6 @@ module Inferno
           versions :r4
         end
 
-        
         search_params = { patient: @instance.patient_id, status: "active" }
 
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
@@ -78,7 +75,6 @@ module Inferno
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
-      
       end
 
       test 'CareTeam read resource supported' do
@@ -94,7 +90,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@careteam, versioned_resource_class('CareTeam'))
-  
       end
 
       test 'CareTeam vread resource supported' do
@@ -110,7 +105,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@careteam, versioned_resource_class('CareTeam'))
-  
       end
 
       test 'CareTeam history resource supported' do
@@ -126,7 +120,6 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@careteam, versioned_resource_class('CareTeam'))
-  
       end
 
       test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
@@ -140,7 +133,6 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('CareTeam')
-  
       end
 
       test 'All references can be resolved' do
