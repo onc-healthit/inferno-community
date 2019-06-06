@@ -401,8 +401,9 @@ def create_search_validation(resource, profile, search_params)
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
       # https://www.hl7.org/fhir/search.html#string
-      if resource_metadata[param]['max'] > 1
-        search_validators += %(
+      search_validators +=
+        if resource_metadata[param]['max'] > 1
+          %(
         when '#{param}'
           found = resource.#{path_parts.join('&.')}.any? do |name|
             name.text&.include?(value) ||
@@ -412,18 +413,18 @@ def create_search_validation(resource, profile, search_params)
               name.suffix.any { |suffix| suffix.include?(value) }
           end
           assert found, '#{param} on resource does not match #{param} requested')
-      else search_validators += %(
+        else
+          %(
         when '#{param}'
           name = resource&.#{path_parts.join('&.')}
           found = name&.text&.include?(value) ||
-            name.family.include?(value) ||
-            name.given.any { |given| given&.include?(value) } ||
-            name.prefix.any { |prefix| prefix.include?(value) } ||
-            name.suffix.any { |suffix| suffix.include?(value) }
+              name.family.include?(value) ||
+              name.given.any { |given| given&.include?(value) } ||
+              name.prefix.any { |prefix| prefix.include?(value) } ||
+              name.suffix.any { |suffix| suffix.include?(value) }
 
-          assert found, '#{param} on resource does not match #{param} requested'
-)
-      end
+          assert found, '#{param} on resource does not match #{param} requested')
+        end
     when 'code', 'string', 'id'
       search_validators += %(
         when '#{param}'
