@@ -93,6 +93,7 @@ module Inferno
         end
 
         @token_response_headers = @token_response.headers
+        assert_valid_json(@token_response.body)
         @token_response_body = JSON.parse(@token_response.body)
 
         assert @token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
