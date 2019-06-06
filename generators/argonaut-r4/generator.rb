@@ -180,7 +180,7 @@ def create_authorization_test(sequence)
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
   )
@@ -281,52 +281,52 @@ def get_search_params(resource, profile, search_combo)
     # manually set for now - try to find in metadata if available later
     if resource == 'CarePlan' && search_combo == ['patient', 'category']
       return %(
-        search_params = {patient: @instance.patient_id, category: "assess-plan"}
+        search_params = { patient: @instance.patient_id, category: "assess-plan" }
       )
     end
     if resource == 'CareTeam' && search_combo == ['patient', 'status']
       return %(
-        search_params = {patient: @instance.patient_id, status: "active"}
+        search_params = { patient: @instance.patient_id, status: "active" }
       )
     end
     if (['Location', 'Organization'].include? resource) && search_combo == ['name']
       return %(
-        search_params = {patient: @instance.patient_id, name: "Boston"}
+        search_params = { patient: @instance.patient_id, name: "Boston" }
       )
     end
     if resource == 'Patient' && search_combo == ['_id']
       return %(
-        search_params = {'_id': @instance.patient_id}
+        search_params = { '_id': @instance.patient_id }
       )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json' && search_combo == ['patient', 'code']
       return %(
-        search_params = {patient: @instance.patient_id, code: "72166-2"}
+        search_params = { patient: @instance.patient_id, code: "72166-2" }
       )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json' && search_combo == ['patient', 'category']
       return %(
-        search_params = {patient: @instance.patient_id, category: "laboratory"}
+        search_params = { patient: @instance.patient_id, category: "laboratory" }
       )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json' && search_combo == ['patient', 'code']
       return %(
-        search_params = {patient: @instance.patient_id, code: "77606-2"}
+        search_params = { patient: @instance.patient_id, code: "77606-2" }
       )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json' && search_combo == ['patient', 'code']
       return %(
-        search_params = {patient: @instance.patient_id, code: "59576-9"}
+        search_params = { patient: @instance.patient_id, code: "59576-9" }
       )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json' && search_combo == ['patient', 'category']
       return %(
-        search_params = {patient: @instance.patient_id, category: "LAB"}
+        search_params = { patient: @instance.patient_id, category: "LAB" }
       )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json' && search_combo == ['patient', 'category']
       return %(
-        search_params = {patient: @instance.patient_id, code: "LP29684-5"}
+        search_params = { patient: @instance.patient_id, code: "LP29684-5" }
       )
     end
     if param == 'patient'
@@ -344,14 +344,14 @@ def get_search_params(resource, profile, search_combo)
     type = get_variable_type_from_structure_def(resource, profile, element_name)
     contains_multiple = get_variable_contains_multiple(resource, profile, path_parts[0])
     path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part}
-    path_parts[0] += '.first' if contains_multiple
+    path_parts[0] += '&.first' if contains_multiple
     access_code += %(
         #{param.tr('-', '_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
     case type
     when 'CodeableConcept'
       access_code += '&.coding&.first&.code'
     when 'Reference'
-      access_code += '&.reference.first'
+      access_code += '&.reference&.first'
     when 'Period'
       access_code += '&.start'
     when 'Identifier'
@@ -365,7 +365,7 @@ def get_search_params(resource, profile, search_combo)
   end
 
   %(#{access_code}
-        search_params = {#{search_param.join(', ')}}
+        search_params = { #{search_param.join(', ')} }
   )
 end
 
@@ -393,13 +393,13 @@ def create_search_validation(resource, profile, search_params)
       search_validators += %(
         when '#{param}'
           codings = resource&.#{path_parts.join('&.')}#{'.first' if contains_multiple}&.coding
-          assert !codings.nil?, "#{param} on resource did not match #{param} requested"
-          assert codings.any? {|coding| !coding.try(:code).nil? && coding.try(:code) == value}, "#{param} on resource did not match #{param} requested"
+          assert !codings.nil?, '#{param} on resource did not match #{param} requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value}, '#{param} on resource did not match #{param} requested'
       )
     when 'Reference'
       search_validators += %(
         when '#{param}'
-          assert (resource&.#{path_parts.join('&.')} && resource.#{path_parts.join('&.')}.reference.include?(value)), "#{param} on resource does not match #{param} requested"
+          assert (resource&.#{path_parts.join('&.')} && resource.#{path_parts.join('&.')}.reference.include?(value)), '#{param} on resource does not match #{param} requested'
       )
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
@@ -414,7 +414,7 @@ def create_search_validation(resource, profile, search_params)
                                      name&.prefix.any{|prefix| prefix&.include?(value)} ||
                                      name&.suffix.any{|suffix| suffix&.include?(value)}
                                  end
-                                 assert found, "#{param} on resource does not match #{param} requested"
+                                 assert found, '#{param} on resource does not match #{param} requested'
                              )
                            else
                              %(
@@ -426,25 +426,25 @@ def create_search_validation(resource, profile, search_params)
                                    name&.prefix.any{|prefix| prefix&.include?(value)} ||
                                    name&.suffix.any{|suffix| suffix&.include?(value)}
 
-                                 assert found, "#{param} on resource does not match #{param} requested"
+                                 assert found, '#{param} on resource does not match #{param} requested'
                              )
 
                            end
     when 'code', 'string', 'id'
       search_validators += %(
         when '#{param}'
-          assert resource&.#{path_parts.join('&.')} != nil && resource&.#{path_parts.join('&.')} == value, "#{param} on resource did not match #{param} requested"
+          assert resource&.#{path_parts.join('&.')} == value, '#{param} on resource did not match #{param} requested'
       )
     when 'Coding'
       search_validators += %(
         when '#{param}'
-          assert !resource&.#{path_parts.join('&.')}&.code.nil? && resource&.#{path_parts.join('&.')}&.code == value, "#{param} on resource did not match #{param} requested"
+          assert resource&.#{path_parts.join('&.')}&.code == value, '#{param} on resource did not match #{param} requested'
       )
 
     when 'Identifier'
       search_validators += %(
         when '#{param}'
-          assert resource&.#{path_parts.join('&.')} != nil && resource.#{path_parts.join('&.')}.any?{|identifier| identifier.value == value}, "#{param} on resource did not match #{param} requested"
+          assert resource.#{path_parts.join('&.')}.any?{ |identifier| identifier.value == value}, '#{param} on resource did not match #{param} requested'
       )
     else
       search_validators += %(
@@ -460,11 +460,11 @@ def create_search_validation(resource, profile, search_params)
 
   unless search_validators.empty?
     validate_function = %(
-        def validate_resource_item (resource, property, value)
-          case property
+      def validate_resource_item (resource, property, value)
+        case property
           #{search_validators}
-          end
         end
+      end
     )
   end
 

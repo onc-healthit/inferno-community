@@ -1,4 +1,4 @@
-
+# frozen_string_literal: true
 module Inferno
   module Sequence
     class <%=classname%> < SequenceBase
@@ -18,7 +18,7 @@ module Inferno
 
       details %(
         
-        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
+        The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [<%= classname.gsub('UsCoreR4','').gsub('Sequence','') %> Argonaut Profile](<%=profile.gsub('.json','')%>)
 
       )
@@ -26,13 +26,13 @@ module Inferno
       @resources_found = false
       <% tests.each do |test|%>
       test '<%=test[:tests_that]%>' do
-        metadata {
+        metadata do
           id '<%=test[:index]%>'
           link '<%=test[:link]%>'
           desc %(
           )
           versions :r4
-        }
+        end
         <%=test[:test_code]%>
       end
       <% end%>
