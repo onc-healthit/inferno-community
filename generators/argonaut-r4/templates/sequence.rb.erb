@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 module Inferno
   module Sequence
     class <%=classname%> < SequenceBase
-
       group 'US Core R4 Profile Conformance'
 
       title '<%= classname.gsub('UsCoreR4','').gsub('Sequence','') %> Tests'
@@ -13,18 +13,17 @@ module Inferno
 
       requires :token, :patient_id
       conformance_supports :<%=resource%>
-
       <%=search_validator%>
 
       details %(
-        
+
         The #{title} Sequence tests `#{title.gsub(/\s+/,'')}` resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [<%= classname.gsub('UsCoreR4','').gsub('Sequence','') %> Argonaut Profile](<%=profile.gsub('.json','')%>)
 
       )
 
-      @resources_found = false
-      <% tests.each do |test|%>
+      @resources_found = false<% tests.each do |test|%>
+
       test '<%=test[:tests_that]%>' do
         metadata do
           id '<%=test[:index]%>'
@@ -33,9 +32,8 @@ module Inferno
           )
           versions :r4
         end
-        <%=test[:test_code]%>
-      end
-      <% end%>
+<%=test[:test_code]%>
+      end<% end%>
     end
   end
 end
