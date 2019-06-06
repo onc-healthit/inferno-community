@@ -356,9 +356,12 @@ $(function(){
       document.getElementById(preset.module).checked = true;
       document.getElementById(preset.module).disabled = false;
       document.getElementById("preset").value = JSON.stringify(preset);
+      document.getElementById("instructions-link").style.display = preset.instructions == null ? "none" : "";
+      document.getElementById("instructions-link").href = preset.instructions;
     } else {
       modules.forEach(mod => document.getElementById(mod).disabled = false);
       document.getElementById("preset").value = "";
+      document.getElementById("instructions-link").style.display = "none";
     }
   });
 }); 
