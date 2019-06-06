@@ -37,7 +37,7 @@ module Inferno
 
         end
       end
-    
+
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
@@ -73,7 +73,7 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, category: "LAB" }
+        search_params = { patient: @instance.patient_id, category: 'LAB' }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)
@@ -142,7 +142,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
-        search_params = { patient: @instance.patient_id, category: "LAB" }
+        search_params = { patient: @instance.patient_id, category: 'LAB' }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)

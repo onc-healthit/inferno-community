@@ -24,7 +24,7 @@ module Inferno
 
         end
       end
-    
+
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
@@ -60,7 +60,7 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, name: "Boston" }
+        search_params = { patient: @instance.patient_id, name: 'Boston' }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)

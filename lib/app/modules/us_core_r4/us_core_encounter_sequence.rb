@@ -41,7 +41,7 @@ module Inferno
 
         end
       end
-    
+
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources

@@ -272,17 +272,17 @@ def get_search_params(resource, profile, search_combo)
     # manually set for now - try to find in metadata if available later
     if resource == 'CarePlan' && search_combo == ['patient', 'category']
       return %(
-        search_params = { patient: @instance.patient_id, category: "assess-plan" }
+        search_params = { patient: @instance.patient_id, category: 'assess-plan' }
 )
     end
     if resource == 'CareTeam' && search_combo == ['patient', 'status']
       return %(
-        search_params = { patient: @instance.patient_id, status: "active" }
+        search_params = { patient: @instance.patient_id, status: 'active' }
 )
     end
     if (['Location', 'Organization'].include? resource) && search_combo == ['name']
       return %(
-        search_params = { patient: @instance.patient_id, name: "Boston" }
+        search_params = { patient: @instance.patient_id, name: 'Boston' }
 )
     end
     if resource == 'Patient' && search_combo == ['_id']
@@ -292,32 +292,32 @@ def get_search_params(resource, profile, search_combo)
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json' && search_combo == ['patient', 'code']
       return %(
-        search_params = { patient: @instance.patient_id, code: "72166-2" }
+        search_params = { patient: @instance.patient_id, code: '72166-2' }
 )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json' && search_combo == ['patient', 'category']
       return %(
-        search_params = { patient: @instance.patient_id, category: "laboratory" }
+        search_params = { patient: @instance.patient_id, category: 'laboratory' }
 )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json' && search_combo == ['patient', 'code']
       return %(
-        search_params = { patient: @instance.patient_id, code: "77606-2" }
+        search_params = { patient: @instance.patient_id, code: '77606-2' }
 )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json' && search_combo == ['patient', 'code']
       return %(
-        search_params = { patient: @instance.patient_id, code: "59576-9" }
+        search_params = { patient: @instance.patient_id, code: '59576-9' }
 )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json' && search_combo == ['patient', 'category']
       return %(
-        search_params = { patient: @instance.patient_id, category: "LAB" }
+        search_params = { patient: @instance.patient_id, category: 'LAB' }
 )
     end
     if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json' && search_combo == ['patient', 'category']
       return %(
-        search_params = { patient: @instance.patient_id, code: "LP29684-5" }
+        search_params = { patient: @instance.patient_id, code: 'LP29684-5' }
 )
     end
     if param == 'patient'
@@ -456,7 +456,7 @@ def create_search_validation(resource, profile, search_params)
 #{search_validators}
         end
       end
-    )
+)
   end
 
   validate_function
