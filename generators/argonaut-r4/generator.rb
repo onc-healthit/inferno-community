@@ -383,7 +383,7 @@ def create_search_validation(resource, profile, search_params)
     type = get_variable_type_from_structure_def(resource, profile, element_name)
     contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
     resource_metadata = FHIR.const_get(resource).const_get('METADATA')
-    
+
     path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
     case type
     when 'CodeableConcept'
@@ -401,29 +401,29 @@ def create_search_validation(resource, profile, search_params)
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
       # https://www.hl7.org/fhir/search.html#string
-      search_validators += if resource_metadata[param]['max'] > 1
-                             %(
+      if resource_metadata[param]['max'] > 1
+        search_validators += %(
         when '#{param}'
           found = resource.#{path_parts.join('&.')}.any? do |name|
             name.text&.include?(value) ||
               name.family.include?(value) ||
-              name.given.any{ |given| given&.include?(value)} ||
-              name.prefix.any{ |prefix| prefix.include?(value) } ||
-              name.suffix.any{ |suffix| suffix.include?(value) }
+              name.given.any { |given| given&.include?(value) } ||
+              name.prefix.any { |prefix| prefix.include?(value) } ||
+              name.suffix.any { |suffix| suffix.include?(value) }
           end
           assert found, '#{param} on resource does not match #{param} requested')
-       else %(
+      else search_validators += %(
         when '#{param}'
           name = resource&.#{path_parts.join('&.')}
           found = name&.text&.include?(value) ||
             name.family.include?(value) ||
-            name.given.any{ |given| given&.include?(value) } ||
-            name.prefix.any{ |prefix| prefix.include?(value) } ||
-            name.suffix.any{ |suffix| suffix.include?(value) }
+            name.given.any { |given| given&.include?(value) } ||
+            name.prefix.any { |prefix| prefix.include?(value) } ||
+            name.suffix.any { |suffix| suffix.include?(value) }
 
           assert found, '#{param} on resource does not match #{param} requested'
 )
-       end
+      end
     when 'code', 'string', 'id'
       search_validators += %(
         when '#{param}'

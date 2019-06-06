@@ -38,9 +38,9 @@ module Inferno
           found = resource.name.any? do |name|
             name.text&.include?(value) ||
               name.family.include?(value) ||
-              name.given.any{ |given| given&.include?(value)} ||
-              name.prefix.any{ |prefix| prefix.include?(value) } ||
-              name.suffix.any{ |suffix| suffix.include?(value) }
+              name.given.any { |given| given&.include?(value) } ||
+              name.prefix.any { |prefix| prefix.include?(value) } ||
+              name.suffix.any { |suffix| suffix.include?(value) }
           end
           assert found, 'name on resource does not match name requested'
         end
