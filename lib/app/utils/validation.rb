@@ -55,6 +55,12 @@ module Inferno
     }.freeze
 
     def self.guess_profile(resource, version)
+      # if the profile is given, we don't need to guess
+      if resource&.meta&.profile && !resource&.meta&.profile&.empty?
+        resource.meta.profile.each do |uri|
+          return DEFINITIONS[uri] if DEFINITIONS[uri]
+        end
+      end
       if version == :dstu2
         guess_dstu2_profile(resource)
       elsif version == :stu3
@@ -66,12 +72,6 @@ module Inferno
 
     def self.guess_dstu2_profile(resource)
       if resource
-        # if the profile is given, we don't need to guess
-        if resource.meta&.profile && !resource.meta.profile.empty?
-          resource.meta.profile.each do |uri|
-            return DEFINITIONS[uri] if DEFINITIONS[uri]
-          end
-        end
         candidates = RESOURCES[:dstu2][resource.resourceType]
         if candidates && !candidates.empty?
           # Special cases where there are multiple profiles per Resource type
@@ -99,12 +99,6 @@ module Inferno
 
     def self.guess_stu3_profile(resource)
       if resource
-        # if the profile is given, we don't need to guess
-        if resource.meta&.profile && !resource.meta.profile.empty?
-          resource.meta.profile.each do |uri|
-            return DEFINITIONS[uri] if DEFINITIONS[uri]
-          end
-        end
         candidates = RESOURCES[:stu3][resource.resourceType]
         if candidates && !candidates.empty?
           # Special cases where there are multiple profiles per Resource type
@@ -136,12 +130,6 @@ module Inferno
 
     def self.guess_r4_profile(resource)
       if resource
-        # if the profile is given, we don't need to guess
-        if resource.meta&.profile && !resource.meta.profile.empty?
-          resource.meta.profile.each do |uri|
-            return DEFINITIONS[uri] if DEFINITIONS[uri]
-          end
-        end
         candidates = RESOURCES[:r4][resource.resourceType]
         return candidates.first if candidates && !candidates.empty?
       end

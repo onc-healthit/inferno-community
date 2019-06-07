@@ -18,11 +18,11 @@ module Inferno
       end
 
       def sequences
-        @groups.map { |group| group.test_cases.map(&:sequence) }.flatten
+        @groups.flat_map { |group| group.test_cases.map(&:sequence) }
       end
 
       def test_cases
-        @groups.map(&:test_cases).flatten
+        @groups.flat_map(&:test_cases)
       end
 
       def test_case_by_id(test_case_id)
@@ -138,7 +138,7 @@ module Inferno
     end
 
     def sequences
-      @test_sets.values.map { |test_set| test_set.groups.map { |group| group.test_cases.map(&:sequence) } }.flatten
+      @test_sets.values.flat_map { |test_set| test_set.groups.flat_map { |group| group.test_cases.map(&:sequence) } }
     end
 
     def view_by_test_set(test_set)
@@ -166,13 +166,27 @@ module Inferno
     end
 
     def self.load_module(module_hash)
-      new_module = new(module_hash[:name], module_hash[:description], module_hash[:default_test_set], module_hash[:fhir_version], module_hash[:title] || module_hash[:name])
+      new_module = new(
+        module_hash[:name],
+        module_hash[:description],
+        module_hash[:default_test_set],
+        module_hash[:fhir_version],
+        module_hash[:title] || module_hash[:name]
+      )
 
       module_hash[:test_sets].each do |test_set_key, test_set|
-        new_module.default_test_set = test_set_key.to_s if new_module.default_test_set.nil?
+        new_module.default_test_set ||= test_set_key.to_s
         new_test_set = TestSet.new(test_set_key, test_set[:view])
         test_set[:tests].each do |group|
-          new_group = TestGroup.new(new_test_set, group[:name], group[:overview], group[:input_instructions], group[:lock_variables], group[:run_all] || false, group[:run_skipped] || false)
+          new_group = TestGroup.new(
+            new_test_set,
+            group[:name],
+            group[:overview],
+            group[:input_instructions],
+            group[:lock_variables],
+            group[:run_all] || false,
+            group[:run_skipped] || false
+          )
 
           group[:sequences].each do |sequence|
             if sequence.instance_of?(String)

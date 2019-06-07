@@ -34,6 +34,41 @@ module Inferno
 
       has n, :test_results, order: [:test_index.asc]
       belongs_to :testing_instance
+
+      def fail?
+        result == 'fail' || error?
+      end
+
+      def error?
+        result == 'error'
+      end
+
+      def pass?
+        result == 'pass'
+      end
+
+      def skip?
+        result == 'skip'
+      end
+
+      def wait?
+        result == 'wait'
+      end
+
+      def failures
+        test_results.select(&:fail?)
+      end
+
+      def reset!
+        [
+          'required_passed',
+          'required_total',
+          'error_count',
+          'skip_count',
+          'optional_passed',
+          'optional_total'
+        ].each { |field| send("#{field}=", 0) }
+      end
     end
   end
 end

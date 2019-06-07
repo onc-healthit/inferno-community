@@ -50,7 +50,7 @@ Metrics/BlockNesting:
 # Offense count: 60
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 593
+  Max: 594
 
 # Offense count: 38
 Metrics/CyclomaticComplexity:
@@ -93,20 +93,14 @@ Style/Documentation:
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
   Exclude:
-    - 'lib/app/models/testing_instance.rb'
-    - 'lib/app/sequence_base.rb'
-    - 'lib/app/utils/assertions.rb'
-    - 'lib/app/utils/terminology.rb'
-    - 'lib/app/utils/tls_tester.rb'
     - 'lib/app/utils/validation.rb'
-    - 'lib/tasks/tasks.rake'
+    - 'lib/app/utils/tls_tester.rb'
 
 # Max line length needs to be reduced before fixing these
 # Offense count: 14
 # Cop supports --auto-correct.
 Style/IfUnlessModifier:
   Exclude:
-    - 'lib/app/endpoint/home.rb'
     - 'lib/app/models/testing_instance.rb'
     - 'lib/app/utils/assertions.rb'
     - 'lib/tasks/tasks.rake'
@@ -135,4 +129,4 @@ Style/Semicolon:
 # Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
 # URISchemes: http, https
 Metrics/LineLength:
-  Max: 532
+  Max: 180

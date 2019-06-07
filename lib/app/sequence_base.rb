@@ -88,13 +88,15 @@ module Inferno
 
       def start(test_set_id = nil, test_case_id = nil)
         if @sequence_result.nil?
-          @sequence_result = Models::SequenceResult.new(name: sequence_name,
-                                                        result: STATUS[:pass],
-                                                        testing_instance: @instance,
-                                                        required: !optional?,
-                                                        test_set_id: test_set_id,
-                                                        test_case_id: test_case_id,
-                                                        app_version: VERSION)
+          @sequence_result = Models::SequenceResult.new(
+            name: sequence_name,
+            result: STATUS[:pass],
+            testing_instance: @instance,
+            required: !optional?,
+            test_set_id: test_set_id,
+            test_case_id: test_case_id,
+            app_version: VERSION
+          )
           @sequence_result.save!
         end
 
@@ -148,31 +150,11 @@ module Inferno
           end
 
           @client&.requests&.each do |req|
-            result.request_responses << Models::RequestResponse.new(
-              direction: 'outbound',
-              request_method: req.request[:method],
-              request_url: req.request[:url],
-              request_headers: req.request[:headers].to_json,
-              request_payload: req.request[:payload],
-              response_code: req.response[:code],
-              response_headers: req.response[:headers].to_json,
-              response_body: req.response[:body],
-              instance_id: @instance.id
-            )
+            result.request_responses << Models::RequestResponse.from_request(req, @instance.id, 'outbound')
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Models::RequestResponse.new(
-              direction: req[:direction],
-              request_method: req[:request][:method].to_s,
-              request_url: req[:request][:url],
-              request_headers: req[:request][:headers].to_json,
-              request_payload: req[:request][:payload].to_json,
-              response_code: req[:response][:code],
-              response_headers: req[:response][:headers].to_json,
-              response_body: req[:response][:body],
-              instance_id: @instance.id
-            )
+            result.request_responses << Models::RequestResponse.from_request(OpenStruct.new(req), @instance.id)
           end
 
           yield result if block_given?
@@ -196,7 +178,7 @@ module Inferno
 
         @sequence_result.output_results = output_results.to_json if !output_results.nil? && !output_results.empty?
 
-        @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
+        @sequence_result.reset!
         @sequence_result.result = STATUS[:pass]
 
         @sequence_result.test_results.each do |result|
@@ -303,22 +285,18 @@ module Inferno
 
         # move this into a hash so things are duplicated.
 
-        if recurse
+        return dependencies[self] unless recurse
 
-          linked_dependencies = {}
-          dependencies[self].each do |dep|
-            return if linked_dependencies.key? dep
+        linked_dependencies = {}
+        dependencies[self].each do |dep|
+          return if linked_dependencies.key? dep
 
-            dep[1].each do |seq|
-              linked_dependencies.merge! seq.missing_requirements(instance, true)
-            end
+          dep[1].each do |seq|
+            linked_dependencies.merge! seq.missing_requirements(instance, true)
           end
-
-          dependencies.merge! linked_dependencies
-
-        else
-          return dependencies[self]
         end
+
+        dependencies.merge! linked_dependencies
 
         dependencies
       end
@@ -420,7 +398,8 @@ module Inferno
                                           result: STATUS[:pass],
                                           test_index: test_index)
           begin
-            skip_unless((@@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym), 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
+            fhir_version_included = @@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym
+            skip_unless(fhir_version_included, 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
             Inferno.logger.info "Starting Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
             instance_eval(&block)
           rescue AssertionException, ClientException => e
@@ -468,10 +447,10 @@ module Inferno
       end
 
       def metadata
-        if @metadata_only
-          yield
-          raise MetadataException
-        end
+        return unless @metadata_only
+
+        yield
+        raise MetadataException
       end
 
       def id(test_id)

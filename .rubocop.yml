@@ -8,8 +8,16 @@ AllCops:
     - 'node_modules/**/*'
     - '.git/**/*'
 
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: 'indented'
+
 Style/WordArray:
   Enabled: false
 
 Style/SymbolArray:
   Enabled: false
+
+Metrics/LineLength:
+  Exclude:
+    - 'lib/app/modules/**/*'
+    - 'lib/app/helpers/browser_logic.rb'

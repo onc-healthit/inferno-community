@@ -30,8 +30,9 @@ class SequenceValidationTest < MiniTest::Test
       # || test[:ref].nil? # no refs yet
     end
 
-    assert incomplete_metadata_tests.empty?, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
-      "First: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:sequence]}: #{!incomplete_metadata_tests.empty? && incomplete_metadata_tests.first[:name]}"
+    empty = incomplete_metadata_tests.empty?
+    assert empty, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
+      "First: #{!empty && incomplete_metadata_tests.first[:sequence]}: #{!empty && incomplete_metadata_tests.first[:name]}"
   end
 
   def test_ordered_sequences

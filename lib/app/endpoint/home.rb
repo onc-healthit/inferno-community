@@ -30,13 +30,9 @@ module Inferno
                               'The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test. ' \
                               "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
 
-              unless params[:error].nil?
-                error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
-              end
+              error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
 
-              unless params[:error_description].nil?
-                error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
-              end
+              error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
 
               halt 500, error_message
             end
@@ -47,34 +43,39 @@ module Inferno
                             'Inferno is unable to identify the currently running test session without the state parameter. ' \
                             "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
 
-            unless params[:error].nil?
-              error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>"
-            end
+            error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
 
-            unless params[:error_description].nil?
-              error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>"
-            end
+            error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
 
             halt 500, error_message
           end
 
           if params[:endpoint] == 'launch'
-            recent_results = Inferno::Models::SequenceResult.all(:created_at.gte => 5.minutes.ago, :result => 'wait', :order => [:created_at.desc])
-            matching_results = recent_results.select { |sr| sr.testing_instance.url.downcase.split('://').last.chomp('/') == params[:iss].downcase.split('://').last.chomp('/') }
+            recent_results = Inferno::Models::SequenceResult.all(
+              :created_at.gte => 5.minutes.ago,
+              :result => 'wait',
+              :order => [:created_at.desc]
+            )
+            iss_url = params[:iss].downcase.split('://').last.chomp('/')
+
+            matching_results = recent_results.select do |sr|
+              testing_instance_url = sr.testing_instance.url.downcase.split('://').last.chomp('/')
+              testing_instance_url == iss_url
+            end
 
             instance = matching_results.first.try(:testing_instance)
-            halt 500, "Error: No actively running launch sequences found for iss #{params[:iss]}.  Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR." if instance.nil?
+            if instance.nil?
+              message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
+                        'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
+              halt 500, message
+            end
           end
           halt 500, 'Error: Could not find a running test that match this set of critera' unless !instance.nil? &&
                                                                                                  instance.client_endpoint_key == params[:key] &&
                                                                                                  %w[launch redirect].include?(params[:endpoint])
 
           sequence_result = instance.waiting_on_sequence
-          if sequence_result.nil? || sequence_result.result != 'wait'
-            latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
-            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
-            redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
-          else
+          if sequence_result&.wait?
             test_set = instance.module.test_sets[sequence_result.test_set_id.to_sym]
             failed_test_cases = []
             all_test_cases = []
@@ -106,10 +107,12 @@ module Inferno
 
               # finish the inprocess stream
 
-              out << erb(instance.module.view_by_test_set(test_set.id), {}, instance: instance,
-                                                                            test_set: test_set,
-                                                                            sequence_results: instance.latest_results_by_case,
-                                                                            tests_running: true)
+              out << erb(instance.module.view_by_test_set(test_set.id),
+                         {},
+                         instance: instance,
+                         test_set: test_set,
+                         sequence_results: instance.latest_results_by_case,
+                         tests_running: true)
 
               out << js_hide_wait_modal
               out << js_show_test_modal
@@ -120,7 +123,7 @@ module Inferno
                 instance.save!
               end
               all_test_cases << test_case.id
-              failed_test_cases << test_case.id if sequence_result.result == 'fail' || sequence_result.result == 'error'
+              failed_test_cases << test_case.id if sequence_result.fail?
               instance.sequence_results.push(sequence_result)
               instance.save!
 
@@ -159,9 +162,7 @@ module Inferno
                   out << js_update_result(sequence, test_set, result, count, sequence.test_count)
                 end
                 all_test_cases << test_case.id
-                if sequence_result.result == 'fail' || sequence_result.result == 'error'
-                  failed_test_cases << test_case.id
-                end
+                failed_test_cases << test_case.id if sequence_result.fail?
 
                 sequence_result.test_set_id = test_set.id
                 sequence_result.test_case_id = test_case.id
@@ -186,6 +187,10 @@ module Inferno
 
               out << js_redirect("#{base_path}/#{instance.id}/#{test_set.id}/##{query_target}") if finished
             end
+          else
+            latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
+            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
+            redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
           end
         end
 
@@ -237,7 +242,15 @@ module Inferno
             inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/#{params[:test_set]}/"
           }
 
-          erb :report, { layout: false }, instance: instance, test_set: test_set, show_button: false, sequence_results: sequence_results, report_summary: report_summary
+          erb(
+            :report,
+            { layout: false },
+            instance: instance,
+            test_set: test_set,
+            show_button: false,
+            sequence_results: sequence_results,
+            report_summary: report_summary
+          )
         end
 
         # Creates a new testing instance at the provided FHIR Server URL
@@ -417,7 +430,7 @@ module Inferno
               sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
 
               all_test_cases << test_case.id
-              failed_test_cases << test_case.id if sequence_result.result == 'fail' || sequence_result.result == 'error'
+              failed_test_cases << test_case.id if sequence_result.fail?
 
               sequence_result.save!
               if sequence_result.redirect_to_url

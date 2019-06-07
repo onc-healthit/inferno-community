@@ -25,6 +25,22 @@ module Inferno
       has n, :request_responses, through: Resource
       has n, :test_warnings
       belongs_to :sequence_result
+
+      def fail?
+        result == 'fail' || error?
+      end
+
+      def error?
+        result == 'error'
+      end
+
+      def pass?
+        result == 'pass'
+      end
+
+      def skip?
+        result == 'skip'
+      end
     end
   end
 end

@@ -38,71 +38,71 @@ module Inferno
     private_class_method :reset
 
     def self.load_terminology
-      unless @@loaded
-        begin
-          # load the top lab codes
-          filename = File.join(@@term_root, 'terminology_loinc_2000.txt')
-          raw = File.open(filename, 'r:UTF-8', &:read)
-          raw.split("\n").each do |line|
-            row = line.split('|')
-            @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
-          end
-        rescue StandardError => e
-          FHIR.logger.error e
-        end
+      return if @@loaded
 
-        begin
-          # load the known codes
-          filename = File.join(@@term_root, 'terminology_umls.txt')
-          raw = File.open(filename, 'r:UTF-8', &:read)
-          raw.split("\n").each do |line|
-            row = line.split('|')
-            code_system = row[0]
-            code = row[1]
-            description = row[2]
-            if @@known_codes[code_system]
-              code_system_hash = @@known_codes[code_system]
-            else
-              code_system_hash = {}
-              @@known_codes[code_system] = code_system_hash
-            end
-            code_system_hash[code] = description
-          end
-        rescue StandardError => error
-          FHIR.logger.error error
+      begin
+        # load the top lab codes
+        filename = File.join(@@term_root, 'terminology_loinc_2000.txt')
+        raw = File.open(filename, 'r:UTF-8', &:read)
+        raw.split("\n").each do |line|
+          row = line.split('|')
+          @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
         end
-
-        begin
-          # load the core snomed codes
-          @@known_codes['SNOMED'] = {} if @@known_codes['SNOMED'].nil?
-          code_system_hash = @@known_codes['SNOMED']
-          filename = File.join(@@term_root, 'terminology_snomed_core.txt')
-          raw = File.open(filename, 'r:UTF-8', &:read)
-          raw.split("\n").each do |line|
-            row = line.split('|')
-            code = row[0]
-            description = row[1]
-            code_system_hash[code] = description if code_system_hash[code].nil?
-            @@core_snomed[code] = description
-          end
-        rescue StandardError => error
-          FHIR.logger.error error
-        end
-
-        begin
-          # load common UCUM codes
-          filename = File.join(@@term_root, 'terminology_ucum.txt')
-          raw = File.open(filename, 'r:UTF-8', &:read)
-          raw.split("\n").each do |code|
-            @@common_ucum << code
-          end
-          @@common_ucum.uniq!
-        rescue StandardError => error
-          FHIR.logger.error error
-        end
-
-        @@loaded = true
+      rescue StandardError => e
+        FHIR.logger.error e
       end
+
+      begin
+        # load the known codes
+        filename = File.join(@@term_root, 'terminology_umls.txt')
+        raw = File.open(filename, 'r:UTF-8', &:read)
+        raw.split("\n").each do |line|
+          row = line.split('|')
+          code_system = row[0]
+          code = row[1]
+          description = row[2]
+          if @@known_codes[code_system]
+            code_system_hash = @@known_codes[code_system]
+          else
+            code_system_hash = {}
+            @@known_codes[code_system] = code_system_hash
+          end
+          code_system_hash[code] = description
+        end
+      rescue StandardError => error
+        FHIR.logger.error error
+      end
+
+      begin
+        # load the core snomed codes
+        @@known_codes['SNOMED'] = {} if @@known_codes['SNOMED'].nil?
+        code_system_hash = @@known_codes['SNOMED']
+        filename = File.join(@@term_root, 'terminology_snomed_core.txt')
+        raw = File.open(filename, 'r:UTF-8', &:read)
+        raw.split("\n").each do |line|
+          row = line.split('|')
+          code = row[0]
+          description = row[1]
+          code_system_hash[code] = description if code_system_hash[code].nil?
+          @@core_snomed[code] = description
+        end
+      rescue StandardError => error
+        FHIR.logger.error error
+      end
+
+      begin
+        # load common UCUM codes
+        filename = File.join(@@term_root, 'terminology_ucum.txt')
+        raw = File.open(filename, 'r:UTF-8', &:read)
+        raw.split("\n").each do |code|
+          @@common_ucum << code
+        end
+        @@common_ucum.uniq!
+      rescue StandardError => error
+        FHIR.logger.error error
+      end
+
+      @@loaded = true
     end
 
     def self.get_description(system, code)

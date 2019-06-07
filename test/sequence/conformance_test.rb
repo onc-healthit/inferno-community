@@ -30,8 +30,8 @@ class ConformanceSequenceTest < MiniTest::Test
       .to_return(status: 200, body: @conformance.to_json, headers: RESPONSE_HEADERS)
 
     sequence_result = @sequence.start
-    assert sequence_result.result == 'pass', 'The sequence should be marked as pass.'
-    assert sequence_result.test_results.all? { |r| r.result == 'pass' || r.result == 'skip' }, 'All tests should pass'
+    assert sequence_result.pass?, 'The sequence should be marked as pass.'
+    assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
     # assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 
@@ -41,7 +41,7 @@ class ConformanceSequenceTest < MiniTest::Test
       .to_return(status: 404)
 
     sequence_result = @sequence.start
-    assert sequence_result.result == 'fail'
+    assert sequence_result.fail?
     assert sequence_result.test_results.reject(&:required).length == 1 # SMART capabilities
   end
 end
