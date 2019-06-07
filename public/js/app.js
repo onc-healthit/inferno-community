@@ -342,9 +342,15 @@ $(function(){
   // Then register the handler
   $(window).on('scroll', handleScroll)
 
-  $('#preset-select').on('change', function() {
-    var preset = $('#preset-select option:selected').data('selected');
+  $('#preset-select').on('change', function(e, preset_id = "") {
+    preset_id = preset_id == "" ? $('#preset-select option:selected').data('selected') : preset_id;
+    var all = $('#preset-select option:selected').data('all');
     var modules = $('#preset-select option:selected').data('module_names').split(",");
+    var preset = all[preset_id] == undefined ? "" : all[preset_id];
+    
+    if (preset != "") {
+      document.getElementById("preset-select").selectedIndex = Object.keys(all).indexOf(preset_id) + 1;
+    }
 
     $el = $('input[name=fhir_server]');
     $el.val(preset.uri);
@@ -363,5 +369,13 @@ $(function(){
       document.getElementById("preset").value = "";
       document.getElementById("instructions-link").style.display = "none";
     }
-  });
+  })
+
+  if (window.location.hash != "") {
+    var preset_id = window.location.hash;
+    if (preset_id.startsWith("#preset-")) {
+      preset_id = preset_id.substring('#preset-'.length);
+      $('#preset-select').trigger("change", preset_id);
+    }
+  }
 }); 

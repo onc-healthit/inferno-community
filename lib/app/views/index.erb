@@ -44,9 +44,9 @@
         <div class="form-group">
           <span class="oi oi-lightbulb"></span> Optionally, choose a preset vendor configuration to test:
           <select class="custom-select custom-select-lg" name="preset" style="margin-left: 10px;" id="preset-select">
-            <option value="" data-module_names=<%=module_names.join(',')%> data-selected="">None</option>
+            <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">None</option>
             <% presets.each do |preset| %>
-              <option value="" data-module_names=<%=module_names.join(',')%> data-selected=<%=preset.at(1).to_json.tr(' ', '_')%>><%=preset.at(1)["name"]%></option>
+              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
             <% end %>
             <input type="hidden" name="preset" id="preset" value="" />
           </select>
