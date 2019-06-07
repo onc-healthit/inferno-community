@@ -62,7 +62,6 @@ $(function(){
   });
 
   $('.sequence-button').click(function(){
-    
     var sequences = [],
         test_cases = [],
         variable_defaults = {},
@@ -343,4 +342,26 @@ $(function(){
   // Then register the handler
   $(window).on('scroll', handleScroll)
 
+  $('#preset-select').on('change', function() {
+    var preset = $('#preset-select option:selected').data('selected');
+    var modules = $('#preset-select option:selected').data('module_names').split(",");
+
+    $el = $('input[name=fhir_server]');
+    $el.val(preset.uri);
+    $el.prop('readonly', preset !== '');
+    var preset_on = $el.val() == '' ? false : true;
+
+    if (preset_on) {
+      modules.forEach(mod => document.getElementById(mod).disabled = true);
+      document.getElementById(preset.module).checked = true;
+      document.getElementById(preset.module).disabled = false;
+      document.getElementById("preset").value = JSON.stringify(preset);
+      document.getElementById("instructions-link").style.display = preset.instructions == null ? "none" : "";
+      document.getElementById("instructions-link").href = preset.instructions;
+    } else {
+      modules.forEach(mod => document.getElementById(mod).disabled = false);
+      document.getElementById("preset").value = "";
+      document.getElementById("instructions-link").style.display = "none";
+    }
+  });
 }); 

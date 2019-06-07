@@ -47,3 +47,13 @@ modules:
   - smart
   - us_core_r4
   - argonaut
+
+# preset fhir servers: optional. Minimally requires name, uri, module, client_id, optional client_secret
+presets:
+  site: 
+    name: SITE FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
+    client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
+    instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions

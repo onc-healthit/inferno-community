@@ -38,6 +38,21 @@
         </div>
 
       </div>
+
+      <% if !presets.nil? %>
+        <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
+        <div class="form-group">
+          <span class="oi oi-lightbulb"></span> Optionally, choose a preset vendor configuration to test:
+          <select class="custom-select custom-select-lg" name="preset" style="margin-left: 10px;" id="preset-select">
+            <option value="" data-module_names=<%=module_names.join(',')%> data-selected="">None</option>
+            <% presets.each do |preset| %>
+              <option value="" data-module_names=<%=module_names.join(',')%> data-selected=<%=preset.at(1).to_json.tr(' ', '_')%>><%=preset.at(1)["name"]%></option>
+            <% end %>
+            <input type="hidden" name="preset" id="preset" value="" />
+          </select>
+          <a id="instructions-link" href="" target="_blank" style="display:none">Click here for instructions.</a>
+        </div>
+      <% end %>
     </form>
 
     <div class='alert alert-warning'>
