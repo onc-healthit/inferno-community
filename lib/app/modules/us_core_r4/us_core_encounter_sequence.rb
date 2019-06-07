@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4EncounterSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Encounter Tests'
+      title 'Encounter Tests'
 
       description 'Verify that Encounter resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -21,15 +21,18 @@ module Inferno
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when '_id'
-          assert !resource&.id.nil? && resource&.id == value, '_id on resource did not match _id requested'
+          assert resource&.id == value, '_id on resource did not match _id requested'
 
         when 'class'
-          assert !resource&.class&.code.nil? && resource&.class&.code == value, 'class on resource did not match class requested'
+          assert resource&.local_class&.code == value, 'class on resource did not match class requested'
 
         when 'date'
 
+        when 'identifier'
+          assert resource.identifier.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+
         when 'status'
-          assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
+          assert resource&.status == value, 'status on resource did not match status requested'
 
         when 'type'
           codings = resource&.type&.first&.coding
@@ -103,7 +106,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = { '_id': @encounter&.id }
+        id_val = @encounter&.id
+        search_params = { '_id': id_val }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
@@ -180,7 +184,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        class_val = @encounter&.class&.code
+        class_val = @encounter&.local_class&.code
         patient_val = @instance.patient_id
         search_params = { 'class': class_val, 'patient': patient_val }
 

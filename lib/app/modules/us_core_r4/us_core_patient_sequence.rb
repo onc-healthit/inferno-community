@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4PatientSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Patient Tests'
+      title 'Patient Tests'
 
       description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,29 +18,31 @@ module Inferno
         case property
 
         when '_id'
-          assert !resource&.id.nil? && resource&.id == value, '_id on resource did not match _id requested'
+          assert resource&.id == value, '_id on resource did not match _id requested'
 
         when 'birthdate'
 
         when 'family'
-          assert !resource&.name&.family.nil? && resource&.name&.family == value, 'family on resource did not match family requested'
+          assert resource&.name&.family == value, 'family on resource did not match family requested'
 
         when 'gender'
-          assert !resource&.gender.nil? && resource&.gender == value, 'gender on resource did not match gender requested'
+          assert resource&.gender == value, 'gender on resource did not match gender requested'
 
         when 'given'
-          assert !resource&.name&.given.nil? && resource&.name&.given == value, 'given on resource did not match given requested'
+          assert resource&.name&.given == value, 'given on resource did not match given requested'
+
+        when 'identifier'
+          assert resource.identifier.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
 
         when 'name'
           found = resource.name.any? do |name|
-            name&.text&.include?(value) ||
-              name&.family&.include?(value) ||
-              name&.given&.any { |given| given&.include?(value) } ||
-              name&.prefix&.any { |prefix| prefix&.include?(value) } ||
-              name&.suffix&.any { |suffix| suffix&.include?(value) }
+            name.text&.include?(value) ||
+              name.family.include?(value) ||
+              name.given.any { |given| given&.include?(value) } ||
+              name.prefix.any { |prefix| prefix.include?(value) } ||
+              name.suffix.any { |suffix| suffix.include?(value) }
           end
           assert found, 'name on resource does not match name requested'
-
         end
       end
 

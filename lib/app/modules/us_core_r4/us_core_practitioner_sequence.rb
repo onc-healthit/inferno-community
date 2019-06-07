@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4PractitionerSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Practitioner Tests'
+      title 'Practitioner Tests'
 
       description 'Verify that Practitioner resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -19,13 +19,15 @@ module Inferno
 
         when 'name'
           found = resource.name.any? do |name|
-            name&.text&.include?(value) ||
-              name&.family&.include?(value) ||
-              name&.given&.any { |given| given&.include?(value) } ||
-              name&.prefix&.any { |prefix| prefix&.include?(value) } ||
-              name&.suffix&.any { |suffix| suffix&.include?(value) }
+            name.text&.include?(value) ||
+              name.family.include?(value) ||
+              name.given.any { |given| given&.include?(value) } ||
+              name.prefix.any { |prefix| prefix.include?(value) } ||
+              name.suffix.any { |suffix| suffix.include?(value) }
           end
           assert found, 'name on resource does not match name requested'
+        when 'identifier'
+          assert resource.identifier.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
 
         end
       end

@@ -30,7 +30,7 @@ test_sets:
         sequences:
           - sequence: ManualRegistrationSequence
             title: Manual App Registration
-          - ArgonautConformanceSequence
+          - sequence: UsCoreR4CapabilityStatementSequence
           - SMARTDiscoverySequence
       - name: Standalone Patient App
         overview: |

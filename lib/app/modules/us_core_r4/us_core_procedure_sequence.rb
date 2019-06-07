@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4ProcedureSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Procedure Tests'
+      title 'Procedure Tests'
 
       description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -21,7 +21,7 @@ module Inferno
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'status'
-          assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
+          assert resource&.status == value, 'status on resource did not match status requested'
 
         when 'date'
 

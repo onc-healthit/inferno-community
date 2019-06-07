@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4SmokingstatusSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Smokingstatus Tests'
+      title 'Smokingstatus Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -21,7 +21,7 @@ module Inferno
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'status'
-          assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
+          assert resource&.status == value, 'status on resource did not match status requested'
 
         when 'category'
           codings = resource&.category&.first&.coding

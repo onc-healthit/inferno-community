@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4OrganizationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Organization Tests'
+      title 'Organization Tests'
 
       description 'Verify that Organization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,7 +18,7 @@ module Inferno
         case property
 
         when 'name'
-          assert !resource&.name.nil? && resource&.name == value, 'name on resource did not match name requested'
+          assert resource&.name == value, 'name on resource did not match name requested'
 
         when 'address'
 

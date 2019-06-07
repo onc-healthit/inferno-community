@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4GoalSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Goal Tests'
+      title 'Goal Tests'
 
       description 'Verify that Goal resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -21,7 +21,7 @@ module Inferno
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'lifecycle-status'
-          assert !resource&.lifecycleStatus.nil? && resource&.lifecycleStatus == value, 'lifecycle-status on resource did not match lifecycle-status requested'
+          assert resource&.lifecycleStatus == value, 'lifecycle-status on resource did not match lifecycle-status requested'
 
         when 'target-date'
 

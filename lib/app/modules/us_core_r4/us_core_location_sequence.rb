@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4LocationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Location Tests'
+      title 'Location Tests'
 
       description 'Verify that Location resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,18 +18,18 @@ module Inferno
         case property
 
         when 'name'
-          assert !resource&.name.nil? && resource&.name == value, 'name on resource did not match name requested'
+          assert resource&.name == value, 'name on resource did not match name requested'
 
         when 'address'
 
         when 'address-city'
-          assert !resource&.address&.city.nil? && resource&.address&.city == value, 'address-city on resource did not match address-city requested'
+          assert resource&.address&.city == value, 'address-city on resource did not match address-city requested'
 
         when 'address-state'
-          assert !resource&.address&.state.nil? && resource&.address&.state == value, 'address-state on resource did not match address-state requested'
+          assert resource&.address&.state == value, 'address-state on resource did not match address-state requested'
 
         when 'address-postalcode'
-          assert !resource&.address&.postalCode.nil? && resource&.address&.postalCode == value, 'address-postalcode on resource did not match address-postalcode requested'
+          assert resource&.address&.postalCode == value, 'address-postalcode on resource did not match address-postalcode requested'
 
         end
       end

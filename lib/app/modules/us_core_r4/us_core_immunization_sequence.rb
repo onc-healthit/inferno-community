@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4ImmunizationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Immunization Tests'
+      title 'Immunization Tests'
 
       description 'Verify that Immunization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -21,7 +21,7 @@ module Inferno
           assert (resource&.patient && resource.patient.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when 'status'
-          assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
+          assert resource&.status == value, 'status on resource did not match status requested'
 
         when 'date'
 

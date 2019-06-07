@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4DeviceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Device Tests'
+      title 'Device Tests'
 
       description 'Verify that Device resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

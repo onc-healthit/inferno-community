@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4ConditionSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Condition Tests'
+      title 'Condition Tests'
 
       description 'Verify that Condition resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

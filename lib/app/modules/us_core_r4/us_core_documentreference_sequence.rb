@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4DocumentreferenceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'US Core R4 Documentreference Tests'
+      title 'Documentreference Tests'
 
       description 'Verify that DocumentReference resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -21,10 +21,10 @@ module Inferno
           assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
 
         when '_id'
-          assert !resource&.id.nil? && resource&.id == value, '_id on resource did not match _id requested'
+          assert resource&.id == value, '_id on resource did not match _id requested'
 
         when 'status'
-          assert !resource&.status.nil? && resource&.status == value, 'status on resource did not match status requested'
+          assert resource&.status == value, 'status on resource did not match status requested'
 
         when 'category'
           codings = resource&.category&.first&.coding
@@ -107,7 +107,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        search_params = { '_id': @documentreference&.id }
+        id_val = @documentreference&.id
+        search_params = { '_id': id_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
