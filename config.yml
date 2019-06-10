@@ -48,12 +48,21 @@ modules:
   - us_core_r4
   - argonaut
 
-# preset fhir servers: optional. Minimally requires name, uri, module, optional client_id, client_secret, scopes, instructions link
+# preset fhir servers: optional. Minimally requires name, uri, module, optional domain, client_id, client_secret, scopes, instructions link
 presets:
   site_healthit_gov: 
     name: SITE FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
     module: onc
+    domain: https://inferno.healthit.gov/inferno/
     client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
     client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
+    instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
+  site_local: 
+    name: SITE FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    domain: http://localhost:4567
+    client_id: Yg0o6sJ8I8CfVVyHz1eA0m8jv6sXwe
+    client_secret: UDVrTXlna0NvcGRQZ1VhMkZaZzQ0R1FxVGdtTWxFMXVoT3pPd1VRMUN4MFVkV25Gejk=
     instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
