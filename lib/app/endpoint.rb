@@ -51,6 +51,14 @@ module Inferno
       set :static, true
       set :views, File.expand_path('views', __dir__)
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
+
+      def render_index
+        unless defined?(settings.presets).nil? || settings.presets.nil? # rubocop:disable Style/IfUnlessModifier
+          presets = settings.presets.select { |_, v| v['domain'].nil? || v['domain'] == request.base_url }
+        end
+        modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
+        erb :index, {}, modules: modules, presets: presets
+      end
     end
   end
 end

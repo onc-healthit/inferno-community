@@ -11,10 +11,7 @@ module Inferno
 
         # Return the index page of the application
         get '/?' do
-          unless defined?(settings.presets).nil? || settings.presets.nil?
-            presets = Hash[settings.presets.map { |k, v| [k, v] if v['domain'].nil? || v['domain'] == request.base_url }]
-          end
-          erb :index, {}, modules: settings.modules.map { |m| Inferno::Module.get(m) }.compact, presets: presets
+          render_index
         end
 
         # Returns the static files associated with web app

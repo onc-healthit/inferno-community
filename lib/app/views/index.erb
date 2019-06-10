@@ -39,7 +39,7 @@
 
       </div>
 
-      <% if !presets.blank? %>
+      <% if presets.present? %>
         <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
         <div class="form-group">
           <span class="oi oi-lightbulb"></span> Optionally, choose a preset vendor configuration to test:
