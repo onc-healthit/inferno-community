@@ -229,6 +229,12 @@
                       </button>
                     <% end %>
                     
+                    <% if index < instance.group_results(test_set.id).length - 1 && group_result.to_s != "not_run" %>
+                      <button class="continue btn btn-info btn-sm" id='<%=group.id%>' data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
+                        <span class="oi oi-media-play"></span> Continue
+                      </button>
+                    <% end %>
+
                   </div>
                   
                 </div>

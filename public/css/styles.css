@@ -1097,6 +1097,14 @@ body {
   margin-right: 10px;
 }
 
+.guided .continue {
+  cursor:pointer; 
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  margin-right: 10px;
+  float: right;
+}
+
 .guided span.oi.oi-warning.prerequisite-tooltip {
   display: none;
   width: 0;

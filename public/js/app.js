@@ -364,4 +364,9 @@ $(function(){
       document.getElementById("instructions-link").style.display = "none";
     }
   });
+
+  $(document.getElementsByClassName("continue")).on('click', function() {
+    var next_tab = $('#' + this.id).data('next_tab');
+    $('#group-link-' + next_tab).click();
+  });
 }); 
