@@ -228,11 +228,18 @@
                         <span class="oi oi-media-play"></span> Start
                       </button>
                     <% end %>
-                    
-                    <% if index < instance.group_results(test_set.id).length - 1 && group_result.to_s != "not_run" %>
-                      <button class="continue btn btn-info btn-sm" id='<%=group.id%>' data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
-                        <span class="oi oi-media-play"></span> Continue
-                      </button>
+
+                    <% if group_result.to_s != "not_run" %>
+                      <% if index < instance.group_results(test_set.id).length - 1 %>
+                        <button class="continue-back btn btn-info btn-sm" id=<%='cont-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
+                          <span class="oi oi-media-play"></span> Continue
+                        </button>
+                      <% end %>
+                      <% if index > 0 %>
+                        <button class="continue-back btn btn-info btn-sm" id=<%='back-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index - 1)[:group].id%>>
+                          <span class="oi oi-media-play"></span> Back
+                        </button>
+                      <% end %>
                     <% end %>
 
                   </div>

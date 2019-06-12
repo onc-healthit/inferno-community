@@ -365,7 +365,7 @@ $(function(){
     }
   });
 
-  $(document.getElementsByClassName("continue")).on('click', function() {
+  $(document.getElementsByClassName("continue-back")).on('click', function() {
     var next_tab = $('#' + this.id).data('next_tab');
     $('#group-link-' + next_tab).click();
   });
