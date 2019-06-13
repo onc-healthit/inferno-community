@@ -16,10 +16,22 @@ module Inferno
           "<script>console.log('Time running: ' + #{time})</script>"
         end
 
-        def js_update_result(sequence, _test_set, _result, count, total)
-          cancel_button = ''
-          cancel_button = "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>" if sequence.sequence_result
-          "<script>console.log('js_update_result');$('#testsRunningModal').find('.number-complete:last').html('(#{count} of #{total} #{sequence.class.title} tests complete)');$('#testsRunningModal .modal-footer').html('#{cancel_button}');</script>"
+        def js_update_result(sequence, _test_set, _result, set_count, set_total, count, total)
+          cancel_button =
+            if sequence.sequence_result
+              "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
+            else
+              ''
+            end
+
+          print_debug = "console.log('js_update_result');"
+          progress_words = "$('#testsRunningModal').find('.number-complete:last').html('(#{set_count} of #{set_total} #{sequence.class.title} tests complete)');"
+          cancel = "$('#testsRunningModal .modal-footer').html('#{cancel_button}');"
+          progress = "var progress = Math.round((#{count}/#{total}) * 100);console.log(progress);"
+          progress_text = "$('#progress-bar').text(progress + '%').attr('aria-valuenow', progress);"
+          progress_width = "if (progress < 5) { $('#progress-bar').css('width', 5 + '%');} else {$('#progress-bar').css('width', progress + '%'); }"
+
+          "<script>#{print_debug}#{progress_words}#{cancel}#{progress}#{progress_text}#{progress_width}</script>"
         end
 
         def js_redirect(location)
