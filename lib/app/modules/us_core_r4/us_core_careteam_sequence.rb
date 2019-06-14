@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# This test is auto-generated
 module Inferno
   module Sequence
     class UsCoreR4CareteamSequence < SequenceBase
@@ -18,7 +19,7 @@ module Inferno
         case property
 
         when 'patient'
-          assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
+          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'
