@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# This test is auto-generated
 module Inferno
   module Sequence
     class UsCoreR4CareplanSequence < SequenceBase
@@ -17,15 +18,15 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-        when 'patient'
-          assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
-
         when 'category'
           codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
 
         when 'date'
+
+        when 'patient'
+          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'

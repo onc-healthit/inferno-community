@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# This test is auto-generated
 module Inferno
   module Sequence
     class UsCoreR4AllergyintoleranceSequence < SequenceBase
@@ -17,13 +18,13 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-        when 'patient'
-          assert (resource&.patient && resource.patient.reference.include?(value)), 'patient on resource does not match patient requested'
-
         when 'clinical-status'
           codings = resource&.clinicalStatus&.coding
           assert !codings.nil?, 'clinical-status on resource did not match clinical-status requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'clinical-status on resource did not match clinical-status requested'
+
+        when 'patient'
+          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         end
       end

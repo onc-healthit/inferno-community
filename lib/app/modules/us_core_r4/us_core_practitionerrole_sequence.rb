@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# This test is auto-generated
 module Inferno
   module Sequence
     class UsCoreR4PractitionerroleSequence < SequenceBase
@@ -23,7 +24,7 @@ module Inferno
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'specialty on resource did not match specialty requested'
 
         when 'practitioner'
-          assert (resource&.practitioner && resource.practitioner.reference.include?(value)), 'practitioner on resource does not match practitioner requested'
+          assert resource&.practitioner&.reference&.include?(value), 'practitioner on resource does not match practitioner requested'
 
         end
       end
