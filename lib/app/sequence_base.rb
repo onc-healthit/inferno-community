@@ -86,7 +86,7 @@ module Inferno
         start(&block)
       end
 
-      def start(test_set_id = nil, test_case_id = nil)
+      def start(test_set_id = nil, test_case_id = nil, &block)
         if @sequence_result.nil?
           @sequence_result = Models::SequenceResult.new(
             name: sequence_name,
@@ -102,29 +102,61 @@ module Inferno
 
         start_at = @sequence_result.test_results.length
 
+        load_input_params(sequence_name)
+
+        output_results = save_output(sequence_name)
+
+        methods = self.methods.grep(/_test$/).sort[start_at..-1]
+
+        run_tests(methods, &block)
+
+        update_output(sequence_name, output_results)
+        @sequence_result.output_results = output_results.to_json if output_results.present?
+
+        @sequence_result.reset!
+        @sequence_result.pass!
+
+        update_result_counts
+
+        @sequence_result
+      end
+
+      def load_input_params(sequence_name)
         input_parameters = {}
-        @@requires[sequence_name]&.each do |requirement|
-          next unless @instance.respond_to? requirement
-
-          input_value = @instance.send(requirement).to_s
-          input_value = 'none' if input_value.empty?
-          input_parameters[requirement.to_sym] = input_value
-        end
+        @@requires[sequence_name]
+          &.select { |requirement| @instance.respond_to? requirement }
+          &.each do |requirement|
+            input_value = @instance.send(requirement).to_s
+            input_value = 'none' if input_value.empty?
+            input_parameters[requirement.to_sym] = input_value
+          end
         @sequence_result.input_params = input_parameters.to_json
+      end
 
-        output_results = {}
-        @@defines[sequence_name]&.each do |output|
-          next unless @instance.respond_to? output
-
-          output_value = @instance.send(output).to_s
-          output_value = 'none' if output_value.empty?
-          output_results[output.to_sym] = { original: output_value }
+      def save_output(sequence_name)
+        {}.tap do |output_results|
+          @@defines[sequence_name]
+            &.select { |output| @instance.respond_to? output }
+            &.each do |output|
+              output_value = @instance.send(output).to_s
+              output_value = 'none' if output_value.empty?
+              output_results[output.to_sym] = { original: output_value }
+            end
         end
+      end
 
-        methods = self.methods.grep(/_test$/).sort
-        methods.each_with_index do |test_method, index|
-          next if index < start_at
+      def update_output(sequence_name, output_results)
+        @@defines[sequence_name]
+          &.select { |output| @instance.respond_to? output }
+          &.each do |output|
+            output_value = @instance.send(output).to_s
+            output_value = 'none' if output_value.empty?
+            output_results[output.to_sym][:updated] = output_value
+          end
+      end
 
+      def run_tests(methods)
+        methods.each do |test_method|
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
           result = method(test_method).call
@@ -167,20 +199,9 @@ module Inferno
           @sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
+      end
 
-        @@defines[sequence_name]&.each do |output|
-          next unless @instance.respond_to? output
-
-          output_value = @instance.send(output).to_s
-          output_value = 'none' if output_value.empty?
-          output_results[output.to_sym][:updated] = output_value
-        end
-
-        @sequence_result.output_results = output_results.to_json if !output_results.nil? && !output_results.empty?
-
-        @sequence_result.reset!
-        @sequence_result.pass!
-
+      def update_result_counts
         @sequence_result.test_results.each do |result|
           if result.required
             @sequence_result.required_total += 1
@@ -214,8 +235,6 @@ module Inferno
             @sequence_result.result = result.result
           end
         end
-
-        @sequence_result
       end
 
       def self.test_count
