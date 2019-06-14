@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require_relative '../utils/result_statuses'
+
 module Inferno
   module Models
     class TestResult
+      include ResultStatuses
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :test_id, String
@@ -25,22 +28,6 @@ module Inferno
       has n, :request_responses, through: Resource
       has n, :test_warnings
       belongs_to :sequence_result
-
-      def fail?
-        result == 'fail' || error?
-      end
-
-      def error?
-        result == 'error'
-      end
-
-      def pass?
-        result == 'pass'
-      end
-
-      def skip?
-        result == 'skip'
-      end
     end
   end
 end
