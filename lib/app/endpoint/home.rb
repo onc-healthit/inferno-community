@@ -384,6 +384,8 @@ module Inferno
           test_set = instance.module.test_sets[params[:test_set].to_sym]
           halt 404 if test_set.nil?
 
+          cookies[:instance_id] = instance.id
+
           # Save params
           params[:required_fields].split(',').each do |field|
             instance.send("#{field}=", params[field]) if instance.respond_to? field
