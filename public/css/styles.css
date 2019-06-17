@@ -1090,6 +1090,7 @@ body {
   margin-bottom: 1rem;
   margin-right: 10px;
 }
+
 .guided .sequence-button-next {
   cursor:pointer; 
   font-size: 1.2rem;
@@ -1097,12 +1098,22 @@ body {
   margin-right: 10px;
 }
 
-.guided .continue-back {
+.guided .next-back {
   cursor:pointer; 
+  background-color: #7b9ba0;
+  border-color: #7b9ba0;
   font-size: 1.2rem;
   margin-bottom: 1rem;
   margin-right: 10px;
   float: right;
+}
+
+.guided .oi-media-step-forward {
+  font-size: 1rem;
+}
+
+.guided .oi-media-step-backward {
+  font-size: 1rem;
 }
 
 .guided span.oi.oi-warning.prerequisite-tooltip {
