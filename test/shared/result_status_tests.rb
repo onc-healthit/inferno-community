@@ -3,11 +3,17 @@
 module Inferno
   module ResultStatusTests
     def test_result_setters
-      statuses = ['fail', 'error', 'pass', 'skip', 'wait', 'todo']
-
-      statuses.each do |status|
+      Inferno::ResultStatuses::STATUS_LIST.each do |status|
         @result.send("#{status}!")
         assert(@result.result == status)
+      end
+    end
+
+    def test_result_equality
+      Inferno::ResultStatuses::STATUS_LIST.each do |status|
+        assert(!@result.send("#{status}?"))
+        @result.send("#{status}!")
+        assert(@result.send("#{status}?"))
       end
     end
   end
