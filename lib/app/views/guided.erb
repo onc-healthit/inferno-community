@@ -158,75 +158,69 @@
 
                   <% end %>
 
-                  <% case group_result.to_s
+                  <div class="group-message">
+                    <% case group_result.to_s
                       when 'pass' %>
-                      <div class="group-message">
-                        Result: Pass. Tests have successfully passed.
-                      </div>
-                      <%= markdown_to_html(group.overview) %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-loop"></span> Rerun All Tests
-                      </button>
-                    <% when 'fail' %>
-                      <div class="group-message">
-                        Result: Fail. One or more tests have failed, please see below for failure details.
-                      </div>
-                      <%= markdown_to_html(group.overview) %>
-                      <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
-                          <span class="oi oi-loop"></span> Rerun Skipped Tests
-                        </button>
+                          Result: Pass. Tests have successfully passed.
+                      <% when 'fail' %>
+                          Result: Fail. One or more tests have failed, please see below for failure details.
+                      <% when 'cancel' %>
+                          Cancelled
+                      <% when 'error' %>
+                          Errored
+                      <% when 'wait' %>
+                          Paused
+                      <% when 'skip' %>
+                          Skipped
                       <% end %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-loop"></span> Rerun All Tests
-                      </button>
-                    <% when 'cancel' %>
-                      <div class="group-message">
-                        Cancelled
-                      </div>
-                      <%= markdown_to_html(group.overview) %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Begin Tests
-                      </button>
-                    <% when 'error' %>
-                      <div class="group-message">
-                        Errored
-                      </div>
-                      <%= markdown_to_html(group.overview) %>
-                      <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
-                          <span class="oi oi-loop"></span> Rerun Skipped Tests
+                  </div>
+                  <%= markdown_to_html(group.overview) %>
+
+                  <div class='buttons-container'>
+                    <% case group_result.to_s
+                      when 'pass' %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-loop"></span> Rerun All Tests
                         </button>
-                      <% end %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-loop"></span> Rerun All Tests
-                      </button>
-                    <% when 'wait' %>
-                      <div class="group-message">
-                        Paused
-                      </div>
-                      <%= markdown_to_html(group.overview) %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Begin Tests
-                      </button>
-                    <% when 'skip' %>
-                        <div class="group-message">
-                        Skipped
-                      </div>
-                      <%= markdown_to_html(group.overview) %>
-                      <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
-                          <span class="oi oi-loop"></span> Rerun Skipped Tests
+                      <% when 'fail' %>
+                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                            <span class="oi oi-loop"></span> Rerun Skipped Tests
+                          </button>
+                        <% end %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-loop"></span> Rerun All Tests
                         </button>
-                      <% end %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-loop"></span> Rerun All Tests
-                      </button>
-                    <% else %>
-                      <%= markdown_to_html(group.overview) %>
-                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                        <span class="oi oi-media-play"></span> Run
-                      </button>
+                      <% when 'cancel' %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-media-play"></span> Begin Tests
+                        </button>
+                      <% when 'error' %>
+                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                            <span class="oi oi-loop"></span> Rerun Skipped Tests
+                          </button>
+                        <% end %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-loop"></span> Rerun All Tests
+                        </button>
+                      <% when 'wait' %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-media-play"></span> Begin Tests
+                        </button>
+                      <% when 'skip' %>
+                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                            <span class="oi oi-loop"></span> Rerun Skipped Tests
+                          </button>
+                        <% end %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-loop"></span> Rerun All Tests
+                        </button>
+                      <% else %>
+                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                          <span class="oi oi-media-play"></span> Run
+                        </button>
                     <% end %>
 
                     <% if group_result.to_s != "not_run" %>
@@ -234,13 +228,22 @@
                         <button class="next next-back btn btn-info btn-sm" id=<%='cont-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
                           Next <span class="oi oi-media-step-forward"></span>
                         </button>
+                      <% else %>
+                        <button class="next placeholder btn btn-info btn-sm">
+                          Next <span class="oi oi-media-step-forward"></span>
+                        </button>
                       <% end %>
                       <% if index > 0 %>
                         <button class="back next-back btn btn-info btn-sm" id=<%='back-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index - 1)[:group].id%>>
                           <span class="oi oi-media-step-backward"></span> Back
                         </button>
+                      <% else %>
+                        <button class="back placeholder btn btn-info btn-sm">
+                          <span class="oi oi-media-step-backward"></span> Back
+                        </button>
                       <% end %>
                     <% end %>
+                  </div>
 
                   </div>
                   

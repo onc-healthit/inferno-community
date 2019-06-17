@@ -1104,8 +1104,24 @@ body {
   border-color: #7b9ba0;
   font-size: 1.2rem;
   margin-bottom: 1rem;
-  margin-right: 10px;
+}
+
+.guided .placeholder {
+  visibility: hidden;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.guided .buttons-container {
+  text-align: center;
+}
+
+.guided .next {
   float: right;
+}
+
+.guided .back {
+  float: left;
 }
 
 .guided .oi-media-step-forward {
