@@ -2,6 +2,7 @@
 
 require 'sinatra/base'
 require 'sinatra/custom_logger'
+require 'sinatra/cookies'
 require_relative 'helpers/configuration'
 require_relative 'helpers/browser_logic'
 module Inferno

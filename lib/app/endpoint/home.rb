@@ -6,6 +6,7 @@ module Inferno
       # Home provides a Sinatra endpoint for accessing Inferno.
       # Home serves the main web application.
       class Home < Endpoint
+        helpers Sinatra::Cookies
         # Set the url prefix these routes will map to
         set :prefix, "/#{base_path}"
 
@@ -65,9 +66,13 @@ module Inferno
 
             instance = matching_results.first.try(:testing_instance)
             if instance.nil?
-              message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
-                        'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
-              halt 500, message
+              if cookies[:instance_id].present?
+                redirect "#{base_path}/#{cookies[:instance_id]}/?error=ehr_launch"
+              else
+                message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
+                          'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
+                halt 500, message
+              end
             end
           end
           halt 500, 'Error: Could not find a running test that match this set of critera' unless !instance.nil? &&
@@ -288,6 +293,8 @@ module Inferno
 
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
           @instance.redirect_uris = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/redirect"
+
+          cookies[:instance_id] = @instance.id
 
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
