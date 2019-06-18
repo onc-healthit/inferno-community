@@ -36,6 +36,24 @@ def get_json_from_uri(uri)
   JSON.parse(File.read(filename))
 end
 
+def build_new_sequence(resource, profile)
+  base_name = profile.split('StructureDefinition/')[1]
+  {
+    name: base_name.tr('-', '_'),
+    classname: base_name
+      .split('-')
+      .map(&:capitalize)
+      .join
+      .gsub('UsCore', 'UsCoreR4') + 'Sequence',
+    resource: resource['type'],
+    profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{base_name}.json", # links in capability statement currently incorrect
+    interactions: [],
+    search_params: [],
+    search_combos: [],
+    tests: []
+  }
+end
+
 def extract_metadata(resources)
   data = {
     name: 'test',
@@ -44,23 +62,7 @@ def extract_metadata(resources)
 
   resources.each do |resource|
     resource['supportedProfile'].each do |supported_profile|
-      # links in capability statement currently incorrect
-      profile = "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{supported_profile.split('StructureDefinition/')[1]}.json"
-      new_sequence = {
-        name: supported_profile.split('StructureDefinition/')[1].tr('-', '_'),
-        classname: supported_profile
-          .split('StructureDefinition/')[1]
-          .split('-')
-          .map(&:capitalize)
-          .join
-          .gsub('UsCore', 'UsCoreR4') + 'Sequence',
-        resource: resource['type'],
-        profile: profile,
-        interactions: [],
-        search_params: [],
-        search_combos: [],
-        tests: []
-      }
+      new_sequence = build_new_sequence(resource, supported_profile)
       search_params = resource['searchParam']
       search_params&.each do |search_param|
         new_search_param = {
@@ -75,30 +77,32 @@ def extract_metadata(resources)
       end
       # assume extension is just the search combinations
       # assume to be SHALL
-      search_combos = resource['extension']
-      search_combos&.each do |combo|
-        next unless combo['url'] == 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
+      search_combos = resource['extension'] || []
+      search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
+      search_combos
+        .select { |combo| combo['url'] == search_combo_url }
+        .each do |combo|
+          combo_params = combo['extension']
+          new_search_combo = {
+            expectation: combo_params[0]['valueCode'],
+            names: []
+          }
+          combo_params
+            .select { |param| param.key? 'valueString' }
+            .each { |param| new_search_combo[:names] << param['valueString'] }
 
-        combo_params = combo['extension']
-        new_search_combo = {
-          expectation: combo_params[0]['valueCode'],
-          names: []
-        }
-        combo_params.each do |param|
-          new_search_combo[:names] << param['valueString'] if param.key?('valueString')
+          # special case - set search by category first for these two profiles
+          observation_profiles = [
+            'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
+            'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
+            'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+          ]
+          if new_search_combo[:names] == ['patient', 'category'] && observation_profiles.include?(new_sequence[:profile])
+            new_sequence[:search_params].insert(0, new_search_combo)
+          else
+            new_sequence[:search_params] << new_search_combo
+          end
         end
-        # special case - set search by category first for these two profiles
-        observation_profiles = [
-          'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
-          'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
-          'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
-        ]
-        if new_search_combo[:names] == ['patient', 'category'] && observation_profiles.include?(new_sequence[:profile])
-          new_sequence[:search_params].insert(0, new_search_combo)
-        else
-          new_sequence[:search_params] << new_search_combo
-        end
-      end
       interactions = resource['interaction']
       interactions&.each do |interaction|
         new_interaction = {
