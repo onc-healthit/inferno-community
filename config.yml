@@ -48,9 +48,9 @@ modules:
   - us_core_r4
   - argonaut
 
-# preset fhir servers: optional. Minimally requires name, uri, module, client_id, optional client_secret
+# preset fhir servers: optional. Minimally requires name, uri, module, optional client_id, client_secret, scopes, instructions link
 presets:
-  site: 
+  site_healthit_gov: 
     name: SITE FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
     module: onc
