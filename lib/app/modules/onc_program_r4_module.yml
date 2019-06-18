@@ -149,3 +149,5 @@ test_sets:
             title: BMI For Age
           - sequence: UsCoreR4ProcedureSequence
             title: Procedure
+          - sequence: R4ProvenanceSequence
+            title: Provenance
