@@ -88,23 +88,24 @@ class MetadataExtractor
   end
 
   def add_combo_searches(resource, sequence)
-    search_combos = resource['extension']
-    search_combos&.each do |combo|
-      next unless combo['url'] == 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
+    search_combos = resource['extension'] || []
+    search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
+    search_combos
+      .select { |combo| combo['url'] == search_combo_url }
+      .each do |combo|
+        combo_params = combo['extension']
+        new_search_combo = {
+          expectation: combo_params[0]['valueCode'],
+          names: []
+        }
+        combo_params.each do |param|
+          next unless param.key?('valueString')
 
-      combo_params = combo['extension']
-      new_search_combo = {
-        expectation: combo_params[0]['valueCode'],
-        names: []
-      }
-      combo_params.each do |param|
-        next unless param.key?('valueString')
-
-        new_search_combo[:names] << param['valueString']
-        sequence[:search_param_descriptions][param['valueString'].to_sym] = {}
+          new_search_combo[:names] << param['valueString']
+          sequence[:search_param_descriptions][param['valueString'].to_sym] = {}
+        end
+        sequence[:searches] << new_search_combo
       end
-      sequence[:searches] << new_search_combo
-    end
   end
 
   def add_interactions(resource, sequence)
