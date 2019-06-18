@@ -219,29 +219,28 @@
                         </button>
                       <% else %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-media-play"></span> Run
+                          <span class="oi oi-media-play"></span> Run Tests
                         </button>
                     <% end %>
 
-                    <% if group_result.to_s != "not_run" %>
-                      <% if index < instance.group_results(test_set.id).length - 1 %>
-                        <button class="next next-back btn btn-info btn-sm" id=<%='cont-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
-                          Next <span class="oi oi-media-step-forward"></span>
-                        </button>
-                      <% else %>
-                        <button class="next placeholder btn btn-info btn-sm">
-                          Next <span class="oi oi-media-step-forward"></span>
-                        </button>
-                      <% end %>
-                      <% if index > 0 %>
-                        <button class="back next-back btn btn-info btn-sm" id=<%='back-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index - 1)[:group].id%>>
-                          <span class="oi oi-media-step-backward"></span> Back
-                        </button>
-                      <% else %>
-                        <button class="back placeholder btn btn-info btn-sm">
-                          <span class="oi oi-media-step-backward"></span> Back
-                        </button>
-                      <% end %>
+                    <% if index < instance.group_results(test_set.id).length - 1 && group_result.to_s != "not_run" %>
+                      <button class="next next-back btn btn-info btn-sm" id=<%='cont-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
+                        Next <span class="oi oi-media-step-forward"></span>
+                      </button>
+                    <% else %>
+                      <button class="next placeholder btn btn-info btn-sm">
+                        Next <span class="oi oi-media-step-forward"></span>
+                      </button>
+                    <% end %>
+                    
+                    <% if index > 0 %>
+                      <button class="back next-back btn btn-info btn-sm" id=<%='back-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index - 1)[:group].id%>>
+                        <span class="oi oi-media-step-backward"></span> Back
+                      </button>
+                    <% else %>
+                      <button class="back placeholder btn btn-info btn-sm">
+                        <span class="oi oi-media-step-backward"></span> Back
+                      </button>
                     <% end %>
                   </div>
 
