@@ -14,8 +14,13 @@ def run
   redownload_files = (ARGV&.first == '-d')
   FileUtils.rm Dir.glob("#{RESOURCE_PATH}*") if redownload_files
 
+<<<<<<< HEAD
   metadata_extractor = MetadataExtractor.new
   metadata = metadata_extractor.extract_metadata
+=======
+  @metadata_extractor = MetadataExtractor.new
+  metadata = @metadata_extractor.extract_metadata
+>>>>>>> aa7cf98ae2e2b5aa5c7b1265a11c12b781a6ddff
   generate_tests(metadata)
   generate_search_validators(metadata)
   metadata[:sequences].each do |sequence|
