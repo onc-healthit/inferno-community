@@ -54,7 +54,7 @@ presets:
     name: SITE FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
     module: onc
-    inferno_uri: https://inferno.healthit.gov/inferno/
+    inferno_uri: https://inferno.healthit.gov
     client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
     client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
     instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions

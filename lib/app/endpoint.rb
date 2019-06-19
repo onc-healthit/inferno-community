@@ -53,8 +53,14 @@ module Inferno
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
 
       def render_index
-        unless defined?(settings.presets).nil? || settings.presets.nil? # rubocop:disable Style/IfUnlessModifier
-          presets = settings.presets.select { |_, v| v['inferno_uri'].nil? || v['inferno_uri'] == request.base_url }
+        unless defined?(settings.presets).nil? || settings.presets.nil?
+          base_url = request.base_url
+          base_path = Inferno::BASE_PATH.chomp('/') unless Inferno::BASE_PATH.nil?
+
+          presets = settings.presets.select do |_, v|
+            inferno_uri = v['inferno_uri'].chomp('/') unless v['inferno_uri'].nil?
+            inferno_uri.nil? || inferno_uri == base_url || inferno_uri == base_url + base_path
+          end
         end
         modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
         erb :index, {}, modules: modules, presets: presets
