@@ -36,7 +36,7 @@ module Inferno
       @@conformance_supports = {}
       @@defines = {}
       @@versions = {}
-      @@test_metadata = {}
+      @@test_metadata = Hash.new { |hash, key| hash[key] = [] }
 
       @@optional = []
       @@show_uris = []
@@ -329,7 +329,7 @@ module Inferno
       end
 
       def self.tests
-        @@test_metadata[sequence_name] || []
+        @@test_metadata[sequence_name]
       end
 
       def optional?
@@ -373,7 +373,6 @@ module Inferno
       # this must be called to ensure that the child class is referenced in self.sequence_name
       def self.extends_sequence(klass)
         @@test_metadata[klass.sequence_name].each do |metadata|
-          @@test_metadata[sequence_name] ||= []
           @@test_metadata[sequence_name] << metadata
           @@test_metadata[sequence_name].last[:test_index] = @@test_metadata[sequence_name].length - 1
           define_method metadata[:method_name], metadata[:method]
@@ -390,13 +389,12 @@ module Inferno
         test_index = @@test_index
 
         test_method = "#{@@test_index.to_s.rjust(4, '0')} #{name} test".downcase.tr(' ', '_').to_sym
-        @@test_metadata[sequence_name] ||= []
         @@test_metadata[sequence_name] << { name: name,
                                             test_index: test_index,
                                             required: true,
                                             versions: FHIR::VERSIONS }
 
-        test_index_in_sequence = @@test_metadata[sequence_name].length - 1
+        current_test = @@test_metadata[sequence_name].last
 
         wrapped = lambda do
           instance_eval(&block) if @metadata_only # just run the test to hit the metadata block
@@ -405,19 +403,23 @@ module Inferno
           @links = []
           @requires = []
           @validates = []
-          result = Models::TestResult.new(test_id: @@test_metadata[sequence_name][test_index_in_sequence][:test_id],
-                                          name: name,
-                                          ref: @@test_metadata[sequence_name][test_index_in_sequence][:ref],
-                                          required: @@test_metadata[sequence_name][test_index_in_sequence][:required],
-                                          description: @@test_metadata[sequence_name][test_index_in_sequence][:description],
-                                          url: @@test_metadata[sequence_name][test_index_in_sequence][:url],
-                                          versions: @@test_metadata[sequence_name][test_index_in_sequence][:versions].join(','),
-                                          result: STATUS[:pass],
-                                          test_index: test_index)
+          test_id = current_test[:test_id]
+          versions = current_test[:versions]
+          result = Models::TestResult.new(
+            test_id: test_id,
+            name: name,
+            ref: current_test[:ref],
+            required: current_test[:required],
+            description: current_test[:description],
+            url: current_test[:url],
+            versions: versions.join(','),
+            result: STATUS[:pass],
+            test_index: test_index
+          )
           begin
-            fhir_version_included = @@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym
-            skip_unless(fhir_version_included, 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
-            Inferno.logger.info "Starting Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
+            fhir_version_included = @instance.fhir_version.present? && versions.include?(@instance.fhir_version&.to_sym)
+            skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
+            Inferno.logger.info "Starting Test: #{test_id} [#{name}]"
             instance_eval(&block)
           rescue AssertionException, ClientException => e
             result.fail!
@@ -446,15 +448,15 @@ module Inferno
             result.error!
             result.message = "Fatal Error: #{e.message}"
           end
-          result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) } unless @test_warnings.empty?
-          Inferno.logger.info "Finished Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{result.result}]"
+          result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
+          Inferno.logger.info "Finished Test: #{test_id} [#{result.result}]"
           result
         end
 
         define_method test_method, wrapped
 
-        @@test_metadata[sequence_name][test_index_in_sequence][:method] = wrapped
-        @@test_metadata[sequence_name][test_index_in_sequence][:method_name] = test_method
+        current_test[:method] = wrapped
+        current_test[:method_name] = test_method
 
         instance = new(nil, nil, nil, nil, true)
         begin
@@ -644,8 +646,8 @@ module Inferno
       attr_accessor :profiles_failed
 
       def test_resources_against_profile(resource_type, specified_profile = nil)
-        @profiles_encountered ||= []
-        @profiles_failed ||= {}
+        @profiles_encountered ||= Set.new
+        @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
 
         all_errors = []
 
@@ -665,12 +667,10 @@ module Inferno
           end
           if p
             @profiles_encountered << p.url
-            @profiles_encountered.uniq!
             errors = p.validate_resource(resource)
             @test_warnings.concat(p.warnings.reject(&:empty?))
             unless errors.empty?
               errors.map! { |e| "#{resource_type}/#{resource_id}: #{e}" }
-              @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
               @profiles_failed[p.url].concat(errors)
             end
             all_errors.concat(errors)
@@ -732,11 +732,9 @@ module Inferno
         end
         if p
           @profiles_encountered << p.url
-          @profiles_encountered.uniq!
           errors = p.validate_resource(resource)
           unless errors.empty?
             errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
-            @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
             @profiles_failed[p.url].concat(errors)
           end
         else
