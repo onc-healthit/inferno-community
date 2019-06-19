@@ -16,7 +16,7 @@ module Inferno
           "<script>console.log('Time running: ' + #{time})</script>"
         end
 
-        def js_update_result(sequence, _test_set, _result, set_count, set_total, count, total)
+        def js_update_result(sequence, _test_set, result, set_count, set_total, count, total, rerun = nil)
           cancel_button =
             if sequence.sequence_result
               "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
@@ -24,13 +24,22 @@ module Inferno
               ''
             end
 
+          width = (1.0 / total) * 100
+          rerun_html = ''
+          if rerun.present?
+            rerun.each { |run| rerun_html += "<div class='progress-bar progress-bar-#{run}' role='progressbar' aria-valuenow='#{width}' aria-valuemin='0' aria-valuemax='100' style='width: #{width}%;'></div>" }
+          end
+          result_html = "<div class='progress-bar progress-bar-#{result.result}' role='progressbar' aria-valuenow='#{width}' aria-valuemin='0' aria-valuemax='100' style='width: #{width}%;'></div>"
+
           %(
             <script>
               $('#testsRunningModal').find('.number-complete:last').html('(#{set_count} of #{set_total} #{sequence.class.title} tests complete)');
               $('#testsRunningModal .modal-footer').html('#{cancel_button}');
               var progress = Math.round((#{count}/#{total}) * 100);
               console.log('js_update_result (' + progress + ')');
-              $('#progress-bar').attr('aria-valuenow', progress).css('width', progress + '%');
+              $('#current-progress').text(progress + '%');
+              $(document.getElementsByClassName('progress')).append(\"#{rerun_html}\");
+              $(document.getElementsByClassName('progress')).append(\"#{result_html}\");
             </script>
           )
         end

@@ -10,6 +10,7 @@ module Inferno
       # Home serves the main web application.
       class Home < Endpoint
         helpers Sinatra::Cookies
+
         # Set the url prefix these routes will map to
         set :prefix, "/#{base_path}"
 

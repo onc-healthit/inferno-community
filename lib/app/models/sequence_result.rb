@@ -35,6 +35,8 @@ module Inferno
 
       property :created_at, DateTime, default: proc { DateTime.now }
 
+      property :group_run, Boolean
+
       has n, :test_results, order: [:test_index.asc]
       belongs_to :testing_instance
 

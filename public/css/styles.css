@@ -249,10 +249,6 @@ body {
 
 }
 
-.progress .progress-bar.active {
-  background-color: #f98718;
-}
-
 #PrerequisitesModal label {
   margin-bottom: .1rem;
   text-transform: uppercase;
@@ -1171,6 +1167,34 @@ body {
 .guided .sequence-group {
   background-repeat: repeat-y;
   /* background-image: url("../images/guided-background.png"); */
+}
+
+#progress-bar .progress-bar-pass {
+  background-color: #28a745;
+}
+
+#progress-bar .progress-bar-fail {
+  background-color: #cb2431;
+}
+
+#progress-bar .progress-bar-skip {
+  background-color: #00e1e1;
+}
+
+#progress-bar .progress-bar-error {
+  background-color: #f0f;
+}
+
+#progress-bar .progress-bar-omit {
+  background-color: #999;
+}
+
+#progress-bar .progress-bar-wait {
+  background-color: #999;
+}
+
+#progress-bar .progress-bar-todo {
+  background-color: #999;
 }
 
 .tab-pane {
