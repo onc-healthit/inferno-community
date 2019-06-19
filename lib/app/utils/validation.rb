@@ -28,7 +28,7 @@ module Inferno
       DEFINITIONS[resource.url] = resource
       if resource.resourceType == 'StructureDefinition'
         profiled_type = resource.snapshot.element.first.path # will this always be the first?
-        RESOURCES[version][profiled_type] = [] unless RESOURCES[version][profiled_type]
+        RESOURCES[version][profiled_type] ||= []
         RESOURCES[version][profiled_type] << resource
       elsif resource.resourceType == 'ValueSet'
         VALUESETS[resource.url] = resource
@@ -56,11 +56,12 @@ module Inferno
 
     def self.guess_profile(resource, version)
       # if the profile is given, we don't need to guess
-      if resource&.meta&.profile && !resource&.meta&.profile&.empty?
+      if resource&.meta&.profile&.present?
         resource.meta.profile.each do |uri|
           return DEFINITIONS[uri] if DEFINITIONS[uri]
         end
       end
+
       if version == :dstu2
         guess_dstu2_profile(resource)
       elsif version == :stu3
@@ -71,69 +72,68 @@ module Inferno
     end
 
     def self.guess_dstu2_profile(resource)
-      if resource
-        candidates = RESOURCES[:dstu2][resource.resourceType]
-        if candidates && !candidates.empty?
-          # Special cases where there are multiple profiles per Resource type
-          if resource.resourceType == 'Observation'
-            if resource.code&.coding && resource.code.coding.any? { |coding| coding.code == '72166-2' }
-              return DEFINITIONS[ARGONAUT_URIS[:smoking_status]]
-            elsif resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'laboratory' }
-              return DEFINITIONS[ARGONAUT_URIS[:observation_results]]
-            elsif resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'vital-signs' }
-              return DEFINITIONS[ARGONAUT_URIS[:vital_signs]]
-            end
-          elsif resource.resourceType == 'CarePlan'
-            if resource.category.any? { |category| category.coding.any? { |coding| coding.code == 'careteam' } }
-              return DEFINITIONS[ARGONAUT_URIS[:care_team]]
-            else
-              return DEFINITIONS[ARGONAUT_URIS[:care_plan]]
-            end
-          end
-          # Otherwise, guess the first profile that matches on resource type
-          return candidates.first
+      return if resource.blank?
+
+      candidates = RESOURCES[:dstu2][resource.resourceType]
+      return if candidates.blank?
+
+      # Special cases where there are multiple profiles per Resource type
+      if resource.resourceType == 'Observation'
+        if resource&.code&.coding&.any? { |coding| coding&.code == '72166-2' }
+          return DEFINITIONS[ARGONAUT_URIS[:smoking_status]]
+        elsif resource&.category&.coding&.any? { |coding| coding&.code == 'laboratory' }
+          return DEFINITIONS[ARGONAUT_URIS[:observation_results]]
+        elsif resource&.category&.coding&.any? { |coding| coding&.code == 'vital-signs' }
+          return DEFINITIONS[ARGONAUT_URIS[:vital_signs]]
+        end
+      elsif resource.resourceType == 'CarePlan'
+        if resource&.category&.any? { |category| category&.coding&.any? { |coding| coding&.code == 'careteam' } }
+          return DEFINITIONS[ARGONAUT_URIS[:care_team]]
+        else
+          return DEFINITIONS[ARGONAUT_URIS[:care_plan]]
         end
       end
-      nil
+
+      # Otherwise, guess the first profile that matches on resource type
+      candidates.first
     end
 
     def self.guess_stu3_profile(resource)
-      if resource
-        candidates = RESOURCES[:stu3][resource.resourceType]
-        if candidates && !candidates.empty?
-          # Special cases where there are multiple profiles per Resource type
-          if resource.resourceType == 'ExplanationOfBenefit'
-            if resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'CARRIER' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:carrier]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'DME' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:dme]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'HHA' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:hha]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'HOSPICE' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:hospice]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'INPATIENT' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:inpatient]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'OUTPATIENT' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:outpatient]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'PDE' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:pde]]
-            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'SNF' }
-              return DEFINITIONS[BLUEBUTTON_URIS[:snf]]
-            end
-          end
-          # Otherwise, guess the first profile that matches on resource type
-          return candidates.first
+      return if resource.blank?
+
+      candidates = RESOURCES[:stu3][resource.resourceType]
+      return if candidates.blank?
+
+      # Special cases where there are multiple profiles per Resource type
+      if resource.resourceType == 'ExplanationOfBenefit'
+        if resource&.type&.coding&.any? { |coding| coding.code == 'CARRIER' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:carrier]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'DME' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:dme]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'HHA' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:hha]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'HOSPICE' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:hospice]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'INPATIENT' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:inpatient]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'OUTPATIENT' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:outpatient]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'PDE' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:pde]]
+        elsif resource&.type&.coding&.any? { |coding| coding.code == 'SNF' }
+          return DEFINITIONS[BLUEBUTTON_URIS[:snf]]
         end
       end
-      nil
+
+      # Otherwise, guess the first profile that matches on resource type
+      candidates.first
     end
 
     def self.guess_r4_profile(resource)
-      if resource
-        candidates = RESOURCES[:r4][resource.resourceType]
-        return candidates.first if candidates && !candidates.empty?
-      end
-      nil
+      return if resource.blank?
+
+      candidates = RESOURCES[:r4][resource.resourceType]
+      return candidates.first if candidates.present?
     end
   end
 end

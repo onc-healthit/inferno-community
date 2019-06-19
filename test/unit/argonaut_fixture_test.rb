@@ -22,8 +22,8 @@ class ArgonautFixtureTest < MiniTest::Test
     errors = []
     @invalid.entry.each do |entry|
       profile = Inferno::ValidationUtil.guess_profile(entry.resource, :dstu2)
-      errors += profile.validate_resource(entry.resource) unless profile.nil?
+      errors += profile.validate_resource(entry.resource) if profile.present?
     end
-    assert !errors.empty?, 'Expected numerous validation errors.'
+    assert errors.present?, 'Expected numerous validation errors.'
   end
 end
