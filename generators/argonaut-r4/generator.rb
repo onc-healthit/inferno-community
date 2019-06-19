@@ -5,6 +5,7 @@ require 'pry'
 require 'fileutils'
 require 'net/http'
 require 'fhir_models'
+require_relative './metadata_extractor'
 
 OUT_PATH = '../../lib/app/modules'
 RESOURCE_PATH = '../../resources/us_core_r4/'
@@ -13,9 +14,8 @@ def run
   redownload_files = (ARGV&.first == '-d')
   FileUtils.rm Dir.glob("#{RESOURCE_PATH}*") if redownload_files
 
-  capability_statement_json = get_json_from_uri('https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.json')
-  resources = capability_statement_json['rest'][0]['resource']
-  metadata = extract_metadata(resources)
+  metadata_extractor = MetadataExtractor.new
+  metadata = metadata_extractor.extract_metadata
   generate_tests(metadata)
   generate_search_validators(metadata)
   metadata[:sequences].each do |sequence|
@@ -24,102 +24,9 @@ def run
   generate_module(metadata)
 end
 
-def get_json_from_uri(uri)
-  filename = RESOURCE_PATH + uri.split('/').last
-  unless File.exist?(filename)
-    puts "Downloading #{uri}\n"
-    json_result = Net::HTTP.get(URI(uri))
-    JSON.parse(json_result)
-    File.write(filename, json_result)
-  end
-
-  JSON.parse(File.read(filename))
-end
-
-def build_new_sequence(resource, profile)
-  base_name = profile.split('StructureDefinition/')[1]
-  {
-    name: base_name.tr('-', '_'),
-    classname: base_name
-      .split('-')
-      .map(&:capitalize)
-      .join
-      .gsub('UsCore', 'UsCoreR4') + 'Sequence',
-    resource: resource['type'],
-    profile: "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{base_name}.json", # links in capability statement currently incorrect
-    interactions: [],
-    search_params: [],
-    search_combos: [],
-    tests: []
-  }
-end
-
-def extract_metadata(resources)
-  data = {
-    name: 'test',
-    sequences: []
-  }
-
-  resources.each do |resource|
-    resource['supportedProfile'].each do |supported_profile|
-      new_sequence = build_new_sequence(resource, supported_profile)
-      search_params = resource['searchParam']
-      search_params&.each do |search_param|
-        new_search_param = {
-          names: [search_param['name']],
-          expectation: search_param['extension'][0]['valueCode']
-        }
-        if search_param['name'] == 'patient' # move patient search first
-          new_sequence[:search_params].insert(0, new_search_param)
-        else
-          new_sequence[:search_params] << new_search_param
-        end
-      end
-      # assume extension is just the search combinations
-      # assume to be SHALL
-      search_combos = resource['extension'] || []
-      search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
-      search_combos
-        .select { |combo| combo['url'] == search_combo_url }
-        .each do |combo|
-          combo_params = combo['extension']
-          new_search_combo = {
-            expectation: combo_params[0]['valueCode'],
-            names: []
-          }
-          combo_params
-            .select { |param| param.key? 'valueString' }
-            .each { |param| new_search_combo[:names] << param['valueString'] }
-
-          # special case - set search by category first for these two profiles
-          observation_profiles = [
-            'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
-            'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
-            'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
-          ]
-          if new_search_combo[:names] == ['patient', 'category'] && observation_profiles.include?(new_sequence[:profile])
-            new_sequence[:search_params].insert(0, new_search_combo)
-          else
-            new_sequence[:search_params] << new_search_combo
-          end
-        end
-      interactions = resource['interaction']
-      interactions&.each do |interaction|
-        new_interaction = {
-          code: interaction['code'],
-          expectation: interaction['extension'][0]['valueCode']
-        }
-        new_sequence[:interactions] << new_interaction
-      end
-      data[:sequences] << new_sequence
-    end
-  end
-  data
-end
-
 def generate_search_validators(metadata)
   metadata[:sequences].each do |sequence|
-    sequence[:search_validator] = create_search_validation(sequence[:resource], sequence[:profile], sequence[:search_params])
+    sequence[:search_validator] = create_search_validation(sequence)
   end
 end
 
@@ -130,11 +37,11 @@ def generate_tests(metadata)
     create_authorization_test(sequence)
 
     # make tests for each SHALL and SHOULD search param, SHALL's first
-    sequence[:search_params]
+    sequence[:searches]
       .select { |search_param| search_param[:expectation] == 'SHALL' }
       .each { |search_param| create_search_test(sequence, search_param) }
 
-    sequence[:search_params]
+    sequence[:searches]
       .select { |search_param| search_param[:expectation] == 'SHOULD' }
       .each { |search_param| create_search_test(sequence, search_param) }
 
@@ -162,27 +69,6 @@ def generate_sequence(sequence)
   output =   template.result_with_hash(sequence)
   FileUtils.mkdir_p(OUT_PATH + '/us_core_r4') unless File.directory?(OUT_PATH + '/us_core_r4')
   File.write(file_name, output)
-end
-
-def get_search_param_json(resource, param)
-  param = 'id' if param == '_id' # special case for _id
-  uri = "https://build.fhir.org/ig/HL7/US-Core-R4/SearchParameter-us-core-#{resource}-#{param}.json"
-  get_json_from_uri(uri)
-rescue StandardError
-end
-
-def get_variable_type_from_structure_def(resource, profile, var)
-  resource_struct_def = get_json_from_uri(profile)
-  element_def = resource_struct_def['snapshot']['element'].select { |el| el['id'] == "#{resource}.#{var}" }.first unless resource_struct_def.nil?
-  return element_def['type'].first['code'] unless element_def.nil?
-
-  'test'
-end
-
-def get_variable_contains_multiple(resource, profile, var)
-  resource_struct_def = get_json_from_uri(profile)
-  element_def = resource_struct_def['snapshot']['element'].select { |el| el['id'] == "#{resource}.#{var}" }.first unless resource_struct_def.nil?
-  return element_def['max'] == '*' unless element_def.nil?
 end
 
 def create_authorization_test(sequence)
@@ -213,7 +99,7 @@ def create_search_test(sequence, search_param)
   is_first_search = search_test[:index] == '02' # if first search - fix this check later
   search_test[:test_code] =
     if is_first_search
-      %(#{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
+      %(#{get_search_params(search_param[:names], sequence)}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
@@ -230,7 +116,7 @@ def create_search_test(sequence, search_param)
       %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
-#{get_search_params(sequence[:resource], sequence[:profile], search_param[:names])}
+#{get_search_params(search_param[:names], sequence)}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         assert_response_ok(reply))
     end
@@ -281,189 +167,161 @@ def create_references_resolved_test(sequence)
   sequence[:tests] << test
 end
 
-def get_search_params(resource, profile, search_combo)
-  search_param = []
-  access_code = ''
-  search_combo.each do |param|
-    # manually set for now - try to find in metadata if available later
-    if resource == 'CarePlan' && search_combo == ['patient', 'category']
-      return %(
-        search_params = { patient: @instance.patient_id, category: 'assess-plan' }
-)
-    end
-    if resource == 'CareTeam' && search_combo == ['patient', 'status']
-      return %(
-        search_params = { patient: @instance.patient_id, status: 'active' }
-)
-    end
-    if (['Location', 'Organization'].include? resource) && search_combo == ['name']
-      return %(
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
-)
-    end
-    if resource == 'Patient' && search_combo == ['_id']
-      return %(
-        search_params = { '_id': @instance.patient_id }
-)
-    end
-    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json' && search_combo == ['patient', 'code']
-      return %(
-        search_params = { patient: @instance.patient_id, code: '72166-2' }
-)
-    end
-    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json' && search_combo == ['patient', 'category']
-      return %(
-        search_params = { patient: @instance.patient_id, category: 'laboratory' }
-)
-    end
-    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json' && search_combo == ['patient', 'code']
-      return %(
-        search_params = { patient: @instance.patient_id, code: '77606-2' }
-)
-    end
-    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json' && search_combo == ['patient', 'code']
-      return %(
-        search_params = { patient: @instance.patient_id, code: '59576-9' }
-)
-    end
-    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json' && search_combo == ['patient', 'category']
-      return %(
-        search_params = { patient: @instance.patient_id, category: 'LAB' }
-)
-    end
-    if profile == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json' && search_combo == ['patient', 'category']
-      return %(
-        search_params = { patient: @instance.patient_id, code: 'LP29684-5' }
-)
-    end
-    if param == 'patient'
-      access_code += %(
-        patient_val = @instance.patient_id)
-      search_param << "'#{param}': #{param.tr('-', '_')}_val"
-      next
-    end
-    if param == '_id'
-      access_code += %(
-        id_val = @#{resource.downcase}&.id)
-      search_param << "'#{param}': id_val"
-      next
-    end
-    search_param_struct = get_search_param_json(resource.downcase, param)
-    path = search_param_struct['xpath']
-    path_parts = path.split('/f:')
-    path_parts.delete_at(0)
-    path_parts = ['id'] if param == '_id' # xpath for id doesn't follow the format of others
-    element_name = path_parts.join('.')
-    type = get_variable_type_from_structure_def(resource, profile, element_name)
-    contains_multiple = get_variable_contains_multiple(resource, profile, path_parts[0])
-    path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
-    path_parts[0] += '&.first' if contains_multiple
-    access_code += %(
-        #{param.tr('-', '_')}_val = @#{resource.downcase}&.#{path_parts.join('&.')})
-    case type
-    when 'CodeableConcept'
-      access_code += '&.coding&.first&.code'
-    when 'Reference'
-      access_code += '&.reference&.first'
-    when 'Period'
-      access_code += '&.start'
-    when 'Identifier'
-      access_code += '&.value'
-    when 'Coding'
-      access_code += '&.code'
-    when 'HumanName'
-      access_code += '&.family'
-    end
-    search_param << "'#{param}': #{param.tr('-', '_')}_val"
-  end
+def get_safe_access_path(param, search_param_descriptions, element_descriptions)
+  element_path = search_param_descriptions[param.to_sym][:path]
+  path_parts = element_path.split('.')
+  parts_with_multiple = []
+  path_parts.each_with_index do |part, index|
+    next if index.zero?
+    next if element_path == 'Procedure.occurrenceDateTime' # bug in us core?
 
-  %(#{access_code}
-        search_params = { #{search_param.join(', ')} }
-)
+    cur_path = path_parts[0..index].join('.')
+    path_parts[index] = 'local_class' if part == 'class' # match fhir_models because class is protected keyword in ruby
+    parts_with_multiple << index if element_descriptions[cur_path.downcase.to_sym][:contains_multiple]
+  end
+  parts_with_multiple.each do |index|
+    path_parts[index] += '&.first'
+  end
+  path_parts[0] = "@#{path_parts[0].downcase}"
+
+  path_parts.join('&.')
 end
 
-def create_search_validation(resource, profile, search_params)
-  return if search_params.empty?
+def get_value_path_by_type(type)
+  case type
+  when 'CodeableConcept'
+    '&.coding&.first&.code'
+  when 'Reference'
+    '&.reference&.first'
+  when 'Period'
+    '&.start'
+  when 'Identifier'
+    '&.value'
+  when 'Coding'
+    '&.code'
+  when 'HumanName'
+    '&.family'
+  else
+    ''
+  end
+end
 
+def get_search_params(search_parameters, sequence)
+  unless search_param_constants(search_parameters, sequence).nil?
+    return %(
+        search_params = { #{search_param_constants(search_parameters, sequence)} }\n)
+  end
+  search_values = []
+  search_assignments = []
+  search_parameters.each do |param|
+    type = sequence[:search_param_descriptions][param.to_sym][:type]
+    variable_name =
+      if param == '_id'
+        'id_val'
+      else
+        param.tr('-', '_') + '_val'
+      end
+    variable_value =
+      if param == 'patient'
+        '@instance.patient_id'
+      else
+        get_safe_access_path(param, sequence[:search_param_descriptions], sequence[:element_descriptions]) + get_value_path_by_type(type)
+      end
+    search_values << "#{variable_name} = #{variable_value}"
+    search_assignments << "'#{param}': #{variable_name}"
+  end
+
+  search_code = ''
+  search_values.each do |value|
+    search_code += %(
+        #{value})
+  end
+  search_code += %(
+        search_params = { #{search_assignments.join(', ')} }
+)
+  search_code
+end
+
+def search_param_constants(search_parameters, sequence)
+  return "patient: @instance.patient_id, category: 'assess-plan'" if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
+  return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
+  return "patient: @instance.patient_id, name: 'Boston'" if search_parameters == ['name'] && (['Location', 'Organization'].include? sequence[:resource])
+  return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
+  return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json'
+  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json'
+  return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
+  return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json'
+  return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json'
+  return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+end
+
+def create_search_validation(sequence)
   search_validators = ''
-  search_params.each do |search_param|
-    next if search_param[:names].length != 1
-
-    param = search_param[:names].first
-    search_param_struct = get_search_param_json(resource.downcase, param)
-    path = search_param_struct['xpath']
-    path_parts = path.split('/f:')
-    path_parts.delete_at(0)
-    path_parts = ['id'] if param == '_id' # xpath for id doesn't follow the format of others
-    element_name = path_parts.join('.')
-    type = get_variable_type_from_structure_def(resource, profile, element_name)
-    contains_multiple = get_variable_contains_multiple(resource, profile, element_name)
-    resource_metadata = FHIR.const_get(resource).const_get('METADATA')
-
+  sequence[:search_param_descriptions].each do |element, definition|
+    type = definition[:type]
+    contains_multiple = definition[:contains_multiple]
+    path_parts = definition[:path].split('.')
+    path_parts[0] = 'resource'
     path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
     case type
     when 'CodeableConcept'
       search_validators += %(
-        when '#{param}'
-          codings = resource&.#{path_parts.join('&.')}#{'&.first' if contains_multiple}&.coding
-          assert !codings.nil?, '#{param} on resource did not match #{param} requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, '#{param} on resource did not match #{param} requested'
+        when '#{element}'
+          codings = #{path_parts.join('&.')}#{'&.first' if contains_multiple}&.coding
+          assert !codings.nil?, '#{element} on resource did not match #{element} requested'
+          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, '#{element} on resource did not match #{element} requested'
 )
     when 'Reference'
       search_validators += %(
-        when '#{param}'
-          assert (resource&.#{path_parts.join('&.')} && resource.#{path_parts.join('&.')}.reference.include?(value)), '#{param} on resource does not match #{param} requested'
+        when '#{element}'
+          assert #{path_parts.join('&.')}&.reference&.include?(value), '#{element} on resource does not match #{element} requested'
 )
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
       # https://www.hl7.org/fhir/search.html#string
       search_validators +=
-        if resource_metadata[param]['max'] > 1
+        if contains_multiple
           %(
-        when '#{param}'
-          found = resource.#{path_parts.join('&.')}.any? do |name|
+        when '#{element}'
+          found = #{path_parts.join('&.')}&.any? do |name|
             name.text&.include?(value) ||
               name.family.include?(value) ||
               name.given.any { |given| given&.include?(value) } ||
               name.prefix.any { |prefix| prefix.include?(value) } ||
               name.suffix.any { |suffix| suffix.include?(value) }
           end
-          assert found, '#{param} on resource does not match #{param} requested')
+          assert found, '#{element} on resource does not match #{element} requested')
         else
           %(
-        when '#{param}'
-          name = resource&.#{path_parts.join('&.')}
+        when '#{element}'
+          name = #{path_parts.join('&.')}
           found = name&.text&.include?(value) ||
               name.family.include?(value) ||
               name.given.any { |given| given&.include?(value) } ||
               name.prefix.any { |prefix| prefix.include?(value) } ||
               name.suffix.any { |suffix| suffix.include?(value) }
-
-          assert found, '#{param} on resource does not match #{param} requested')
+          assert found, '#{element} on resource does not match #{element} requested')
         end
     when 'code', 'string', 'id'
       search_validators += %(
-        when '#{param}'
-          assert resource&.#{path_parts.join('&.')} == value, '#{param} on resource did not match #{param} requested'
+        when '#{element}'
+          assert #{path_parts.join('&.')} == value, '#{element} on resource did not match #{element} requested'
 )
     when 'Coding'
       search_validators += %(
-        when '#{param}'
-          assert resource&.#{path_parts.join('&.')}&.code == value, '#{param} on resource did not match #{param} requested'
+        when '#{element}'
+          assert #{path_parts.join('&.')}&.code == value, '#{element} on resource did not match #{element} requested'
 )
     when 'Identifier'
       search_validators += %(
-        when '#{param}'
-          assert resource.#{path_parts.join('&.')}.any? { |identifier| identifier.value == value }, '#{param} on resource did not match #{param} requested'
+        when '#{element}'
+          assert #{path_parts.join('&.')}&.any? { |identifier| identifier.value == value }, '#{element} on resource did not match #{element} requested'
 )
     else
       search_validators += %(
-        when '#{param}'
+        when '#{element}'
 )
-
     end
-  rescue StandardError
-    print "#{resource} - #{param}" # gets here if param is '_id' because it fails to get the search param definition
   end
 
   validate_function = ''

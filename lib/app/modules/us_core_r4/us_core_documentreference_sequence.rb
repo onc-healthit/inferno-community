@@ -17,14 +17,14 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-        when 'patient'
-          assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
-
         when '_id'
           assert resource&.id == value, '_id on resource did not match _id requested'
 
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'
+
+        when 'patient'
+          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'category'
           codings = resource&.category&.first&.coding
