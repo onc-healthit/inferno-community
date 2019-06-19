@@ -9,6 +9,7 @@ require_relative 'utils/validation'
 require_relative 'utils/walk'
 require_relative 'utils/web_driver'
 require_relative 'utils/terminology'
+require_relative 'utils/result_statuses'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -22,15 +23,6 @@ module Inferno
       include Assertions
       include SkipHelpers
       include Inferno::WebDriver
-
-      STATUS = {
-        pass: 'pass',
-        fail: 'fail',
-        error: 'error',
-        todo: 'todo',
-        wait: 'wait',
-        skip: 'skip'
-      }.freeze
 
       @@test_index = 0
 
@@ -49,6 +41,9 @@ module Inferno
       @@show_uris = []
 
       @@test_id_prefixes = {}
+
+      delegate :versioned_resource_class, to: :@client
+      delegate :versioned_conformance_class, to: :@instance
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
         @client = client
@@ -95,7 +90,7 @@ module Inferno
         if @sequence_result.nil?
           @sequence_result = Models::SequenceResult.new(
             name: sequence_name,
-            result: STATUS[:pass],
+            result: ResultStatuses::PASS,
             testing_instance: @instance,
             required: !optional?,
             test_set_id: test_set_id,
@@ -105,7 +100,7 @@ module Inferno
           @sequence_result.save!
         end
 
-        start_at = @sequence_result.test_results.length
+        start_at = @sequence_result.result_count
 
         load_input_params(sequence_name)
 
@@ -116,14 +111,15 @@ module Inferno
         run_tests(methods, &block)
 
         update_output(sequence_name, output_results)
-        @sequence_result.output_results = output_results.to_json if output_results.present?
 
-        @sequence_result.reset!
-        @sequence_result.pass!
+        @sequence_result.tap do |result|
+          result.output_results = output_results.to_json if output_results.present?
 
-        update_result_counts
+          result.reset!
+          result.pass!
 
-        @sequence_result
+          result.update_result_counts
+        end
       end
 
       def load_input_params(sequence_name)
@@ -206,42 +202,6 @@ module Inferno
         end
       end
 
-      def update_result_counts
-        @sequence_result.test_results.each do |result|
-          if result.required
-            @sequence_result.required_total += 1
-          else
-            @sequence_result.optional_total += 1
-          end
-          case result.result
-          when STATUS[:pass]
-            if result.required
-              @sequence_result.required_passed += 1
-            else
-              @sequence_result.optional_passed += 1
-            end
-          when STATUS[:todo]
-            @sequence_result.todo_count += 1
-          when STATUS[:fail]
-            if result.required
-              @sequence_result.result = result.result unless @sequence_result.error?
-            end
-          when STATUS[:error]
-            if result.required
-              @sequence_result.error_count += 1
-              @sequence_result.result = result.result
-            end
-          when STATUS[:skip]
-            if result.required
-              @sequence_result.skip_count += 1
-              @sequence_result.result = result.result if @sequence_result.pass?
-            end
-          when STATUS[:wait]
-            @sequence_result.result = result.result
-          end
-        end
-      end
-
       def self.test_count
         new(nil, nil).test_count
       end
@@ -262,8 +222,6 @@ module Inferno
       def self.sequence_name
         name.demodulize
       end
-
-      attr_reader :sequence_result
 
       def self.title(title = nil)
         @@titles[sequence_name] = title unless title.nil?
@@ -420,7 +378,7 @@ module Inferno
             description: current_test[:description],
             url: current_test[:url],
             versions: versions.join(','),
-            result: STATUS[:pass],
+            result: ResultStatuses::PASS,
             test_index: test_index
           )
           begin
@@ -546,12 +504,8 @@ module Inferno
         @client.search(klass, options)
       end
 
-      def versioned_resource_class(klass)
-        @client.versioned_resource_class klass
-      end
-
-      def check_sort_order(entries)
-        relevant_entries = entries.reject { |x| x.request.try(:local_method) == 'DELETE' }
+      def validate_sort_order(entries)
+        relevant_entries = entries.reject { |entry| entry.request&.local_method == 'DELETE' }
         begin
           relevant_entries.map!(&:resource).map!(&:meta).compact
         rescue StandardError
@@ -559,13 +513,16 @@ module Inferno
         end
 
         relevant_entries.each_cons(2) do |left, right|
-          if !left.versionId.nil? && !right.versionId.nil?
-            assert (left.versionId > right.versionId), 'Result contains entries in the wrong order.'
-          elsif !left.lastUpdated.nil? && !right.lastUpdated.nil?
-            assert (left.lastUpdated >= right.lastUpdated), 'Result contains entries in the wrong order.'
-          else
-            raise AssertionException, 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
-          end
+          left_version, right_version =
+            if left.versionId.present? && right.versionId.present?
+              [left.versionId, right.versionId]
+            elsif left.lastUpdated.present? && right.lastUpdated.present?
+              [left.lastUpdated, right.lastUpdated]
+            else
+              raise AssertionException, 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
+            end
+
+          assert (left_version > right_version), 'Result contains entries in the wrong order.'
         end
       end
 
@@ -578,10 +535,10 @@ module Inferno
         assert_bundle_response(reply)
 
         entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
-        assert !entries.empty?, 'No resources of this type were returned'
+        assert entries.present?, 'No resources of this type were returned'
 
         if klass == versioned_resource_class('Patient')
-          assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
+          assert reply.resource.get_by_id(@instance.patient_id).present?, 'Server returned nil patient'
           assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', 'text', 'meta', 'lastUpdated']), 'Server returned wrong patient'
         end
 
@@ -598,18 +555,18 @@ module Inferno
       end
 
       def save_resource_ids_in_bundle(klass, reply)
-        return if reply.try(:resource).try(:entry).nil?
+        return if reply&.resource&.entry.blank?
 
         entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
 
         entries.each do |entry|
-          @instance.post_resource_references(resource_type: klass.name.split(':').last,
+          @instance.post_resource_references(resource_type: klass.name.demodulize,
                                              resource_id: entry.resource.id)
         end
       end
 
       def validate_read_reply(resource, klass)
-        assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+        assert !resource.nil?, "No #{klass.name.demodulize} resources available from search."
         if resource.is_a? FHIR::DSTU2::Reference
           read_response = resource.read
         else
@@ -624,7 +581,7 @@ module Inferno
       end
 
       def validate_history_reply(resource, klass)
-        assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+        assert !resource.nil?, "No #{klass.name.demodulize} resources available from search."
         id = resource.try(:id)
         assert !id.nil?, "#{klass} id not returned"
         history_response = @client.resource_instance_history(klass, id)
@@ -634,11 +591,11 @@ module Inferno
         entries = history_response.try(:resource).try(:entry)
         assert entries, 'No bundle entries returned'
         assert entries.try(:length).positive?, 'No resources of this type were returned'
-        check_sort_order entries
+        validate_sort_order entries
       end
 
       def validate_vread_reply(resource, klass)
-        assert !resource.nil?, "No #{klass.name.split(':').last} resources available from search."
+        assert !resource.nil?, "No #{klass.name.demodulize} resources available from search."
         id = resource.try(:id)
         assert !id.nil?, "#{klass} id not returned"
         version_id = resource.try(:meta).try(:versionId)
@@ -717,16 +674,6 @@ module Inferno
         end
 
         assert(problems.empty?, problems.join("<br/>\n"))
-      end
-
-      def versioned_conformance_class
-        if @instance.fhir_version == 'dstu2'
-          FHIR::DSTU2::Conformance
-        elsif @instance.fhir_version == 'stu3'
-          FHIR::STU3::CapabilityStatement
-        else
-          FHIR::CapabilityStatement
-        end
       end
 
       def check_resource_against_profile(resource, resource_type, specified_profile = nil)

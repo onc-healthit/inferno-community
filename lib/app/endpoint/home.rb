@@ -129,7 +129,7 @@ module Inferno
 
               out << js_hide_wait_modal
               out << js_show_test_modal
-              count = sequence_result.test_results.length
+              count = sequence_result.result_count
 
               submitted_test_cases_count = sequence_result.next_test_cases.split(',')
               total_tests = submitted_test_cases_count.reduce(first_test_count) do |total, set|
@@ -361,7 +361,7 @@ module Inferno
             x.sequence_name == sequence_result.name
           end
 
-          current_test_count = sequence_result.test_results.length
+          current_test_count = sequence_result.result_count
 
           sequence.tests.each_with_index do |test, index|
             next if index < current_test_count

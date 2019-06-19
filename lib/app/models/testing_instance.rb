@@ -234,6 +234,16 @@ module Inferno
         reload
       end
 
+      def versioned_conformance_class
+        if fhir_version == 'dstu2'
+          FHIR::DSTU2::Conformance
+        elsif fhir_version == 'stu3'
+          FHIR::STU3::CapabilityStatement
+        else
+          FHIR::CapabilityStatement
+        end
+      end
+
       private
 
       def interaction_supported?(capabilities, interaction_code)
