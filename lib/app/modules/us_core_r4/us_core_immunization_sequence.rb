@@ -18,7 +18,7 @@ module Inferno
         case property
 
         when 'patient'
-          assert (resource&.patient && resource.patient.reference.include?(value)), 'patient on resource does not match patient requested'
+          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'

@@ -17,11 +17,11 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-        when 'patient'
-          assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
-
         when 'status'
           assert resource&.status == value, 'status on resource did not match status requested'
+
+        when 'patient'
+          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'category'
           codings = resource&.category&.first&.coding
@@ -130,27 +130,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+category' do
-        metadata do
-          id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
-
-        search_params = { patient: @instance.patient_id, code: 'LP29684-5' }
-
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
-        assert_response_ok(reply)
-      end
-
       test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -171,7 +153,7 @@ module Inferno
 
       test 'Server returns expected results from DiagnosticReport search by patient+status' do
         metadata do
-          id '07'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -184,6 +166,24 @@ module Inferno
         patient_val = @instance.patient_id
         status_val = @diagnosticreport&.status
         search_params = { 'patient': patient_val, 'status': status_val }
+
+        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from DiagnosticReport search by patient+category' do
+        metadata do
+          id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
+
+        search_params = { patient: @instance.patient_id, code: 'LP29684-5' }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)

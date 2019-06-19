@@ -17,11 +17,11 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-        when 'patient'
-          assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
-
         when 'lifecycle-status'
           assert resource&.lifecycleStatus == value, 'lifecycle-status on resource did not match lifecycle-status requested'
+
+        when 'patient'
+          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'target-date'
 
