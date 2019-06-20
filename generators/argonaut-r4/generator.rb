@@ -150,13 +150,15 @@ def create_must_support_test(sequence)
 
   sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
     test[:test_code] += %(
-        element_found = @instance.must_support_confirmed.include?('#{extension[:id]}') || @#{sequence[:resource].downcase}.extension.any? { |extension| extension.url == '#{extension[:url]}' }
+        extension_found = @#{sequence[:resource].downcase}.extension.any? { |extension| extension.url == '#{extension[:url]}' }
+        element_found = @instance.must_support_confirmed.include?('#{extension[:id]}') || extension_found
         skip 'Could not find #{extension[:id]} in the provided resource' unless element_found
         @instance.must_support_confirmed += '#{extension[:id]},')
   end
 
   sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
     truncated_path = element[:path].gsub("#{sequence[:resource]}.", '')
+    truncated_path = 'local_class' if truncated_path == 'class' # class is mapped to local_class in fhir_models
     test[:test_code] += %(
         element_found = @instance.must_support_confirmed.include?('#{element[:path]}') || can_resolve_path(@#{sequence[:resource].downcase}, '#{truncated_path}')
         skip 'Could not find #{element[:path]} in the provided resource' unless element_found

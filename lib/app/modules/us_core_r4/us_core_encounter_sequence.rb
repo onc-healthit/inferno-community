@@ -278,7 +278,7 @@ module Inferno
         element_found = @instance.must_support_confirmed.include?('Encounter.status') || can_resolve_path(@encounter, 'status')
         skip 'Could not find Encounter.status in the provided resource' unless element_found
         @instance.must_support_confirmed += 'Encounter.status,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.class') || can_resolve_path(@encounter, 'class')
+        element_found = @instance.must_support_confirmed.include?('Encounter.class') || can_resolve_path(@encounter, 'local_class')
         skip 'Could not find Encounter.class in the provided resource' unless element_found
         @instance.must_support_confirmed += 'Encounter.class,'
         element_found = @instance.must_support_confirmed.include?('Encounter.type') || can_resolve_path(@encounter, 'type')

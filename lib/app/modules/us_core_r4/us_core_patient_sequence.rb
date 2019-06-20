@@ -269,13 +269,16 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Patient.extension:race') || @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race' }
+        extension_found = @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race' }
+        element_found = @instance.must_support_confirmed.include?('Patient.extension:race') || extension_found
         skip 'Could not find Patient.extension:race in the provided resource' unless element_found
         @instance.must_support_confirmed += 'Patient.extension:race,'
-        element_found = @instance.must_support_confirmed.include?('Patient.extension:ethnicity') || @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity' }
+        extension_found = @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity' }
+        element_found = @instance.must_support_confirmed.include?('Patient.extension:ethnicity') || extension_found
         skip 'Could not find Patient.extension:ethnicity in the provided resource' unless element_found
         @instance.must_support_confirmed += 'Patient.extension:ethnicity,'
-        element_found = @instance.must_support_confirmed.include?('Patient.extension:birthsex') || @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex' }
+        extension_found = @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex' }
+        element_found = @instance.must_support_confirmed.include?('Patient.extension:birthsex') || extension_found
         skip 'Could not find Patient.extension:birthsex in the provided resource' unless element_found
         @instance.must_support_confirmed += 'Patient.extension:birthsex,'
         element_found = @instance.must_support_confirmed.include?('Patient.identifier') || can_resolve_path(@patient, 'identifier')

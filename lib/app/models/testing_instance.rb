@@ -51,7 +51,7 @@ module Inferno
 
       property :dynamic_registration_token, String
 
-      property :must_support_confirmed, String, default:''
+      property :must_support_confirmed, String, default: ''
 
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]

@@ -23,14 +23,7 @@ module Inferno
       include SkipHelpers
       include Inferno::WebDriver
 
-      STATUS = {
-        pass: 'pass',
-        fail: 'fail',
-        error: 'error',
-        todo: 'todo',
-        wait: 'wait',
-        skip: 'skip'
-      }.freeze
+      STATUS = { pass: 'pass', fail: 'fail', error: 'error', todo: 'todo', wait: 'wait', skip: 'skip' }.freeze
 
       @@test_index = 0
 
