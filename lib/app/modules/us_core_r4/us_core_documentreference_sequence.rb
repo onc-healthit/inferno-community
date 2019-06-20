@@ -276,9 +276,72 @@ module Inferno
         validate_history_reply(@documentreference, versioned_resource_class('DocumentReference'))
       end
 
-      test 'DocumentReference resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '13'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.identifier') || can_resolve_path(@documentreference, 'identifier')
+        skip 'Could not find DocumentReference.identifier in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.identifier,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.status') || can_resolve_path(@documentreference, 'status')
+        skip 'Could not find DocumentReference.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.status,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.type') || can_resolve_path(@documentreference, 'type')
+        skip 'Could not find DocumentReference.type in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.type,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.category') || can_resolve_path(@documentreference, 'category')
+        skip 'Could not find DocumentReference.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.category,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.subject') || can_resolve_path(@documentreference, 'subject')
+        skip 'Could not find DocumentReference.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.subject,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.date') || can_resolve_path(@documentreference, 'date')
+        skip 'Could not find DocumentReference.date in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.date,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.author') || can_resolve_path(@documentreference, 'author')
+        skip 'Could not find DocumentReference.author in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.author,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.custodian') || can_resolve_path(@documentreference, 'custodian')
+        skip 'Could not find DocumentReference.custodian in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.custodian,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.content') || can_resolve_path(@documentreference, 'content')
+        skip 'Could not find DocumentReference.content in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.content,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment') || can_resolve_path(@documentreference, 'content.attachment')
+        skip 'Could not find DocumentReference.content.attachment in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.content.attachment,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment.contentType') || can_resolve_path(@documentreference, 'content.attachment.contentType')
+        skip 'Could not find DocumentReference.content.attachment.contentType in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.content.attachment.contentType,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment.data') || can_resolve_path(@documentreference, 'content.attachment.data')
+        skip 'Could not find DocumentReference.content.attachment.data in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.content.attachment.data,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment.url') || can_resolve_path(@documentreference, 'content.attachment.url')
+        skip 'Could not find DocumentReference.content.attachment.url in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.content.attachment.url,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.format') || can_resolve_path(@documentreference, 'content.format')
+        skip 'Could not find DocumentReference.content.format in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.content.format,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.context') || can_resolve_path(@documentreference, 'context')
+        skip 'Could not find DocumentReference.context in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.context,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.context.encounter') || can_resolve_path(@documentreference, 'context.encounter')
+        skip 'Could not find DocumentReference.context.encounter in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.context.encounter,'
+        element_found = @instance.must_support_confirmed.include?('DocumentReference.context.period') || can_resolve_path(@documentreference, 'context.period')
+        skip 'Could not find DocumentReference.context.period in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DocumentReference.context.period,'
+        @instance.save!
+      end
+
+      test 'DocumentReference resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '14'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-documentreference.json'
           desc %(
           )
@@ -291,7 +354,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '14'
+          id '15'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

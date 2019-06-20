@@ -165,9 +165,42 @@ module Inferno
         validate_history_reply(@immunization, versioned_resource_class('Immunization'))
       end
 
-      test 'Immunization resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Immunization.status') || can_resolve_path(@immunization, 'status')
+        skip 'Could not find Immunization.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.status,'
+        element_found = @instance.must_support_confirmed.include?('Immunization.statusReason') || can_resolve_path(@immunization, 'statusReason')
+        skip 'Could not find Immunization.statusReason in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.statusReason,'
+        element_found = @instance.must_support_confirmed.include?('Immunization.vaccineCode') || can_resolve_path(@immunization, 'vaccineCode')
+        skip 'Could not find Immunization.vaccineCode in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.vaccineCode,'
+        element_found = @instance.must_support_confirmed.include?('Immunization.patient') || can_resolve_path(@immunization, 'patient')
+        skip 'Could not find Immunization.patient in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.patient,'
+        element_found = @instance.must_support_confirmed.include?('Immunization.occurrencedateTime') || can_resolve_path(@immunization, 'occurrencedateTime')
+        skip 'Could not find Immunization.occurrencedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.occurrencedateTime,'
+        element_found = @instance.must_support_confirmed.include?('Immunization.occurrencestring') || can_resolve_path(@immunization, 'occurrencestring')
+        skip 'Could not find Immunization.occurrencestring in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.occurrencestring,'
+        element_found = @instance.must_support_confirmed.include?('Immunization.primarySource') || can_resolve_path(@immunization, 'primarySource')
+        skip 'Could not find Immunization.primarySource in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Immunization.primarySource,'
+        @instance.save!
+      end
+
+      test 'Immunization resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-immunization.json'
           desc %(
           )
@@ -180,7 +213,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

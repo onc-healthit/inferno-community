@@ -145,9 +145,33 @@ module Inferno
         validate_history_reply(@allergyintolerance, versioned_resource_class('AllergyIntolerance'))
       end
 
-      test 'AllergyIntolerance resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.clinicalStatus') || can_resolve_path(@allergyintolerance, 'clinicalStatus')
+        skip 'Could not find AllergyIntolerance.clinicalStatus in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'AllergyIntolerance.clinicalStatus,'
+        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.verificationStatus') || can_resolve_path(@allergyintolerance, 'verificationStatus')
+        skip 'Could not find AllergyIntolerance.verificationStatus in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'AllergyIntolerance.verificationStatus,'
+        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.code') || can_resolve_path(@allergyintolerance, 'code')
+        skip 'Could not find AllergyIntolerance.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'AllergyIntolerance.code,'
+        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.patient') || can_resolve_path(@allergyintolerance, 'patient')
+        skip 'Could not find AllergyIntolerance.patient in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'AllergyIntolerance.patient,'
+        @instance.save!
+      end
+
+      test 'AllergyIntolerance resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance.json'
           desc %(
           )
@@ -160,7 +184,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '08'
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

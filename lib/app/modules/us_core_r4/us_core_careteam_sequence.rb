@@ -122,9 +122,36 @@ module Inferno
         validate_history_reply(@careteam, versioned_resource_class('CareTeam'))
       end
 
-      test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '06'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('CareTeam.status') || can_resolve_path(@careteam, 'status')
+        skip 'Could not find CareTeam.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CareTeam.status,'
+        element_found = @instance.must_support_confirmed.include?('CareTeam.subject') || can_resolve_path(@careteam, 'subject')
+        skip 'Could not find CareTeam.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CareTeam.subject,'
+        element_found = @instance.must_support_confirmed.include?('CareTeam.participant') || can_resolve_path(@careteam, 'participant')
+        skip 'Could not find CareTeam.participant in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CareTeam.participant,'
+        element_found = @instance.must_support_confirmed.include?('CareTeam.participant.role') || can_resolve_path(@careteam, 'participant.role')
+        skip 'Could not find CareTeam.participant.role in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CareTeam.participant.role,'
+        element_found = @instance.must_support_confirmed.include?('CareTeam.participant.member') || can_resolve_path(@careteam, 'participant.member')
+        skip 'Could not find CareTeam.participant.member in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CareTeam.participant.member,'
+        @instance.save!
+      end
+
+      test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam.json'
           desc %(
           )
@@ -137,7 +164,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '07'
+          id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

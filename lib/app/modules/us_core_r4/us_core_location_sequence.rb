@@ -206,9 +206,48 @@ module Inferno
         validate_history_reply(@location, versioned_resource_class('Location'))
       end
 
-      test 'Location resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '10'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Location.status') || can_resolve_path(@location, 'status')
+        skip 'Could not find Location.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.status,'
+        element_found = @instance.must_support_confirmed.include?('Location.name') || can_resolve_path(@location, 'name')
+        skip 'Could not find Location.name in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.name,'
+        element_found = @instance.must_support_confirmed.include?('Location.telecom') || can_resolve_path(@location, 'telecom')
+        skip 'Could not find Location.telecom in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.telecom,'
+        element_found = @instance.must_support_confirmed.include?('Location.address') || can_resolve_path(@location, 'address')
+        skip 'Could not find Location.address in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.address,'
+        element_found = @instance.must_support_confirmed.include?('Location.address.line') || can_resolve_path(@location, 'address.line')
+        skip 'Could not find Location.address.line in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.address.line,'
+        element_found = @instance.must_support_confirmed.include?('Location.address.city') || can_resolve_path(@location, 'address.city')
+        skip 'Could not find Location.address.city in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.address.city,'
+        element_found = @instance.must_support_confirmed.include?('Location.address.state') || can_resolve_path(@location, 'address.state')
+        skip 'Could not find Location.address.state in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.address.state,'
+        element_found = @instance.must_support_confirmed.include?('Location.address.postalCode') || can_resolve_path(@location, 'address.postalCode')
+        skip 'Could not find Location.address.postalCode in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.address.postalCode,'
+        element_found = @instance.must_support_confirmed.include?('Location.managingOrganization') || can_resolve_path(@location, 'managingOrganization')
+        skip 'Could not find Location.managingOrganization in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Location.managingOrganization,'
+        @instance.save!
+      end
+
+      test 'Location resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-location.json'
           desc %(
           )
@@ -221,7 +260,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

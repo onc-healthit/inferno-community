@@ -85,9 +85,24 @@ module Inferno
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Medication resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '05'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Medication.code') || can_resolve_path(@medication, 'code')
+        skip 'Could not find Medication.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Medication.code,'
+        @instance.save!
+      end
+
+      test 'Medication resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication.json'
           desc %(
           )
@@ -100,7 +115,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '06'
+          id '07'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

@@ -257,9 +257,72 @@ module Inferno
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
-      test 'Encounter resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '12'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Encounter.identifier') || can_resolve_path(@encounter, 'identifier')
+        skip 'Could not find Encounter.identifier in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.identifier,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.identifier.system') || can_resolve_path(@encounter, 'identifier.system')
+        skip 'Could not find Encounter.identifier.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.identifier.system,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.identifier.value') || can_resolve_path(@encounter, 'identifier.value')
+        skip 'Could not find Encounter.identifier.value in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.identifier.value,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.status') || can_resolve_path(@encounter, 'status')
+        skip 'Could not find Encounter.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.status,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.class') || can_resolve_path(@encounter, 'class')
+        skip 'Could not find Encounter.class in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.class,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.type') || can_resolve_path(@encounter, 'type')
+        skip 'Could not find Encounter.type in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.type,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.subject') || can_resolve_path(@encounter, 'subject')
+        skip 'Could not find Encounter.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.subject,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.participant') || can_resolve_path(@encounter, 'participant')
+        skip 'Could not find Encounter.participant in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.participant,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.participant.type') || can_resolve_path(@encounter, 'participant.type')
+        skip 'Could not find Encounter.participant.type in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.participant.type,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.participant.period') || can_resolve_path(@encounter, 'participant.period')
+        skip 'Could not find Encounter.participant.period in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.participant.period,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.participant.individual') || can_resolve_path(@encounter, 'participant.individual')
+        skip 'Could not find Encounter.participant.individual in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.participant.individual,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.period') || can_resolve_path(@encounter, 'period')
+        skip 'Could not find Encounter.period in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.period,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.reasonCode') || can_resolve_path(@encounter, 'reasonCode')
+        skip 'Could not find Encounter.reasonCode in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.reasonCode,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.hospitalization') || can_resolve_path(@encounter, 'hospitalization')
+        skip 'Could not find Encounter.hospitalization in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.hospitalization,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.hospitalization.dischargeDisposition') || can_resolve_path(@encounter, 'hospitalization.dischargeDisposition')
+        skip 'Could not find Encounter.hospitalization.dischargeDisposition in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.hospitalization.dischargeDisposition,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.location') || can_resolve_path(@encounter, 'location')
+        skip 'Could not find Encounter.location in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.location,'
+        element_found = @instance.must_support_confirmed.include?('Encounter.location.location') || can_resolve_path(@encounter, 'location.location')
+        skip 'Could not find Encounter.location.location in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Encounter.location.location,'
+        @instance.save!
+      end
+
+      test 'Encounter resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '13'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-encounter.json'
           desc %(
           )
@@ -272,7 +335,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '13'
+          id '14'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

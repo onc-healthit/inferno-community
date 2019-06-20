@@ -193,9 +193,42 @@ module Inferno
         validate_history_reply(@careplan, versioned_resource_class('CarePlan'))
       end
 
-      test 'CarePlan resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '09'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('CarePlan.text') || can_resolve_path(@careplan, 'text')
+        skip 'Could not find CarePlan.text in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.text,'
+        element_found = @instance.must_support_confirmed.include?('CarePlan.text.status') || can_resolve_path(@careplan, 'text.status')
+        skip 'Could not find CarePlan.text.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.text.status,'
+        element_found = @instance.must_support_confirmed.include?('CarePlan.status') || can_resolve_path(@careplan, 'status')
+        skip 'Could not find CarePlan.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.status,'
+        element_found = @instance.must_support_confirmed.include?('CarePlan.intent') || can_resolve_path(@careplan, 'intent')
+        skip 'Could not find CarePlan.intent in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.intent,'
+        element_found = @instance.must_support_confirmed.include?('CarePlan.category') || can_resolve_path(@careplan, 'category')
+        skip 'Could not find CarePlan.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.category,'
+        element_found = @instance.must_support_confirmed.include?('CarePlan.category') || can_resolve_path(@careplan, 'category')
+        skip 'Could not find CarePlan.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.category,'
+        element_found = @instance.must_support_confirmed.include?('CarePlan.subject') || can_resolve_path(@careplan, 'subject')
+        skip 'Could not find CarePlan.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'CarePlan.subject,'
+        @instance.save!
+      end
+
+      test 'CarePlan resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careplan.json'
           desc %(
           )
@@ -208,7 +241,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '10'
+          id '11'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

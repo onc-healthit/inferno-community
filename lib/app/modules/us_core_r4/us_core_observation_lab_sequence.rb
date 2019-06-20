@@ -217,9 +217,75 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '10'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Observation.status') || can_resolve_path(@observation, 'status')
+        skip 'Could not find Observation.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.status,'
+        element_found = @instance.must_support_confirmed.include?('Observation.category') || can_resolve_path(@observation, 'category')
+        skip 'Could not find Observation.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.category,'
+        element_found = @instance.must_support_confirmed.include?('Observation.code') || can_resolve_path(@observation, 'code')
+        skip 'Could not find Observation.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.code,'
+        element_found = @instance.must_support_confirmed.include?('Observation.subject') || can_resolve_path(@observation, 'subject')
+        skip 'Could not find Observation.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.subject,'
+        element_found = @instance.must_support_confirmed.include?('Observation.effectivedateTime') || can_resolve_path(@observation, 'effectivedateTime')
+        skip 'Could not find Observation.effectivedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.effectivedateTime,'
+        element_found = @instance.must_support_confirmed.include?('Observation.effectivePeriod') || can_resolve_path(@observation, 'effectivePeriod')
+        skip 'Could not find Observation.effectivePeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.effectivePeriod,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueQuantity') || can_resolve_path(@observation, 'valueQuantity')
+        skip 'Could not find Observation.valueQuantity in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueQuantity,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueCodeableConcept') || can_resolve_path(@observation, 'valueCodeableConcept')
+        skip 'Could not find Observation.valueCodeableConcept in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueCodeableConcept,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valuestring') || can_resolve_path(@observation, 'valuestring')
+        skip 'Could not find Observation.valuestring in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valuestring,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueboolean') || can_resolve_path(@observation, 'valueboolean')
+        skip 'Could not find Observation.valueboolean in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueboolean,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueinteger') || can_resolve_path(@observation, 'valueinteger')
+        skip 'Could not find Observation.valueinteger in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueinteger,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueRange') || can_resolve_path(@observation, 'valueRange')
+        skip 'Could not find Observation.valueRange in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueRange,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueRatio') || can_resolve_path(@observation, 'valueRatio')
+        skip 'Could not find Observation.valueRatio in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueRatio,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueSampledData') || can_resolve_path(@observation, 'valueSampledData')
+        skip 'Could not find Observation.valueSampledData in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueSampledData,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valuetime') || can_resolve_path(@observation, 'valuetime')
+        skip 'Could not find Observation.valuetime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valuetime,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valuedateTime') || can_resolve_path(@observation, 'valuedateTime')
+        skip 'Could not find Observation.valuedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valuedateTime,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valuePeriod') || can_resolve_path(@observation, 'valuePeriod')
+        skip 'Could not find Observation.valuePeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valuePeriod,'
+        element_found = @instance.must_support_confirmed.include?('Observation.dataAbsentReason') || can_resolve_path(@observation, 'dataAbsentReason')
+        skip 'Could not find Observation.dataAbsentReason in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.dataAbsentReason,'
+        @instance.save!
+      end
+
+      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json'
           desc %(
           )
@@ -232,7 +298,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

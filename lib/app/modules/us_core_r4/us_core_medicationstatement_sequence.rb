@@ -165,9 +165,45 @@ module Inferno
         validate_history_reply(@medicationstatement, versioned_resource_class('MedicationStatement'))
       end
 
-      test 'MedicationStatement resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.status') || can_resolve_path(@medicationstatement, 'status')
+        skip 'Could not find MedicationStatement.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.status,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.medicationCodeableConcept') || can_resolve_path(@medicationstatement, 'medicationCodeableConcept')
+        skip 'Could not find MedicationStatement.medicationCodeableConcept in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.medicationCodeableConcept,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.medicationReference') || can_resolve_path(@medicationstatement, 'medicationReference')
+        skip 'Could not find MedicationStatement.medicationReference in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.medicationReference,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.subject') || can_resolve_path(@medicationstatement, 'subject')
+        skip 'Could not find MedicationStatement.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.subject,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.effectivedateTime') || can_resolve_path(@medicationstatement, 'effectivedateTime')
+        skip 'Could not find MedicationStatement.effectivedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.effectivedateTime,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.effectivePeriod') || can_resolve_path(@medicationstatement, 'effectivePeriod')
+        skip 'Could not find MedicationStatement.effectivePeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.effectivePeriod,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.dateAsserted') || can_resolve_path(@medicationstatement, 'dateAsserted')
+        skip 'Could not find MedicationStatement.dateAsserted in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.dateAsserted,'
+        element_found = @instance.must_support_confirmed.include?('MedicationStatement.derivedFrom') || can_resolve_path(@medicationstatement, 'derivedFrom')
+        skip 'Could not find MedicationStatement.derivedFrom in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'MedicationStatement.derivedFrom,'
+        @instance.save!
+      end
+
+      test 'MedicationStatement resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medicationstatement.json'
           desc %(
           )
@@ -180,7 +216,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

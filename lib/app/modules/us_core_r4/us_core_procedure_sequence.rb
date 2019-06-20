@@ -191,9 +191,36 @@ module Inferno
         validate_history_reply(@procedure, versioned_resource_class('Procedure'))
       end
 
-      test 'Procedure resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '09'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Procedure.status') || can_resolve_path(@procedure, 'status')
+        skip 'Could not find Procedure.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Procedure.status,'
+        element_found = @instance.must_support_confirmed.include?('Procedure.code') || can_resolve_path(@procedure, 'code')
+        skip 'Could not find Procedure.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Procedure.code,'
+        element_found = @instance.must_support_confirmed.include?('Procedure.subject') || can_resolve_path(@procedure, 'subject')
+        skip 'Could not find Procedure.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Procedure.subject,'
+        element_found = @instance.must_support_confirmed.include?('Procedure.performeddateTime') || can_resolve_path(@procedure, 'performeddateTime')
+        skip 'Could not find Procedure.performeddateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Procedure.performeddateTime,'
+        element_found = @instance.must_support_confirmed.include?('Procedure.performedPeriod') || can_resolve_path(@procedure, 'performedPeriod')
+        skip 'Could not find Procedure.performedPeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Procedure.performedPeriod,'
+        @instance.save!
+      end
+
+      test 'Procedure resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-procedure.json'
           desc %(
           )
@@ -206,7 +233,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '10'
+          id '11'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

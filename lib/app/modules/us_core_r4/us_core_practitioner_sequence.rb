@@ -148,9 +148,42 @@ module Inferno
         validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
 
-      test 'Practitioner resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier') || can_resolve_path(@practitioner, 'identifier')
+        skip 'Could not find Practitioner.identifier in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.identifier,'
+        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier.system') || can_resolve_path(@practitioner, 'identifier.system')
+        skip 'Could not find Practitioner.identifier.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.identifier.system,'
+        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier.value') || can_resolve_path(@practitioner, 'identifier.value')
+        skip 'Could not find Practitioner.identifier.value in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.identifier.value,'
+        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier') || can_resolve_path(@practitioner, 'identifier')
+        skip 'Could not find Practitioner.identifier in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.identifier,'
+        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier.system') || can_resolve_path(@practitioner, 'identifier.system')
+        skip 'Could not find Practitioner.identifier.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.identifier.system,'
+        element_found = @instance.must_support_confirmed.include?('Practitioner.name') || can_resolve_path(@practitioner, 'name')
+        skip 'Could not find Practitioner.name in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.name,'
+        element_found = @instance.must_support_confirmed.include?('Practitioner.name.family') || can_resolve_path(@practitioner, 'name.family')
+        skip 'Could not find Practitioner.name.family in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Practitioner.name.family,'
+        @instance.save!
+      end
+
+      test 'Practitioner resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitioner.json'
           desc %(
           )
@@ -163,7 +196,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '08'
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

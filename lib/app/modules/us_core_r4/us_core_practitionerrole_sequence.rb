@@ -144,9 +144,48 @@ module Inferno
         validate_history_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))
       end
 
-      test 'PractitionerRole resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.practitioner') || can_resolve_path(@practitionerrole, 'practitioner')
+        skip 'Could not find PractitionerRole.practitioner in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.practitioner,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.organization') || can_resolve_path(@practitionerrole, 'organization')
+        skip 'Could not find PractitionerRole.organization in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.organization,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.code') || can_resolve_path(@practitionerrole, 'code')
+        skip 'Could not find PractitionerRole.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.code,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.specialty') || can_resolve_path(@practitionerrole, 'specialty')
+        skip 'Could not find PractitionerRole.specialty in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.specialty,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.location') || can_resolve_path(@practitionerrole, 'location')
+        skip 'Could not find PractitionerRole.location in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.location,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.telecom') || can_resolve_path(@practitionerrole, 'telecom')
+        skip 'Could not find PractitionerRole.telecom in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.telecom,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.telecom.system') || can_resolve_path(@practitionerrole, 'telecom.system')
+        skip 'Could not find PractitionerRole.telecom.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.telecom.system,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.telecom.value') || can_resolve_path(@practitionerrole, 'telecom.value')
+        skip 'Could not find PractitionerRole.telecom.value in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.telecom.value,'
+        element_found = @instance.must_support_confirmed.include?('PractitionerRole.endpoint') || can_resolve_path(@practitionerrole, 'endpoint')
+        skip 'Could not find PractitionerRole.endpoint in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'PractitionerRole.endpoint,'
+        @instance.save!
+      end
+
+      test 'PractitionerRole resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitionerrole.json'
           desc %(
           )
@@ -159,7 +198,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '08'
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

@@ -145,9 +145,36 @@ module Inferno
         validate_history_reply(@device, versioned_resource_class('Device'))
       end
 
-      test 'Device resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Device.udiCarrier') || can_resolve_path(@device, 'udiCarrier')
+        skip 'Could not find Device.udiCarrier in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Device.udiCarrier,'
+        element_found = @instance.must_support_confirmed.include?('Device.udiCarrier.carrierAIDC') || can_resolve_path(@device, 'udiCarrier.carrierAIDC')
+        skip 'Could not find Device.udiCarrier.carrierAIDC in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Device.udiCarrier.carrierAIDC,'
+        element_found = @instance.must_support_confirmed.include?('Device.udiCarrier.carrierHRF') || can_resolve_path(@device, 'udiCarrier.carrierHRF')
+        skip 'Could not find Device.udiCarrier.carrierHRF in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Device.udiCarrier.carrierHRF,'
+        element_found = @instance.must_support_confirmed.include?('Device.type') || can_resolve_path(@device, 'type')
+        skip 'Could not find Device.type in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Device.type,'
+        element_found = @instance.must_support_confirmed.include?('Device.patient') || can_resolve_path(@device, 'patient')
+        skip 'Could not find Device.patient in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Device.patient,'
+        @instance.save!
+      end
+
+      test 'Device resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-device.json'
           desc %(
           )
@@ -160,7 +187,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '08'
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

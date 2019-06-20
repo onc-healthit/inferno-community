@@ -217,9 +217,36 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '10'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Observation.status') || can_resolve_path(@observation, 'status')
+        skip 'Could not find Observation.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.status,'
+        element_found = @instance.must_support_confirmed.include?('Observation.code') || can_resolve_path(@observation, 'code')
+        skip 'Could not find Observation.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.code,'
+        element_found = @instance.must_support_confirmed.include?('Observation.subject') || can_resolve_path(@observation, 'subject')
+        skip 'Could not find Observation.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.subject,'
+        element_found = @instance.must_support_confirmed.include?('Observation.issued') || can_resolve_path(@observation, 'issued')
+        skip 'Could not find Observation.issued in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.issued,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueCodeableConcept') || can_resolve_path(@observation, 'valueCodeableConcept')
+        skip 'Could not find Observation.valueCodeableConcept in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueCodeableConcept,'
+        @instance.save!
+      end
+
+      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json'
           desc %(
           )
@@ -232,7 +259,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

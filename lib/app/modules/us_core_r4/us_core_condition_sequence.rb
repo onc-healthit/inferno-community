@@ -217,9 +217,36 @@ module Inferno
         validate_history_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Condition resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '10'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Condition.clinicalStatus') || can_resolve_path(@condition, 'clinicalStatus')
+        skip 'Could not find Condition.clinicalStatus in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Condition.clinicalStatus,'
+        element_found = @instance.must_support_confirmed.include?('Condition.verificationStatus') || can_resolve_path(@condition, 'verificationStatus')
+        skip 'Could not find Condition.verificationStatus in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Condition.verificationStatus,'
+        element_found = @instance.must_support_confirmed.include?('Condition.category') || can_resolve_path(@condition, 'category')
+        skip 'Could not find Condition.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Condition.category,'
+        element_found = @instance.must_support_confirmed.include?('Condition.code') || can_resolve_path(@condition, 'code')
+        skip 'Could not find Condition.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Condition.code,'
+        element_found = @instance.must_support_confirmed.include?('Condition.subject') || can_resolve_path(@condition, 'subject')
+        skip 'Could not find Condition.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Condition.subject,'
+        @instance.save!
+      end
+
+      test 'Condition resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-condition.json'
           desc %(
           )
@@ -232,7 +259,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

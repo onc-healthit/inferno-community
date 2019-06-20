@@ -217,9 +217,105 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '10'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Observation.status') || can_resolve_path(@observation, 'status')
+        skip 'Could not find Observation.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.status,'
+        element_found = @instance.must_support_confirmed.include?('Observation.category') || can_resolve_path(@observation, 'category')
+        skip 'Could not find Observation.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.category,'
+        element_found = @instance.must_support_confirmed.include?('Observation.category') || can_resolve_path(@observation, 'category')
+        skip 'Could not find Observation.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.category,'
+        element_found = @instance.must_support_confirmed.include?('Observation.category.coding') || can_resolve_path(@observation, 'category.coding')
+        skip 'Could not find Observation.category.coding in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.category.coding,'
+        element_found = @instance.must_support_confirmed.include?('Observation.category.coding.system') || can_resolve_path(@observation, 'category.coding.system')
+        skip 'Could not find Observation.category.coding.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.category.coding.system,'
+        element_found = @instance.must_support_confirmed.include?('Observation.category.coding.code') || can_resolve_path(@observation, 'category.coding.code')
+        skip 'Could not find Observation.category.coding.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.category.coding.code,'
+        element_found = @instance.must_support_confirmed.include?('Observation.subject') || can_resolve_path(@observation, 'subject')
+        skip 'Could not find Observation.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.subject,'
+        element_found = @instance.must_support_confirmed.include?('Observation.effectivedateTime') || can_resolve_path(@observation, 'effectivedateTime')
+        skip 'Could not find Observation.effectivedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.effectivedateTime,'
+        element_found = @instance.must_support_confirmed.include?('Observation.effectivePeriod') || can_resolve_path(@observation, 'effectivePeriod')
+        skip 'Could not find Observation.effectivePeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.effectivePeriod,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueQuantity.value') || can_resolve_path(@observation, 'valueQuantity.value')
+        skip 'Could not find Observation.valueQuantity.value in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueQuantity.value,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueQuantity.unit') || can_resolve_path(@observation, 'valueQuantity.unit')
+        skip 'Could not find Observation.valueQuantity.unit in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueQuantity.unit,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueQuantity.system') || can_resolve_path(@observation, 'valueQuantity.system')
+        skip 'Could not find Observation.valueQuantity.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueQuantity.system,'
+        element_found = @instance.must_support_confirmed.include?('Observation.valueQuantity.code') || can_resolve_path(@observation, 'valueQuantity.code')
+        skip 'Could not find Observation.valueQuantity.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.valueQuantity.code,'
+        element_found = @instance.must_support_confirmed.include?('Observation.dataAbsentReason') || can_resolve_path(@observation, 'dataAbsentReason')
+        skip 'Could not find Observation.dataAbsentReason in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.dataAbsentReason,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component') || can_resolve_path(@observation, 'component')
+        skip 'Could not find Observation.component in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.code') || can_resolve_path(@observation, 'component.code')
+        skip 'Could not find Observation.component.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.code,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueQuantity') || can_resolve_path(@observation, 'component.valueQuantity')
+        skip 'Could not find Observation.component.valueQuantity in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueQuantity,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueCodeableConcept') || can_resolve_path(@observation, 'component.valueCodeableConcept')
+        skip 'Could not find Observation.component.valueCodeableConcept in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueCodeableConcept,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valuestring') || can_resolve_path(@observation, 'component.valuestring')
+        skip 'Could not find Observation.component.valuestring in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valuestring,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueboolean') || can_resolve_path(@observation, 'component.valueboolean')
+        skip 'Could not find Observation.component.valueboolean in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueboolean,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueinteger') || can_resolve_path(@observation, 'component.valueinteger')
+        skip 'Could not find Observation.component.valueinteger in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueinteger,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueRange') || can_resolve_path(@observation, 'component.valueRange')
+        skip 'Could not find Observation.component.valueRange in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueRange,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueRatio') || can_resolve_path(@observation, 'component.valueRatio')
+        skip 'Could not find Observation.component.valueRatio in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueRatio,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valueSampledData') || can_resolve_path(@observation, 'component.valueSampledData')
+        skip 'Could not find Observation.component.valueSampledData in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valueSampledData,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valuetime') || can_resolve_path(@observation, 'component.valuetime')
+        skip 'Could not find Observation.component.valuetime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valuetime,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valuedateTime') || can_resolve_path(@observation, 'component.valuedateTime')
+        skip 'Could not find Observation.component.valuedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valuedateTime,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.valuePeriod') || can_resolve_path(@observation, 'component.valuePeriod')
+        skip 'Could not find Observation.component.valuePeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.valuePeriod,'
+        element_found = @instance.must_support_confirmed.include?('Observation.component.dataAbsentReason') || can_resolve_path(@observation, 'component.dataAbsentReason')
+        skip 'Could not find Observation.component.dataAbsentReason in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Observation.component.dataAbsentReason,'
+        @instance.save!
+      end
+
+      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json'
           desc %(
           )
@@ -232,7 +328,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

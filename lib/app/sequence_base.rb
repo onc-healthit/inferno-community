@@ -746,6 +746,17 @@ module Inferno
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
+
+      def can_resolve_path(element, path)
+        return true if path.empty?
+
+        path_ary = path.split('.')
+        el_as_array = Array.wrap(element)
+        cur_path_part = path_ary.delete_at(0)
+        return false unless el_as_array.any? { |el| !el.try(cur_path_part.to_sym).nil? }
+
+        el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
+      end
     end
 
     Dir.glob(File.join(__dir__, 'modules', '**', '*_sequence.rb')).each { |file| require file }

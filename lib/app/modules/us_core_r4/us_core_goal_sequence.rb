@@ -165,9 +165,39 @@ module Inferno
         validate_history_reply(@goal, versioned_resource_class('Goal'))
       end
 
-      test 'Goal resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Goal.lifecycleStatus') || can_resolve_path(@goal, 'lifecycleStatus')
+        skip 'Could not find Goal.lifecycleStatus in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Goal.lifecycleStatus,'
+        element_found = @instance.must_support_confirmed.include?('Goal.description') || can_resolve_path(@goal, 'description')
+        skip 'Could not find Goal.description in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Goal.description,'
+        element_found = @instance.must_support_confirmed.include?('Goal.subject') || can_resolve_path(@goal, 'subject')
+        skip 'Could not find Goal.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Goal.subject,'
+        element_found = @instance.must_support_confirmed.include?('Goal.target') || can_resolve_path(@goal, 'target')
+        skip 'Could not find Goal.target in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Goal.target,'
+        element_found = @instance.must_support_confirmed.include?('Goal.target.duedate') || can_resolve_path(@goal, 'target.duedate')
+        skip 'Could not find Goal.target.duedate in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Goal.target.duedate,'
+        element_found = @instance.must_support_confirmed.include?('Goal.target.dueDuration') || can_resolve_path(@goal, 'target.dueDuration')
+        skip 'Could not find Goal.target.dueDuration in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Goal.target.dueDuration,'
+        @instance.save!
+      end
+
+      test 'Goal resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-goal.json'
           desc %(
           )
@@ -180,7 +210,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

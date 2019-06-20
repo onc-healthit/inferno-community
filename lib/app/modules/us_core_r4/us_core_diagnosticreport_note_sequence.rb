@@ -270,9 +270,54 @@ module Inferno
         validate_history_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
       end
 
-      test 'DiagnosticReport resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '13'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.status') || can_resolve_path(@diagnosticreport, 'status')
+        skip 'Could not find DiagnosticReport.status in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.status,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.category') || can_resolve_path(@diagnosticreport, 'category')
+        skip 'Could not find DiagnosticReport.category in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.category,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.code') || can_resolve_path(@diagnosticreport, 'code')
+        skip 'Could not find DiagnosticReport.code in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.code,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.subject') || can_resolve_path(@diagnosticreport, 'subject')
+        skip 'Could not find DiagnosticReport.subject in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.subject,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.encounter') || can_resolve_path(@diagnosticreport, 'encounter')
+        skip 'Could not find DiagnosticReport.encounter in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.encounter,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.effectivedateTime') || can_resolve_path(@diagnosticreport, 'effectivedateTime')
+        skip 'Could not find DiagnosticReport.effectivedateTime in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.effectivedateTime,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.effectivePeriod') || can_resolve_path(@diagnosticreport, 'effectivePeriod')
+        skip 'Could not find DiagnosticReport.effectivePeriod in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.effectivePeriod,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.issued') || can_resolve_path(@diagnosticreport, 'issued')
+        skip 'Could not find DiagnosticReport.issued in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.issued,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.performer') || can_resolve_path(@diagnosticreport, 'performer')
+        skip 'Could not find DiagnosticReport.performer in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.performer,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.media') || can_resolve_path(@diagnosticreport, 'media')
+        skip 'Could not find DiagnosticReport.media in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.media,'
+        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.presentedForm') || can_resolve_path(@diagnosticreport, 'presentedForm')
+        skip 'Could not find DiagnosticReport.presentedForm in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'DiagnosticReport.presentedForm,'
+        @instance.save!
+      end
+
+      test 'DiagnosticReport resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '14'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
           desc %(
           )
@@ -285,7 +330,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '14'
+          id '15'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

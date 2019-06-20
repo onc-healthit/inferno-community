@@ -260,9 +260,84 @@ module Inferno
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
 
-      test 'Patient resources associated with Patient conform to Argonaut profiles' do
+      test 'Demonstrates that the server can supply must supported elements' do
         metadata do
           id '12'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        element_found = @instance.must_support_confirmed.include?('Patient.extension:race') || @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race' }
+        skip 'Could not find Patient.extension:race in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.extension:race,'
+        element_found = @instance.must_support_confirmed.include?('Patient.extension:ethnicity') || @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity' }
+        skip 'Could not find Patient.extension:ethnicity in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.extension:ethnicity,'
+        element_found = @instance.must_support_confirmed.include?('Patient.extension:birthsex') || @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex' }
+        skip 'Could not find Patient.extension:birthsex in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.extension:birthsex,'
+        element_found = @instance.must_support_confirmed.include?('Patient.identifier') || can_resolve_path(@patient, 'identifier')
+        skip 'Could not find Patient.identifier in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.identifier,'
+        element_found = @instance.must_support_confirmed.include?('Patient.identifier.system') || can_resolve_path(@patient, 'identifier.system')
+        skip 'Could not find Patient.identifier.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.identifier.system,'
+        element_found = @instance.must_support_confirmed.include?('Patient.identifier.value') || can_resolve_path(@patient, 'identifier.value')
+        skip 'Could not find Patient.identifier.value in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.identifier.value,'
+        element_found = @instance.must_support_confirmed.include?('Patient.name') || can_resolve_path(@patient, 'name')
+        skip 'Could not find Patient.name in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.name,'
+        element_found = @instance.must_support_confirmed.include?('Patient.name.family') || can_resolve_path(@patient, 'name.family')
+        skip 'Could not find Patient.name.family in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.name.family,'
+        element_found = @instance.must_support_confirmed.include?('Patient.name.given') || can_resolve_path(@patient, 'name.given')
+        skip 'Could not find Patient.name.given in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.name.given,'
+        element_found = @instance.must_support_confirmed.include?('Patient.telecom') || can_resolve_path(@patient, 'telecom')
+        skip 'Could not find Patient.telecom in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.telecom,'
+        element_found = @instance.must_support_confirmed.include?('Patient.telecom.system') || can_resolve_path(@patient, 'telecom.system')
+        skip 'Could not find Patient.telecom.system in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.telecom.system,'
+        element_found = @instance.must_support_confirmed.include?('Patient.telecom.value') || can_resolve_path(@patient, 'telecom.value')
+        skip 'Could not find Patient.telecom.value in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.telecom.value,'
+        element_found = @instance.must_support_confirmed.include?('Patient.gender') || can_resolve_path(@patient, 'gender')
+        skip 'Could not find Patient.gender in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.gender,'
+        element_found = @instance.must_support_confirmed.include?('Patient.birthDate') || can_resolve_path(@patient, 'birthDate')
+        skip 'Could not find Patient.birthDate in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.birthDate,'
+        element_found = @instance.must_support_confirmed.include?('Patient.address') || can_resolve_path(@patient, 'address')
+        skip 'Could not find Patient.address in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.address,'
+        element_found = @instance.must_support_confirmed.include?('Patient.address.line') || can_resolve_path(@patient, 'address.line')
+        skip 'Could not find Patient.address.line in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.address.line,'
+        element_found = @instance.must_support_confirmed.include?('Patient.address.city') || can_resolve_path(@patient, 'address.city')
+        skip 'Could not find Patient.address.city in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.address.city,'
+        element_found = @instance.must_support_confirmed.include?('Patient.address.state') || can_resolve_path(@patient, 'address.state')
+        skip 'Could not find Patient.address.state in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.address.state,'
+        element_found = @instance.must_support_confirmed.include?('Patient.address.postalCode') || can_resolve_path(@patient, 'address.postalCode')
+        skip 'Could not find Patient.address.postalCode in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.address.postalCode,'
+        element_found = @instance.must_support_confirmed.include?('Patient.communication') || can_resolve_path(@patient, 'communication')
+        skip 'Could not find Patient.communication in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.communication,'
+        element_found = @instance.must_support_confirmed.include?('Patient.communication.language') || can_resolve_path(@patient, 'communication.language')
+        skip 'Could not find Patient.communication.language in the provided resource' unless element_found
+        @instance.must_support_confirmed += 'Patient.communication.language,'
+        @instance.save!
+      end
+
+      test 'Patient resources associated with Patient conform to Argonaut profiles' do
+        metadata do
+          id '13'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.json'
           desc %(
           )
@@ -275,7 +350,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '13'
+          id '14'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )
