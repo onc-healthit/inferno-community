@@ -121,11 +121,7 @@ module Inferno
 
               submitted_test_cases_count = sequence_result.next_test_cases.split(',')
               total_tests = submitted_test_cases_count.reduce(first_test_count) do |total, set|
-                sequence_test_count =
-                  test_set
-                    .test_case_by_id(set)
-                    .sequence.new(instance, client, settings.disable_tls_tests)
-                    .test_count
+                sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
                 total + sequence_test_count
               end
 
@@ -403,11 +399,7 @@ module Inferno
           instance.reload # ensure that we have all the latest data
 
           total_tests = submitted_test_cases.reduce(0) do |total, set|
-            sequence_test_count =
-              test_set
-                .test_case_by_id(set)
-                .sequence.new(instance, client, settings.disable_tls_tests)
-                .test_count
+            sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
             total + sequence_test_count
           end
 
