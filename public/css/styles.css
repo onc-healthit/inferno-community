@@ -249,6 +249,10 @@ body {
 
 }
 
+.progress .progress-bar.active {
+  background-color: #f98718;
+}
+
 #PrerequisitesModal label {
   margin-bottom: .1rem;
   text-transform: uppercase;
