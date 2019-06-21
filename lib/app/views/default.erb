@@ -73,6 +73,12 @@
         <% elsif error_code == 'no_redirect' %>
           The redirect URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
           before visiting this redirect url.
+        <% elsif error_code == 'no_ehr_launch' %>
+          No actively running launch sequences found for iss <%=params[:iss]%>.
+          Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.
+        <% elsif error_code == 'no_state' %>
+          Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of <%=params[:state]%>.
+          The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test.
         <% end %>
       </div>
     <% end %>

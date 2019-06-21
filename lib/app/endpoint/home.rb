@@ -6,6 +6,7 @@ module Inferno
       # Home provides a Sinatra endpoint for accessing Inferno.
       # Home serves the main web application.
       class Home < Endpoint
+        helpers Sinatra::Cookies
         # Set the url prefix these routes will map to
         set :prefix, "/#{base_path}"
 
@@ -23,31 +24,35 @@ module Inferno
         # This must be early so it doesn't get picked up by the other routes
         get '/oauth2/:key/:endpoint/?' do
           instance = nil
-          if params[:endpoint] == 'redirect' && !params[:state].nil?
+          error_message = nil
+
+          if params[:endpoint] == 'redirect'
             instance = Inferno::Models::TestingInstance.first(state: params[:state])
             if instance.nil?
-              error_message = "<p>Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of #{params[:state]}. " \
-                              'The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test. ' \
-                              "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
+              instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
+              if instance.nil?
+                error_message = %(
+                               <p>
+                                  Inferno has detected an issue with the SMART launch.
+                                  No actively running launch sequences found with a state of #{params[:state]}.
+                                  The authorization server is not returning the correct state variable and
+                                  therefore Inferno cannot identify which server is currently under test.
+                                  Please click your browser's "Back" button to return to Inferno,
+                                  and click "Refresh" to ensure that the most recent test results are visible.
+                                </p>
+                                )
 
-              error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
+                error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" if params[:error].present?
 
-              error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
+                error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
 
-              halt 500, error_message
+                halt 500, error_message
+              elsif instance&.waiting_on_sequence&.wait?
+                error_message = "State provided in redirect (#{params[:state]}) does not match expected state (#{instance.state})."
+              else
+                redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_state&state=#{params[:state]}"
+              end
             end
-          end
-
-          if params[:endpoint] == 'redirect' && params[:state].nil?
-            error_message = '<p>No state parameter was provided to the redirect URI as required by OAuth2.0. ' \
-                            'Inferno is unable to identify the currently running test session without the state parameter. ' \
-                            "Please click your browser's \"Back\" button to return to Inferno, and click \"Refresh\" to ensure that the most recent test results are visible.</p>"
-
-            error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
-
-            error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
-
-            halt 500, error_message
           end
 
           if params[:endpoint] == 'launch'
@@ -56,18 +61,25 @@ module Inferno
               :result => 'wait',
               :order => [:created_at.desc]
             )
-            iss_url = params[:iss].downcase.split('://').last.chomp('/')
+            iss_url = params[:iss]&.downcase&.split('://')&.last&.chomp('/')
 
             matching_results = recent_results.select do |sr|
               testing_instance_url = sr.testing_instance.url.downcase.split('://').last.chomp('/')
               testing_instance_url == iss_url
             end
 
-            instance = matching_results.first.try(:testing_instance)
+            instance = matching_results&.first&.testing_instance
             if instance.nil?
-              message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
-                        'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
-              halt 500, message
+              instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
+              if instance.nil?
+                message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
+                          'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
+                halt 500, message
+              elsif instance&.waiting_on_sequence&.wait?
+                error_message = 'No iss for redirect'
+              else
+                redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"
+              end
             end
           end
           halt 500, 'Error: Could not find a running test that match this set of critera' unless !instance.nil? &&
@@ -125,7 +137,7 @@ module Inferno
                 total + sequence_test_count
               end
 
-              sequence_result = sequence.resume(request, headers, request.params) do |result|
+              sequence_result = sequence.resume(request, headers, request.params, error_message) do |result|
                 count += 1
                 out << js_update_result(sequence, test_set, result, count, sequence.test_count, count, total_tests)
                 instance.save!
@@ -199,7 +211,7 @@ module Inferno
             end
           else
             latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
-            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
+            test_set_id = latest_sequence_result&.test_set_id || instance.module.default_test_set
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
           end
         end
@@ -267,12 +279,17 @@ module Inferno
         post '/?' do
           url = params['fhir_server']
           url = url.chomp('/') if url.end_with?('/')
-          inferno_module = params['module']
+          inferno_module = Inferno::Module.get(params[:module])
+
+          if inferno_module.nil?
+            FHIR.logger.error "Unknown module: #{params[:module]}"
+            halt 404, "Unknown module: #{params[:module]}"
+          end
 
           @instance = Inferno::Models::TestingInstance.new(url: url,
                                                            name: params['name'],
                                                            base_url: request.base_url,
-                                                           selected_module: inferno_module)
+                                                           selected_module: inferno_module.name)
 
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
@@ -288,6 +305,8 @@ module Inferno
 
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
           @instance.redirect_uris = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/redirect"
+
+          cookies[:instance_id_test_set] = "#{@instance.id}/#{inferno_module.default_test_set}"
 
           @instance.save!
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
@@ -376,6 +395,8 @@ module Inferno
           halt 404 if instance.nil?
           test_set = instance.module.test_sets[params[:test_set].to_sym]
           halt 404 if test_set.nil?
+
+          cookies[:instance_id_test_set] = "#{instance.id}/#{params[:test_set]}"
 
           # Save params
           params[:required_fields].split(',').each do |field|

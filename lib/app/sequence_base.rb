@@ -61,10 +61,15 @@ module Inferno
         @metadata_only = metadata_only
       end
 
-      def resume(request = nil, headers = nil, params = nil, &block)
+      def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
         @params = params unless params.nil?
 
         @sequence_result.test_results.last.pass!
+
+        if fail_message.present?
+          @sequence_result.test_results.last.result = STATUS[:fail]
+          @sequence_result.test_results.last.message = fail_message
+        end
 
         unless request.nil?
           @sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
