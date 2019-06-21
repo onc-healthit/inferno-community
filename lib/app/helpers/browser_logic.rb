@@ -24,14 +24,20 @@ module Inferno
               ''
             end
 
-          print_debug = "console.log('js_update_result');"
-          progress_words = "$('#testsRunningModal').find('.number-complete:last').html('(#{set_count} of #{set_total} #{sequence.class.title} tests complete)');"
-          cancel = "$('#testsRunningModal .modal-footer').html('#{cancel_button}');"
-          progress = "var progress = Math.round((#{count}/#{total}) * 100);console.log(progress);"
-          progress_text = "$('#progress-bar').text(progress + '%').attr('aria-valuenow', progress);"
-          progress_width = "if (progress < 3) { $('#progress-bar').css('width', 3 + '%');} else {$('#progress-bar').css('width', progress + '%'); }"
-
-          "<script>#{print_debug}#{progress_words}#{cancel}#{progress}#{progress_text}#{progress_width}</script>"
+          %(
+            <script>
+              $('#testsRunningModal').find('.number-complete:last').html('(#{set_count} of #{set_total} #{sequence.class.title} tests complete)');
+              $('#testsRunningModal .modal-footer').html('#{cancel_button}');
+              var progress = Math.round((#{count}/#{total}) * 100);
+              console.log('js_update_result (' + progress + ')');
+              $('#progress-bar').text(progress + '%').attr('aria-valuenow', progress);
+              if (progress < 3) { 
+                $('#progress-bar').css('width', 3 + '%');
+              } else {
+                $('#progress-bar').css('width', progress + '%'); 
+              }
+            </script>
+          )
         end
 
         def js_redirect(location)
