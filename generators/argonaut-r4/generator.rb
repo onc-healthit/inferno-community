@@ -75,7 +75,7 @@ end
 def create_authorization_test(sequence)
   authorization_test = {
     tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
 
@@ -93,11 +93,11 @@ end
 def create_search_test(sequence, search_param)
   search_test = {
     tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
-  is_first_search = search_test[:index] == '02' # if first search - fix this check later
+  is_first_search = search_test[:index] == 2 # if first search - fix this check later
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}
@@ -127,7 +127,7 @@ end
 def create_interaction_test(sequence, interaction)
   interaction_test = {
     tests_that: "#{sequence[:resource]} #{interaction[:code]} resource supported",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
@@ -143,27 +143,44 @@ end
 def create_must_support_test(sequence)
   test = {
     tests_that: 'Demonstrates that the server can supply must supported elements',
-    index: format('%02d', sequence[:tests].length + 1),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support',
     test_code: ''
   }
-
+  
+  extensions_list = ''
   sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
-    test[:test_code] += %(
-        extension_found = @#{sequence[:resource].downcase}.extension.any? { |extension| extension.url == '#{extension[:url]}' }
-        element_found = @instance.must_support_confirmed.include?('#{extension[:id]}') || extension_found
-        skip 'Could not find #{extension[:id]} in the provided resource' unless element_found
-        @instance.must_support_confirmed += '#{extension[:id]},')
+    extensions_list += %(
+          '#{extension[:id]}': '#{extension[:url]}',)
   end
+  test[:test_code] += %(
+        extensions_list = {#{extensions_list}
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @#{sequence[:resource].downcase}.extension.any? { |extension| extension.url == url }
+          skip "Could not find \#{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "\#{id.to_s}," unless already_found
+        end)
 
+  elements_list = ''
   sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
-    truncated_path = element[:path].gsub("#{sequence[:resource]}.", '')
-    truncated_path = 'local_class' if truncated_path == 'class' # class is mapped to local_class in fhir_models
-    test[:test_code] += %(
-        element_found = @instance.must_support_confirmed.include?('#{element[:path]}') || can_resolve_path(@#{sequence[:resource].downcase}, '#{truncated_path}')
-        skip 'Could not find #{element[:path]} in the provided resource' unless element_found
-        @instance.must_support_confirmed += '#{element[:path]},')
+    element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
+    elements_list += %(
+          '#{element[:path]}',)
   end
+    
+  test[:test_code] += %(
+
+        must_support_elements = [#{elements_list}
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('#{sequence[:resource]}.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@#{sequence[:resource].downcase}, truncated_path)
+          skip "Could not find \#{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "\#{path}," unless already_found
+        end)
 
   test[:test_code] += %(
         @instance.save!)
@@ -174,7 +191,7 @@ end
 def create_resource_profile_test(sequence)
   test = {
     tests_that: "#{sequence[:resource]} resources associated with Patient conform to Argonaut profiles",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: sequence[:profile]
   }
   test[:test_code] = %(
@@ -187,7 +204,7 @@ end
 def create_references_resolved_test(sequence)
   test = {
     tests_that: 'All references can be resolved',
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://www.hl7.org/fhir/DSTU2/references.html'
   }
 

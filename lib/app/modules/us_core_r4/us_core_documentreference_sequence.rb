@@ -285,57 +285,41 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.identifier') || can_resolve_path(@documentreference, 'identifier')
-        skip 'Could not find DocumentReference.identifier in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.identifier,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.status') || can_resolve_path(@documentreference, 'status')
-        skip 'Could not find DocumentReference.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.status,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.type') || can_resolve_path(@documentreference, 'type')
-        skip 'Could not find DocumentReference.type in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.type,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.category') || can_resolve_path(@documentreference, 'category')
-        skip 'Could not find DocumentReference.category in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.category,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.subject') || can_resolve_path(@documentreference, 'subject')
-        skip 'Could not find DocumentReference.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.subject,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.date') || can_resolve_path(@documentreference, 'date')
-        skip 'Could not find DocumentReference.date in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.date,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.author') || can_resolve_path(@documentreference, 'author')
-        skip 'Could not find DocumentReference.author in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.author,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.custodian') || can_resolve_path(@documentreference, 'custodian')
-        skip 'Could not find DocumentReference.custodian in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.custodian,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.content') || can_resolve_path(@documentreference, 'content')
-        skip 'Could not find DocumentReference.content in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.content,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment') || can_resolve_path(@documentreference, 'content.attachment')
-        skip 'Could not find DocumentReference.content.attachment in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.content.attachment,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment.contentType') || can_resolve_path(@documentreference, 'content.attachment.contentType')
-        skip 'Could not find DocumentReference.content.attachment.contentType in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.content.attachment.contentType,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment.data') || can_resolve_path(@documentreference, 'content.attachment.data')
-        skip 'Could not find DocumentReference.content.attachment.data in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.content.attachment.data,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.attachment.url') || can_resolve_path(@documentreference, 'content.attachment.url')
-        skip 'Could not find DocumentReference.content.attachment.url in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.content.attachment.url,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.content.format') || can_resolve_path(@documentreference, 'content.format')
-        skip 'Could not find DocumentReference.content.format in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.content.format,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.context') || can_resolve_path(@documentreference, 'context')
-        skip 'Could not find DocumentReference.context in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.context,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.context.encounter') || can_resolve_path(@documentreference, 'context.encounter')
-        skip 'Could not find DocumentReference.context.encounter in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.context.encounter,'
-        element_found = @instance.must_support_confirmed.include?('DocumentReference.context.period') || can_resolve_path(@documentreference, 'context.period')
-        skip 'Could not find DocumentReference.context.period in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DocumentReference.context.period,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @documentreference.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'DocumentReference.identifier',
+          'DocumentReference.status',
+          'DocumentReference.type',
+          'DocumentReference.category',
+          'DocumentReference.subject',
+          'DocumentReference.date',
+          'DocumentReference.author',
+          'DocumentReference.custodian',
+          'DocumentReference.content',
+          'DocumentReference.content.attachment',
+          'DocumentReference.content.attachment.contentType',
+          'DocumentReference.content.attachment.data',
+          'DocumentReference.content.attachment.url',
+          'DocumentReference.content.format',
+          'DocumentReference.context',
+          'DocumentReference.context.encounter',
+          'DocumentReference.context.period',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('DocumentReference.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@documentreference, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

@@ -202,27 +202,31 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('CarePlan.text') || can_resolve_path(@careplan, 'text')
-        skip 'Could not find CarePlan.text in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.text,'
-        element_found = @instance.must_support_confirmed.include?('CarePlan.text.status') || can_resolve_path(@careplan, 'text.status')
-        skip 'Could not find CarePlan.text.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.text.status,'
-        element_found = @instance.must_support_confirmed.include?('CarePlan.status') || can_resolve_path(@careplan, 'status')
-        skip 'Could not find CarePlan.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.status,'
-        element_found = @instance.must_support_confirmed.include?('CarePlan.intent') || can_resolve_path(@careplan, 'intent')
-        skip 'Could not find CarePlan.intent in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.intent,'
-        element_found = @instance.must_support_confirmed.include?('CarePlan.category') || can_resolve_path(@careplan, 'category')
-        skip 'Could not find CarePlan.category in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.category,'
-        element_found = @instance.must_support_confirmed.include?('CarePlan.category') || can_resolve_path(@careplan, 'category')
-        skip 'Could not find CarePlan.category in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.category,'
-        element_found = @instance.must_support_confirmed.include?('CarePlan.subject') || can_resolve_path(@careplan, 'subject')
-        skip 'Could not find CarePlan.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CarePlan.subject,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @careplan.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'CarePlan.text',
+          'CarePlan.text.status',
+          'CarePlan.status',
+          'CarePlan.intent',
+          'CarePlan.category',
+          'CarePlan.category',
+          'CarePlan.subject',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('CarePlan.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@careplan, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

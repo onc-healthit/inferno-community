@@ -25,7 +25,7 @@ module Inferno
 
       test '<%=test[:tests_that]%>' do
         metadata do
-          id '<%=test[:index]%>'
+          id '<%=format('%02d', test[:index])%>'
           link '<%=test[:link]%>'
           desc %(
           )

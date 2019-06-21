@@ -134,8 +134,8 @@ class MetadataExtractor
 
       path = element['path']
       if path.include? '[x]'
-        variable_el = profile_definition['snapshot']['element'].select { |el| el['id'] == (path.split('[x]').first + '[x]') }.first
-        variable_el['type'].each do |type|
+        choice_el = profile_definition['snapshot']['element'].find { |el| el['id'] == (path.split('[x]').first + '[x]') }
+        choice_el['type'].each do |type|
           sequence[:must_supports] <<
             {
               type: 'element',

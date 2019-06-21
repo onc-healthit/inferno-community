@@ -226,60 +226,42 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Observation.status') || can_resolve_path(@observation, 'status')
-        skip 'Could not find Observation.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.status,'
-        element_found = @instance.must_support_confirmed.include?('Observation.category') || can_resolve_path(@observation, 'category')
-        skip 'Could not find Observation.category in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.category,'
-        element_found = @instance.must_support_confirmed.include?('Observation.code') || can_resolve_path(@observation, 'code')
-        skip 'Could not find Observation.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.code,'
-        element_found = @instance.must_support_confirmed.include?('Observation.subject') || can_resolve_path(@observation, 'subject')
-        skip 'Could not find Observation.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.subject,'
-        element_found = @instance.must_support_confirmed.include?('Observation.effectivedateTime') || can_resolve_path(@observation, 'effectivedateTime')
-        skip 'Could not find Observation.effectivedateTime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.effectivedateTime,'
-        element_found = @instance.must_support_confirmed.include?('Observation.effectivePeriod') || can_resolve_path(@observation, 'effectivePeriod')
-        skip 'Could not find Observation.effectivePeriod in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.effectivePeriod,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueQuantity') || can_resolve_path(@observation, 'valueQuantity')
-        skip 'Could not find Observation.valueQuantity in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueQuantity,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueCodeableConcept') || can_resolve_path(@observation, 'valueCodeableConcept')
-        skip 'Could not find Observation.valueCodeableConcept in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueCodeableConcept,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valuestring') || can_resolve_path(@observation, 'valuestring')
-        skip 'Could not find Observation.valuestring in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valuestring,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueboolean') || can_resolve_path(@observation, 'valueboolean')
-        skip 'Could not find Observation.valueboolean in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueboolean,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueinteger') || can_resolve_path(@observation, 'valueinteger')
-        skip 'Could not find Observation.valueinteger in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueinteger,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueRange') || can_resolve_path(@observation, 'valueRange')
-        skip 'Could not find Observation.valueRange in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueRange,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueRatio') || can_resolve_path(@observation, 'valueRatio')
-        skip 'Could not find Observation.valueRatio in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueRatio,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueSampledData') || can_resolve_path(@observation, 'valueSampledData')
-        skip 'Could not find Observation.valueSampledData in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueSampledData,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valuetime') || can_resolve_path(@observation, 'valuetime')
-        skip 'Could not find Observation.valuetime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valuetime,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valuedateTime') || can_resolve_path(@observation, 'valuedateTime')
-        skip 'Could not find Observation.valuedateTime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valuedateTime,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valuePeriod') || can_resolve_path(@observation, 'valuePeriod')
-        skip 'Could not find Observation.valuePeriod in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valuePeriod,'
-        element_found = @instance.must_support_confirmed.include?('Observation.dataAbsentReason') || can_resolve_path(@observation, 'dataAbsentReason')
-        skip 'Could not find Observation.dataAbsentReason in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.dataAbsentReason,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @observation.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Observation.status',
+          'Observation.category',
+          'Observation.code',
+          'Observation.subject',
+          'Observation.effectivedateTime',
+          'Observation.effectivePeriod',
+          'Observation.valueQuantity',
+          'Observation.valueCodeableConcept',
+          'Observation.valuestring',
+          'Observation.valueboolean',
+          'Observation.valueinteger',
+          'Observation.valueRange',
+          'Observation.valueRatio',
+          'Observation.valueSampledData',
+          'Observation.valuetime',
+          'Observation.valuedateTime',
+          'Observation.valuePeriod',
+          'Observation.dataAbsentReason',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Observation.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@observation, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

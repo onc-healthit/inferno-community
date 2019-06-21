@@ -226,21 +226,29 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Observation.status') || can_resolve_path(@observation, 'status')
-        skip 'Could not find Observation.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.status,'
-        element_found = @instance.must_support_confirmed.include?('Observation.code') || can_resolve_path(@observation, 'code')
-        skip 'Could not find Observation.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.code,'
-        element_found = @instance.must_support_confirmed.include?('Observation.subject') || can_resolve_path(@observation, 'subject')
-        skip 'Could not find Observation.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.subject,'
-        element_found = @instance.must_support_confirmed.include?('Observation.issued') || can_resolve_path(@observation, 'issued')
-        skip 'Could not find Observation.issued in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.issued,'
-        element_found = @instance.must_support_confirmed.include?('Observation.valueCodeableConcept') || can_resolve_path(@observation, 'valueCodeableConcept')
-        skip 'Could not find Observation.valueCodeableConcept in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Observation.valueCodeableConcept,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @observation.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Observation.status',
+          'Observation.code',
+          'Observation.subject',
+          'Observation.issued',
+          'Observation.valueCodeableConcept',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Observation.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@observation, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

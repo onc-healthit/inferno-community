@@ -94,9 +94,25 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Medication.code') || can_resolve_path(@medication, 'code')
-        skip 'Could not find Medication.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Medication.code,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @medication.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Medication.code',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Medication.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@medication, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

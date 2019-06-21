@@ -174,27 +174,31 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Immunization.status') || can_resolve_path(@immunization, 'status')
-        skip 'Could not find Immunization.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.status,'
-        element_found = @instance.must_support_confirmed.include?('Immunization.statusReason') || can_resolve_path(@immunization, 'statusReason')
-        skip 'Could not find Immunization.statusReason in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.statusReason,'
-        element_found = @instance.must_support_confirmed.include?('Immunization.vaccineCode') || can_resolve_path(@immunization, 'vaccineCode')
-        skip 'Could not find Immunization.vaccineCode in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.vaccineCode,'
-        element_found = @instance.must_support_confirmed.include?('Immunization.patient') || can_resolve_path(@immunization, 'patient')
-        skip 'Could not find Immunization.patient in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.patient,'
-        element_found = @instance.must_support_confirmed.include?('Immunization.occurrencedateTime') || can_resolve_path(@immunization, 'occurrencedateTime')
-        skip 'Could not find Immunization.occurrencedateTime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.occurrencedateTime,'
-        element_found = @instance.must_support_confirmed.include?('Immunization.occurrencestring') || can_resolve_path(@immunization, 'occurrencestring')
-        skip 'Could not find Immunization.occurrencestring in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.occurrencestring,'
-        element_found = @instance.must_support_confirmed.include?('Immunization.primarySource') || can_resolve_path(@immunization, 'primarySource')
-        skip 'Could not find Immunization.primarySource in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Immunization.primarySource,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @immunization.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Immunization.status',
+          'Immunization.statusReason',
+          'Immunization.vaccineCode',
+          'Immunization.patient',
+          'Immunization.occurrencedateTime',
+          'Immunization.occurrencestring',
+          'Immunization.primarySource',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Immunization.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@immunization, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

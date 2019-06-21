@@ -157,27 +157,31 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier') || can_resolve_path(@practitioner, 'identifier')
-        skip 'Could not find Practitioner.identifier in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.identifier,'
-        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier.system') || can_resolve_path(@practitioner, 'identifier.system')
-        skip 'Could not find Practitioner.identifier.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.identifier.system,'
-        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier.value') || can_resolve_path(@practitioner, 'identifier.value')
-        skip 'Could not find Practitioner.identifier.value in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.identifier.value,'
-        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier') || can_resolve_path(@practitioner, 'identifier')
-        skip 'Could not find Practitioner.identifier in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.identifier,'
-        element_found = @instance.must_support_confirmed.include?('Practitioner.identifier.system') || can_resolve_path(@practitioner, 'identifier.system')
-        skip 'Could not find Practitioner.identifier.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.identifier.system,'
-        element_found = @instance.must_support_confirmed.include?('Practitioner.name') || can_resolve_path(@practitioner, 'name')
-        skip 'Could not find Practitioner.name in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.name,'
-        element_found = @instance.must_support_confirmed.include?('Practitioner.name.family') || can_resolve_path(@practitioner, 'name.family')
-        skip 'Could not find Practitioner.name.family in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Practitioner.name.family,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @practitioner.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Practitioner.identifier',
+          'Practitioner.identifier.system',
+          'Practitioner.identifier.value',
+          'Practitioner.identifier',
+          'Practitioner.identifier.system',
+          'Practitioner.name',
+          'Practitioner.name.family',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Practitioner.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@practitioner, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

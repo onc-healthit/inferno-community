@@ -745,8 +745,8 @@ module Inferno
 
         path_ary = path.split('.')
         el_as_array = Array.wrap(element)
-        cur_path_part = path_ary.delete_at(0)
-        return false unless el_as_array.any? { |el| !el.try(cur_path_part.to_sym).nil? }
+        cur_path_part = path_ary.shift.to_sym
+        return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
 
         el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
       end

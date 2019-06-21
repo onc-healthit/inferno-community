@@ -266,57 +266,41 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Encounter.identifier') || can_resolve_path(@encounter, 'identifier')
-        skip 'Could not find Encounter.identifier in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.identifier,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.identifier.system') || can_resolve_path(@encounter, 'identifier.system')
-        skip 'Could not find Encounter.identifier.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.identifier.system,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.identifier.value') || can_resolve_path(@encounter, 'identifier.value')
-        skip 'Could not find Encounter.identifier.value in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.identifier.value,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.status') || can_resolve_path(@encounter, 'status')
-        skip 'Could not find Encounter.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.status,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.class') || can_resolve_path(@encounter, 'local_class')
-        skip 'Could not find Encounter.class in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.class,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.type') || can_resolve_path(@encounter, 'type')
-        skip 'Could not find Encounter.type in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.type,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.subject') || can_resolve_path(@encounter, 'subject')
-        skip 'Could not find Encounter.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.subject,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.participant') || can_resolve_path(@encounter, 'participant')
-        skip 'Could not find Encounter.participant in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.participant,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.participant.type') || can_resolve_path(@encounter, 'participant.type')
-        skip 'Could not find Encounter.participant.type in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.participant.type,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.participant.period') || can_resolve_path(@encounter, 'participant.period')
-        skip 'Could not find Encounter.participant.period in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.participant.period,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.participant.individual') || can_resolve_path(@encounter, 'participant.individual')
-        skip 'Could not find Encounter.participant.individual in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.participant.individual,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.period') || can_resolve_path(@encounter, 'period')
-        skip 'Could not find Encounter.period in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.period,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.reasonCode') || can_resolve_path(@encounter, 'reasonCode')
-        skip 'Could not find Encounter.reasonCode in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.reasonCode,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.hospitalization') || can_resolve_path(@encounter, 'hospitalization')
-        skip 'Could not find Encounter.hospitalization in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.hospitalization,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.hospitalization.dischargeDisposition') || can_resolve_path(@encounter, 'hospitalization.dischargeDisposition')
-        skip 'Could not find Encounter.hospitalization.dischargeDisposition in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.hospitalization.dischargeDisposition,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.location') || can_resolve_path(@encounter, 'location')
-        skip 'Could not find Encounter.location in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.location,'
-        element_found = @instance.must_support_confirmed.include?('Encounter.location.location') || can_resolve_path(@encounter, 'location.location')
-        skip 'Could not find Encounter.location.location in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Encounter.location.location,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @encounter.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Encounter.identifier',
+          'Encounter.identifier.system',
+          'Encounter.identifier.value',
+          'Encounter.status',
+          'Encounter.local_class',
+          'Encounter.type',
+          'Encounter.subject',
+          'Encounter.participant',
+          'Encounter.participant.type',
+          'Encounter.participant.period',
+          'Encounter.participant.individual',
+          'Encounter.period',
+          'Encounter.reasonCode',
+          'Encounter.hospitalization',
+          'Encounter.hospitalization.dischargeDisposition',
+          'Encounter.location',
+          'Encounter.location.location',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Encounter.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@encounter, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

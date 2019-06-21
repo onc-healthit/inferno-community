@@ -153,33 +153,33 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.practitioner') || can_resolve_path(@practitionerrole, 'practitioner')
-        skip 'Could not find PractitionerRole.practitioner in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.practitioner,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.organization') || can_resolve_path(@practitionerrole, 'organization')
-        skip 'Could not find PractitionerRole.organization in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.organization,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.code') || can_resolve_path(@practitionerrole, 'code')
-        skip 'Could not find PractitionerRole.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.code,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.specialty') || can_resolve_path(@practitionerrole, 'specialty')
-        skip 'Could not find PractitionerRole.specialty in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.specialty,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.location') || can_resolve_path(@practitionerrole, 'location')
-        skip 'Could not find PractitionerRole.location in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.location,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.telecom') || can_resolve_path(@practitionerrole, 'telecom')
-        skip 'Could not find PractitionerRole.telecom in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.telecom,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.telecom.system') || can_resolve_path(@practitionerrole, 'telecom.system')
-        skip 'Could not find PractitionerRole.telecom.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.telecom.system,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.telecom.value') || can_resolve_path(@practitionerrole, 'telecom.value')
-        skip 'Could not find PractitionerRole.telecom.value in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.telecom.value,'
-        element_found = @instance.must_support_confirmed.include?('PractitionerRole.endpoint') || can_resolve_path(@practitionerrole, 'endpoint')
-        skip 'Could not find PractitionerRole.endpoint in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'PractitionerRole.endpoint,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @practitionerrole.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'PractitionerRole.practitioner',
+          'PractitionerRole.organization',
+          'PractitionerRole.code',
+          'PractitionerRole.specialty',
+          'PractitionerRole.location',
+          'PractitionerRole.telecom',
+          'PractitionerRole.telecom.system',
+          'PractitionerRole.telecom.value',
+          'PractitionerRole.endpoint',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('PractitionerRole.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@practitionerrole, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

@@ -215,33 +215,33 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Location.status') || can_resolve_path(@location, 'status')
-        skip 'Could not find Location.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.status,'
-        element_found = @instance.must_support_confirmed.include?('Location.name') || can_resolve_path(@location, 'name')
-        skip 'Could not find Location.name in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.name,'
-        element_found = @instance.must_support_confirmed.include?('Location.telecom') || can_resolve_path(@location, 'telecom')
-        skip 'Could not find Location.telecom in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.telecom,'
-        element_found = @instance.must_support_confirmed.include?('Location.address') || can_resolve_path(@location, 'address')
-        skip 'Could not find Location.address in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.address,'
-        element_found = @instance.must_support_confirmed.include?('Location.address.line') || can_resolve_path(@location, 'address.line')
-        skip 'Could not find Location.address.line in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.address.line,'
-        element_found = @instance.must_support_confirmed.include?('Location.address.city') || can_resolve_path(@location, 'address.city')
-        skip 'Could not find Location.address.city in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.address.city,'
-        element_found = @instance.must_support_confirmed.include?('Location.address.state') || can_resolve_path(@location, 'address.state')
-        skip 'Could not find Location.address.state in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.address.state,'
-        element_found = @instance.must_support_confirmed.include?('Location.address.postalCode') || can_resolve_path(@location, 'address.postalCode')
-        skip 'Could not find Location.address.postalCode in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.address.postalCode,'
-        element_found = @instance.must_support_confirmed.include?('Location.managingOrganization') || can_resolve_path(@location, 'managingOrganization')
-        skip 'Could not find Location.managingOrganization in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Location.managingOrganization,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @location.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Location.status',
+          'Location.name',
+          'Location.telecom',
+          'Location.address',
+          'Location.address.line',
+          'Location.address.city',
+          'Location.address.state',
+          'Location.address.postalCode',
+          'Location.managingOrganization',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Location.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@location, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

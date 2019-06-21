@@ -149,42 +149,36 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Organization.identifier') || can_resolve_path(@organization, 'identifier')
-        skip 'Could not find Organization.identifier in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.identifier,'
-        element_found = @instance.must_support_confirmed.include?('Organization.identifier.system') || can_resolve_path(@organization, 'identifier.system')
-        skip 'Could not find Organization.identifier.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.identifier.system,'
-        element_found = @instance.must_support_confirmed.include?('Organization.active') || can_resolve_path(@organization, 'active')
-        skip 'Could not find Organization.active in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.active,'
-        element_found = @instance.must_support_confirmed.include?('Organization.name') || can_resolve_path(@organization, 'name')
-        skip 'Could not find Organization.name in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.name,'
-        element_found = @instance.must_support_confirmed.include?('Organization.telecom') || can_resolve_path(@organization, 'telecom')
-        skip 'Could not find Organization.telecom in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.telecom,'
-        element_found = @instance.must_support_confirmed.include?('Organization.address') || can_resolve_path(@organization, 'address')
-        skip 'Could not find Organization.address in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.address,'
-        element_found = @instance.must_support_confirmed.include?('Organization.address.line') || can_resolve_path(@organization, 'address.line')
-        skip 'Could not find Organization.address.line in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.address.line,'
-        element_found = @instance.must_support_confirmed.include?('Organization.address.city') || can_resolve_path(@organization, 'address.city')
-        skip 'Could not find Organization.address.city in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.address.city,'
-        element_found = @instance.must_support_confirmed.include?('Organization.address.state') || can_resolve_path(@organization, 'address.state')
-        skip 'Could not find Organization.address.state in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.address.state,'
-        element_found = @instance.must_support_confirmed.include?('Organization.address.postalCode') || can_resolve_path(@organization, 'address.postalCode')
-        skip 'Could not find Organization.address.postalCode in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.address.postalCode,'
-        element_found = @instance.must_support_confirmed.include?('Organization.address.country') || can_resolve_path(@organization, 'address.country')
-        skip 'Could not find Organization.address.country in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.address.country,'
-        element_found = @instance.must_support_confirmed.include?('Organization.endpoint') || can_resolve_path(@organization, 'endpoint')
-        skip 'Could not find Organization.endpoint in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Organization.endpoint,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @organization.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Organization.identifier',
+          'Organization.identifier.system',
+          'Organization.active',
+          'Organization.name',
+          'Organization.telecom',
+          'Organization.address',
+          'Organization.address.line',
+          'Organization.address.city',
+          'Organization.address.state',
+          'Organization.address.postalCode',
+          'Organization.address.country',
+          'Organization.endpoint',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Organization.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@organization, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

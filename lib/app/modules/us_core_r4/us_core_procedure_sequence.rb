@@ -200,21 +200,29 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Procedure.status') || can_resolve_path(@procedure, 'status')
-        skip 'Could not find Procedure.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Procedure.status,'
-        element_found = @instance.must_support_confirmed.include?('Procedure.code') || can_resolve_path(@procedure, 'code')
-        skip 'Could not find Procedure.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Procedure.code,'
-        element_found = @instance.must_support_confirmed.include?('Procedure.subject') || can_resolve_path(@procedure, 'subject')
-        skip 'Could not find Procedure.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Procedure.subject,'
-        element_found = @instance.must_support_confirmed.include?('Procedure.performeddateTime') || can_resolve_path(@procedure, 'performeddateTime')
-        skip 'Could not find Procedure.performeddateTime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Procedure.performeddateTime,'
-        element_found = @instance.must_support_confirmed.include?('Procedure.performedPeriod') || can_resolve_path(@procedure, 'performedPeriod')
-        skip 'Could not find Procedure.performedPeriod in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Procedure.performedPeriod,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @procedure.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Procedure.status',
+          'Procedure.code',
+          'Procedure.subject',
+          'Procedure.performeddateTime',
+          'Procedure.performedPeriod',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Procedure.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@procedure, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

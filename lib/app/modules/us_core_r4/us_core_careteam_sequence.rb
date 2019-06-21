@@ -131,21 +131,29 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('CareTeam.status') || can_resolve_path(@careteam, 'status')
-        skip 'Could not find CareTeam.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CareTeam.status,'
-        element_found = @instance.must_support_confirmed.include?('CareTeam.subject') || can_resolve_path(@careteam, 'subject')
-        skip 'Could not find CareTeam.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CareTeam.subject,'
-        element_found = @instance.must_support_confirmed.include?('CareTeam.participant') || can_resolve_path(@careteam, 'participant')
-        skip 'Could not find CareTeam.participant in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CareTeam.participant,'
-        element_found = @instance.must_support_confirmed.include?('CareTeam.participant.role') || can_resolve_path(@careteam, 'participant.role')
-        skip 'Could not find CareTeam.participant.role in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CareTeam.participant.role,'
-        element_found = @instance.must_support_confirmed.include?('CareTeam.participant.member') || can_resolve_path(@careteam, 'participant.member')
-        skip 'Could not find CareTeam.participant.member in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'CareTeam.participant.member,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @careteam.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'CareTeam.status',
+          'CareTeam.subject',
+          'CareTeam.participant',
+          'CareTeam.participant.role',
+          'CareTeam.participant.member',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('CareTeam.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@careteam, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

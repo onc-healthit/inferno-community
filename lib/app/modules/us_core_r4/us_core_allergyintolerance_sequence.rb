@@ -154,18 +154,28 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.clinicalStatus') || can_resolve_path(@allergyintolerance, 'clinicalStatus')
-        skip 'Could not find AllergyIntolerance.clinicalStatus in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'AllergyIntolerance.clinicalStatus,'
-        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.verificationStatus') || can_resolve_path(@allergyintolerance, 'verificationStatus')
-        skip 'Could not find AllergyIntolerance.verificationStatus in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'AllergyIntolerance.verificationStatus,'
-        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.code') || can_resolve_path(@allergyintolerance, 'code')
-        skip 'Could not find AllergyIntolerance.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'AllergyIntolerance.code,'
-        element_found = @instance.must_support_confirmed.include?('AllergyIntolerance.patient') || can_resolve_path(@allergyintolerance, 'patient')
-        skip 'Could not find AllergyIntolerance.patient in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'AllergyIntolerance.patient,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @allergyintolerance.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'AllergyIntolerance.clinicalStatus',
+          'AllergyIntolerance.verificationStatus',
+          'AllergyIntolerance.code',
+          'AllergyIntolerance.patient',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('AllergyIntolerance.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@allergyintolerance, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

@@ -269,72 +269,45 @@ module Inferno
           versions :r4
         end
 
-        extension_found = @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race' }
-        element_found = @instance.must_support_confirmed.include?('Patient.extension:race') || extension_found
-        skip 'Could not find Patient.extension:race in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.extension:race,'
-        extension_found = @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity' }
-        element_found = @instance.must_support_confirmed.include?('Patient.extension:ethnicity') || extension_found
-        skip 'Could not find Patient.extension:ethnicity in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.extension:ethnicity,'
-        extension_found = @patient.extension.any? { |extension| extension.url == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex' }
-        element_found = @instance.must_support_confirmed.include?('Patient.extension:birthsex') || extension_found
-        skip 'Could not find Patient.extension:birthsex in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.extension:birthsex,'
-        element_found = @instance.must_support_confirmed.include?('Patient.identifier') || can_resolve_path(@patient, 'identifier')
-        skip 'Could not find Patient.identifier in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.identifier,'
-        element_found = @instance.must_support_confirmed.include?('Patient.identifier.system') || can_resolve_path(@patient, 'identifier.system')
-        skip 'Could not find Patient.identifier.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.identifier.system,'
-        element_found = @instance.must_support_confirmed.include?('Patient.identifier.value') || can_resolve_path(@patient, 'identifier.value')
-        skip 'Could not find Patient.identifier.value in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.identifier.value,'
-        element_found = @instance.must_support_confirmed.include?('Patient.name') || can_resolve_path(@patient, 'name')
-        skip 'Could not find Patient.name in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.name,'
-        element_found = @instance.must_support_confirmed.include?('Patient.name.family') || can_resolve_path(@patient, 'name.family')
-        skip 'Could not find Patient.name.family in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.name.family,'
-        element_found = @instance.must_support_confirmed.include?('Patient.name.given') || can_resolve_path(@patient, 'name.given')
-        skip 'Could not find Patient.name.given in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.name.given,'
-        element_found = @instance.must_support_confirmed.include?('Patient.telecom') || can_resolve_path(@patient, 'telecom')
-        skip 'Could not find Patient.telecom in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.telecom,'
-        element_found = @instance.must_support_confirmed.include?('Patient.telecom.system') || can_resolve_path(@patient, 'telecom.system')
-        skip 'Could not find Patient.telecom.system in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.telecom.system,'
-        element_found = @instance.must_support_confirmed.include?('Patient.telecom.value') || can_resolve_path(@patient, 'telecom.value')
-        skip 'Could not find Patient.telecom.value in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.telecom.value,'
-        element_found = @instance.must_support_confirmed.include?('Patient.gender') || can_resolve_path(@patient, 'gender')
-        skip 'Could not find Patient.gender in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.gender,'
-        element_found = @instance.must_support_confirmed.include?('Patient.birthDate') || can_resolve_path(@patient, 'birthDate')
-        skip 'Could not find Patient.birthDate in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.birthDate,'
-        element_found = @instance.must_support_confirmed.include?('Patient.address') || can_resolve_path(@patient, 'address')
-        skip 'Could not find Patient.address in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.address,'
-        element_found = @instance.must_support_confirmed.include?('Patient.address.line') || can_resolve_path(@patient, 'address.line')
-        skip 'Could not find Patient.address.line in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.address.line,'
-        element_found = @instance.must_support_confirmed.include?('Patient.address.city') || can_resolve_path(@patient, 'address.city')
-        skip 'Could not find Patient.address.city in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.address.city,'
-        element_found = @instance.must_support_confirmed.include?('Patient.address.state') || can_resolve_path(@patient, 'address.state')
-        skip 'Could not find Patient.address.state in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.address.state,'
-        element_found = @instance.must_support_confirmed.include?('Patient.address.postalCode') || can_resolve_path(@patient, 'address.postalCode')
-        skip 'Could not find Patient.address.postalCode in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.address.postalCode,'
-        element_found = @instance.must_support_confirmed.include?('Patient.communication') || can_resolve_path(@patient, 'communication')
-        skip 'Could not find Patient.communication in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.communication,'
-        element_found = @instance.must_support_confirmed.include?('Patient.communication.language') || can_resolve_path(@patient, 'communication.language')
-        skip 'Could not find Patient.communication.language in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Patient.communication.language,'
+        extensions_list = {
+          'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
+          'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
+          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex',
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @patient.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Patient.identifier',
+          'Patient.identifier.system',
+          'Patient.identifier.value',
+          'Patient.name',
+          'Patient.name.family',
+          'Patient.name.given',
+          'Patient.telecom',
+          'Patient.telecom.system',
+          'Patient.telecom.value',
+          'Patient.gender',
+          'Patient.birthDate',
+          'Patient.address',
+          'Patient.address.line',
+          'Patient.address.city',
+          'Patient.address.state',
+          'Patient.address.postalCode',
+          'Patient.communication',
+          'Patient.communication.language',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Patient.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@patient, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

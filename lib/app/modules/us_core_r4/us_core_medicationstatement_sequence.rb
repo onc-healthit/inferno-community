@@ -174,30 +174,32 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.status') || can_resolve_path(@medicationstatement, 'status')
-        skip 'Could not find MedicationStatement.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.status,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.medicationCodeableConcept') || can_resolve_path(@medicationstatement, 'medicationCodeableConcept')
-        skip 'Could not find MedicationStatement.medicationCodeableConcept in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.medicationCodeableConcept,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.medicationReference') || can_resolve_path(@medicationstatement, 'medicationReference')
-        skip 'Could not find MedicationStatement.medicationReference in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.medicationReference,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.subject') || can_resolve_path(@medicationstatement, 'subject')
-        skip 'Could not find MedicationStatement.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.subject,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.effectivedateTime') || can_resolve_path(@medicationstatement, 'effectivedateTime')
-        skip 'Could not find MedicationStatement.effectivedateTime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.effectivedateTime,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.effectivePeriod') || can_resolve_path(@medicationstatement, 'effectivePeriod')
-        skip 'Could not find MedicationStatement.effectivePeriod in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.effectivePeriod,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.dateAsserted') || can_resolve_path(@medicationstatement, 'dateAsserted')
-        skip 'Could not find MedicationStatement.dateAsserted in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.dateAsserted,'
-        element_found = @instance.must_support_confirmed.include?('MedicationStatement.derivedFrom') || can_resolve_path(@medicationstatement, 'derivedFrom')
-        skip 'Could not find MedicationStatement.derivedFrom in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationStatement.derivedFrom,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @medicationstatement.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'MedicationStatement.status',
+          'MedicationStatement.medicationCodeableConcept',
+          'MedicationStatement.medicationReference',
+          'MedicationStatement.subject',
+          'MedicationStatement.effectivedateTime',
+          'MedicationStatement.effectivePeriod',
+          'MedicationStatement.dateAsserted',
+          'MedicationStatement.derivedFrom',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('MedicationStatement.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@medicationstatement, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

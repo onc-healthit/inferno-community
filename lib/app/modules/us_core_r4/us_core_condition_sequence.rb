@@ -226,21 +226,29 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('Condition.clinicalStatus') || can_resolve_path(@condition, 'clinicalStatus')
-        skip 'Could not find Condition.clinicalStatus in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Condition.clinicalStatus,'
-        element_found = @instance.must_support_confirmed.include?('Condition.verificationStatus') || can_resolve_path(@condition, 'verificationStatus')
-        skip 'Could not find Condition.verificationStatus in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Condition.verificationStatus,'
-        element_found = @instance.must_support_confirmed.include?('Condition.category') || can_resolve_path(@condition, 'category')
-        skip 'Could not find Condition.category in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Condition.category,'
-        element_found = @instance.must_support_confirmed.include?('Condition.code') || can_resolve_path(@condition, 'code')
-        skip 'Could not find Condition.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Condition.code,'
-        element_found = @instance.must_support_confirmed.include?('Condition.subject') || can_resolve_path(@condition, 'subject')
-        skip 'Could not find Condition.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'Condition.subject,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @condition.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'Condition.clinicalStatus',
+          'Condition.verificationStatus',
+          'Condition.category',
+          'Condition.code',
+          'Condition.subject',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('Condition.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@condition, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

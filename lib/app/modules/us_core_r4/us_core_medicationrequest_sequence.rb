@@ -174,30 +174,32 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.status') || can_resolve_path(@medicationrequest, 'status')
-        skip 'Could not find MedicationRequest.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.status,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.medicationCodeableConcept') || can_resolve_path(@medicationrequest, 'medicationCodeableConcept')
-        skip 'Could not find MedicationRequest.medicationCodeableConcept in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.medicationCodeableConcept,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.medicationReference') || can_resolve_path(@medicationrequest, 'medicationReference')
-        skip 'Could not find MedicationRequest.medicationReference in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.medicationReference,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.subject') || can_resolve_path(@medicationrequest, 'subject')
-        skip 'Could not find MedicationRequest.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.subject,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.authoredOn') || can_resolve_path(@medicationrequest, 'authoredOn')
-        skip 'Could not find MedicationRequest.authoredOn in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.authoredOn,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.requester') || can_resolve_path(@medicationrequest, 'requester')
-        skip 'Could not find MedicationRequest.requester in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.requester,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.dosageInstruction') || can_resolve_path(@medicationrequest, 'dosageInstruction')
-        skip 'Could not find MedicationRequest.dosageInstruction in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.dosageInstruction,'
-        element_found = @instance.must_support_confirmed.include?('MedicationRequest.dosageInstruction.text') || can_resolve_path(@medicationrequest, 'dosageInstruction.text')
-        skip 'Could not find MedicationRequest.dosageInstruction.text in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'MedicationRequest.dosageInstruction.text,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @medicationrequest.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'MedicationRequest.status',
+          'MedicationRequest.medicationCodeableConcept',
+          'MedicationRequest.medicationReference',
+          'MedicationRequest.subject',
+          'MedicationRequest.authoredOn',
+          'MedicationRequest.requester',
+          'MedicationRequest.dosageInstruction',
+          'MedicationRequest.dosageInstruction.text',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('MedicationRequest.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@medicationrequest, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 

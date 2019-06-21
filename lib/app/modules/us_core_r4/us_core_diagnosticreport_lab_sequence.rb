@@ -279,39 +279,35 @@ module Inferno
           versions :r4
         end
 
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.status') || can_resolve_path(@diagnosticreport, 'status')
-        skip 'Could not find DiagnosticReport.status in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.status,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.category') || can_resolve_path(@diagnosticreport, 'category')
-        skip 'Could not find DiagnosticReport.category in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.category,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.code') || can_resolve_path(@diagnosticreport, 'code')
-        skip 'Could not find DiagnosticReport.code in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.code,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.subject') || can_resolve_path(@diagnosticreport, 'subject')
-        skip 'Could not find DiagnosticReport.subject in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.subject,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.effectivedateTime') || can_resolve_path(@diagnosticreport, 'effectivedateTime')
-        skip 'Could not find DiagnosticReport.effectivedateTime in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.effectivedateTime,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.effectivePeriod') || can_resolve_path(@diagnosticreport, 'effectivePeriod')
-        skip 'Could not find DiagnosticReport.effectivePeriod in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.effectivePeriod,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.issued') || can_resolve_path(@diagnosticreport, 'issued')
-        skip 'Could not find DiagnosticReport.issued in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.issued,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.performer') || can_resolve_path(@diagnosticreport, 'performer')
-        skip 'Could not find DiagnosticReport.performer in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.performer,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.result') || can_resolve_path(@diagnosticreport, 'result')
-        skip 'Could not find DiagnosticReport.result in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.result,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.media') || can_resolve_path(@diagnosticreport, 'media')
-        skip 'Could not find DiagnosticReport.media in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.media,'
-        element_found = @instance.must_support_confirmed.include?('DiagnosticReport.presentedForm') || can_resolve_path(@diagnosticreport, 'presentedForm')
-        skip 'Could not find DiagnosticReport.presentedForm in the provided resource' unless element_found
-        @instance.must_support_confirmed += 'DiagnosticReport.presentedForm,'
+        extensions_list = {
+        }
+        extensions_list.each do |id, url|
+          already_found = @instance.must_support_confirmed.include?(id.to_s)
+          element_found = already_found || @diagnosticreport.extension.any? { |extension| extension.url == url }
+          skip "Could not find #{id.to_s} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+        end
+
+        must_support_elements = [
+          'DiagnosticReport.status',
+          'DiagnosticReport.category',
+          'DiagnosticReport.code',
+          'DiagnosticReport.subject',
+          'DiagnosticReport.effectivedateTime',
+          'DiagnosticReport.effectivePeriod',
+          'DiagnosticReport.issued',
+          'DiagnosticReport.performer',
+          'DiagnosticReport.result',
+          'DiagnosticReport.media',
+          'DiagnosticReport.presentedForm',
+        ]
+        must_support_elements.each do |path|
+          truncated_path = path.gsub('DiagnosticReport.', '')
+          already_found = @instance.must_support_confirmed.include?(path)
+          element_found = already_found || can_resolve_path(@diagnosticreport, truncated_path)
+          skip "Could not find #{path} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{path}," unless already_found
+        end
         @instance.save!
       end
 
