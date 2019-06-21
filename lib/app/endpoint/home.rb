@@ -31,12 +31,16 @@ module Inferno
             if instance.nil?
               instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
               if instance.nil?
-                error_message = '<p>Inferno has detected an issue with the SMART launch. ' \
-                                "No actively running launch sequences found with a state of #{params[:state]}. " \
-                                'The authorization server is not returning the correct state variable and ' \
-                                'therefore Inferno cannot identify which server is currently under test. ' \
-                                "Please click your browser's \"Back\" button to return to Inferno, " \
-                                "and click \"Refresh\" to ensure that the most recent test results are visible.</p>" # rubocop: disable Style/StringLiterals
+                error_message = %(
+                               <p>
+                                  Inferno has detected an issue with the SMART launch.
+                                  No actively running launch sequences found with a state of #{params[:state]}.
+                                  The authorization server is not returning the correct state variable and
+                                  therefore Inferno cannot identify which server is currently under test.
+                                  Please click your browser's "Back" button to return to Inferno,
+                                  and click "Refresh" to ensure that the most recent test results are visible.
+                                </p>
+                                )
 
                 error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" if params[:error].present?
 
@@ -44,7 +48,7 @@ module Inferno
 
                 halt 500, error_message
               elsif instance&.waiting_on_sequence&.wait?
-                error_message = 'No state for redirect'
+                error_message = "State provided in redirect (#{params[:state]}) does not match expected state (#{instance.state})."
               else
                 redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_state&state=#{params[:state]}"
               end
@@ -57,14 +61,14 @@ module Inferno
               :result => 'wait',
               :order => [:created_at.desc]
             )
-            iss_url = params[:iss].downcase.split('://').last.chomp('/')
+            iss_url = params[:iss]&.downcase&.split('://')&.last&.chomp('/')
 
             matching_results = recent_results.select do |sr|
               testing_instance_url = sr.testing_instance.url.downcase.split('://').last.chomp('/')
               testing_instance_url == iss_url
             end
 
-            instance = matching_results.first.try(:testing_instance)
+            instance = matching_results&.first&.testing_instance
             if instance.nil?
               instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
               if instance.nil?
@@ -207,7 +211,7 @@ module Inferno
             end
           else
             latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
-            test_set_id = latest_sequence_result.try(:test_set_id) || instance.module.default_test_set
+            test_set_id = latest_sequence_result&.test_set_id || instance.module.default_test_set
             redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
           end
         end
