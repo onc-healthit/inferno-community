@@ -93,6 +93,7 @@ module Inferno
             end
             client.default_json
             sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests, sequence_result)
+            first_test_count = sequence.test_count
 
             timer_count = 0
             stayalive_timer_seconds = 20
@@ -117,9 +118,16 @@ module Inferno
               out << js_hide_wait_modal
               out << js_show_test_modal
               count = sequence_result.test_results.length
+
+              submitted_test_cases_count = sequence_result.next_test_cases.split(',')
+              total_tests = submitted_test_cases_count.reduce(first_test_count) do |total, set|
+                sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
+                total + sequence_test_count
+              end
+
               sequence_result = sequence.resume(request, headers, request.params) do |result|
                 count += 1
-                out << js_update_result(sequence, test_set, result, count, sequence.test_count)
+                out << js_update_result(sequence, test_set, result, count, sequence.test_count, count, total_tests)
                 instance.save!
               end
               all_test_cases << test_case.id
@@ -143,6 +151,7 @@ module Inferno
 
               # continue processesing any afterwards
 
+              test_count = first_test_count
               until next_test_case.nil?
                 test_case = test_set.test_case_by_id(next_test_case)
 
@@ -158,8 +167,9 @@ module Inferno
                 sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
                 count = 0
                 sequence_result = sequence.start do |result|
+                  test_count += 1
                   count += 1
-                  out << js_update_result(sequence, test_set, result, count, sequence.test_count)
+                  out << js_update_result(sequence, test_set, result, count, sequence.test_count, test_count, total_tests)
                 end
                 all_test_cases << test_case.id
                 failed_test_cases << test_case.id if sequence_result.fail?
@@ -385,6 +395,14 @@ module Inferno
           end
           client.default_json
           submitted_test_cases = params[:test_case].split(',')
+
+          instance.reload # ensure that we have all the latest data
+
+          total_tests = submitted_test_cases.reduce(0) do |total, set|
+            sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
+            total + sequence_test_count
+          end
+
           test_group = nil
           test_group = test_set.test_case_by_id(submitted_test_cases.first).test_group
           failed_test_cases = []
@@ -408,6 +426,7 @@ module Inferno
             next_test_case = submitted_test_cases.shift
             finished = next_test_case.nil?
 
+            test_count = 0
             until next_test_case.nil?
               test_case = test_set.test_case_by_id(next_test_case)
 
@@ -424,7 +443,8 @@ module Inferno
               count = 0
               sequence_result = sequence.start(test_set.id, test_case.id) do |result|
                 count += 1
-                out << js_update_result(sequence, test_set, result, count, sequence.test_count)
+                test_count += 1
+                out << js_update_result(sequence, test_set, result, count, sequence.test_count, test_count, total_tests)
               end
 
               sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
