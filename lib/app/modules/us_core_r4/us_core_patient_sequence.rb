@@ -272,13 +272,13 @@ module Inferno
         extensions_list = {
           'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
           'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
-          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex',
+          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
         }
         extensions_list.each do |id, url|
           already_found = @instance.must_support_confirmed.include?(id.to_s)
           element_found = already_found || @patient.extension.any? { |extension| extension.url == url }
-          skip "Could not find #{id.to_s} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
+          skip "Could not find #{id} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "#{id}," unless already_found
         end
 
         must_support_elements = [
@@ -299,7 +299,7 @@ module Inferno
           'Patient.address.state',
           'Patient.address.postalCode',
           'Patient.communication',
-          'Patient.communication.language',
+          'Patient.communication.language'
         ]
         must_support_elements.each do |path|
           truncated_path = path.gsub('Patient.', '')

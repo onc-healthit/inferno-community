@@ -266,15 +266,6 @@ module Inferno
           versions :r4
         end
 
-        extensions_list = {
-        }
-        extensions_list.each do |id, url|
-          already_found = @instance.must_support_confirmed.include?(id.to_s)
-          element_found = already_found || @encounter.extension.any? { |extension| extension.url == url }
-          skip "Could not find #{id.to_s} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "#{id.to_s}," unless already_found
-        end
-
         must_support_elements = [
           'Encounter.identifier',
           'Encounter.identifier.system',
@@ -292,7 +283,7 @@ module Inferno
           'Encounter.hospitalization',
           'Encounter.hospitalization.dischargeDisposition',
           'Encounter.location',
-          'Encounter.location.location',
+          'Encounter.location.location'
         ]
         must_support_elements.each do |path|
           truncated_path = path.gsub('Encounter.', '')

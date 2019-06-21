@@ -147,32 +147,34 @@ def create_must_support_test(sequence)
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support',
     test_code: ''
   }
-  
-  extensions_list = ''
+
+  extensions_list = []
   sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
-    extensions_list += %(
-          '#{extension[:id]}': '#{extension[:url]}',)
+    extensions_list << "'#{extension[:id]}': '#{extension[:url]}'"
   end
-  test[:test_code] += %(
-        extensions_list = {#{extensions_list}
+  if extensions_list.any?
+    test[:test_code] += %(
+        extensions_list = {
+          #{extensions_list.join(",\n          ")}
         }
         extensions_list.each do |id, url|
           already_found = @instance.must_support_confirmed.include?(id.to_s)
           element_found = already_found || @#{sequence[:resource].downcase}.extension.any? { |extension| extension.url == url }
-          skip "Could not find \#{id.to_s} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "\#{id.to_s}," unless already_found
-        end)
-
-  elements_list = ''
+          skip "Could not find \#{id} in the provided resource" unless element_found
+          @instance.must_support_confirmed += "\#{id}," unless already_found
+        end
+)
+  end
+  elements_list = []
   sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
     element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
-    elements_list += %(
-          '#{element[:path]}',)
+    elements_list << "'#{element[:path]}'"
   end
-    
-  test[:test_code] += %(
 
-        must_support_elements = [#{elements_list}
+  if elements_list.any?
+    test[:test_code] += %(
+        must_support_elements = [
+          #{elements_list.join(",\n          ")}
         ]
         must_support_elements.each do |path|
           truncated_path = path.gsub('#{sequence[:resource]}.', '')
@@ -181,6 +183,7 @@ def create_must_support_test(sequence)
           skip "Could not find \#{path} in the provided resource" unless element_found
           @instance.must_support_confirmed += "\#{path}," unless already_found
         end)
+  end
 
   test[:test_code] += %(
         @instance.save!)
