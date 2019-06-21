@@ -369,7 +369,12 @@ $(function(){
       document.getElementById("preset").value = "";
       document.getElementById("instructions-link").style.display = "none";
     }
-  })
+  });
+
+  $(document.getElementsByClassName("next-back")).on('click', function() {
+    var next_tab = $('#' + this.id).data('next_tab');
+    $('#group-link-' + next_tab).click();
+  });
 
   if (window.location.hash != "") {
     var preset_id = window.location.hash;
