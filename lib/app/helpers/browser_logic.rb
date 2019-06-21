@@ -31,10 +31,10 @@ module Inferno
               var progress = Math.round((#{count}/#{total}) * 100);
               console.log('js_update_result (' + progress + ')');
               $('#progress-bar').text(progress + '%').attr('aria-valuenow', progress);
-              if (progress < 3) { 
+              if (progress < 3) {
                 $('#progress-bar').css('width', 3 + '%');
               } else {
-                $('#progress-bar').css('width', progress + '%'); 
+                $('#progress-bar').css('width', progress + '%');
               }
             </script>
           )
