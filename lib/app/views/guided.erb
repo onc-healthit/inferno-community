@@ -183,7 +183,7 @@
                           <span class="oi oi-loop"></span> Rerun Tests
                         </button>
                       <% when 'fail' %>
-                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
                           <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
                             <span class="oi oi-loop"></span> Rerun Skipped Tests
                           </button>
@@ -196,7 +196,7 @@
                           <span class="oi oi-media-play"></span> Begin Tests
                         </button>
                       <% when 'error' %>
-                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
                           <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
                             <span class="oi oi-loop"></span> Rerun Skipped Tests
                           </button>
@@ -209,7 +209,7 @@
                           <span class="oi oi-media-play"></span> Begin Tests
                         </button>
                       <% when 'skip' %>
-                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
+                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
                           <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
                             <span class="oi oi-loop"></span> Rerun Skipped Tests
                           </button>
@@ -530,6 +530,7 @@
     </div>
   </div>
 </div>
+
 
 <div class="modal fade" data-backdrop="static" data-keyboard="false" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
