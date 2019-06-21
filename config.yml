@@ -58,6 +58,14 @@ presets:
     client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
     client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
     instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
+  site_test_healthit_gov:
+    name: SITE FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    inferno_uri: https://infernotest.healthit.gov
+    client_id: TrToU5piE-dJ1g6PBG1elFV4r9KLmH
+    client_secret: ckFqb1ZhbmFMQS13WDE0c1dTLWxSdGRLSE8yUXpWNS1vSnd6azNrMmU3Y0JPdDRja3U=
+    instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
   site_local: 
     name: SITE FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
