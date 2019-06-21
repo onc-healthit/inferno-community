@@ -373,7 +373,10 @@ $(function(){
   }
 
   // Call when we initially load
-  handlePresetChange();
+  if($('#preset-select').length > 0){
+    handlePresetChange();
+  }
+
   // Set handler
   $('#preset-select').on('change', handlePresetChange);
 
