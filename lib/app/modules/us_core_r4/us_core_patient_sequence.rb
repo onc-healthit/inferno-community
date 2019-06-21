@@ -32,10 +32,10 @@ module Inferno
           assert resource&.name&.given == value, 'given on resource did not match given requested'
 
         when 'identifier'
-          assert resource.identifier.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          assert resource&.identifier&.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
 
         when 'name'
-          found = resource.name.any? do |name|
+          found = resource&.name&.any? do |name|
             name.text&.include?(value) ||
               name.family.include?(value) ||
               name.given.any { |given| given&.include?(value) } ||

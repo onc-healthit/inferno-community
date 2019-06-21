@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require_relative '../utils/result_statuses'
+
 module Inferno
   module Models
     class SequenceResult
+      include ResultStatuses
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :name, String
@@ -34,26 +37,6 @@ module Inferno
 
       has n, :test_results, order: [:test_index.asc]
       belongs_to :testing_instance
-
-      def fail?
-        result == 'fail' || error?
-      end
-
-      def error?
-        result == 'error'
-      end
-
-      def pass?
-        result == 'pass'
-      end
-
-      def skip?
-        result == 'skip'
-      end
-
-      def wait?
-        result == 'wait'
-      end
 
       def failures
         test_results.select(&:fail?)

@@ -1,0 +1,17 @@
+{
+  "resourceType": "Provenance",
+  "id": "1",
+  "target": [
+    {
+      "reference": "Patient/1234"
+    }
+  ],
+  "recorded": "2009-10-10T12:00:00-05:00",
+  "agent": [
+    {
+      "who": {
+        "reference": "Practitioner/abc"
+      }
+    }
+  ]
+}

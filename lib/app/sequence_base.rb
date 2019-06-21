@@ -64,7 +64,7 @@ module Inferno
       def resume(request = nil, headers = nil, params = nil, &block)
         @params = params unless params.nil?
 
-        @sequence_result.test_results.last.result = STATUS[:pass]
+        @sequence_result.test_results.last.pass!
 
         unless request.nil?
           @sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
@@ -77,7 +77,7 @@ module Inferno
           )
         end
 
-        @sequence_result.result = STATUS[:pass]
+        @sequence_result.pass!
         @sequence_result.wait_at_endpoint = nil
         @sequence_result.redirect_to_url = nil
 
@@ -86,7 +86,7 @@ module Inferno
         start(&block)
       end
 
-      def start(test_set_id = nil, test_case_id = nil)
+      def start(test_set_id = nil, test_case_id = nil, &block)
         if @sequence_result.nil?
           @sequence_result = Models::SequenceResult.new(
             name: sequence_name,
@@ -102,29 +102,61 @@ module Inferno
 
         start_at = @sequence_result.test_results.length
 
+        load_input_params(sequence_name)
+
+        output_results = save_output(sequence_name)
+
+        methods = self.methods.grep(/_test$/).sort[start_at..-1]
+
+        run_tests(methods, &block)
+
+        update_output(sequence_name, output_results)
+        @sequence_result.output_results = output_results.to_json if output_results.present?
+
+        @sequence_result.reset!
+        @sequence_result.pass!
+
+        update_result_counts
+
+        @sequence_result
+      end
+
+      def load_input_params(sequence_name)
         input_parameters = {}
-        @@requires[sequence_name]&.each do |requirement|
-          next unless @instance.respond_to? requirement
-
-          input_value = @instance.send(requirement).to_s
-          input_value = 'none' if input_value.empty?
-          input_parameters[requirement.to_sym] = input_value
-        end
+        @@requires[sequence_name]
+          &.select { |requirement| @instance.respond_to? requirement }
+          &.each do |requirement|
+            input_value = @instance.send(requirement).to_s
+            input_value = 'none' if input_value.empty?
+            input_parameters[requirement.to_sym] = input_value
+          end
         @sequence_result.input_params = input_parameters.to_json
+      end
 
-        output_results = {}
-        @@defines[sequence_name]&.each do |output|
-          next unless @instance.respond_to? output
-
-          output_value = @instance.send(output).to_s
-          output_value = 'none' if output_value.empty?
-          output_results[output.to_sym] = { original: output_value }
+      def save_output(sequence_name)
+        {}.tap do |output_results|
+          @@defines[sequence_name]
+            &.select { |output| @instance.respond_to? output }
+            &.each do |output|
+              output_value = @instance.send(output).to_s
+              output_value = 'none' if output_value.empty?
+              output_results[output.to_sym] = { original: output_value }
+            end
         end
+      end
 
-        methods = self.methods.grep(/_test$/).sort
-        methods.each_with_index do |test_method, index|
-          next if index < start_at
+      def update_output(sequence_name, output_results)
+        @@defines[sequence_name]
+          &.select { |output| @instance.respond_to? output }
+          &.each do |output|
+            output_value = @instance.send(output).to_s
+            output_value = 'none' if output_value.empty?
+            output_results[output.to_sym][:updated] = output_value
+          end
+      end
 
+      def run_tests(methods)
+        methods.each do |test_method|
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
           result = method(test_method).call
@@ -134,17 +166,17 @@ module Inferno
           if result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?
             begin
               @params = run_script(@instance.standalone_launch_script, result.redirect_to_url)
-              result.result = STATUS[:pass]
+              result.pass!
             rescue StandardError => e
-              result.result = STATUS[:fail]
+              result.fail!
               result.message = "Automated browser script failed: #{e}"
             end
           elsif result.wait_at_endpoint == 'launch' && !@instance.ehr_launch_script.nil?
             begin
               @params = run_script(@instance.ehr_launch_script)
-              result.result = STATUS[:pass]
+              result.pass!
             rescue StandardError => e
-              result.result = STATUS[:fail]
+              result.fail!
               result.message = "Automated browser script failed: #{e}"
             end
           end
@@ -161,26 +193,15 @@ module Inferno
 
           @sequence_result.test_results << result
 
-          next unless result.result == STATUS[:wait]
+          next unless result.wait?
 
           @sequence_result.redirect_to_url = result.redirect_to_url
           @sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
+      end
 
-        @@defines[sequence_name]&.each do |output|
-          next unless @instance.respond_to? output
-
-          output_value = @instance.send(output).to_s
-          output_value = 'none' if output_value.empty?
-          output_results[output.to_sym][:updated] = output_value
-        end
-
-        @sequence_result.output_results = output_results.to_json if !output_results.nil? && !output_results.empty?
-
-        @sequence_result.reset!
-        @sequence_result.result = STATUS[:pass]
-
+      def update_result_counts
         @sequence_result.test_results.each do |result|
           if result.required
             @sequence_result.required_total += 1
@@ -198,7 +219,7 @@ module Inferno
             @sequence_result.todo_count += 1
           when STATUS[:fail]
             if result.required
-              @sequence_result.result = result.result if @sequence_result.result != STATUS[:error]
+              @sequence_result.result = result.result unless @sequence_result.error?
             end
           when STATUS[:error]
             if result.required
@@ -208,14 +229,12 @@ module Inferno
           when STATUS[:skip]
             if result.required
               @sequence_result.skip_count += 1
-              @sequence_result.result = result.result if @sequence_result.result == STATUS[:pass]
+              @sequence_result.result = result.result if @sequence_result.pass?
             end
           when STATUS[:wait]
             @sequence_result.result = result.result
           end
         end
-
-        @sequence_result
       end
 
       def self.test_count
@@ -403,30 +422,30 @@ module Inferno
             Inferno.logger.info "Starting Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
             instance_eval(&block)
           rescue AssertionException, ClientException => e
-            result.result = STATUS[:fail]
+            result.fail!
             result.message = e.message
             result.details = e.details
           rescue PassException => e
-            result.result = STATUS[:pass]
+            result.pass!
             result.message = e.message
           rescue TodoException => e
-            result.result = STATUS[:todo]
+            result.todo!
             result.message = e.message
           rescue WaitException => e
-            result.result = STATUS[:wait]
+            result.wait!
             result.wait_at_endpoint = e.endpoint
           rescue RedirectException => e
-            result.result = STATUS[:wait]
+            result.wait!
             result.wait_at_endpoint = e.endpoint
             result.redirect_to_url = e.url
           rescue SkipException => e
-            result.result = STATUS[:skip]
+            result.skip!
             result.message = e.message
             result.details = e.details
           rescue StandardError => e
             Inferno.logger.error "Fatal Error: #{e.message}"
             Inferno.logger.error e.backtrace
-            result.result = STATUS[:error]
+            result.error!
             result.message = "Fatal Error: #{e.message}"
           end
           result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) } unless @test_warnings.empty?

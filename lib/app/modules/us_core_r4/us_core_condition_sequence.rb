@@ -17,9 +17,6 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
 
-        when 'patient'
-          assert (resource&.subject && resource.subject.reference.include?(value)), 'patient on resource does not match patient requested'
-
         when 'category'
           codings = resource&.category&.first&.coding
           assert !codings.nil?, 'category on resource did not match category requested'
@@ -29,6 +26,9 @@ module Inferno
           codings = resource&.clinicalStatus&.coding
           assert !codings.nil?, 'clinical-status on resource did not match clinical-status requested'
           assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'clinical-status on resource did not match clinical-status requested'
+
+        when 'patient'
+          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
 
         when 'onset-date'
 
