@@ -38,7 +38,7 @@ module Inferno
                                 "Please click your browser's \"Back\" button to return to Inferno, " \
                                 "and click \"Refresh\" to ensure that the most recent test results are visible.</p>" # rubocop: disable Style/StringLiterals
 
-                error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" unless params[:error].nil?
+                error_message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" if params[:error].present?
 
                 error_message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
 
