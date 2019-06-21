@@ -176,11 +176,11 @@
                   </div>
                   <%= markdown_to_html(group.overview) %>
 
-                  <div class='buttons-container'>
+                  <div class='buttons-container buttons-container-<%=group_result.to_s%>'>
                     <% case group_result.to_s
                       when 'pass' %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun All Tests
+                          <span class="oi oi-loop"></span> Rerun Tests
                         </button>
                       <% when 'fail' %>
                         <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id].try(:result) == 'skip'} %>
@@ -189,7 +189,7 @@
                           </button>
                         <% end %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun All Tests
+                          <span class="oi oi-loop"></span> Rerun Tests
                         </button>
                       <% when 'cancel' %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
@@ -202,7 +202,7 @@
                           </button>
                         <% end %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun All Tests
+                          <span class="oi oi-loop"></span> Rerun Tests
                         </button>
                       <% when 'wait' %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
@@ -215,7 +215,7 @@
                           </button>
                         <% end %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun All Tests
+                          <span class="oi oi-loop"></span> Rerun Tests
                         </button>
                       <% else %>
                         <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
