@@ -342,7 +342,7 @@ $(function(){
   // Then register the handler
   $(window).on('scroll', handleScroll)
 
-  $('#preset-select').on('change', function(e, preset_id = "") {
+  function handlePresetChange(e, preset_id = ""){
     preset_id = preset_id == "" ? $('#preset-select option:selected').data('selected') : preset_id;
     var all = $('#preset-select option:selected').data('all');
     var modules = $('#preset-select option:selected').data('module_names').split(",");
@@ -358,18 +358,24 @@ $(function(){
     var preset_on = $el.val() == '' ? false : true;
 
     if (preset_on) {
-      modules.forEach(mod => document.getElementById(mod).disabled = true);
+      modules.forEach(function(mod){document.getElementById(mod).disabled = true});
       document.getElementById(preset.module).checked = true;
       document.getElementById(preset.module).disabled = false;
       document.getElementById("preset").value = JSON.stringify(preset);
       document.getElementById("instructions-link").style.display = preset.instructions == null ? "none" : "";
       document.getElementById("instructions-link").href = preset.instructions;
     } else {
-      modules.forEach(mod => document.getElementById(mod).disabled = false);
+      modules.forEach(function(mod){document.getElementById(mod).disabled = false});
       document.getElementById("preset").value = "";
       document.getElementById("instructions-link").style.display = "none";
     }
-  });
+
+  }
+
+  // Call when we initially load
+  handlePresetChange();
+  // Set handler
+  $('#preset-select').on('change', handlePresetChange);
 
   $(document.getElementsByClassName("next-back")).on('click', function() {
     var next_tab = $('#' + this.id).data('next_tab');
