@@ -66,7 +66,7 @@ module Inferno
 
         @sequence_result.test_results.last.pass!
 
-        unless fail_message.nil?
+        if fail_message.present?
           @sequence_result.test_results.last.result = STATUS[:fail]
           @sequence_result.test_results.last.message = fail_message
         end
