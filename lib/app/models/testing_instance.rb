@@ -236,6 +236,16 @@ module Inferno
         reload
       end
 
+      def save_resource_ids_in_bundle(klass, reply)
+        return if reply&.resource&.entry&.blank?
+
+        reply.resource.entry
+          .select { |entry| entry.resource.class == klass }
+          .each do |entry|
+          save_resource_reference(klass.name.demodulize, entry.resource.id)
+        end
+      end
+
       def versioned_conformance_class
         if fhir_version == 'dstu2'
           FHIR::DSTU2::Conformance
