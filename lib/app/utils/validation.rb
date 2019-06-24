@@ -84,7 +84,7 @@ module Inferno
               return DEFINITIONS[ARGONAUT_URIS[:vital_signs]]
             end
           elsif resource.resourceType == 'CarePlan'
-            if resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'careteam' }
+            if resource.category.any? { |category| category.coding.any? { |coding| coding.code == 'careteam' } }
               return DEFINITIONS[ARGONAUT_URIS[:care_team]]
             else
               return DEFINITIONS[ARGONAUT_URIS[:care_plan]]

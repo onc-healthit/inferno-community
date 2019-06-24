@@ -9,11 +9,7 @@
   "recorded": "2009-10-10T12:00:00-05:00",
   "agent": [
     {
-      "role": {
-        "system": "http://hl7.org/fhir/provenance-participant-role",
-        "code": "enterer"
-      },
-      "actor": {
+      "who": {
         "reference": "Practitioner/abc"
       }
     }
