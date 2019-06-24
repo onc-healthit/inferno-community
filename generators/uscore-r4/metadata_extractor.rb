@@ -164,16 +164,23 @@ class MetadataExtractor
         path = path_parts[0]
       end
       profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
+      param_metadata = {
+        path: path,
+        comparators: {}
+      }
       if !profile_element.nil?
-        sequence[:search_param_descriptions][param][:type] = profile_element['type'].first['code']
-        sequence[:search_param_descriptions][param][:path] = path
-        sequence[:search_param_descriptions][param][:contains_multiple] = (profile_element['max'] == '*')
+        param_metadata[:type] = profile_element['type'].first['code']
+        param_metadata[:contains_multiple] = (profile_element['max'] == '*')
       else
         # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
-        sequence[:search_param_descriptions][param][:type] = search_param_definition['type']
-        sequence[:search_param_descriptions][param][:path] = path
-        sequence[:search_param_descriptions][param][:contains_multiple] = false
+        param_metadata[:type] = search_param_definition['type']
+        param_metadata[:contains_multiple] = false
       end
+      search_param_definition['comparator']&.each_with_index do |comparator, index|
+        expectation = search_param_definition['_comparator'][index]['extension'].first['valueCode']
+        param_metadata[:comparators][comparator.to_sym] = expectation
+      end
+      sequence[:search_param_descriptions][param] = param_metadata
     end
   end
 
