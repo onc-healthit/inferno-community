@@ -19,11 +19,10 @@ class ONCProgramDocumentReferenceTest < MiniTest::Test
       entry.resource.meta.versionId = '1'
     end
 
-    @patient_id = @resource.target&.first&.reference
+    @patient_id = @resource.subject&.reference
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
-    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
     # Assume we already have a patient
     @instance.resource_references << Inferno::Models::ResourceReference.new(
@@ -61,7 +60,7 @@ class ONCProgramDocumentReferenceTest < MiniTest::Test
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}?patient=#{@resource.target.first.reference}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}?patient=#{@patient_id}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources

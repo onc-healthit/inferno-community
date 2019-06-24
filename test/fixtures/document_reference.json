@@ -4,6 +4,7 @@
   "subject": {
     "reference": "Patient/1234"
   },
+  "status": "current",
   "type": {
     "coding": [
       {
@@ -27,6 +28,8 @@
       "reference": "Practitioner/abcd"
     }
   ],
+  "created": "2005-12-24T09:35:00+11:00",
+  "indexed": "2005-12-24T09:43:41+11:00",
   "content": [
     {
       "attachment": {
