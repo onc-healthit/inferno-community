@@ -44,6 +44,7 @@ module Inferno
 
       delegate :versioned_resource_class, to: :@client
       delegate :versioned_conformance_class, to: :@instance
+      delegate :save_resource_ids_in_bundle, to: :@instance
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
         @client = client
@@ -552,16 +553,6 @@ module Inferno
             validate_resource_item(entry.resource, key.to_s, value)
           end
         end
-      end
-
-      def save_resource_ids_in_bundle(klass, reply)
-        return if reply&.resource&.entry&.blank?
-
-        reply.resource.entry
-          .select { |entry| entry.resource.class == klass }
-          .each do |entry|
-            @instance.save_resource_reference(klass.name.demodulize, entry.resource.id)
-          end
       end
 
       def validate_read_reply(resource, klass)
