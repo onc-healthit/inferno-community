@@ -555,14 +555,13 @@ module Inferno
       end
 
       def save_resource_ids_in_bundle(klass, reply)
-        return if reply&.resource&.entry.blank?
+        return if reply&.resource&.entry&.blank?
 
-        entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
-
-        entries.each do |entry|
-          @instance.post_resource_references(resource_type: klass.name.demodulize,
-                                             resource_id: entry.resource.id)
-        end
+        reply.resource.entry
+          .select { |entry| entry.resource.class == klass }
+          .each do |entry|
+            @instance.save_resource_reference(klass.name.demodulize, entry.resource.id)
+          end
       end
 
       def validate_read_reply(resource, klass)

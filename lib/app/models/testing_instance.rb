@@ -182,7 +182,7 @@ module Inferno
           conformance
             .rest.first.resource
             .select { |resource| resources.include? resource.type }
-            .each_with_object({}) { |resource, hash| hash[resource.type] = resource }
+            .index_by(&:type)
 
         supported_resources.each(&:destroy)
         save!
@@ -225,12 +225,14 @@ module Inferno
         end
       end
 
-      def post_resource_references(resource_type: nil, resource_id: nil)
-        resource_references.each do |ref|
-          ref.destroy if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
-        end
-        resource_references << ResourceReference.new(resource_type: resource_type,
-                                                     resource_id: resource_id)
+      def save_resource_reference(type, id)
+        resource_references
+          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
+          .each(&:destroy)
+
+        new_reference = ResourceReference.new(resource_type: type, resource_id: id)
+        resource_references << new_reference
+
         save!
         # Ensure the instance resource references are accurate
         reload
