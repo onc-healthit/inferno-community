@@ -98,7 +98,7 @@ module Inferno
       end
 
       def all_test_cases(test_set_id)
-        self.module.test_sets[test_set_id.to_sym].groups.each_with_object([]) { |g, o| o.push(*g.test_cases) }
+        self.module.test_sets[test_set_id.to_sym].groups.flat_map(&:test_cases)
       end
 
       def all_passed?(test_set_id)
