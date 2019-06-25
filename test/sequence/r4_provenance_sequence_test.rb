@@ -5,7 +5,7 @@ require_relative '../test_helper'
 class R4ProvenanceSequenceTest < MiniTest::Test
   def setup
     @patient_id = 1234
-    @provenance_resource = load_json_fixture(:provenance)
+    @provenance_resource = load_json_fixture(:r4_provenance)
     provenance_url = "http://www.example.com/Provenance/#{@provenance_resource['id']}"
     @provenance_bundle = {
       resourceType: 'Bundle',
