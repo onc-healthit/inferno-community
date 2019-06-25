@@ -1122,10 +1122,12 @@ body {
 
 .guided .buttons-container-pass .next{
   background-color: #17a2b8;
+  border-color: #17a2b8;
 }
 
 .guided .buttons-container-pass .sequence-button{
   background-color: #7b9ba0;
+  border-color: #7b9ba0;
 }
 
 
