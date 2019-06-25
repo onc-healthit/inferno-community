@@ -186,13 +186,15 @@ module Inferno
           'Immunization.primarySource'
         ]
         must_support_elements.each do |path|
+          element_found = false
           @immunization_ary&.each do |resource|
             truncated_path = path.gsub('Immunization.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)
-            skip "Could not find #{path} in the provided resource" unless element_found
-            @instance.must_support_confirmed += "#{path}," unless already_found
+            @instance.must_support_confirmed += "#{path}," if element_found && !already_found
+            break if element_found
           end
+          skip "Could not find #{path} in the provided resource" unless element_found
         end
         @instance.save!
       end
