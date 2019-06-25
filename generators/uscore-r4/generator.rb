@@ -105,12 +105,13 @@ def create_search_test(sequence, search_param)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply))
     else
@@ -158,10 +159,12 @@ def create_must_support_test(sequence)
           #{extensions_list.join(",\n          ")}
         }
         extensions_list.each do |id, url|
-          already_found = @instance.must_support_confirmed.include?(id.to_s)
-          element_found = already_found || @#{sequence[:resource].downcase}.extension.any? { |extension| extension.url == url }
-          skip "Could not find \#{id} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "\#{id}," unless already_found
+          @#{sequence[:resource].downcase}_ary.each do |resource|
+            already_found = @instance.must_support_confirmed.include?(id.to_s)
+            element_found = already_found || resource.extension.any? { |extension| extension.url == url }
+            skip "Could not find \#{id} in the provided resource" unless element_found
+            @instance.must_support_confirmed += "\#{id}," unless already_found
+          end
         end
 )
   end
@@ -177,11 +180,13 @@ def create_must_support_test(sequence)
           #{elements_list.join(",\n          ")}
         ]
         must_support_elements.each do |path|
-          truncated_path = path.gsub('#{sequence[:resource]}.', '')
-          already_found = @instance.must_support_confirmed.include?(path)
-          element_found = already_found || can_resolve_path(@#{sequence[:resource].downcase}, truncated_path)
-          skip "Could not find \#{path} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "\#{path}," unless already_found
+          @#{sequence[:resource].downcase}_ary.each do |resource|
+            truncated_path = path.gsub('#{sequence[:resource]}.', '')
+            already_found = @instance.must_support_confirmed.include?(path)
+            element_found = already_found || can_resolve_path(resource, truncated_path)
+            skip "Could not find \#{path} in the provided resource" unless element_found
+            @instance.must_support_confirmed += "\#{path}," unless already_found
+          end
         end)
   end
 
@@ -193,7 +198,7 @@ end
 
 def create_resource_profile_test(sequence)
   test = {
-    tests_that: "#{sequence[:resource]} resources associated with Patient conform to Argonaut profiles",
+    tests_that: "#{sequence[:resource]} resources associated with Patient conform to US Core R4 profiles",
     index: sequence[:tests].length + 1,
     link: sequence[:profile]
   }

@@ -98,16 +98,18 @@ module Inferno
           'Medication.code'
         ]
         must_support_elements.each do |path|
-          truncated_path = path.gsub('Medication.', '')
-          already_found = @instance.must_support_confirmed.include?(path)
-          element_found = already_found || can_resolve_path(@medication, truncated_path)
-          skip "Could not find #{path} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "#{path}," unless already_found
+          @medication_ary.each do |resource|
+            truncated_path = path.gsub('Medication.', '')
+            already_found = @instance.must_support_confirmed.include?(path)
+            element_found = already_found || can_resolve_path(resource, truncated_path)
+            skip "Could not find #{path} in the provided resource" unless element_found
+            @instance.must_support_confirmed += "#{path}," unless already_found
+          end
         end
         @instance.save!
       end
 
-      test 'Medication resources associated with Patient conform to Argonaut profiles' do
+      test 'Medication resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication.json'

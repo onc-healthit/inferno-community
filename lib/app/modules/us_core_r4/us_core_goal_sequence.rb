@@ -70,12 +70,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @goal_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
       end
@@ -183,16 +184,18 @@ module Inferno
           'Goal.target.dueDuration'
         ]
         must_support_elements.each do |path|
-          truncated_path = path.gsub('Goal.', '')
-          already_found = @instance.must_support_confirmed.include?(path)
-          element_found = already_found || can_resolve_path(@goal, truncated_path)
-          skip "Could not find #{path} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "#{path}," unless already_found
+          @goal_ary.each do |resource|
+            truncated_path = path.gsub('Goal.', '')
+            already_found = @instance.must_support_confirmed.include?(path)
+            element_found = already_found || can_resolve_path(resource, truncated_path)
+            skip "Could not find #{path} in the provided resource" unless element_found
+            @instance.must_support_confirmed += "#{path}," unless already_found
+          end
         end
         @instance.save!
       end
 
-      test 'Goal resources associated with Patient conform to Argonaut profiles' do
+      test 'Goal resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-goal.json'

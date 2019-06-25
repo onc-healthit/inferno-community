@@ -66,12 +66,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @organization = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @organization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
       end
@@ -164,16 +165,18 @@ module Inferno
           'Organization.endpoint'
         ]
         must_support_elements.each do |path|
-          truncated_path = path.gsub('Organization.', '')
-          already_found = @instance.must_support_confirmed.include?(path)
-          element_found = already_found || can_resolve_path(@organization, truncated_path)
-          skip "Could not find #{path} in the provided resource" unless element_found
-          @instance.must_support_confirmed += "#{path}," unless already_found
+          @organization_ary.each do |resource|
+            truncated_path = path.gsub('Organization.', '')
+            already_found = @instance.must_support_confirmed.include?(path)
+            element_found = already_found || can_resolve_path(resource, truncated_path)
+            skip "Could not find #{path} in the provided resource" unless element_found
+            @instance.must_support_confirmed += "#{path}," unless already_found
+          end
         end
         @instance.save!
       end
 
-      test 'Organization resources associated with Patient conform to Argonaut profiles' do
+      test 'Organization resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-organization.json'
