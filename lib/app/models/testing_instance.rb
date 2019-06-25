@@ -113,7 +113,7 @@ module Inferno
         latest_results = latest_results_by_case
 
         all_test_cases(test_set_id).any? do |test_case|
-          ['fail', 'error'].include? latest_results[test_case.id]&.result
+         latest_results[test_case.id]&.fail?
         end
       end
 
