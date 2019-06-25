@@ -270,13 +270,14 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @patient_ary&.any?
         extensions_list = {
           'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
           'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
           'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
         }
         extensions_list.each do |id, url|
-          @patient_ary.each do |resource|
+          @patient_ary&.each do |resource|
             already_found = @instance.must_support_confirmed.include?(id.to_s)
             element_found = already_found || resource.extension.any? { |extension| extension.url == url }
             skip "Could not find #{id} in the provided resource" unless element_found
@@ -305,7 +306,7 @@ module Inferno
           'Patient.communication.language'
         ]
         must_support_elements.each do |path|
-          @patient_ary.each do |resource|
+          @patient_ary&.each do |resource|
             truncated_path = path.gsub('Patient.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

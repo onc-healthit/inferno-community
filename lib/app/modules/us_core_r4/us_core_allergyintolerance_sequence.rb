@@ -155,6 +155,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @allergyintolerance_ary&.any?
         must_support_elements = [
           'AllergyIntolerance.clinicalStatus',
           'AllergyIntolerance.verificationStatus',
@@ -162,7 +163,7 @@ module Inferno
           'AllergyIntolerance.patient'
         ]
         must_support_elements.each do |path|
-          @allergyintolerance_ary.each do |resource|
+          @allergyintolerance_ary&.each do |resource|
             truncated_path = path.gsub('AllergyIntolerance.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

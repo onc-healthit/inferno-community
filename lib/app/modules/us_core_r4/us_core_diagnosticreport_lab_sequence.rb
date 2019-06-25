@@ -280,6 +280,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @diagnosticreport_ary&.any?
         must_support_elements = [
           'DiagnosticReport.status',
           'DiagnosticReport.category',
@@ -294,7 +295,7 @@ module Inferno
           'DiagnosticReport.presentedForm'
         ]
         must_support_elements.each do |path|
-          @diagnosticreport_ary.each do |resource|
+          @diagnosticreport_ary&.each do |resource|
             truncated_path = path.gsub('DiagnosticReport.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

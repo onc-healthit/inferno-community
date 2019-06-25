@@ -267,6 +267,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @encounter_ary&.any?
         must_support_elements = [
           'Encounter.identifier',
           'Encounter.identifier.system',
@@ -287,7 +288,7 @@ module Inferno
           'Encounter.location.location'
         ]
         must_support_elements.each do |path|
-          @encounter_ary.each do |resource|
+          @encounter_ary&.each do |resource|
             truncated_path = path.gsub('Encounter.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

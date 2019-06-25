@@ -201,6 +201,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @procedure_ary&.any?
         must_support_elements = [
           'Procedure.status',
           'Procedure.code',
@@ -209,7 +210,7 @@ module Inferno
           'Procedure.performedPeriod'
         ]
         must_support_elements.each do |path|
-          @procedure_ary.each do |resource|
+          @procedure_ary&.each do |resource|
             truncated_path = path.gsub('Procedure.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

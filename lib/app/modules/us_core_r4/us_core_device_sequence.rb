@@ -155,6 +155,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @device_ary&.any?
         must_support_elements = [
           'Device.udiCarrier',
           'Device.udiCarrier.carrierAIDC',
@@ -163,7 +164,7 @@ module Inferno
           'Device.patient'
         ]
         must_support_elements.each do |path|
-          @device_ary.each do |resource|
+          @device_ary&.each do |resource|
             truncated_path = path.gsub('Device.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

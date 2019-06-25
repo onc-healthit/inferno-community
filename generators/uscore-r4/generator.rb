@@ -149,6 +149,9 @@ def create_must_support_test(sequence)
     test_code: ''
   }
 
+  test[:test_code] += %(
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].downcase}_ary&.any?)
+
   extensions_list = []
   sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
     extensions_list << "'#{extension[:id]}': '#{extension[:url]}'"
@@ -159,7 +162,7 @@ def create_must_support_test(sequence)
           #{extensions_list.join(",\n          ")}
         }
         extensions_list.each do |id, url|
-          @#{sequence[:resource].downcase}_ary.each do |resource|
+          @#{sequence[:resource].downcase}_ary&.each do |resource|
             already_found = @instance.must_support_confirmed.include?(id.to_s)
             element_found = already_found || resource.extension.any? { |extension| extension.url == url }
             skip "Could not find \#{id} in the provided resource" unless element_found
@@ -180,7 +183,7 @@ def create_must_support_test(sequence)
           #{elements_list.join(",\n          ")}
         ]
         must_support_elements.each do |path|
-          @#{sequence[:resource].downcase}_ary.each do |resource|
+          @#{sequence[:resource].downcase}_ary&.each do |resource|
             truncated_path = path.gsub('#{sequence[:resource]}.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

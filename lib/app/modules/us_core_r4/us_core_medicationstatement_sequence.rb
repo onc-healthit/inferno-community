@@ -175,6 +175,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medicationstatement_ary&.any?
         must_support_elements = [
           'MedicationStatement.status',
           'MedicationStatement.medicationCodeableConcept',
@@ -186,7 +187,7 @@ module Inferno
           'MedicationStatement.derivedFrom'
         ]
         must_support_elements.each do |path|
-          @medicationstatement_ary.each do |resource|
+          @medicationstatement_ary&.each do |resource|
             truncated_path = path.gsub('MedicationStatement.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)

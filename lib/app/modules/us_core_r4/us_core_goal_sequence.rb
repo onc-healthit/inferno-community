@@ -175,6 +175,7 @@ module Inferno
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @goal_ary&.any?
         must_support_elements = [
           'Goal.lifecycleStatus',
           'Goal.description',
@@ -184,7 +185,7 @@ module Inferno
           'Goal.target.dueDuration'
         ]
         must_support_elements.each do |path|
-          @goal_ary.each do |resource|
+          @goal_ary&.each do |resource|
             truncated_path = path.gsub('Goal.', '')
             already_found = @instance.must_support_confirmed.include?(path)
             element_found = already_found || can_resolve_path(resource, truncated_path)
