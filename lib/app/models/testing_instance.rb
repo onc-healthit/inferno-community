@@ -97,16 +97,32 @@ module Inferno
         sequence_results.first(result: 'wait')
       end
 
-      def all_passed?
-        required_sequences = Inferno::Sequence::SequenceBase.subclasses.reject(&:optional?)
+      def all_test_cases(test_set_id)
+        self.module.test_sets[test_set_id.to_sym].groups.each_with_object([]) { |g, o| o.push(*g.test_cases) }
+      end
 
-        required_sequences.all? do |sequence|
-          latest_results[sequence.name].try(:result) == 'pass'
+      def all_passed?(test_set_id)
+        latest_results = latest_results_by_case
+
+        all_test_cases(test_set_id).all? do |test_case|
+          latest_results[test_case.id]&.result == 'pass'
         end
       end
 
-      def final_result
-        all_passed? ? 'pass' : 'fail'
+      def any_failed?(test_set_id)
+        latest_results = latest_results_by_case
+
+        all_test_cases(test_set_id).any? do |test_case|
+          ['fail', 'error'].include? latest_results[test_case.id]&.result
+        end
+      end
+
+      def final_result(test_set_id)
+        if all_passed?(test_set_id)
+          'pass'
+        else
+          any_failed?(test_set_id) ? 'fail' : 'incomplete'
+        end
       end
 
       def fhir_version
