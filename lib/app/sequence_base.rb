@@ -60,6 +60,30 @@ module Inferno
         @metadata_only = metadata_only
       end
 
+      def test_count
+        methods.grep(/_test$/).length
+      end
+
+      def sequence_name
+        self.class.sequence_name
+      end
+
+      def self.test_count
+        new(nil, nil).test_count
+      end
+
+      def self.sequence_name
+        name.demodulize
+      end
+
+      def optional?
+        self.class.optional?
+      end
+
+      ##########################################################################
+      ### Test running methods, move into a test running class/module
+      ##########################################################################
+
       def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
         @params = params unless params.nil?
 
@@ -206,25 +230,49 @@ module Inferno
         end
       end
 
-      def self.test_count
-        new(nil, nil).test_count
+      def todo(message = '')
+        raise TodoException, message
       end
 
-      def test_count
-        methods.grep(/_test$/).length
+      def pass(message = '')
+        raise PassException, message
       end
 
-      def sequence_name
-        self.class.sequence_name
+      def skip(message = '', details = nil)
+        raise SkipException.new message, details
       end
+
+      def skip_unless(test, message = '', details = nil)
+        raise SkipException.new message, details unless test
+      end
+
+      def skip_if(test, message = '', details = nil)
+        raise SkipException.new message, details if test
+      end
+
+      def wait_at_endpoint(endpoint)
+        raise WaitException, endpoint
+      end
+
+      def redirect(url, endpoint)
+        raise RedirectException.new url, endpoint
+      end
+
+      def warning
+        yield
+      rescue AssertionException => e
+        @test_warnings << e.message
+      end
+
+      ##########################################################################
+      ### Methods with class variables, should these really instance variables
+      ### in a different class? This seems like a potentially complicated and
+      ### risky change.
+      ##########################################################################
 
       def self.group(group = nil)
         @@group[sequence_name] = group unless group.nil?
         @@group[sequence_name] || []
-      end
-
-      def self.sequence_name
-        name.demodulize
       end
 
       def self.title(title = nil)
@@ -301,10 +349,6 @@ module Inferno
         @@test_metadata[sequence_name]
       end
 
-      def optional?
-        self.class.optional?
-      end
-
       def self.optional
         @@optional << sequence_name
       end
@@ -347,6 +391,10 @@ module Inferno
           define_method metadata[:method_name], metadata[:method]
         end
       end
+
+      ##########################################################################
+      ### Test definition methods. Move to a module and include it here?
+      ##########################################################################
 
       # Defines a new test.
       #
@@ -466,40 +514,6 @@ module Inferno
         @@test_metadata[sequence_name].last[:versions] = versions
       end
 
-      def todo(message = '')
-        raise TodoException, message
-      end
-
-      def pass(message = '')
-        raise PassException, message
-      end
-
-      def skip(message = '', details = nil)
-        raise SkipException.new message, details
-      end
-
-      def skip_unless(test, message = '', details = nil)
-        raise SkipException.new message, details unless test
-      end
-
-      def skip_if(test, message = '', details = nil)
-        raise SkipException.new message, details if test
-      end
-
-      def wait_at_endpoint(endpoint)
-        raise WaitException, endpoint
-      end
-
-      def redirect(url, endpoint)
-        raise RedirectException.new url, endpoint
-      end
-
-      def warning
-        yield
-      rescue AssertionException => e
-        @test_warnings << e.message
-      end
-
       def get_resource_by_params(klass, params = {})
         assert !params.empty?, 'No params for search'
         options = {
@@ -511,6 +525,10 @@ module Inferno
         }
         @client.search(klass, options)
       end
+
+      ##########################################################################
+      ### Validation methods. Move into a separate class/module.
+      ##########################################################################
 
       def validate_sort_order(entries)
         relevant_entries = entries.reject { |entry| entry.request&.local_method == 'DELETE' }
