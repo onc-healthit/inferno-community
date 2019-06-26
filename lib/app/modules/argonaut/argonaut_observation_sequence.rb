@@ -3,6 +3,9 @@
 module Inferno
   module Sequence
     class ArgonautObservationSequence < SequenceBase
+      SMOKING_STATUS_PROFILE = Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]
+      OBSERVATION_RESULTS_PROFILE = Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]
+
       title 'Observation'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
@@ -92,7 +95,7 @@ module Inferno
 
         @observationresults = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, OBSERVATION_RESULTS_PROFILE)
       end
 
       test 'Server returns expected results from Observation Results search by patient + category + date' do
@@ -198,7 +201,7 @@ module Inferno
         search_params = { patient: @instance.patient_id, code: '72166-2' }
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, SMOKING_STATUS_PROFILE)
       end
 
       test 'Observation read resource supported' do
@@ -261,9 +264,9 @@ module Inferno
           versions :dstu2
         end
 
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]), 'No Observation Results found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]]}"
+        test_resources_against_profile('Observation', OBSERVATION_RESULTS_PROFILE)
+        skip_unless @profiles_encountered.include?(OBSERVATION_RESULTS_PROFILE), 'No Observation Results found.'
+        assert !@profiles_failed.include?(OBSERVATION_RESULTS_PROFILE), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]]}"
       end
 
       test 'All references can be resolved' do

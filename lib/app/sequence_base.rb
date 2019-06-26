@@ -42,6 +42,9 @@ module Inferno
 
       @@test_id_prefixes = {}
 
+      attr_accessor :profiles_encountered
+      attr_accessor :profiles_failed
+
       delegate :versioned_resource_class, to: :@client
       delegate :versioned_conformance_class, to: :@instance
       delegate :save_resource_ids_in_bundle, to: :@instance
@@ -479,6 +482,10 @@ module Inferno
         raise SkipException.new message, details unless test
       end
 
+      def skip_if(test, message = '', details = nil)
+        raise SkipException.new message, details if test
+      end
+
       def wait_at_endpoint(endpoint)
         raise WaitException, endpoint
       end
@@ -596,47 +603,83 @@ module Inferno
         assert vread_response.resource.is_a?(klass), "Expected resource to be valid #{klass}"
       end
 
-      attr_accessor :profiles_encountered
-      attr_accessor :profiles_failed
+      def validate_resource(resource_type, resource, profile)
+        errors = profile.validate_resource(resource)
+        @test_warnings.concat(profile.warnings.reject(&:empty?))
+        errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
+        @profiles_failed[profile.url].concat(errors) unless errors.empty?
+        errors
+      end
+
+      def fetch_resource(resource_type, resource_id)
+        response = @client.read(versioned_resource_class(resource_type), resource_id)
+        assert_response_ok response
+        resource = response.resource
+        assert resource.is_a?(versioned_resource_class(resource_type)), "Expected resource to be of type #{resource_type}"
+        resource
+      end
+
+      def test_resources(resource_type)
+        references = @instance.resource_references.all(resource_type: resource_type)
+        skip_if(
+          references.empty?,
+          "Skip profile validation since no #{resource_type} resources found for Patient."
+        )
+
+        errors = references.map(&:resource_id).flat_map do |resource_id|
+          resource = fetch_resource(resource_type, resource_id)
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          if p
+            @profiles_encountered << p.url
+            validate_resource(resource_type, resource, p)
+          else
+            warn { assert false, 'No profiles found for this Resource' }
+            resource.validate
+          end
+        end
+        # TODO
+        # bundle = client.next_bundle
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
 
       def test_resources_against_profile(resource_type, specified_profile = nil)
         @profiles_encountered ||= Set.new
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
 
-        all_errors = []
+        return test_resources(resource_type) if specified_profile.blank?
 
-        resources = @instance.resource_references.select { |r| r.resource_type == resource_type }
-        skip("Skip profile validation since no #{resource_type} resources found for Patient.") if resources.empty?
+        profile = Inferno::ValidationUtil::DEFINITIONS[specified_profile]
+        skip_if(
+          profile.blank?,
+          "Skip profile validation since profile #{specified_profile} is unknown."
+        )
 
-        @instance.resource_references.select { |r| r.resource_type == resource_type }.map(&:resource_id).each do |resource_id|
-          resource_response = @client.read(versioned_resource_class(resource_type), resource_id)
-          assert_response_ok resource_response
-          resource = resource_response.resource
-          assert resource.is_a?(versioned_resource_class(resource_type)), "Expected resource to be of type #{resource_type}"
-
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
-          if specified_profile
-            warn { assert false, "No #{specified_profile} found for this Resource" }
-            next unless p.url == specified_profile
-          end
-          if p
-            @profiles_encountered << p.url
-            errors = p.validate_resource(resource)
-            @test_warnings.concat(p.warnings.reject(&:empty?))
-            unless errors.empty?
-              errors.map! { |e| "#{resource_type}/#{resource_id}: #{e}" }
-              @profiles_failed[p.url].concat(errors)
+        references = @instance.resource_references.all(profile: specified_profile)
+        resources =
+          if references.present?
+            references.map(&:resource_id).map do |resource_id|
+              fetch_resource(resource_type, resource_id)
             end
-            all_errors.concat(errors)
           else
-            warn { assert false, 'No profiles found for this Resource' }
-            errors = resource.validate
-            all_errors.concat(errors.values)
+            @instance.resource_references
+              .all(resource_type: resource_type)
+              .map { |reference| fetch_resource(resource_type, reference.resource_id) }
+              .select { |resource| resource.meta&.profile&.include? specified_profile }
           end
+
+        skip_if(
+          resources.blank?,
+          "Skip profile validation since no #{resource_type} resources conforming to the #{specified_profile} profile found for Patient."
+        )
+
+        @profiles_encountered << profile.url
+
+        errors = resources.flat_map do |resource|
+          validate_resource(resource_type, resource, profile)
         end
         # TODO
         # bundle = client.next_bundle
-        assert(all_errors.empty?, all_errors.join("<br/>\n"))
+        assert(errors.empty?, errors.join("<br/>\n"))
       end
 
       def validate_reference_resolutions(resource)

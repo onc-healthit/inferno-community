@@ -3,6 +3,8 @@
 module Inferno
   module Sequence
     class ArgonautVitalSignsSequence < SequenceBase
+      PROFILE = Inferno::ValidationUtil::ARGONAUT_URIS[:vital_signs]
+
       title 'Vital Signs'
 
       description 'Verify that Vital Signs are collected on the FHIR server according to the Argonaut Data Query Implementation Guide'
@@ -92,7 +94,7 @@ module Inferno
 
         @vitalsigns = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, PROFILE)
       end
 
       test 'Server returns expected results from Vital Signs search by patient + category + date' do
@@ -170,9 +172,9 @@ module Inferno
           versions :dstu2
         end
 
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:vital_signs])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:vital_signs]), 'No Vital Sign Observations found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:vital_signs]), "Vital Sign Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:vital_signs]]}"
+        test_resources_against_profile('Observation', PROFILE)
+        skip_unless @profiles_encountered.include?(PROFILE), 'No Vital Sign Observations found.'
+        assert !@profiles_failed.include?(PROFILE), "Vital Sign Observations failed validation.<br/>#{@profiles_failed[PROFILE]}"
       end
     end
   end
