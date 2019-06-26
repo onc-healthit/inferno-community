@@ -2,6 +2,7 @@
 
 require 'dm-core'
 require 'dm-migrations'
+require_relative '../utils/result_statuses'
 
 module Inferno
   module Models
@@ -97,16 +98,32 @@ module Inferno
         sequence_results.first(result: 'wait')
       end
 
-      def all_passed?
-        required_sequences = Inferno::Sequence::SequenceBase.subclasses.reject(&:optional?)
+      def all_test_cases(test_set_id)
+        self.module.test_sets[test_set_id.to_sym].groups.flat_map(&:test_cases)
+      end
 
-        required_sequences.all? do |sequence|
-          latest_results[sequence.name].try(:result) == 'pass'
+      def all_passed?(test_set_id)
+        latest_results = latest_results_by_case
+
+        all_test_cases(test_set_id).all? do |test_case|
+          latest_results[test_case.id]&.pass?
         end
       end
 
-      def final_result
-        all_passed? ? 'pass' : 'fail'
+      def any_failed?(test_set_id)
+        latest_results = latest_results_by_case
+
+        all_test_cases(test_set_id).any? do |test_case|
+          latest_results[test_case.id]&.fail?
+        end
+      end
+
+      def final_result(test_set_id)
+        if all_passed?(test_set_id)
+          Inferno::ResultStatuses::PASS
+        else
+          any_failed?(test_set_id) ? Inferno::ResultStatuses::FAIL : Inferno::ResultStatuses::PENDING
+        end
       end
 
       def fhir_version

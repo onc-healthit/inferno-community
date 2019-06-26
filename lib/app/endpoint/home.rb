@@ -260,7 +260,7 @@ module Inferno
             supported_resources: instance.supported_resources.count,
             request_response: request_response_count,
             latest_sequence_time: latest_sequence_time,
-            final_result: instance.final_result,
+            final_result: instance.final_result(params[:test_set]),
             inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/#{params[:test_set]}/"
           }
 
