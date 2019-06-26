@@ -14,28 +14,28 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Condition
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'category'
-          codings = resource&.category&.first&.coding
-          assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
+          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'category on resource does not match category requested'
 
         when 'clinical-status'
-          codings = resource&.clinicalStatus&.coding
-          assert !codings.nil?, 'clinical-status on resource did not match clinical-status requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'clinical-status on resource did not match clinical-status requested'
+          value_found = can_resolve_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'onset-date'
+          value_found = can_resolve_path(resource, 'onsetDateTime') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'onset-date on resource does not match onset-date requested'
 
         when 'code'
-          codings = resource&.code&.coding
-          assert !codings.nil?, 'code on resource did not match code requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'code on resource did not match code requested'
+          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'code on resource does not match code requested'
 
         end
       end
@@ -106,10 +106,11 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        onset_date_val = @condition&.onsetDateTime
+        onset_date_val = resolve_element_from_path(@condition, 'onsetDateTime')
         search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -126,10 +127,11 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @condition&.category&.first&.coding&.first&.code
+        category_val = resolve_element_from_path(@condition, 'category.coding.code')
         search_params = { 'patient': patient_val, 'category': category_val }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -146,10 +148,11 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = @condition&.code&.coding&.first&.code
+        code_val = resolve_element_from_path(@condition, 'code.coding.code')
         search_params = { 'patient': patient_val, 'code': code_val }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -166,10 +169,11 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = @condition&.clinicalStatus&.coding&.first&.code
+        clinical_status_val = resolve_element_from_path(@condition, 'clinicalStatus.coding.code')
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
       end
 

@@ -14,31 +14,40 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :DocumentReference
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when '_id'
-          assert resource&.id == value, '_id on resource did not match _id requested'
+          value_found = can_resolve_path(resource, 'id') { |value_in_resource| value_in_resource == value }
+          assert value_found, '_id on resource does not match _id requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'category'
-          codings = resource&.category&.first&.coding
-          assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
+          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'category on resource does not match category requested'
 
         when 'type'
-          codings = resource&.type&.coding
-          assert !codings.nil?, 'type on resource did not match type requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'type on resource did not match type requested'
+          value_found = can_resolve_path(resource, 'type.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'type on resource does not match type requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'date') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'date on resource does not match date requested'
 
         when 'period'
+          value_found = can_resolve_path(resource, 'context.period') do |period|
+            startDate = DateTime.xmlschema(period.start)
+            endDate = DateTime.xmlschema(period.end)
+            valueDate = DateTime.xmlschema(value)
+            valueDate >= startDate && valueDate <= endDate
+          end
 
         end
       end
@@ -108,10 +117,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        id_val = @documentreference&.id
+        id_val = resolve_element_from_path(@documentreference, 'id')
         search_params = { '_id': id_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -128,10 +138,11 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @documentreference&.category&.first&.coding&.first&.code
+        category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
         search_params = { 'patient': patient_val, 'category': category_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -148,11 +159,12 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @documentreference&.category&.first&.coding&.first&.code
-        date_val = @documentreference&.date
+        category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
+        date_val = resolve_element_from_path(@documentreference, 'date')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -169,10 +181,11 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = @documentreference&.type&.coding&.first&.code
+        type_val = resolve_element_from_path(@documentreference, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -189,10 +202,11 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @documentreference&.status
+        status_val = resolve_element_from_path(@documentreference, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -209,11 +223,12 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = @documentreference&.type&.coding&.first&.code
-        period_val = @documentreference&.context&.period&.start
+        type_val = resolve_element_from_path(@documentreference, 'type.coding.code')
+        period_val = resolve_element_from_path(@documentreference, 'context.period.start')
         search_params = { 'patient': patient_val, 'type': type_val, 'period': period_val }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
       end
 

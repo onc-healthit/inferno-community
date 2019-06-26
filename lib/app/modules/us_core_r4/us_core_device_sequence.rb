@@ -14,16 +14,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Device
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'patient'
-          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'patient.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'type'
-          codings = resource&.type&.coding
-          assert !codings.nil?, 'type on resource did not match type requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'type on resource did not match type requested'
+          value_found = can_resolve_path(resource, 'type.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'type on resource does not match type requested'
 
         end
       end
@@ -94,10 +94,11 @@ module Inferno
         assert !@device.nil?, 'Expected valid Device resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = @device&.type&.coding&.first&.code
+        type_val = resolve_element_from_path(@device, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
 
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
+        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         assert_response_ok(reply)
       end
 

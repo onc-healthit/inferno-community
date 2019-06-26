@@ -14,22 +14,28 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Location
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'name'
-          assert resource&.name == value, 'name on resource did not match name requested'
+          value_found = can_resolve_path(resource, 'name') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'name on resource does not match name requested'
 
         when 'address'
+          value_found = can_resolve_path(resource, 'address') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address on resource does not match address requested'
 
         when 'address-city'
-          assert resource&.address&.city == value, 'address-city on resource did not match address-city requested'
+          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address-city on resource does not match address-city requested'
 
         when 'address-state'
-          assert resource&.address&.state == value, 'address-state on resource did not match address-state requested'
+          value_found = can_resolve_path(resource, 'address.state') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address-state on resource does not match address-state requested'
 
         when 'address-postalcode'
-          assert resource&.address&.postalCode == value, 'address-postalcode on resource did not match address-postalcode requested'
+          value_found = can_resolve_path(resource, 'address.postalCode') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address-postalcode on resource does not match address-postalcode requested'
 
         end
       end
@@ -98,10 +104,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_val = @location&.address
+        address_val = resolve_element_from_path(@location, 'address')
         search_params = { 'address': address_val }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -117,10 +124,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_city_val = @location&.address&.city
+        address_city_val = resolve_element_from_path(@location, 'address.city')
         search_params = { 'address-city': address_city_val }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -136,10 +144,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_state_val = @location&.address&.state
+        address_state_val = resolve_element_from_path(@location, 'address.state')
         search_params = { 'address-state': address_state_val }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -155,10 +164,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_postalcode_val = @location&.address&.postalCode
+        address_postalcode_val = resolve_element_from_path(@location, 'address.postalCode')
         search_params = { 'address-postalcode': address_postalcode_val }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 

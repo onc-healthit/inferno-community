@@ -14,14 +14,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :CareTeam
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         end
       end

@@ -120,6 +120,7 @@ def create_search_test(sequence, search_param)
         assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
 #{get_search_params(search_param[:names], sequence)}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         assert_response_ok(reply))
     end
   sequence[:tests] << search_test
@@ -230,40 +231,30 @@ def create_references_resolved_test(sequence)
   sequence[:tests] << test
 end
 
-def get_safe_access_path(param, search_param_descriptions, element_descriptions)
-  element_path = search_param_descriptions[param.to_sym][:path]
+def resolve_element_path(search_param_description)
+  type = search_param_description[:type]
+  element_path = search_param_description[:path] + get_value_path_by_type(type)
+  element_path.gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
   path_parts = element_path.split('.')
-  parts_with_multiple = []
-  path_parts.each_with_index do |part, index|
-    next if index.zero?
-    next if element_path == 'Procedure.occurrenceDateTime' # bug in us core?
-
-    cur_path = path_parts[0..index].join('.')
-    path_parts[index] = 'local_class' if part == 'class' # match fhir_models because class is protected keyword in ruby
-    parts_with_multiple << index if element_descriptions[cur_path.downcase.to_sym][:contains_multiple]
-  end
-  parts_with_multiple.each do |index|
-    path_parts[index] += '&.first'
-  end
   path_parts[0] = "@#{path_parts[0].downcase}"
-
-  path_parts.join('&.')
+  resource_val = path_parts.shift
+  "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
 end
 
 def get_value_path_by_type(type)
   case type
   when 'CodeableConcept'
-    '&.coding&.first&.code'
+    '.coding.code'
   when 'Reference'
-    '&.reference&.first'
+    '.reference'
   when 'Period'
-    '&.start'
+    '.start'
   when 'Identifier'
-    '&.value'
+    '.value'
   when 'Coding'
-    '&.code'
+    '.code'
   when 'HumanName'
-    '&.family'
+    '.family'
   else
     ''
   end
@@ -277,7 +268,6 @@ def get_search_params(search_parameters, sequence)
   search_values = []
   search_assignments = []
   search_parameters.each do |param|
-    type = sequence[:search_param_descriptions][param.to_sym][:type]
     variable_name =
       if param == '_id'
         'id_val'
@@ -288,7 +278,7 @@ def get_search_params(search_parameters, sequence)
       if param == 'patient'
         '@instance.patient_id'
       else
-        get_safe_access_path(param, sequence[:search_param_descriptions], sequence[:element_descriptions]) + get_value_path_by_type(type)
+        resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
       end
     search_values << "#{variable_name} = #{variable_value}"
     search_assignments << "'#{param}': #{variable_name}"
@@ -321,69 +311,41 @@ end
 def create_search_validation(sequence)
   search_validators = ''
   sequence[:search_param_descriptions].each do |element, definition|
+    search_validators += %(
+        when '#{element}')
     type = definition[:type]
-    contains_multiple = definition[:contains_multiple]
     path_parts = definition[:path].split('.')
-    path_parts[0] = 'resource'
     path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
+    path_parts.shift
     case type
-    when 'CodeableConcept'
+    when 'Period'
       search_validators += %(
-        when '#{element}'
-          codings = #{path_parts.join('&.')}#{'&.first' if contains_multiple}&.coding
-          assert !codings.nil?, '#{element} on resource did not match #{element} requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, '#{element} on resource did not match #{element} requested'
-)
-    when 'Reference'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')}&.reference&.include?(value), '#{element} on resource does not match #{element} requested'
+          value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
+            startDate = DateTime.xmlschema(period.start)
+            endDate = DateTime.xmlschema(period.end)
+            valueDate = DateTime.xmlschema(value)
+            valueDate >= startDate && valueDate <= endDate
+          end
 )
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
       # https://www.hl7.org/fhir/search.html#string
-      search_validators +=
-        if contains_multiple
-          %(
-        when '#{element}'
-          found = #{path_parts.join('&.')}&.any? do |name|
-            name.text&.include?(value) ||
+      search_validators += %(
+          value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |name|
+            name.text&.include(value) ||
               name.family.include?(value) ||
               name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
+              name.prefix.any { |prefix| prefix&.include?(value) } ||
+              name.suffix.any { |suffix| suffix&.include?(value) }
           end
-          assert found, '#{element} on resource does not match #{element} requested')
-        else
-          %(
-        when '#{element}'
-          name = #{path_parts.join('&.')}
-          found = name&.text&.include?(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
-          assert found, '#{element} on resource does not match #{element} requested')
-        end
-    when 'code', 'string', 'id'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')} == value, '#{element} on resource did not match #{element} requested'
-)
-    when 'Coding'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')}&.code == value, '#{element} on resource did not match #{element} requested'
-)
-    when 'Identifier'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')}&.any? { |identifier| identifier.value == value }, '#{element} on resource did not match #{element} requested'
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
     else
       search_validators += %(
-        when '#{element}'
+          value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |value_in_resource| value_in_resource == value }
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
+
     end
   end
 
@@ -391,7 +353,7 @@ def create_search_validation(sequence)
 
   unless search_validators.empty?
     validate_function = %(
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 #{search_validators}
         end

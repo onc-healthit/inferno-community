@@ -14,16 +14,20 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Goal
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'lifecycle-status'
-          assert resource&.lifecycleStatus == value, 'lifecycle-status on resource did not match lifecycle-status requested'
+          value_found = can_resolve_path(resource, 'lifecycleStatus') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'lifecycle-status on resource does not match lifecycle-status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'target-date'
+          value_found = can_resolve_path(resource, 'target.dueDate') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'target-date on resource does not match target-date requested'
 
         end
       end
@@ -94,10 +98,11 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        target_date_val = @goal&.target&.first&.dueDate
+        target_date_val = resolve_element_from_path(@goal, 'target.dueDate')
         search_params = { 'patient': patient_val, 'target-date': target_date_val }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -114,10 +119,11 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        lifecycle_status_val = @goal&.lifecycleStatus
+        lifecycle_status_val = resolve_element_from_path(@goal, 'lifecycleStatus')
         search_params = { 'patient': patient_val, 'lifecycle-status': lifecycle_status_val }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         assert_response_ok(reply)
       end
 

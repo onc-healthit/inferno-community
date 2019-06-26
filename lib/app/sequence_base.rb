@@ -732,7 +732,11 @@ module Inferno
       end
 
       def can_resolve_path(element, path)
-        return true if path.empty?
+        if path.empty?
+          return !element.nil? && yield(element) if block_given?
+
+          return !element.nil?
+        end
 
         path_ary = path.split('.')
         el_as_array = Array.wrap(element)
@@ -740,6 +744,23 @@ module Inferno
         return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
 
         el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
+      end
+
+      def resolve_element_from_path(element, path)
+        el_as_array = Array.wrap(element)
+        return el_as_array&.first if path.empty?
+
+        path_ary = path.split('.')
+        cur_path_part = path_ary.shift.to_sym
+
+        found_subset = el_as_array.select { |el| el.try(cur_path_part).present? }
+        return nil if found_subset.empty?
+
+        found_subset.each do |el|
+          el_found = resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
+          return el_found unless el_found.nil?
+        end
+        nil
       end
     end
 

@@ -14,21 +14,24 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Procedure
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'occurrenceDateTime') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'date on resource does not match date requested'
 
         when 'code'
-          codings = resource&.code&.coding
-          assert !codings.nil?, 'code on resource did not match code requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'code on resource did not match code requested'
+          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'code on resource does not match code requested'
 
         end
       end
@@ -99,10 +102,11 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
 
         patient_val = @instance.patient_id
-        date_val = @procedure&.occurrenceDateTime
+        date_val = resolve_element_from_path(@procedure, 'occurrenceDateTime')
         search_params = { 'patient': patient_val, 'date': date_val }
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -119,11 +123,12 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = @procedure&.code&.coding&.first&.code
-        date_val = @procedure&.occurrenceDateTime
+        code_val = resolve_element_from_path(@procedure, 'code.coding.code')
+        date_val = resolve_element_from_path(@procedure, 'occurrenceDateTime')
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -140,10 +145,11 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @procedure&.status
+        status_val = resolve_element_from_path(@procedure, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         assert_response_ok(reply)
       end
 

@@ -14,16 +14,20 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :MedicationStatement
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'effective'
+          value_found = can_resolve_path(resource, 'effectiveDateTime') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'effective on resource does not match effective requested'
 
         end
       end
@@ -94,10 +98,11 @@ module Inferno
         assert !@medicationstatement.nil?, 'Expected valid MedicationStatement resource to be present'
 
         patient_val = @instance.patient_id
-        effective_val = @medicationstatement&.effectiveDateTime
+        effective_val = resolve_element_from_path(@medicationstatement, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'effective': effective_val }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -114,10 +119,11 @@ module Inferno
         assert !@medicationstatement.nil?, 'Expected valid MedicationStatement resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @medicationstatement&.status
+        status_val = resolve_element_from_path(@medicationstatement, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         assert_response_ok(reply)
       end
 

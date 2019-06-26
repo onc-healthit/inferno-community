@@ -14,16 +14,16 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :PractitionerRole
 
-      def validate_resource_item(resource, property, value)
+      def validate_resource_item(resource, property, value, comparator = nil)
         case property
 
         when 'specialty'
-          codings = resource&.specialty&.coding
-          assert !codings.nil?, 'specialty on resource did not match specialty requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'specialty on resource did not match specialty requested'
+          value_found = can_resolve_path(resource, 'specialty.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'specialty on resource does not match specialty requested'
 
         when 'practitioner'
-          assert resource&.practitioner&.reference&.include?(value), 'practitioner on resource does not match practitioner requested'
+          value_found = can_resolve_path(resource, 'practitioner.reference') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'practitioner on resource does not match practitioner requested'
 
         end
       end
@@ -63,7 +63,7 @@ module Inferno
           versions :r4
         end
 
-        specialty_val = @practitionerrole&.specialty&.coding&.first&.code
+        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
         search_params = { 'specialty': specialty_val }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
@@ -93,10 +93,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitionerrole.nil?, 'Expected valid PractitionerRole resource to be present'
 
-        practitioner_val = @practitionerrole&.practitioner&.reference&.first
+        practitioner_val = resolve_element_from_path(@practitionerrole, 'practitioner.reference')
         search_params = { 'practitioner': practitioner_val }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
         assert_response_ok(reply)
       end
 
