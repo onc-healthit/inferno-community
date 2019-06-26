@@ -225,12 +225,16 @@ module Inferno
         end
       end
 
-      def save_resource_reference(type, id)
+      def save_resource_reference(type, id, profile = nil)
         resource_references
           .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
           .each(&:destroy)
 
-        new_reference = ResourceReference.new(resource_type: type, resource_id: id)
+        new_reference = ResourceReference.new(
+          resource_type: type,
+          resource_id: id,
+          profile: profile
+        )
         resource_references << new_reference
 
         save!
@@ -238,13 +242,13 @@ module Inferno
         reload
       end
 
-      def save_resource_ids_in_bundle(klass, reply)
+      def save_resource_ids_in_bundle(klass, reply, profile = nil)
         return if reply&.resource&.entry&.blank?
 
         reply.resource.entry
           .select { |entry| entry.resource.class == klass }
           .each do |entry|
-          save_resource_reference(klass.name.demodulize, entry.resource.id)
+          save_resource_reference(klass.name.demodulize, entry.resource.id, profile)
         end
       end
 

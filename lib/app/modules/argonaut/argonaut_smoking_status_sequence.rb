@@ -3,6 +3,8 @@
 module Inferno
   module Sequence
     class ArgonautSmokingStatusSequence < SequenceBase
+      PROFILE = Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]
+
       group 'Argonaut Profile Conformance'
 
       title 'Smoking Status'
@@ -84,7 +86,7 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, PROFILE)
       end
 
       test 'Smoking Status resources associated with Patient conform to Argonaut profiles' do
@@ -96,9 +98,9 @@ module Inferno
           )
           versions :dstu2
         end
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]), 'No Smoking Status Observations found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:smoking_status]]}"
+        test_resources_against_profile('Observation', PROFILE)
+        skip_unless @profiles_encountered.include?(PROFILE), 'No Smoking Status Observations found.'
+        assert !@profiles_failed.include?(PROFILE), "Smoking Status Observations failed validation.<br/>#{@profiles_failed[PROFILE]}"
       end
     end
   end
