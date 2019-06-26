@@ -105,7 +105,7 @@ module Inferno
         latest_results = latest_results_by_case
 
         all_test_cases(test_set_id).all? do |test_case|
-          latest_results[test_case.id]&.result == 'pass'
+          latest_results[test_case.id]&.pass?
         end
       end
 
