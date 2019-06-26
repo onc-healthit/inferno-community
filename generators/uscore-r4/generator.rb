@@ -56,8 +56,8 @@ def generate_tests(metadata)
         create_interaction_test(sequence, interaction)
       end
 
-    create_must_support_test(sequence)
     create_resource_profile_test(sequence)
+    create_must_support_test(sequence)
     create_references_resolved_test(sequence)
   end
 end
@@ -143,7 +143,7 @@ end
 
 def create_must_support_test(sequence)
   test = {
-    tests_that: 'Demonstrates that the server can supply must supported elements',
+    tests_that: "At least one of every must support element is provided in any #{sequences[:resource]} for this patient.",
     index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support',
     test_code: ''
@@ -151,6 +151,10 @@ def create_must_support_test(sequence)
 
   test[:test_code] += %(
         skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].downcase}_ary&.any?)
+
+  test[:test_code] += %(
+        must_support_confirmed = {}
+  )
 
   extensions_list = []
   sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
@@ -164,12 +168,10 @@ def create_must_support_test(sequence)
         extensions_list.each do |id, url|
           element_found = false
           @#{sequence[:resource].downcase}_ary&.each do |resource|
-            already_found = @instance.must_support_confirmed.include?(id.to_s)
-            element_found = already_found || resource.extension.any? { |extension| extension.url == url }
-            @instance.must_support_confirmed += "\#{id}," unless already_found
-            break if element_found
+            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
+            break if must_support_confirmed[id]
           end
-          skip "Could not find \#{id} in the provided resource" unless element_found
+          skip "Could not find \#{id} in any of the \#{@#{sequence[:resource].downcase}_ary.length} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[id]
         end
 )
   end
@@ -185,15 +187,12 @@ def create_must_support_test(sequence)
           #{elements_list.join(",\n          ")}
         ]
         must_support_elements.each do |path|
-          element_found = false
           @#{sequence[:resource].downcase}_ary&.each do |resource|
             truncated_path = path.gsub('#{sequence[:resource]}.', '')
-            already_found = @instance.must_support_confirmed.include?(path)
-            element_found = already_found || can_resolve_path(resource, truncated_path)
-            @instance.must_support_confirmed += "\#{path}," if element_found && !already_found
-            break if element_found
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
           end
-          skip "Could not find \#{path} in the provided resource" unless element_found
+          skip "Could not find \#{path} in any of the \#{@#{sequence[:resource].downcase}_ary.length} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
         end)
   end
 
