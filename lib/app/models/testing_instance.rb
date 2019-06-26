@@ -2,6 +2,7 @@
 
 require 'dm-core'
 require 'dm-migrations'
+require_relative '../utils/result_statuses'
 
 module Inferno
   module Models
@@ -119,9 +120,9 @@ module Inferno
 
       def final_result(test_set_id)
         if all_passed?(test_set_id)
-          'pass'
+          Inferno::ResultStatuses::PASS
         else
-          any_failed?(test_set_id) ? 'fail' : 'incomplete'
+          any_failed?(test_set_id) ? Inferno::ResultStatuses::FAIL : Inferno::ResultStatuses::PENDING
         end
       end
 
