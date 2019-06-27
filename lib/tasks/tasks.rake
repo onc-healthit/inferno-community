@@ -2,6 +2,7 @@
 
 require 'fhir_client'
 require 'pry'
+require 'pry-byebug'
 require 'dm-core'
 require 'csv'
 require 'colorize'
