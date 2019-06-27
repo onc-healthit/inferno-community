@@ -28,16 +28,14 @@ module Inferno
 
       script.each do |command|
         unless command['find_value'].nil?
-          current_element = wait.until do
-            if command['index'].nil?
-              driver.find_element(command['type'].to_sym => command['find_value'])
-            else
-              driver.find_elements(command['type'].to_sym => command['find_value'])
-            end
+          if command['index'].nil?
+            wait.until { !driver.find_element(command['type'].to_sym => command['find_value']).nil? }
+            current_element = driver.find_element(command['type'].to_sym => command['find_value'])
+          else
+            wait.until { driver.find_elements(command['type'].to_sym => command['find_value']).any? }
+            current_element = driver.find_elements(command['type'].to_sym => command['find_value'])
           end
         end
-
-        sleep 1
 
         case command['cmd']
         when 'send_keys'
