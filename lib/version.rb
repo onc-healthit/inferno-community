@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Inferno
-  VERSION = '2.3.0-pre2'
+  VERSION = '2.3.0'
 end
