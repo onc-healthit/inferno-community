@@ -49,7 +49,7 @@ module Inferno
           @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
         end
       rescue StandardError => e
-        FHIR.logger.error e
+        Inferno.logger.error e
       end
 
       begin
@@ -70,7 +70,7 @@ module Inferno
           code_system_hash[code] = description
         end
       rescue StandardError => error
-        FHIR.logger.error error
+        Inferno.logger.error error
       end
 
       begin
@@ -87,7 +87,7 @@ module Inferno
           @@core_snomed[code] = description
         end
       rescue StandardError => error
-        FHIR.logger.error error
+        Inferno.logger.error error
       end
 
       begin
@@ -99,7 +99,7 @@ module Inferno
         end
         @@common_ucum.uniq!
       rescue StandardError => error
-        FHIR.logger.error error
+        Inferno.logger.error error
       end
 
       @@loaded = true
@@ -132,14 +132,14 @@ module Inferno
         @known_valuesets.each do |k, vs|
           next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
 
-          puts "Processing #{k}"
+          Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
           save_bloom_to_file(vs.valueset, filename)
           validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom' }
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, _v|
-          puts "Processing #{k}"
+          Inferno.logger.debug "Processing #{k}"
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(%r{[./]}, '_')}.msgpack"
           save_bloom_to_file(cs, filename)
@@ -153,14 +153,14 @@ module Inferno
         @known_valuesets.each do |k, vs|
           next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
 
-          puts "Processing #{k}"
+          Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.csv"
           save_csv_to_file(vs.valueset, filename)
           validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv' }
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, _v|
-          puts "Processing #{k}"
+          Inferno.logger.debug "Processing #{k}"
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(%r{[./]}, '_')}.csv"
           save_csv_to_file(cs, filename)
