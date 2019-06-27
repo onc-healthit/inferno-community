@@ -63,7 +63,7 @@ class SupportedResourceTest < MiniTest::Test
   def test_unsupported_interactions_all_pass
     @unsupported_test_cases.each do |test_case|
       validate_unsupported_interactions(test_case[:instance],
-                                      test_case[:expected_respones][:validate_supported_interactions])
+                                        test_case[:expected_respones][:validate_supported_interactions])
     end
   end
 end

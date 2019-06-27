@@ -153,6 +153,7 @@ end
 
 def file_path(filename)
   return filename unless ENV['RACK_ENV'] == 'test'
+
   FileUtils.mkdir_p 'tmp'
   File.join('tmp', filename)
 end
