@@ -2,6 +2,7 @@
 
 require 'sinatra/base'
 require 'sinatra/custom_logger'
+require 'sinatra/cookies'
 require_relative 'helpers/configuration'
 require_relative 'helpers/browser_logic'
 module Inferno
@@ -23,7 +24,7 @@ module Inferno
                            ::Logger.new('logs.log', level: settings.log_level.to_sym, progname: 'Inferno')
                          else
                            l = ::Logger.new(STDOUT, level: settings.log_level.to_sym, progname: 'Inferno')
-                           l.formatter = proc do |severity, datetime, progname, msg|
+                           l.formatter = proc do |severity, _datetime, progname, msg|
                              "#{severity} | #{progname} | #{msg}\n"
                            end
                            l
@@ -51,6 +52,20 @@ module Inferno
       set :static, true
       set :views, File.expand_path('views', __dir__)
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
+
+      def render_index
+        unless defined?(settings.presets).nil? || settings.presets.nil?
+          base_url = request.base_url
+          base_path = Inferno::BASE_PATH&.chomp('/')
+
+          presets = settings.presets.select do |_, v|
+            inferno_uri = v['inferno_uri']&.chomp('/')
+            inferno_uri.nil? || inferno_uri == base_url || inferno_uri == base_url + base_path
+          end
+        end
+        modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
+        erb :index, {}, modules: modules, presets: presets
+      end
     end
   end
 end

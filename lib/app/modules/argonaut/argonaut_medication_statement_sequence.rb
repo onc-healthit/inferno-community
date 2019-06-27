@@ -12,32 +12,32 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :MedicationStatement
 
-      def validate_resource_item (resource, property, value)
+      def validate_resource_item(resource, property, value)
         case property
-        when "patient"
-          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        when 'patient'
+          assert (resource.patient&.reference&.include?(value)), 'Patient on resource does not match patient requested'
         end
       end
 
       details %(
         # Background
 
-        The #{title} Sequence tests `#{title.gsub(/\s+/,"")}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [#{title} Argonaut Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/, '').downcase}.html)
 
         # Test Methodology
 
-        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/,"")}/?patient={id}` using a `GET` request.
+        This test suite accesses the server endpoint at `/#{title.gsub(/\s+/, '')}/?patient={id}` using a `GET` request.
         It parses the #{title} and verifies that it conforms to the profile.
 
         It collects the following information that is saved in the testing session for use by later tests:
 
-        * List of `#{title.gsub(/\s+/,"")}` resources
+        * List of `#{title.gsub(/\s+/, '')}` resources
 
         For more information on the #{title}, visit these links:
 
-        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/,"")}.html)
-        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/,"").downcase}.html)
+        * [FHIR DSTU2 #{title}](https://www.hl7.org/fhir/DSTU2/#{title.gsub(/\s+/, '')}.html)
+        * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-#{title.gsub(/\s+/, '').downcase}.html)
               )
       @resources_found = false
 
@@ -56,7 +56,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -73,15 +73,13 @@ module Inferno
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
 
-        search_params = {patient: @instance.patient_id}
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count > 0
-          @resources_found = true
-        end
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -108,7 +106,6 @@ module Inferno
         @medication_statements.each do |medication_statement|
           validate_read_reply(medication_statement, versioned_resource_class('MedicationStatement'))
         end
-
       end
 
       test 'MedicationStatement history resource supported' do
@@ -128,7 +125,6 @@ module Inferno
         @medication_statements.each do |medication_statement|
           validate_history_reply(medication_statement, versioned_resource_class('MedicationStatement'))
         end
-
       end
 
       test 'MedicationStatement vread resource supported' do
@@ -148,7 +144,6 @@ module Inferno
         @medication_statements.each do |medication_statement|
           validate_vread_reply(medication_statement, versioned_resource_class('MedicationStatement'))
         end
-
       end
 
       test 'MedicationStatement resources associated with Patient conform to Argonaut profiles' do
@@ -186,19 +181,18 @@ module Inferno
 
         pass 'Test passes because medication resource references are not used in any medication statements.' if @medication_references.nil? || @medication_references.empty?
 
-        not_contained_refs = @medication_references&.select {|ref| !ref.contained?}
+        @medication_references&.select { |ref| !ref.contained? }
       end
 
       test 'All references can be resolved' do
-
-        metadata {
+        metadata do
           id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the MedicationStatement resource should be resolveable.
           )
           versions :dstu2
-        }
+        end
 
         skip_if_not_supported(:MedicationStatement, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -206,8 +200,6 @@ module Inferno
         @medication_statements.each do |medication_statement|
           validate_reference_resolutions(medication_statement)
         end
-
-
       end
 
       test 'Referenced Medications conform to the Argonaut profile' do

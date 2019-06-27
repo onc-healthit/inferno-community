@@ -71,7 +71,7 @@ class TokenRefreshSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
 
-    assert sequence_result.result == 'pass', 'The sequence should be marked as pass.'
+    assert sequence_result.pass?, 'The sequence should be marked as pass.'
   end
 
   def test_all_pass_confidential_client

@@ -2,6 +2,22 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   TargetRubyVersion: 2.5
+  Exclude:
+    - 'config.ru'
+    - 'vendor/**/*'
+    - 'node_modules/**/*'
+    - '.git/**/*'
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: 'indented'
+
+Style/WordArray:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
 
 Metrics/LineLength:
-  Max: 120
+  Exclude:
+    - 'lib/app/modules/**/*'
+    - 'lib/app/helpers/browser_logic.rb'

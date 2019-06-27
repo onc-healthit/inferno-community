@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 
 module Inferno
@@ -14,18 +16,18 @@ module Inferno
     validation_packs = File.join('resources', '*', '*.json')
 
     DEFINITIONS = {}
-    RESOURCES = {dstu2: {}, stu3: {}, r4: {}}
+    RESOURCES = { dstu2: {}, stu3: {}, r4: {} }
     VALUESETS = {}
 
-    VERSION_MAP = {"1.0.2" => :dstu2, "3.0.1" => :stu3, "4.0.0" => :r4}
+    VERSION_MAP = { '1.0.2' => :dstu2, '3.0.1' => :stu3, '4.0.0' => :r4 }
 
     Dir.glob(validation_packs).each do |definition|
       json = File.read(definition)
-      version = VERSION_MAP[JSON.parse(json)["fhirVersion"]]
-      resource = self.get_resource(json, version)
+      version = VERSION_MAP[JSON.parse(json)['fhirVersion']]
+      resource = get_resource(json, version)
       DEFINITIONS[resource.url] = resource
       if resource.resourceType == 'StructureDefinition'
-        profiled_type = resource.snapshot.element.first.path  # will this always be the first?
+        profiled_type = resource.snapshot.element.first.path # will this always be the first?
         RESOURCES[version][profiled_type] = [] unless RESOURCES[version][profiled_type]
         RESOURCES[version][profiled_type] << resource
       elsif resource.resourceType == 'ValueSet'
@@ -39,7 +41,7 @@ module Inferno
       vital_signs: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-vitalsigns',
       care_team: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-careteam',
       care_plan: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-careplan'
-    }
+    }.freeze
 
     BLUEBUTTON_URIS = {
       carrier: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-carrier-claim',
@@ -50,39 +52,39 @@ module Inferno
       outpatient: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-outpatient-claim',
       pde: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-pde-claim',
       snf: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-snf-claim'
-    }
+    }.freeze
 
     def self.guess_profile(resource, version)
+      # if the profile is given, we don't need to guess
+      if resource&.meta&.profile && !resource&.meta&.profile&.empty?
+        resource.meta.profile.each do |uri|
+          return DEFINITIONS[uri] if DEFINITIONS[uri]
+        end
+      end
       if version == :dstu2
-        self.guess_dstu2_profile(resource)
+        guess_dstu2_profile(resource)
       elsif version == :stu3
-        self.guess_stu3_profile(resource)
+        guess_stu3_profile(resource)
       elsif version == :r4
-        self.guess_r4_profile(resource)
+        guess_r4_profile(resource)
       end
     end
 
     def self.guess_dstu2_profile(resource)
       if resource
-        # if the profile is given, we don't need to guess
-        if resource.meta && resource.meta.profile && !resource.meta.profile.empty?
-          resource.meta.profile.each do |uri|
-            return DEFINITIONS[uri] if DEFINITIONS[uri]
-          end
-        end
         candidates = RESOURCES[:dstu2][resource.resourceType]
         if candidates && !candidates.empty?
           # Special cases where there are multiple profiles per Resource type
           if resource.resourceType == 'Observation'
-            if resource.code && resource.code.coding && resource.code.coding.any? { |coding| coding.code == '72166-2' }
+            if resource.code&.coding && resource.code.coding.any? { |coding| coding.code == '72166-2' }
               return DEFINITIONS[ARGONAUT_URIS[:smoking_status]]
-            elsif resource.category && resource.category.coding && resource.category.coding.any? { |coding| coding.code == 'laboratory' }
+            elsif resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'laboratory' }
               return DEFINITIONS[ARGONAUT_URIS[:observation_results]]
-            elsif resource.category && resource.category.coding && resource.category.coding.any? { |coding| coding.code == 'vital-signs' }
+            elsif resource.category&.coding && resource.category.coding.any? { |coding| coding.code == 'vital-signs' }
               return DEFINITIONS[ARGONAUT_URIS[:vital_signs]]
             end
-          elsif resource.resourceType == 'CareTeam'
-            if resource.category && resource.category.coding && resource.category.coding.any? { |coding| coding.code = 'careteam' }
+          elsif resource.resourceType == 'CarePlan'
+            if resource.category.any? { |category| category.coding.any? { |coding| coding.code == 'careteam' } }
               return DEFINITIONS[ARGONAUT_URIS[:care_team]]
             else
               return DEFINITIONS[ARGONAUT_URIS[:care_plan]]
@@ -97,31 +99,25 @@ module Inferno
 
     def self.guess_stu3_profile(resource)
       if resource
-        # if the profile is given, we don't need to guess
-        if resource.meta && resource.meta.profile && !resource.meta.profile.empty?
-          resource.meta.profile.each do |uri|
-            return DEFINITIONS[uri] if DEFINITIONS[uri]
-          end
-        end
         candidates = RESOURCES[:stu3][resource.resourceType]
         if candidates && !candidates.empty?
           # Special cases where there are multiple profiles per Resource type
           if resource.resourceType == 'ExplanationOfBenefit'
-            if resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'CARRIER' }
+            if resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'CARRIER' }
               return DEFINITIONS[BLUEBUTTON_URIS[:carrier]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'DME' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'DME' }
               return DEFINITIONS[BLUEBUTTON_URIS[:dme]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'HHA' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'HHA' }
               return DEFINITIONS[BLUEBUTTON_URIS[:hha]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'HOSPICE' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'HOSPICE' }
               return DEFINITIONS[BLUEBUTTON_URIS[:hospice]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'INPATIENT' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'INPATIENT' }
               return DEFINITIONS[BLUEBUTTON_URIS[:inpatient]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'OUTPATIENT' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'OUTPATIENT' }
               return DEFINITIONS[BLUEBUTTON_URIS[:outpatient]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'PDE' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'PDE' }
               return DEFINITIONS[BLUEBUTTON_URIS[:pde]]
-            elsif resource.type && resource.type.coding && resource.type.coding.any? { |coding| coding.code == 'SNF' }
+            elsif resource.type&.coding && resource.type.coding.any? { |coding| coding.code == 'SNF' }
               return DEFINITIONS[BLUEBUTTON_URIS[:snf]]
             end
           end
@@ -134,16 +130,8 @@ module Inferno
 
     def self.guess_r4_profile(resource)
       if resource
-        # if the profile is given, we don't need to guess
-        if resource.meta && resource.meta.profile && !resource.meta.profile.empty?
-          resource.meta.profile.each do |uri|
-            return DEFINITIONS[uri] if DEFINITIONS[uri]
-          end
-        end
         candidates = RESOURCES[:r4][resource.resourceType]
-        if candidates && !candidates.empty?
-          return candidates.first
-        end
+        return candidates.first if candidates && !candidates.empty?
       end
       nil
     end

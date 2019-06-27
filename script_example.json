@@ -1,6 +1,6 @@
 {
-  "server": "https://api-v5-dstu2.hspconsortium.org/InfernoDev/data",
-  "module": "uscdi",
+  "server": "https://api-v8-dstu2.hspconsortium.org/InfernoDev/data",
+  "module": "onc",
   "arguments": {
     "client_name": "Inferno",
     "scopes": "launch launch/patient offline_access openid profile user/*.* patient/*.*",
@@ -25,6 +25,7 @@
   },
   "sequences": [
     "ArgonautConformance",
+    "SMARTDiscovery",
     "DynamicRegistration",
     "StandaloneLaunch",
     "ArgonautPatient"

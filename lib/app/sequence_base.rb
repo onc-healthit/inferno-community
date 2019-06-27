@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'utils/assertions'
 require_relative 'utils/skip_helpers'
 require_relative 'ext/fhir_client'
@@ -14,11 +16,9 @@ require 'json'
 
 module Inferno
   module Sequence
-
     Inferno::Terminology.load_validators
 
     class SequenceBase
-
       include Assertions
       include SkipHelpers
       include Inferno::WebDriver
@@ -30,7 +30,7 @@ module Inferno
         todo: 'todo',
         wait: 'wait',
         skip: 'skip'
-      }
+      }.freeze
 
       @@test_index = 0
 
@@ -53,32 +53,36 @@ module Inferno
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
         @client = client
         @instance = instance
-        @client.set_bearer_token(@instance.token) unless (@client.nil? || @instance.nil? || @instance.token.nil?)
-        @client.monitor_requests unless @client.nil?
+        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
+        @client&.monitor_requests
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
         @metadata_only = metadata_only
       end
 
-      def resume(request = nil, headers = nil, params = nil, &block)
-
+      def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
         @params = params unless params.nil?
 
-        @sequence_result.test_results.last.result = STATUS[:pass]
+        @sequence_result.test_results.last.pass!
+
+        if fail_message.present?
+          @sequence_result.test_results.last.result = STATUS[:fail]
+          @sequence_result.test_results.last.message = fail_message
+        end
 
         unless request.nil?
           @sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
-              direction: 'inbound',
-              request_method: request.request_method.downcase,
-              request_url: request.url,
-              request_headers: headers.to_json,
-              request_payload: request.body.read,
-              instance_id: @instance.id
+            direction: 'inbound',
+            request_method: request.request_method.downcase,
+            request_url: request.url,
+            request_headers: headers.to_json,
+            request_payload: request.body.read,
+            instance_id: @instance.id
           )
         end
 
-        @sequence_result.result = STATUS[:pass]
+        @sequence_result.pass!
         @sequence_result.wait_at_endpoint = nil
         @sequence_result.redirect_to_url = nil
 
@@ -87,133 +91,131 @@ module Inferno
         start(&block)
       end
 
-      def start(test_set_id = nil, test_case_id = nil)
+      def start(test_set_id = nil, test_case_id = nil, &block)
         if @sequence_result.nil?
-          @sequence_result = Models::SequenceResult.new(name: sequence_name,
-                                                        result: STATUS[:pass],
-                                                        testing_instance: @instance,
-                                                        required: !optional?,
-                                                        test_set_id: test_set_id,
-                                                        test_case_id: test_case_id,
-                                                        app_version: VERSION)
+          @sequence_result = Models::SequenceResult.new(
+            name: sequence_name,
+            result: STATUS[:pass],
+            testing_instance: @instance,
+            required: !optional?,
+            test_set_id: test_set_id,
+            test_case_id: test_case_id,
+            app_version: VERSION
+          )
           @sequence_result.save!
         end
 
         start_at = @sequence_result.test_results.length
 
+        load_input_params(sequence_name)
+
+        output_results = save_output(sequence_name)
+
+        methods = self.methods.grep(/_test$/).sort[start_at..-1]
+
+        run_tests(methods, &block)
+
+        update_output(sequence_name, output_results)
+        @sequence_result.output_results = output_results.to_json if output_results.present?
+
+        @sequence_result.reset!
+        @sequence_result.pass!
+
+        update_result_counts
+
+        @sequence_result
+      end
+
+      def load_input_params(sequence_name)
         input_parameters = {}
-        if !@@requires[sequence_name].nil?
-          @@requires[sequence_name].each do |requirement|
-            if @instance.respond_to? requirement then
-              input_value = @instance.send(requirement).to_s
-              input_value = "none" if input_value.empty?
-              input_parameters[requirement.to_sym] = input_value
-            end
+        @@requires[sequence_name]
+          &.select { |requirement| @instance.respond_to? requirement }
+          &.each do |requirement|
+            input_value = @instance.send(requirement).to_s
+            input_value = 'none' if input_value.empty?
+            input_parameters[requirement.to_sym] = input_value
           end
-        end
         @sequence_result.input_params = input_parameters.to_json
+      end
 
-        output_results = {}
-        if !@@defines[sequence_name].nil? then
-          @@defines[sequence_name].each do |output|
-            if @instance.respond_to? output then
+      def save_output(sequence_name)
+        {}.tap do |output_results|
+          @@defines[sequence_name]
+            &.select { |output| @instance.respond_to? output }
+            &.each do |output|
               output_value = @instance.send(output).to_s
-              output_value = "none" if output_value.empty?
-              output_results[output.to_sym] = {original: output_value}
+              output_value = 'none' if output_value.empty?
+              output_results[output.to_sym] = { original: output_value }
             end
-          end
         end
+      end
 
-        methods = self.methods.grep(/_test$/).sort
-        methods.each_with_index do |test_method, index|
-          next if index < start_at
+      def update_output(sequence_name, output_results)
+        @@defines[sequence_name]
+          &.select { |output| @instance.respond_to? output }
+          &.each do |output|
+            output_value = @instance.send(output).to_s
+            output_value = 'none' if output_value.empty?
+            output_results[output.to_sym][:updated] = output_value
+          end
+      end
+
+      def run_tests(methods)
+        methods.each do |test_method|
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
-          result = self.method(test_method).call()
+          result = method(test_method).call
 
           # Check to see if we are in headless mode and should redirect
 
           if result.wait_at_endpoint == 'redirect' && !@instance.standalone_launch_script.nil?
             begin
               @params = run_script(@instance.standalone_launch_script, result.redirect_to_url)
-              result.result = STATUS[:pass]
-            rescue => e
-              result.result = STATUS[:fail]
+              result.pass!
+            rescue StandardError => e
+              result.fail!
               result.message = "Automated browser script failed: #{e}"
             end
           elsif result.wait_at_endpoint == 'launch' && !@instance.ehr_launch_script.nil?
             begin
               @params = run_script(@instance.ehr_launch_script)
-              result.result = STATUS[:pass]
-            rescue => e
-              result.result = STATUS[:fail]
+              result.pass!
+            rescue StandardError => e
+              result.fail!
               result.message = "Automated browser script failed: #{e}"
             end
           end
 
-          unless @client.nil?
-            @client.requests.each do |req|
-              result.request_responses << Models::RequestResponse.new(
-                  direction: 'outbound',
-                  request_method: req.request[:method],
-                  request_url: req.request[:url],
-                  request_headers: req.request[:headers].to_json,
-                  request_payload: req.request[:payload],
-                  response_code: req.response[:code],
-                  response_headers: req.response[:headers].to_json,
-                  response_body: req.response[:body],
-                  instance_id: @instance.id)
-            end
+          @client&.requests&.each do |req|
+            result.request_responses << Models::RequestResponse.from_request(req, @instance.id, 'outbound')
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Models::RequestResponse.new(
-                direction: req[:direction],
-                request_method: req[:request][:method].to_s,
-                request_url: req[:request][:url],
-                request_headers: req[:request][:headers].to_json,
-                request_payload: req[:request][:payload].to_json,
-                response_code: req[:response][:code],
-                response_headers: req[:response][:headers].to_json,
-                response_body: req[:response][:body],
-                instance_id: @instance.id)
+            result.request_responses << Models::RequestResponse.from_request(OpenStruct.new(req), @instance.id)
           end
 
           yield result if block_given?
 
           @sequence_result.test_results << result
 
-          if result.result == STATUS[:wait]
-            @sequence_result.redirect_to_url = result.redirect_to_url
-            @sequence_result.wait_at_endpoint = result.wait_at_endpoint
-            break
-          end
+          next unless result.wait?
+
+          @sequence_result.redirect_to_url = result.redirect_to_url
+          @sequence_result.wait_at_endpoint = result.wait_at_endpoint
+          break
         end
+      end
 
-        if !@@defines[sequence_name].nil? then
-          @@defines[sequence_name].each do |output|
-            if @instance.respond_to? output then
-              output_value = @instance.send(output).to_s
-              output_value = "none" if output_value.empty?
-              output_results[output.to_sym][:updated] = output_value
-            end
-          end
-        end
-
-        @sequence_result.output_results = output_results.to_json if !output_results.nil? && output_results.size > 0
-
-        @sequence_result.required_passed = @sequence_result.todo_count = @sequence_result.required_total = @sequence_result.error_count = @sequence_result.skip_count = @sequence_result.optional_passed = @sequence_result.optional_total = 0
-        @sequence_result.result = STATUS[:pass]
-
+      def update_result_counts
         @sequence_result.test_results.each do |result|
-          if result.required then
+          if result.required
             @sequence_result.required_total += 1
           else
             @sequence_result.optional_total += 1
           end
           case result.result
           when STATUS[:pass]
-            if result.required then
+            if result.required
               @sequence_result.required_passed += 1
             else
               @sequence_result.optional_passed += 1
@@ -222,7 +224,7 @@ module Inferno
             @sequence_result.todo_count += 1
           when STATUS[:fail]
             if result.required
-              @sequence_result.result = result.result if @sequence_result.result != STATUS[:error]
+              @sequence_result.result = result.result unless @sequence_result.error?
             end
           when STATUS[:error]
             if result.required
@@ -232,120 +234,109 @@ module Inferno
           when STATUS[:skip]
             if result.required
               @sequence_result.skip_count += 1
-              @sequence_result.result = result.result if @sequence_result.result == STATUS[:pass]
+              @sequence_result.result = result.result if @sequence_result.pass?
             end
           when STATUS[:wait]
             @sequence_result.result = result.result
           end
         end
-
-        @sequence_result
       end
 
       def self.test_count
-        self.new(nil,nil).test_count
+        new(nil, nil).test_count
       end
 
       def test_count
-        self.methods.grep(/_test$/).length
+        methods.grep(/_test$/).length
       end
-
 
       def sequence_name
         self.class.sequence_name
       end
 
       def self.group(group = nil)
-        @@group[self.sequence_name] = group unless group.nil?
-        @@group[self.sequence_name] || []
+        @@group[sequence_name] = group unless group.nil?
+        @@group[sequence_name] || []
       end
 
       def self.sequence_name
-        self.name.demodulize
+        name.demodulize
       end
 
-      def sequence_result
-        @sequence_result
-      end
+      attr_reader :sequence_result
 
       def self.title(title = nil)
-        @@titles[self.sequence_name] = title unless title.nil?
-        @@titles[self.sequence_name] || self.sequence_name
+        @@titles[sequence_name] = title unless title.nil?
+        @@titles[sequence_name] || sequence_name
       end
 
       def self.description(description = nil)
-        @@descriptions[self.sequence_name] = description unless description.nil?
-        @@descriptions[self.sequence_name]
+        @@descriptions[sequence_name] = description unless description.nil?
+        @@descriptions[sequence_name]
       end
 
       def self.details(details = nil)
-        @@details[self.sequence_name] = details unless details.nil?
-        @@details[self.sequence_name]
+        @@details[sequence_name] = details unless details.nil?
+        @@details[sequence_name]
       end
 
       def self.requires(*requires)
-        @@requires[self.sequence_name] = requires unless requires.empty?
-        @@requires[self.sequence_name] || []
+        @@requires[sequence_name] = requires unless requires.empty?
+        @@requires[sequence_name] || []
       end
 
       def self.conformance_supports(*supports)
-        @@conformance_supports[self.sequence_name] = supports unless supports.empty?
-        @@conformance_supports[self.sequence_name] || []
+        @@conformance_supports[sequence_name] = supports unless supports.empty?
+        @@conformance_supports[sequence_name] || []
       end
 
       def self.versions(*versions)
-        @@versions[self.sequence_name] = versions unless versions.empty?
-        @@versions[self.sequence_name] || FHIR::VERSIONS
+        @@versions[sequence_name] = versions unless versions.empty?
+        @@versions[sequence_name] || FHIR::VERSIONS
       end
 
       def self.missing_requirements(instance, recurse = false)
+        return [] unless @@requires.key?(sequence_name)
 
-        return [] unless @@requires.key?(self.sequence_name)
-
-        requires = @@requires[self.sequence_name]
+        requires = @@requires[sequence_name]
 
         missing = requires.select { |r| instance.respond_to?(r) && instance.send(r).nil? }
 
         dependencies = {}
         dependencies[self] = missing.map do |requirement|
-          [requirement, instance.sequences.select{ |sequence| sequence.defines.include? requirement}]
+          [requirement, instance.sequences.select { |sequence| sequence.defines.include? requirement }]
         end
 
         # move this into a hash so things are duplicated.
 
-        if(recurse)
+        return dependencies[self] unless recurse
 
-          linked_dependencies = {}
-          dependencies[self].each do |dep|
-            return if linked_dependencies.has_key? dep
-            dep[1].each do |seq|
-              linked_dependencies.merge! seq.missing_requirements(instance, true)
-            end
+        linked_dependencies = {}
+        dependencies[self].each do |dep|
+          return if linked_dependencies.key? dep
+
+          dep[1].each do |seq|
+            linked_dependencies.merge! seq.missing_requirements(instance, true)
           end
-
-          dependencies.merge! linked_dependencies
-
-        else
-          return dependencies[self]
         end
 
-        dependencies
+        dependencies.merge! linked_dependencies
 
+        dependencies
       end
 
       def self.defines(*defines)
-        @@defines[self.sequence_name] = defines unless defines.empty?
-        @@defines[self.sequence_name] || []
+        @@defines[sequence_name] = defines unless defines.empty?
+        @@defines[sequence_name] || []
       end
 
-
       def self.test_id_prefix(test_id_prefix = nil)
-        @@test_id_prefixes[self.sequence_name] = test_id_prefix unless test_id_prefix.nil?
-        @@test_id_prefixes[self.sequence_name]
+        @@test_id_prefixes[sequence_name] = test_id_prefix unless test_id_prefix.nil?
+        @@test_id_prefixes[sequence_name]
       end
 
       def self.tests
-        @@test_metadata[self.sequence_name] || []
+        @@test_metadata[sequence_name] || []
       end
 
       def optional?
@@ -353,46 +344,45 @@ module Inferno
       end
 
       def self.optional
-        @@optional << self.sequence_name
+        @@optional << sequence_name
       end
 
       def self.optional?
-        @@optional.include?(self.sequence_name)
+        @@optional.include?(sequence_name)
       end
 
       def self.show_uris
-        @@show_uris << self.sequence_name
+        @@show_uris << sequence_name
       end
 
       def self.show_uris?
-        @@show_uris.include?(self.sequence_name)
+        @@show_uris.include?(sequence_name)
       end
 
       def self.preconditions(description, &block)
-        @@preconditions[self.sequence_name] = {
+        @@preconditions[sequence_name] = {
           block: block,
-            description: description
+          description: description
         }
       end
 
       def self.preconditions_description
-        @@preconditions[self.sequence_name] && @@preconditions[self.sequence_name][:description]
+        @@preconditions[sequence_name] && @@preconditions[sequence_name][:description]
       end
 
       def self.preconditions_met_for?(instance)
+        return true unless @@preconditions.key?(sequence_name)
 
-        return true unless @@preconditions.key?(self.sequence_name)
-
-        block = @@preconditions[self.sequence_name][:block]
-        self.new(instance,nil).instance_eval &block
+        block = @@preconditions[sequence_name][:block]
+        new(instance, nil).instance_eval(&block)
       end
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
       def self.extends_sequence(klass)
         @@test_metadata[klass.sequence_name].each do |metadata|
-          @@test_metadata[self.sequence_name] ||= []
-          @@test_metadata[self.sequence_name] << metadata
-          @@test_metadata[self.sequence_name].last[:test_index] = @@test_metadata[self.sequence_name].length() - 1
+          @@test_metadata[sequence_name] ||= []
+          @@test_metadata[sequence_name] << metadata
+          @@test_metadata[sequence_name].last[:test_index] = @@test_metadata[sequence_name].length - 1
           define_method metadata[:method_name], metadata[:method]
         end
       end
@@ -402,143 +392,134 @@ module Inferno
       # name - The String name of the test
       # block - The Block test to be executed
       def self.test(name, &block)
-
         @@test_index += 1
 
         test_index = @@test_index
 
-        test_method = "#{@@test_index.to_s.rjust(4,"0")} #{name} test".downcase.tr(' ', '_').to_sym
-        @@test_metadata[self.sequence_name] ||= []
-        @@test_metadata[self.sequence_name] << { name: name,
-                                                 test_index: test_index,
-                                                 required: true,
-                                                 versions: FHIR::VERSIONS }
+        test_method = "#{@@test_index.to_s.rjust(4, '0')} #{name} test".downcase.tr(' ', '_').to_sym
+        @@test_metadata[sequence_name] ||= []
+        @@test_metadata[sequence_name] << { name: name,
+                                            test_index: test_index,
+                                            required: true,
+                                            versions: FHIR::VERSIONS }
 
-        test_index_in_sequence = @@test_metadata[self.sequence_name].length - 1
+        test_index_in_sequence = @@test_metadata[sequence_name].length - 1
 
-        wrapped = -> () do
+        wrapped = lambda do
+          instance_eval(&block) if @metadata_only # just run the test to hit the metadata block
 
-          instance_eval &block if @metadata_only # just run the test to hit the metadata block
-
-          @test_warnings, @links, @requires, @validates = [],[],[],[]
-          result = Models::TestResult.new(test_id: @@test_metadata[self.sequence_name][test_index_in_sequence][:test_id],
+          @test_warnings = []
+          @links = []
+          @requires = []
+          @validates = []
+          result = Models::TestResult.new(test_id: @@test_metadata[sequence_name][test_index_in_sequence][:test_id],
                                           name: name,
-                                          ref: @@test_metadata[self.sequence_name][test_index_in_sequence][:ref],
-                                          required: @@test_metadata[self.sequence_name][test_index_in_sequence][:required],
-                                          description: @@test_metadata[self.sequence_name][test_index_in_sequence][:description],
-                                          url: @@test_metadata[self.sequence_name][test_index_in_sequence][:url],
-                                          versions: @@test_metadata[self.sequence_name][test_index_in_sequence][:versions].join(","),
+                                          ref: @@test_metadata[sequence_name][test_index_in_sequence][:ref],
+                                          required: @@test_metadata[sequence_name][test_index_in_sequence][:required],
+                                          description: @@test_metadata[sequence_name][test_index_in_sequence][:description],
+                                          url: @@test_metadata[sequence_name][test_index_in_sequence][:url],
+                                          versions: @@test_metadata[sequence_name][test_index_in_sequence][:versions].join(','),
                                           result: STATUS[:pass],
                                           test_index: test_index)
           begin
-
-            skip_unless((@@test_metadata[self.sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym), 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
-            Inferno.logger.info "Starting Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
-            instance_eval &block
-
+            fhir_version_included = @@test_metadata[sequence_name][test_index_in_sequence][:versions].include? @instance.fhir_version&.to_sym
+            skip_unless(fhir_version_included, 'This test does not run with this FHIR version') unless @instance.fhir_version.nil?
+            Inferno.logger.info "Starting Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{name}]"
+            instance_eval(&block)
           rescue AssertionException, ClientException => e
-            result.result = STATUS[:fail]
+            result.fail!
             result.message = e.message
             result.details = e.details
-
           rescue PassException => e
-            result.result = STATUS[:pass]
+            result.pass!
             result.message = e.message
-
           rescue TodoException => e
-            result.result = STATUS[:todo]
+            result.todo!
             result.message = e.message
-
           rescue WaitException => e
-            result.result = STATUS[:wait]
+            result.wait!
             result.wait_at_endpoint = e.endpoint
-
           rescue RedirectException => e
-            result.result = STATUS[:wait]
+            result.wait!
             result.wait_at_endpoint = e.endpoint
             result.redirect_to_url = e.url
-
           rescue SkipException => e
-            result.result = STATUS[:skip]
+            result.skip!
             result.message = e.message
             result.details = e.details
-
-          rescue => e
+          rescue StandardError => e
             Inferno.logger.error "Fatal Error: #{e.message}"
             Inferno.logger.error e.backtrace
-            result.result = STATUS[:error]
+            result.error!
             result.message = "Fatal Error: #{e.message}"
           end
-          result.test_warnings = @test_warnings.map{ |w| Models::TestWarning.new(message: w)} unless @test_warnings.empty?
-          Inferno.logger.info "Finished Test: #{@@test_metadata[self.sequence_name][test_index_in_sequence][:test_id]} [#{result.result}]"
+          result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) } unless @test_warnings.empty?
+          Inferno.logger.info "Finished Test: #{@@test_metadata[sequence_name][test_index_in_sequence][:test_id]} [#{result.result}]"
           result
         end
 
         define_method test_method, wrapped
 
-        @@test_metadata[self.sequence_name][test_index_in_sequence][:method] = wrapped
-        @@test_metadata[self.sequence_name][test_index_in_sequence][:method_name] = test_method
+        @@test_metadata[sequence_name][test_index_in_sequence][:method] = wrapped
+        @@test_metadata[sequence_name][test_index_in_sequence][:method_name] = test_method
 
-        instance = self.new(nil, nil, nil, nil, true)
+        instance = new(nil, nil, nil, nil, true)
         begin
           instance.send(test_method)
-        rescue MetadataException => e
+        rescue MetadataException
         end
-
       end
 
       def metadata
-        if @metadata_only
-          yield
-          raise MetadataException.new
-        end
+        return unless @metadata_only
+
+        yield
+        raise MetadataException
       end
 
-      def id test_id
-        complete_test_id = @@test_id_prefixes[self.sequence_name] + '-' + test_id
-        @@test_metadata[self.sequence_name].last[:test_id] = complete_test_id
+      def id(test_id)
+        complete_test_id = @@test_id_prefixes[sequence_name] + '-' + test_id
+        @@test_metadata[sequence_name].last[:test_id] = complete_test_id
       end
 
-      def link link
-        @@test_metadata[self.sequence_name].last[:url] = link
+      def link(link)
+        @@test_metadata[sequence_name].last[:url] = link
       end
 
-      def ref ref
-        @@test_metadata[self.sequence_name].last[:ref] = requirement
+      def ref(_ref)
+        @@test_metadata[sequence_name].last[:ref] = requirement
       end
 
       def optional
-        @@test_metadata[self.sequence_name].last[:required] = false
+        @@test_metadata[sequence_name].last[:required] = false
       end
 
-      def desc description
-        @@test_metadata[self.sequence_name].last[:description] = description
+      def desc(description)
+        @@test_metadata[sequence_name].last[:description] = description
       end
 
-      def versions *versions
-        @@test_metadata[self.sequence_name].last[:versions] = versions
+      def versions(*versions)
+        @@test_metadata[sequence_name].last[:versions] = versions
       end
 
-      def todo(message = "")
-        raise TodoException.new message
+      def todo(message = '')
+        raise TodoException, message
       end
 
-      def pass(message = "")
-        raise PassException.new message
+      def pass(message = '')
+        raise PassException, message
       end
 
-      def skip(message = "", details = nil)
+      def skip(message = '', details = nil)
         raise SkipException.new message, details
       end
 
       def skip_unless(test, message = '', details = nil)
-        unless test
-          raise SkipException.new message, details
-        end
+        raise SkipException.new message, details unless test
       end
 
       def wait_at_endpoint(endpoint)
-        raise WaitException.new endpoint
+        raise WaitException, endpoint
       end
 
       def redirect(url, endpoint)
@@ -546,20 +527,18 @@ module Inferno
       end
 
       def warning
-        begin
-          yield
-        rescue AssertionException => e
-          @test_warnings << e.message
-        end
+        yield
+      rescue AssertionException => e
+        @test_warnings << e.message
       end
 
       def get_resource_by_params(klass, params = {})
-        assert !params.empty?, "No params for search"
+        assert !params.empty?, 'No params for search'
         options = {
-          :search => {
-            :flag => false,
-              :compartment => nil,
-              :parameters => params
+          search: {
+            flag: false,
+            compartment: nil,
+            parameters: params
           }
         }
         @client.search(klass, options)
@@ -570,8 +549,12 @@ module Inferno
       end
 
       def check_sort_order(entries)
-        relevant_entries = entries.select{|x|x.request.try(:local_method)!='DELETE'}
-        relevant_entries.map!(&:resource).map!(&:meta).compact rescue assert(false, 'Unable to find meta for resources returned by the bundle')
+        relevant_entries = entries.reject { |x| x.request.try(:local_method) == 'DELETE' }
+        begin
+          relevant_entries.map!(&:resource).map!(&:meta).compact
+        rescue StandardError
+          assert(false, 'Unable to find meta for resources returned by the bundle')
+        end
 
         relevant_entries.each_cons(2) do |left, right|
           if !left.versionId.nil? && !right.versionId.nil?
@@ -579,29 +562,28 @@ module Inferno
           elsif !left.lastUpdated.nil? && !right.lastUpdated.nil?
             assert (left.lastUpdated >= right.lastUpdated), 'Result contains entries in the wrong order.'
           else
-            raise AssertionException.new 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
+            raise AssertionException, 'Unable to determine if entries are in the correct order -- no meta.versionId or meta.lastUpdated'
           end
         end
       end
 
-      def validate_resource_item (resource, property, value)
-        assert false, "Could not validate resource"
+      def validate_resource_item(_resource, _property, _value)
+        assert false, 'Could not validate resource'
       end
 
       def validate_search_reply(klass, reply, search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
-        assert entries.length > 0, 'No resources of this type were returned'
+        entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
+        assert !entries.empty?, 'No resources of this type were returned'
 
-        if klass == versioned_resource_class('Patient') then
+        if klass == versioned_resource_class('Patient')
           assert !reply.resource.get_by_id(@instance.patient_id).nil?, 'Server returned nil patient'
-          assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', "text", "meta", "lastUpdated"]), 'Server returned wrong patient'
+          assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', 'text', 'meta', 'lastUpdated']), 'Server returned wrong patient'
         end
 
         entries.each do |entry|
-
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           base_resource_validation_errors = entry.resource.validate
@@ -616,7 +598,7 @@ module Inferno
       def save_resource_ids_in_bundle(klass, reply)
         return if reply.try(:resource).try(:entry).nil?
 
-        entries = reply.resource.entry.select{ |entry| entry.resource.class == klass }
+        entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
 
         entries.each do |entry|
           @instance.post_resource_references(resource_type: klass.name.split(':').last,
@@ -646,10 +628,10 @@ module Inferno
         history_response = @client.resource_instance_history(klass, id)
         assert_response_ok history_response
         assert_bundle_response history_response
-        assert_equal "history", history_response.try(:resource).try(:type)
+        assert_equal 'history', history_response.try(:resource).try(:type)
         entries = history_response.try(:resource).try(:entry)
         assert entries, 'No bundle entries returned'
-        assert entries.try(:length) > 0, 'No resources of this type were returned'
+        assert entries.try(:length).positive?, 'No resources of this type were returned'
         check_sort_order entries
       end
 
@@ -668,17 +650,16 @@ module Inferno
       attr_accessor :profiles_encountered
       attr_accessor :profiles_failed
 
-      def test_resources_against_profile(resource_type, specified_profile=nil)
-        @profiles_encountered = [] unless @profiles_encountered
-        @profiles_failed = {} unless @profiles_failed
+      def test_resources_against_profile(resource_type, specified_profile = nil)
+        @profiles_encountered ||= []
+        @profiles_failed ||= {}
 
         all_errors = []
 
-        resources = @instance.resource_references.select{|r| r.resource_type == resource_type}
+        resources = @instance.resource_references.select { |r| r.resource_type == resource_type }
         skip("Skip profile validation since no #{resource_type} resources found for Patient.") if resources.empty?
 
-        @instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).each do |resource_id|
-
+        @instance.resource_references.select { |r| r.resource_type == resource_type }.map(&:resource_id).each do |resource_id|
           resource_response = @client.read(versioned_resource_class(resource_type), resource_id)
           assert_response_ok resource_response
           resource = resource_response.resource
@@ -695,13 +676,13 @@ module Inferno
             errors = p.validate_resource(resource)
             @test_warnings.concat(p.warnings.reject(&:empty?))
             unless errors.empty?
-              errors.map!{|e| "#{resource_type}/#{resource_id}: #{e}"}
+              errors.map! { |e| "#{resource_type}/#{resource_id}: #{e}" }
               @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
               @profiles_failed[p.url].concat(errors)
             end
             all_errors.concat(errors)
           else
-            warn { assert false, "No profiles found for this Resource" }
+            warn { assert false, 'No profiles found for this Resource' }
             errors = resource.validate
             all_errors.concat(errors.values)
           end
@@ -715,7 +696,8 @@ module Inferno
         problems = []
 
         walk_resource(resource) do |value, meta, path|
-          next if meta["type"] != "Reference"
+          next if meta['type'] != 'Reference'
+
           begin
             # Should potentially update valid? method in fhir_dstu2_models
             # to check for this type of thing
@@ -723,14 +705,14 @@ module Inferno
             if value.relative?
               begin
                 value.resource_class
-              rescue NameError => e
+              rescue NameError
                 problems << "#{path} has invalid resource type in reference: #{value.type}"
                 next
               end
             end
             value.read
           rescue ClientException => e
-            problems << "#{path} did not resolve: #{e.to_s}"
+            problems << "#{path} did not resolve: #{e}"
           end
         end
 
@@ -747,7 +729,7 @@ module Inferno
         end
       end
 
-      def check_resource_against_profile(resource, resource_type, specified_profile=nil)
+      def check_resource_against_profile(resource, resource_type, specified_profile = nil)
         assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
                "Expected resource to be of type #{resource_type}"
 
@@ -760,7 +742,7 @@ module Inferno
           @profiles_encountered.uniq!
           errors = p.validate_resource(resource)
           unless errors.empty?
-            errors.map!{|e| "#{resource_type}/#{resource.id}: #{e}"}
+            errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
             @profiles_failed[p.url] = [] unless @profiles_failed[p.url]
             @profiles_failed[p.url].concat(errors)
           end
@@ -769,10 +751,8 @@ module Inferno
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
-
     end
 
-    Dir.glob(File.join(__dir__, 'modules', '**', '*_sequence.rb')).each{|file| require file}
+    Dir.glob(File.join(__dir__, 'modules', '**', '*_sequence.rb')).each { |file| require file }
   end
 end
-

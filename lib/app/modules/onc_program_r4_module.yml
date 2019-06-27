@@ -1,5 +1,5 @@
 name: onc_r4
-title: Preliminary ONC Health IT Certification Tests
+title: Preliminary ONC Health IT Certification
 
 description : |
 
@@ -30,7 +30,7 @@ test_sets:
         sequences:
           - sequence: ManualRegistrationSequence
             title: Manual App Registration
-          - ArgonautConformanceSequence
+          - sequence: UsCoreR4CapabilityStatementSequence
           - SMARTDiscoverySequence
       - name: Standalone Patient App
         overview: |
@@ -149,3 +149,5 @@ test_sets:
             title: BMI For Age
           - sequence: UsCoreR4ProcedureSequence
             title: Procedure
+          - sequence: R4ProvenanceSequence
+            title: Provenance

@@ -80,7 +80,7 @@ class MedicationOrderSequenceTest < MiniTest::Test
     ar_med_orders.each do |mo|
       bundle[:entry] << {
         resource: mo,
-        fullUrl:  "http://www.example.com/#{mo['resourceType']}/#{mo['id']}"
+        fullUrl: "http://www.example.com/#{mo['resourceType']}/#{mo['id']}"
       }
     end
   end
@@ -155,20 +155,20 @@ class MedicationOrderSequenceTest < MiniTest::Test
     # Stub Patient for Reference Resolution Tests
     stub_request(:get, %r{example.com/Patient/})
       .with(headers: {
-        'Authorization' => "Bearer #{@instance.token}"
-      })
+              'Authorization' => "Bearer #{@instance.token}"
+            })
       .to_return(status: 200,
-               body: @patient_resource.to_json,
-               headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+                 body: @patient_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     # Stub Practitioner for Reference Resolution Tests
     stub_request(:get, %r{example.com/Practitioner/})
-        .with(headers: {
-            'Authorization' => "Bearer #{@instance.token}"
-        })
-        .to_return(status: 200,
-                   body: @practitioner_resource.to_json,
-                   headers: { content_type: 'application/json+fhir; charset=UTF-8'})
+      .with(headers: {
+              'Authorization' => "Bearer #{@instance.token}"
+            })
+      .to_return(status: 200,
+                 body: @practitioner_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     stub_get_med_order @medication_order_bundle
     stub_history @medication_order_bundle
@@ -180,9 +180,9 @@ class MedicationOrderSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
-    assert sequence_result.result == 'pass', 'The sequence should be marked as pass.'
+    assert sequence_result.pass?, 'The sequence should be marked as pass.'
   end
 
   def test_no_duplicate_orders
@@ -191,7 +191,7 @@ class MedicationOrderSequenceTest < MiniTest::Test
     sequence_result = @sequence.start
     sequence_result.save!
 
-    #Running second sequence...
+    # Running second sequence...
 
     # When sequences are rerun with the Sinatra Interface new sequences are created
     client = FHIR::Client.new(@instance.url)

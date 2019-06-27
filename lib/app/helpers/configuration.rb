@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 require_relative '../utils/tls_tester'
 
 module Inferno
   class App
     module Helpers
       module Configuration
-
         def base_path
           BASE_PATH
         end
@@ -14,7 +15,7 @@ module Inferno
         end
 
         def request_headers
-          env.inject({}){|acc, (k,v)| acc[$1.downcase] = v if k =~ /^http_(.*)/i; acc}
+          env.each_with_object({}) { |(k, v), acc| acc[Regexp.last_match(1).downcase] = v if k =~ /^http_(.*)/i; }
         end
 
         def version
@@ -31,9 +32,9 @@ module Inferno
 
         def valid_json?(json)
           JSON.parse(json)
-          return true
-        rescue JSON::ParserError => e
-          return false
+          true
+        rescue JSON::ParserError
+          false
         end
 
         def tls_testing_supported?
@@ -47,4 +48,3 @@ module Inferno
     end
   end
 end
-

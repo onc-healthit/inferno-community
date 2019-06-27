@@ -4,7 +4,6 @@ require 'sqlite3'
 module Inferno
   class Terminology
     class Valueset
-
       # STU3 Valuesets located at: http://hl7.org/fhir/stu3/terminologies-valuesets.html
       # STU3 Valueset Resource: http://hl7.org/fhir/stu3/valueset.html
       #
@@ -20,20 +19,20 @@ module Inferno
 
       # UMLS Vocabulary: https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html
       SAB = {
-          'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
-          'http://loinc.org' => 'LNC',
-          'http://snomed.info/sct' => 'SNOMEDCT_US',
-          'http://www.icd10data.com/icd10pcs' => 'ICD10CM',
-          'http://unitsofmeasure.org' => 'NCI_UCUM',
-          'http://hl7.org/fhir/ndfrt' => 'NDFRT',
-          'http://nucc.org/provider-taxonomy' => 'NUCCPT',
-          'http://www.ama-assn.org/go/cpt' => 'CPT'
+        'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
+        'http://loinc.org' => 'LNC',
+        'http://snomed.info/sct' => 'SNOMEDCT_US',
+        'http://www.icd10data.com/icd10pcs' => 'ICD10CM',
+        'http://unitsofmeasure.org' => 'NCI_UCUM',
+        'http://hl7.org/fhir/ndfrt' => 'NDFRT',
+        'http://nucc.org/provider-taxonomy' => 'NUCCPT',
+        'http://www.ama-assn.org/go/cpt' => 'CPT'
       }.freeze
 
       CODE_SYS = {
-          'http://hl7.org/fhir/v3/Ethnicity' => 'resources/misc_valuesets/CodeSystem-v3-Ethnicity.json',
-          'http://hl7.org/fhir/v3/Race' => 'resources/misc_valuesets/CodeSystem-v3-Race.json',
-          'http://hl7.org/fhir/condition-category' => 'resources/misc_valuesets/CodeSystem-condition-category.json'
+        'http://hl7.org/fhir/v3/Ethnicity' => 'resources/misc_valuesets/CodeSystem-v3-Ethnicity.json',
+        'http://hl7.org/fhir/v3/Race' => 'resources/misc_valuesets/CodeSystem-v3-Race.json',
+        'http://hl7.org/fhir/condition-category' => 'resources/misc_valuesets/CodeSystem-condition-category.json'
       }.freeze
 
       def initialize(database)
@@ -104,7 +103,7 @@ module Inferno
 
       def generate_bloom
         require 'bloomer'
-        @bf = Bloomer::Scalable.new #(100_000, 0.00001)
+        @bf = Bloomer::Scalable.new # (100_000, 0.00001)
         valueset.each do |cc|
           @bf.add("#{cc[:system]}|#{cc[:code]}")
         end
@@ -114,7 +113,7 @@ module Inferno
       # Saves the valueset bloomfilter to a msgpack file
       #
       # @param [String] filename the name of the file
-      def save_bloom_to_file(filename = "resources/validators/bloom/#{(URI(url).host + URI(url).path).gsub(/[.\/]/,'_')}.msgpack")
+      def save_bloom_to_file(filename = "resources/validators/bloom/#{(URI(url).host + URI(url).path).gsub(%r{[./]}, '_')}.msgpack")
         generate_bloom unless @bf
         File.write(filename, @bf.to_msgpack) unless @bf.nil?
         filename
@@ -122,7 +121,7 @@ module Inferno
 
       # Saves the valueset to a csv
       # @param [String] filename the name of the file
-      def save_csv_to_file(filename = "resources/validators/csv/#{(URI(url).host + URI(url).path).gsub(/[.\/]/,'_')}.csv")
+      def save_csv_to_file(filename = "resources/validators/csv/#{(URI(url).host + URI(url).path).gsub(%r{[./]}, '_')}.csv")
         CSV.open(filename, 'wb') do |csv|
           valueset.each do |code|
             csv << [code[:system], code[:code]]
@@ -138,7 +137,6 @@ module Inferno
       #
       # @param [ValueSet::Compose::Include] vscs the FHIR Valueset include or exclude
       def get_code_sets(vscs)
-
         intersection_set = nil
 
         # Get Concepts
@@ -173,10 +171,9 @@ module Inferno
       # @param [String] system the code system url
       # @param [FHIR::ValueSet::Compose::Include::Filter] filter the filter object
       # @return [Set] the filtered set of codes
-      def filter_code_set(system, filter = nil, version = nil)
-
-        filter_clause = ->(filter) do
-          where = "".dup
+      def filter_code_set(system, filter = nil, _version = nil)
+        filter_clause = lambda do |filter|
+          where = +''
           if filter.op == 'in'
             col = filter.property
             vals = filter.value.split(',')
@@ -202,13 +199,14 @@ module Inferno
           return load_code_system(system)
         end
         raise "Can't handle #{filter&.op}" unless ['=', 'in', 'is-a', nil].include? filter&.op
-        raise UnknownCodeSystemException.new(system) if SAB[system].nil?
+        raise UnknownCodeSystemException, system if SAB[system].nil?
+
         if filter.nil?
           @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}'") do |row|
             filtered_set.add(system: system, code: row[0])
           end
         elsif ['=', 'in', nil].include? filter&.op
-          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.(filter)}") do |row|
+          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
             filtered_set.add(system: system, code: row[0])
           end
         elsif filter&.op == 'is-a'
@@ -221,16 +219,16 @@ module Inferno
       #
       # @param [String] system the name of the code system
       def load_code_system(system)
-        #TODO Generalize this
+        # TODO: Generalize this
         cs = FHIR::Json.from_json(File.read(CODE_SYS[system]))
         cs_set = Set.new
-        load_codes = ->(concept) do
+        load_codes = lambda do |concept|
           concept.each do |concept_code|
-            cs_set.add({system: system, code: concept_code.code})
-            load_codes.(concept_code.concept) unless concept_code.concept.empty?
+            cs_set.add(system: system, code: concept_code.code)
+            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
           end
         end
-        load_codes.(cs.concept)
+        load_codes.call(cs.concept)
         cs_set
       end
 
@@ -249,8 +247,8 @@ module Inferno
       # @return [Set] the filtered codes
       def filter_is_a(system, filter)
         children = {}
-        find_children = ->(parent, system) do
-          puts "getting children..."
+        find_children = lambda do |_parent, system|
+          puts 'getting children...'
           @db.execute("SELECT c1.code, c2.code
           FROM mrrel r
             JOIN mrconso c1 ON c1.aui=r.aui1
@@ -261,20 +259,20 @@ module Inferno
           end
         end
         # Get all the children/parent hierarchy
-        find_children.(filter.value, system)
+        find_children.call(filter.value, system)
 
         desired_children = Set.new
-        subsume = ->(parent) do
+        subsume = lambda do |parent|
           # Only execute if we haven't processed this parent yet
-          par = {system: system, code:parent}
+          par = { system: system, code: parent }
           unless desired_children.include? par
             desired_children.add(system: system, code: parent)
             children[parent]&.each do |child|
-              subsume.(child)
+              subsume.call(child)
             end
           end
         end
-        subsume.(filter.value)
+        subsume.call(filter.value)
         desired_children
       end
 

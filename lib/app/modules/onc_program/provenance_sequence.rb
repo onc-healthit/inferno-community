@@ -14,10 +14,10 @@ module Inferno
 
       description 'Tests for Provenance resources'
 
-      def validate_resource_item (resource, property, value)
+      def validate_resource_item(resource, property, _value)
         case property
-        when "target"
-          assert (resource.target && resource.target.any?{|t| t.reference.include?(@instance.patient_id)}), "No target on resource matches patient requested"
+        when 'patient'
+          assert (resource&.target&.any? { |t| t&.reference&.include?(@instance.patient_id) }), 'No target on resource matches patient requested'
         end
       end
 
@@ -35,7 +35,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(FHIR::DSTU2::Provenance, target: 'Patient/' + @instance.patient_id)
+        reply = get_resource_by_params(FHIR::DSTU2::Provenance, patient: 'Patient/' + @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -52,12 +52,12 @@ module Inferno
           )
         end
 
-        search_params = {target: "Patient/" + @instance.patient_id}
+        search_params = { patient: 'Patient/' + @instance.patient_id }
         reply = get_resource_by_params(FHIR::DSTU2::Provenance, search_params)
         validate_search_reply(FHIR::DSTU2::Provenance, reply, search_params)
-        @provenance = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @provenance = reply&.resource&.entry&.first&.resource
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert @provenance.present?, 'Expected valid DSTU2 Provenance resource to be present'
       end
 
       test 'Provenance read resource supported' do
@@ -70,7 +70,7 @@ module Inferno
           )
         end
 
-        assert !@provenance.nil?, 'Expected valid DSTU2 Provenance resource to be present'
+        assert @provenance.present?, 'Expected valid DSTU2 Provenance resource to be present'
 
         validate_read_reply(@provenance, FHIR::DSTU2::Provenance)
       end

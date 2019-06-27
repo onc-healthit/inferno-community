@@ -13,10 +13,10 @@ module Inferno
 
       conformance_supports :MedicationOrder
 
-      def validate_resource_item (resource, property, value)
+      def validate_resource_item(resource, property, value)
         case property
-        when "patient"
-          assert (resource.patient && resource.patient.reference.include?(value)), "Patient on resource does not match patient requested"
+        when 'patient'
+          assert (resource.patient&.reference&.include?(value)), 'Patient on resource does not match patient requested'
         end
       end
 
@@ -47,16 +47,15 @@ module Inferno
         * [Argonauts #{title} Profile](https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html)
       )
 
-
       test 'Server rejects MedicationOrder search without authorization' do
-        metadata {
+        metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             An MedicationOrder search does not work without proper authorization.
           )
           versions :dstu2
-        }
+        end
 
         @resources_found = false
         skip_if_not_supported(:MedicationOrder, [:search, :read])
@@ -64,32 +63,30 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('MedicationOrder'), {patient: @instance.patient_id})
+        reply = get_resource_by_params(versioned_resource_class('MedicationOrder'), patient: @instance.patient_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
 
       test 'Server returns expected results from MedicationOrder search by patient' do
-        metadata {
+        metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             A server is capable of returning a patient's medications.
           )
           versions :dstu2
-        }
+        end
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
 
-        search_params = {patient: @instance.patient_id}
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('MedicationOrder'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
-        if resource_count > 0
-          @resources_found = true
-        end
+        @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -101,17 +98,16 @@ module Inferno
       end
 
       test 'MedicationOrder read resource supported' do
-        metadata {
+        metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
-        }
+        end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' if @no_resources_found
-
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -122,7 +118,7 @@ module Inferno
       end
 
       test 'MedicationOrder history resource supported' do
-        metadata {
+        metadata do
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
@@ -130,7 +126,7 @@ module Inferno
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
-        }
+        end
 
         skip_if_not_supported(:MedicationOrder, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -141,7 +137,7 @@ module Inferno
       end
 
       test 'MedicationOrder vread resource supported' do
-        metadata {
+        metadata do
           id '05'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
@@ -149,7 +145,7 @@ module Inferno
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
-        }
+        end
 
         skip_if_not_supported(:MedicationOrder, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -160,14 +156,14 @@ module Inferno
       end
 
       test 'MedicationOrder resources associated with Patient conform to Argonaut profiles' do
-        metadata {
+        metadata do
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationorder.html'
           desc %(
             MedicationOrder resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
-        }
+        end
         test_resources_against_profile('MedicationOrder')
       end
 
@@ -188,7 +184,7 @@ module Inferno
 
         pass 'Test passes because medication resource references are not used in any medication orders.' if @medication_references.nil? || @medication_references.empty?
 
-        not_contained_refs = @medication_references&.select {|ref| !ref.contained?}
+        not_contained_refs = @medication_references&.select { |ref| !ref.contained? }
 
         pass 'Test passes because all medication resource references are contained within the medication orders.' if not_contained_refs.empty?
 
@@ -198,15 +194,14 @@ module Inferno
       end
 
       test 'All references can be resolved' do
-
-        metadata {
+        metadata do
           id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
             All references in the MedicationOrder resource should be resolveable.
           )
           versions :dstu2
-        }
+        end
 
         skip_if_not_supported(:MedicationOrder, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -214,7 +209,6 @@ module Inferno
         @medication_orders.each do |medication_order|
           validate_reference_resolutions(medication_order)
         end
-
       end
 
       test 'Referenced Medications conform to the Argonaut profile' do

@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
+require_relative '../utils/result_statuses'
 
 module Inferno
   module Models
@@ -54,20 +57,16 @@ module Inferno
       has n, :resource_references
 
       def latest_results
-        self.sequence_results.reduce({}) do |hash, result|
-          if hash[result.name].nil? || hash[result.name].created_at < result.created_at
-            hash[result.name] = result
-          end
-          hash
+        sequence_results.each_with_object({}) do |result, hash|
+          hash[result.name] = result if hash[result.name].nil? || hash[result.name].created_at < result.created_at
         end
       end
 
       def latest_results_by_case
-        self.sequence_results.reduce({}) do |hash, result|
+        sequence_results.each_with_object({}) do |result, hash|
           if hash[result.test_case_id].nil? || hash[result.test_case_id].created_at < result.created_at
             hash[result.test_case_id] = result
           end
-          hash
         end
       end
 
@@ -76,54 +75,55 @@ module Inferno
         results = latest_results_by_case
 
         self.module.test_sets[test_set_id.to_sym].groups.each do |group|
-          pass_count = 0
-          failure_count = 0;
-          total_count = 0;
-          result_details = group.test_cases.reduce(cancel: 0, pass: 0, skip: 0, fail: 0, error: 0, total: 0) do |hash, val|
-            
-            if results.has_key?(val.id)
-              hash[results[val.id].result.to_sym] = 0 if !hash.has_key?(results[val.id].result.to_sym)
-              hash[results[val.id].result.to_sym] += 1
-              hash[:total] += 1
-            end
+          result_details = group.test_cases.each_with_object(Hash.new(0)) do |test_case, hash|
+            id = test_case.id
+            next unless results.key?(id)
 
-            hash
+            hash[results[id].result.to_sym] += 1
+            hash[:total] += 1
           end
 
-
-          result = :pass
-          result = :skip if result_details[:skip] > 0
-          result = :fail if result_details[:fail] > 0
-          result = :fail if result_details[:cancel] > 0
-          result = :error if result_details[:error] > 0
-          result = :not_run if result_details[:total] == 0
-
-          return_data << { group: group, result_details: result_details, result: result, missing_variables: group.lock_variables.select{|var| self.send(var.to_sym).nil?} }
-
-          return_data
+          return_data << {
+            group: group,
+            result_details: result_details,
+            result: group_result(result_details),
+            missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? }
+          }
         end
-        
+
         return_data
       end
 
       def waiting_on_sequence
-        self.sequence_results.first(result: 'wait')
+        sequence_results.first(result: 'wait')
       end
 
-      def final_result
+      def all_test_cases(test_set_id)
+        self.module.test_sets[test_set_id.to_sym].groups.flat_map(&:test_cases)
+      end
 
-        required_sequences = Inferno::Sequence::SequenceBase.subclasses.reject(&:optional?)
+      def all_passed?(test_set_id)
+        latest_results = latest_results_by_case
 
-        all_passed = required_sequences.all? do |sequence|
-          self.latest_results[sequence.name].try(:result) == 'pass'
+        all_test_cases(test_set_id).all? do |test_case|
+          latest_results[test_case.id]&.pass?
         end
+      end
 
-        if all_passed
-          return 'pass'
+      def any_failed?(test_set_id)
+        latest_results = latest_results_by_case
+
+        all_test_cases(test_set_id).any? do |test_case|
+          latest_results[test_case.id]&.fail?
+        end
+      end
+
+      def final_result(test_set_id)
+        if all_passed?(test_set_id)
+          Inferno::ResultStatuses::PASS
         else
-          return 'fail'
+          any_failed?(test_set_id) ? Inferno::ResultStatuses::FAIL : Inferno::ResultStatuses::PENDING
         end
-
       end
 
       def fhir_version
@@ -131,30 +131,31 @@ module Inferno
       end
 
       def module
-        Inferno::Module.get(self.selected_module)
+        @module ||= Inferno::Module.get(selected_module)
       end
 
       def patient_id
-        self.resource_references.select{|ref| ref.resource_type == 'Patient'}.first.try(:resource_id)
+        resource_references
+          .select { |ref| ref.resource_type == 'Patient' }
+          .first&.resource_id
       end
 
-      def patient_id= patient_id
+      def patient_id=(patient_id)
         return if patient_id.to_s == self.patient_id.to_s
 
-        existing_patients = self.resource_references.select{|ref| ref.resource_type == 'Patient'}
-        # Use destroy directly (instead of on each, so we don't have to reload)
-        self.resource_references.destroy
-        self.save!
+        resource_references.destroy
 
-        self.resource_references << ResourceReference.new({
-                                                              resource_type: 'Patient',
-                                                              resource_id: patient_id
-                                                          })
+        save!
 
+        resource_references << ResourceReference.new(
+          resource_type: 'Patient',
+          resource_id: patient_id
+        )
+
+        reload
       end
 
       def save_supported_resources(conformance)
-
         resources = ['Patient',
                      'AllergyIntolerance',
                      'CarePlan',
@@ -175,36 +176,35 @@ module Inferno
                      'DocumentReference',
                      'Provenance']
 
-        supported_resources = conformance.rest.first.resource.select{ |r| resources.include? r.type}.reduce({}){|a,k| a[k.type] = k; a}
+        supported_resource_capabilities =
+          conformance
+            .rest.first.resource
+            .select { |resource| resources.include? resource.type }
+            .each_with_object({}) { |resource, hash| hash[resource.type] = resource }
 
-        self.supported_resources.each(&:destroy)
-        self.save!
+        supported_resources.each(&:destroy)
+        save!
 
         resources.each_with_index do |resource_name, index|
+          capabilities = supported_resource_capabilities[resource_name]
 
-          resource = supported_resources[resource_name]
-
-          read_supported = resource && resource.interaction && resource.interaction.any?{|i| i.code == 'read'}
-
-          self.supported_resources << SupportedResource.create({
-                                                                   resource_type: resource_name,
-                                                                   index: index,
-                                                                   testing_instance_id: self.id,
-                                                                   supported: !resource.nil?,
-                                                                   read_supported: read_supported,
-                                                                   vread_supported: resource && resource.interaction && resource.interaction.any?{|i| i.code == 'vread'},
-                                                                   search_supported: resource && resource.interaction && resource.interaction.any?{|i| i.code == 'search-type'},
-                                                                   history_supported: resource && resource.interaction && resource.interaction.any?{|i| i.code == 'history-instance'}
-                                                               })
+          supported_resources << SupportedResource.create(
+            resource_type: resource_name,
+            index: index,
+            testing_instance_id: id,
+            supported: !capabilities.nil?,
+            read_supported: interaction_supported?(capabilities, 'read'),
+            vread_supported: interaction_supported?(capabilities, 'vread'),
+            search_supported: interaction_supported?(capabilities, 'search-type'),
+            history_supported: interaction_supported?(capabilities, 'history-instance')
+          )
         end
 
-        self.save!
-
+        save!
       end
 
       def conformance_supported?(resource, methods = [])
-
-        resource_support = self.supported_resources.find {|r| r.resource_type == resource.to_s}
+        resource_support = supported_resources.find { |r| r.resource_type == resource.to_s }
         return false if resource_support.nil? || !resource_support.supported
 
         methods.all? do |method|
@@ -224,16 +224,30 @@ module Inferno
       end
 
       def post_resource_references(resource_type: nil, resource_id: nil)
-        self.resource_references.each do |ref|
-          if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
-            ref.destroy
-          end
+        resource_references.each do |ref|
+          ref.destroy if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
         end
-        self.resource_references << ResourceReference.new({resource_type: resource_type,
-                                                          resource_id: resource_id})
-        self.save!
+        resource_references << ResourceReference.new(resource_type: resource_type,
+                                                     resource_id: resource_id)
+        save!
         # Ensure the instance resource references are accurate
-        self.reload
+        reload
+      end
+
+      private
+
+      def interaction_supported?(capabilities, interaction_code)
+        capabilities&.interaction&.any? { |i| i.code == interaction_code }
+      end
+
+      def group_result(results)
+        return :skip if results[:skip].positive?
+        return :fail if results[:fail].positive?
+        return :fail if results[:cancel].positive?
+        return :error if results[:error].positive?
+        return :not_run if results[:total].zero?
+
+        :pass
       end
     end
   end

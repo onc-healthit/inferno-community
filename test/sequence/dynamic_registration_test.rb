@@ -31,15 +31,18 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
     @dynamic_registration = load_json_fixture(:dynamic_registration)
   end
 
+  def confidential_correct?(confidential, body)
+    (!confidential && body['token_endpoint_auth_method'] == 'none') ||
+      (confidential && body['token_endpoint_auth_method'] == 'client_secret_basic')
+  end
+
   def validate_register_payload(req, confidential)
     body = JSON.parse(req.body)
 
     required_fields = %w[client_name initiate_login_uri redirect_uris token_endpoint_auth_method grant_types scope].all? { |k| body.key?(k) }
     all_uris = [body['initiate_login_uri'], body['redirect_uris']].flatten.all? { |uri| valid_uri?(uri) }
 
-    confidential_correct = (!confidential && body['token_endpoint_auth_method'] == 'none') || (confidential && body['token_endpoint_auth_method'] == 'client_secret_basic')
-
-    required_fields && all_uris && confidential_correct
+    required_fields && all_uris && confidential_correct?(confidential, body)
   end
 
   def all_pass(bearer_present, confidential)
@@ -48,8 +51,8 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
     headers['Authorization'] = "Bearer #{DYNAMIC_REGISTRATION_TOKEN}" if bearer_present
 
     stub_register = stub_request(:post, @instance.oauth_register_endpoint)
-                    .with(headers: headers) { |req| validate_register_payload(req, confidential) }
-                    .to_return(status: 201, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
+      .with(headers: headers) { |req| validate_register_payload(req, confidential) }
+      .to_return(status: 201, body: @dynamic_registration.to_json, headers: RESPONSE_HEADERS)
 
     @instance.dynamic_registration_token = (DYNAMIC_REGISTRATION_TOKEN if bearer_present)
 
@@ -58,10 +61,10 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
 
     assert_requested(stub_register)
 
-    failures = sequence_result.test_results.select { |r| r.result != 'pass' && r.result != 'skip' }
+    failures = sequence_result.failures
 
     assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
-    assert sequence_result.result == 'pass', 'Sequence should pass'
+    assert sequence_result.pass?, 'Sequence should pass'
     assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 

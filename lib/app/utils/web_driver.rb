@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'selenium-webdriver'
 
 module Inferno
@@ -12,7 +14,6 @@ module Inferno
       options.add_argument('--disable-gpu')
       options.add_argument('--incognito')
 
-
       # options.add_argument('--remote-debugging-port=9222')
 
       # Selenium::WebDriver.logger.output = 'selenium.log'
@@ -23,38 +24,35 @@ module Inferno
       sleep 2
       driver.navigate.to start_url unless start_url.nil?
 
-      wait = Selenium::WebDriver::Wait.new(:timeout => 30)
-
+      wait = Selenium::WebDriver::Wait.new(timeout: 30)
 
       script.each do |command|
-        current_element = wait.until {
-          if(!command['index'].nil?)
-            current = driver.find_elements({command['type'].to_sym => command['find_value']})
+        unless command['find_value'].nil?
+          if command['index'].nil?
+            wait.until { !driver.find_element(command['type'].to_sym => command['find_value']).nil? }
+            current_element = driver.find_element(command['type'].to_sym => command['find_value'])
           else
-            current = driver.find_element({command['type'].to_sym => command['find_value']})
+            wait.until { driver.find_elements(command['type'].to_sym => command['find_value']).any? }
+            current_element = driver.find_elements(command['type'].to_sym => command['find_value'])
           end
-
-          current if (current.is_a?(Array) && current.length >= (command['index'] || 0) && current[command['index']].displayed?) || (!current.is_a?(Array) && current.displayed?)
-        } unless command['find_value'].nil?
-
-        sleep 1
+        end
 
         case command['cmd']
         when 'send_keys'
           current_element.send_keys(command['value'])
         when 'debugger'
-          binding.pry
+          binding.pry # rubocop:disable Lint/Debugger
         when 'wait'
           sleep command['value']
         when 'navigate'
           driver.navigate.to command['value']
         when 'click'
-          if command['index'] != nil
-            driver.action.move_to current_element[command['index']]
-            current_element[command['index']].click
-          else
+          if command['index'].nil?
             driver.action.move_to current_element
             current_element.click
+          else
+            driver.action.move_to current_element[command['index']]
+            current_element[command['index']].click
           end
         end
       end
@@ -62,8 +60,7 @@ module Inferno
       sleep 5
       driver.switch_to.window(driver.window_handles.last)
 
-      Rack::Utils.parse_query URI::parse(driver.current_url).query
+      Rack::Utils.parse_query URI.parse(driver.current_url).query
     end
   end
 end
-

@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Inferno
   module Sequence
     class ManualRegistrationSequence < SequenceBase
-
       title 'Manual Registration'
 
       description 'Manually register the Inferno application with the authorization service'
@@ -10,9 +11,9 @@ module Inferno
 
       optional
 
-      requires :initiate_login_uri, :redirect_uris, :confidential_client,:initiate_login_uri, :redirect_uris, :client_id, :client_secret
+      requires :initiate_login_uri, :redirect_uris, :confidential_client, :initiate_login_uri, :redirect_uris, :client_id, :client_secret
       defines :client_id, :client_secret
-      
+
       show_uris
 
       details %(
@@ -38,17 +39,15 @@ module Inferno
               )
 
       test 'User entered client id, and client secret if confidential client' do
-
-        metadata {
+        metadata do
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
           desc %(
             Received client id (and client secret if necessary)
           )
-        }
+        end
 
         assert !@instance.client_id.blank?, 'User must register the Inferno client with the authorizaton service and enter in Client ID'
-
       end
     end
   end

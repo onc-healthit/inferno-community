@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require_relative '../test_helper'
 
 class ValueSetTest < Minitest::Test
-
   def setup
     # Should create a fake database to test with
     @db = SQLite3::Database.new 'valueset_test.db'
@@ -28,27 +29,28 @@ class ValueSetTest < Minitest::Test
         CVF	int
       );')
 
-    insert_into_table = -> concept {@db.execute('INSERT INTO mrconso (CUI, LAT, TS, LUI, STT, SUI, ISPREF, AUI, SAB, TTY, CODE, STR, SRL, SUPPRESS, CVF)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', concept)}
+    insert_into_table = lambda { |concept|
+      @db.execute('INSERT INTO mrconso (CUI, LAT, TS, LUI, STT, SUI, ISPREF, AUI, SAB, TTY, CODE, STR, SRL, SUPPRESS, CVF)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', concept)
+    }
 
-    new_med = -> code, tty do
+    new_med = lambda do |code, tty|
       xs = '98'
       [xs, 'ENG', 'A', xs, 'B', xs, 'Y', xs, 'RXNORM', tty, code, 'C', 1, 'N', 1]
     end
     meds = []
-    meds << new_med.('1', 'SCD')
-    meds << new_med.('2', 'SBD')
-    meds << new_med.('3', 'GPCK')
-    meds << new_med.('4', 'BPCK')
-    meds << new_med.('5', 'SCDG')
-    meds << new_med.('6', 'SBDG')
-    meds << new_med.('7', 'SCDF')
-    meds << new_med.('8', 'SBDF')
-    meds << new_med.('9999', 'FAKE')
+    meds << new_med.call('1', 'SCD')
+    meds << new_med.call('2', 'SBD')
+    meds << new_med.call('3', 'GPCK')
+    meds << new_med.call('4', 'BPCK')
+    meds << new_med.call('5', 'SCDG')
+    meds << new_med.call('6', 'SBDG')
+    meds << new_med.call('7', 'SCDF')
+    meds << new_med.call('8', 'SBDF')
+    meds << new_med.call('9999', 'FAKE')
     meds.each do |med|
-      insert_into_table.(med)
+      insert_into_table.call(med)
     end
-
   end
 
   def teardown
@@ -68,7 +70,7 @@ class ValueSetTest < Minitest::Test
     bf = vs.generate_bloom
     assert bf.count == 8, 'Expected 8 entries in the filter'
     (1..8).each do |n|
-      assert bf.include?("http://www.nlm.nih.gov/research/umls/rxnorm|#{n.to_s}"), "Expected #{n.to_s} to match"
+      assert bf.include?("http://www.nlm.nih.gov/research/umls/rxnorm|#{n}"), "Expected #{n} to match"
     end
     hits = 0
     total = 0
@@ -76,9 +78,8 @@ class ValueSetTest < Minitest::Test
       hits += 1 if bf.include?(n)
       total += 1
     end
-    assert hits == 0, 'Expected to invalid codes to match'
+    assert hits.zero?, 'Expected to invalid codes to match'
     puts "Hits: #{hits}, Total: #{total}"
     assert !bf.include?('9999'), 'Expected 9999 to fail'
   end
-
 end

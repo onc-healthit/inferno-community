@@ -62,7 +62,6 @@ $(function(){
   });
 
   $('.sequence-button').click(function(){
-    
     var sequences = [],
         test_cases = [],
         variable_defaults = {},
@@ -343,4 +342,54 @@ $(function(){
   // Then register the handler
   $(window).on('scroll', handleScroll)
 
+  function handlePresetChange(e, preset_id = ""){
+    preset_id = preset_id == "" ? $('#preset-select option:selected').data('selected') : preset_id;
+    var all = $('#preset-select option:selected').data('all');
+    var modules = $('#preset-select option:selected').data('module_names').split(",");
+    var preset = all[preset_id] == undefined ? "" : all[preset_id];
+    
+    if (preset != "") {
+      document.getElementById("preset-select").selectedIndex = Object.keys(all).indexOf(preset_id) + 1;
+    }
+
+    $el = $('input[name=fhir_server]');
+    $el.val(preset.uri);
+    $el.prop('readonly', preset !== '');
+    var preset_on = $el.val() == '' ? false : true;
+
+    if (preset_on) {
+      modules.forEach(function(mod){document.getElementById(mod).disabled = true});
+      document.getElementById(preset.module).checked = true;
+      document.getElementById(preset.module).disabled = false;
+      document.getElementById("preset").value = JSON.stringify(preset);
+      document.getElementById("instructions-link").style.display = preset.instructions == null ? "none" : "";
+      document.getElementById("instructions-link").href = preset.instructions;
+    } else {
+      modules.forEach(function(mod){document.getElementById(mod).disabled = false});
+      document.getElementById("preset").value = "";
+      document.getElementById("instructions-link").style.display = "none";
+    }
+
+  }
+
+  // Call when we initially load
+  if($('#preset-select').length > 0){
+    handlePresetChange();
+  }
+
+  // Set handler
+  $('#preset-select').on('change', handlePresetChange);
+
+  $(document.getElementsByClassName("next-back")).on('click', function() {
+    var next_tab = $('#' + this.id).data('next_tab');
+    $('#group-link-' + next_tab).click();
+  });
+
+  if (window.location.hash != "") {
+    var preset_id = window.location.hash;
+    if (preset_id.startsWith("#preset-")) {
+      preset_id = preset_id.substring('#preset-'.length);
+      $('#preset-select').trigger("change", preset_id);
+    }
+  }
 }); 

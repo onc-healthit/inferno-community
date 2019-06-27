@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 DataMapper::Model.raise_on_save_failure = true
 
-DataMapper.setup(:default, "sqlite3:data/#{Inferno::ENVIRONMENT.to_s}_data.db")
+DataMapper.setup(:default, "sqlite3:data/#{Inferno::ENVIRONMENT}_data.db")
 
 require_relative 'models/request_response'
 require_relative 'models/resource_reference'
@@ -17,4 +19,3 @@ if Inferno::PURGE_ON_RELOAD || Inferno::ENVIRONMENT == :test
 else
   DataMapper.auto_upgrade!
 end
-#DataMapper.auto_upgrade!

@@ -6,13 +6,12 @@ module Inferno
       # Home provides a Sinatra endpoint for accessing Inferno.
       # Home serves the index page and landing page
       class Landing < Endpoint
-
         set :prefix, '/'
 
         # Return the index page of the application
         get '/' do
           logger.info 'loading index page.'
-          erb :index, {}, modules: settings.modules.map{|m| Inferno::Module.get(m)}.select{|m| !m.nil?}
+          render_index
         end
 
         get '/landing/?' do

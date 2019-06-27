@@ -249,6 +249,10 @@ body {
 
 }
 
+.progress .progress-bar.active {
+  background-color: #f98718;
+}
+
 #PrerequisitesModal label {
   margin-bottom: .1rem;
   text-transform: uppercase;
@@ -1090,11 +1094,57 @@ body {
   margin-bottom: 1rem;
   margin-right: 10px;
 }
+
 .guided .sequence-button-next {
   cursor:pointer; 
   font-size: 1.2rem;
   margin-bottom: 1rem;
   margin-right: 10px;
+}
+
+.guided .next-back {
+  cursor:pointer; 
+  background-color: #7b9ba0;
+  border-color: #7b9ba0;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.guided .placeholder {
+  visibility: hidden;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.guided .buttons-container {
+  text-align: center;
+}
+
+.guided .buttons-container-pass .next{
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.guided .buttons-container-pass .sequence-button{
+  background-color: #7b9ba0;
+  border-color: #7b9ba0;
+}
+
+
+.guided .next {
+  float: right;
+}
+
+.guided .back {
+  float: left;
+}
+
+.guided .oi-media-step-forward {
+  font-size: 1rem;
+}
+
+.guided .oi-media-step-backward {
+  font-size: 1rem;
 }
 
 .guided span.oi.oi-warning.prerequisite-tooltip {
@@ -1145,9 +1195,10 @@ body {
 }
 
 .metrics-value{
-  font-size: 5em;
-  margin-bottom: -30px;
+  font-size: 2.5em;
   text-transform: uppercase;
+  line-height: 1.1em;
+  margin-top: 40px;
 }
 
 .metrics-value-small{
@@ -1158,10 +1209,6 @@ body {
 .report-summary{
   margin: 10px 0;
   padding: 8px 0;
-}
-
-.result-column{
-  padding-left:50px;
 }
 
 .report-summary .col{

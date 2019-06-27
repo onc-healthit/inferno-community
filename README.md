@@ -93,13 +93,13 @@ bundle exec rake inferno:tests_to_csv
 Arguments can be provided to the task in order to export a specific set of tests or to specify the output file.
 
 ```sh
-bundle exec rake inferno:tests_to_csv[uscdi,all_tests.csv]
+bundle exec rake inferno:tests_to_csv[onc,all_tests.csv]
 ```
 
 To just choose the module and use the default groups and filename:
 
 ```sh
-bundle exec rake inferno:tests_to_csv[uscdi]
+bundle exec rake inferno:tests_to_csv[onc]
 
 ```
 
@@ -112,7 +112,7 @@ _Note: This feature is still in development and we are looking for feedback on f
 
 Testing sequences can be run from the command line via a rake task which takes the sequence (or sequences) to be run and server url as arguments:
 ```sh
-bundle exec rake inferno:execute[https://my-server.org/data,uscdi,ArgonautConformance]
+bundle exec rake inferno:execute[https://my-server.org/data,onc,ArgonautConformance]
 ```
 
 ### Running Automated Command Line Interface Scripts
@@ -126,7 +126,7 @@ bundle exec rake inferno:execute_batch[script.json]
 Inferno also provides a  `generate_script` rake task which prompts the user for a series of inputs which are then used to generate a script.
 The user is expected to provide a url for the FHIR Server to be tested and the module name from which sequences will be pulled.
 ```sh
-bundle exec rake inferno:generate_script[https://my-server.org/data,uscdi]
+bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 ```
 
 ### Caveats
@@ -141,7 +141,7 @@ The Inferno development team can be reached by email at inferno@groups.mitre.org
 
 ## License
 
-Copyright 2018 The MITRE Corporation
+Copyright 2019 The MITRE Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 ```

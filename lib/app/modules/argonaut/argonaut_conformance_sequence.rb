@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require_relative '../core/capability_statement_sequence'
 
 module Inferno
   module Sequence
     class ArgonautConformanceSequence < CapabilityStatementSequence
-
       extends_sequence CapabilityStatementSequence
 
       title 'Conformance Statement'
@@ -56,10 +57,8 @@ module Inferno
         * [SMART on FHIR Conformance](http://hl7.org/fhir/smart-app-launch/conformance/index.html)
       )
 
-
       test 'FHIR server conformance states JSON support' do
-
-        metadata {
+        metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
@@ -85,16 +84,15 @@ module Inferno
             Note that FHIR changed the FHIR-specific JSON mime type to `application/fhir+json` in later versions of the specification.
 
           )
-        }
+        end
 
         assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
-        assert @conformance.format.include?('json') || @conformance.format.include?('application/json') || @conformance.format.include?('application/json+fhir') || @conformance.format.include?('application/fhir+json'), 'Conformance does not state support for json.'
-
+        formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
+        assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'Conformance Statement describes SMART on FHIR core capabilities' do
-
-        metadata {
+        metadata do
           id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
           optional
@@ -103,7 +101,7 @@ module Inferno
            A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.
 
           )
-        }
+        end
 
         required_capabilities = ['launch-ehr',
                                  'launch-standalone',
@@ -115,23 +113,21 @@ module Inferno
                                  'context-standalone-encounter',
                                  'permission-offline',
                                  'permission-patient',
-                                 'permission-user'
-        ]
+                                 'permission-user']
 
         assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
 
         extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
         assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
-        capabilities = extensions.select{|x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
+        capabilities = extensions.select { |x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
         assert !capabilities.nil?, 'No SMART capabilities listed in conformance.'
-        available_capabilities = capabilities.map{ |v| v.valueCode}
+        available_capabilities = capabilities.map(&:valueCode)
         missing_capabilities = (required_capabilities - available_capabilities)
         assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
       end
 
       test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do
-
-        metadata {
+        metadata do
           id '05'
           link 'https://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
@@ -142,22 +138,18 @@ module Inferno
            ```
 
           )
-        }
+        end
 
         assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
 
         begin
           @instance.save_supported_resources(@conformance)
-        rescue => e
+        rescue StandardError
           assert false, 'Conformance Statement could not be parsed.'
         end
 
         assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in conformance statement.'
-
       end
-
     end
-
-
   end
 end

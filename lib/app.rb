@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require 'yaml'
 require 'sinatra/base'
 require 'sinatra/config_file'
 require 'sinatra/namespace'
+require 'sinatra/cookies'
 require 'fhir_client'
 require 'rest-client'
 require 'time_difference'

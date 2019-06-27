@@ -1,0 +1,60 @@
+{
+  "id": "85e027e0-103b-0136-6943-60f81dc2d82a",
+  "meta": {
+    "profile": [
+      "http://fhir.org/guides/argonaut/StructureDefinition/argo-careteam"
+    ]
+  },
+  "text": {
+    "status": "additional",
+    "div": "This example is modified from the Official Argonaut Implementation Guide at http://www.fhir.org/guides/argonaut/r2/CarePlan-colonoscopy.html"
+  },
+  "subject": {
+    "reference": "Patient/7ec866ca-4130-4a40-82a9-b67f2626a5df",
+    "display": "Mrs. Rhea34 Ernser583"
+  },
+  "status": "active",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://argonaut.hl7.org/ValueSet/extension-codes",
+          "code": "careteam"
+        }
+      ]
+    }
+  ],
+  "participant": [
+    {
+      "role": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "116154003",
+            "display": "Patient (person)"
+          }
+        ]
+      },
+      "member": {
+        "reference": "Patient/7ec866ca-4130-4a40-82a9-b67f2626a5df",
+        "display": "Mrs. Rhea34 Ernser583"
+      }
+    },
+    {
+      "role": {
+        "coding": [
+          {
+            "system": "http://www.nucc.org",
+            "code": "207RC0000X",
+            "display": "Allopathic and Osteopathic Physicians:Internal Medicine:Cardiovascular Disease"
+          }
+        ]
+      },
+      "member": {
+        "reference": "Practitioner/1",
+        "display": "Dr. Cayr (BMC PCP)"
+      }
+    }
+  ],
+  "resourceType": "CarePlan"
+}
