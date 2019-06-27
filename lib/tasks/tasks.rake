@@ -42,7 +42,14 @@ end
 def execute(instance, sequences)
   client = FHIR::Client.new(instance.url)
 
-  client.use_dstu2 if instance.module.fhir_version == 'dstu2'
+  case instance.module.fhir_version
+  when 'stu3'
+    client.use_stu3
+  when 'dstu2'
+    client.use_dstu2
+  else
+    client.use_r4
+  end
 
   client.default_json
 
@@ -134,11 +141,11 @@ def execute(instance, sequences)
   failures_count = sequence_results.count(&:fail?).to_s
   passed_count = sequence_results.count(&:pass?).to_s
   print ' Result: ' + failures_count.red + ' failed, ' + passed_count.green + ' passed'
-  if sequence_results.any?(&:skip)
+  if sequence_results.any?(&:skip?)
     skip_count = sequence_results.count(&:skip?).to_s
     print(', ' + skip_count.yellow + ' skipped')
   end
-  if sequence_results.any?(&:error)
+  if sequence_results.any?(&:error?)
     error_count = sequence_results.count(&:error?).to_s
     print(', ' + error_count.yellow + ' error')
   end
