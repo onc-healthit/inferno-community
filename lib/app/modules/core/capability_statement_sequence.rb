@@ -71,9 +71,24 @@ module Inferno
         end
       end
 
-      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
+      test 'Test FHIR version' do
         metadata do
           id '02'
+          link ''
+          desc %(
+            Testing that the FHIR client is the same version that was version as the testing instance that was selected.
+          )
+        end
+
+        #@client.detect_version is a symbol
+        assert_equal(@instance.fhir_version, @client.detect_version.to_s, "FHIR client version does not match with instance version");
+
+      end
+
+
+      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
+        metadata do
+          id '03'
           link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
           desc %(
             The conformance 'whole system' interaction provides a method to get the conformance statement for
