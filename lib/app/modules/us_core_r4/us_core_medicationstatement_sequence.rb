@@ -166,9 +166,22 @@ module Inferno
         validate_history_reply(@medicationstatement, versioned_resource_class('MedicationStatement'))
       end
 
-      test 'Demonstrates that the server can supply must supported elements' do
+      test 'MedicationStatement resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medicationstatement.json'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        test_resources_against_profile('MedicationStatement')
+      end
+
+      test 'At least one of every must support element is provided in any MedicationStatement for this patient.' do
+        metadata do
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -176,6 +189,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medicationstatement_ary&.any?
+        must_support_confirmed = {}
         must_support_elements = [
           'MedicationStatement.status',
           'MedicationStatement.medicationCodeableConcept',
@@ -187,30 +201,16 @@ module Inferno
           'MedicationStatement.derivedFrom'
         ]
         must_support_elements.each do |path|
-          element_found = false
           @medicationstatement_ary&.each do |resource|
             truncated_path = path.gsub('MedicationStatement.', '')
-            already_found = @instance.must_support_confirmed.include?(path)
-            element_found = already_found || can_resolve_path(resource, truncated_path)
-            @instance.must_support_confirmed += "#{path}," if element_found && !already_found
-            break if element_found
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
           end
-          skip "Could not find #{path} in the provided resource" unless element_found
+          resource_count = @medicationstatement_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided MedicationStatement resource(s)" unless must_support_confirmed[path]
         end
         @instance.save!
-      end
-
-      test 'MedicationStatement resources associated with Patient conform to US Core R4 profiles' do
-        metadata do
-          id '09'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medicationstatement.json'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('MedicationStatement')
       end
 
       test 'All references can be resolved' do

@@ -218,40 +218,9 @@ module Inferno
         validate_history_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Demonstrates that the server can supply must supported elements' do
-        metadata do
-          id '10'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @condition_ary&.any?
-        must_support_elements = [
-          'Condition.clinicalStatus',
-          'Condition.verificationStatus',
-          'Condition.category',
-          'Condition.code',
-          'Condition.subject'
-        ]
-        must_support_elements.each do |path|
-          element_found = false
-          @condition_ary&.each do |resource|
-            truncated_path = path.gsub('Condition.', '')
-            already_found = @instance.must_support_confirmed.include?(path)
-            element_found = already_found || can_resolve_path(resource, truncated_path)
-            @instance.must_support_confirmed += "#{path}," if element_found && !already_found
-            break if element_found
-          end
-          skip "Could not find #{path} in the provided resource" unless element_found
-        end
-        @instance.save!
-      end
-
       test 'Condition resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '11'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-condition.json'
           desc %(
           )
@@ -260,6 +229,37 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Condition')
+      end
+
+      test 'At least one of every must support element is provided in any Condition for this patient.' do
+        metadata do
+          id '11'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @condition_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'Condition.clinicalStatus',
+          'Condition.verificationStatus',
+          'Condition.category',
+          'Condition.code',
+          'Condition.subject'
+        ]
+        must_support_elements.each do |path|
+          @condition_ary&.each do |resource|
+            truncated_path = path.gsub('Condition.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @condition_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Condition resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
       end
 
       test 'All references can be resolved' do
