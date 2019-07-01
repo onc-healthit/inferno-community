@@ -71,7 +71,7 @@ module Inferno
         end
       end
 
-      test 'Test FHIR version' do
+      test 'FHIR version of the server matches the FHIR version expected by tests' do
         metadata do
           id '02'
           link 'http://www.hl7.org/fhir/directory.cfml'
