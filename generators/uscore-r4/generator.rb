@@ -57,6 +57,7 @@ def generate_tests(metadata)
       end
 
     create_resource_profile_test(sequence)
+    create_must_support_test(sequence)
     create_references_resolved_test(sequence)
   end
 end
@@ -74,7 +75,7 @@ end
 def create_authorization_test(sequence)
   authorization_test = {
     tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
 
@@ -92,11 +93,11 @@ end
 def create_search_test(sequence, search_param)
   search_test = {
     tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
-  is_first_search = search_test[:index] == '02' # if first search - fix this check later
+  is_first_search = search_test[:index] == 2 # if first search - fix this check later
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}
@@ -104,12 +105,13 @@ def create_search_test(sequence, search_param)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply))
     else
@@ -126,7 +128,7 @@ end
 def create_interaction_test(sequence, interaction)
   interaction_test = {
     tests_that: "#{sequence[:resource]} #{interaction[:code]} resource supported",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
@@ -139,10 +141,71 @@ def create_interaction_test(sequence, interaction)
   sequence[:tests] << interaction_test
 end
 
+def create_must_support_test(sequence)
+  test = {
+    tests_that: "At least one of every must support element is provided in any #{sequence[:resource]} for this patient.",
+    index: sequence[:tests].length + 1,
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support',
+    test_code: ''
+  }
+
+  test[:test_code] += %(
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].downcase}_ary&.any?)
+
+  test[:test_code] += %(
+        must_support_confirmed = {})
+
+  extensions_list = []
+  sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
+    extensions_list << "'#{extension[:id]}': '#{extension[:url]}'"
+  end
+  if extensions_list.any?
+    test[:test_code] += %(
+        extensions_list = {
+          #{extensions_list.join(",\n          ")}
+        }
+        extensions_list.each do |id, url|
+          @#{sequence[:resource].downcase}_ary&.each do |resource|
+            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
+            break if must_support_confirmed[id]
+          end
+          skip "Could not find \#{id} in any of the \#{@#{sequence[:resource].downcase}_ary.length} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[id]
+        end
+)
+  end
+  elements_list = []
+  sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+    element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
+    elements_list << "'#{element[:path]}'"
+  end
+
+  if elements_list.any?
+    test[:test_code] += %(
+        must_support_elements = [
+          #{elements_list.join(",\n          ")}
+        ]
+        must_support_elements.each do |path|
+          @#{sequence[:resource].downcase}_ary&.each do |resource|
+            truncated_path = path.gsub('#{sequence[:resource]}.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @#{sequence[:resource].downcase}_ary.length
+
+          skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
+        end)
+  end
+
+  test[:test_code] += %(
+        @instance.save!)
+
+  sequence[:tests] << test
+end
+
 def create_resource_profile_test(sequence)
   test = {
-    tests_that: "#{sequence[:resource]} resources associated with Patient conform to Argonaut profiles",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    tests_that: "#{sequence[:resource]} resources associated with Patient conform to US Core R4 profiles",
+    index: sequence[:tests].length + 1,
     link: sequence[:profile]
   }
   test[:test_code] = %(
@@ -155,7 +218,7 @@ end
 def create_references_resolved_test(sequence)
   test = {
     tests_that: 'All references can be resolved',
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://www.hl7.org/fhir/DSTU2/references.html'
   }
 

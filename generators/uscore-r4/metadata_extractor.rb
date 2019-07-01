@@ -2,6 +2,7 @@
 
 class MetadataExtractor
   CAPABILITY_STATEMENT_URI = 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.json'
+  OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
   def profile_uri(profile)
     "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{profile}.json"
@@ -31,6 +32,26 @@ class MetadataExtractor
     @metadata
   end
 
+  def build_new_sequence(resource, profile)
+    base_name = profile.split('StructureDefinition/')[1]
+    {
+      name: base_name.tr('-', '_'),
+      classname: base_name
+        .split('-')
+        .map(&:capitalize)
+        .join
+        .gsub('UsCore', 'UsCoreR4') + 'Sequence',
+      resource: resource['type'],
+      profile: profile_uri(base_name), # link in capability statement is incorrect
+      interactions: [],
+      searches: [],
+      search_param_descriptions: {},
+      element_descriptions: {},
+      must_supports: [],
+      tests: []
+    }
+  end
+
   def extract_metadata_from_resources(resources)
     data = {
       sequences: []
@@ -38,35 +59,15 @@ class MetadataExtractor
 
     resources.each do |resource|
       resource['supportedProfile'].each do |supported_profile|
-        new_sequence = {
-          name: supported_profile.split('StructureDefinition/')[1].tr('-', '_'),
-          classname: supported_profile
-            .split('StructureDefinition/')[1]
-            .split('-')
-            .map(&:capitalize)
-            .join
-            .gsub('UsCore', 'UsCoreR4') + 'Sequence',
-          resource: resource['type'],
-          profile: profile_uri(supported_profile.split('StructureDefinition/')[1]), # link in capability statement is incorrect
-          interactions: [],
-          searches: [],
-          search_param_descriptions: {},
-          element_descriptions: {},
-          tests: []
-        }
+        new_sequence = build_new_sequence(resource, supported_profile)
 
-        # add each basic search type
         add_basic_searches(resource, new_sequence)
-
-        # add each search combination
         add_combo_searches(resource, new_sequence)
-
-        # add each interaction
         add_interactions(resource, new_sequence)
 
         profile_definition = get_json_from_uri(new_sequence[:profile])
+        add_must_support_elements(profile_definition, new_sequence)
         add_search_param_descriptions(profile_definition, new_sequence)
-
         add_element_definitions(profile_definition, new_sequence)
 
         data[:sequences] << new_sequence
@@ -116,6 +117,39 @@ class MetadataExtractor
         expectation: interaction['extension'][0]['valueCode']
       }
       sequence[:interactions] << new_interaction
+    end
+  end
+
+  def add_must_support_elements(profile_definition, sequence)
+    profile_definition['snapshot']['element'].select { |el| el['mustSupport'] }.each do |element|
+      if element['path'].end_with? 'extension'
+        sequence[:must_supports] <<
+          {
+            type: 'extension',
+            id: element['id'],
+            path: element['path'],
+            url: element['type'].first['profile'].first
+          }
+        next
+      end
+
+      path = element['path']
+      if path.include? '[x]'
+        choice_el = profile_definition['snapshot']['element'].find { |el| el['id'] == (path.split('[x]').first + '[x]') }
+        choice_el['type'].each do |type|
+          sequence[:must_supports] <<
+            {
+              type: 'element',
+              path: path.gsub('[x]', type['code'])
+            }
+        end
+      else
+        sequence[:must_supports] <<
+          {
+            type: 'element',
+            path: path
+          }
+      end
     end
   end
 

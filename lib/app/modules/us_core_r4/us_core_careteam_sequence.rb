@@ -67,12 +67,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @careteam_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
       end
@@ -122,7 +123,7 @@ module Inferno
         validate_history_reply(@careteam, versioned_resource_class('CareTeam'))
       end
 
-      test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
+      test 'CareTeam resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam.json'
@@ -135,9 +136,40 @@ module Inferno
         test_resources_against_profile('CareTeam')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any CareTeam for this patient.' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @careteam_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'CareTeam.status',
+          'CareTeam.subject',
+          'CareTeam.participant',
+          'CareTeam.participant.role',
+          'CareTeam.participant.member'
+        ]
+        must_support_elements.each do |path|
+          @careteam_ary&.each do |resource|
+            truncated_path = path.gsub('CareTeam.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @careteam_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided CareTeam resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

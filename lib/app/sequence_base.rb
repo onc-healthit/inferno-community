@@ -23,14 +23,7 @@ module Inferno
       include SkipHelpers
       include Inferno::WebDriver
 
-      STATUS = {
-        pass: 'pass',
-        fail: 'fail',
-        error: 'error',
-        todo: 'todo',
-        wait: 'wait',
-        skip: 'skip'
-      }.freeze
+      STATUS = { pass: 'pass', fail: 'fail', error: 'error', todo: 'todo', wait: 'wait', skip: 'skip' }.freeze
 
       @@test_index = 0
 
@@ -750,6 +743,17 @@ module Inferno
           errors = entry.resource.validate
         end
         assert(errors.empty?, errors.join("<br/>\n"))
+      end
+
+      def can_resolve_path(element, path)
+        return true if path.empty?
+
+        path_ary = path.split('.')
+        el_as_array = Array.wrap(element)
+        cur_path_part = path_ary.shift.to_sym
+        return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
+
+        el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
       end
     end
 

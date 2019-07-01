@@ -82,12 +82,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @condition = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @condition_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
       end
@@ -217,7 +218,7 @@ module Inferno
         validate_history_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Condition resources associated with Patient conform to Argonaut profiles' do
+      test 'Condition resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-condition.json'
@@ -230,9 +231,40 @@ module Inferno
         test_resources_against_profile('Condition')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any Condition for this patient.' do
         metadata do
           id '11'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @condition_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'Condition.clinicalStatus',
+          'Condition.verificationStatus',
+          'Condition.category',
+          'Condition.code',
+          'Condition.subject'
+        ]
+        must_support_elements.each do |path|
+          @condition_ary&.each do |resource|
+            truncated_path = path.gsub('Condition.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @condition_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Condition resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

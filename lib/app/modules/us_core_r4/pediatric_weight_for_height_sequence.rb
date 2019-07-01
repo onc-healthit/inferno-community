@@ -79,12 +79,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @observation_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
       end
@@ -217,7 +218,7 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Observation resources associated with Patient conform to Argonaut profiles' do
+      test 'Observation resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
@@ -230,9 +231,63 @@ module Inferno
         test_resources_against_profile('Observation')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any Observation for this patient.' do
         metadata do
           id '11'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @observation_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'Observation.status',
+          'Observation.category',
+          'Observation.category',
+          'Observation.category.coding',
+          'Observation.category.coding.system',
+          'Observation.category.coding.code',
+          'Observation.subject',
+          'Observation.effectivedateTime',
+          'Observation.effectivePeriod',
+          'Observation.valueQuantity.value',
+          'Observation.valueQuantity.unit',
+          'Observation.valueQuantity.system',
+          'Observation.valueQuantity.code',
+          'Observation.dataAbsentReason',
+          'Observation.component',
+          'Observation.component.code',
+          'Observation.component.valueQuantity',
+          'Observation.component.valueCodeableConcept',
+          'Observation.component.valuestring',
+          'Observation.component.valueboolean',
+          'Observation.component.valueinteger',
+          'Observation.component.valueRange',
+          'Observation.component.valueRatio',
+          'Observation.component.valueSampledData',
+          'Observation.component.valuetime',
+          'Observation.component.valuedateTime',
+          'Observation.component.valuePeriod',
+          'Observation.component.dataAbsentReason'
+        ]
+        must_support_elements.each do |path|
+          @observation_ary&.each do |resource|
+            truncated_path = path.gsub('Observation.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @observation_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Observation resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

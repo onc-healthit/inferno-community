@@ -87,12 +87,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @patient = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @patient_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
       end
@@ -260,7 +261,7 @@ module Inferno
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
 
-      test 'Patient resources associated with Patient conform to Argonaut profiles' do
+      test 'Patient resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '12'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.json'
@@ -273,9 +274,66 @@ module Inferno
         test_resources_against_profile('Patient')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any Patient for this patient.' do
         metadata do
           id '13'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @patient_ary&.any?
+        must_support_confirmed = {}
+        extensions_list = {
+          'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
+          'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
+          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
+        }
+        extensions_list.each do |id, url|
+          @patient_ary&.each do |resource|
+            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
+            break if must_support_confirmed[id]
+          end
+          skip "Could not find #{id} in any of the #{@patient_ary.length} provided Patient resource(s)" unless must_support_confirmed[id]
+        end
+
+        must_support_elements = [
+          'Patient.identifier',
+          'Patient.identifier.system',
+          'Patient.identifier.value',
+          'Patient.name',
+          'Patient.name.family',
+          'Patient.name.given',
+          'Patient.telecom',
+          'Patient.telecom.system',
+          'Patient.telecom.value',
+          'Patient.gender',
+          'Patient.birthDate',
+          'Patient.address',
+          'Patient.address.line',
+          'Patient.address.city',
+          'Patient.address.state',
+          'Patient.address.postalCode',
+          'Patient.communication',
+          'Patient.communication.language'
+        ]
+        must_support_elements.each do |path|
+          @patient_ary&.each do |resource|
+            truncated_path = path.gsub('Patient.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @patient_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Patient resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '14'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

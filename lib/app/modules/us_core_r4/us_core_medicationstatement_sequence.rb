@@ -70,12 +70,13 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @medicationstatement_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationStatement'), reply)
       end
@@ -165,7 +166,7 @@ module Inferno
         validate_history_reply(@medicationstatement, versioned_resource_class('MedicationStatement'))
       end
 
-      test 'MedicationStatement resources associated with Patient conform to Argonaut profiles' do
+      test 'MedicationStatement resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medicationstatement.json'
@@ -178,9 +179,43 @@ module Inferno
         test_resources_against_profile('MedicationStatement')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any MedicationStatement for this patient.' do
         metadata do
           id '09'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medicationstatement_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'MedicationStatement.status',
+          'MedicationStatement.medicationCodeableConcept',
+          'MedicationStatement.medicationReference',
+          'MedicationStatement.subject',
+          'MedicationStatement.effectivedateTime',
+          'MedicationStatement.effectivePeriod',
+          'MedicationStatement.dateAsserted',
+          'MedicationStatement.derivedFrom'
+        ]
+        must_support_elements.each do |path|
+          @medicationstatement_ary&.each do |resource|
+            truncated_path = path.gsub('MedicationStatement.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @medicationstatement_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided MedicationStatement resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )
