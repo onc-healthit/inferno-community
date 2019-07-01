@@ -11,6 +11,9 @@ require 'webmock/minitest'
 require 'rack/test'
 require 'json/jwt'
 
+test_log_filename = File.join('tmp', 'test.log')
+FileUtils.rm test_log_filename if File.exist? test_log_filename
+
 # require File.expand_path '../../app.rb', __FILE__
 require_relative '../lib/app'
 
