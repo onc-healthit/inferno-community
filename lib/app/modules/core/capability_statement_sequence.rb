@@ -76,7 +76,8 @@ module Inferno
           id '02'
           link 'http://www.hl7.org/fhir/directory.cfml'
           desc %(
-            Testing that the FHIR client is the same version that was version as the testing instance that was selected.
+            Checks that the FHIR version of the server matches the FHIR version expected by the tests.
+            This test will inspect the CapabilityStatement returned by the server to verify the FHIR version of the server.
           )
         end
 
