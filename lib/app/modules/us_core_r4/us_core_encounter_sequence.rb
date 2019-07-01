@@ -258,9 +258,22 @@ module Inferno
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
-      test 'Demonstrates that the server can supply must supported elements' do
+      test 'Encounter resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '12'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-encounter.json'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        test_resources_against_profile('Encounter')
+      end
+
+      test 'At least one of every must support element is provided in any Encounter for this patient.' do
+        metadata do
+          id '13'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -268,6 +281,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information' unless @encounter_ary&.any?
+        must_support_confirmed = {}
         must_support_elements = [
           'Encounter.identifier',
           'Encounter.identifier.system',
@@ -288,30 +302,16 @@ module Inferno
           'Encounter.location.location'
         ]
         must_support_elements.each do |path|
-          element_found = false
           @encounter_ary&.each do |resource|
             truncated_path = path.gsub('Encounter.', '')
-            already_found = @instance.must_support_confirmed.include?(path)
-            element_found = already_found || can_resolve_path(resource, truncated_path)
-            @instance.must_support_confirmed += "#{path}," if element_found && !already_found
-            break if element_found
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
           end
-          skip "Could not find #{path} in the provided resource" unless element_found
+          resource_count = @encounter_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Encounter resource(s)" unless must_support_confirmed[path]
         end
         @instance.save!
-      end
-
-      test 'Encounter resources associated with Patient conform to US Core R4 profiles' do
-        metadata do
-          id '13'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-encounter.json'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Encounter')
       end
 
       test 'All references can be resolved' do

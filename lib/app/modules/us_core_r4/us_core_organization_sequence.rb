@@ -141,9 +141,22 @@ module Inferno
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end
 
-      test 'Demonstrates that the server can supply must supported elements' do
+      test 'Organization resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-organization.json'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        test_resources_against_profile('Organization')
+      end
+
+      test 'At least one of every must support element is provided in any Organization for this patient.' do
+        metadata do
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -151,6 +164,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information' unless @organization_ary&.any?
+        must_support_confirmed = {}
         must_support_elements = [
           'Organization.identifier',
           'Organization.identifier.system',
@@ -166,30 +180,16 @@ module Inferno
           'Organization.endpoint'
         ]
         must_support_elements.each do |path|
-          element_found = false
           @organization_ary&.each do |resource|
             truncated_path = path.gsub('Organization.', '')
-            already_found = @instance.must_support_confirmed.include?(path)
-            element_found = already_found || can_resolve_path(resource, truncated_path)
-            @instance.must_support_confirmed += "#{path}," if element_found && !already_found
-            break if element_found
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
           end
-          skip "Could not find #{path} in the provided resource" unless element_found
+          resource_count = @organization_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Organization resource(s)" unless must_support_confirmed[path]
         end
         @instance.save!
-      end
-
-      test 'Organization resources associated with Patient conform to US Core R4 profiles' do
-        metadata do
-          id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-organization.json'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Organization')
       end
 
       test 'All references can be resolved' do

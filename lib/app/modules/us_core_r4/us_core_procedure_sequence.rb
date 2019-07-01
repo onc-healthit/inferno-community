@@ -192,40 +192,9 @@ module Inferno
         validate_history_reply(@procedure, versioned_resource_class('Procedure'))
       end
 
-      test 'Demonstrates that the server can supply must supported elements' do
-        metadata do
-          id '09'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @procedure_ary&.any?
-        must_support_elements = [
-          'Procedure.status',
-          'Procedure.code',
-          'Procedure.subject',
-          'Procedure.performeddateTime',
-          'Procedure.performedPeriod'
-        ]
-        must_support_elements.each do |path|
-          element_found = false
-          @procedure_ary&.each do |resource|
-            truncated_path = path.gsub('Procedure.', '')
-            already_found = @instance.must_support_confirmed.include?(path)
-            element_found = already_found || can_resolve_path(resource, truncated_path)
-            @instance.must_support_confirmed += "#{path}," if element_found && !already_found
-            break if element_found
-          end
-          skip "Could not find #{path} in the provided resource" unless element_found
-        end
-        @instance.save!
-      end
-
       test 'Procedure resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '10'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-procedure.json'
           desc %(
           )
@@ -234,6 +203,37 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Procedure')
+      end
+
+      test 'At least one of every must support element is provided in any Procedure for this patient.' do
+        metadata do
+          id '10'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @procedure_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'Procedure.status',
+          'Procedure.code',
+          'Procedure.subject',
+          'Procedure.performeddateTime',
+          'Procedure.performedPeriod'
+        ]
+        must_support_elements.each do |path|
+          @procedure_ary&.each do |resource|
+            truncated_path = path.gsub('Procedure.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @procedure_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Procedure resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
       end
 
       test 'All references can be resolved' do
