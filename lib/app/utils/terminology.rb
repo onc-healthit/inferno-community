@@ -126,7 +126,6 @@ module Inferno
         end
         # Register the validators with FHIR Models for validation
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
-        FHIR::STU3::StructureDefinition.validates_vs(validator[:url], &validate_fn)
         FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
       end
     end
