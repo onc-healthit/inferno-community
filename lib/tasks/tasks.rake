@@ -2,6 +2,7 @@
 
 require 'fhir_client'
 require 'pry'
+require 'pry-byebug'
 require 'dm-core'
 require 'csv'
 require 'colorize'
@@ -157,6 +158,13 @@ def execute(instance, sequences)
   return_value
 end
 
+def file_path(filename)
+  return filename unless ENV['RACK_ENV'] == 'test'
+
+  FileUtils.mkdir_p 'tmp'
+  File.join('tmp', filename)
+end
+
 namespace :inferno do |_argv|
   # Exports a CSV containing the test metadata
   desc 'Generate List of All Tests'
@@ -186,8 +194,10 @@ namespace :inferno do |_argv|
       end
     end
 
-    File.write(args.filename, csv_out)
-    puts "Writing to #{args.filename}"
+    filename = file_path(args.filename)
+
+    File.write(filename, csv_out)
+    Inferno.logger.info "Writing to #{filename}"
   end
 
   desc 'Generate automated run script'

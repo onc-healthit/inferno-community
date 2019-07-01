@@ -5,7 +5,7 @@ module Inferno
     attr_accessor :details
     def initialize(message, details = nil)
       super(message)
-      FHIR.logger.error "AssertionException: #{message}"
+      Inferno.logger.error "AssertionException: #{message}"
       @details = details
     end
   end
@@ -14,7 +14,7 @@ module Inferno
     attr_accessor :details
     def initialize(message = '', details = nil)
       super(message)
-      FHIR.logger.info "SkipException: #{message}"
+      Inferno.logger.info "SkipException: #{message}"
       @details = details
     end
   end
@@ -22,14 +22,14 @@ module Inferno
   class TodoException < RuntimeError
     def initialize(message = '')
       super(message)
-      FHIR.logger.info "TodoException: #{message}"
+      Inferno.logger.info "TodoException: #{message}"
     end
   end
 
   class PassException < RuntimeError
     def initialize(message = '')
       super(message)
-      FHIR.logger.info "PassException: #{message}"
+      Inferno.logger.info "PassException: #{message}"
     end
   end
 
