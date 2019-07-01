@@ -44,6 +44,7 @@ module Inferno
 
       attr_accessor :profiles_encountered
       attr_accessor :profiles_failed
+      attr_accessor :sequence_result
 
       delegate :versioned_resource_class, to: :@client
       delegate :versioned_conformance_class, to: :@instance
@@ -63,15 +64,15 @@ module Inferno
       def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
         @params = params unless params.nil?
 
-        @sequence_result.test_results.last.pass!
+        sequence_result.test_results.last.pass!
 
         if fail_message.present?
-          @sequence_result.test_results.last.fail!
-          @sequence_result.test_results.last.message = fail_message
+          sequence_result.test_results.last.fail!
+          sequence_result.test_results.last.message = fail_message
         end
 
         unless request.nil?
-          @sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
+          sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
             direction: 'inbound',
             request_method: request.request_method.downcase,
             request_url: request.url,
@@ -81,18 +82,18 @@ module Inferno
           )
         end
 
-        @sequence_result.pass!
-        @sequence_result.wait_at_endpoint = nil
-        @sequence_result.redirect_to_url = nil
+        sequence_result.pass!
+        sequence_result.wait_at_endpoint = nil
+        sequence_result.redirect_to_url = nil
 
-        @sequence_result.save!
+        sequence_result.save!
 
         start(&block)
       end
 
       def start(test_set_id = nil, test_case_id = nil, &block)
-        if @sequence_result.nil?
-          @sequence_result = Models::SequenceResult.new(
+        if sequence_result.nil?
+          self.sequence_result = Models::SequenceResult.new(
             name: sequence_name,
             result: ResultStatuses::PASS,
             testing_instance: @instance,
@@ -101,10 +102,10 @@ module Inferno
             test_case_id: test_case_id,
             app_version: VERSION
           )
-          @sequence_result.save!
+          sequence_result.save!
         end
 
-        start_at = @sequence_result.result_count
+        start_at = sequence_result.result_count
 
         load_input_params(sequence_name)
 
@@ -116,7 +117,7 @@ module Inferno
 
         update_output(sequence_name, output_results)
 
-        @sequence_result.tap do |result|
+        sequence_result.tap do |result|
           result.output_results = output_results.to_json if output_results.present?
 
           result.reset!
@@ -135,7 +136,7 @@ module Inferno
             input_value = 'none' if input_value.empty?
             input_parameters[requirement.to_sym] = input_value
           end
-        @sequence_result.input_params = input_parameters.to_json
+        sequence_result.input_params = input_parameters.to_json
       end
 
       def save_output(sequence_name)
@@ -196,12 +197,12 @@ module Inferno
 
           yield result if block_given?
 
-          @sequence_result.test_results << result
+          sequence_result.test_results << result
 
           next unless result.wait?
 
-          @sequence_result.redirect_to_url = result.redirect_to_url
-          @sequence_result.wait_at_endpoint = result.wait_at_endpoint
+          sequence_result.redirect_to_url = result.redirect_to_url
+          sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
       end
