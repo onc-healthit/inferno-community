@@ -80,11 +80,9 @@ module Inferno
           )
         end
 
-        #@client.detect_version is a symbol
-        assert_equal(@instance.fhir_version, @client.detect_version.to_s, "FHIR client version does not match with instance version");
-
+        # @client.detect_version is a symbol
+        assert_equal(@instance.fhir_version, @client.detect_version.to_s, 'FHIR client version does not match with instance version')
       end
-
 
       test 'FHIR server supports the conformance interaction that defines how it supports resources' do
         metadata do
