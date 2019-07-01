@@ -42,7 +42,7 @@ module Inferno
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
       FILTER_PROP = {
-          'SCALE_TYP' => 'LOINC_SCALE_TYP'
+        'SCALE_TYP' => 'LOINC_SCALE_TYP'
       }.freeze
 
       def initialize(database)
