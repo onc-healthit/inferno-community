@@ -74,7 +74,7 @@ module Inferno
       test 'Test FHIR version' do
         metadata do
           id '02'
-          link ''
+          link 'http://www.hl7.org/fhir/directory.cfml'
           desc %(
             Testing that the FHIR client is the same version that was version as the testing instance that was selected.
           )
