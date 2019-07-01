@@ -246,3 +246,6 @@ DEPENDENCIES
   thin
   time_difference
   webmock
+
+BUNDLED WITH
+   1.16.1
