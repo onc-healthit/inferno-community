@@ -266,7 +266,7 @@ module Inferno
 
         test_resources_against_profile('Observation', OBSERVATION_RESULTS_PROFILE)
         skip_unless @profiles_encountered.include?(OBSERVATION_RESULTS_PROFILE), 'No Observation Results found.'
-        assert !@profiles_failed.include?(OBSERVATION_RESULTS_PROFILE), "Observation Results failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:observation_results]]}"
+        assert !@profiles_failed.include?(OBSERVATION_RESULTS_PROFILE), "Observation Results failed validation.<br/>#{@profiles_failed[OBSERVATION_RESULTS_PROFILE]}"
       end
 
       test 'All references can be resolved' do

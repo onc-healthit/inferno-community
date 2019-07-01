@@ -3,6 +3,8 @@
 module Inferno
   module Sequence
     class ArgonautCarePlanSequence < SequenceBase
+      PROFILE = Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]
+
       group 'Argonaut Profile Conformance'
 
       title 'Care Plan'
@@ -102,7 +104,7 @@ module Inferno
 
         @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply, PROFILE)
       end
 
       test 'Server returns expected results from CarePlan search by patient + category + date' do
@@ -228,9 +230,9 @@ module Inferno
           )
           versions :dstu2
         end
-        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]), 'No CarePlans found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]), "CarePlans failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:care_plan]]}"
+        test_resources_against_profile('CarePlan', PROFILE)
+        skip_unless @profiles_encountered.include?(PROFILE), 'No CarePlans found.'
+        assert !@profiles_failed.include?(PROFILE), "CarePlans failed validation.<br/>#{@profiles_failed[PROFILE]}"
       end
 
       test 'All references can be resolved' do
