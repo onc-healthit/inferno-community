@@ -32,7 +32,17 @@ module Inferno
       CODE_SYS = {
         'http://hl7.org/fhir/v3/Ethnicity' => 'resources/misc_valuesets/CodeSystem-v3-Ethnicity.json',
         'http://hl7.org/fhir/v3/Race' => 'resources/misc_valuesets/CodeSystem-v3-Race.json',
-        'http://hl7.org/fhir/condition-category' => 'resources/misc_valuesets/CodeSystem-condition-category.json'
+        'http://hl7.org/fhir/condition-category' => 'resources/misc_valuesets/CodeSystem-condition-category.json',
+        'http://hl7.org/fhir/us/core/CodeSystem/careplan-category' => 'resources/us_core_r4/CodeSystem-careplan-category.json',
+        'urn:oid:2.16.840.1.113883.6.238' => 'resources/us_core_r4/CodeSystem-cdcrec.json',
+        'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => 'resources/us_core_r4/CodeSystem-condition-category.json',
+        'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => 'resources/us_core_r4/CodeSystem-us-core-documentreference-category.json',
+        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json'
+      }.freeze
+
+      # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
+      FILTER_PROP = {
+          'SCALE_TYP' => 'LOINC_SCALE_TYP'
       }.freeze
 
       def initialize(database)
