@@ -30,8 +30,21 @@ module Inferno
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'onset-date'
-          value_found = can_resolve_path(resource, 'onsetDateTime') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'onset-date on resource does not match onset-date requested'
+        value_found = can_resolve_path(resource, 'onsetDateTime') do |date|
+          date_found = DateTime.xmlschema(date)
+          valueDate = DateTime.xmlschema(value)
+          case comparator
+          when 'ge'
+            date_found >= valueDate
+          when 'le'
+            date_found <= valuedate
+          when 'gt'
+            date_found > valueDate
+          when 'lt'
+            date_found < valuedate
+          else
+            date_found == valuedate
+        end
 
         when 'code'
           value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }

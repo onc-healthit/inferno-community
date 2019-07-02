@@ -22,8 +22,21 @@ module Inferno
           assert value_found, '_id on resource does not match _id requested'
 
         when 'birthdate'
-          value_found = can_resolve_path(resource, 'birthDate') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'birthdate on resource does not match birthdate requested'
+        value_found = can_resolve_path(resource, 'birthDate') do |date|
+          date_found = DateTime.xmlschema(date)
+          valueDate = DateTime.xmlschema(value)
+          case comparator
+          when 'ge'
+            date_found >= valueDate
+          when 'le'
+            date_found <= valuedate
+          when 'gt'
+            date_found > valueDate
+          when 'lt'
+            date_found < valuedate
+          else
+            date_found == valuedate
+        end
 
         when 'family'
           value_found = can_resolve_path(resource, 'name.family') { |value_in_resource| value_in_resource == value }

@@ -14,7 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :PractitionerRole
 
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value)
         case property
 
         when 'specialty'

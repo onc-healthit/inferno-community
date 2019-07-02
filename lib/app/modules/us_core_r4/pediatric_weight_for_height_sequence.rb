@@ -30,8 +30,21 @@ module Inferno
           assert value_found, 'code on resource does not match code requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'effectiveDateTime') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'date on resource does not match date requested'
+        value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+          date_found = DateTime.xmlschema(date)
+          valueDate = DateTime.xmlschema(value)
+          case comparator
+          when 'ge'
+            date_found >= valueDate
+          when 'le'
+            date_found <= valuedate
+          when 'gt'
+            date_found > valueDate
+          when 'lt'
+            date_found < valuedate
+          else
+            date_found == valuedate
+        end
 
         when 'patient'
           value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }

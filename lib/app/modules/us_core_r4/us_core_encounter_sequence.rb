@@ -27,10 +27,20 @@ module Inferno
 
         when 'date'
           value_found = can_resolve_path(resource, 'period') do |period|
-            startDate = DateTime.xmlschema(period.start)
-            endDate = DateTime.xmlschema(period.end)
+            startDate = DateTime.xmlschema(period&.start)
+            endDate = DateTime.xmlschema(period&.end)
             valueDate = DateTime.xmlschema(value)
-            valueDate >= startDate && valueDate <= endDate
+            case comparator
+            when 'ge'
+              endDate >= valueDate || endDate.nil?
+            when 'le'
+              startDate <= valuedate || startDate.nil?
+            when 'gt'
+              endDate > valueDate || endDate.nil?
+            when 'lt'
+              startDate < valuedate || startDate.nil?
+            else
+              valueDate >= startDate && valueDate <= endDate
           end
 
         when 'identifier'

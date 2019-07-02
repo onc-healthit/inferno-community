@@ -123,6 +123,8 @@ def create_search_test(sequence, search_param)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         assert_response_ok(reply))
     end
+  search_test[:test_code] += get_comparator_searches()
+  end
   sequence[:tests] << search_test
 end
 
@@ -295,6 +297,10 @@ def get_search_params(search_parameters, sequence)
   search_code
 end
 
+def get_comparator_searches(search_param, sequence, comparator)
+  # todo
+end
+
 def search_param_constants(search_parameters, sequence)
   return "patient: @instance.patient_id, category: 'assess-plan'" if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
   return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
@@ -321,11 +327,39 @@ def create_search_validation(sequence)
     when 'Period'
       search_validators += %(
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
-            startDate = DateTime.xmlschema(period.start)
-            endDate = DateTime.xmlschema(period.end)
+            startDate = DateTime.xmlschema(period&.start)
+            endDate = DateTime.xmlschema(period&.end)
             valueDate = DateTime.xmlschema(value)
-            valueDate >= startDate && valueDate <= endDate
+            case comparator
+            when 'ge'
+              endDate >= valueDate || endDate.nil?
+            when 'le'
+              startDate <= valuedate || startDate.nil?
+            when 'gt'
+              endDate > valueDate || endDate.nil?
+            when 'lt'
+              startDate < valuedate || startDate.nil?
+            else
+              valueDate >= startDate && valueDate <= endDate
           end
+)
+    when 'date'
+      search_validators += %(
+        value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
+          date_found = DateTime.xmlschema(date)
+          valueDate = DateTime.xmlschema(value)
+          case comparator
+          when 'ge'
+            date_found >= valueDate
+          when 'le'
+            date_found <= valuedate
+          when 'gt'
+            date_found > valueDate
+          when 'lt'
+            date_found < valuedate
+          else
+            date_found == valuedate
+        end
 )
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
@@ -353,7 +387,7 @@ def create_search_validation(sequence)
 
   unless search_validators.empty?
     validate_function = %(
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value#{', comparator = nil' if sequence[:search_param_descriptions].any? { |element, definition| definition[:comparators].any?}})
         case property
 #{search_validators}
         end
