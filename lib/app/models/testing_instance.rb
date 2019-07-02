@@ -182,7 +182,7 @@ module Inferno
           conformance
             .rest.first.resource
             .select { |resource| resources.include? resource.type }
-            .each_with_object({}) { |resource, hash| hash[resource.type] = resource }
+            .index_by(&:type)
 
         supported_resources.each(&:destroy)
         save!
@@ -225,15 +225,41 @@ module Inferno
         end
       end
 
-      def post_resource_references(resource_type: nil, resource_id: nil)
-        resource_references.each do |ref|
-          ref.destroy if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
-        end
-        resource_references << ResourceReference.new(resource_type: resource_type,
-                                                     resource_id: resource_id)
+      def save_resource_reference(type, id, profile = nil)
+        resource_references
+          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
+          .each(&:destroy)
+
+        new_reference = ResourceReference.new(
+          resource_type: type,
+          resource_id: id,
+          profile: profile
+        )
+        resource_references << new_reference
+
         save!
         # Ensure the instance resource references are accurate
         reload
+      end
+
+      def save_resource_ids_in_bundle(klass, reply, profile = nil)
+        return if reply&.resource&.entry&.blank?
+
+        reply.resource.entry
+          .select { |entry| entry.resource.class == klass }
+          .each do |entry|
+          save_resource_reference(klass.name.demodulize, entry.resource.id, profile)
+        end
+      end
+
+      def versioned_conformance_class
+        if fhir_version == 'dstu2'
+          FHIR::DSTU2::Conformance
+        elsif fhir_version == 'stu3'
+          FHIR::STU3::CapabilityStatement
+        else
+          FHIR::CapabilityStatement
+        end
       end
 
       private
