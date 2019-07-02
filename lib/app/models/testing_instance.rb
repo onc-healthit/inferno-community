@@ -152,6 +152,8 @@ module Inferno
           resource_id: patient_id
         )
 
+        save!
+
         reload
       end
 
