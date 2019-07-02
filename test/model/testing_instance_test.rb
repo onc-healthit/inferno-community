@@ -5,8 +5,8 @@ require_relative '../../lib/app/models/testing_instance'
 
 class TestingInstanceTest < MiniTest::Test
   def setup
-    @patient_id1 = 1
-    @patient_id2 = 2
+    @patient_id1 = '1'
+    @patient_id2 = '2'
     @testing_instance = Inferno::Models::TestingInstance.new
     @testing_instance.resource_references << Inferno::Models::ResourceReference.new(
       resource_type: 'Patient',
@@ -20,7 +20,9 @@ class TestingInstanceTest < MiniTest::Test
 
     @testing_instance.patient_id = @patient_id2
 
-    assert(@testing_instance.resource_references.empty?)
+    assert(@testing_instance.patient_id == @patient_id2)
+    assert(@testing_instance.resource_references.length == 1)
+    assert(@testing_instance.resource_references.first.resource_id == @patient_id2)
   end
 
   def test_patient_id_reassignment
