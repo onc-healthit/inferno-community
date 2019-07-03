@@ -1,0 +1,17 @@
+name: smart
+title: SMART Application Launch Framework Implementation Guide v1.0.0
+description: Smart on FHIR Testing
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: SMART on FHIR Testing
+        sequences:
+          - SMARTDiscoverySequence
+          - DynamicRegistrationSequence
+          - ManualRegistrationSequence
+          - StandaloneLaunchSequence
+          - EHRLaunchSequence
+          - OpenIDConnectSequence
+          - TokenRefreshSequence
