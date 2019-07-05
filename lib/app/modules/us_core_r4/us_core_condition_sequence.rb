@@ -14,7 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Condition
 
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value)
         case property
 
         when 'category'
@@ -30,21 +30,25 @@ module Inferno
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'onset-date'
-        value_found = can_resolve_path(resource, 'onsetDateTime') do |date|
-          date_found = DateTime.xmlschema(date)
-          valueDate = DateTime.xmlschema(value)
-          case comparator
-          when 'ge'
-            date_found >= valueDate
-          when 'le'
-            date_found <= valuedate
-          when 'gt'
-            date_found > valueDate
-          when 'lt'
-            date_found < valuedate
-          else
-            date_found == valuedate
-        end
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          value_found = can_resolve_path(resource, 'onsetDateTime') do |date|
+            date_found = DateTime.xmlschema(date)
+            value_date = DateTime.xmlschema(value)
+            case comparator
+            when 'ge'
+              date_found >= value_date
+            when 'le'
+              date_found <= value_date
+            when 'gt'
+              date_found > value_date
+            when 'lt'
+              date_found < value_date
+            else
+              date_found == value_date
+            end
+          end
+          assert value_found, 'onset-date on resource does not match onset-date requested'
 
         when 'code'
           value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
@@ -124,6 +128,24 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+        assert_response_ok(reply)
+
+        gt_onset_date_val = 'gt' + (DateTime.xmlschema(onset_date_val) - 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'onset-date': gt_onset_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        lt_onset_date_val = 'lt' + (DateTime.xmlschema(onset_date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'onset-date': lt_onset_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        le_onset_date_val = 'le' + (DateTime.xmlschema(onset_date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'onset-date': le_onset_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
         assert_response_ok(reply)
       end
 

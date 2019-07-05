@@ -123,8 +123,7 @@ def create_search_test(sequence, search_param)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         assert_response_ok(reply))
     end
-  search_test[:test_code] += get_comparator_searches()
-  end
+  search_test[:test_code] += get_comparator_searches(search_param[:names], sequence)
   sequence[:tests] << search_test
 end
 
@@ -262,6 +261,14 @@ def get_value_path_by_type(type)
   end
 end
 
+def param_value_name(param)
+  if param == '_id'
+    'id_val'
+  else
+    param.tr('-', '_') + '_val'
+  end
+end
+
 def get_search_params(search_parameters, sequence)
   unless search_param_constants(search_parameters, sequence).nil?
     return %(
@@ -270,12 +277,7 @@ def get_search_params(search_parameters, sequence)
   search_values = []
   search_assignments = []
   search_parameters.each do |param|
-    variable_name =
-      if param == '_id'
-        'id_val'
-      else
-        param.tr('-', '_') + '_val'
-      end
+    variable_name = param_value_name(param)
     variable_value =
       if param == 'patient'
         '@instance.patient_id'
@@ -297,8 +299,42 @@ def get_search_params(search_parameters, sequence)
   search_code
 end
 
-def get_comparator_searches(search_param, sequence, comparator)
-  # todo
+def get_comparator_searches(search_params, sequence)
+  search_code = ''
+  search_assignments = []
+  search_params.each do |param|
+    search_assignments << "'#{param}': #{param_value_name(param)}"
+  end
+  search_assignments_str = "{ #{search_assignments.join(', ')} }"
+  search_params.each do |param|
+    param_val_name = param_value_name(param)
+    param_info = sequence[:search_param_descriptions][param.to_sym]
+    comparators = param_info[:comparators]
+    type = param_info[:type]
+    case type
+    when 'Period', 'date'
+      comparators.each do |comparator, expecatation|
+        next unless ['SHALL', 'SHOULD'].include? expecatation
+
+        comparator_val_name = "#{comparator}_#{param.tr('-', '_') + '_val'}"
+        case comparator.to_s
+        when 'gt', 'ge'
+          search_code += %(\n
+        #{comparator_val_name} = '#{comparator}' + (DateTime.xmlschema(#{param_val_name}) - 1).xmlschema)
+        when 'lt', 'le'
+          search_code += %(\n
+        #{comparator_val_name} = '#{comparator}' + (DateTime.xmlschema(#{param_val_name}) + 1).xmlschema)
+        end
+        comparator_search_params = search_assignments_str.gsub(param_val_name, comparator_val_name)
+        search_code += %(
+        comparator_search_params = #{comparator_search_params}
+        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
+        assert_response_ok(reply))
+      end
+    end
+  end
+  search_code
 end
 
 def search_param_constants(search_parameters, sequence)
@@ -326,40 +362,48 @@ def create_search_validation(sequence)
     case type
     when 'Period'
       search_validators += %(
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
-            startDate = DateTime.xmlschema(period&.start)
-            endDate = DateTime.xmlschema(period&.end)
-            valueDate = DateTime.xmlschema(value)
+            start_date = DateTime.xmlschema(period&.start)
+            end_date = DateTime.xmlschema(period&.end)
+            value_date = DateTime.xmlschema(value)
             case comparator
             when 'ge'
-              endDate >= valueDate || endDate.nil?
+              end_date >= value_date || end_date.nil?
             when 'le'
-              startDate <= valuedate || startDate.nil?
+              start_date <= value_date || start_date.nil?
             when 'gt'
-              endDate > valueDate || endDate.nil?
+              end_date > value_date || end_date.nil?
             when 'lt'
-              startDate < valuedate || startDate.nil?
+              start_date < value_date || start_date.nil?
             else
-              valueDate >= startDate && valueDate <= endDate
+              valueDate >= start_date && valueDate <= end_date
+            end
           end
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
     when 'date'
       search_validators += %(
-        value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
-          date_found = DateTime.xmlschema(date)
-          valueDate = DateTime.xmlschema(value)
-          case comparator
-          when 'ge'
-            date_found >= valueDate
-          when 'le'
-            date_found <= valuedate
-          when 'gt'
-            date_found > valueDate
-          when 'lt'
-            date_found < valuedate
-          else
-            date_found == valuedate
-        end
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
+            date_found = DateTime.xmlschema(date)
+            value_date = DateTime.xmlschema(value)
+            case comparator
+            when 'ge'
+              date_found >= value_date
+            when 'le'
+              date_found <= value_date
+            when 'gt'
+              date_found > value_date
+            when 'lt'
+              date_found < value_date
+            else
+              date_found == value_date
+            end
+          end
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
@@ -387,7 +431,7 @@ def create_search_validation(sequence)
 
   unless search_validators.empty?
     validate_function = %(
-      def validate_resource_item(resource, property, value#{', comparator = nil' if sequence[:search_param_descriptions].any? { |element, definition| definition[:comparators].any?}})
+      def validate_resource_item(resource, property, value)
         case property
 #{search_validators}
         end

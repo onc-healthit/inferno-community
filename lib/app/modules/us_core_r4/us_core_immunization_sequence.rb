@@ -14,7 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Immunization
 
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value)
         case property
 
         when 'patient'
@@ -26,21 +26,25 @@ module Inferno
           assert value_found, 'status on resource does not match status requested'
 
         when 'date'
-        value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
-          date_found = DateTime.xmlschema(date)
-          valueDate = DateTime.xmlschema(value)
-          case comparator
-          when 'ge'
-            date_found >= valueDate
-          when 'le'
-            date_found <= valuedate
-          when 'gt'
-            date_found > valueDate
-          when 'lt'
-            date_found < valuedate
-          else
-            date_found == valuedate
-        end
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
+            date_found = DateTime.xmlschema(date)
+            value_date = DateTime.xmlschema(value)
+            case comparator
+            when 'ge'
+              date_found >= value_date
+            when 'le'
+              date_found <= value_date
+            when 'gt'
+              date_found > value_date
+            when 'lt'
+              date_found < value_date
+            else
+              date_found == value_date
+            end
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         end
       end
@@ -116,6 +120,24 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
+        assert_response_ok(reply)
+
+        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'date': gt_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'date': lt_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'date': le_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
         assert_response_ok(reply)
       end
 

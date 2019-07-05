@@ -14,7 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :DocumentReference
 
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value)
         case property
 
         when '_id'
@@ -42,22 +42,26 @@ module Inferno
           assert value_found, 'date on resource does not match date requested'
 
         when 'period'
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
           value_found = can_resolve_path(resource, 'context.period') do |period|
-            startDate = DateTime.xmlschema(period&.start)
-            endDate = DateTime.xmlschema(period&.end)
-            valueDate = DateTime.xmlschema(value)
+            start_date = DateTime.xmlschema(period&.start)
+            end_date = DateTime.xmlschema(period&.end)
+            value_date = DateTime.xmlschema(value)
             case comparator
             when 'ge'
-              endDate >= valueDate || endDate.nil?
+              end_date >= value_date || end_date.nil?
             when 'le'
-              startDate <= valuedate || startDate.nil?
+              start_date <= value_date || start_date.nil?
             when 'gt'
-              endDate > valueDate || endDate.nil?
+              end_date > value_date || end_date.nil?
             when 'lt'
-              startDate < valuedate || startDate.nil?
+              start_date < value_date || start_date.nil?
             else
-              valueDate >= startDate && valueDate <= endDate
+              valueDate >= start_date && valueDate <= end_date
+            end
           end
+          assert value_found, 'period on resource does not match period requested'
 
         end
       end
@@ -239,6 +243,24 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
+
+        gt_period_val = 'gt' + (DateTime.xmlschema(period_val) - 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': gt_period_val }
+        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        lt_period_val = 'lt' + (DateTime.xmlschema(period_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': lt_period_val }
+        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        le_period_val = 'le' + (DateTime.xmlschema(period_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': le_period_val }
+        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
         assert_response_ok(reply)
       end
 

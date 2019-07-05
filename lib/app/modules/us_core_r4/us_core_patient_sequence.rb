@@ -14,7 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Patient
 
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value)
         case property
 
         when '_id'
@@ -22,21 +22,25 @@ module Inferno
           assert value_found, '_id on resource does not match _id requested'
 
         when 'birthdate'
-        value_found = can_resolve_path(resource, 'birthDate') do |date|
-          date_found = DateTime.xmlschema(date)
-          valueDate = DateTime.xmlschema(value)
-          case comparator
-          when 'ge'
-            date_found >= valueDate
-          when 'le'
-            date_found <= valuedate
-          when 'gt'
-            date_found > valueDate
-          when 'lt'
-            date_found < valuedate
-          else
-            date_found == valuedate
-        end
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          value_found = can_resolve_path(resource, 'birthDate') do |date|
+            date_found = DateTime.xmlschema(date)
+            value_date = DateTime.xmlschema(value)
+            case comparator
+            when 'ge'
+              date_found >= value_date
+            when 'le'
+              date_found <= value_date
+            when 'gt'
+              date_found > value_date
+            when 'lt'
+              date_found < value_date
+            else
+              date_found == value_date
+            end
+          end
+          assert value_found, 'birthdate on resource does not match birthdate requested'
 
         when 'family'
           value_found = can_resolve_path(resource, 'name.family') { |value_in_resource| value_in_resource == value }

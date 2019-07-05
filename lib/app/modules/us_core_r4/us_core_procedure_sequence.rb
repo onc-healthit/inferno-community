@@ -14,7 +14,7 @@ module Inferno
       requires :token, :patient_id
       conformance_supports :Procedure
 
-      def validate_resource_item(resource, property, value, comparator = nil)
+      def validate_resource_item(resource, property, value)
         case property
 
         when 'status'
@@ -26,21 +26,25 @@ module Inferno
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'date'
-        value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
-          date_found = DateTime.xmlschema(date)
-          valueDate = DateTime.xmlschema(value)
-          case comparator
-          when 'ge'
-            date_found >= valueDate
-          when 'le'
-            date_found <= valuedate
-          when 'gt'
-            date_found > valueDate
-          when 'lt'
-            date_found < valuedate
-          else
-            date_found == valuedate
-        end
+          comparator = value[0, 1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
+            date_found = DateTime.xmlschema(date)
+            value_date = DateTime.xmlschema(value)
+            case comparator
+            when 'ge'
+              date_found >= value_date
+            when 'le'
+              date_found <= value_date
+            when 'gt'
+              date_found > value_date
+            when 'lt'
+              date_found < value_date
+            else
+              date_found == value_date
+            end
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         when 'code'
           value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
@@ -121,6 +125,24 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         assert_response_ok(reply)
+
+        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'date': gt_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'date': lt_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'date': le_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+        assert_response_ok(reply)
       end
 
       test 'Server returns expected results from Procedure search by patient+code+date' do
@@ -142,6 +164,24 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+        assert_response_ok(reply)
+
+        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': gt_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': lt_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+        assert_response_ok(reply)
+
+        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
+        comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': le_date_val }
+        reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+        validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
         assert_response_ok(reply)
       end
 
