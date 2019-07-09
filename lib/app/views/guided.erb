@@ -476,7 +476,7 @@
           <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
           <div class="modal-footer">
             <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
-            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/test_sets/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
           </div>
         </div>
       </div>

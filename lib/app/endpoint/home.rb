@@ -15,70 +15,6 @@ module Inferno
           render_index
         end
 
-        # Returns the static files associated with web app
-        get '/static/*' do
-          call! env.merge('PATH_INFO' => '/' + params['splat'].first)
-        end
-
-        # Returns a specific testing instance test page
-        get '/:id/?' do
-          instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 if instance.nil?
-
-          redirect "#{base_path}/#{instance.id}/#{instance.module.default_test_set}/#{'?error=' + params[:error] unless params[:error].nil?}"
-        end
-
-        # Returns a specific testing instance test page
-        get '/:id/:test_set/?' do
-          instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 if instance.nil?
-          test_set = instance.module.test_sets[params[:test_set].to_sym]
-          halt 404 if test_set.nil?
-          sequence_results = instance.latest_results_by_case
-
-          erb instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
-                                                                       test_set: test_set,
-                                                                       sequence_results: sequence_results,
-                                                                       error_code: params[:error]
-        end
-
-        get '/:id/:test_set/report?' do
-          instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 if instance.nil?
-          test_set = instance.module.test_sets[params[:test_set].to_sym]
-          halt 404 if test_set.nil?
-          sequence_results = instance.latest_results_by_case
-
-          request_response_count = Inferno::Models::RequestResponse.all(instance_id: instance.id).count
-          latest_sequence_time =
-            if instance.sequence_results.count.positive?
-              Inferno::Models::SequenceResult.first(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
-            else
-              'No tests ran'
-            end
-
-          report_summary = {
-            fhir_version: instance.fhir_version,
-            app_version: VERSION,
-            resource_references: instance.resource_references.count,
-            supported_resources: instance.supported_resources.count,
-            request_response: request_response_count,
-            latest_sequence_time: latest_sequence_time,
-            final_result: instance.final_result(params[:test_set]),
-            inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/#{params[:test_set]}/"
-          }
-
-          erb(
-            :report,
-            { layout: false },
-            instance: instance,
-            test_set: test_set,
-            show_button: false,
-            sequence_results: sequence_results,
-            report_summary: report_summary
-          )
-        end
-
         # Creates a new testing instance at the provided FHIR Server URL
         post '/?' do
           url = params['fhir_server']
@@ -110,43 +46,82 @@ module Inferno
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
           @instance.redirect_uris = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/redirect"
 
-          cookies[:instance_id_test_set] = "#{@instance.id}/#{inferno_module.default_test_set}"
+          cookies[:instance_id_test_set] = "#{@instance.id}/test_sets/#{inferno_module.default_test_set}"
 
           @instance.save!
+          print "redirecting to: "
+          puts "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
+              settings.autorun_capability}"
           redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
               settings.autorun_capability}"
         end
 
-        # Returns test details for a specific test including any applicable requests and responses.
-        #   This route is typically used for retrieving test metadata before the test has been run
-        get '/test_details/:module/:sequence_name/:test_index?' do
-          sequence = Inferno::Module.get(params[:module]).sequences.find do |x|
-            x.sequence_name == params[:sequence_name]
-          end
-          halt 404 unless sequence
-          @test_metadata = sequence.tests[params[:test_index].to_i]
-          halt 404 unless @test_metadata
-          erb :test_details, layout: false
+        # Returns the static files associated with web app
+        get '/static/*' do
+          call! env.merge('PATH_INFO' => '/' + params['splat'].first)
         end
 
-        # Returns test details for a specific test including any applicable requests and responses.
-        #   This route is typically used for retrieving test metadata and results after the test has been run.
-        get '/:id/test_result/:test_result_id/?' do
-          @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
-          halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
-          erb :test_result_details, layout: false
+        # Returns a specific testing instance test page
+        get '/:id/?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 if instance.nil?
+
+          redirect "#{base_path}/#{instance.id}/test_sets/#{instance.module.default_test_set}/#{'?error=' + params[:error] unless params[:error].nil?}"
         end
 
-        # Returns details for a specific request response
-        #   This route is typically used for retrieving test metadata and results after the test has been run.
-        get '/:id/test_request/:test_request_id/?' do
-          request_response = Inferno::Models::RequestResponse.get(params[:test_request_id])
-          halt 404 if request_response.instance_id != params[:id]
-          erb :request_details, { layout: false }, rr: request_response
+        # Returns a specific testing instance test page
+        get '/:id/test_sets/:test_set/?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 if instance.nil?
+          test_set = instance.module.test_sets[params[:test_set].to_sym]
+          halt 404 if test_set.nil?
+          sequence_results = instance.latest_results_by_case
+
+          erb instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
+                                                                       test_set: test_set,
+                                                                       sequence_results: sequence_results,
+                                                                       error_code: params[:error]
+        end
+
+        get '/:id/test_sets/:test_set/report?' do
+          instance = Inferno::Models::TestingInstance.get(params[:id])
+          halt 404 if instance.nil?
+          test_set = instance.module.test_sets[params[:test_set].to_sym]
+          halt 404 if test_set.nil?
+          sequence_results = instance.latest_results_by_case
+
+          request_response_count = Inferno::Models::RequestResponse.all(instance_id: instance.id).count
+          latest_sequence_time =
+            if instance.sequence_results.count.positive?
+              Inferno::Models::SequenceResult.first(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
+            else
+              'No tests ran'
+            end
+
+          report_summary = {
+            fhir_version: instance.fhir_version,
+            app_version: VERSION,
+            resource_references: instance.resource_references.count,
+            supported_resources: instance.supported_resources.count,
+            request_response: request_response_count,
+            latest_sequence_time: latest_sequence_time,
+            final_result: instance.final_result(params[:test_set]),
+            inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/test_sets/#{params[:test_set]}/"
+          }
+
+          erb(
+            :report,
+            { layout: false },
+            instance: instance,
+            test_set: test_set,
+            show_button: false,
+            sequence_results: sequence_results,
+            report_summary: report_summary
+          )
         end
 
         # Cancels the currently running test
-        get '/:id/:test_set/sequence_result/:sequence_result_id/cancel' do
+        get '/:id/test_sets/:test_set/sequence_result/:sequence_result_id/cancel' do
           sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
           halt 404 if sequence_result.testing_instance.id != params[:id]
           test_set = sequence_result.testing_instance.module.test_sets[params[:test_set].to_sym]
@@ -186,21 +161,21 @@ module Inferno
           query_target = sequence_result.test_case_id
           query_target = "#{test_group.id}/#{sequence_result.test_case_id}" unless test_group.nil?
 
-          redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}"
+          redirect "#{base_path}/#{params[:id]}/test_sets/#{params[:test_set]}/##{query_target}"
         end
 
-        get '/:id/:test_set/sequence_result?' do
-          redirect "#{base_path}/#{params[:id]}/#{params[:test_set]}/"
+        get '/:id/test_sets/:test_set/sequence_result?' do
+          redirect "#{base_path}/#{params[:id]}/test_sets/#{params[:test_set]}/"
         end
 
         # Run a sequence and get the results
-        post '/:id/:test_set/sequence_result?' do
+        post '/:id/test_sets/:test_set/sequence_result?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
           test_set = instance.module.test_sets[params[:test_set].to_sym]
           halt 404 if test_set.nil?
 
-          cookies[:instance_id_test_set] = "#{instance.id}/#{params[:test_set]}"
+          cookies[:instance_id_test_set] = "#{instance.id}/test_sets/#{params[:test_set]}"
 
           # Save params
           params[:required_fields].split(',').each do |field|
@@ -298,8 +273,36 @@ module Inferno
 
             query_target = "#{test_group.id}/#{query_target}" unless test_group.nil?
 
-            out << js_redirect("#{base_path}/#{params[:id]}/#{params[:test_set]}/##{query_target}") if finished
+            out << js_redirect("#{base_path}/#{params[:id]}/test_sets/#{params[:test_set]}/##{query_target}") if finished
           end
+        end
+
+        # Returns test details for a specific test including any applicable requests and responses.
+        #   This route is typically used for retrieving test metadata before the test has been run
+        get '/test_details/:module/:sequence_name/:test_index?' do
+          sequence = Inferno::Module.get(params[:module]).sequences.find do |x|
+            x.sequence_name == params[:sequence_name]
+          end
+          halt 404 unless sequence
+          @test_metadata = sequence.tests[params[:test_index].to_i]
+          halt 404 unless @test_metadata
+          erb :test_details, layout: false
+        end
+
+        # Returns test details for a specific test including any applicable requests and responses.
+        #   This route is typically used for retrieving test metadata and results after the test has been run.
+        get '/:id/test_result/:test_result_id/?' do
+          @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
+          halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
+          erb :test_result_details, layout: false
+        end
+
+        # Returns details for a specific request response
+        #   This route is typically used for retrieving test metadata and results after the test has been run.
+        get '/:id/test_request/:test_request_id/?' do
+          request_response = Inferno::Models::RequestResponse.get(params[:test_request_id])
+          halt 404 if request_response.instance_id != params[:id]
+          erb :request_details, { layout: false }, rr: request_response
         end
       end
     end
