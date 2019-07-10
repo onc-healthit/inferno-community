@@ -1,0 +1,12 @@
+name: quality_reporting
+title: FHIR Quality Reporting
+description: Quality Reporting with FHIR
+default_test_set: developer
+fhir_version: stu3
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: Evaluate Measure
+        sequences:
+          - MeasureSequence

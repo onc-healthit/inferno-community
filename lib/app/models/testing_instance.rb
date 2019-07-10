@@ -52,6 +52,10 @@ module Inferno
 
       property :dynamic_registration_token, String
 
+      property :measure_id, String
+      property :period_start, String
+      property :period_end, String
+
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references

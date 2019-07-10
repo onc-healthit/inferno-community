@@ -42,6 +42,7 @@ badge_text: Community
 
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
+  - quality_reporting
   - onc
   - onc_r4
   - smart
