@@ -261,8 +261,12 @@ module Inferno
       end
     end
 
-    def assert_is_valid_uri(uri)
-          assert uri =~ URI::regexp, "\"#{uri}\" is not a valid URI"
+    def assert_is_valid_uri(uri, message = nil)
+          
+          if message == nil
+            message = "\"#{uri}\" is not a valid URI"
+          end
+          assert uri =~ URI::regexp, message
     end
 
   end

@@ -79,7 +79,7 @@ module Inferno
         oauth_authorize_endpoint = @instance.oauth_authorize_endpoint
 
         # Confirm that oauth2_auth_endpoint is valid before moving forward
-        assert_is_valid_uri oauth_authorize_endpoint
+        assert_is_valid_uri oauth_authorize_endpoint, "OAuth2 Authorization Endpoint: \"#{oauth_authorize_endpoint}\" is not a valid URI"
 
         oauth2_auth_query = oauth_authorize_endpoint
 
