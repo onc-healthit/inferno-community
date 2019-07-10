@@ -35,6 +35,9 @@ module Inferno
         !@instance.client_id.nil?
       end
 
+      OAUTH_REDIRECT_FAILED = "Redirect to OAuth server failed"
+      NO_TOKEN = "No valid token"
+
       test 'OAuth 2.0 authorize endpoint secured by transport layer security' do
         metadata do
           id '01'
@@ -72,7 +75,13 @@ module Inferno
           'aud' => @instance.url
         }
 
-        oauth2_auth_query = @instance.oauth_authorize_endpoint
+
+        oauth_authorize_endpoint = @instance.oauth_authorize_endpoint
+
+        # Confirm that oauth2_auth_endpoint is valid before moving forward
+        assert_is_valid_uri oauth_authorize_endpoint
+
+        oauth2_auth_query = oauth_authorize_endpoint
 
         oauth2_auth_query += if @instance.oauth_authorize_endpoint.include? '?'
                                '&'
@@ -95,6 +104,9 @@ module Inferno
             Code and state are required querystring parameters. State must be the exact value received from the client.
           )
         end
+
+        # Confirm that there is a @params object from the redirect 
+        assert !@params.nil?, OAUTH_REDIRECT_FAILED 
 
         assert @params['error'].nil?, "Error returned from authorization server:  code #{@params['error']}, description: #{@params['error_description']}"
         assert @params['state'] == @instance.state, "OAuth server state querystring parameter (#{@params['state']}) did not match state from app #{@instance.state}"
@@ -138,6 +150,10 @@ module Inferno
         token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
         assert_response_bad_or_unauthorized token_response
 
+        # Confirm that there is a @params object from the redirect 
+        assert !@params.nil?, OAUTH_REDIRECT_FAILED 
+
+
         oauth2_params = {
           'grant_type' => 'authorization_code',
           'code' => @params['code'],
@@ -157,6 +173,9 @@ module Inferno
             After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749.
           )
         end
+
+        # Confirm that there is a @params object from the redirect 
+        assert !@params.nil?, OAUTH_REDIRECT_FAILED 
 
         oauth2_params = {
           'grant_type' => 'authorization_code',
@@ -184,6 +203,9 @@ module Inferno
             access_token, token_type, and scope are required. access_token must be Bearer.
           )
         end
+
+        # Confirm that there is valid token 
+        assert !@token_response.nil?, NO_TOKEN 
 
         @token_response_headers = @token_response.headers
         assert_valid_json(@token_response.body)
@@ -241,6 +263,9 @@ module Inferno
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
           )
         end
+
+        # Confirm that there is valid token 
+        assert !@token_response.nil?, NO_TOKEN 
 
         [:cache_control, :pragma].each do |key|
           assert @token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
