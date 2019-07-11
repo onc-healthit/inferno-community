@@ -8,8 +8,6 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     @docref_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_docref_bundle))
     @diagrpt_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_diagrpt_bundle))
 
-    #binding.pry
-
     @instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
       client_name: 'Inferno',
@@ -37,14 +35,13 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
       read_supported: true
     )
 
-    @request_headers = 
-    {           
-      'Accept'=>'application/fhir+json',
-      'Accept-Charset'=>'utf-8',
-      'Accept-Encoding'=>'gzip, deflate',
-      'Authorization'=>'Bearer 99897979',
-      'Host'=>'www.example.com',
-      'User-Agent'=>'Ruby FHIR Client' 
+    @request_headers = {
+      'Accept'          => 'application/fhir+json',
+      'Accept-Charset'  => 'utf-8',
+      'Accept-Encoding' => 'gzip, deflate',
+      'Authorization'   => 'Bearer 99897979',
+      'Host'            => 'www.example.com',
+      'User-Agent'      => 'Ruby FHIR Client'
     }
       
     client = FHIR::Client.new(@instance.url)
@@ -67,30 +64,30 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
 
     # Search Cardiology report
     stub_request(:get, "http://www.example.com/DiagnosticReport?category=http://loinc.org|LP29708-2&patient=#{@patient_id}")
-    .with(headers: @request_headers)
-    .to_return(
-      status: 200,
-      body: @diagrpt_bundle.to_json,
-      headers: { content_type: 'application/fhir+json; charset=UTF-8' }
-    )
+      .with(headers: @request_headers)
+      .to_return(
+        status: 200,
+        body: @diagrpt_bundle.to_json,
+        headers: { content_type: 'application/fhir+json; charset=UTF-8' }
+      )
 
     # Search Pathology report
     stub_request(:get, "http://www.example.com/DiagnosticReport?category=http://loinc.org|LP7839-6&patient=#{@patient_id}")
-    .with(headers: @request_headers)
-    .to_return(
-      status: 200,
-      body: @diagrpt_bundle.to_json,
-      headers: { content_type: 'application/fhir+json; charset=UTF-8' }
-    )
+      .with(headers: @request_headers)
+      .to_return(
+        status: 200,
+        body: @diagrpt_bundle.to_json,
+        headers: { content_type: 'application/fhir+json; charset=UTF-8' }
+      )
 
     # Search Cardiology report
     stub_request(:get, "http://www.example.com/DiagnosticReport?category=http://loinc.org|LP29684-5&patient=#{@patient_id}")
-    .with(headers: @request_headers)
-    .to_return(
-      status: 200,
-      body: @diagrpt_bundle.to_json,
-      headers: { content_type: 'application/fhir+json; charset=UTF-8' }
-    )
+      .with(headers: @request_headers)
+      .to_return(
+        status: 200,
+        body: @diagrpt_bundle.to_json,
+        headers: { content_type: 'application/fhir+json; charset=UTF-8' }
+      )
   end
 
   def test_all_pass
@@ -100,7 +97,7 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
 
     failures = sequence_result.failures
     assert failures.empty?, "All tests should pass. First error: #{failures&.first&.message}"
-    assert !sequence_result.skip?, "No tests should be skipped."
+    assert !sequence_result.skip?, 'No tests should be skipped.'
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
   end
 end
