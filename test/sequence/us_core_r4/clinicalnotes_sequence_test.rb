@@ -36,14 +36,14 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     )
 
     @request_headers = {
-      'Accept'          => 'application/fhir+json',
-      'Accept-Charset'  => 'utf-8',
+      'Accept' => 'application/fhir+json',
+      'Accept-Charset' => 'utf-8',
       'Accept-Encoding' => 'gzip, deflate',
-      'Authorization'   => 'Bearer 99897979',
-      'Host'            => 'www.example.com',
-      'User-Agent'      => 'Ruby FHIR Client'
+      'Authorization' => 'Bearer 99897979',
+      'Host' => 'www.example.com',
+      'User-Agent' => 'Ruby FHIR Client'
     }
-      
+
     client = FHIR::Client.new(@instance.url)
     client.use_r4
     client.default_json
