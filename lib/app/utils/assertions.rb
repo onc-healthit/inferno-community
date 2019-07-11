@@ -1,6 +1,8 @@
 # frozen_string_literal: true
+
 require_relative 'assertions.rb'
 require 'uri'
+
 module Inferno
   module Assertions
     def assert(test, message = 'assertion failed, no message', data = '')
@@ -261,13 +263,11 @@ module Inferno
       end
     end
 
-    def assert_is_valid_uri(uri, message = nil)
-          
-          if message == nil
-            message = "\"#{uri}\" is not a valid URI"
-          end
-          assert uri =~ URI::regexp, message
+    def assert_is_valid_uri(uri, message = nil)          
+      if message.nil?
+        message = "\"#{uri}\" is not a valid URI"
+      end
+      assert uri =~ URI::DEFAULT_PARSER.make_regexp, message
     end
-
   end
 end

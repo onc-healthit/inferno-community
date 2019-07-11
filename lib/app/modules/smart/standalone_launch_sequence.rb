@@ -35,8 +35,8 @@ module Inferno
         !@instance.client_id.nil?
       end
 
-      OAUTH_REDIRECT_FAILED = "Redirect to OAuth server failed"
-      NO_TOKEN = "No valid token"
+      OAUTH_REDIRECT_FAILED = 'Redirect to OAuth server failed'
+      NO_TOKEN = 'No valid token'
 
       test 'OAuth 2.0 authorize endpoint secured by transport layer security' do
         metadata do
@@ -75,7 +75,6 @@ module Inferno
           'aud' => @instance.url
         }
 
-
         oauth_authorize_endpoint = @instance.oauth_authorize_endpoint
 
         # Confirm that oauth2_auth_endpoint is valid before moving forward
@@ -105,8 +104,8 @@ module Inferno
           )
         end
 
-        # Confirm that there is a @params object from the redirect 
-        assert !@params.nil?, OAUTH_REDIRECT_FAILED 
+        # Confirm that there is a @params object from the redirect
+        assert !@params.nil?, OAUTH_REDIRECT_FAILED
 
         assert @params['error'].nil?, "Error returned from authorization server:  code #{@params['error']}, description: #{@params['error_description']}"
         assert @params['state'] == @instance.state, "OAuth server state querystring parameter (#{@params['state']}) did not match state from app #{@instance.state}"
@@ -150,9 +149,8 @@ module Inferno
         token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
         assert_response_bad_or_unauthorized token_response
 
-        # Confirm that there is a @params object from the redirect 
-        assert !@params.nil?, OAUTH_REDIRECT_FAILED 
-
+        # Confirm that there is a @params object from the redirect
+        assert !@params.nil?, OAUTH_REDIRECT_FAILED
 
         oauth2_params = {
           'grant_type' => 'authorization_code',
@@ -174,8 +172,8 @@ module Inferno
           )
         end
 
-        # Confirm that there is a @params object from the redirect 
-        assert !@params.nil?, OAUTH_REDIRECT_FAILED 
+        # Confirm that there is a @params object from the redirect
+        assert !@params.nil?, OAUTH_REDIRECT_FAILED
 
         oauth2_params = {
           'grant_type' => 'authorization_code',
@@ -204,8 +202,8 @@ module Inferno
           )
         end
 
-        # Confirm that there is valid token 
-        assert !@token_response.nil?, NO_TOKEN 
+        # Confirm that there is valid token
+        assert !@token_response.nil?, NO_TOKEN
 
         @token_response_headers = @token_response.headers
         assert_valid_json(@token_response.body)
@@ -264,8 +262,8 @@ module Inferno
           )
         end
 
-        # Confirm that there is valid token 
-        assert !@token_response.nil?, NO_TOKEN 
+        # Confirm that there is valid token
+        assert !@token_response.nil?, NO_TOKEN
 
         [:cache_control, :pragma].each do |key|
           assert @token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
