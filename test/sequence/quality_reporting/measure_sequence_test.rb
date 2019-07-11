@@ -15,14 +15,14 @@ class MeasureSequenceTest < MiniTest::Test
     {
       measure_id: 'MitreTestScript-measure-col',
       params: {
-        patient: 'MitreTestScript-test-Patient-410',
-        periodStart: '2017',
-        periodEnd: '2017'
+        'patient': 'MitreTestScript-test-Patient-410',
+        'periodStart': '2017',
+        'periodEnd': '2017'
       },
       example_measurereport: :col_measure_report
       # Add new Measures/params here...
     }
-  ]
+  ].freeze
 
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', selected_module: 'quality_reporting')
@@ -36,7 +36,7 @@ class MeasureSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
-    MEASURES_TO_TEST.each do | req |
+    MEASURES_TO_TEST.each do |req|
       # Set the required instance variables
       @instance.measure_id = req[:measure_id]
       @instance.patient_id = req[:params][:patient]
@@ -44,7 +44,7 @@ class MeasureSequenceTest < MiniTest::Test
       @instance.period_end = req[:params][:periodEnd]
 
       # Set other variables needed
-      params_string = !req[:params].empty? ? "?#{req[:params].to_query}" : ""
+      params_string = !req[:params].empty? ? "?#{req[:params].to_query}" : ''
       measure_report = load_json_fixture(req[:example_measurereport])
 
       # Mock a request for $evaluate-measure
@@ -52,9 +52,9 @@ class MeasureSequenceTest < MiniTest::Test
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 200, body: measure_report.to_json, headers: {})
 
-    sequence_result = @sequence.start
-    assert sequence_result.pass?, 'The sequence should be marked as pass.'
-    assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
+      sequence_result = @sequence.start
+      assert sequence_result.pass?, 'The sequence should be marked as pass.'
+      assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
     end
   end
 end
