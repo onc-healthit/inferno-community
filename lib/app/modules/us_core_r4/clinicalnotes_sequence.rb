@@ -123,7 +123,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_documentreference("11488-4")
+        test_clinicalnotes_documentreference('11488-4')
       end
 
       test 'Server shall have Discharge Summary' do
@@ -194,7 +194,7 @@ module Inferno
           )
           versions :r4
         end
-        
+
         test_clinicalnotes_diagnosticreport('http://loinc.org|LP7839-6')
       end
 
@@ -206,7 +206,7 @@ module Inferno
           )
           versions :r4
         end
-        
+
         test_clinicalnotes_diagnosticreport('http://loinc.org|LP29684-5')
       end
 
@@ -218,7 +218,7 @@ module Inferno
           )
           versions :r4
         end
-        
+
         skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
 
         @attachment_url.each { |key, value| assert value[:flag], "Attachment #{key} referenced in DocumentReference/#{value[:id]} but not in any DiagnosticReport" }
