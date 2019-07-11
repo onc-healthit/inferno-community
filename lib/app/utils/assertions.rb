@@ -263,11 +263,11 @@ module Inferno
       end
     end
 
-    def assert_is_valid_uri(uri, message = nil)
+    def assert_valid_http_uri(uri, message = nil)
       if message.nil?
         message = "\"#{uri}\" is not a valid URI"
       end
-      assert uri =~ URI::DEFAULT_PARSER.make_regexp, message
+      assert (uri =~ /\A#{URI.regexp(['http', 'https'])}\z/), message
     end
   end
 end
