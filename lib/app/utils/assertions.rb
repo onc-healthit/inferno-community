@@ -264,7 +264,7 @@ module Inferno
     end
 
     def assert_valid_http_uri(uri, message = nil)
-      error_message = message;
+      error_message = message
       if error_message.nil?
         error_message = "\"#{uri}\" is not a valid URI"
       end
