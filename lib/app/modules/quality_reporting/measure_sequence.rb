@@ -35,7 +35,7 @@ module Inferno
           'denominator': 1
         }.freeze
 
-        evaluate_measure_response = evaluate_measure(@instance.measure_id, PARAMS)
+        evaluate_measure_response = evaluate_measure(@instance.measure_id, PARAMS.compact)
         assert_response_ok evaluate_measure_response
 
         # Load response body into a FHIR MeasureReport class
