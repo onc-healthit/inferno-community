@@ -26,12 +26,12 @@ module Inferno
           assert value_found, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'onset-date'
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'onsetDateTime') do |date|
             date_found = DateTime.xmlschema(date)
             value_date = DateTime.xmlschema(value)
@@ -40,10 +40,14 @@ module Inferno
               date_found >= value_date
             when 'le'
               date_found <= value_date
-            when 'gt'
+            when 'gt', 'sa'
               date_found > value_date
-            when 'lt'
+            when 'lt', 'eb'
               date_found < value_date
+            when 'ne'
+              date_found != value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
               date_found == value_date
             end
@@ -130,23 +134,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_onset_date_val = 'gt' + (DateTime.xmlschema(onset_date_val) - 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'onset-date': gt_onset_date_val }
-        reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_onset_date_val = 'lt' + (DateTime.xmlschema(onset_date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'onset-date': lt_onset_date_val }
-        reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_onset_date_val = 'le' + (DateTime.xmlschema(onset_date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'onset-date': le_onset_date_val }
-        reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, onset_date_val)
+          comparator_search_params = { 'patient': patient_val, 'onset-date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Condition search by patient+category' do

@@ -18,7 +18,7 @@ module Inferno
         case property
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'patient.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'type'

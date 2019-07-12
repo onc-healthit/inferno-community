@@ -26,7 +26,7 @@ module Inferno
           assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'category'
@@ -42,8 +42,8 @@ module Inferno
           assert value_found, 'date on resource does not match date requested'
 
         when 'period'
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'context.period') do |period|
             start_date = DateTime.xmlschema(period&.start)
             end_date = DateTime.xmlschema(period&.end)
@@ -57,8 +57,16 @@ module Inferno
               end_date > value_date || end_date.nil?
             when 'lt'
               start_date < value_date || start_date.nil?
+            when 'ne'
+              value_date < start_date || value_date > end_date
+            when 'sa'
+              start_date > value_date
+            when 'eb'
+              end_date < value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
-              valueDate >= start_date && valueDate <= end_date
+              value_date >= start_date && value_date <= end_date
             end
           end
           assert value_found, 'period on resource does not match period requested'
@@ -245,23 +253,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_period_val = 'gt' + (DateTime.xmlschema(period_val) - 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': gt_period_val }
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_period_val = 'lt' + (DateTime.xmlschema(period_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': lt_period_val }
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_period_val = 'le' + (DateTime.xmlschema(period_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': le_period_val }
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, period_val)
+          comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'DocumentReference create resource supported' do

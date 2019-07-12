@@ -22,12 +22,12 @@ module Inferno
           assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'effective'
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
             date_found = DateTime.xmlschema(date)
             value_date = DateTime.xmlschema(value)
@@ -36,10 +36,14 @@ module Inferno
               date_found >= value_date
             when 'le'
               date_found <= value_date
-            when 'gt'
+            when 'gt', 'sa'
               date_found > value_date
-            when 'lt'
+            when 'lt', 'eb'
               date_found < value_date
+            when 'ne'
+              date_found != value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
               date_found == value_date
             end
@@ -122,23 +126,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_effective_val = 'gt' + (DateTime.xmlschema(effective_val) - 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'effective': gt_effective_val }
-        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_effective_val = 'lt' + (DateTime.xmlschema(effective_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'effective': lt_effective_val }
-        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_effective_val = 'le' + (DateTime.xmlschema(effective_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'effective': le_effective_val }
-        reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, effective_val)
+          comparator_search_params = { 'patient': patient_val, 'effective': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('MedicationStatement'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from MedicationStatement search by patient+status' do
@@ -236,7 +230,7 @@ module Inferno
           'MedicationStatement.medicationCodeableConcept',
           'MedicationStatement.medicationReference',
           'MedicationStatement.subject',
-          'MedicationStatement.effectivedateTime',
+          'MedicationStatement.effectiveDateTime',
           'MedicationStatement.effectivePeriod',
           'MedicationStatement.dateAsserted',
           'MedicationStatement.derivedFrom'

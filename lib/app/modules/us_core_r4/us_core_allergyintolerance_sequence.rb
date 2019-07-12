@@ -22,7 +22,7 @@ module Inferno
           assert value_found, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'patient.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         end

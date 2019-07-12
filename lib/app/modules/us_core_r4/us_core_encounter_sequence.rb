@@ -26,8 +26,8 @@ module Inferno
           assert value_found, 'class on resource does not match class requested'
 
         when 'date'
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'period') do |period|
             start_date = DateTime.xmlschema(period&.start)
             end_date = DateTime.xmlschema(period&.end)
@@ -41,8 +41,16 @@ module Inferno
               end_date > value_date || end_date.nil?
             when 'lt'
               start_date < value_date || start_date.nil?
+            when 'ne'
+              value_date < start_date || value_date > end_date
+            when 'sa'
+              start_date > value_date
+            when 'eb'
+              end_date < value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
-              valueDate >= start_date && valueDate <= end_date
+              value_date >= start_date && value_date <= end_date
             end
           end
           assert value_found, 'date on resource does not match date requested'
@@ -52,7 +60,7 @@ module Inferno
           assert value_found, 'identifier on resource does not match identifier requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
@@ -159,23 +167,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
-        comparator_search_params = { 'date': gt_date_val, 'patient': patient_val }
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'date': lt_date_val, 'patient': patient_val }
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'date': le_date_val, 'patient': patient_val }
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'date': comparator_val, 'patient': patient_val }
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Encounter search by identifier' do

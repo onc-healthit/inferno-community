@@ -140,7 +140,7 @@ class MetadataExtractor
           sequence[:must_supports] <<
             {
               type: 'element',
-              path: path.gsub('[x]', type['code'])
+              path: path.gsub('[x]', type['code'].slice(0).capitalize + type['code'].slice(1..-1))
             }
         end
       else

@@ -237,8 +237,7 @@ def resolve_element_path(search_param_description)
   element_path = search_param_description[:path] + get_value_path_by_type(type)
   element_path.gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
   path_parts = element_path.split('.')
-  path_parts[0] = "@#{path_parts[0].downcase}"
-  resource_val = path_parts.shift
+  resource_val = "@#{path_parts.shift.downcase}"
   "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
 end
 
@@ -301,37 +300,27 @@ end
 
 def get_comparator_searches(search_params, sequence)
   search_code = ''
-  search_assignments = []
-  search_params.each do |param|
-    search_assignments << "'#{param}': #{param_value_name(param)}"
+  search_assignments = search_params.map do |param|
+    "'#{param}': #{param_value_name(param)}"
   end
   search_assignments_str = "{ #{search_assignments.join(', ')} }"
   search_params.each do |param|
     param_val_name = param_value_name(param)
     param_info = sequence[:search_param_descriptions][param.to_sym]
-    comparators = param_info[:comparators]
+    comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
+    next if comparators.empty?
+
     type = param_info[:type]
     case type
     when 'Period', 'date'
-      comparators.each do |comparator, expecatation|
-        next unless ['SHALL', 'SHOULD'].include? expecatation
-
-        comparator_val_name = "#{comparator}_#{param.tr('-', '_') + '_val'}"
-        case comparator.to_s
-        when 'gt', 'ge'
-          search_code += %(\n
-        #{comparator_val_name} = '#{comparator}' + (DateTime.xmlschema(#{param_val_name}) - 1).xmlschema)
-        when 'lt', 'le'
-          search_code += %(\n
-        #{comparator_val_name} = '#{comparator}' + (DateTime.xmlschema(#{param_val_name}) + 1).xmlschema)
-        end
-        comparator_search_params = search_assignments_str.gsub(param_val_name, comparator_val_name)
-        search_code += %(
-        comparator_search_params = #{comparator_search_params}
-        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
-        assert_response_ok(reply))
-      end
+      search_code += %(\n
+        [#{comparators.keys.map { |comparator| "'#{comparator}'" }.join(', ')}].each do |comparator|
+          comparator_val = date_comparator_value(comparator, #{param_val_name})
+          comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end)
     end
   end
   search_code
@@ -362,8 +351,8 @@ def create_search_validation(sequence)
     case type
     when 'Period'
       search_validators += %(
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
             start_date = DateTime.xmlschema(period&.start)
             end_date = DateTime.xmlschema(period&.end)
@@ -377,16 +366,24 @@ def create_search_validation(sequence)
               end_date > value_date || end_date.nil?
             when 'lt'
               start_date < value_date || start_date.nil?
+            when 'ne'
+              value_date < start_date || value_date > end_date
+            when 'sa'
+              start_date > value_date
+            when 'eb'
+              end_date < value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
-              valueDate >= start_date && valueDate <= end_date
+              value_date >= start_date && value_date <= end_date
             end
           end
           assert value_found, '#{element} on resource does not match #{element} requested'
 )
     when 'date'
       search_validators += %(
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
             date_found = DateTime.xmlschema(date)
             value_date = DateTime.xmlschema(value)
@@ -395,10 +392,14 @@ def create_search_validation(sequence)
               date_found >= value_date
             when 'le'
               date_found <= value_date
-            when 'gt'
+            when 'gt', 'sa'
               date_found > value_date
-            when 'lt'
+            when 'lt', 'eb'
               date_found < value_date
+            when 'ne'
+              date_found != value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
               date_found == value_date
             end
@@ -409,21 +410,31 @@ def create_search_validation(sequence)
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
       # https://www.hl7.org/fhir/search.html#string
       search_validators += %(
+          value = value.downcase
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |name|
-            name.text&.include(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix&.include?(value) } ||
-              name.suffix.any { |suffix| suffix&.include?(value) }
+            name&.text&.start_with?(value) ||
+              name&.family&.downcase&.include?(value) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
           assert value_found, '#{element} on resource does not match #{element} requested'
 )
     else
-      search_validators += %(
+      # searching by patient requires special case because we are searching by a resource identifier
+      # references can also be URL's, so we made need to resolve those url's
+      search_validators +=
+        if ['subject', 'patient'].include? element.to_s
+          %(
+          value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, '#{element} on resource does not match #{element} requested'
+)
+        else
+          %(
           value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |value_in_resource| value_in_resource == value }
           assert value_found, '#{element} on resource does not match #{element} requested'
 )
-
+        end
     end
   end
 

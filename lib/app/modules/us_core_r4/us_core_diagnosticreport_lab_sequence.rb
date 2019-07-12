@@ -22,7 +22,7 @@ module Inferno
           assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'category'
@@ -34,8 +34,8 @@ module Inferno
           assert value_found, 'code on resource does not match code requested'
 
         when 'date'
-          comparator = value[0, 1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt'].include? comparator
+          comparator = value[0..1]
+          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
             date_found = DateTime.xmlschema(date)
             value_date = DateTime.xmlschema(value)
@@ -44,10 +44,14 @@ module Inferno
               date_found >= value_date
             when 'le'
               date_found <= value_date
-            when 'gt'
+            when 'gt', 'sa'
               date_found > value_date
-            when 'lt'
+            when 'lt', 'eb'
               date_found < value_date
+            when 'ne'
+              date_found != value_date
+            when 'ap'
+              true # don't have a good way to check this
             else
               date_found == value_date
             end
@@ -151,23 +155,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': gt_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': lt_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': le_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
@@ -191,23 +185,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': gt_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': lt_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': le_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+status' do
@@ -271,23 +255,13 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
 
-        gt_date_val = 'gt' + (DateTime.xmlschema(date_val) - 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': gt_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        lt_date_val = 'lt' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': lt_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
-
-        le_date_val = 'le' + (DateTime.xmlschema(date_val) + 1).xmlschema
-        comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': le_date_val }
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-        assert_response_ok(reply)
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'DiagnosticReport create resource supported' do
@@ -379,7 +353,7 @@ module Inferno
           'DiagnosticReport.category',
           'DiagnosticReport.code',
           'DiagnosticReport.subject',
-          'DiagnosticReport.effectivedateTime',
+          'DiagnosticReport.effectiveDateTime',
           'DiagnosticReport.effectivePeriod',
           'DiagnosticReport.issued',
           'DiagnosticReport.performer',

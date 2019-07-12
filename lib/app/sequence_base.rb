@@ -743,7 +743,11 @@ module Inferno
         cur_path_part = path_ary.shift.to_sym
         return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
 
-        el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
+        if block_given?
+          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) } }
+        else
+          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
+        end
       end
 
       def resolve_element_from_path(element, path)
@@ -761,6 +765,17 @@ module Inferno
           return el_found unless el_found.nil?
         end
         nil
+      end
+
+      def date_comparator_value(comparator, date)
+        case comparator
+        when 'lt', 'le'
+          comparator + (DateTime.xmlschema(date) + 1).xmlschema
+        when 'gt', 'ge'
+          comparator + (DateTime.xmlschema(date) - 1).xmlschema
+        else
+          ''
+        end
       end
     end
 

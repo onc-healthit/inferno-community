@@ -18,12 +18,13 @@ module Inferno
         case property
 
         when 'name'
+          value = value.downcase
           value_found = can_resolve_path(resource, 'name') do |name|
-            name.text&.include(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix&.include?(value) } ||
-              name.suffix.any { |suffix| suffix&.include?(value) }
+            name&.text&.start_with?(value) ||
+              name&.family&.downcase&.include?(value) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
           assert value_found, 'name on resource does not match name requested'
 
