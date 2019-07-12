@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Inferno
   class App
     module TestSetEndpoints
@@ -11,10 +13,14 @@ module Inferno
             halt 404 if test_set.nil?
             sequence_results = instance.latest_results_by_case
 
-            erb instance.module.view_by_test_set(params[:test_set_id]), {}, instance: instance,
-                test_set: test_set,
-                sequence_results: sequence_results,
-                error_code: params[:error]
+            erb(
+              instance.module.view_by_test_set(params[:test_set_id]),
+              {},
+              instance: instance,
+              test_set: test_set,
+              sequence_results: sequence_results,
+              error_code: params[:error]
+            )
           end
 
           get '/:id/test_sets/:test_set_id/report?' do
@@ -152,12 +158,15 @@ module Inferno
                 out << js_stayalive(timer_count * stayalive_timer_seconds)
               end
 
-              out << erb(instance.module.view_by_test_set(params[:test_set_id]), {}, instance: instance,
-                         test_set: test_set,
-                         sequence_results: instance.latest_results_by_case,
-                         tests_running: true,
-                         test_group: test_group.id
-                        )
+              out << erb(
+                instance.module.view_by_test_set(params[:test_set_id]),
+                {},
+                instance: instance,
+                test_set: test_set,
+                sequence_results: instance.latest_results_by_case,
+                tests_running: true,
+                test_group: test_group.id
+              )
 
               next_test_case = submitted_test_cases.shift
               finished = next_test_case.nil?
