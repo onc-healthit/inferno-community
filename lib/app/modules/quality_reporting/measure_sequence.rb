@@ -44,10 +44,10 @@ module Inferno
         assert(!group.nil?)
 
         # Check matching values for each population in the group
-        group[0].population.each do |p|
+        group.first.population.each do |p|
           coding = p.code&.coding
           assert(!coding.nil?)
-          code = coding[0].code
+          code = coding.first.code
           assert(!code.nil?)
           assert_equal(EXPECTED_RESULTS[code.to_sym], p.count, "Expected #{code} count and actual #{code} count are not equal")
         end
