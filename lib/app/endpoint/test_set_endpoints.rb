@@ -4,23 +4,23 @@ module Inferno
       def self.included(klass)
         klass.class_eval do
           # Returns a specific testing instance test page
-          get '/:id/test_sets/:test_set/?' do
+          get '/:id/test_sets/:test_set_id/?' do
             instance = Inferno::Models::TestingInstance.get(params[:id])
             halt 404 if instance.nil?
-            test_set = instance.module.test_sets[params[:test_set].to_sym]
+            test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
             sequence_results = instance.latest_results_by_case
 
-            erb instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
+            erb instance.module.view_by_test_set(params[:test_set_id]), {}, instance: instance,
                 test_set: test_set,
                 sequence_results: sequence_results,
                 error_code: params[:error]
           end
 
-          get '/:id/test_sets/:test_set/report?' do
+          get '/:id/test_sets/:test_set_id/report?' do
             instance = Inferno::Models::TestingInstance.get(params[:id])
             halt 404 if instance.nil?
-            test_set = instance.module.test_sets[params[:test_set].to_sym]
+            test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
             sequence_results = instance.latest_results_by_case
 
@@ -39,8 +39,8 @@ module Inferno
               supported_resources: instance.supported_resources.count,
               request_response: request_response_count,
               latest_sequence_time: latest_sequence_time,
-              final_result: instance.final_result(params[:test_set]),
-              inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/test_sets/#{params[:test_set]}/"
+              final_result: instance.final_result(params[:test_set_id]),
+              inferno_url: "#{request.base_url}#{base_path}/#{instance.id}/test_sets/#{params[:test_set_id]}/"
             }
 
             erb(
@@ -55,10 +55,10 @@ module Inferno
           end
 
           # Cancels the currently running test
-          get '/:id/test_sets/:test_set/sequence_result/:sequence_result_id/cancel' do
+          get '/:id/test_sets/:test_set_id/sequence_result/:sequence_result_id/cancel' do
             sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
             halt 404 if sequence_result.testing_instance.id != params[:id]
-            test_set = sequence_result.testing_instance.module.test_sets[params[:test_set].to_sym]
+            test_set = sequence_result.testing_instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
 
             sequence_result.result = 'cancel'
@@ -95,21 +95,21 @@ module Inferno
             query_target = sequence_result.test_case_id
             query_target = "#{test_group.id}/#{sequence_result.test_case_id}" unless test_group.nil?
 
-            redirect "#{base_path}/#{params[:id]}/test_sets/#{params[:test_set]}/##{query_target}"
+            redirect "#{base_path}/#{params[:id]}/test_sets/#{params[:test_set_id]}/##{query_target}"
           end
 
-          get '/:id/test_sets/:test_set/sequence_result?' do
-            redirect "#{base_path}/#{params[:id]}/test_sets/#{params[:test_set]}/"
+          get '/:id/test_sets/:test_set_id/sequence_result?' do
+            redirect "#{base_path}/#{params[:id]}/test_sets/#{params[:test_set_id]}/"
           end
 
           # Run a sequence and get the results
-          post '/:id/test_sets/:test_set/sequence_result?' do
+          post '/:id/test_sets/:test_set_id/sequence_result?' do
             instance = Inferno::Models::TestingInstance.get(params[:id])
             halt 404 if instance.nil?
-            test_set = instance.module.test_sets[params[:test_set].to_sym]
+            test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
 
-            cookies[:instance_id_test_set] = "#{instance.id}/test_sets/#{params[:test_set]}"
+            cookies[:instance_id_test_set] = "#{instance.id}/test_sets/#{params[:test_set_id]}"
 
             # Save params
             params[:required_fields].split(',').each do |field|
@@ -152,7 +152,7 @@ module Inferno
                 out << js_stayalive(timer_count * stayalive_timer_seconds)
               end
 
-              out << erb(instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
+              out << erb(instance.module.view_by_test_set(params[:test_set_id]), {}, instance: instance,
                          test_set: test_set,
                          sequence_results: instance.latest_results_by_case,
                          tests_running: true,
@@ -208,7 +208,7 @@ module Inferno
 
               query_target = "#{test_group.id}/#{query_target}" unless test_group.nil?
 
-              out << js_redirect("#{base_path}/#{params[:id]}/test_sets/#{params[:test_set]}/##{query_target}") if finished
+              out << js_redirect("#{base_path}/#{params[:id]}/test_sets/#{params[:test_set_id]}/##{query_target}") if finished
             end
           end
         end
