@@ -111,6 +111,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
@@ -141,6 +142,7 @@ module Inferno
 
         id_val = resolve_element_from_path(@documentreference, 'id')
         search_params = { '_id': id_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
@@ -162,6 +164,7 @@ module Inferno
         patient_val = @instance.patient_id
         category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
         search_params = { 'patient': patient_val, 'category': category_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
@@ -184,6 +187,7 @@ module Inferno
         category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
         date_val = resolve_element_from_path(@documentreference, 'date')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
@@ -205,6 +209,7 @@ module Inferno
         patient_val = @instance.patient_id
         type_val = resolve_element_from_path(@documentreference, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
@@ -226,6 +231,7 @@ module Inferno
         patient_val = @instance.patient_id
         status_val = resolve_element_from_path(@documentreference, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
@@ -248,6 +254,7 @@ module Inferno
         type_val = resolve_element_from_path(@documentreference, 'type.coding.code')
         period_val = resolve_element_from_path(@documentreference, 'context.period.start')
         search_params = { 'patient': patient_val, 'type': type_val, 'period': period_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)

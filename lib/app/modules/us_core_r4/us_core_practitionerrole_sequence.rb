@@ -65,6 +65,7 @@ module Inferno
 
         specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
         search_params = { 'specialty': specialty_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
@@ -95,6 +96,7 @@ module Inferno
 
         practitioner_val = resolve_element_from_path(@practitionerrole, 'practitioner.reference')
         search_params = { 'practitioner': practitioner_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)

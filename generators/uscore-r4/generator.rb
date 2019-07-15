@@ -294,6 +294,7 @@ def get_search_params(search_parameters, sequence)
   end
   search_code += %(
         search_params = { #{search_assignments.join(', ')} }
+        search_params.each { |param, value| skip "Could not resolve \#{param} in given resource" if value.nil? }
 )
   search_code
 end

@@ -130,6 +130,7 @@ module Inferno
         category_val = resolve_element_from_path(@careplan, 'category.coding.code')
         status_val = resolve_element_from_path(@careplan, 'status')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
@@ -153,6 +154,7 @@ module Inferno
         status_val = resolve_element_from_path(@careplan, 'status')
         date_val = resolve_element_from_path(@careplan, 'period.start')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
@@ -183,6 +185,7 @@ module Inferno
         category_val = resolve_element_from_path(@careplan, 'category.coding.code')
         date_val = resolve_element_from_path(@careplan, 'period.start')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)

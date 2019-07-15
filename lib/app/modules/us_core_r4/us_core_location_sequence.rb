@@ -106,6 +106,7 @@ module Inferno
 
         address_val = resolve_element_from_path(@location, 'address')
         search_params = { 'address': address_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
@@ -126,6 +127,7 @@ module Inferno
 
         address_city_val = resolve_element_from_path(@location, 'address.city')
         search_params = { 'address-city': address_city_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
@@ -146,6 +148,7 @@ module Inferno
 
         address_state_val = resolve_element_from_path(@location, 'address.state')
         search_params = { 'address-state': address_state_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
@@ -166,6 +169,7 @@ module Inferno
 
         address_postalcode_val = resolve_element_from_path(@location, 'address.postalCode')
         search_params = { 'address-postalcode': address_postalcode_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)

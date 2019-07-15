@@ -98,6 +98,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         assert_response_ok(reply)
@@ -129,6 +130,7 @@ module Inferno
         patient_val = @instance.patient_id
         onset_date_val = resolve_element_from_path(@condition, 'onsetDateTime')
         search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
@@ -158,6 +160,7 @@ module Inferno
         patient_val = @instance.patient_id
         category_val = resolve_element_from_path(@condition, 'category.coding.code')
         search_params = { 'patient': patient_val, 'category': category_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
@@ -179,6 +182,7 @@ module Inferno
         patient_val = @instance.patient_id
         code_val = resolve_element_from_path(@condition, 'code.coding.code')
         search_params = { 'patient': patient_val, 'code': code_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
@@ -200,6 +204,7 @@ module Inferno
         patient_val = @instance.patient_id
         clinical_status_val = resolve_element_from_path(@condition, 'clinicalStatus.coding.code')
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)

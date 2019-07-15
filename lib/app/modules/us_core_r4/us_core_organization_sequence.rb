@@ -94,6 +94,7 @@ module Inferno
 
         address_val = resolve_element_from_path(@organization, 'address')
         search_params = { 'address': address_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)

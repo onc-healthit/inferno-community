@@ -72,6 +72,7 @@ module Inferno
 
         name_val = resolve_element_from_path(@practitioner, 'name.family')
         search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         assert_response_ok(reply)
@@ -102,6 +103,7 @@ module Inferno
 
         identifier_val = resolve_element_from_path(@practitioner, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)

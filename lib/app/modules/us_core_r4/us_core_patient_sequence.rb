@@ -142,6 +142,7 @@ module Inferno
 
         identifier_val = resolve_element_from_path(@patient, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
@@ -162,6 +163,7 @@ module Inferno
 
         name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
@@ -183,6 +185,7 @@ module Inferno
         birthdate_val = resolve_element_from_path(@patient, 'birthDate')
         name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'birthdate': birthdate_val, 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
@@ -204,6 +207,7 @@ module Inferno
         gender_val = resolve_element_from_path(@patient, 'gender')
         name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'gender': gender_val, 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
@@ -225,6 +229,7 @@ module Inferno
         family_val = resolve_element_from_path(@patient, 'name.family')
         gender_val = resolve_element_from_path(@patient, 'gender')
         search_params = { 'family': family_val, 'gender': gender_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
@@ -246,6 +251,7 @@ module Inferno
         birthdate_val = resolve_element_from_path(@patient, 'birthDate')
         family_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'birthdate': birthdate_val, 'family': family_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)

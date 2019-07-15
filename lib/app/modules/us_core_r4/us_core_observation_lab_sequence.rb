@@ -128,6 +128,7 @@ module Inferno
         patient_val = @instance.patient_id
         code_val = resolve_element_from_path(@observation, 'code.coding.code')
         search_params = { 'patient': patient_val, 'code': code_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
@@ -150,6 +151,7 @@ module Inferno
         category_val = resolve_element_from_path(@observation, 'category.coding.code')
         date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
@@ -180,6 +182,7 @@ module Inferno
         code_val = resolve_element_from_path(@observation, 'code.coding.code')
         date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
@@ -210,6 +213,7 @@ module Inferno
         category_val = resolve_element_from_path(@observation, 'category.coding.code')
         status_val = resolve_element_from_path(@observation, 'status')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)

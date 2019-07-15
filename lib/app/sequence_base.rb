@@ -733,9 +733,11 @@ module Inferno
 
       def can_resolve_path(element, path)
         if path.empty?
-          return !element.nil? && yield(element) if block_given?
+          return false if element.nil?
 
-          return !element.nil?
+          return Array.wrap(element).any? { |el| yield(el) } if block_given? 
+
+          return true
         end
 
         path_ary = path.split('.')

@@ -111,6 +111,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
@@ -141,6 +142,7 @@ module Inferno
 
         id_val = resolve_element_from_path(@encounter, 'id')
         search_params = { '_id': id_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
@@ -162,6 +164,7 @@ module Inferno
         date_val = resolve_element_from_path(@encounter, 'period.start')
         patient_val = @instance.patient_id
         search_params = { 'date': date_val, 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
@@ -190,6 +193,7 @@ module Inferno
 
         identifier_val = resolve_element_from_path(@encounter, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
@@ -211,6 +215,7 @@ module Inferno
         patient_val = @instance.patient_id
         status_val = resolve_element_from_path(@encounter, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
@@ -232,6 +237,7 @@ module Inferno
         class_val = resolve_element_from_path(@encounter, 'class.code')
         patient_val = @instance.patient_id
         search_params = { 'class': class_val, 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
@@ -253,6 +259,7 @@ module Inferno
         patient_val = @instance.patient_id
         type_val = resolve_element_from_path(@encounter, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)

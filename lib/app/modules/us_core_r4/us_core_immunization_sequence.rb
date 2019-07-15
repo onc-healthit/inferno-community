@@ -90,6 +90,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         assert_response_ok(reply)
@@ -121,6 +122,7 @@ module Inferno
         patient_val = @instance.patient_id
         date_val = resolve_element_from_path(@immunization, 'occurrenceDateTime')
         search_params = { 'patient': patient_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
@@ -150,6 +152,7 @@ module Inferno
         patient_val = @instance.patient_id
         status_val = resolve_element_from_path(@immunization, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
