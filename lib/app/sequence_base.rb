@@ -412,6 +412,9 @@ module Inferno
             result.skip!
             result.message = e.message
             result.details = e.details
+          rescue OmitException => e
+            result.omit!
+            result.message = e.message
           rescue StandardError => e
             Inferno.logger.error "Fatal Error: #{e.message}"
             Inferno.logger.error e.backtrace

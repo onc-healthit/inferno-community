@@ -9,8 +9,9 @@ module Inferno
     WAIT = 'wait'
     TODO = 'todo'
     PENDING = 'pending'
+    OMIT = 'omit'
 
-    STATUS_LIST = [FAIL, ERROR, PASS, SKIP, WAIT, TODO, PENDING].freeze
+    STATUS_LIST = [FAIL, ERROR, PASS, SKIP, WAIT, TODO, PENDING, OMIT].freeze
 
     def fail?
       result == FAIL || error?
@@ -67,5 +68,10 @@ module Inferno
     def pending!
       self.result = PENDING
     end
+
+    def omit!
+      self.result = OMIT
+    end
+    
   end
 end
