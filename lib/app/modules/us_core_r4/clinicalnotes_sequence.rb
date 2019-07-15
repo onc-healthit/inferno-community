@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that DocumentReference and DiagnosticReport resources on the FHIR server follow the US Core R4 Clinical Notes Guideline'
 
-      test_id_prefix 'ClinicalNotes' # change me
+      test_id_prefix 'ClinicalNotes'
 
       requires :token, :patient_id
       conformance_supports :DocumentReference, :DiagnosticReport
@@ -23,17 +23,16 @@ module Inferno
 
       @clinicalnotes_found = false
 
-      def test_clinicalnotes_documentreference(type_code)
+      def test_clinical_notes_document_reference(type_code)
         skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
 
-        assert @must_have_type_code[type_code], "Clinical Notes shall have at least one DocumentReference with type #{type_code}"
+        assert @actual_type_codes.include?(type_code), "Clinical Notes shall have at least one DocumentReference with type #{type_code}"
       end
 
-      def test_clinicalnotes_diagnosticreport(category_code)
+      def test_clinical_notes_diagnostic_report(category_code)
         skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val, 'category': category_code }
+        search_params = { 'patient': @instance.patient_id, 'category': category_code }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)
@@ -44,17 +43,12 @@ module Inferno
 
         assert @resources_found, "Clinical Notes shall have at least one DiagnosticReport with category #{category_code}"
 
-        diagnosticreport_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        diagnostic_reports = reply&.resource&.entry&.map { |entry| entry&.resource }
 
-        diagnosticreport_ary&.each do |resource|
-          id = resource&.id
-
-          resource&.presentedForm&.each do |attachment|
-            url_value = attachment&.url
-            next if url_value.nil?
-
-            assert @attachment_url.key?(url_value), "Attachment #{url_value} referenced in DiagnosticReport/#{id} but not in any DocumentReference"
-            @attachment_url[url_value][:flag] = true
+        diagnostic_reports&.each do |diarpt|
+          diarpt&.presentedForm&.select { |attachment| attachment&.url&.present? }&.each do |attachment|
+            assert @attachment_urls.key?(attachment.url), "Attachment #{attachment.url} referenced in DiagnosticReport/#{diarpt.id} but not in any DocumentReference"
+            @attachment_urls[attachment.url][:flag] = true
           end
         end
       end
@@ -68,10 +62,8 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        category_val = 'clinical-note'
-        search_params = { 'patient': patient_val, 'category': category_val }
-        @attachment_url = {}
+        search_params = { 'patient': @instance.patient_id, 'category': 'clinical-note' }
+        @attachment_urls = {}
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
@@ -82,33 +74,24 @@ module Inferno
 
         skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
 
-        documentreference_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
 
-        @must_have_type_code = {
-          '11488-4' => false, # Consultation Note
-          '18842-5' => false, # Dischard Summary
-          '34117-2' => false, # History and physical note
-          '28570-0' => false, # Procedure note
-          '11506-3' => false # Progress not
-        }
+        @required_type_codes = Set[
+          '11488-4', # Consultation Note
+          '18842-5', # Dischard Summary
+          '34117-2', # History and physical note
+          '28570-0', # Procedure note
+          '11506-3' # Progress not
+        ]
 
-        documentreference_ary&.each do |resource|
-          codings = resource&.type&.coding
-          next if codings.nil?
+        @actual_type_codes = Set[]
 
-          codings&.each do |coding|
-            code = coding&.code
-            system = coding&.system
+        document_references&.select { |docref| docref&.type&.coding&.present? }&.each do |docref|
+          docref.type.coding.select { |coding| coding&.system == 'http://loinc.org' && @required_type_codes.include?(coding&.code) }&.each do |coding|
+            @actual_type_codes.add(coding.code)
 
-            next if system != 'http://loinc.org' || !@must_have_type_code.key?(code)
-
-            @must_have_type_code[code] = true
-
-            resource&.content&.each do |a_content|
-              url_value = a_content&.attachment&.url
-              next if url_value.nil? || @attachment_url.key?(url_value)
-
-              @attachment_url[url_value] = { id: resource&.id, flag: false }
+            docref&.content&.select { |content| !@attachment_urls.key?(content&.attachment&.url) }&.each do |content|
+              @attachment_urls[content.attachment.url] = { id: docref.id, flag: false }
             end
           end
         end
@@ -123,7 +106,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_documentreference('11488-4')
+        test_clinical_notes_document_reference('11488-4')
       end
 
       test 'Server shall have Discharge Summary' do
@@ -135,7 +118,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_documentreference('18842-5')
+        test_clinical_notes_document_reference('18842-5')
       end
 
       test 'Server shall have History and Physical Note' do
@@ -147,7 +130,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_documentreference('34117-2')
+        test_clinical_notes_document_reference('34117-2')
       end
 
       test 'Server shall have Procedures Note' do
@@ -159,7 +142,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_documentreference('28570-0')
+        test_clinical_notes_document_reference('28570-0')
       end
 
       test 'Server shall have Progress Note' do
@@ -171,7 +154,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_documentreference('11506-3')
+        test_clinical_notes_document_reference('11506-3')
       end
 
       test 'Server returns Cardiology report from DiagnosticReport search by patient+category' do
@@ -183,7 +166,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_diagnosticreport('http://loinc.org|LP29708-2')
+        test_clinical_notes_diagnostic_report('http://loinc.org|LP29708-2')
       end
 
       test 'Server returns Pathology report from DiagnosticReport search by patient+category' do
@@ -195,7 +178,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_diagnosticreport('http://loinc.org|LP7839-6')
+        test_clinical_notes_diagnostic_report('http://loinc.org|LP7839-6')
       end
 
       test 'Server returns Radiology report from DiagnosticReport search by patient+category' do
@@ -207,7 +190,7 @@ module Inferno
           versions :r4
         end
 
-        test_clinicalnotes_diagnosticreport('http://loinc.org|LP29684-5')
+        test_clinical_notes_diagnostic_report('http://loinc.org|LP29684-5')
       end
 
       test 'DiagnosticReport and DocumentReference reference the same attachment' do
@@ -221,7 +204,7 @@ module Inferno
 
         skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
 
-        @attachment_url.each { |key, value| assert value[:flag], "Attachment #{key} referenced in DocumentReference/#{value[:id]} but not in any DiagnosticReport" }
+        @attachment_urls.each { |key, value| assert value[:flag], "Attachment #{key} referenced in DocumentReference/#{value[:id]} but not in any DiagnosticReport" }
       end
     end
   end
