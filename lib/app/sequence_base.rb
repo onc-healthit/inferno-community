@@ -735,7 +735,7 @@ module Inferno
         if path.empty?
           return false if element.nil?
 
-          return Array.wrap(element).any? { |el| yield(el) } if block_given? 
+          return Array.wrap(element).any? { |el| yield(el) } if block_given?
 
           return true
         end
