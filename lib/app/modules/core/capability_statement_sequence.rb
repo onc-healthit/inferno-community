@@ -84,7 +84,7 @@ module Inferno
         pass 'Tests are not version dependent' if @instance.fhir_version.blank?
 
         # @client.detect_version is a symbol
-        assert_equal(@instance.fhir_version.upcase, @client.detect_version.to_s.upcase, 'FHIR client version does not match with instance version')
+        assert_equal(@instance.fhir_version.upcase, @client.detect_version.to_s.upcase, 'FHIR client version does not match with instance version.')
       end
 
       test 'FHIR server supports the conformance interaction that defines how it supports resources' do
