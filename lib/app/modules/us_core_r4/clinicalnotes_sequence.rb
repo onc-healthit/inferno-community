@@ -21,20 +21,22 @@ module Inferno
 
       )
 
-      @clinicalnotes_found = false
+      @clinical_notes_found = false
 
       def test_clinical_notes_document_reference(type_code)
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
+        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
 
         assert @actual_type_codes.include?(type_code), "Clinical Notes shall have at least one DocumentReference with type #{type_code}"
       end
 
       def test_clinical_notes_diagnostic_report(category_code)
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
+        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
 
         search_params = { 'patient': @instance.patient_id, 'category': category_code }
+        resource_class = 'DiagnosticReport'
+        @report_attachments = ClinicalNoteAttachment.new(resource_class)
 
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -45,10 +47,9 @@ module Inferno
 
         diagnostic_reports = reply&.resource&.entry&.map { |entry| entry&.resource }
 
-        diagnostic_reports&.each do |diarpt|
-          diarpt&.presentedForm&.select { |attachment| attachment&.url&.present? }&.each do |attachment|
-            assert @attachment_urls.key?(attachment.url), "Attachment #{attachment.url} referenced in DiagnosticReport/#{diarpt.id} but not in any DocumentReference"
-            @attachment_urls[attachment.url][:flag] = true
+        diagnostic_reports&.each do |report|
+          report&.presentedForm&.select { |attachment| !@report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
+            @report_attachments.attachment[attachment.url] = report.id
           end
         end
       end
@@ -63,16 +64,18 @@ module Inferno
         end
 
         search_params = { 'patient': @instance.patient_id, 'category': 'clinical-note' }
-        @attachment_urls = {}
+        resource_class = 'DocumentReference'
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        @document_attachments = ClinicalNoteAttachment.new(resource_class)
+
+        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         resource_count = reply&.resource&.entry&.length || 0
-        @clinicalnotes_found = true if resource_count.positive?
+        @clinical_notes_found = true if resource_count.positive?
 
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
+        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
 
         document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
 
@@ -81,17 +84,17 @@ module Inferno
           '18842-5', # Dischard Summary
           '34117-2', # History and physical note
           '28570-0', # Procedure note
-          '11506-3' # Progress not
+          '11506-3' # Progress note
         ]
 
         @actual_type_codes = Set[]
 
-        document_references&.select { |docref| docref&.type&.coding&.present? }&.each do |docref|
-          docref.type.coding.select { |coding| coding&.system == 'http://loinc.org' && @required_type_codes.include?(coding&.code) }&.each do |coding|
-            @actual_type_codes.add(coding.code)
+        document_references&.select { |document| document&.type&.coding&.present? }&.each do |document|
+          document.type.coding.select { |coding| coding&.system == 'http://loinc.org' && @required_type_codes.include?(coding&.code) }&.each do |coding|
+            @actual_type_codes << coding.code
 
-            docref&.content&.select { |content| !@attachment_urls.key?(content&.attachment&.url) }&.each do |content|
-              @attachment_urls[content.attachment.url] = { id: docref.id, flag: false }
+            document&.content&.select { |content| !@document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
+              @document_attachments.attachment[content.attachment.url] = document.id
             end
           end
         end
@@ -202,9 +205,27 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinicalnotes_found
+        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
 
-        @attachment_urls.each { |key, value| assert value[:flag], "Attachment #{key} referenced in DocumentReference/#{value[:id]} but not in any DiagnosticReport" }
+        assert_attachment_matched(@document_attachments, @report_attachments)
+        assert_attachment_matched(@report_attachments, @document_attachments)
+      end
+
+      def assert_attachment_matched(source_attachments, target_attachments)
+        not_matched_urls = source_attachments.attachment.keys - target_attachments.attachment.keys
+        not_matched_attachments = not_matched_urls.map { |url| "#{url} in #{source_attachments.resource_class}/#{source_attachments.attachment[url]}" }
+
+        assert not_matched_attachments.empty?, "Attachments #{not_matched_attachments.join(', ')} are not referenced in any #{target_attachments.resource_class}."
+      end
+    end
+
+    class ClinicalNoteAttachment
+      attr_reader :resource_class
+      attr_reader :attachment
+
+      def initialize(resource_class)
+        @resource_class = resource_class
+        @attachment = {}
       end
     end
   end
