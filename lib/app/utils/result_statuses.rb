@@ -41,6 +41,10 @@ module Inferno
       result == PENDING
     end
 
+    def omit?
+      result == OMIT
+    end
+
     def fail!
       self.result = FAIL
     end

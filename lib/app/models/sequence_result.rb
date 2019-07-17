@@ -23,6 +23,7 @@ module Inferno
       property :skip_count, Integer, default: 0
       property :optional_passed, Integer, default: 0
       property :optional_total, Integer, default: 0
+      property :omitted_count, Integer, default: 0
 
       property :app_version, String
 
@@ -49,7 +50,8 @@ module Inferno
           'error_count',
           'skip_count',
           'optional_passed',
-          'optional_total'
+          'optional_total',
+          'omitted_count'
         ].each { |field| send("#{field}=", 0) }
       end
 
@@ -71,6 +73,8 @@ module Inferno
             else
               self.optional_passed += 1
             end
+          when ResultStatuses::OMIT
+            self.omitted_count += 1
           when ResultStatuses::TODO
             self.todo_count += 1
           when ResultStatuses::FAIL

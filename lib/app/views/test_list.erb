@@ -36,6 +36,10 @@
           <div class="result-details-icon result-details-icon-todo">
             <span class="oi oi-minus"></span>
           </div>
+      <% when 'omit' %>
+        <div class="result-details-icon result-details-icon-omit" data-toggle="tooltip" title="Test was omitted and does not affect passing or failed scores">
+          <span class="oi oi-media-record" aria-hidden="true"></span>
+        </div>
       <% end %>
       <% if result.test_warnings.length > 0 %>
           <div class="result-details-icon result-details-icon-warning" data-toggle="tooltip" title="<%= result.test_warnings.length %> warning(s).  Warnings do not result in a test failure.">

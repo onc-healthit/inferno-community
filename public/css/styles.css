@@ -750,6 +750,10 @@ body {
   color: #00e1e1;
 }
 
+.result-details-icon-omit {
+  color: #999;
+}
+
 .result-details-icon-todo {
   color: #336699;
 }

@@ -478,6 +478,10 @@ module Inferno
         raise PassException, message
       end
 
+      def omit(message = '')
+        raise OmitException, message
+      end
+
       def skip(message = '', details = nil)
         raise SkipException.new message, details
       end
