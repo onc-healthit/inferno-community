@@ -25,7 +25,7 @@ module Inferno
       property :optional_total, Integer, default: 0
 
       property :required_omitted, Integer, default: 0      
-      property :omitted_total, Integer, default: 0
+      property :optional_omitted, Integer, default: 0
 
       property :app_version, String
 
@@ -53,7 +53,8 @@ module Inferno
           'skip_count',
           'optional_passed',
           'optional_total',
-          'omitted_total'
+          'required_omitted',
+          'optional_omitted'
         ].each { |field| send("#{field}=", 0) }
       end
 
@@ -78,8 +79,9 @@ module Inferno
           when ResultStatuses::OMIT
             if result.required
               self.required_omitted += 1
+            else
+              self.optional_omitted += 1
             end
-            self.omitted_total += 1
           when ResultStatuses::TODO
             self.todo_count += 1
           when ResultStatuses::FAIL
