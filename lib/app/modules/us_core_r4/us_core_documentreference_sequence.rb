@@ -42,32 +42,8 @@ module Inferno
           assert value_found, 'date on resource does not match date requested'
 
         when 'period'
-          comparator = value[0..1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'context.period') do |period|
-            start_date = DateTime.xmlschema(period&.start)
-            end_date = DateTime.xmlschema(period&.end)
-            value_date = DateTime.xmlschema(value)
-            case comparator
-            when 'ge'
-              end_date >= value_date || end_date.nil?
-            when 'le'
-              start_date <= value_date || start_date.nil?
-            when 'gt'
-              end_date > value_date || end_date.nil?
-            when 'lt'
-              start_date < value_date || start_date.nil?
-            when 'ne'
-              value_date < start_date || value_date > end_date
-            when 'sa'
-              start_date > value_date
-            when 'eb'
-              end_date < value_date
-            when 'ap'
-              true # don't have a good way to check this
-            else
-              value_date >= start_date && value_date <= end_date
-            end
+            validate_period_search(value, period)
           end
           assert value_found, 'period on resource does not match period requested'
 

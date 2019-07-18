@@ -26,27 +26,8 @@ module Inferno
           assert value_found, 'patient on resource does not match patient requested'
 
         when 'target-date'
-          comparator = value[0..1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, 'target.dueDate') do |date|
-            date_found = DateTime.xmlschema(date)
-            value_date = DateTime.xmlschema(value)
-            case comparator
-            when 'ge'
-              date_found >= value_date
-            when 'le'
-              date_found <= value_date
-            when 'gt', 'sa'
-              date_found > value_date
-            when 'lt', 'eb'
-              date_found < value_date
-            when 'ne'
-              date_found != value_date
-            when 'ap'
-              true # don't have a good way to check this
-            else
-              date_found == value_date
-            end
+            validate_date_search(value, date)
           end
           assert value_found, 'target-date on resource does not match target-date requested'
 

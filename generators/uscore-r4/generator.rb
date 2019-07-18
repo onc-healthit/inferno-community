@@ -352,58 +352,15 @@ def create_search_validation(sequence)
     case type
     when 'Period'
       search_validators += %(
-          comparator = value[0..1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
-            start_date = DateTime.xmlschema(period&.start)
-            end_date = DateTime.xmlschema(period&.end)
-            value_date = DateTime.xmlschema(value)
-            case comparator
-            when 'ge'
-              end_date >= value_date || end_date.nil?
-            when 'le'
-              start_date <= value_date || start_date.nil?
-            when 'gt'
-              end_date > value_date || end_date.nil?
-            when 'lt'
-              start_date < value_date || start_date.nil?
-            when 'ne'
-              value_date < start_date || value_date > end_date
-            when 'sa'
-              start_date > value_date
-            when 'eb'
-              end_date < value_date
-            when 'ap'
-              true # don't have a good way to check this
-            else
-              value_date >= start_date && value_date <= end_date
-            end
+            validate_period_search(value, period)
           end
           assert value_found, '#{element} on resource does not match #{element} requested'
 )
     when 'date'
       search_validators += %(
-          comparator = value[0..1]
-          value = value[2..-1] if ['ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
           value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
-            date_found = DateTime.xmlschema(date)
-            value_date = DateTime.xmlschema(value)
-            case comparator
-            when 'ge'
-              date_found >= value_date
-            when 'le'
-              date_found <= value_date
-            when 'gt', 'sa'
-              date_found > value_date
-            when 'lt', 'eb'
-              date_found < value_date
-            when 'ne'
-              date_found != value_date
-            when 'ap'
-              true # don't have a good way to check this
-            else
-              date_found == value_date
-            end
+            validate_date_search(value, date)
           end
           assert value_found, '#{element} on resource does not match #{element} requested'
 )
