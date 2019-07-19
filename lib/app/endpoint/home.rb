@@ -125,7 +125,8 @@ module Inferno
                          instance: instance,
                          test_set: test_set,
                          sequence_results: instance.latest_results_by_case,
-                         tests_running: true)
+                         tests_running: true,
+                         test_group: test_group.id)
 
               out << js_hide_wait_modal
               out << js_show_test_modal
@@ -442,7 +443,8 @@ module Inferno
             out << erb(instance.module.view_by_test_set(params[:test_set]), {}, instance: instance,
                                                                                 test_set: test_set,
                                                                                 sequence_results: instance.latest_results_by_case,
-                                                                                tests_running: true)
+                                                                                tests_running: true,
+                                                                                test_group: test_group.id)
 
             next_test_case = submitted_test_cases.shift
             finished = next_test_case.nil?
