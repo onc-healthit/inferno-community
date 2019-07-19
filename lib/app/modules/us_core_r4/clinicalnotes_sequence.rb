@@ -175,7 +175,7 @@ module Inferno
       test 'Server returns Pathology report from DiagnosticReport search by patient+category' do
         metadata do
           id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/clinical-notes-guidance.html'
+          link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           desc %(
           )
           versions :r4
