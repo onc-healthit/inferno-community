@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative 'assertions.rb'
+require 'uri'
+
 module Inferno
   module Assertions
     def assert(test, message = 'assertion failed, no message', data = '')
@@ -259,6 +261,11 @@ module Inferno
             option to false in `config.yml`.
           )
       end
+    end
+
+    def assert_valid_http_uri(uri, message = nil)
+      error_message = message || "\"#{uri}\" is not a valid URI"
+      assert (uri =~ /\A#{URI.regexp(['http', 'https'])}\z/), error_message
     end
   end
 end
