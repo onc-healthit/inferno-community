@@ -17,7 +17,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests DiagnosticReport and DocumentReference resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [US Core Clinical Notes Guidance](https://build.fhir.org/ig/HL7/US-Core-R4/clinical-notes-guidance.html)
+        returned will be checked for consistency against the [US Core Clinical Notes Guidance](https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html)
 
       )
 
