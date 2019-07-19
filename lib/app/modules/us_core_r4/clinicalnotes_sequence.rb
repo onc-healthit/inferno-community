@@ -139,7 +139,7 @@ module Inferno
       test 'Server shall have Procedures Note' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/clinical-notes-guidance.html'
+          link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           desc %(
           )
           versions :r4
