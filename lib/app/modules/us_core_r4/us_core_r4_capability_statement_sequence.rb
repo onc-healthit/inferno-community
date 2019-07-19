@@ -59,7 +59,7 @@ module Inferno
 
       test 'FHIR server capability states JSON support' do
         metadata do
-          id '03'
+          id '04'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           desc %(
 
@@ -93,7 +93,7 @@ module Inferno
 
       test 'Capability Statement describes SMART on FHIR core capabilities' do
         metadata do
-          id '04'
+          id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
           optional
           desc %(
@@ -128,7 +128,7 @@ module Inferno
 
       test 'Capability Statement lists supported Argonaut profiles, operations and search parameters' do
         metadata do
-          id '05'
+          id '06'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           desc %(
            The Argonaut Data Query Implementation Guide states:

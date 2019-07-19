@@ -59,7 +59,7 @@ module Inferno
 
       test 'FHIR server conformance states JSON support' do
         metadata do
-          id '03'
+          id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
 
@@ -93,7 +93,7 @@ module Inferno
 
       test 'Conformance Statement describes SMART on FHIR core capabilities' do
         metadata do
-          id '04'
+          id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
           optional
           desc %(
