@@ -44,7 +44,7 @@ module Inferno
         assert(!group.nil?)
 
         # Check matching values for each population in the group
-        group.first.population.each do |p|
+        group&.first&.population&.each do |p|
           coding = p.code&.coding
           assert(!coding.nil?)
           code = coding.first.code
