@@ -63,6 +63,8 @@ module Inferno
           versions :r4
         end
 
+        @client.set_no_auth if @instance.token.blank?
+
         search_params = { 'patient': @instance.patient_id, 'category': 'clinical-note' }
         resource_class = 'DocumentReference'
 
