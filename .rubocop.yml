@@ -21,3 +21,17 @@ Metrics/LineLength:
   Exclude:
     - 'lib/app/modules/**/*'
     - 'lib/app/helpers/browser_logic.rb'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/app/endpoint/oauth2_endpoints.rb'
+    - 'lib/app/endpoint/test_set_endpoints.rb'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'lib/app/endpoint/oauth2_endpoints.rb'
+    - 'lib/app/endpoint/test_set_endpoints.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/app/endpoint/oauth2_endpoints.rb'
