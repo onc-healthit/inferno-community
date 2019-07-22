@@ -77,7 +77,7 @@
                     <% end%>
 
                     <% if sequence_results[test_case.id].required_omitted + sequence_results[test_case.id].optional_omitted > 0%> -
-                      <%= sequence_results[test_case.id].optional_omitted %> Tests Omitted
+                      <%= sequence_results[test_case.id].required_omitted + sequence_results[test_case.id].optional_omitted %> Tests Omitted
                     <% end%>
                   <% end %>
                   -
