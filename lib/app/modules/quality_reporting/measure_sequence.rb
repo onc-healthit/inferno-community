@@ -49,7 +49,7 @@ module Inferno
           assert(!coding.nil?)
           code = coding.first.code
           assert(!code.nil?)
-          assert_equal(EXPECTED_RESULTS[code.to_sym], p.count, "Expected #{code} count and actual #{code} count are not equal")
+          assert_equal(EXPECTED_RESULTS[code.to_sym], p.count, "Expected #{code} count and actual #{code} count are not equal") if EXPECTED_RESULTS.key?(code.to_sym)
         end
       end
     end
