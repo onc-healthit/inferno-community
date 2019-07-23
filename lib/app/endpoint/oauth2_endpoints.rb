@@ -198,7 +198,7 @@ module Inferno
             else
               latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: instance)
               test_set_id = latest_sequence_result&.test_set_id || instance.module.default_test_set
-              redirect "#{BASE_PATH}/#{instance.id}/#{test_set_id}/?error=no_#{params[:endpoint]}"
+              redirect "#{BASE_PATH}/#{instance.id}/test_sets/#{test_set_id}/?error=no_#{params[:endpoint]}"
             end
           end
         end
