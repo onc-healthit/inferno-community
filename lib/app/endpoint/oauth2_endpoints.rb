@@ -41,35 +41,23 @@ module Inferno
             end
 
             if params[:endpoint] == 'launch'
-              recent_results = Inferno::Models::SequenceResult.all(
-                :created_at.gte => 5.minutes.ago,
-                :result => 'wait',
-                :order => [:created_at.desc]
-              )
-              iss_url = params[:iss]&.downcase&.split('://')&.last&.chomp('/')
-
-              matching_results = recent_results.select do |sr|
-                testing_instance_url = sr.testing_instance.url.downcase.split('://').last.chomp('/')
-                testing_instance_url == iss_url
-              end
-
-              instance = matching_results&.first&.testing_instance
+              instance = Inferno::Models::SequenceResult.recent_results_for_iss(params[:iss]).testing_instance
               if instance.nil?
                 instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
                 if instance.nil?
                   message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
                             'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
                   halt 500, message
-                elsif instance&.waiting_on_sequence&.wait?
+                elsif instance.waiting_on_sequence&.wait?
                   error_message = 'No iss for redirect'
                 else
                   redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"
                 end
               end
             end
-            halt 500, 'Error: Could not find a running test that match this set of critera' unless !instance.nil? &&
-                                                                                                   instance.client_endpoint_key == params[:key] &&
-                                                                                                   %w[launch redirect].include?(params[:endpoint])
+            halt 500, 'Error: Could not find a running test that match this set of criteria' unless !instance.nil? &&
+                                                                                                    instance.client_endpoint_key == params[:key] &&
+                                                                                                    %w[launch redirect].include?(params[:endpoint])
 
             sequence_result = instance.waiting_on_sequence
             if sequence_result&.wait?

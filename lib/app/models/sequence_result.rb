@@ -38,6 +38,19 @@ module Inferno
       has n, :test_results, order: [:test_index.asc]
       belongs_to :testing_instance
 
+      def self.recent_results_for_iss(iss)
+        all(
+          :created_at.gte => 5.minutes.ago,
+          :result => 'wait',
+          :order => [:created_at.desc]
+        ).find { |result| normalize_url(result.testing_instance.url) == normalize_url(iss) }
+      end
+
+      # TODO: find this a home
+      def self.normalize_url(url)
+        url&.downcase&.split('://')&.last&.chomp('/')
+      end
+
       def failures
         test_results.select(&:fail?)
       end
