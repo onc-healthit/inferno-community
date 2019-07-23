@@ -732,6 +732,55 @@ module Inferno
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
+
+      def can_resolve_path(element, path)
+        if path.empty?
+          return false if element.nil?
+
+          return Array.wrap(element).any? { |el| yield(el) } if block_given?
+
+          return true
+        end
+
+        path_ary = path.split('.')
+        el_as_array = Array.wrap(element)
+        cur_path_part = path_ary.shift.to_sym
+        return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
+
+        if block_given?
+          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) } }
+        else
+          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
+        end
+      end
+
+      def resolve_element_from_path(element, path)
+        el_as_array = Array.wrap(element)
+        return el_as_array&.first if path.empty?
+
+        path_ary = path.split('.')
+        cur_path_part = path_ary.shift.to_sym
+
+        found_subset = el_as_array.select { |el| el.try(cur_path_part).present? }
+        return nil if found_subset.empty?
+
+        found_subset.each do |el|
+          el_found = resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
+          return el_found unless el_found.nil?
+        end
+        nil
+      end
+
+      def date_comparator_value(comparator, date)
+        case comparator
+        when 'lt', 'le'
+          comparator + (DateTime.xmlschema(date) + 1).xmlschema
+        when 'gt', 'ge'
+          comparator + (DateTime.xmlschema(date) - 1).xmlschema
+        else
+          ''
+        end
+      end
     end
 
     Dir.glob(File.join(__dir__, 'modules', '**', '*_sequence.rb')).each { |file| require file }
