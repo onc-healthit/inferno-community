@@ -22,7 +22,7 @@ module Inferno
 
       # Test Methodology
 
-      This test attempt to exchange the refresh token for a new access token and verify that the information returned
+      This test attempts to exchange the refresh token for a new access token and verify that the information returned
       contains the required fields and uses the proper headers.
 
       For more information see:
@@ -85,6 +85,10 @@ module Inferno
         assert_valid_json(token_response.body)
         token_response_body = JSON.parse(token_response.body)
 
+        # The minimum we need to 'progress' is the access token,
+        # so first just check and save access token, before validating rest of payload.
+        # This is done to make things easier for developers.
+
         assert token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
 
         token_retrieved_at = DateTime.now
@@ -96,7 +100,7 @@ module Inferno
 
         @instance.update(token: token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
 
-        ['token_type', 'scope'].each do |key|
+        ['expires_in', 'token_type', 'scope'].each do |key|
           assert token_response_body.key?(key), "Token response did not contain #{key} as required"
         end
 
@@ -127,12 +131,7 @@ module Inferno
           @instance.save!
           @instance.update(refresh_token: token_response_body['refresh_token'])
         end
-        [:cache_control, :pragma].each do |key|
-          assert token_response.headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
-        end
 
-        assert token_response.headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
-        assert token_response.headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
       end
 
       test 'Server successfully refreshes the access token when optional scope parameter omitted.' do
@@ -144,9 +143,7 @@ module Inferno
             the body of the request.
 
             The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
-            access_token, token_type, and scope are required. access_token must be Bearer.
-
-            The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
+            access_token, expires_in, token_type, and scope are required. access_token must be Bearer.
           )
         end
 
@@ -165,9 +162,7 @@ module Inferno
             the body of the request.
 
             The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
-            access_token, token_type, and scope are required. access_token must be Bearer.
-
-            The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
+            access_token, token_type, expires_in, and scope are required. access_token must be Bearer.
           )
         end
 

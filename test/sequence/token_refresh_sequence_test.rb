@@ -37,10 +37,13 @@ class TokenRefreshSequenceTest < MiniTest::Test
     headers = {
       'Content-Type' => 'application/x-www-form-urlencoded'
     }
+
     body = {
       'grant_type' => 'refresh_token',
       'refresh_token' => @instance.refresh_token
     }
+
+    body_response_code = 200
 
     body_with_scope = {
       'grant_type' => 'refresh_token',
@@ -48,11 +51,36 @@ class TokenRefreshSequenceTest < MiniTest::Test
       'scope' => @instance.scopes
     }
 
+    body_with_scope_response_code = 200
+
     exchange_response = @standalone_token_exchange.dup
 
-    exchange_response['token_type'] = 'unknown' if failure_mode == :bad_token_type
-    exchange_response.delete('scope') if failure_mode == :no_scope
-    exchange_response.delete('access_token') if failure_mode == :no_access_token
+    response_headers = { content_type: 'application/json; charset=UTF-8',
+                         cache_control: 'no-store',
+                         pragma: 'no-cache' }
+
+    case failure_mode
+    when :bad_token_type
+      exchange_response['token_type'] = 'unknown'
+    when :no_scope
+      exchange_response.delete('scope')
+    when :no_access_token
+      exchange_response.delete('access_token')
+    when :no_expires_in
+      exchange_response.delete('expires_in')
+    when :cache_control_off
+      response_headers.delete(:cache_control)
+    when :pragma_off
+      response_headers.delete(:pragma)
+    when :requires_scope
+      body_response_code = 400
+    when :disallows_scope
+      body_with_scope_response_code = 400
+    end
+
+    # can't do this above because we are altering the content of hash in other error modes
+    exchange_response_json = exchange_response.to_json
+    exchange_response_json = '<bad>' if failure_mode == :bad_json_response
 
     if @instance.client_secret.present?
       headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
@@ -60,27 +88,17 @@ class TokenRefreshSequenceTest < MiniTest::Test
       body['client_id'] = body_with_scope['client_id'] = @instance.client_id
     end
 
-    response_headers = { content_type: 'application/json; charset=UTF-8',
-                         cache_control: 'no-store',
-                         pragma: 'no-cache' }
-
-    response_headers.delete(:cache_control) if failure_mode == :cache_control_off
-    response_headers.delete(:pragma) if failure_mode == :pragma_off
-
-    exchange_response_json = exchange_response.to_json
-    exchange_response_json = '<bad>' if failure_mode == :bad_json_response
-
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,
             body: body)
-      .to_return(status: failure_mode == :requires_scope ? 400 : 200,
+      .to_return(status: body_response_code,
                  body: exchange_response_json,
                  headers: response_headers)
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,
             body: body_with_scope)
-      .to_return(status: 200,
+      .to_return(status: body_with_scope_response_code,
                  body: exchange_response_json,
                  headers: response_headers)
 
@@ -105,34 +123,37 @@ class TokenRefreshSequenceTest < MiniTest::Test
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
   end
 
-  def test_all_pass_confidential_client
+  def test_pass_if_confidential_client
     @instance.client_secret = @confidential_client_secret
     @instance.confidential_client = true
     all_pass
   end
 
-  def test_all_pass_public_client
+  def test_pass_if_public_client
     @instance.client_secret = nil
     @instance.confidential_client = false
     all_pass
   end
 
-  def test_fail_if_bad_token_type
-    setup_mocks(:bad_token_type)
-
-    sequence_result = @sequence.start
-    assert sequence_result.fail?
-  end
-
-  def test_fail_if_cache_control_off
+  # Initial token exchange requires cache control and pragma headers
+  # But token exchange does not according to the letter of the smart spec
+  # Check that the next two tests pass
+  def test_pass_if_cache_control_off
     setup_mocks(:cache_control_off)
 
     sequence_result = @sequence.start
-    assert sequence_result.fail?
+    assert sequence_result.pass?
   end
 
-  def test_fail_if_pragma_off
+  def test_pass_if_pragma_off
     setup_mocks(:pragma_off)
+
+    sequence_result = @sequence.start
+    assert sequence_result.pass?
+  end
+
+  def test_fail_if_bad_token_type
+    setup_mocks(:bad_token_type)
 
     sequence_result = @sequence.start
     assert sequence_result.fail?
@@ -152,6 +173,13 @@ class TokenRefreshSequenceTest < MiniTest::Test
     assert sequence_result.fail?
   end
 
+  def test_fail_if_no_expires_in
+    setup_mocks(:no_expires_in)
+
+    sequence_result = @sequence.start
+    assert sequence_result.fail?
+  end
+
   def test_fail_if_bad_json_response
     setup_mocks(:bad_json_response)
 
@@ -161,6 +189,13 @@ class TokenRefreshSequenceTest < MiniTest::Test
 
   def test_fail_if_scope_must_be_in_payload
     setup_mocks(:requires_scope)
+
+    sequence_result = @sequence.start
+    assert sequence_result.fail?
+  end
+
+  def test_fail_if_scope_cannot_be_in_payload
+    setup_mocks(:disallows_scope)
 
     sequence_result = @sequence.start
     assert sequence_result.fail?
