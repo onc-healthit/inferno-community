@@ -23,7 +23,7 @@ class SequenceResultTest < MiniTest::Test
     result.optional_total = 3
     result.required_omitted = 4
     result.optional_omitted = 300
-    
+
     result.reset!
 
     assert_equal 0, result.required_passed
@@ -112,7 +112,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_result_pass
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS
@@ -168,7 +168,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_result_skip_when_skip_test_is_required
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS
@@ -186,7 +186,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_result_required_skip_when_no_pass_tests
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::SKIP
@@ -195,12 +195,11 @@ class SequenceResultTest < MiniTest::Test
     sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::SKIP, sequence_result.result
-  end 
-
+  end
 
   def test_sequence_result_result_optional_skip_when_no_pass_tests
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = false
     test_result1.result = Inferno::ResultStatuses::SKIP
@@ -209,11 +208,11 @@ class SequenceResultTest < MiniTest::Test
     sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
-  end 
+  end
 
-   def test_sequence_result_fail
+  def test_sequence_result_fail
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS
@@ -254,7 +253,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_error
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS
@@ -277,7 +276,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_pass_when_error_optional
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS
@@ -295,7 +294,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_pass_fail_vs_error
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::FAIL
