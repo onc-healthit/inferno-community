@@ -235,7 +235,7 @@ class SequenceResultTest < MiniTest::Test
 
   def test_sequence_result_pass_when_fail_optional
     sequence_result = Inferno::Models::SequenceResult.new
-	
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS

@@ -76,6 +76,5 @@ module Inferno
     def omit!
       self.result = OMIT
     end
-    
   end
 end

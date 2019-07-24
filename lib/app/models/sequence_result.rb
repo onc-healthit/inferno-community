@@ -3,7 +3,6 @@
 require_relative '../utils/result_statuses'
 require_relative '../utils/logging'
 
-
 module Inferno
   module Models
     class SequenceResult
@@ -25,7 +24,7 @@ module Inferno
       property :skip_count, Integer, default: 0
       property :optional_passed, Integer, default: 0
       property :optional_total, Integer, default: 0
-      property :required_omitted, Integer, default: 0      
+      property :required_omitted, Integer, default: 0
       property :optional_omitted, Integer, default: 0
 
       property :app_version, String

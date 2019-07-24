@@ -96,13 +96,8 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_register)
     assert_requested(stub_refresh_register)
 
-    tls = true
-    #if tls
-      assert sequence_result.fail?, 'Sequence should fail.'
-      assert sequence_result.test_results.select(&:pass?).empty?, 'No tests should pass (the tls testing sequence).' 
-    #else
-    #  assert sequence_result.test_results.select(&:omit?).length == 2, 'If tls is disabled, each test should be omitted.' 
-    #end
+    assert sequence_result.fail?, 'Sequence should fail.'
+    assert sequence_result.test_results.select(&:pass?).empty?, 'No tests should pass (the tls testing sequence).'
   end
 
   def test_inactive
