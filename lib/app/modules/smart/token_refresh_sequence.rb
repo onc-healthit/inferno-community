@@ -25,8 +25,6 @@ module Inferno
       This test attempt to exchange the refresh token for a new access token and verify that the information returned
       contains the required fields and uses the proper headers.
 
-      This test
-
       For more information see:
 
       * [The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
@@ -160,7 +158,7 @@ module Inferno
 
       test 'Server successfully refreshes the access token when optional scope parameter provided.' do
         metadata do
-          id '05'
+          id '04'
           link 'https://tools.ietf.org/html/rfc6749'
           desc %(
             Server successfully exchanges refresh token at OAuth token endpoint while providing scope in
