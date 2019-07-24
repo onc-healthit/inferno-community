@@ -132,6 +132,16 @@ module Inferno
           @instance.update(refresh_token: token_response_body['refresh_token'])
         end
 
+        warning do
+          # These should be required but due to a gap in the SMART App Launch Guide they are not currently required
+          # See https://github.com/HL7/smart-app-launch/issues/293
+          [:cache_control, :pragma].each do |key|
+            assert token_response.headers.key?(key), "Token response headers did not contain #{key} as is recommended for token exchanges."
+          end
+
+          assert token_response.headers[:cache_control].downcase.include?('no-store'), 'Token response header should have cache_control containing no-store.'
+          assert token_response.headers[:pragma].downcase.include?('no-cache'), 'Token response header should have pragma containing no-cache.'
+        end
       end
 
       test 'Server successfully refreshes the access token when optional scope parameter omitted.' do
@@ -144,6 +154,11 @@ module Inferno
 
             The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
             access_token, expires_in, token_type, and scope are required. access_token must be Bearer.
+
+            Although not required in the token refresh portion of the SMART App Launch Guide,
+            the token refresh response should include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache
+            to be consistent with the requirements of the inital access token exchange.
+
           )
         end
 
@@ -162,7 +177,11 @@ module Inferno
             the body of the request.
 
             The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
-            access_token, token_type, expires_in, and scope are required. access_token must be Bearer.
+            access_token, token_type, and scope are required. access_token must be Bearer.
+
+            Although not required in the token refresh portion of the SMART App Launch Guide,
+            the token refresh response should include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache
+            to be consistent with the requirements of the inital access token exchange.
           )
         end
 

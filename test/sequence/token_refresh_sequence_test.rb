@@ -120,7 +120,8 @@ class TokenRefreshSequenceTest < MiniTest::Test
     setup_mocks
     sequence_result = @sequence.start
 
-    assert sequence_result.pass?, 'The sequence should be marked as pass.'
+    assert sequence_result.pass?
+    assert(sequence_result.test_results.none? { |result| result.test_warnings.present? })
   end
 
   def test_pass_if_confidential_client
@@ -137,19 +138,22 @@ class TokenRefreshSequenceTest < MiniTest::Test
 
   # Initial token exchange requires cache control and pragma headers
   # But token exchange does not according to the letter of the smart spec
-  # Check that the next two tests pass
-  def test_pass_if_cache_control_off
+  # This may be updated in future versions of the spec
+  # See https://github.com/HL7/smart-app-launch/issues/293
+  def test_warning_if_cache_control_off
     setup_mocks(:cache_control_off)
 
     sequence_result = @sequence.start
     assert sequence_result.pass?
+    assert(sequence_result.test_results.any? { |result| result.test_warnings.present? })
   end
 
-  def test_pass_if_pragma_off
+  def test_warning_if_pragma_off
     setup_mocks(:pragma_off)
 
     sequence_result = @sequence.start
     assert sequence_result.pass?
+    assert(sequence_result.test_results.any? { |result| result.test_warnings.present? })
   end
 
   def test_fail_if_bad_token_type
