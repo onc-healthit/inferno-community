@@ -45,11 +45,7 @@ class TokenRefreshSequenceTest < MiniTest::Test
 
     body_response_code = 200
 
-    body_with_scope = {
-      'grant_type' => 'refresh_token',
-      'refresh_token' => @instance.refresh_token,
-      'scope' => @instance.scopes
-    }
+    body_with_scope = body.merge('scope' => @instance.scopes)
 
     body_with_scope_response_code = 200
 
