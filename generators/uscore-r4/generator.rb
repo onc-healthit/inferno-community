@@ -79,11 +79,15 @@ def create_authorization_test(sequence)
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
 
+  first_search = sequence[:searches].select { |search_param| search_param[:expectation] == 'SHALL' }.first ||
+                 sequence[:searches].select { |search_param| search_param[:expectation] == 'SHOULD' }.first
+  return if first_search.nil?
+
   authorization_test[:test_code] = %(
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
-
-        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), patient: @instance.patient_id)
+#{get_search_params(first_search[:names], sequence)}
+        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply)
 

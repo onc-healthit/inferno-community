@@ -2,7 +2,6 @@
 
 class MetadataExtractor
   CAPABILITY_STATEMENT_URI = 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.json'
-  OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
   def profile_uri(profile)
     "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{profile}.json"
