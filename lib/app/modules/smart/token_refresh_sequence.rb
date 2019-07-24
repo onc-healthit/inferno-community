@@ -17,10 +17,15 @@ module Inferno
       Refresh tokens are typically longer lived than access tokens and allow client applications to obtain a new access token
       Refresh tokens themselves cannot provide access to resources on the server.
 
+      Token refreshes are accomplished through a `POST` request to the token exchange endpoint as described in the
+      [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
+
       # Test Methodology
 
-      Inferno will attempt to exchange the refresh token for a new access token and verify that the information returned
+      This test attempt to exchange the refresh token for a new access token and verify that the information returned
       contains the required fields and uses the proper headers.
+
+      This test
 
       For more information see:
 
@@ -28,7 +33,32 @@ module Inferno
       * [Using a refresh token to obtain a new access token](http://hl7.org/fhir/smart-app-launch/#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
               )
 
-      test 'Refresh token exchange fails when supplied invalid Refresh Token or Client ID.' do
+      INVALID_CLIENT_ID = 'INVALID_CLIENT_ID'
+      INVALID_REFRESH_TOKEN = 'INVALID_REFRESH_TOKEN'
+
+      def encoded_secret(client_id, client_secret)
+        "Basic #{Base64.strict_encode64(client_id + ':' + client_secret)}"
+      end
+
+      def perform_refresh_request(client_id, refresh_token, provide_scope = false)
+        oauth2_params = {
+          'grant_type' => 'refresh_token',
+          'refresh_token' => refresh_token
+        }
+        oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
+
+        if @instance.confidential_client
+          oauth2_headers['Authorization'] = encoded_secret(client_id, @instance.client_secret)
+        else
+          oauth2_params['client_id'] = client_id
+        end
+
+        oauth2_params['scope'] = @instance.scopes if provide_scope
+
+        LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
+      end
+
+      test 'Refresh token exchange fails when provided invalid Refresh Token.' do
         metadata do
           id '01'
           link 'https://tools.ietf.org/html/rfc6749'
@@ -36,125 +66,117 @@ module Inferno
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
 
-        oauth2_params = {
-          'grant_type' => 'refresh_token',
-          'refresh_token' => 'INVALID REFRESH TOKEN',
-          'client_id' => @instance.client_id
-        }
-
-        token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
-        assert_response_bad_or_unauthorized token_response
-
-        oauth2_params = {
-          'grant_type' => 'refresh_token',
-          'refresh_token' => @instance.refresh_token,
-          'client_id' => 'INVALID_CLIENT_ID'
-        }
-
-        token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params)
+        token_response = perform_refresh_request(@instance.client_id, INVALID_REFRESH_TOKEN)
         assert_response_bad_or_unauthorized token_response
       end
 
-      test 'Server successfully exchanges refresh token at OAuth token endpoint.' do
+      test 'Refresh token exchange fails when provided invalid Client ID.' do
         metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc6749'
           desc %(
-            Server successfully exchanges refresh token at OAuth token endpoint.
-          )
+            If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
 
-        oauth2_params = {
-          'grant_type' => 'refresh_token',
-          'refresh_token' => @instance.refresh_token
-        }
-        oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
-
-        if @instance.confidential_client
-          oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id +
-                                                                                ':' +
-                                                                                @instance.client_secret)}"
-        else
-          oauth2_params['client_id'] = @instance.client_id
-        end
-
-        @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
-        assert_response_ok(@token_response)
+        token_response = perform_refresh_request(INVALID_CLIENT_ID, @instance.refresh_token)
+        assert_response_bad_or_unauthorized token_response
       end
 
-      test 'Data returned from refresh token exchange contains required information encoded in JSON.' do
-        metadata do
-          id '03'
-          link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
-           The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
-           access_token, token_type, and scope are required. access_token must be Bearer.
-          )
-        end
+      def validate_and_save_refresh_response(token_response)
+        assert_response_ok(token_response)
+        assert_valid_json(token_response.body)
+        token_response_body = JSON.parse(token_response.body)
 
-        @token_response_headers = @token_response.headers
-        assert_valid_json(@token_response.body)
-        @token_response_body = JSON.parse(@token_response.body)
-
-        assert @token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
+        assert token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
 
         token_retrieved_at = DateTime.now
 
         @instance.resource_references.each(&:destroy)
-        @instance.resource_references << Inferno::Models::ResourceReference.new(resource_type: 'Patient', resource_id: @token_response_body['patient']) if @token_response_body.key?('patient')
+        @instance.resource_references << Inferno::Models::ResourceReference.new(resource_type: 'Patient', resource_id: token_response_body['patient']) if token_response_body.key?('patient')
 
         @instance.save!
 
-        @instance.update(token: @token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
+        @instance.update(token: token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
 
         ['token_type', 'scope'].each do |key|
-          assert @token_response_body.key?(key), "Token response did not contain #{key} as required"
+          assert token_response_body.key?(key), "Token response did not contain #{key} as required"
         end
 
         # case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
-        assert @token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
+        assert token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
 
         expected_scopes = @instance.scopes.split(' ')
-        actual_scopes = @token_response_body['scope'].split(' ')
+        actual_scopes = token_response_body['scope'].split(' ')
 
         warning do
           missing_scopes = (expected_scopes - actual_scopes)
           assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
 
-          assert @token_response_body.key?('patient'), 'No patient id provided in token exchange.'
+          assert token_response_body.key?('patient'), 'No patient id provided in token exchange.'
         end
 
-        scopes = @token_response_body['scope'] || @instance.scopes
+        scopes = token_response_body['scope'] || @instance.scopes
 
         @instance.save!
         @instance.update(scopes: scopes)
 
-        if @token_response_body.key?('id_token')
+        if token_response_body.key?('id_token')
           @instance.save!
-          @instance.update(id_token: @token_response_body['id_token'])
+          @instance.update(id_token: token_response_body['id_token'])
         end
 
-        if @token_response_body.key?('refresh_token')
+        if token_response_body.key?('refresh_token')
           @instance.save!
-          @instance.update(refresh_token: @token_response_body['refresh_token'])
+          @instance.update(refresh_token: token_response_body['refresh_token'])
         end
+        [:cache_control, :pragma].each do |key|
+          assert token_response.headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
+        end
+
+        assert token_response.headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
+        assert token_response.headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
       end
 
-      test 'Response includes correct HTTP Cache-Control and Pragma headers' do
+      test 'Server successfully refreshes the access token when optional scope parameter omitted.' do
         metadata do
-          id '04'
-          link 'http://www.hl7.org/fhir/smart-app-launch/'
+          id '03'
+          link 'https://tools.ietf.org/html/rfc6749'
           desc %(
+            Server successfully exchanges refresh token at OAuth token endpoint without providing scope in
+            the body of the request.
+
+            The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
+            access_token, token_type, and scope are required. access_token must be Bearer.
+
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
           )
         end
 
-        [:cache_control, :pragma].each do |key|
-          assert @token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
+        specify_scopes = false
+
+        token_response = perform_refresh_request(@instance.client_id, @instance.refresh_token, specify_scopes)
+        validate_and_save_refresh_response(token_response)
+      end
+
+      test 'Server successfully refreshes the access token when optional scope parameter provided.' do
+        metadata do
+          id '05'
+          link 'https://tools.ietf.org/html/rfc6749'
+          desc %(
+            Server successfully exchanges refresh token at OAuth token endpoint while providing scope in
+            the body of the request.
+
+            The EHR authorization server SHALL return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
+            access_token, token_type, and scope are required. access_token must be Bearer.
+
+            The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
+          )
         end
 
-        assert @token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
-        assert @token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
+        specify_scopes = true
+
+        token_response = perform_refresh_request(@instance.client_id, @instance.refresh_token, specify_scopes)
+        validate_and_save_refresh_response(token_response)
       end
     end
   end
