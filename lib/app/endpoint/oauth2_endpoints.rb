@@ -69,16 +69,7 @@ module Inferno
               test_case = test_set.test_case_by_id(sequence_result.test_case_id)
               test_group = test_case.test_group
 
-              client = FHIR::Client.new(@instance.url)
-              case @instance.fhir_version
-              when 'stu3'
-                client.use_stu3
-              when 'dstu2'
-                client.use_dstu2
-              else
-                client.use_r4
-              end
-              client.default_json
+              client = FHIR::Client.for_testing_instance(@instance)
               sequence = test_case.sequence.new(@instance, client, settings.disable_tls_tests, sequence_result)
               first_test_count = sequence.test_count
 
