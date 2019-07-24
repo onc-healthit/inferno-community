@@ -23,7 +23,7 @@ It is important to open port `80` for HTTP  and port `22` for SSH if you need to
 "Review and Launch" button, click next button until you get to the Security Groups option. Ensure 80 is accessible from anywhere and 22 is
 available from an IP range from which you will connect. Below is an example:
 
-![Security Groups Configuration](https://raw.githubusercontent.com/siteadmin/inferno/master/deployment-files/security-groups.png "Security Groups Configuration")
+![Security Groups Configuration](https://raw.githubusercontent.com/onc-healthit/inferno/master/deployment-files/security-groups.png "Security Groups Configuration")
 
 After this step is done, launch the instance.  Obtain your instance's IP or host name from the AWS console. Point a web browser to the instance using the IP address or host name.
 
@@ -70,7 +70,7 @@ Now, issue the following commands to setup Inferno.
      sudo apt-get install git ruby-bundler ruby-dev
      sudo apt-get install sqlite3 libsqlite3-dev
      sudo apt-get install build-essential patch zlib1g-dev liblzma-dev
-     git clone https://github.com/siteadmin/inferno.git
+     git clone https://github.com/onc-healthit/inferno.git
      cd  inferno
      bundle install
 
@@ -183,7 +183,7 @@ This section describes how to setup the tool using Apache2 using Passenger.
     sudo apt-get install apache2 git ruby-bundler ruby-dev
     sudo apt-get install sqlite3 libsqlite3-dev
     sudo apt-get install build-essential patch zlib1g-dev liblzma-dev
-    git clone https://github.com/siteadmin/inferno.git
+    git clone https://github.com/onc-healthit/inferno.git
     cd  inferno
     bundle install
 
