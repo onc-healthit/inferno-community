@@ -123,15 +123,15 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::TODO
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
-    assert_equal Inferno::ResultStatuses::PASS, sequence_result.result	
+    assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
 
   def test_sequence_result_result_pass_even_with_omit
     sequence_result = Inferno::Models::SequenceResult.new
-    sequence_result.test_results = [];
-	
+    sequence_result.test_results = []
+
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
     test_result1.result = Inferno::ResultStatuses::PASS
@@ -142,14 +142,14 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::OMIT
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
 
   def test_sequence_result_result_pass_when_skip_test_is_optional
     sequence_result = Inferno::Models::SequenceResult.new
-    sequence_result.test_results = [];
+    sequence_result.test_results = []
 
     test_result1 = Inferno::Models::TestResult.new
     test_result1.required = true
@@ -161,7 +161,7 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::SKIP
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
@@ -179,7 +179,7 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::SKIP
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::SKIP, sequence_result.result
   end
@@ -192,7 +192,7 @@ class SequenceResultTest < MiniTest::Test
     test_result1.result = Inferno::ResultStatuses::SKIP
     sequence_result.test_results << test_result1
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::SKIP, sequence_result.result
   end 
@@ -206,7 +206,7 @@ class SequenceResultTest < MiniTest::Test
     test_result1.result = Inferno::ResultStatuses::SKIP
     sequence_result.test_results << test_result1
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end 
@@ -229,7 +229,7 @@ class SequenceResultTest < MiniTest::Test
     test_result3.result = Inferno::ResultStatuses::FAIL
     sequence_result.test_results << test_result3
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::FAIL, sequence_result.result
   end
@@ -247,7 +247,7 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::FAIL
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
@@ -270,7 +270,7 @@ class SequenceResultTest < MiniTest::Test
     test_result3.result = Inferno::ResultStatuses::ERROR
     sequence_result.test_results << test_result3
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::ERROR, sequence_result.result
   end
@@ -288,7 +288,7 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::ERROR
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
@@ -306,7 +306,7 @@ class SequenceResultTest < MiniTest::Test
     test_result2.result = Inferno::ResultStatuses::ERROR
     sequence_result.test_results << test_result2
 
-    sequence_result.update_result_counts 
+    sequence_result.update_result_counts
 
     assert_equal Inferno::ResultStatuses::ERROR, sequence_result.result
   end
