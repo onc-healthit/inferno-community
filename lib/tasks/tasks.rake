@@ -122,12 +122,12 @@ def execute(instance, sequences)
           puts "      #{req}"
         end
         fails = true
-      end
       elsif result.omit?
         print '* omit'.light_black
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
       end
+    end
     print "\n" + sequence.sequence_name + ' Sequence Result: '
     if sequence_result.pass?
       puts 'pass '.green + checkmark.encode('utf-8').green

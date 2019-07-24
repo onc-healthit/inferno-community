@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative '../utils/result_statuses'
+require_relative '../utils/logging'
+
 
 module Inferno
   module Models
@@ -9,7 +11,7 @@ module Inferno
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :name, String
-      property :result, String
+      property :result, String, default: ResultStatuses::PASS
       property :test_case_id, String
       property :test_set_id, String
 
@@ -23,7 +25,6 @@ module Inferno
       property :skip_count, Integer, default: 0
       property :optional_passed, Integer, default: 0
       property :optional_total, Integer, default: 0
-
       property :required_omitted, Integer, default: 0      
       property :optional_omitted, Integer, default: 0
 
@@ -50,6 +51,7 @@ module Inferno
           'required_passed',
           'required_total',
           'error_count',
+          'todo_count',
           'skip_count',
           'optional_passed',
           'optional_total',
@@ -60,6 +62,10 @@ module Inferno
 
       def result_count
         test_results.length
+      end
+
+      def total_omitted
+        required_omitted + optional_omitted
       end
 
       def update_result_counts
@@ -95,9 +101,9 @@ module Inferno
             end
           when ResultStatuses::SKIP
             if result.required
-              self.skip_count += 1
               self.result = result.result if pass?
             end
+            self.skip_count += 1
           when ResultStatuses::WAIT
             self.result = result.result
           end

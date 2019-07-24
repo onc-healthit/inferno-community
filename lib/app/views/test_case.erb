@@ -76,8 +76,8 @@
                       <%= sequence_results[test_case.id].optional_passed%>/<%= sequence_results[test_case.id].optional_total%> Optional Tests Passed
                     <% end%>
 
-                    <% if sequence_results[test_case.id].required_omitted + sequence_results[test_case.id].optional_omitted > 0%> -
-                      <%= sequence_results[test_case.id].required_omitted + sequence_results[test_case.id].optional_omitted %> Tests Omitted
+                    <% if sequence_results[test_case.id].total_omitted > 0%> -
+                      <%= sequence_results[test_case.id].total_omitted %> Test <% if sequence_results[test_case.id].total_omitted != 1%>s<% end%> Omitted
                     <% end%>
                   <% end %>
                   -
