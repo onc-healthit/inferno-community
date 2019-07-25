@@ -112,8 +112,8 @@ def create_search_test(sequence, search_param)
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply))
+        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
+        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
       %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
