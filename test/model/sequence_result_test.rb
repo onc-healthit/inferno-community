@@ -292,7 +292,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
 
-  def test_sequence_result_error_when_pass__fail_and_error_tests_in_sequence
+  def test_sequence_result_error_when_pass_fail_and_error_tests_in_sequence
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result1 = Inferno::Models::TestResult.new
