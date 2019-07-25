@@ -110,7 +110,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal 1, sequence_result.optional_omitted
   end
 
-  def test_sequence_result_result_pass
+  def test_sequence_result_pass
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result1 = Inferno::Models::TestResult.new
@@ -128,7 +128,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
 
-  def test_sequence_result_result_pass_even_with_omit
+  def test_sequence_result_pass_even_with_omit
     sequence_result = Inferno::Models::SequenceResult.new
     sequence_result.test_results = []
 
@@ -147,7 +147,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
 
-  def test_sequence_result_result_pass_when_skip_test_is_optional
+  def test_sequence_result_pass_when_skip_test_is_optional
     sequence_result = Inferno::Models::SequenceResult.new
     sequence_result.test_results = []
 
@@ -166,7 +166,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal Inferno::ResultStatuses::PASS, sequence_result.result
   end
 
-  def test_sequence_result_result_skip_when_skip_test_is_required
+  def test_sequence_result_skip_when_skip_test_is_required
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result1 = Inferno::Models::TestResult.new
@@ -184,7 +184,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal Inferno::ResultStatuses::SKIP, sequence_result.result
   end
 
-  def test_sequence_result_result_required_skip_when_no_pass_tests
+  def test_sequence_result_required_skip_when_no_pass_tests
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result1 = Inferno::Models::TestResult.new
@@ -197,7 +197,7 @@ class SequenceResultTest < MiniTest::Test
     assert_equal Inferno::ResultStatuses::SKIP, sequence_result.result
   end
 
-  def test_sequence_result_result_optional_skip_when_no_pass_tests
+  def test_sequence_result_is_pass_when_only_1_optional_skip_test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result1 = Inferno::Models::TestResult.new
