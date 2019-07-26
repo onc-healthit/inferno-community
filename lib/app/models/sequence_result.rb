@@ -10,7 +10,7 @@ module Inferno
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :name, String
-      property :result, String, default: ResultStatuses::PASS
+      property :result, String
       property :test_case_id, String
       property :test_set_id, String
 
@@ -81,6 +81,7 @@ module Inferno
             else
               self.optional_passed += 1
             end
+            self.result = result.result unless error? || fail? || skip?
           when ResultStatuses::OMIT
             if result.required
               self.required_omitted += 1
@@ -100,13 +101,14 @@ module Inferno
             end
           when ResultStatuses::SKIP
             if result.required
-              self.result = result.result if pass?
+              self.result = result.result if pass? || self.result.nil?
               self.skip_count += 1
             end
           when ResultStatuses::WAIT
             self.result = result.result
           end
         end
+        self.result = ResultStatuses::PASS if self.result.nil?
       end
     end
   end
