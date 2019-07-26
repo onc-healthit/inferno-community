@@ -58,14 +58,14 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: false, result: Inferno::ResultStatuses::PASS},
-    	{required: true, result: Inferno::ResultStatuses::OMIT},
-    	{required: false, result: Inferno::ResultStatuses::OMIT},
-    	{required: true, result: Inferno::ResultStatuses::TODO},
-    	{required: true, result: Inferno::ResultStatuses::ERROR},
-    	{required: false, result: Inferno::ResultStatuses::SKIP},
-    	{required: false, result: Inferno::ResultStatuses::WAIT}
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: false, result: Inferno::ResultStatuses::PASS },
+      { required: true, result: Inferno::ResultStatuses::OMIT },
+      { required: false, result: Inferno::ResultStatuses::OMIT },
+      { required: true, result: Inferno::ResultStatuses::TODO },
+      { required: true, result: Inferno::ResultStatuses::ERROR },
+      { required: false, result: Inferno::ResultStatuses::SKIP },
+      { required: false, result: Inferno::ResultStatuses::WAIT }
     ]
 
     sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
@@ -87,10 +87,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: true, result: Inferno::ResultStatuses::TODO}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: true, result: Inferno::ResultStatuses::TODO }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -101,10 +101,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: true, result: Inferno::ResultStatuses::OMIT}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: true, result: Inferno::ResultStatuses::OMIT }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -115,10 +115,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: false, result: Inferno::ResultStatuses::SKIP}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: false, result: Inferno::ResultStatuses::SKIP }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -129,10 +129,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: true, result: Inferno::ResultStatuses::SKIP}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: true, result: Inferno::ResultStatuses::SKIP }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -143,9 +143,9 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::SKIP},
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::SKIP }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -156,9 +156,9 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: false, result: Inferno::ResultStatuses::SKIP},
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: false, result: Inferno::ResultStatuses::SKIP }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -169,11 +169,11 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: true, result: Inferno::ResultStatuses::SKIP},
-    	{required: true, result: Inferno::ResultStatuses::FAIL}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: true, result: Inferno::ResultStatuses::SKIP },
+      { required: true, result: Inferno::ResultStatuses::FAIL }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -184,10 +184,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: false, result: Inferno::ResultStatuses::FAIL}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: false, result: Inferno::ResultStatuses::FAIL }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -198,11 +198,11 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: true, result: Inferno::ResultStatuses::SKIP},
-    	{required: true, result: Inferno::ResultStatuses::ERROR}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: true, result: Inferno::ResultStatuses::SKIP },
+      { required: true, result: Inferno::ResultStatuses::ERROR }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -213,10 +213,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::PASS},
-    	{required: false, result: Inferno::ResultStatuses::ERROR}
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::PASS },
+      { required: false, result: Inferno::ResultStatuses::ERROR }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
@@ -227,10 +227,10 @@ class SequenceResultTest < MiniTest::Test
     sequence_result = Inferno::Models::SequenceResult.new
 
     test_result_params = [
-    	{required: true, result: Inferno::ResultStatuses::FAIL},
-    	{required: true, result: Inferno::ResultStatuses::ERROR},
-	]   
-	sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
+      { required: true, result: Inferno::ResultStatuses::FAIL },
+      { required: true, result: Inferno::ResultStatuses::ERROR }
+    ]
+    sequence_result.test_results = test_result_params.map { |params| Inferno::Models::TestResult.new(params) }
 
     sequence_result.update_result_counts
 
