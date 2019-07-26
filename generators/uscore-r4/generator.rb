@@ -80,7 +80,7 @@ def create_authorization_test(sequence)
   }
 
   first_search = sequence[:searches].select { |search_param| search_param[:expectation] == 'SHALL' }.first ||
-                 sequence[:searches].select { |search_param| search_param[:expectation] == 'SHOULD' }.first
+                 sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
   return if first_search.nil?
 
   authorization_test[:test_code] = %(
