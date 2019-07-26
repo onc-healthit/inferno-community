@@ -46,11 +46,6 @@ module Inferno
         ).find { |result| normalize_url(result.testing_instance.url) == normalize_url(iss) }
       end
 
-      # TODO: find this a home
-      def self.normalize_url(url)
-        url&.downcase&.split('://')&.last&.chomp('/')
-      end
-
       def failures
         test_results.select(&:fail?)
       end
@@ -105,6 +100,11 @@ module Inferno
           end
         end
       end
+
+      def self.normalize_url(url)
+        url&.downcase&.split('://')&.last&.chomp('/')
+      end
+      private_class_method :normalize_url
     end
   end
 end

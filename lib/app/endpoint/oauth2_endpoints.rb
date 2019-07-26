@@ -5,61 +5,63 @@ module Inferno
     module OAuth2Endpoints
       def self.included(klass)
         klass.class_eval do
-          # Resume oauth2 flow
-          # This must be early so it doesn't get picked up by the other routes
-          get '/oauth2/:key/:endpoint/?' do
-            if params[:endpoint] == 'redirect'
-              @instance = Inferno::Models::TestingInstance.first(state: params[:state])
-              if @instance.nil?
-                @instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
-                if @instance.nil?
-                  message = %(
-                             <p>
-                               Inferno has detected an issue with the SMART launch.
-                               No actively running launch sequences found with a state of #{params[:state]}.
-                               The authorization server is not returning the correct state variable and
-                               therefore Inferno cannot identify which server is currently under test.
-                               Please click your browser's "Back" button to return to Inferno,
-                               and click "Refresh" to ensure that the most recent test results are visible.
-                             </p>
-                             )
+          def running_test_found?
+            @instance.present? &&
+              @instance.client_endpoint_key == params[:key] &&
+              %w[launch redirect].include?(params[:endpoint])
+          end
 
-                  message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" if params[:error].present?
+          def instance_id_from_cookie
+            cookies[:instance_id_test_set]&.split('/')&.first
+          end
 
-                  message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" unless params[:error_description].nil?
+          get '/oauth2/:key/redirect/?' do
+            @instance = Inferno::Models::TestingInstance.first(state: params[:state])
+            pass if @instance.present?
 
-                  halt 500, message
-                elsif @instance&.waiting_on_sequence&.wait?
-                  @error_message = "State provided in redirect (#{params[:state]}) does not match expected state (#{@instance.state})."
-                else
-                  redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_state&state=#{params[:state]}"
-                end
-              end
+            @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
+            if @instance.nil?
+              message = %(
+                         <p>
+                           Inferno has detected an issue with the SMART launch.
+                           No actively running launch sequences found with a state of #{params[:state]}.
+                           The authorization server is not returning the correct state variable and
+                           therefore Inferno cannot identify which server is currently under test.
+                           Please click your browser's "Back" button to return to Inferno,
+                           and click "Refresh" to ensure that the most recent test results are visible.
+                         </p>
+                         )
+
+              message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" if params[:error].present?
+
+              message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" if params[:error_description].present?
+
+              halt 500, message
+            elsif @instance&.waiting_on_sequence&.wait?
+              @error_message = "State provided in redirect (#{params[:state]}) does not match expected state (#{@instance.state})."
+            else
+              redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_state&state=#{params[:state]}"
             end
-            pass
           end
 
           get '/oauth2/:key/launch/?' do
             @instance = Inferno::Models::SequenceResult.recent_results_for_iss(params[:iss]).testing_instance
+            pass if @instance.present?
+
+            @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
             if @instance.nil?
-              @instance = Inferno::Models::TestingInstance.get(cookies[:instance_id_test_set]&.split('/')&.first)
-              if @instance.nil?
-                message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
-                          'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
-                halt 500, message
-              elsif @instance.waiting_on_sequence&.wait?
-                @error_message = 'No iss for redirect'
-              else
-                redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"
-              end
+              message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
+                        'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
+              halt 500, message
+            elsif @instance.waiting_on_sequence&.wait?
+              @error_message = 'No iss for redirect'
+            else
+              redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"
             end
-            pass
           end
 
           get '/oauth2/:key/:endpoint/?' do
-            halt 500, 'Error: Could not find a running test that match this set of criteria' unless !@instance.nil? &&
-                                                                                                    @instance.client_endpoint_key == params[:key] &&
-                                                                                                    %w[launch redirect].include?(params[:endpoint])
+            halt 500, 'Error: Could not find a running test that match this set of criteria' unless running_test_found?
 
             sequence_result = @instance.waiting_on_sequence
             if sequence_result&.wait?
