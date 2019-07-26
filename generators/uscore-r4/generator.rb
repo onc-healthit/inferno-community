@@ -79,7 +79,7 @@ def create_authorization_test(sequence)
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
 
-  first_search = sequence[:searches].select { |search_param| search_param[:expectation] == 'SHALL' }.first ||
+  first_search = sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
                  sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
   return if first_search.nil?
 
