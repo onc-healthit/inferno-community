@@ -64,7 +64,7 @@ class SequenceResultTest < MiniTest::Test
       { required: false, result: Inferno::ResultStatuses::OMIT },
       { required: true, result: Inferno::ResultStatuses::TODO },
       { required: true, result: Inferno::ResultStatuses::ERROR },
-      { required: false, result: Inferno::ResultStatuses::SKIP },
+      { required: true, result: Inferno::ResultStatuses::SKIP },
       { required: false, result: Inferno::ResultStatuses::WAIT }
     ]
 
@@ -73,12 +73,12 @@ class SequenceResultTest < MiniTest::Test
     sequence_result.update_result_counts
 
     assert_equal 1, sequence_result.required_passed
-    assert_equal 4, sequence_result.required_total
+    assert_equal 5, sequence_result.required_total
     assert_equal 1, sequence_result.error_count
     assert_equal 1, sequence_result.todo_count
     assert_equal 1, sequence_result.skip_count
     assert_equal 1, sequence_result.optional_passed
-    assert_equal 4, sequence_result.optional_total
+    assert_equal 3, sequence_result.optional_total
     assert_equal 1, sequence_result.required_omitted
     assert_equal 1, sequence_result.optional_omitted
   end
