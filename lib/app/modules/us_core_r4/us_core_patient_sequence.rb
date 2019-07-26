@@ -18,31 +18,42 @@ module Inferno
         case property
 
         when '_id'
-          assert resource&.id == value, '_id on resource did not match _id requested'
+          value_found = can_resolve_path(resource, 'id') { |value_in_resource| value_in_resource == value }
+          assert value_found, '_id on resource does not match _id requested'
 
         when 'birthdate'
+          value_found = can_resolve_path(resource, 'birthDate') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'birthdate on resource does not match birthdate requested'
 
         when 'family'
-          assert resource&.name&.family == value, 'family on resource did not match family requested'
+          value_found = can_resolve_path(resource, 'name.family') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'family on resource does not match family requested'
 
         when 'gender'
-          assert resource&.gender == value, 'gender on resource did not match gender requested'
+          value_found = can_resolve_path(resource, 'gender') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'gender on resource does not match gender requested'
 
         when 'given'
-          assert resource&.name&.given == value, 'given on resource did not match given requested'
+          value_found = can_resolve_path(resource, 'name.given') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'given on resource does not match given requested'
 
         when 'identifier'
-          assert resource&.identifier&.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          value_found = can_resolve_path(resource, 'identifier.value') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'identifier on resource does not match identifier requested'
 
         when 'name'
-          found = resource&.name&.any? do |name|
-            name.text&.include?(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
+          value = value.downcase
+          value_found = can_resolve_path(resource, 'name') do |name|
+            name&.text&.start_with?(value) ||
+              name&.family&.downcase&.include?(value) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
-          assert found, 'name on resource does not match name requested'
+          assert value_found, 'name on resource does not match name requested'
+
         end
       end
 
@@ -110,10 +121,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        identifier_val = @patient&.identifier&.first&.value
+        identifier_val = resolve_element_from_path(@patient, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -129,10 +142,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        name_val = @patient&.name&.first&.family
+        name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -148,11 +163,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = @patient&.birthDate
-        name_val = @patient&.name&.first&.family
+        birthdate_val = resolve_element_from_path(@patient, 'birthDate')
+        name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'birthdate': birthdate_val, 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -168,11 +185,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        gender_val = @patient&.gender
-        name_val = @patient&.name&.first&.family
+        gender_val = resolve_element_from_path(@patient, 'gender')
+        name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'gender': gender_val, 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -188,11 +207,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        family_val = @patient&.name&.first&.family
-        gender_val = @patient&.gender
+        family_val = resolve_element_from_path(@patient, 'name.family')
+        gender_val = resolve_element_from_path(@patient, 'gender')
         search_params = { 'family': family_val, 'gender': gender_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -208,11 +229,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = @patient&.birthDate
-        family_val = @patient&.name&.first&.family
+        birthdate_val = resolve_element_from_path(@patient, 'birthDate')
+        family_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'birthdate': birthdate_val, 'family': family_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 

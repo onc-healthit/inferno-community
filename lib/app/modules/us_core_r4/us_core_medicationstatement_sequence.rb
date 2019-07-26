@@ -18,12 +18,18 @@ module Inferno
         case property
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'effective'
+          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'effective on resource does not match effective requested'
 
         end
       end
@@ -65,6 +71,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
         assert_response_ok(reply)
@@ -94,11 +101,21 @@ module Inferno
         assert !@medicationstatement.nil?, 'Expected valid MedicationStatement resource to be present'
 
         patient_val = @instance.patient_id
-        effective_val = @medicationstatement&.effectiveDateTime
+        effective_val = resolve_element_from_path(@medicationstatement, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'effective': effective_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, effective_val)
+          comparator_search_params = { 'patient': patient_val, 'effective': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('MedicationStatement'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from MedicationStatement search by patient+status' do
@@ -114,10 +131,12 @@ module Inferno
         assert !@medicationstatement.nil?, 'Expected valid MedicationStatement resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @medicationstatement&.status
+        status_val = resolve_element_from_path(@medicationstatement, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationStatement'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -195,7 +214,7 @@ module Inferno
           'MedicationStatement.medicationCodeableConcept',
           'MedicationStatement.medicationReference',
           'MedicationStatement.subject',
-          'MedicationStatement.effectivedateTime',
+          'MedicationStatement.effectiveDateTime',
           'MedicationStatement.effectivePeriod',
           'MedicationStatement.dateAsserted',
           'MedicationStatement.derivedFrom'

@@ -18,22 +18,26 @@ module Inferno
         case property
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'category'
-          codings = resource&.category&.coding
-          assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
+          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'category on resource does not match category requested'
 
         when 'code'
-          codings = resource&.code&.coding
-          assert !codings.nil?, 'code on resource did not match code requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'code on resource did not match code requested'
+          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'code on resource does not match code requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         end
       end
@@ -103,10 +107,12 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = @diagnosticreport&.code&.coding&.first&.code
+        code_val = resolve_element_from_path(@diagnosticreport, 'code.coding.code')
         search_params = { 'patient': patient_val, 'code': code_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -123,12 +129,22 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @diagnosticreport&.category&.coding&.first&.code
-        date_val = @diagnosticreport&.effectiveDateTime
+        category_val = resolve_element_from_path(@diagnosticreport, 'category.coding.code')
+        date_val = resolve_element_from_path(@diagnosticreport, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
@@ -144,12 +160,22 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = @diagnosticreport&.code&.coding&.first&.code
-        date_val = @diagnosticreport&.effectiveDateTime
+        code_val = resolve_element_from_path(@diagnosticreport, 'code.coding.code')
+        date_val = resolve_element_from_path(@diagnosticreport, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+status' do
@@ -165,10 +191,12 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @diagnosticreport&.status
+        status_val = resolve_element_from_path(@diagnosticreport, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -187,6 +215,7 @@ module Inferno
         search_params = { patient: @instance.patient_id, category: 'LAB' }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -203,12 +232,22 @@ module Inferno
         assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @diagnosticreport&.category&.coding&.first&.code
-        date_val = @diagnosticreport&.effectiveDateTime
+        category_val = resolve_element_from_path(@diagnosticreport, 'category.coding.code')
+        date_val = resolve_element_from_path(@diagnosticreport, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'DiagnosticReport create resource supported' do
@@ -300,7 +339,7 @@ module Inferno
           'DiagnosticReport.category',
           'DiagnosticReport.code',
           'DiagnosticReport.subject',
-          'DiagnosticReport.effectivedateTime',
+          'DiagnosticReport.effectiveDateTime',
           'DiagnosticReport.effectivePeriod',
           'DiagnosticReport.issued',
           'DiagnosticReport.performer',

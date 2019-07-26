@@ -18,26 +18,34 @@ module Inferno
         case property
 
         when '_id'
-          assert resource&.id == value, '_id on resource did not match _id requested'
+          value_found = can_resolve_path(resource, 'id') { |value_in_resource| value_in_resource == value }
+          assert value_found, '_id on resource does not match _id requested'
 
         when 'class'
-          assert resource&.local_class&.code == value, 'class on resource did not match class requested'
+          value_found = can_resolve_path(resource, 'local_class.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'class on resource does not match class requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'period') do |period|
+            validate_period_search(value, period)
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         when 'identifier'
-          assert resource&.identifier&.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          value_found = can_resolve_path(resource, 'identifier.value') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'identifier on resource does not match identifier requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'type'
-          codings = resource&.type&.first&.coding
-          assert !codings.nil?, 'type on resource did not match type requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'type on resource did not match type requested'
+          value_found = can_resolve_path(resource, 'type.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'type on resource does not match type requested'
 
         end
       end
@@ -79,6 +87,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
@@ -107,10 +116,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        id_val = @encounter&.id
+        id_val = resolve_element_from_path(@encounter, 'id')
         search_params = { '_id': id_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -126,12 +137,22 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        date_val = @encounter&.period&.start
+        date_val = resolve_element_from_path(@encounter, 'period.start')
         patient_val = @instance.patient_id
         search_params = { 'date': date_val, 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'date': comparator_val, 'patient': patient_val }
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Encounter search by identifier' do
@@ -146,10 +167,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        identifier_val = @encounter&.identifier&.first&.value
+        identifier_val = resolve_element_from_path(@encounter, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -166,10 +189,12 @@ module Inferno
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @encounter&.status
+        status_val = resolve_element_from_path(@encounter, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -185,11 +210,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        class_val = @encounter&.local_class&.code
+        class_val = resolve_element_from_path(@encounter, 'class.code')
         patient_val = @instance.patient_id
         search_params = { 'class': class_val, 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -206,10 +233,12 @@ module Inferno
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = @encounter&.type&.first&.coding&.first&.code
+        type_val = resolve_element_from_path(@encounter, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
       end
 
