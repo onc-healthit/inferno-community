@@ -29,6 +29,9 @@ module Inferno
           'periodEnd': @instance.period_end
         }.freeze
 
+        # TODO: The way we handle expected results are going to change in the future
+        # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
+        # For now, we are going to keep if with these individual canned expected results
         EXPECTED_RESULTS = {
           'initial-population': 1,
           'numerator': 1,
