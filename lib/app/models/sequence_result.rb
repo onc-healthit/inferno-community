@@ -101,8 +101,8 @@ module Inferno
           when ResultStatuses::SKIP
             if result.required
               self.result = result.result if pass?
+              self.skip_count += 1
             end
-            self.skip_count += 1
           when ResultStatuses::WAIT
             self.result = result.result
           end
