@@ -34,7 +34,7 @@ class MetadataExtractor
   def build_new_sequence(resource, profile)
     base_name = profile.split('StructureDefinition/')[1]
     profile_json = get_json_from_uri(profile_uri(base_name))
-    profile_title = profile_json['title'].gsub('US ', '').gsub('Core ', '').gsub('Profile', '').strip
+    profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
     {
       name: base_name.tr('-', '_'),
       classname: base_name

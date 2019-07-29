@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4DiagnosticreportLabSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'DiagnosticReport  for Laboratory Results Reporting Tests'
+      title 'DiagnosticReport for Laboratory Results Reporting Tests'
 
       description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
