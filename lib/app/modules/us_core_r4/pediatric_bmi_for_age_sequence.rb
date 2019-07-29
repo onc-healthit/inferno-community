@@ -5,7 +5,7 @@ module Inferno
     class PediatricBmiForAgeSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'PediatricBmiForAge Tests'
+      title 'Pediatric BMI for Age Observation Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

@@ -2,7 +2,6 @@
 
 class MetadataExtractor
   CAPABILITY_STATEMENT_URI = 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.json'
-  OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
   def profile_uri(profile)
     "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{profile}.json"
@@ -34,6 +33,8 @@ class MetadataExtractor
 
   def build_new_sequence(resource, profile)
     base_name = profile.split('StructureDefinition/')[1]
+    profile_json = get_json_from_uri(profile_uri(base_name))
+    profile_title = profile_json['title'].gsub('US ', '').gsub('Core ', '').gsub('Profile', '').strip
     {
       name: base_name.tr('-', '_'),
       classname: base_name
@@ -42,7 +43,8 @@ class MetadataExtractor
         .join
         .gsub('UsCore', 'UsCoreR4') + 'Sequence',
       resource: resource['type'],
-      profile: profile_uri(base_name), # link in capability statement is incorrect
+      profile: profile_uri(base_name), # link in capability statement is incorrect,
+      title: profile_title,
       interactions: [],
       searches: [],
       search_param_descriptions: {},

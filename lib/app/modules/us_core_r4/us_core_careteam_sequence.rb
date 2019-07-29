@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4CareteamSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Careteam Tests'
+      title 'CareTeam Tests'
 
       description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

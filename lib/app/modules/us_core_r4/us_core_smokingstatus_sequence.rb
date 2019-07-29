@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4SmokingstatusSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Smokingstatus Tests'
+      title 'Smoking Status Observation Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

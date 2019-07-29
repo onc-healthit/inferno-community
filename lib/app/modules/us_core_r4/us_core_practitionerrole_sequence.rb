@@ -5,7 +5,7 @@ module Inferno
     class UsCoreR4PractitionerroleSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Practitionerrole Tests'
+      title 'PractitionerRole Tests'
 
       description 'Verify that PractitionerRole resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
