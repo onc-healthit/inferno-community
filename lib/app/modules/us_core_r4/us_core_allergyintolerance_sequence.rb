@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4AllergyintoleranceSequence < SequenceBase
+    class USCoreR4AllergyintoleranceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'AllergyIntolerance Tests'

@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4DiagnosticreportNoteSequence < SequenceBase
+    class USCoreR4DiagnosticreportNoteSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'DiagnosticReport for Report and Note exchange Tests'

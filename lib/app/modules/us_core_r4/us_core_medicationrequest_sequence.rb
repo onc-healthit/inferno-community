@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4MedicationrequestSequence < SequenceBase
+    class USCoreR4MedicationrequestSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'MedicationRequest Tests'

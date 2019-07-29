@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4ObservationLabSequence < SequenceBase
+    class USCoreR4ObservationLabSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Laboratory Result Observation Tests'

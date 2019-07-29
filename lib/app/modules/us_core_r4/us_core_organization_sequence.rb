@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4OrganizationSequence < SequenceBase
+    class USCoreR4OrganizationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Organization Tests'

@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4ProcedureSequence < SequenceBase
+    class USCoreR4ProcedureSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Procedure Tests'

@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4ConditionSequence < SequenceBase
+    class USCoreR4ConditionSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Condition Tests'

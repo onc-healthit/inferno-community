@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4DocumentreferenceSequence < SequenceBase
+    class USCoreR4DocumentreferenceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'DocumentReference Tests'

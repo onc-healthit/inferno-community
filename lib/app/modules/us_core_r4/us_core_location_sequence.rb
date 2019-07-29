@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4LocationSequence < SequenceBase
+    class USCoreR4LocationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Location Tests'

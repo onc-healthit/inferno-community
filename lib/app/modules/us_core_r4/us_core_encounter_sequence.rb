@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4EncounterSequence < SequenceBase
+    class USCoreR4EncounterSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Encounter Tests'

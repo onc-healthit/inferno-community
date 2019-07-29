@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4SmokingstatusSequence < SequenceBase
+    class USCoreR4SmokingstatusSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Smoking Status Observation Tests'

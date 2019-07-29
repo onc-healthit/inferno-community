@@ -41,7 +41,7 @@ class MetadataExtractor
         .split('-')
         .map(&:capitalize)
         .join
-        .gsub('UsCore', 'UsCoreR4') + 'Sequence',
+        .gsub('UsCore', 'USCoreR4') + 'Sequence',
       resource: resource['type'],
       profile: profile_uri(base_name), # link in capability statement is incorrect,
       title: profile_title,

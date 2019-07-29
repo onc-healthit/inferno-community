@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4CareplanSequence < SequenceBase
+    class USCoreR4CareplanSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'CarePlan Tests'
