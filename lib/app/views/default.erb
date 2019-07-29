@@ -228,6 +228,27 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :measure_id,
+              label: 'Measure ID',
+              instance: instance,
+              value: instance.measure_id,
+              required: true
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :period_start,
+              label: 'Period Start',
+              instance: instance,
+              value: instance.period_start,
+              required: true
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :period_end,
+              label: 'Period End',
+              instance: instance,
+              value: instance.period_end,
+              required: true
+              })%>
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
