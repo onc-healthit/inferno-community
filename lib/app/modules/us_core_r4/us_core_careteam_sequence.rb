@@ -76,8 +76,8 @@ module Inferno
 
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @careteam_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
       test 'CareTeam read resource supported' do

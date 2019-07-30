@@ -100,8 +100,8 @@ module Inferno
 
         @encounter = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @encounter_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Encounter'), reply)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
       end
 
       test 'Server returns expected results from Encounter search by _id' do

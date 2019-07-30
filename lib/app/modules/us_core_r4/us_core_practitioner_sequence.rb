@@ -85,8 +85,8 @@ module Inferno
 
         @practitioner = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @practitioner_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
+        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
 
       test 'Server returns expected results from Practitioner search by identifier' do

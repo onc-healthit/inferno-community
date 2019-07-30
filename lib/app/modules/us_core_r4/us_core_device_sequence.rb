@@ -78,8 +78,8 @@ module Inferno
 
         @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @device_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
+        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
 
       test 'Server returns expected results from Device search by patient+type' do

@@ -82,8 +82,8 @@ module Inferno
 
         @medicationrequest = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @medicationrequest_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
+        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
       end
 
       test 'Server returns expected results from MedicationRequest search by patient+status' do
