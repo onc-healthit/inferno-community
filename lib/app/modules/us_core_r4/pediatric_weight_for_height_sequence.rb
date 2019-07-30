@@ -5,7 +5,7 @@ module Inferno
     class PediatricWeightForHeightSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'PediatricWeightForHeight Tests'
+      title 'Pediatric Weight for Height Observation Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

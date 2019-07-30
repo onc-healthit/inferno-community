@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4GoalSequence < SequenceBase
+    class USCoreR4GoalSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Goal Tests'

@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4PractitionerSequence < SequenceBase
+    class USCoreR4PractitionerSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Practitioner Tests'

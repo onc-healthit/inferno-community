@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4AllergyintoleranceSequence < SequenceBase
+    class USCoreR4AllergyintoleranceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Allergyintolerance Tests'
+      title 'AllergyIntolerance Tests'
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

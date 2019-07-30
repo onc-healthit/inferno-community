@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4DocumentreferenceSequence < SequenceBase
+    class USCoreR4DocumentreferenceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Documentreference Tests'
+      title 'DocumentReference Tests'
 
       description 'Verify that DocumentReference resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

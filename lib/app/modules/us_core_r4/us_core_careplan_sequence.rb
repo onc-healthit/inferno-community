@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4CareplanSequence < SequenceBase
+    class USCoreR4CareplanSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Careplan Tests'
+      title 'CarePlan Tests'
 
       description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

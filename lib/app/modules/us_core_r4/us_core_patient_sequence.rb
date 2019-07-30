@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4PatientSequence < SequenceBase
+    class USCoreR4PatientSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Patient Tests'

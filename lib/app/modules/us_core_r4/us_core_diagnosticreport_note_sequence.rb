@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4DiagnosticreportNoteSequence < SequenceBase
+    class USCoreR4DiagnosticreportNoteSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'DiagnosticreportNote Tests'
+      title 'DiagnosticReport for Report and Note exchange Tests'
 
       description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

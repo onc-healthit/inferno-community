@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4ImmunizationSequence < SequenceBase
+    class USCoreR4ImmunizationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Immunization Tests'

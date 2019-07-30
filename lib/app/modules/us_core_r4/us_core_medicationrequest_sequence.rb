@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4MedicationrequestSequence < SequenceBase
+    class USCoreR4MedicationrequestSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Medicationrequest Tests'
+      title 'MedicationRequest Tests'
 
       description 'Verify that MedicationRequest resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 

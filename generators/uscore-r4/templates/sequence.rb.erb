@@ -5,7 +5,7 @@ module Inferno
     class <%=classname%> < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title '<%= classname.gsub('UsCoreR4','').gsub('Sequence','') %> Tests'
+      title '<%=title%> Tests'
 
       description 'Verify that <%=resource%> resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -17,7 +17,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [<%= classname.gsub('UsCoreR4','').gsub('Sequence','') %> Argonaut Profile](<%=profile.gsub('.json','')%>)
+        returned will be checked for consistency against the [<%= classname.gsub('USCoreR4','').gsub('Sequence','') %> Argonaut Profile](<%=profile.gsub('.json','')%>)
 
       )
 

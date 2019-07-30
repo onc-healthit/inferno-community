@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4DeviceSequence < SequenceBase
+    class USCoreR4DeviceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Device Tests'

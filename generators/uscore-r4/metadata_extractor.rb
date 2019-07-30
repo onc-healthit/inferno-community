@@ -33,15 +33,18 @@ class MetadataExtractor
 
   def build_new_sequence(resource, profile)
     base_name = profile.split('StructureDefinition/')[1]
+    profile_json = get_json_from_uri(profile_uri(base_name))
+    profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
     {
       name: base_name.tr('-', '_'),
       classname: base_name
         .split('-')
         .map(&:capitalize)
         .join
-        .gsub('UsCore', 'UsCoreR4') + 'Sequence',
+        .gsub('UsCore', 'USCoreR4') + 'Sequence',
       resource: resource['type'],
-      profile: profile_uri(base_name), # link in capability statement is incorrect
+      profile: profile_uri(base_name), # link in capability statement is incorrect,
+      title: profile_title,
       interactions: [],
       searches: [],
       search_param_descriptions: {},
