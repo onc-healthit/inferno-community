@@ -163,6 +163,7 @@ module Inferno
         resources = ['Patient',
                      'AllergyIntolerance',
                      'CarePlan',
+                     'CareTeam',
                      'Condition',
                      'Device',
                      'DiagnosticReport',
@@ -171,14 +172,19 @@ module Inferno
                      'ExplanationOfBenefit',
                      'Goal',
                      'Immunization',
+                     'Location',
                      'Medication',
                      'MedicationDispense',
                      'MedicationStatement',
+                     'MedicationRequest',
                      'MedicationOrder',
                      'Observation',
+                     'Organization',
                      'Procedure',
                      'DocumentReference',
-                     'Provenance']
+                     'Provenance',
+                     'Practitioner',
+                     'PractitionerRole']
 
         supported_resource_capabilities =
           conformance
