@@ -56,7 +56,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Practitioner'), patient: @instance.patient_id)
+        name_val = @practitioner&.name&.first&.family
+        search_params = { 'name': name_val }
+
+        reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end

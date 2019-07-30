@@ -23,26 +23,9 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects Medication search without authorization' do
-        metadata do
-          id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
-
-        reply = get_resource_by_params(versioned_resource_class('Medication'), patient: @instance.patient_id)
-        @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
-      end
-
       test 'Medication read resource supported' do
         metadata do
-          id '02'
+          id '01'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -57,7 +40,7 @@ module Inferno
 
       test 'Medication vread resource supported' do
         metadata do
-          id '03'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -72,7 +55,7 @@ module Inferno
 
       test 'Medication history resource supported' do
         metadata do
-          id '04'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -87,7 +70,7 @@ module Inferno
 
       test 'Medication resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '05'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication.json'
           desc %(
           )
@@ -100,7 +83,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Medication for this patient.' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -127,7 +110,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '07'
+          id '06'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )
