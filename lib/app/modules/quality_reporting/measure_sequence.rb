@@ -13,7 +13,11 @@ module Inferno
 
       requires :url, :measure_id, :period_start, :period_end, :patient_id
 
-      description 'Tests measure operations for a given FHIR Measure'
+      description 'Tests measure operations for a given FHIR Measure. <br/>'\
+                  'Please import the following resources into your FHIR system in the order shown prior to running the test: <br/>'\
+                  '<a href="/inferno/resources/quality_reporting/Patient/test-Patient-410.json">Patient</a>, '\
+                  '<a href="/inferno/resources/quality_reporting/Library/library-col-logic.json">Library</a>, '\
+                  '<a href="/inferno/resources/quality_reporting/Measure/measure-col.json">Measure</a>'
 
       test 'Evaluate Measure' do
         metadata do

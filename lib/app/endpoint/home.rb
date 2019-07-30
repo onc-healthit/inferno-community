@@ -15,6 +15,13 @@ module Inferno
           render_index
         end
 
+        # Make test FHIR resources available for download
+        get '/resources/*' do
+          file_path = params['splat'].first
+          file_name = File.basename(file_path)
+          send_file "./resources/#{file_path}", :filename => file_name, :type => 'Application/octet-stream'
+        end
+
         # Returns the static files associated with web app
         get '/static/*' do
           call! env.merge('PATH_INFO' => '/' + params['splat'].first)
