@@ -21,3 +21,25 @@ Metrics/LineLength:
   Exclude:
     - 'lib/app/modules/**/*'
     - 'lib/app/helpers/browser_logic.rb'
+
+# Use code climate's metrics measurement rather than rubocop's
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false

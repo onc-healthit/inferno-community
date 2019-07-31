@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4GoalSequence < SequenceBase
+    class USCoreR4GoalSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Goal Tests'
@@ -18,12 +18,18 @@ module Inferno
         case property
 
         when 'lifecycle-status'
-          assert resource&.lifecycleStatus == value, 'lifecycle-status on resource did not match lifecycle-status requested'
+          value_found = can_resolve_path(resource, 'lifecycleStatus') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'lifecycle-status on resource does not match lifecycle-status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'target-date'
+          value_found = can_resolve_path(resource, 'target.dueDate') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'target-date on resource does not match target-date requested'
 
         end
       end
@@ -49,7 +55,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), patient: @instance.patient_id)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+
+        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -65,19 +74,21 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @goal = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+        @goal_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
       end
 
       test 'Server returns expected results from Goal search by patient+target-date' do
@@ -93,11 +104,21 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        target_date_val = @goal&.target&.first&.dueDate
+        target_date_val = resolve_element_from_path(@goal, 'target.dueDate')
         search_params = { 'patient': patient_val, 'target-date': target_date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, target_date_val)
+          comparator_search_params = { 'patient': patient_val, 'target-date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Goal search by patient+lifecycle-status' do
@@ -113,10 +134,12 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        lifecycle_status_val = @goal&.lifecycleStatus
+        lifecycle_status_val = resolve_element_from_path(@goal, 'lifecycleStatus')
         search_params = { 'patient': patient_val, 'lifecycle-status': lifecycle_status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -165,7 +188,7 @@ module Inferno
         validate_history_reply(@goal, versioned_resource_class('Goal'))
       end
 
-      test 'Goal resources associated with Patient conform to Argonaut profiles' do
+      test 'Goal resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-goal.json'
@@ -178,9 +201,41 @@ module Inferno
         test_resources_against_profile('Goal')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any Goal for this patient.' do
         metadata do
           id '09'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @goal_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'Goal.lifecycleStatus',
+          'Goal.description',
+          'Goal.subject',
+          'Goal.target',
+          'Goal.target.dueDate',
+          'Goal.target.dueDuration'
+        ]
+        must_support_elements.each do |path|
+          @goal_ary&.each do |resource|
+            truncated_path = path.gsub('Goal.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @goal_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Goal resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

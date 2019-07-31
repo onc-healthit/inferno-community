@@ -309,7 +309,7 @@
           <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
           <div class="modal-footer">
             <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
-            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/test_sets/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
           </div>
         </div>
       </div>
@@ -434,7 +434,7 @@
             <tr><td><span class="oi oi-arrow-thick-left" style='color:#336699' aria-hidden="true"></span></td> <td><strong>Incoming HTTP(S)</strong></td> <td>This test contains incoming HTTP(S) requests</td></tr>
           </tbody>
         </table>
-        <p>For more information, see the <a href='https://github.com/siteadmin/inferno#inferno' target="_blank">Inferno README</a> and the <a href='https://github.com/siteadmin/inferno/wiki' target='_blank'>Inferno wiki</a>.</p>
+        <p>For more information, see the <a href='https://github.com/onc-healthit/inferno#inferno' target="_blank">Inferno README</a> and the <a href='https://github.com/onc-healthit/inferno/wiki' target='_blank'>Inferno wiki</a>.</p>
       </div>
     </div>
   </div>

@@ -20,20 +20,24 @@ module Inferno
       Inferno::EXTRAS = settings.include_extras
 
       if settings.logging_enabled
-        Inferno.logger = if settings.log_to_file
-                           ::Logger.new('logs.log', level: settings.log_level.to_sym, progname: 'Inferno')
-                         else
-                           l = ::Logger.new(STDOUT, level: settings.log_level.to_sym, progname: 'Inferno')
-                           l.formatter = proc do |severity, _datetime, progname, msg|
-                             "#{severity} | #{progname} | #{msg}\n"
-                           end
-                           l
-                         end
+        Inferno.logger =
+          if ENV['RACK_ENV'] == 'test'
+            FileUtils.mkdir_p 'tmp'
+            ::Logger.new(File.join('tmp', 'test.log'), level: settings.log_level.to_sym, progname: 'Inferno')
+          elsif settings.log_to_file
+            ::Logger.new('logs.log', level: settings.log_level.to_sym, progname: 'Inferno')
+          else
+            l = ::Logger.new(STDOUT, level: settings.log_level.to_sym, progname: 'Inferno')
+            l.formatter = proc do |severity, _datetime, progname, msg|
+              "#{severity} | #{progname} | #{msg}\n"
+            end
+            l
+          end
 
         # FIXME: Really don't want a direct dependency to DataMapper here
         DataMapper.logger = Inferno.logger if Inferno::ENVIRONMENT == :development
 
-        FHIR.logger = Inferno.logger
+        FHIR.logger = FHIR::STU3.logger = FHIR::DSTU2.logger = Inferno.logger
 
         Inferno.logger.info "Environment: #{Inferno::ENVIRONMENT}"
 

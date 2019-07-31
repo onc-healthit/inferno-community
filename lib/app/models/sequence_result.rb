@@ -52,6 +52,46 @@ module Inferno
           'optional_total'
         ].each { |field| send("#{field}=", 0) }
       end
+
+      def result_count
+        test_results.length
+      end
+
+      def update_result_counts
+        test_results.each do |result|
+          if result.required
+            self.required_total += 1
+          else
+            self.optional_total += 1
+          end
+          case result.result
+          when ResultStatuses::PASS
+            if result.required
+              self.required_passed += 1
+            else
+              self.optional_passed += 1
+            end
+          when ResultStatuses::TODO
+            self.todo_count += 1
+          when ResultStatuses::FAIL
+            if result.required
+              self.result = result.result unless error?
+            end
+          when ResultStatuses::ERROR
+            if result.required
+              self.error_count += 1
+              self.result = result.result
+            end
+          when ResultStatuses::SKIP
+            if result.required
+              self.skip_count += 1
+              self.result = result.result if pass?
+            end
+          when ResultStatuses::WAIT
+            self.result = result.result
+          end
+        end
+      end
     end
   end
 end

@@ -22,6 +22,7 @@ class SupportedResourceTest < MiniTest::Test
             %i[read vread search history authorized]
       }
     }
+
     resource2 = resource1.deep_dup
     resource2[:attributes][:supported] = false
     resource2[:description] = 'not supported, but supports all operations'
@@ -32,9 +33,13 @@ class SupportedResourceTest < MiniTest::Test
     resource3[:description] = 'supported and supports all operations except vread'
     resource3[:expected_respones][:validate_supported_interactions] = %i[read search history authorized]
 
-    @test_cases = [resource1, resource2, resource3]
+    @supported_test_cases = [resource1, resource3]
+    @supported_test_cases.each do |test_case|
+      test_case[:instance] = Inferno::Models::SupportedResource.create(test_case[:attributes])
+    end
 
-    @test_cases.each do |test_case|
+    @unsupported_test_cases = [resource2]
+    @unsupported_test_cases.each do |test_case|
       test_case[:instance] = Inferno::Models::SupportedResource.create(test_case[:attributes])
     end
   end
@@ -43,10 +48,22 @@ class SupportedResourceTest < MiniTest::Test
     assert_equal expected_response, resource_to_test.supported_interactions
   end
 
-  def test_all_pass
-    @test_cases.each do |test_case|
+  def validate_unsupported_interactions(resource_to_test, expected_response)
+    assert_nil expected_response
+    assert_nil resource_to_test.supported_interactions
+  end
+
+  def test_supported_interactions_all_pass
+    @supported_test_cases.each do |test_case|
       validate_supported_interactions(test_case[:instance],
                                       test_case[:expected_respones][:validate_supported_interactions])
+    end
+  end
+
+  def test_unsupported_interactions_all_pass
+    @unsupported_test_cases.each do |test_case|
+      validate_unsupported_interactions(test_case[:instance],
+                                        test_case[:expected_respones][:validate_supported_interactions])
     end
   end
 end

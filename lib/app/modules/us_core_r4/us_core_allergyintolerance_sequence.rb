@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4AllergyintoleranceSequence < SequenceBase
+    class USCoreR4AllergyintoleranceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Allergyintolerance Tests'
+      title 'AllergyIntolerance Tests'
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,12 +18,12 @@ module Inferno
         case property
 
         when 'clinical-status'
-          codings = resource&.clinicalStatus&.coding
-          assert !codings.nil?, 'clinical-status on resource did not match clinical-status requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'clinical-status on resource did not match clinical-status requested'
+          value_found = can_resolve_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         end
       end
@@ -49,7 +49,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), patient: @instance.patient_id)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+
+        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -65,19 +68,21 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        @allergyintolerance_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
       end
 
       test 'Server returns expected results from AllergyIntolerance search by patient+clinical-status' do
@@ -93,10 +98,12 @@ module Inferno
         assert !@allergyintolerance.nil?, 'Expected valid AllergyIntolerance resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = @allergyintolerance&.clinicalStatus&.coding&.first&.code
+        clinical_status_val = resolve_element_from_path(@allergyintolerance, 'clinicalStatus.coding.code')
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -145,7 +152,7 @@ module Inferno
         validate_history_reply(@allergyintolerance, versioned_resource_class('AllergyIntolerance'))
       end
 
-      test 'AllergyIntolerance resources associated with Patient conform to Argonaut profiles' do
+      test 'AllergyIntolerance resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance.json'
@@ -158,9 +165,39 @@ module Inferno
         test_resources_against_profile('AllergyIntolerance')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any AllergyIntolerance for this patient.' do
         metadata do
           id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @allergyintolerance_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'AllergyIntolerance.clinicalStatus',
+          'AllergyIntolerance.verificationStatus',
+          'AllergyIntolerance.code',
+          'AllergyIntolerance.patient'
+        ]
+        must_support_elements.each do |path|
+          @allergyintolerance_ary&.each do |resource|
+            truncated_path = path.gsub('AllergyIntolerance.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @allergyintolerance_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided AllergyIntolerance resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

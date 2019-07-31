@@ -84,9 +84,9 @@ module Inferno
         @conformance_authorize_url = oauth_metadata[:authorize_url]
         @conformance_token_url = oauth_metadata[:token_url]
         assert !@conformance_authorize_url.blank?, 'No authorize URI provided in Conformance/CapabilityStatement resource'
-        assert (@conformance_authorize_url =~ /\A#{URI.regexp(['http', 'https'])}\z/).zero?, "Invalid authorize url: '#{@conformance_authorize_url}'"
+        assert_valid_http_uri @conformance_authorize_url, "Invalid authorize url: '#{@conformance_authorize_url}'"
         assert !@conformance_token_url.blank?, 'No token URI provided in conformance statement.'
-        assert (@conformance_token_url =~ /\A#{URI.regexp(['http', 'https'])}\z/).zero?, "Invalid token url: '#{@conformance_token_url}'"
+        assert_valid_http_uri @conformance_token_url, "Invalid token url: '#{@conformance_token_url}'"
 
         warning do
           service = []
@@ -109,7 +109,7 @@ module Inferno
           registration_url = security_info.extension.find { |x| x.url == 'register' }
           registration_url = registration_url.value if registration_url
           assert !registration_url.blank?, 'No dynamic registration endpoint in conformance.'
-          assert (registration_url =~ /\A#{URI.regexp(['http', 'https'])}\z/).zero?, "Invalid registration url: '#{registration_url}'"
+          assert_valid_http_uri registration_url, "Invalid registration url: '#{registration_url}'"
 
           manage_url = security_info.extension.find { |x| x.url == 'manage' }
           manage_url = manage_url.value if manage_url

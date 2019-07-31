@@ -1,6 +1,6 @@
-<img src="https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
+<img src="https://github.com/onc-healthit/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
 
-[![Build Status](https://travis-ci.org/siteadmin/inferno.svg?branch=master)](https://travis-ci.org/siteadmin/inferno)
+[![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno)
 
 Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
 It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
@@ -9,7 +9,7 @@ This application creates test clients that exercise the range of requirements of
 
 ## Using Inferno
 
-If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Quick Start Guide](https://github.com/siteadmin/inferno/wiki/Quick-Start-Guide).
+If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Quick Start Guide](https://github.com/onc-healthit/inferno/wiki/Quick-Start-Guide).
 
 ## Installation and Deployment
 
@@ -18,14 +18,14 @@ If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Qui
 Docker is the recommended installation method for Windows devices and can also be used on Linux and MacOS hosts.
 
 1. Install [Docker](https://www.docker.com/) for the host platform as well as the [docker-compose](https://docs.docker.com/compose/install/) tool (which may be included in the distribution, as is the case for Windows and MacOS).
-2. Download the [latest release of the `inferno` project](https://github.com/siteadmin/inferno/releases) to your local computer on a directory of your choice.
+2. Download the [latest release of the `inferno` project](https://github.com/onc-healthit/inferno/releases) to your local computer on a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
 4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
 5. Navigate to http://localhost:8080 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up --build` to rebuild the containers.
 
-Check out the [Troubleshooting Documentation](https://github.com/siteadmin/inferno/wiki/Troubleshooting) for help.
+Check out the [Troubleshooting Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for help.
 
 ### Native Installation
 
@@ -39,7 +39,7 @@ And run the following commands from the terminal:
 
 ```sh
 # MacOS or Linux
-git clone https://github.com/siteadmin/inferno
+git clone https://github.com/onc-healthit/inferno
 cd inferno
 bundle install
 bundle exec rackup
@@ -59,7 +59,7 @@ Inferno can also be deployed onto a server to test many different instances of t
 
 Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
-Please see the file [deployment-configuration.md](https://github.com/siteadmin/inferno/blob/master/deployment-configuration.md) for details.
+Please see the file [deployment-configuration.md](https://github.com/onc-healthit/inferno/blob/master/deployment-configuration.md) for details.
 
 ### Reference Implementation
 
@@ -82,7 +82,7 @@ bundle exec rake test
 ## Inspecting and Exporting Tests
 
 Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
-viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/app/modules).
+viewed directly [in this repository](https://github.com/onc-healthit/inferno/tree/master/lib/app/sequences).
 
 Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
@@ -134,7 +134,7 @@ bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 * The `confidential_client` field is a boolean and must be provided as `true` or `false`
 
 ## Using with Continuous Integration Systems
-Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
+Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/onc-healthit/inferno/wiki/Using-with-Continuous-Integration-Systems).
 
 ## Contact Us
 The Inferno development team can be reached by email at inferno@groups.mitre.org.  Inferno also has a dedicated [HL7 FHIR chat channel](https://chat.fhir.org/#narrow/stream/153-inferno).

@@ -57,6 +57,7 @@ def generate_tests(metadata)
       end
 
     create_resource_profile_test(sequence)
+    create_must_support_test(sequence)
     create_references_resolved_test(sequence)
   end
 end
@@ -74,15 +75,19 @@ end
 def create_authorization_test(sequence)
   authorization_test = {
     tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
+
+  first_search = sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
+                 sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+  return if first_search.nil?
 
   authorization_test[:test_code] = %(
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
-
-        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), patient: @instance.patient_id)
+#{get_search_params(first_search[:names], sequence)}
+        reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply)
 
@@ -92,11 +97,11 @@ end
 def create_search_test(sequence, search_param)
   search_test = {
     tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
-  is_first_search = search_test[:index] == '02' # if first search - fix this check later
+  is_first_search = search_test[:index] == 2 # if first search - fix this check later
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}
@@ -104,29 +109,32 @@ def create_search_test(sequence, search_param)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply))
+        @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
+        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
       %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
 #{get_search_params(search_param[:names], sequence)}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+        validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         assert_response_ok(reply))
     end
+  search_test[:test_code] += get_comparator_searches(search_param[:names], sequence)
   sequence[:tests] << search_test
 end
 
 def create_interaction_test(sequence, interaction)
   interaction_test = {
     tests_that: "#{sequence[:resource]} #{interaction[:code]} resource supported",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
@@ -139,10 +147,71 @@ def create_interaction_test(sequence, interaction)
   sequence[:tests] << interaction_test
 end
 
+def create_must_support_test(sequence)
+  test = {
+    tests_that: "At least one of every must support element is provided in any #{sequence[:resource]} for this patient.",
+    index: sequence[:tests].length + 1,
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support',
+    test_code: ''
+  }
+
+  test[:test_code] += %(
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].downcase}_ary&.any?)
+
+  test[:test_code] += %(
+        must_support_confirmed = {})
+
+  extensions_list = []
+  sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
+    extensions_list << "'#{extension[:id]}': '#{extension[:url]}'"
+  end
+  if extensions_list.any?
+    test[:test_code] += %(
+        extensions_list = {
+          #{extensions_list.join(",\n          ")}
+        }
+        extensions_list.each do |id, url|
+          @#{sequence[:resource].downcase}_ary&.each do |resource|
+            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
+            break if must_support_confirmed[id]
+          end
+          skip "Could not find \#{id} in any of the \#{@#{sequence[:resource].downcase}_ary.length} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[id]
+        end
+)
+  end
+  elements_list = []
+  sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+    element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
+    elements_list << "'#{element[:path]}'"
+  end
+
+  if elements_list.any?
+    test[:test_code] += %(
+        must_support_elements = [
+          #{elements_list.join(",\n          ")}
+        ]
+        must_support_elements.each do |path|
+          @#{sequence[:resource].downcase}_ary&.each do |resource|
+            truncated_path = path.gsub('#{sequence[:resource]}.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @#{sequence[:resource].downcase}_ary.length
+
+          skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
+        end)
+  end
+
+  test[:test_code] += %(
+        @instance.save!)
+
+  sequence[:tests] << test
+end
+
 def create_resource_profile_test(sequence)
   test = {
-    tests_that: "#{sequence[:resource]} resources associated with Patient conform to Argonaut profiles",
-    index: format('%02d', (sequence[:tests].length + 1)),
+    tests_that: "#{sequence[:resource]} resources associated with Patient conform to US Core R4 profiles",
+    index: sequence[:tests].length + 1,
     link: sequence[:profile]
   }
   test[:test_code] = %(
@@ -155,7 +224,7 @@ end
 def create_references_resolved_test(sequence)
   test = {
     tests_that: 'All references can be resolved',
-    index: format('%02d', (sequence[:tests].length + 1)),
+    index: sequence[:tests].length + 1,
     link: 'https://www.hl7.org/fhir/DSTU2/references.html'
   }
 
@@ -167,42 +236,39 @@ def create_references_resolved_test(sequence)
   sequence[:tests] << test
 end
 
-def get_safe_access_path(param, search_param_descriptions, element_descriptions)
-  element_path = search_param_descriptions[param.to_sym][:path]
+def resolve_element_path(search_param_description)
+  type = search_param_description[:type]
+  element_path = search_param_description[:path] + get_value_path_by_type(type)
+  element_path.gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
   path_parts = element_path.split('.')
-  parts_with_multiple = []
-  path_parts.each_with_index do |part, index|
-    next if index.zero?
-    next if element_path == 'Procedure.occurrenceDateTime' # bug in us core?
-
-    cur_path = path_parts[0..index].join('.')
-    path_parts[index] = 'local_class' if part == 'class' # match fhir_models because class is protected keyword in ruby
-    parts_with_multiple << index if element_descriptions[cur_path.downcase.to_sym][:contains_multiple]
-  end
-  parts_with_multiple.each do |index|
-    path_parts[index] += '&.first'
-  end
-  path_parts[0] = "@#{path_parts[0].downcase}"
-
-  path_parts.join('&.')
+  resource_val = "@#{path_parts.shift.downcase}"
+  "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
 end
 
 def get_value_path_by_type(type)
   case type
   when 'CodeableConcept'
-    '&.coding&.first&.code'
+    '.coding.code'
   when 'Reference'
-    '&.reference&.first'
+    '.reference'
   when 'Period'
-    '&.start'
+    '.start'
   when 'Identifier'
-    '&.value'
+    '.value'
   when 'Coding'
-    '&.code'
+    '.code'
   when 'HumanName'
-    '&.family'
+    '.family'
   else
     ''
+  end
+end
+
+def param_value_name(param)
+  if param == '_id'
+    'id_val'
+  else
+    param.tr('-', '_') + '_val'
   end
 end
 
@@ -214,18 +280,12 @@ def get_search_params(search_parameters, sequence)
   search_values = []
   search_assignments = []
   search_parameters.each do |param|
-    type = sequence[:search_param_descriptions][param.to_sym][:type]
-    variable_name =
-      if param == '_id'
-        'id_val'
-      else
-        param.tr('-', '_') + '_val'
-      end
+    variable_name = param_value_name(param)
     variable_value =
       if param == 'patient'
         '@instance.patient_id'
       else
-        get_safe_access_path(param, sequence[:search_param_descriptions], sequence[:element_descriptions]) + get_value_path_by_type(type)
+        resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
       end
     search_values << "#{variable_name} = #{variable_value}"
     search_assignments << "'#{param}': #{variable_name}"
@@ -238,7 +298,36 @@ def get_search_params(search_parameters, sequence)
   end
   search_code += %(
         search_params = { #{search_assignments.join(', ')} }
+        search_params.each { |param, value| skip "Could not resolve \#{param} in given resource" if value.nil? }
 )
+  search_code
+end
+
+def get_comparator_searches(search_params, sequence)
+  search_code = ''
+  search_assignments = search_params.map do |param|
+    "'#{param}': #{param_value_name(param)}"
+  end
+  search_assignments_str = "{ #{search_assignments.join(', ')} }"
+  search_params.each do |param|
+    param_val_name = param_value_name(param)
+    param_info = sequence[:search_param_descriptions][param.to_sym]
+    comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
+    next if comparators.empty?
+
+    type = param_info[:type]
+    case type
+    when 'Period', 'date'
+      search_code += %(\n
+        [#{comparators.keys.map { |comparator| "'#{comparator}'" }.join(', ')}].each do |comparator|
+          comparator_val = date_comparator_value(comparator, #{param_val_name})
+          comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end)
+    end
+  end
   search_code
 end
 
@@ -258,69 +347,56 @@ end
 def create_search_validation(sequence)
   search_validators = ''
   sequence[:search_param_descriptions].each do |element, definition|
+    search_validators += %(
+        when '#{element}')
     type = definition[:type]
-    contains_multiple = definition[:contains_multiple]
     path_parts = definition[:path].split('.')
-    path_parts[0] = 'resource'
     path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
+    path_parts.shift
     case type
-    when 'CodeableConcept'
+    when 'Period'
       search_validators += %(
-        when '#{element}'
-          codings = #{path_parts.join('&.')}#{'&.first' if contains_multiple}&.coding
-          assert !codings.nil?, '#{element} on resource did not match #{element} requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, '#{element} on resource did not match #{element} requested'
+          value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
+            validate_period_search(value, period)
+          end
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
-    when 'Reference'
+    when 'date'
       search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')}&.reference&.include?(value), '#{element} on resource does not match #{element} requested'
+          value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
     when 'HumanName'
       # When a string search parameter refers to the types HumanName and Address, the search covers the elements of type string, and does not cover elements such as use and period
       # https://www.hl7.org/fhir/search.html#string
-      search_validators +=
-        if contains_multiple
-          %(
-        when '#{element}'
-          found = #{path_parts.join('&.')}&.any? do |name|
-            name.text&.include?(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
+      search_validators += %(
+          value = value.downcase
+          value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |name|
+            name&.text&.start_with?(value) ||
+              name&.family&.downcase&.include?(value) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
-          assert found, '#{element} on resource does not match #{element} requested')
-        else
-          %(
-        when '#{element}'
-          name = #{path_parts.join('&.')}
-          found = name&.text&.include?(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
-          assert found, '#{element} on resource does not match #{element} requested')
-        end
-    when 'code', 'string', 'id'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')} == value, '#{element} on resource did not match #{element} requested'
-)
-    when 'Coding'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')}&.code == value, '#{element} on resource did not match #{element} requested'
-)
-    when 'Identifier'
-      search_validators += %(
-        when '#{element}'
-          assert #{path_parts.join('&.')}&.any? { |identifier| identifier.value == value }, '#{element} on resource did not match #{element} requested'
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
     else
-      search_validators += %(
-        when '#{element}'
+      # searching by patient requires special case because we are searching by a resource identifier
+      # references can also be URL's, so we made need to resolve those url's
+      search_validators +=
+        if ['subject', 'patient'].include? element.to_s
+          %(
+          value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, '#{element} on resource does not match #{element} requested'
 )
+        else
+          %(
+          value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |value_in_resource| value_in_resource == value }
+          assert value_found, '#{element} on resource does not match #{element} requested'
+)
+        end
     end
   end
 
