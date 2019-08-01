@@ -47,6 +47,7 @@ modules:
   - smart
   - us_core_r4
   - argonaut
+  - bulk_data
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:
