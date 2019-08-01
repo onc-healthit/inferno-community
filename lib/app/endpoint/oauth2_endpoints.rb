@@ -45,7 +45,7 @@ module Inferno
           end
 
           get '/oauth2/:key/launch/?' do
-            @instance = Inferno::Models::SequenceResult.recent_results_for_iss(params[:iss]).testing_instance
+            @instance = Inferno::Models::SequenceResult.recent_results_for_iss(params[:iss])&.testing_instance
             pass if @instance.present?
 
             @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
