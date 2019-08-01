@@ -56,7 +56,7 @@ module Inferno
 
       test 'OAuth token exchange endpoint secured by transport layer security' do
         metadata do
-          id '04'
+          id '02'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             Apps must assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
@@ -72,7 +72,7 @@ module Inferno
 
       test 'OAuth token exchange fails when supplied invalid Refresh Token or Client ID' do
         metadata do
-          id '05'
+          id '03'
           link 'https://tools.ietf.org/html/rfc6749'
           desc %(
             If the request failed verification or is invalid, the authorization server returns an error response.
@@ -107,7 +107,7 @@ module Inferno
 
       test 'OAuth token exchange request succeeds when supplied correct information' do
         metadata do
-          id '06'
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded, as described in section 4.1.3 of RFC6749.
@@ -136,7 +136,7 @@ module Inferno
 
       test 'Data returned from token exchange contains required information encoded in JSON' do
         metadata do
-          id '07'
+          id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The EHR authorization server shall return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
@@ -197,7 +197,7 @@ module Inferno
 
       test 'Response includes correct HTTP Cache-Control and Pragma headers' do
         metadata do
-          id '08'
+          id '06'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           desc %(
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
