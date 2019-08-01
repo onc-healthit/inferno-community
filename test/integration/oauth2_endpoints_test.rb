@@ -63,6 +63,21 @@ class OAuth2EndpointsTest < MiniTest::Test
     end
   end
 
+  def test_launch_response_not_running
+    create_testing_instance
+
+    EventMachine.run do
+      bad_iss = 'http://example.com/UNKNOWN_ISS'
+      get "/inferno/oauth2/static/launch?iss=#{bad_iss}"
+
+      assert last_response.status == 500
+
+      expected_error_message = "Error: No actively running launch sequences found for iss #{bad_iss}"
+      assert last_response.body.include? expected_error_message
+      break
+    end
+  end
+
   def test_redirect_response_success
     instance = create_testing_instance(state: 'abc123')
     sequence_result = create_sequence_result(
@@ -84,8 +99,18 @@ class OAuth2EndpointsTest < MiniTest::Test
     end
   end
 
-  def test_404_page
-    get '/asdfasdf'
-    assert last_response.not_found?
+  def test_redirect_response_not_running
+    create_testing_instance
+
+    EventMachine.run do
+      bad_state = 'xyz'
+      get "/inferno/oauth2/static/redirect?state=#{bad_state}"
+
+      assert last_response.status == 500
+
+      expected_error_message = "No actively running launch sequences found with a state of #{bad_state}"
+      assert last_response.body.include? expected_error_message
+      break
+    end
   end
 end
