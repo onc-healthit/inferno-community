@@ -1,0 +1,13 @@
+name: bulk_data
+title: FHIR Bulk Data Access Implementation Guide STU1
+description: Bulk Data Access Testing
+fhir_version: stu3
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests: 
+      - name: Bulk Data Access Testing
+        sequences:
+          - BulkDataCapabilityStatementSequence
+          - BulkDataSMARTDiscoverySequence
