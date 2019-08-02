@@ -6,9 +6,7 @@ module Inferno
       def self.included(klass)
         klass.class_eval do
           def running_test_found?
-            @instance.present? &&
-              @instance.client_endpoint_key == params[:key] &&
-              %w[launch redirect].include?(params[:endpoint])
+            @instance.present? && @instance.client_endpoint_key == params[:key]
           end
 
           def instance_id_from_cookie
@@ -17,7 +15,7 @@ module Inferno
 
           get '/oauth2/:key/redirect/?' do
             @instance = Inferno::Models::TestingInstance.first(state: params[:state])
-            pass if @instance.present?
+            return resume_execution if @instance.present?
 
             @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
             if @instance.nil?
@@ -37,8 +35,11 @@ module Inferno
               message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" if params[:error_description].present?
 
               halt 500, message
-            elsif @instance&.waiting_on_sequence&.wait?
+            end
+
+            if @instance&.waiting_on_sequence&.wait?
               @error_message = "State provided in redirect (#{params[:state]}) does not match expected state (#{@instance.state})."
+              resume_execution
             else
               redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_state&state=#{params[:state]}"
             end
@@ -46,21 +47,24 @@ module Inferno
 
           get '/oauth2/:key/launch/?' do
             @instance = Inferno::Models::SequenceResult.recent_results_for_iss(params[:iss])&.testing_instance
-            pass if @instance.present?
+            return resume_execution if @instance.present?
 
             @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
             if @instance.nil?
               message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
                         'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
               halt 500, message
-            elsif @instance.waiting_on_sequence&.wait?
+            end
+
+            if @instance.waiting_on_sequence&.wait?
               @error_message = 'No iss for redirect'
+              resume_execution
             else
               redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"
             end
           end
 
-          get '/oauth2/:key/:endpoint/?' do
+          def resume_execution
             halt 500, 'Error: Could not find a running test that match this set of criteria' unless running_test_found?
 
             sequence_result = @instance.waiting_on_sequence
