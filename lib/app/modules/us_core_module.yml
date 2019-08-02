@@ -46,3 +46,4 @@ test_sets:
         - USCoreR4PractitionerroleSequence
         - USCoreR4ProcedureSequence
         - R4ProvenanceSequence
+        - USCoreR4ClinicalNotesSequence
