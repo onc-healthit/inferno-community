@@ -126,7 +126,8 @@ class OAuth2EndpointsTest < MiniTest::Test
   end
 
   def test_redirect_response_success
-    instance = create_testing_instance(state: 'abc123')
+    state = SecureRandom.uuid
+    instance = create_testing_instance(state: state)
     sequence_result = create_sequence_result(
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
@@ -136,7 +137,7 @@ class OAuth2EndpointsTest < MiniTest::Test
     )
 
     EventMachine.run do
-      get '/inferno/oauth2/static/redirect?state=abc123'
+      get "/inferno/oauth2/static/redirect?state=#{state}"
 
       assert last_response.ok?
 
@@ -162,7 +163,8 @@ class OAuth2EndpointsTest < MiniTest::Test
   end
 
   def test_redirect_response_bad_state
-    instance = create_testing_instance(state: '123')
+    state = SecureRandom.uuid
+    instance = create_testing_instance(state: state)
     sequence_result = create_sequence_result(
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
@@ -173,7 +175,7 @@ class OAuth2EndpointsTest < MiniTest::Test
 
     EventMachine.run do
       cookies = { 'HTTP_COOKIE' => "instance_id_test_set=#{instance.id}/" }
-      get '/inferno/oauth2/static/redirect?state=abc', {}, cookies
+      get "/inferno/oauth2/static/redirect?state=#{state}x", {}, cookies
 
       assert last_response.ok?
 
@@ -188,7 +190,8 @@ class OAuth2EndpointsTest < MiniTest::Test
   end
 
   def test_redirect_response_not_waiting
-    instance = create_testing_instance(state: 'abc123')
+    state = SecureRandom.uuid
+    instance = create_testing_instance(state: state)
     sequence_result = create_sequence_result(
       testing_instance: instance,
       result: 'pass'
@@ -199,7 +202,7 @@ class OAuth2EndpointsTest < MiniTest::Test
 
     EventMachine.run do
       cookies = { 'HTTP_COOKIE' => "instance_id_test_set=#{instance.id}/" }
-      get '/inferno/oauth2/static/redirect?state=xyz', {}, cookies
+      get "/inferno/oauth2/static/redirect?state=#{state}x", {}, cookies
 
       assert last_response.redirect?
       assert last_response.headers['Location'].include? '?error=no_state'
