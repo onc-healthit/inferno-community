@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+require_relative '../utils/oauth2_error_messages'
+
 module Inferno
   class App
     module OAuth2Endpoints
       def self.included(klass)
         klass.class_eval do
+          include OAuth2ErrorMessages
+
           def running_test_found?
             @instance.present? && @instance.client_endpoint_key == params[:key]
           end
@@ -18,27 +22,10 @@ module Inferno
             return resume_execution if @instance.present?
 
             @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
-            if @instance.nil?
-              message = %(
-                         <p>
-                           Inferno has detected an issue with the SMART launch.
-                           No actively running launch sequences found with a state of #{params[:state]}.
-                           The authorization server is not returning the correct state variable and
-                           therefore Inferno cannot identify which server is currently under test.
-                           Please click your browser's "Back" button to return to Inferno,
-                           and click "Refresh" to ensure that the most recent test results are visible.
-                         </p>
-                         )
-
-              message += "<p>Error returned by server: <strong>#{params[:error]}</strong>.</p>" if params[:error].present?
-
-              message += "<p>Error description returned by server: <strong>#{params[:error_description]}</strong>.</p>" if params[:error_description].present?
-
-              halt 500, message
-            end
+            halt 500, no_instance_for_state_error_message if @instance.nil?
 
             if @instance&.waiting_on_sequence&.wait?
-              @error_message = "State provided in redirect (#{params[:state]}) does not match expected state (#{@instance.state})."
+              @error_message = bad_state_error_message
               resume_execution
             else
               redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_state&state=#{params[:state]}"
@@ -50,14 +37,10 @@ module Inferno
             return resume_execution if @instance.present?
 
             @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
-            if @instance.nil?
-              message = "Error: No actively running launch sequences found for iss #{params[:iss]}. " \
-                        'Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.'
-              halt 500, message
-            end
+            halt 500, no_instance_for_iss_error_message if @instance.nil?
 
             if @instance.waiting_on_sequence&.wait?
-              @error_message = 'No iss for redirect'
+              @error_message = no_iss_error_message
               resume_execution
             else
               redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"
@@ -65,7 +48,7 @@ module Inferno
           end
 
           def resume_execution
-            halt 500, 'Error: Could not find a running test that match this set of criteria' unless running_test_found?
+            halt 500, no_running_test_error_message unless running_test_found?
 
             sequence_result = @instance.waiting_on_sequence
             if sequence_result&.wait?
