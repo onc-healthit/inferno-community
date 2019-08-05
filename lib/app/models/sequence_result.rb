@@ -67,6 +67,10 @@ module Inferno
         required_omitted + optional_omitted
       end
 
+      def total_required_tests_except_omitted
+        required_total - required_omitted
+      end
+
       def update_result_counts
         test_results.each do |result|
           if result.required
