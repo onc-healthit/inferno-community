@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4PractitionerSequence < SequenceBase
+    class USCoreR4PractitionerSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Practitioner Tests'
@@ -18,16 +18,19 @@ module Inferno
         case property
 
         when 'name'
-          found = resource&.name&.any? do |name|
-            name.text&.include?(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
+          value = value.downcase
+          value_found = can_resolve_path(resource, 'name') do |name|
+            name&.text&.start_with?(value) ||
+              name&.family&.downcase&.include?(value) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
-          assert found, 'name on resource does not match name requested'
+          assert value_found, 'name on resource does not match name requested'
+
         when 'identifier'
-          assert resource&.identifier&.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          value_found = can_resolve_path(resource, 'identifier.value') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'identifier on resource does not match identifier requested'
 
         end
       end
@@ -53,7 +56,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Practitioner'), patient: @instance.patient_id)
+        name_val = @practitioner&.name&.first&.family
+        search_params = { 'name': name_val }
+
+        reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -67,8 +73,9 @@ module Inferno
           versions :r4
         end
 
-        name_val = @practitioner&.name&.first&.family
+        name_val = resolve_element_from_path(@practitioner, 'name.family')
         search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         assert_response_ok(reply)
@@ -81,8 +88,8 @@ module Inferno
 
         @practitioner = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @practitioner_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
+        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
 
       test 'Server returns expected results from Practitioner search by identifier' do
@@ -97,10 +104,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
 
-        identifier_val = @practitioner&.identifier&.first&.value
+        identifier_val = resolve_element_from_path(@practitioner, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
+        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
         assert_response_ok(reply)
       end
 

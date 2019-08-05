@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4MedicationrequestSequence < SequenceBase
+    class USCoreR4MedicationrequestSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Medicationrequest Tests'
+      title 'MedicationRequest Tests'
 
       description 'Verify that MedicationRequest resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,12 +18,16 @@ module Inferno
         case property
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'authoredon'
+          value_found = can_resolve_path(resource, 'authoredOn') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'authoredon on resource does not match authoredon requested'
 
         end
       end
@@ -49,7 +53,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), patient: @instance.patient_id)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+
+        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -65,6 +72,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         assert_response_ok(reply)
@@ -77,8 +85,8 @@ module Inferno
 
         @medicationrequest = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @medicationrequest_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
+        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
       end
 
       test 'Server returns expected results from MedicationRequest search by patient+status' do
@@ -94,10 +102,12 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @medicationrequest&.status
+        status_val = resolve_element_from_path(@medicationrequest, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -114,10 +124,12 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        authoredon_val = @medicationrequest&.authoredOn
+        authoredon_val = resolve_element_from_path(@medicationrequest, 'authoredOn')
         search_params = { 'patient': patient_val, 'authoredon': authoredon_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         assert_response_ok(reply)
       end
 

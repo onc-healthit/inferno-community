@@ -22,16 +22,24 @@ Metrics/LineLength:
     - 'lib/app/modules/**/*'
     - 'lib/app/helpers/browser_logic.rb'
 
+# Use code climate's metrics measurement rather than rubocop's
 Metrics/AbcSize:
-  Exclude:
-    - 'lib/app/endpoint/oauth2_endpoints.rb'
-    - 'lib/app/endpoint/test_set_endpoints.rb'
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
 
 Metrics/MethodLength:
-  Exclude:
-    - 'lib/app/endpoint/oauth2_endpoints.rb'
-    - 'lib/app/endpoint/test_set_endpoints.rb'
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
 
 Metrics/PerceivedComplexity:
-  Exclude:
-    - 'lib/app/endpoint/oauth2_endpoints.rb'
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false

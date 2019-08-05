@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4CareteamSequence < SequenceBase
+    class USCoreR4CareteamSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Careteam Tests'
+      title 'CareTeam Tests'
 
       description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,10 +18,12 @@ module Inferno
         case property
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         end
       end
@@ -47,7 +49,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), patient: @instance.patient_id)
+        search_params = { patient: @instance.patient_id, status: 'active' }
+
+        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -74,8 +78,8 @@ module Inferno
 
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @careteam_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
       test 'CareTeam read resource supported' do

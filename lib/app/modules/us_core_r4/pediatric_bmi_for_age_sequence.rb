@@ -5,7 +5,7 @@ module Inferno
     class PediatricBmiForAgeSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'PediatricBmiForAge Tests'
+      title 'Pediatric BMI for Age Observation Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,22 +18,26 @@ module Inferno
         case property
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'category'
-          codings = resource&.category&.first&.coding
-          assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
+          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'category on resource does not match category requested'
 
         when 'code'
-          codings = resource&.code&.coding
-          assert !codings.nil?, 'code on resource did not match code requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'code on resource did not match code requested'
+          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'code on resource does not match code requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         end
       end
@@ -59,7 +63,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), patient: @instance.patient_id)
+        search_params = { patient: @instance.patient_id, code: '59576-9' }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -86,8 +92,8 @@ module Inferno
 
         @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @observation_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
       test 'Server returns expected results from Observation search by patient+category' do
@@ -103,10 +109,12 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @observation&.category&.first&.coding&.first&.code
+        category_val = resolve_element_from_path(@observation, 'category.coding.code')
         search_params = { 'patient': patient_val, 'category': category_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -123,12 +131,22 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @observation&.category&.first&.coding&.first&.code
-        date_val = @observation&.effectiveDateTime
+        category_val = resolve_element_from_path(@observation, 'category.coding.code')
+        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Observation search by patient+code+date' do
@@ -144,12 +162,22 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = @observation&.code&.coding&.first&.code
-        date_val = @observation&.effectiveDateTime
+        code_val = resolve_element_from_path(@observation, 'code.coding.code')
+        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Observation search by patient+category+status' do
@@ -165,11 +193,13 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @observation&.category&.first&.coding&.first&.code
-        status_val = @observation&.status
+        category_val = resolve_element_from_path(@observation, 'category.coding.code')
+        status_val = resolve_element_from_path(@observation, 'status')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -250,7 +280,7 @@ module Inferno
           'Observation.category.coding.system',
           'Observation.category.coding.code',
           'Observation.subject',
-          'Observation.effectivedateTime',
+          'Observation.effectiveDateTime',
           'Observation.effectivePeriod',
           'Observation.valueQuantity.value',
           'Observation.valueQuantity.unit',
@@ -261,14 +291,14 @@ module Inferno
           'Observation.component.code',
           'Observation.component.valueQuantity',
           'Observation.component.valueCodeableConcept',
-          'Observation.component.valuestring',
-          'Observation.component.valueboolean',
-          'Observation.component.valueinteger',
+          'Observation.component.valueString',
+          'Observation.component.valueBoolean',
+          'Observation.component.valueInteger',
           'Observation.component.valueRange',
           'Observation.component.valueRatio',
           'Observation.component.valueSampledData',
-          'Observation.component.valuetime',
-          'Observation.component.valuedateTime',
+          'Observation.component.valueTime',
+          'Observation.component.valueDateTime',
           'Observation.component.valuePeriod',
           'Observation.component.dataAbsentReason'
         ]

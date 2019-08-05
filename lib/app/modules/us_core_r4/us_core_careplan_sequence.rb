@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4CareplanSequence < SequenceBase
+    class USCoreR4CareplanSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Careplan Tests'
+      title 'CarePlan Tests'
 
       description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,17 +18,22 @@ module Inferno
         case property
 
         when 'category'
-          codings = resource&.category&.first&.coding
-          assert !codings.nil?, 'category on resource did not match category requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'category on resource did not match category requested'
+          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'category on resource does not match category requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'period') do |period|
+            validate_period_search(value, period)
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         end
       end
@@ -54,7 +59,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), patient: @instance.patient_id)
+        search_params = { patient: @instance.patient_id, category: 'assess-plan' }
+
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -81,8 +88,8 @@ module Inferno
 
         @careplan = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @careplan_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
       end
 
       test 'Server returns expected results from CarePlan search by patient+category+status' do
@@ -98,11 +105,13 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @careplan&.category&.first&.coding&.first&.code
-        status_val = @careplan&.status
+        category_val = resolve_element_from_path(@careplan, 'category.coding.code')
+        status_val = resolve_element_from_path(@careplan, 'status')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -119,13 +128,23 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @careplan&.category&.first&.coding&.first&.code
-        status_val = @careplan&.status
-        date_val = @careplan&.period&.start
+        category_val = resolve_element_from_path(@careplan, 'category.coding.code')
+        status_val = resolve_element_from_path(@careplan, 'status')
+        date_val = resolve_element_from_path(@careplan, 'period.start')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from CarePlan search by patient+category+date' do
@@ -141,12 +160,22 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = @careplan&.category&.first&.coding&.first&.code
-        date_val = @careplan&.period&.start
+        category_val = resolve_element_from_path(@careplan, 'category.coding.code')
+        date_val = resolve_element_from_path(@careplan, 'period.start')
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'CarePlan read resource supported' do

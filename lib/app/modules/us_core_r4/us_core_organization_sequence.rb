@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4OrganizationSequence < SequenceBase
+    class USCoreR4OrganizationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Organization Tests'
@@ -18,9 +18,12 @@ module Inferno
         case property
 
         when 'name'
-          assert resource&.name == value, 'name on resource did not match name requested'
+          value_found = can_resolve_path(resource, 'name') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'name on resource does not match name requested'
 
         when 'address'
+          value_found = can_resolve_path(resource, 'address') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address on resource does not match address requested'
 
         end
       end
@@ -46,7 +49,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Organization'), patient: @instance.patient_id)
+        search_params = { patient: @instance.patient_id, name: 'Boston' }
+
+        reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -73,8 +78,8 @@ module Inferno
 
         @organization = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @organization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
       test 'Server returns expected results from Organization search by address' do
@@ -89,10 +94,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
-        address_val = @organization&.address&.first
+        address_val = resolve_element_from_path(@organization, 'address')
         search_params = { 'address': address_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         assert_response_ok(reply)
       end
 

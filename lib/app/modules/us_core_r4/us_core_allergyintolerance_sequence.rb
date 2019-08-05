@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4AllergyintoleranceSequence < SequenceBase
+    class USCoreR4AllergyintoleranceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Allergyintolerance Tests'
+      title 'AllergyIntolerance Tests'
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,12 +18,12 @@ module Inferno
         case property
 
         when 'clinical-status'
-          codings = resource&.clinicalStatus&.coding
-          assert !codings.nil?, 'clinical-status on resource did not match clinical-status requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'clinical-status on resource did not match clinical-status requested'
+          value_found = can_resolve_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         end
       end
@@ -49,7 +49,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), patient: @instance.patient_id)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+
+        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -65,6 +68,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
@@ -77,8 +81,8 @@ module Inferno
 
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @allergyintolerance_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
       end
 
       test 'Server returns expected results from AllergyIntolerance search by patient+clinical-status' do
@@ -94,10 +98,12 @@ module Inferno
         assert !@allergyintolerance.nil?, 'Expected valid AllergyIntolerance resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = @allergyintolerance&.clinicalStatus&.coding&.first&.code
+        clinical_status_val = resolve_element_from_path(@allergyintolerance, 'clinicalStatus.coding.code')
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         assert_response_ok(reply)
       end
 

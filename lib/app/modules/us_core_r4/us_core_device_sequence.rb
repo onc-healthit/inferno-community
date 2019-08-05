@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4DeviceSequence < SequenceBase
+    class USCoreR4DeviceSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Device Tests'
@@ -18,12 +18,12 @@ module Inferno
         case property
 
         when 'patient'
-          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'type'
-          codings = resource&.type&.coding
-          assert !codings.nil?, 'type on resource did not match type requested'
-          assert codings.any? { |coding| !coding.try(:code).nil? && coding.try(:code) == value }, 'type on resource did not match type requested'
+          value_found = can_resolve_path(resource, 'type.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'type on resource does not match type requested'
 
         end
       end
@@ -49,7 +49,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Device'), patient: @instance.patient_id)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+
+        reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -65,6 +68,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         assert_response_ok(reply)
@@ -77,8 +81,8 @@ module Inferno
 
         @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @device_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
+        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
 
       test 'Server returns expected results from Device search by patient+type' do
@@ -94,10 +98,12 @@ module Inferno
         assert !@device.nil?, 'Expected valid Device resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = @device&.type&.coding&.first&.code
+        type_val = resolve_element_from_path(@device, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
+        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         assert_response_ok(reply)
       end
 

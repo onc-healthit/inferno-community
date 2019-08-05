@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4LocationSequence < SequenceBase
+    class USCoreR4LocationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Location Tests'
@@ -18,18 +18,24 @@ module Inferno
         case property
 
         when 'name'
-          assert resource&.name == value, 'name on resource did not match name requested'
+          value_found = can_resolve_path(resource, 'name') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'name on resource does not match name requested'
 
         when 'address'
+          value_found = can_resolve_path(resource, 'address') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address on resource does not match address requested'
 
         when 'address-city'
-          assert resource&.address&.city == value, 'address-city on resource did not match address-city requested'
+          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address-city on resource does not match address-city requested'
 
         when 'address-state'
-          assert resource&.address&.state == value, 'address-state on resource did not match address-state requested'
+          value_found = can_resolve_path(resource, 'address.state') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address-state on resource does not match address-state requested'
 
         when 'address-postalcode'
-          assert resource&.address&.postalCode == value, 'address-postalcode on resource did not match address-postalcode requested'
+          value_found = can_resolve_path(resource, 'address.postalCode') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'address-postalcode on resource does not match address-postalcode requested'
 
         end
       end
@@ -55,7 +61,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Location'), patient: @instance.patient_id)
+        search_params = { patient: @instance.patient_id, name: 'Boston' }
+
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -82,8 +90,8 @@ module Inferno
 
         @location = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @location_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test 'Server returns expected results from Location search by address' do
@@ -98,10 +106,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_val = @location&.address
+        address_val = resolve_element_from_path(@location, 'address')
         search_params = { 'address': address_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -117,10 +127,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_city_val = @location&.address&.city
+        address_city_val = resolve_element_from_path(@location, 'address.city')
         search_params = { 'address-city': address_city_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -136,10 +148,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_state_val = @location&.address&.state
+        address_state_val = resolve_element_from_path(@location, 'address.state')
         search_params = { 'address-state': address_state_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -155,10 +169,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_postalcode_val = @location&.address&.postalCode
+        address_postalcode_val = resolve_element_from_path(@location, 'address.postalCode')
         search_params = { 'address-postalcode': address_postalcode_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
       end
 

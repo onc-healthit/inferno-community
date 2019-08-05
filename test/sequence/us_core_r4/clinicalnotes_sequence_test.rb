@@ -2,7 +2,7 @@
 
 require_relative '../../test_helper'
 
-class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
+class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
   def setup
     @patient_id = 1234
     @docref_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_docref_bundle))
@@ -47,7 +47,7 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     client = FHIR::Client.new(@instance.url)
     client.use_r4
     client.default_json
-    @sequence = Inferno::Sequence::UsCoreR4ClinicalNotesSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::USCoreR4ClinicalNotesSequence.new(@instance, client, true)
   end
 
   def full_sequence_stubs

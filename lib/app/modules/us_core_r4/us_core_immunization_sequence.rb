@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4ImmunizationSequence < SequenceBase
+    class USCoreR4ImmunizationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Immunization Tests'
@@ -18,12 +18,18 @@ module Inferno
         case property
 
         when 'patient'
-          assert resource&.patient&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'date'
+          value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'date on resource does not match date requested'
 
         end
       end
@@ -49,7 +55,10 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Immunization'), patient: @instance.patient_id)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -65,6 +74,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         assert_response_ok(reply)
@@ -77,8 +87,8 @@ module Inferno
 
         @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @immunization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         save_resource_ids_in_bundle(versioned_resource_class('Immunization'), reply)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
       end
 
       test 'Server returns expected results from Immunization search by patient+date' do
@@ -94,11 +104,21 @@ module Inferno
         assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
 
         patient_val = @instance.patient_id
-        date_val = @immunization&.occurrenceDateTime
+        date_val = resolve_element_from_path(@immunization, 'occurrenceDateTime')
         search_params = { 'patient': patient_val, 'date': date_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Immunization search by patient+status' do
@@ -114,10 +134,12 @@ module Inferno
         assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = @immunization&.status
+        status_val = resolve_element_from_path(@immunization, 'status')
         search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -195,8 +217,8 @@ module Inferno
           'Immunization.statusReason',
           'Immunization.vaccineCode',
           'Immunization.patient',
-          'Immunization.occurrencedateTime',
-          'Immunization.occurrencestring',
+          'Immunization.occurrenceDateTime',
+          'Immunization.occurrenceString',
           'Immunization.primarySource'
         ]
         must_support_elements.each do |path|
