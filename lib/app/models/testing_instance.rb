@@ -2,6 +2,7 @@
 
 require 'dm-core'
 require 'dm-migrations'
+require_relative 'server_capabilities'
 require_relative '../utils/result_statuses'
 
 module Inferno
@@ -57,6 +58,7 @@ module Inferno
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references
+      has 1, :server_capabilities
 
       def latest_results
         sequence_results.each_with_object({}) do |result, hash|
