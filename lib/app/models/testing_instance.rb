@@ -52,6 +52,12 @@ module Inferno
 
       property :dynamic_registration_token, String
 
+      property :practitioner, String
+      property :practitionerrole, String
+      property :medication, String
+      property :organization, String
+      property :location, String
+
       property :must_support_confirmed, String, default: ''
 
       has n, :sequence_results

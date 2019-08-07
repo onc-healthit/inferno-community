@@ -712,6 +712,24 @@ module Inferno
         assert(problems.empty?, problems.join("<br/>\n"))
       end
 
+      def save_delayed_sequence_references(resource)
+        non_patient_sequences = ['Location', 'Organization', 'Medication', 'Practitioner', 'PractitionerRole']
+        walk_resource(resource) do |value, meta, _path|
+          next if meta['type'] != 'Reference'
+
+          begin
+            if value.relative?
+              begin
+                resource_class = value.resource_class.name.demodulize
+                @instance.save_resource_reference(resource_class, value.reference) if non_patient_sequences.include? resource_class
+              rescue NameError
+                next
+              end
+            end
+          end
+        end
+      end
+
       def check_resource_against_profile(resource, resource_type, specified_profile = nil)
         assert resource.is_a?("FHIR::DSTU2::#{resource_type}".constantize),
                "Expected resource to be of type #{resource_type}"

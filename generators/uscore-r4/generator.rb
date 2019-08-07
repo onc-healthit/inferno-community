@@ -31,8 +31,21 @@ def generate_search_validators(metadata)
 end
 
 def generate_tests(metadata)
+  delayed_sequences = metadata[:sequences].select do |sequence|
+    next if sequence[:resource] == 'Patient'
+
+    sequence[:searches].none? do |search|
+      search[:names].include? 'patient'
+    end
+  end
+
   metadata[:sequences].each do |sequence|
     puts "Generating test #{sequence[:name]}"
+
+    # read refernce if sequence contains no search sequences
+    sequence[:delayed_sequence] = delayed_sequences.include? sequence
+    create_read_test(sequence) if sequence[:delayed_sequence]
+
     # authorization test
     create_authorization_test(sequence)
 
@@ -70,6 +83,19 @@ def generate_sequence(sequence)
   output =   template.result_with_hash(sequence)
   FileUtils.mkdir_p(OUT_PATH + '/us_core_r4') unless File.directory?(OUT_PATH + '/us_core_r4')
   File.write(file_name, output)
+end
+
+def create_read_test(sequence)
+  read_test = {
+    tests_that: "Can read #{sequence[:resource]} from the server",
+    index: sequence[:tests].length + 1,
+    link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+  }
+
+  read_test[:test_code] = %(
+        @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', @instance.#{sequence[:resource].downcase})
+        @resources_found = !@#{sequence[:resource].downcase}.nil?)
+  sequence[:tests] << read_test
 end
 
 def create_authorization_test(sequence)
@@ -117,6 +143,7 @@ def create_search_test(sequence, search_param)
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
+        save_delayed_sequence_references(@#{sequence[:resource].downcase})
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
       %(

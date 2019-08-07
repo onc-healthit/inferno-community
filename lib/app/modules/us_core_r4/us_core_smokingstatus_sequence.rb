@@ -93,6 +93,7 @@ module Inferno
         @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @observation_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_delayed_sequence_references(@observation)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 

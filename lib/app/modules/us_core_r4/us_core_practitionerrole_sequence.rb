@@ -11,7 +11,7 @@ module Inferno
 
       test_id_prefix 'PractitionerRole' # change me
 
-      requires :token, :patient_id
+      requires :token, :practitionerrole
       conformance_supports :PractitionerRole
 
       def validate_resource_item(resource, property, value)
@@ -37,9 +37,22 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects PractitionerRole search without authorization' do
+      test 'Can read PractitionerRole from the server' do
         metadata do
           id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        @practitionerrole = fetch_resource('PractitionerRole', @instance.practitionerrole)
+        @resources_found = !@practitionerrole.nil?
+      end
+
+      test 'Server rejects PractitionerRole search without authorization' do
+        metadata do
+          id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -49,8 +62,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        specialty_val = @practitionerrole&.specialty&.coding&.first&.code
+        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
         search_params = { 'specialty': specialty_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -59,35 +73,28 @@ module Inferno
 
       test 'Server returns expected results from PractitionerRole search by specialty' do
         metadata do
-          id '02'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@practitionerrole.nil?, 'Expected valid PractitionerRole resource to be present'
+
         specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
         search_params = { 'specialty': specialty_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @practitionerrole = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        @practitionerrole_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test 'Server returns expected results from PractitionerRole search by practitioner' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -108,7 +115,7 @@ module Inferno
 
       test 'PractitionerRole read resource supported' do
         metadata do
-          id '04'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -123,7 +130,7 @@ module Inferno
 
       test 'PractitionerRole vread resource supported' do
         metadata do
-          id '05'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -138,7 +145,7 @@ module Inferno
 
       test 'PractitionerRole history resource supported' do
         metadata do
-          id '06'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -153,7 +160,7 @@ module Inferno
 
       test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '07'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitionerrole.json'
           desc %(
           )
@@ -166,7 +173,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any PractitionerRole for this patient.' do
         metadata do
-          id '08'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -201,7 +208,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

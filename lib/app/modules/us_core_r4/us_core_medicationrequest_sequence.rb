@@ -55,6 +55,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -86,6 +87,7 @@ module Inferno
         @medicationrequest = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @medicationrequest_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
+        save_delayed_sequence_references(@medicationrequest)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
       end
 

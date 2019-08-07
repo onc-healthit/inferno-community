@@ -11,7 +11,7 @@ module Inferno
 
       test_id_prefix 'Location' # change me
 
-      requires :token, :patient_id
+      requires :token, :location
       conformance_supports :Location
 
       def validate_resource_item(resource, property, value)
@@ -49,9 +49,22 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects Location search without authorization' do
+      test 'Can read Location from the server' do
         metadata do
           id '01'
+          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        @location = fetch_resource('Location', @instance.location)
+        @resources_found = !@location.nil?
+      end
+
+      test 'Server rejects Location search without authorization' do
+        metadata do
+          id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -70,33 +83,26 @@ module Inferno
 
       test 'Server returns expected results from Location search by name' do
         metadata do
-          id '02'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@location.nil?, 'Expected valid Location resource to be present'
+
         search_params = { patient: @instance.patient_id, name: 'Boston' }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @location = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        @location_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test 'Server returns expected results from Location search by address' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -117,7 +123,7 @@ module Inferno
 
       test 'Server returns expected results from Location search by address-city' do
         metadata do
-          id '04'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -138,7 +144,7 @@ module Inferno
 
       test 'Server returns expected results from Location search by address-state' do
         metadata do
-          id '05'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -159,7 +165,7 @@ module Inferno
 
       test 'Server returns expected results from Location search by address-postalcode' do
         metadata do
-          id '06'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -180,7 +186,7 @@ module Inferno
 
       test 'Location read resource supported' do
         metadata do
-          id '07'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -195,7 +201,7 @@ module Inferno
 
       test 'Location vread resource supported' do
         metadata do
-          id '08'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -210,7 +216,7 @@ module Inferno
 
       test 'Location history resource supported' do
         metadata do
-          id '09'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -225,7 +231,7 @@ module Inferno
 
       test 'Location resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '10'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-location.json'
           desc %(
           )
@@ -238,7 +244,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Location for this patient.' do
         metadata do
-          id '11'
+          id '12'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -273,7 +279,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '12'
+          id '13'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

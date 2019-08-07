@@ -79,6 +79,7 @@ module Inferno
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @careteam_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
+        save_delayed_sequence_references(@careteam)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
