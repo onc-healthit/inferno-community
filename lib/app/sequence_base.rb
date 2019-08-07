@@ -721,7 +721,7 @@ module Inferno
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference) if non_patient_sequences.include? resource_class
+                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if non_patient_sequences.include? resource_class
               rescue NameError
                 next
               end

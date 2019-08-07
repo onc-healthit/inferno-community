@@ -52,13 +52,14 @@ module Inferno
       test 'Can read Location from the server' do
         metadata do
           id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
         @location = fetch_resource('Location', @instance.location)
+        validate_read_reply(@location, versioned_resource_class('Location'))
         @resources_found = !@location.nil?
       end
 
@@ -184,24 +185,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Location read resource supported' do
-        metadata do
-          id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Location, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@location, versioned_resource_class('Location'))
-      end
-
       test 'Location vread resource supported' do
         metadata do
-          id '09'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -216,7 +202,7 @@ module Inferno
 
       test 'Location history resource supported' do
         metadata do
-          id '10'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -231,7 +217,7 @@ module Inferno
 
       test 'Location resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '11'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-location.json'
           desc %(
           )
@@ -244,7 +230,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Location for this patient.' do
         metadata do
-          id '12'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -279,7 +265,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '13'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

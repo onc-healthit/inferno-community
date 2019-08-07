@@ -26,34 +26,20 @@ module Inferno
       test 'Can read Medication from the server' do
         metadata do
           id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        @medication = fetch_resource('Medication', @instance.medication)
-        @resources_found = !@medication.nil?
-      end
-
-      test 'Medication read resource supported' do
-        metadata do
-          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
+        @medication = fetch_resource('Medication', @instance.medication)
         validate_read_reply(@medication, versioned_resource_class('Medication'))
+        @resources_found = !@medication.nil?
       end
 
       test 'Medication vread resource supported' do
         metadata do
-          id '03'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -68,7 +54,7 @@ module Inferno
 
       test 'Medication history resource supported' do
         metadata do
-          id '04'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -83,7 +69,7 @@ module Inferno
 
       test 'Medication resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '05'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication.json'
           desc %(
           )
@@ -96,7 +82,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Medication for this patient.' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -123,7 +109,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '07'
+          id '06'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

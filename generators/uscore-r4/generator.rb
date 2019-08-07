@@ -31,6 +31,7 @@ def generate_search_validators(metadata)
 end
 
 def generate_tests(metadata)
+  # first isolate the profiles that don't have patient searches
   delayed_sequences = metadata[:sequences].select do |sequence|
     next if sequence[:resource] == 'Patient'
 
@@ -42,7 +43,7 @@ def generate_tests(metadata)
   metadata[:sequences].each do |sequence|
     puts "Generating test #{sequence[:name]}"
 
-    # read refernce if sequence contains no search sequences
+    # read reference if sequence contains no search sequences
     sequence[:delayed_sequence] = delayed_sequences.include? sequence
     create_read_test(sequence) if sequence[:delayed_sequence]
 
@@ -65,6 +66,7 @@ def generate_tests(metadata)
       .each do |interaction|
         # specific edge cases
         interaction[:code] = 'history' if interaction[:code] == 'history-instance'
+        next if interaction[:code] == 'read' && sequence[:delayed_sequence]
 
         create_interaction_test(sequence, interaction)
       end
@@ -89,11 +91,12 @@ def create_read_test(sequence)
   read_test = {
     tests_that: "Can read #{sequence[:resource]} from the server",
     index: sequence[:tests].length + 1,
-    link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
   read_test[:test_code] = %(
         @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', @instance.#{sequence[:resource].downcase})
+        validate_read_reply(@#{sequence[:resource].downcase}, versioned_resource_class('#{sequence[:resource]}'))
         @resources_found = !@#{sequence[:resource].downcase}.nil?)
   sequence[:tests] << read_test
 end

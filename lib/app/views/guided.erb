@@ -400,27 +400,27 @@
         <%= erb(:prerequisite_field,{},{prerequisite: :practitioner,
               label: 'Practitioner',
               instance: instance,
-              value: instance.resource_references.find { |reference| reference.resource_type == 'Practitioner'}&.resource_id&.split('/')&.last,
+              value: instance.resource_references.find { |reference| reference.resource_type == 'Practitioner'}&.resource_id,
               })%>
         <%= erb(:prerequisite_field,{},{prerequisite: :practitionerrole,
               label: 'Practitioner Role',
               instance: instance,
-              value: instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole'}&.resource_id&.split('/')&.last,
+              value: instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole'}&.resource_id,
               })%>
         <%= erb(:prerequisite_field,{},{prerequisite: :medication,
               label: 'Medication',
               instance: instance,
-              value: instance.resource_references.find { |reference| reference.resource_type == 'Medication'}&.resource_id&.split('/')&.last,
+              value: instance.resource_references.find { |reference| reference.resource_type == 'Medication'}&.resource_id,
               })%>
         <%= erb(:prerequisite_field,{},{prerequisite: :organization,
               label: 'Organization',
               instance: instance,
-              value: instance.resource_references.find { |reference| reference.resource_type == 'Organization'}&.resource_id&.split('/')&.last,
+              value: instance.resource_references.find { |reference| reference.resource_type == 'Organization'}&.resource_id,
               })%>
         <%= erb(:prerequisite_field,{},{prerequisite: :location,
               label: 'Location',
               instance: instance,
-              value: instance.resource_references.find { |reference| reference.resource_type == 'Location'}&.resource_id&.split('/')&.last,
+              value: instance.resource_references.find { |reference| reference.resource_type == 'Location'}&.resource_id,
               })%>
       </div>
       <form method="POST" action="sequence_result">
