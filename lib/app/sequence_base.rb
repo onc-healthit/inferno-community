@@ -255,6 +255,10 @@ module Inferno
         @@conformance_supports[sequence_name] || []
       end
 
+      def self.resources_to_test
+        conformance_supports.map(&:to_s)
+      end
+
       def self.versions(*versions)
         @@versions[sequence_name] = versions unless versions.empty?
         @@versions[sequence_name] || FHIR::VERSIONS

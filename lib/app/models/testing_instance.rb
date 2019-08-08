@@ -161,6 +161,10 @@ module Inferno
         reload
       end
 
+      def testable_resources
+        self.module.resources_to_test & (server_capabilities&.supported_resources || Set.new)
+      end
+
       def save_supported_resources(conformance)
         resources = ['Patient',
                      'AllergyIntolerance',

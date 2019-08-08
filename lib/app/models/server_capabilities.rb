@@ -19,6 +19,8 @@ module Inferno
         end
       end
 
+      private
+
       def statement
         @statement ||= FHIR::CapabilityStatement.new(capabilities)
       end

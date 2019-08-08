@@ -144,6 +144,10 @@ module Inferno
 
         begin
           @instance.save_supported_resources(@conformance)
+          Inferno::Models::ServerCapabilities.create(
+            testing_instance_id: @instance.id,
+            capabilities: @conformance.as_json
+          )
         rescue StandardError
           assert false, 'Conformance Statement could not be parsed.'
         end

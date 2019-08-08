@@ -14,7 +14,6 @@ module Inferno
     attr_accessor :fhir_version
     attr_accessor :hide_optional
     attr_accessor :name
-    attr_accessor :resources
     attr_accessor :test_sets
     attr_accessor :title
 
@@ -25,7 +24,6 @@ module Inferno
       @fhir_version = params[:fhir_version]
       @title = params[:title] || params[:name]
       @hide_optional = params[:hide_optional]
-      @resources = Set.new(params[:resources])
       @test_sets = {}.tap do |test_sets|
         params[:test_sets].each do |test_set_key, test_set|
           self.default_test_set ||= test_set_key.to_s
@@ -56,6 +54,10 @@ module Inferno
 
     def variable_defined_by(variable)
       sequences.select { |sequence| sequence.defines.include? variable }
+    end
+
+    def resources_to_test
+      @resources_to_test ||= Set.new(sequences.flat_map(&:resources_to_test))
     end
 
     def self.add(name, inferno_module)
