@@ -223,14 +223,18 @@ async function runStreamTests(group_id, sequence_id = "") {
 // Function that is called for each stream returned
 function stream(result, sequence_id) {
   if (!result.done) {
-    if (result.value.type == "update") {
-      // Tests are running
-      updateProgressBar(result.value);
-    } else {
-      // Tests are done
-      document.getElementById("instance-result-content").innerHTML = JSON.stringify(result.value, undefined, 2);
-      sequence_id == "" ? updateModuleResult(result.value) : updateModuleResult([result.value]);
-    }
+    continue_stream(result.value, sequence_id);
+  }
+}
+
+function continue_stream(result, sequence_id) {
+  if (result.type == "update") {
+    // Tests are running
+    updateProgressBar(result);
+  } else {
+    // Tests are done
+    document.getElementById("instance-result-content").innerHTML = JSON.stringify(result, undefined, 2);
+    sequence_id == "" ? updateModuleResult(result) : updateModuleResult([result]);
   }
 }
 

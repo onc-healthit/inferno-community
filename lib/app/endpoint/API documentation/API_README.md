@@ -4,20 +4,26 @@
 A RESTful JSON API was created for Inferno to allow for automated testing and an option for a new front end. 
 
 ### Sections
-* [Overview](#overview)
-* [FHIR API](#fhir-api)
-* [RESTful API](#restful-api)
-* [Documentation](#documentation)
-* [Testing](#testing)
-* [Other Notes](#other-notes)
+
+* Overview
+* FHIR API
+* RESTful API
+* Documentation
+* Testing
+* Other Notes
 
 ## FHIR API
 The first prototype API created was FHIR conformant, and its conformance was tested using Crucible. By conforming to the FHIR standard, the API concepts differed from Inferno’s usual user interface because of the different mappings. Inferno’s sequences were chosen to be represented by the FHIR resource TestScript, and Inferno’s test results were represented by the FHIR resource TestReport. This caused the FHIR API to not work well with Inferno, so this design was left and a new one was created. 
 
 Files:
 * `fhir.rb`: Request endpoints
-* `fhir_definitions.rb`: Building JSONs for API
+* `fhir_definitions.rb`: Builds JSONs for API
 * `fhir_api_test`: Unit tests
+
+Documentation: 
+* [FHIR API Summary.docx](https://github.com/onc-healthit/inferno/files/3482177/FHIR.API.Summary.docx)
+* [FHIR API Requests.docx](https://github.com/onc-healthit/inferno/files/3482178/FHIR.API.Requests.docx)
+* [Inferno FHIR API.postman_collection.json.zip](https://github.com/onc-healthit/inferno/files/3482659/Inferno.FHIR.API.postman_collection.json.zip)
 
 The FHIR API can probably be discarded and then these files will no longer be needed. 
 
@@ -26,7 +32,8 @@ The API’s mappings were designed be as close to Inferno concepts as possible i
 
 Files: 
 * `api.rb`: Request endpoints
-* `api_json.rb`: Building JSONs for API
+* `api_helper.rb`: Helper functions for requests that get information from Inferno
+* `api_json.rb`: Builds JSONs for API
 * `api_test.rb`:  Unit tests
 
 ### Restrictions
@@ -61,6 +68,9 @@ Files:
 
 ## Testing
 
+### Testing with Postman
+[Inferno API.postman_collection.json.zip](https://github.com/onc-healthit/inferno/files/3482666/Inferno.API.postman_collection.json.zip)
+
 ### Inferno Unit Tests
 * Unit tests were written for the RESTful API in `api_test.rb`
 * Currently the unit tests have about 80% code coverage because some testing is not allowed the way the unit tests are configured
@@ -86,8 +96,12 @@ Files:
     * [Canjs NDJSON Stream Documentation](https://canjs.com/doc/can-ndjson-stream.html)
     * [NDJSON Stream Github](https://github.com/canjs/can-ndjson-stream)
 
-### Other Notes
+Front End Preview: 
+<img width="300" alt="Screen Shot 2019-08-08 at 10 12 00 AM" src="https://user-images.githubusercontent.com/47094547/62710464-5955c580-b9c5-11e9-97d8-b16cf201c833.png"> <img width="300" alt="Screen Shot 2019-08-08 at 10 12 13 AM" src="https://user-images.githubusercontent.com/47094547/62710477-5c50b600-b9c5-11e9-9c0f-d014a003bb19.png">
+
+## Other Notes
 Other files that were edited: 
 * `.rubocop_todo.yml`: Updated to pass rubocop tests for length issues
 * `endpoint.rb`: Added references to the FHIR and regular API files
-* `sequence_base.rb`: Saves the results in the database during the start function to make sure that all the counts are updated (ex. count of tests passed) after a sequence is run, this should probably be kept even if the API isn't
+* `sequence_base.rb`: Saves the results during the start function to make sure that all the counts are updated and saved in the database (ex. count of tests passed) after a sequence is run
+* `.codeclimate.yml`: Updated to ignore imported JS files, but not the ones we wrote
