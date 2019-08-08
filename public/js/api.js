@@ -171,8 +171,11 @@ function loadModule() {
   document.getElementById("module").style.display = "";
   module_title = `<h3>${inferno.module.name}</h3>`
   $("#module").append(module_title);
+  addModuleGroup();
+}
 
-  // Add card for each group
+// Add card for each group
+function addModuleGroup() {
   inferno.module.groups.forEach(function(group) {
     button = group.run? `<button type="button" class="btn btn-primary ml-3" onclick="runStreamTests('${group.id}')" style="float: right;">Run</button>` : ""; // Only add button to run if group is executable
     html_group = `
@@ -188,17 +191,21 @@ function loadModule() {
     `;
     $("#module").append(html_group);
 
-    // Add section of card for each sequence
-    group.sequences.forEach(function(sequence) {
-      button = sequence.run? `<button type="button" class="btn btn-primary ml-3" onclick="runStreamTests('${group.id}', '${sequence.id}')" style="float: right;">Run</button>` : ""; // Only add button to run if sequence is executable
-      html_sequence = `
-        <li class="list-group-item" id="module-${sequence.id}">${sequence.name}
-          ${button}
-          <button type="button" class="btn btn-outline-secondary ml-3" id="module-${sequence.id}-results" onclick="loadSequenceResult('${group.id}', '${sequence.id}')" style="float: right;">Not Run</button>
-        </li>
-      `;
-      $(`#module-${group.id}`).append(html_sequence);
-    });
+    addModuleSequence(group);
+  });
+}
+
+// Add section of card for each sequence
+function addModuleSequence(group) {
+  group.sequences.forEach(function(sequence) {
+    button = sequence.run? `<button type="button" class="btn btn-primary ml-3" onclick="runStreamTests('${group.id}', '${sequence.id}')" style="float: right;">Run</button>` : ""; // Only add button to run if sequence is executable
+    html_sequence = `
+      <li class="list-group-item" id="module-${sequence.id}">${sequence.name}
+        ${button}
+        <button type="button" class="btn btn-outline-secondary ml-3" id="module-${sequence.id}-results" onclick="loadSequenceResult('${group.id}', '${sequence.id}')" style="float: right;">Not Run</button>
+      </li>
+    `;
+    $(`#module-${group.id}`).append(html_sequence);
   });
 }
 

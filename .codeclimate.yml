@@ -1,6 +1,9 @@
 version: "2"         # required to adjust maintainability checks
 exclude_patterns:
   - "!**/test/"
+  - "!/public/"
+  - "/public/app.js"
+  - "/public/api.js"
 checks:
   argument-count:
     enabled: true
