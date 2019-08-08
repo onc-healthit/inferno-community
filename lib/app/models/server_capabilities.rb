@@ -11,11 +11,20 @@ module Inferno
 
       belongs_to :testing_instance
 
-      self.raise_on_save_failure = true
-
       def supported_resources
         statement.rest.each_with_object(Set.new) do |rest, resources|
           rest.resource.each { |resource| resources << resource.type }
+        end
+      end
+
+      def supported_interactions
+        statement.rest.flat_map do |rest|
+          rest.resource.map do |resource|
+            {
+              resource_type: resource.type,
+              interactions: resource_interactions(resource).sort
+            }
+          end
         end
       end
 
@@ -23,6 +32,18 @@ module Inferno
 
       def statement
         @statement ||= FHIR::CapabilityStatement.new(capabilities)
+      end
+
+      def interaction_display(interaction)
+        if interaction.code == 'search-type'
+          'search'
+        else
+          interaction.code
+        end
+      end
+
+      def resource_interactions(resource)
+        resource.interaction.map { |interaction| interaction_display(interaction) }
       end
     end
   end

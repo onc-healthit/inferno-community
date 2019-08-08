@@ -17,14 +17,13 @@
     <% end %>
 
     <h4>Conformance Statement Resource Support</h4>
-    <% if instance.supported_resources.count > 0%>
+    <% if instance.server_capabilities.present? %>
     <ul>
-      <% instance.supported_resources.each do |resource| %>
-        <% if resource.supported %>
-          <li><%= resource.resource_type %>
-            <%= "[ #{resource.supported_interactions.join(', ')} ]" unless resource.supported_interactions.nil?%>
-          </li>
-        <% end %>
+      <% instance.supported_resource_interactions.each do |resource| %>
+        <li>
+          <%= resource[:resource_type] %>
+          <%= "[ #{resource[:interactions].join(', ')} ]" unless resource[:interactions].blank?%>
+        </li>
       <% end %>
     </ul>
     <% else %>

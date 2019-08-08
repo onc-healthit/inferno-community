@@ -219,6 +219,15 @@ module Inferno
         save!
       end
 
+      def supported_resource_interactions
+        return [] if server_capabilities.blank?
+
+        resources = testable_resources
+        server_capabilities.supported_interactions.select do |interactions|
+          resources.include? interactions[:resource_type]
+        end
+      end
+
       def conformance_supported?(resource, methods = [])
         resource_support = supported_resources.find { |r| r.resource_type == resource.to_s }
         return false if resource_support.nil? || !resource_support.supported
