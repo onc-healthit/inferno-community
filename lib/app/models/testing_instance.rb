@@ -229,22 +229,20 @@ module Inferno
       end
 
       def conformance_supported?(resource, methods = [])
-        resource_support = supported_resources.find { |r| r.resource_type == resource.to_s }
-        return false if resource_support.nil? || !resource_support.supported
+        resource_support = supported_resource_interactions.find do |interactions|
+          interactions[:resource_type] == resource.to_s
+        end
+
+        return false if resource_support.blank?
 
         methods.all? do |method|
-          case method
-          when :read
-            resource_support.read_supported
-          when :search
-            resource_support.search_supported
-          when :history
-            resource_support.history_supported
-          when :vread
-            resource_support.vread_supported
+          if method == :history
+            method = 'history-instance'
           else
-            false
+            method = method.to_s
           end
+
+          resource_support[:interactions].include? method
         end
       end
 
