@@ -96,7 +96,6 @@ def create_read_test(sequence)
 
   read_test[:test_code] = %(
         @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', @instance.#{sequence[:resource].downcase})
-        validate_read_reply(@#{sequence[:resource].downcase}, versioned_resource_class('#{sequence[:resource]}'))
         @resources_found = !@#{sequence[:resource].downcase}.nil?)
   sequence[:tests] << read_test
 end
@@ -289,6 +288,8 @@ def get_value_path_by_type(type)
     '.code'
   when 'HumanName'
     '.family'
+  when 'Address'
+    '.city'
   else
     ''
   end
@@ -364,7 +365,6 @@ end
 def search_param_constants(search_parameters, sequence)
   return "patient: @instance.patient_id, category: 'assess-plan'" if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
   return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
-  return "patient: @instance.patient_id, name: 'Boston'" if search_parameters == ['name'] && (['Location', 'Organization'].include? sequence[:resource])
   return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
   return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json'
   return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json'

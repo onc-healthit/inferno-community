@@ -22,7 +22,7 @@ module Inferno
           assert value_found, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
           assert value_found, 'address on resource does not match address requested'
 
         end
@@ -47,7 +47,6 @@ module Inferno
         end
 
         @organization = fetch_resource('Organization', @instance.organization)
-        validate_read_reply(@organization, versioned_resource_class('Organization'))
         @resources_found = !@organization.nil?
       end
 
@@ -63,7 +62,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
+        name_val = resolve_element_from_path(@organization, 'name')
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -82,7 +83,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
+        name_val = resolve_element_from_path(@organization, 'name')
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
@@ -101,7 +104,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
-        address_val = resolve_element_from_path(@organization, 'address')
+        address_val = resolve_element_from_path(@organization, 'address.city')
         search_params = { 'address': address_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

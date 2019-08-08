@@ -54,7 +54,6 @@ module Inferno
         end
 
         @practitioner = fetch_resource('Practitioner', @instance.practitioner)
-        validate_read_reply(@practitioner, versioned_resource_class('Practitioner'))
         @resources_found = !@practitioner.nil?
       end
 

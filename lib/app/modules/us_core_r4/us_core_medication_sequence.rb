@@ -33,7 +33,6 @@ module Inferno
         end
 
         @medication = fetch_resource('Medication', @instance.medication)
-        validate_read_reply(@medication, versioned_resource_class('Medication'))
         @resources_found = !@medication.nil?
       end
 
