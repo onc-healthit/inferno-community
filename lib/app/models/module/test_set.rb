@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'test_group'
+
 module Inferno
   class Module
     class TestSet
@@ -7,18 +9,18 @@ module Inferno
       attr_accessor :view
       attr_accessor :groups
 
-      def initialize(id, view)
+      def initialize(id, test_set)
         @id = id
-        @view = view
-        @groups = []
+        @view = test_set[:view]
+        @groups = test_set[:tests].map { |group| TestGroup.new(self, group) }
       end
 
       def sequences
-        @groups.flat_map { |group| group.test_cases.map(&:sequence) }
+        groups.flat_map(&:sequences)
       end
 
       def test_cases
-        @groups.flat_map(&:test_cases)
+        groups.flat_map(&:test_cases)
       end
 
       def test_case_by_id(test_case_id)

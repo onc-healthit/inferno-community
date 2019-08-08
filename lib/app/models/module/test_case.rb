@@ -16,15 +16,15 @@ module Inferno
       end
 
       def title
-        @parameters[:title] || sequence.title
+        parameters[:title] || sequence.title
       end
 
       def description
-        @parameters[:description] || sequence.description
+        parameters[:description] || sequence.description
       end
 
       def variable_defaults
-        @parameters[:variable_defaults]
+        parameters[:variable_defaults]
       end
     end
   end

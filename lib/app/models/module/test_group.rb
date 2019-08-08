@@ -14,30 +14,39 @@ module Inferno
       attr_accessor :test_cases
       attr_accessor :run_all
       attr_accessor :run_skipped
+      attr_accessor :test_case_names
 
-      def initialize(test_set, name, overview, input_instructions, lock_variables, run_all, run_skipped)
+      def initialize(test_set, group)
         @test_set = test_set
-        @name = name
+        @name = group[:name]
         @id = name.gsub(/[^0-9a-z]/i, '')
-        @overview = overview
-        @run_all = run_all
+        @overview = group[:overview]
+        @run_all = group[:run_all] || false
         @test_cases = []
-        @test_case_names = {}
-        @input_instructions = input_instructions
-        @lock_variables = lock_variables || []
-        @run_skipped = run_skipped
+        @test_case_names = Set.new
+        @input_instructions = group[:input_instructions]
+        @lock_variables = group[:lock_variables] || []
+        @run_skipped = group[:run_skipped] || false
+
+        group[:sequences].each do |sequence|
+          if sequence.instance_of?(String)
+            add_test_case(sequence)
+          else
+            add_test_case(sequence[:sequence], sequence)
+          end
+        end
       end
 
       def add_test_case(sequence_name, parameters = {})
-        current_name = "#{test_set.id}_#{@id}_#{sequence_name}"
+        current_name = "#{test_set.id}_#{id}_#{sequence_name}"
         index = 1
-        while @test_case_names.key?(current_name)
+        while test_case_names.include? current_name
           index += 1
-          current_name = "#{test_set.id}_#{@id}_#{sequence_name}_#{index}"
+          current_name = "#{test_set.id}_#{id}_#{sequence_name}_#{index}"
           raise 'Too many test cases using the same scenario' if index > 99
         end
 
-        @test_case_names[current_name] = true
+        test_case_names << current_name
 
         sequence = Inferno::Sequence::SequenceBase.descendants.find { |seq| seq.sequence_name == sequence_name }
 
@@ -45,9 +54,13 @@ module Inferno
 
         new_test_case = TestCase.new(current_name, self, sequence, parameters)
 
-        @test_cases << new_test_case
+        test_cases << new_test_case
 
         new_test_case
+      end
+
+      def sequences
+        test_cases.flat_map(&:sequence)
       end
     end
   end
