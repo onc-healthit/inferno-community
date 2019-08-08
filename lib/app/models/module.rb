@@ -2,139 +2,31 @@
 
 require 'yaml'
 
+require_relative 'module/test_group'
+require_relative 'module/test_set'
+
 module Inferno
   class Module
     @@modules = {}
 
-    class TestSet
-      attr_accessor :id
-      attr_accessor :view
-      attr_accessor :groups
-
-      def initialize(id, view)
-        @id = id
-        @view = view
-        @groups = []
-      end
-
-      def sequences
-        @groups.flat_map { |group| group.test_cases.map(&:sequence) }
-      end
-
-      def test_cases
-        @groups.flat_map(&:test_cases)
-      end
-
-      def test_case_by_id(test_case_id)
-        test_cases.find { |tc| tc.id == test_case_id }
-      end
-
-      def variable_required_by(variable)
-        sequences.select { |sequence| sequence.requires.include? variable }
-      end
-
-      def variable_defined_by(variable)
-        sequences.select { |sequence| sequence.defines.include? variable }
-      end
-    end
-
-    class TestGroup
-      attr_accessor :test_set
-      attr_accessor :name
-      attr_accessor :overview
-      attr_accessor :input_instructions
-      attr_accessor :lock_variables
-      attr_accessor :id
-      attr_accessor :test_cases
-      attr_accessor :run_all
-      attr_accessor :run_skipped
-
-      def initialize(test_set, name, overview, input_instructions, lock_variables, run_all, run_skipped)
-        @test_set = test_set
-        @name = name
-        @id = name.gsub(/[^0-9a-z]/i, '')
-        @overview = overview
-        @run_all = run_all
-        @test_cases = []
-        @test_case_names = {}
-        @input_instructions = input_instructions
-        @lock_variables = lock_variables || []
-        @run_skipped = run_skipped
-      end
-
-      def add_test_case(sequence_name, parameters = {})
-        current_name = "#{test_set.id}_#{@id}_#{sequence_name}"
-        index = 1
-        while @test_case_names.key?(current_name)
-          index += 1
-          current_name = "#{test_set.id}_#{@id}_#{sequence_name}_#{index}"
-          raise 'Too many test cases using the same scenario' if index > 99
-        end
-
-        @test_case_names[current_name] = true
-
-        sequence = Inferno::Sequence::SequenceBase.descendants.find { |seq| seq.sequence_name == sequence_name }
-
-        raise "No such sequence: #{sequence_name}" if sequence.nil?
-
-        new_test_case = TestCase.new(current_name, self, sequence, parameters)
-
-        @test_cases << new_test_case
-
-        new_test_case
-      end
-    end
-
-    class TestCase
-      attr_accessor :id
-      attr_accessor :test_group
-      attr_accessor :sequence
-      attr_accessor :parameters
-
-      def initialize(id, test_group, sequence, parameters)
-        @id = id
-        @sequence = sequence
-        @test_group = test_group
-        @parameters = parameters
-      end
-
-      def title
-        if !@parameters[:title].nil?
-          @parameters[:title]
-        else
-          sequence.title
-        end
-      end
-
-      def description
-        if !@parameters[:description].nil?
-          @parameters[:description]
-        else
-          sequence.description
-        end
-      end
-
-      def variable_defaults
-        @parameters[:variable_defaults]
-      end
-    end
-
-    attr_accessor :name
-    attr_accessor :title
-    attr_accessor :hide_optional
-    attr_accessor :description
     attr_accessor :default_test_set
+    attr_accessor :description
     attr_accessor :fhir_version
+    attr_accessor :hide_optional
+    attr_accessor :name
+    attr_accessor :resources
     attr_accessor :test_sets
+    attr_accessor :title
 
-    def initialize(name, description, default_test_set, fhir_version, title)
-      @name = name
-      @description = description
-      @default_test_set = default_test_set
-      @fhir_version = fhir_version
+    def initialize(**params)
+      @name = params[:name]
+      @description = params[:description]
+      @default_test_set = params[:default_test_set]
+      @fhir_version = params[:fhir_version]
       @test_sets = {}
-      @title = title
-      @hide_optional = hide_optional
+      @title = params[:title] || params[:name]
+      @hide_optional = params[:hide_optional]
+      @resources = Set.new(params[:resources])
     end
 
     def sequences
@@ -166,13 +58,7 @@ module Inferno
     end
 
     def self.load_module(module_hash)
-      new_module = new(
-        module_hash[:name],
-        module_hash[:description],
-        module_hash[:default_test_set],
-        module_hash[:fhir_version],
-        module_hash[:title] || module_hash[:name]
-      )
+      new_module = new(module_hash)
 
       module_hash[:test_sets].each do |test_set_key, test_set|
         new_module.default_test_set ||= test_set_key.to_s
@@ -205,7 +91,7 @@ module Inferno
       @@modules[module_hash[:name]] = new_module
     end
 
-    Dir.glob(File.join(__dir__, 'modules', '*_module.yml')).each do |file|
+    Dir.glob(File.join(__dir__, '..', 'modules', '*_module.yml')).each do |file|
       this_module = YAML.load_file(file).deep_symbolize_keys
       load_module(this_module)
     end
