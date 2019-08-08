@@ -41,18 +41,7 @@ def print_requests(result)
 end
 
 def execute(instance, sequences)
-  client = FHIR::Client.new(instance.url)
-
-  case instance.module.fhir_version
-  when 'stu3'
-    client.use_stu3
-  when 'dstu2'
-    client.use_dstu2
-  else
-    client.use_r4
-  end
-
-  client.default_json
+  client = FHIR::Client.for_testing_instance(instance)
 
   sequence_results = []
 
