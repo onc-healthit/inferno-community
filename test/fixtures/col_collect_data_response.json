@@ -1,0 +1,427 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "measurereport",
+      "resource": {
+        "resourceType": "MeasureReport",
+        "contained": [
+          {
+            "resourceType": "Bundle",
+            "id": "7acf4d0b-070e-4264-a624-0558583d3f62",
+            "type": "collection",
+            "entry": [
+              {
+                "fullUrl": "f052e628-2a04-4ba3-8019-859f7e776129",
+                "resource": {
+                  "resourceType": "List",
+                  "id": "f052e628-2a04-4ba3-8019-859f7e776129",
+                  "title": "numerator",
+                  "entry": [
+                    {
+                      "item": {
+                        "reference": "#Observation/MitreTestScript-test-Observation-32794/_history/1"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "fullUrl": "Observation/MitreTestScript-test-Observation-32794/_history/1",
+                "resource": {
+                  "resourceType": "Observation",
+                  "id": "MitreTestScript-test-Observation-32794",
+                  "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2019-08-07T19:42:17.644+00:00",
+                    "profile": [
+                      "http://hl7.org/fhir/us/hedis/StructureDefinition/hedis-observation"
+                    ]
+                  },
+                  "extension": [
+                    {
+                      "url": "http://mihin.org/extension/copyright",
+                      "valueString": "Copyright 2014-2018 Michigan Health Information Network Shared Services. Licensed under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License."
+                    }
+                  ],
+                  "identifier": [
+                    {
+                      "use": "official",
+                      "system": "mihin.org/fhir/sid/elementId",
+                      "value": "6f28ad6e-326e-4904-85ea-f5ecb514f352"
+                    }
+                  ],
+                  "status": "final",
+                  "category": [
+                    {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/observation-category",
+                          "code": "laboratory",
+                          "display": "Laboratory"
+                        }
+                      ]
+                    }
+                  ],
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://www.ama-assn.org/go/cpt",
+                        "code": "82274"
+                      }
+                    ]
+                  },
+                  "subject": {
+                    "reference": "Patient/MitreTestScript-test-Patient-410",
+                    "display": "Bobbie Simon Jackson"
+                  },
+                  "effectiveDateTime": "2017-01-07T00:08:00-05:00",
+                  "valueString": "NEGATIVE"
+                }
+              },
+              {
+                "fullUrl": "Patient/MitreTestScript-test-Patient-410/_history/1",
+                "resource": {
+                  "resourceType": "Patient",
+                  "id": "MitreTestScript-test-Patient-410",
+                  "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2019-08-07T19:42:17.644+00:00",
+                    "profile": [
+                      "http://hl7.org/fhir/us/hedis/StructureDefinition/hedis-patient"
+                    ]
+                  },
+                  "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Bobbie Simon <b>JACKSON </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>000000410</td></tr><tr><td>Address</td><td><span>34 SW Thames Avenue </span><br/><span>Unit 4 </span><br/><span>Owosso </span><span>MI </span></td></tr><tr><td>Date of birth</td><td><span>15 June 1955</span></td></tr></tbody></table></div>"
+                  },
+                  "extension": [
+                    {
+                      "url": "http://mihin.org/extension/copyright",
+                      "valueString": "Copyright 2014-2018 Michigan Health Information Network Shared Services. Licensed under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0.  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License."
+                    },
+                    {
+                      "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/v3/Race",
+                            "code": "2106-3",
+                            "display": "White"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/v3/Ethnicity",
+                            "code": "2186-5",
+                            "display": "Not Hispanic or Latino"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-religion",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/v3/ReligiousAffiliation",
+                            "code": "1077",
+                            "display": "Protestant"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "identifier": [
+                    {
+                      "use": "official",
+                      "type": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/identifier-type",
+                            "code": "SB",
+                            "display": "Social Beneficiary Identifier"
+                          }
+                        ]
+                      },
+                      "system": "http://hl7.org/fhir/sid/us-ssn",
+                      "value": "000000410"
+                    },
+                    {
+                      "use": "official",
+                      "type": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/identifier-type",
+                            "code": "SB",
+                            "display": "Social Beneficiary Identifier"
+                          }
+                        ]
+                      },
+                      "system": "http://mihin.org/fhir/cks",
+                      "value": "9612010d2fc541ee8c77392c05b53e09"
+                    }
+                  ],
+                  "active": true,
+                  "name": [
+                    {
+                      "family": "Jackson",
+                      "given": [
+                        "Bobbie",
+                        "Simon"
+                      ]
+                    }
+                  ],
+                  "telecom": [
+                    {
+                      "system": "phone",
+                      "value": "989-555-4735",
+                      "use": "home"
+                    },
+                    {
+                      "system": "phone",
+                      "value": "989-555-0975",
+                      "use": "mobile"
+                    }
+                  ],
+                  "gender": "female",
+                  "birthDate": "1955-06-15",
+                  "address": [
+                    {
+                      "use": "home",
+                      "type": "postal",
+                      "line": [
+                        "34 SW Thames Avenue",
+                        "Unit 4"
+                      ],
+                      "city": "Owosso",
+                      "district": "Shiawassee County",
+                      "state": "MI",
+                      "postalCode": "48867"
+                    }
+                  ]
+                }
+              },
+              {
+                "fullUrl": "bbe982a4-7e41-4ada-896d-f5c75952cd0f",
+                "resource": {
+                  "resourceType": "List",
+                  "id": "bbe982a4-7e41-4ada-896d-f5c75952cd0f",
+                  "title": "initial-population",
+                  "entry": [
+                    {
+                      "item": {
+                        "reference": "#Patient/MitreTestScript-test-Patient-410/_history/1"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "status": "complete",
+        "type": "individual",
+        "measure": {
+          "reference": "Measure/MitreTestScript-measure-col"
+        },
+        "patient": {
+          "reference": "Patient/MitreTestScript-test-Patient-410"
+        },
+        "period": {
+          "start": "2017-01-01T00:00:00+00:00",
+          "end": "2017-01-31T00:00:00+00:00"
+        },
+        "evaluatedResources": {
+          "reference": "#7acf4d0b-070e-4264-a624-0558583d3f62"
+        }
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "MitreTestScript-test-Observation-32794",
+        "meta": {
+          "versionId": "1",
+          "lastUpdated": "2019-08-07T19:42:17.644+00:00",
+          "profile": [
+            "http://hl7.org/fhir/us/hedis/StructureDefinition/hedis-observation"
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://mihin.org/extension/copyright",
+            "valueString": "Copyright 2014-2018 Michigan Health Information Network Shared Services. Licensed under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License."
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "mihin.org/fhir/sid/elementId",
+            "value": "6f28ad6e-326e-4904-85ea-f5ecb514f352"
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://www.ama-assn.org/go/cpt",
+              "code": "82274"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/MitreTestScript-test-Patient-410",
+          "display": "Bobbie Simon Jackson"
+        },
+        "effectiveDateTime": "2017-01-07T00:08:00-05:00",
+        "valueString": "NEGATIVE"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "MitreTestScript-test-Patient-410",
+        "meta": {
+          "versionId": "1",
+          "lastUpdated": "2019-08-07T19:42:17.644+00:00",
+          "profile": [
+            "http://hl7.org/fhir/us/hedis/StructureDefinition/hedis-patient"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Bobbie Simon <b>JACKSON </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>000000410</td></tr><tr><td>Address</td><td><span>34 SW Thames Avenue </span><br/><span>Unit 4 </span><br/><span>Owosso </span><span>MI </span></td></tr><tr><td>Date of birth</td><td><span>15 June 1955</span></td></tr></tbody></table></div>"
+        },
+        "extension": [
+          {
+            "url": "http://mihin.org/extension/copyright",
+            "valueString": "Copyright 2014-2018 Michigan Health Information Network Shared Services. Licensed under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0.  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License."
+          },
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/v3/Race",
+                  "code": "2106-3",
+                  "display": "White"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/v3/Ethnicity",
+                  "code": "2186-5",
+                  "display": "Not Hispanic or Latino"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-religion",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/v3/ReligiousAffiliation",
+                  "code": "1077",
+                  "display": "Protestant"
+                }
+              ]
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/identifier-type",
+                  "code": "SB",
+                  "display": "Social Beneficiary Identifier"
+                }
+              ]
+            },
+            "system": "http://hl7.org/fhir/sid/us-ssn",
+            "value": "000000410"
+          },
+          {
+            "use": "official",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/identifier-type",
+                  "code": "SB",
+                  "display": "Social Beneficiary Identifier"
+                }
+              ]
+            },
+            "system": "http://mihin.org/fhir/cks",
+            "value": "9612010d2fc541ee8c77392c05b53e09"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "family": "Jackson",
+            "given": [
+              "Bobbie",
+              "Simon"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "989-555-4735",
+            "use": "home"
+          },
+          {
+            "system": "phone",
+            "value": "989-555-0975",
+            "use": "mobile"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1955-06-15",
+        "address": [
+          {
+            "use": "home",
+            "type": "postal",
+            "line": [
+              "34 SW Thames Avenue",
+              "Unit 4"
+            ],
+            "city": "Owosso",
+            "district": "Shiawassee County",
+            "state": "MI",
+            "postalCode": "48867"
+          }
+        ]
+      }
+    }
+  ]
+}
