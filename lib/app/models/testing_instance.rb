@@ -56,7 +56,6 @@ module Inferno
       property :must_support_confirmed, String, default: ''
 
       has n, :sequence_results
-      has n, :supported_resources, order: [:index.asc]
       has n, :resource_references
       has 1, :server_capabilities
 
@@ -165,60 +164,6 @@ module Inferno
         self.module.resources_to_test & (server_capabilities&.supported_resources || Set.new)
       end
 
-      def save_supported_resources(conformance)
-        resources = ['Patient',
-                     'AllergyIntolerance',
-                     'CarePlan',
-                     'CareTeam',
-                     'Condition',
-                     'Device',
-                     'DiagnosticReport',
-                     'DocumentReference',
-                     'Encounter',
-                     'ExplanationOfBenefit',
-                     'Goal',
-                     'Immunization',
-                     'Location',
-                     'Medication',
-                     'MedicationDispense',
-                     'MedicationStatement',
-                     'MedicationRequest',
-                     'MedicationOrder',
-                     'Observation',
-                     'Organization',
-                     'Procedure',
-                     'DocumentReference',
-                     'Provenance',
-                     'Practitioner',
-                     'PractitionerRole']
-
-        supported_resource_capabilities =
-          conformance
-            .rest.first.resource
-            .select { |resource| resources.include? resource.type }
-            .index_by(&:type)
-
-        supported_resources.each(&:destroy)
-        save!
-
-        resources.each_with_index do |resource_name, index|
-          capabilities = supported_resource_capabilities[resource_name]
-
-          supported_resources << SupportedResource.create(
-            resource_type: resource_name,
-            index: index,
-            testing_instance_id: id,
-            supported: !capabilities.nil?,
-            read_supported: interaction_supported?(capabilities, 'read'),
-            vread_supported: interaction_supported?(capabilities, 'vread'),
-            search_supported: interaction_supported?(capabilities, 'search-type'),
-            history_supported: interaction_supported?(capabilities, 'history-instance')
-          )
-        end
-
-        save!
-      end
-
       def supported_resource_interactions
         return [] if server_capabilities.blank?
 
@@ -236,11 +181,7 @@ module Inferno
         return false if resource_support.blank?
 
         methods.all? do |method|
-          if method == :history
-            method = 'history-instance'
-          else
-            method = method.to_s
-          end
+          method = method == :history ? 'history-instance' : method.to_s
 
           resource_support[:interactions].include? method
         end
