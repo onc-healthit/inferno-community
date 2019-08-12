@@ -93,7 +93,7 @@
       </div>
       <% if show_button %>
       <div class="sequence-action col-2">
-        <%if !sequence_results[test_case.id] && instance.supported_resources.length > 0 && !test_case.sequence.conformance_supports.all?{|resource| instance.conformance_supported?(resource)}%>
+        <% if !sequence_results[test_case.id] && instance.server_capabilities.present? && !test_case.sequence.conformance_supports.all?{ |resource| instance.conformance_supported?(resource) } %>
           <span class="oi oi-warning not-supported-warning" aria-hidden="true" data-toggle="tooltip" title="The Conformance Statement does not indicate support for the Resources required for this test."></span>
         <%end%>
         <span>
