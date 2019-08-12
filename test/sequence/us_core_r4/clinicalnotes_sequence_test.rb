@@ -28,12 +28,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
       resource_id: @patient_id
     )
 
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: 'DocumentReference',
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true
-    )
+    set_resource_support(@instance, 'DocumentReference')
 
     @request_headers = {
       'Accept' => 'application/fhir+json',

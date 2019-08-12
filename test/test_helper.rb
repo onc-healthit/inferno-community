@@ -82,4 +82,27 @@ def get_client(instance)
   client
 end
 
+def set_resource_support(instance, resource)
+  interactions = ['read', 'search-type', 'history-instance', 'vread'].map do |interaction|
+    {
+      code: interaction
+    }
+  end
+  Inferno::Models::ServerCapabilities.create(
+    testing_instance_id: instance.id,
+    capabilities: {
+      rest: [
+        {
+          resource: [
+            {
+              type: resource.to_s,
+              interaction: interactions
+            }
+          ]
+        }
+      ]
+    }
+  )
+end
+
 FHIR::DSTU2::StructureDefinition.clear_all_validates_vs
