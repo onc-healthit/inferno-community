@@ -16,7 +16,7 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'read' },
                 { code: 'vread' },
                 { code: 'history-instance' },
-                { code: 'search' }
+                { code: 'search-type' }
               ]
             },
             {
@@ -44,5 +44,24 @@ class ServerCapabilitiesTest < MiniTest::Test
     expected_resources = Set.new(['Patient', 'Condition', 'Observation'])
 
     assert @capabilities.supported_resources == expected_resources
+  end
+
+  def test_supported_interactions
+    expected_interactions = [
+      {
+        resource_type: 'Patient',
+        interactions: ['history-instance', 'read', 'search', 'vread']
+      },
+      {
+        resource_type: 'Condition',
+        interactions: ['delete', 'update']
+      },
+      {
+        resource_type: 'Observation',
+        interactions: []
+      }
+    ]
+
+    assert @capabilities.supported_interactions == expected_interactions
   end
 end
