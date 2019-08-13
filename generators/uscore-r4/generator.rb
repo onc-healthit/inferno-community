@@ -32,19 +32,12 @@ end
 
 def generate_tests(metadata)
   # first isolate the profiles that don't have patient searches
-  delayed_sequences = metadata[:sequences].select do |sequence|
-    next if sequence[:resource] == 'Patient'
-
-    sequence[:searches].none? do |search|
-      search[:names].include? 'patient'
-    end
-  end
+  mark_delayed_sequences(metadata)
 
   metadata[:sequences].each do |sequence|
     puts "Generating test #{sequence[:name]}"
 
     # read reference if sequence contains no search sequences
-    sequence[:delayed_sequence] = delayed_sequences.include? sequence
     create_read_test(sequence) if sequence[:delayed_sequence]
 
     # authorization test
@@ -77,6 +70,17 @@ def generate_tests(metadata)
   end
 end
 
+def mark_delayed_sequences(metadata)
+  metadata[:sequences].each do |sequence|
+    sequence[:delayed_sequence] = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
+  end
+end
+
+def find_first_search(sequence)
+  sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
+    sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+end
+
 def generate_sequence(sequence)
   puts "Generating #{sequence[:name]}\n"
   file_name = OUT_PATH + '/us_core_r4/' + sequence[:name].downcase + '_sequence.rb'
@@ -107,8 +111,7 @@ def create_authorization_test(sequence)
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
 
-  first_search = sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
-                 sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+  first_search = find_first_search(sequence)
   return if first_search.nil?
 
   authorization_test[:test_code] = %(
@@ -129,7 +132,7 @@ def create_search_test(sequence, search_param)
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
 
-  is_first_search = search_test[:index] == 2 # if first search - fix this check later
+  is_first_search = search_param == find_first_search(sequence)
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}

@@ -11,6 +11,7 @@ module Inferno
 
       test_id_prefix 'Practitioner' # change me
 
+      mark_delayed :practitioner
       requires :token, :practitioner
       conformance_supports :Practitioner
 
@@ -87,16 +88,24 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
-
         name_val = resolve_element_from_path(@practitioner, 'name.family')
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
         assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        resource_count = reply&.resource&.entry&.length || 0
+        @resources_found = true if resource_count.positive?
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @practitioner = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @practitioner_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
+        save_delayed_sequence_references(@practitioner)
+        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
 
       test 'Server returns expected results from Practitioner search by identifier' do

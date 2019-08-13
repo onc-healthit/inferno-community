@@ -11,6 +11,7 @@ module Inferno
 
       test_id_prefix 'Medication' # change me
 
+      mark_delayed :medication
       requires :token, :medication
       conformance_supports :Medication
 

@@ -11,6 +11,7 @@ module Inferno
 
       test_id_prefix 'Organization' # change me
 
+      mark_delayed :organization
       requires :token, :organization
       conformance_supports :Organization
 
@@ -80,16 +81,24 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@organization.nil?, 'Expected valid Organization resource to be present'
-
         name_val = resolve_element_from_path(@organization, 'name')
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        resource_count = reply&.resource&.entry&.length || 0
+        @resources_found = true if resource_count.positive?
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @organization = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @organization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
+        save_delayed_sequence_references(@organization)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
       test 'Server returns expected results from Organization search by address' do

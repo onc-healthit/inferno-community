@@ -11,6 +11,7 @@ require_relative 'utils/web_driver'
 require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
+require_relative 'models/testing_instance'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -38,9 +39,10 @@ module Inferno
       @@defines = {}
       @@versions = {}
       @@test_metadata = Hash.new { |hash, key| hash[key] = [] }
-
+      
       @@optional = []
       @@show_uris = []
+      @@delayed_sequences = []
 
       @@test_id_prefixes = {}
 
@@ -258,6 +260,11 @@ module Inferno
       def self.versions(*versions)
         @@versions[sequence_name] = versions unless versions.empty?
         @@versions[sequence_name] || FHIR::VERSIONS
+      end
+
+      def self.mark_delayed(resource)
+        Inferno::Models::TestingInstance.send('property', resource, String)
+        @@delayed_sequences << resource
       end
 
       def self.missing_requirements(instance, recurse = false)
@@ -713,7 +720,6 @@ module Inferno
       end
 
       def save_delayed_sequence_references(resource)
-        non_patient_sequences = ['Location', 'Organization', 'Medication', 'Practitioner', 'PractitionerRole']
         walk_resource(resource) do |value, meta, _path|
           next if meta['type'] != 'Reference'
 
@@ -721,7 +727,7 @@ module Inferno
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if non_patient_sequences.include? resource_class
+                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if @@delayed_sequences.include? resource_class.downcase.to_sym
               rescue NameError
                 next
               end

@@ -11,6 +11,7 @@ module Inferno
 
       test_id_prefix 'PractitionerRole' # change me
 
+      mark_delayed :practitionerrole
       requires :token, :practitionerrole
       conformance_supports :PractitionerRole
 
@@ -80,16 +81,24 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@practitionerrole.nil?, 'Expected valid PractitionerRole resource to be present'
-
         specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
         search_params = { 'specialty': specialty_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
         assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        resource_count = reply&.resource&.entry&.length || 0
+        @resources_found = true if resource_count.positive?
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @practitionerrole = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @practitionerrole_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
+        save_delayed_sequence_references(@practitionerrole)
+        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
       test 'Server returns expected results from PractitionerRole search by practitioner' do
