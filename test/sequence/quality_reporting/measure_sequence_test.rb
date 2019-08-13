@@ -34,7 +34,6 @@ class MeasureSequenceTest < MiniTest::Test
 
     MEASURES_TO_TEST.each do |req|
       # Set other variables needed
-      # params_string = !req[:params].empty? ? "?#{req[:params].to_query}" : ''
       measure_report = load_json_fixture(req[:example_measurereport])
       collect_data_response = load_json_fixture(req[:mock_collect_data_response])
 

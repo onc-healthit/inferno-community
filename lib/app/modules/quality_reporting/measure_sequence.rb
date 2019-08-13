@@ -17,7 +17,8 @@ module Inferno
                   '<a href="https://cts.nlm.nih.gov/fhir/">NIH VSAC FHIR server</a>.<br/>'\
                   '2) POST '\
                   '<a href="/inferno/resources/quality_reporting/Bundle/measure-col-bundle.json">this Bundle</a> '\
-                  ' to your FHIR server and observe the resource IDs in the response.'
+                  'to your FHIR server, and observe the status codes in the response to ensure all resources '\
+                  'saved sucessfully.'
 
       # These values are based on the content of the measure-col bundle used for this module.
       measure_id = 'MitreTestScript-measure-col'
@@ -67,11 +68,11 @@ module Inferno
         end
       end
 
-      test 'Collet Data' do
+      test 'Collect Data' do
         metadata do
           id '02'
           link 'https://hl7.org/fhir/measure-operation-collect-data.html'
-          desc 'Run the $collect-data operation for a measure that should contain an individual in the IPP and Denominator'
+          desc 'Run the $collect-data operation for a measure that should contain an individual in the IPP, Denominator, and Numerator'
         end
 
         # Parameters appended to the url for $evaluate-measure call
