@@ -74,6 +74,8 @@ def mark_delayed_sequences(metadata)
   metadata[:sequences].each do |sequence|
     sequence[:delayed_sequence] = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
   end
+  metadata[:delayed_sequences] = metadata[:sequences].select { |seq| seq[:delayed_sequence] }
+  metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:delayed_sequence] }
 end
 
 def find_first_search(sequence)

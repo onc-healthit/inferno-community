@@ -20,11 +20,11 @@ test_sets:
         - EHRLaunchSequence
       - name: US Core R4 Patient Based Profiles
         run_all: true
-        sequences:<% sequences.reject { |seq| seq[:delayed_sequence] }.each do |sequence| %>
+        sequences:<% non_delayed_sequences.each do |sequence| %>
         - <%=sequence[:classname]%><% end %>
         - R4ProvenanceSequence
         - USCoreR4ClinicalNotesSequence
       - name: US Core R4 Non-Patient Profiles
         run_all: true
-        sequences:<% sequences.select { |seq| seq[:delayed_sequence] }.each do |sequence| %>
+        sequences:<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:classname]%><% end %>
