@@ -41,7 +41,7 @@ class MeasureSequenceTest < MiniTest::Test
       stub_request(:get, /\$evaluate-measure/)
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 200, body: measure_report.to_json, headers: {})
-        
+
       # Mock a request for $collect-data
       stub_request(:get, /\$collect-data/)
         .with(headers: REQUEST_HEADERS)

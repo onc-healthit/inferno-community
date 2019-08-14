@@ -82,15 +82,6 @@ module Inferno
           'periodEnd': period_end
         }.freeze
 
-        # TODO: The way we handle expected results are going to change in the future
-        # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
-        # For now, we are going to keep if with these individual canned expected results
-        EXPECTED_RESULTS = {
-          'initial-population': 1,
-          'numerator': 1,
-          'denominator': 1
-        }.freeze
-
         collect_data_response = collect_data(measure_id, PARAMS.compact)
         assert_response_ok collect_data_response
 
@@ -103,19 +94,19 @@ module Inferno
         assert !measure_report_param.nil?, 'Response Parameters must contain a MeasureReport.'
         assert measure_report_param.name == 'measurereport', 'Expected MeasureReport Parameter to have name "measurereport".'
 
-        # Assert that the Parameters response contains the Patient  
-        patient_param = parameters.parameter.find { |p|
+        # Assert that the Parameters response contains the Patient
+        patient_param = parameters.parameter.find do |p|
           p.resource.is_a?(FHIR::STU3::Patient) &&
-          p.resource.id == patient_id
-        }
+            p.resource.id == patient_id
+        end
         assert !patient_param.nil?, "Response Parameters must contain Patient: #{patient_id}."
         assert patient_param.name == 'resource', 'Expected Patient Parameter to have name "resource".'
 
         # Assert that the Parameters response contains the Observation
-        observation_param = parameters.parameter.find { |p|
+        observation_param = parameters.parameter.find do |p|
           p.resource.is_a?(FHIR::STU3::Observation) &&
-          p.resource.id == observation_id
-        }
+            p.resource.id == observation_id
+        end
         assert !observation_param.nil?, "Response Parameters must contain the Observation relevant to the measure: #{observation_id}."
         assert observation_param.name == 'resource', 'Expected Observation Parameter to have name "resource".'
       end
