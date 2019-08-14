@@ -52,13 +52,6 @@ module Inferno
 
       property :dynamic_registration_token, String
 
-      # TODO(Matt): We should have quality reporting-specific properties defined in their own subclass
-      # there is no easy way to do this Inferno right now, but we should keep up with additional refactors
-      # to ensure we can get this done once the support is there
-      property :measure_id, String
-      property :period_start, String
-      property :period_end, String
-
       has n, :sequence_results
       has n, :supported_resources, order: [:index.asc]
       has n, :resource_references

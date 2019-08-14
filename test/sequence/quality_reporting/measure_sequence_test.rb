@@ -14,12 +14,8 @@ class MeasureSequenceTest < MiniTest::Test
   MEASURES_TO_TEST = [
     {
       measure_id: 'MitreTestScript-measure-col',
-      params: {
-        'patient': 'MitreTestScript-test-Patient-410',
-        'periodStart': '2017',
-        'periodEnd': '2017'
-      },
-      example_measurereport: :col_measure_report
+      example_measurereport: :col_measure_report,
+      mock_collect_data_response: :col_collect_data_response
       # Add new Measures/params here...
     }
   ].freeze
@@ -37,20 +33,19 @@ class MeasureSequenceTest < MiniTest::Test
     WebMock.reset!
 
     MEASURES_TO_TEST.each do |req|
-      # Set the required instance variables
-      @instance.measure_id = req[:measure_id]
-      @instance.patient_id = req[:params][:patient]
-      @instance.period_start = req[:params][:periodStart]
-      @instance.period_end = req[:params][:periodEnd]
-
       # Set other variables needed
-      params_string = !req[:params].empty? ? "?#{req[:params].to_query}" : ''
       measure_report = load_json_fixture(req[:example_measurereport])
+      collect_data_response = load_json_fixture(req[:mock_collect_data_response])
 
       # Mock a request for $evaluate-measure
-      stub_request(:get, "http://www.example.com/Measure/#{req[:measure_id]}/$evaluate-measure#{params_string}")
+      stub_request(:get, /\$evaluate-measure/)
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 200, body: measure_report.to_json, headers: {})
+
+      # Mock a request for $collect-data
+      stub_request(:get, /\$collect-data/)
+        .with(headers: REQUEST_HEADERS)
+        .to_return(status: 200, body: collect_data_response.to_json, headers: {})
 
       sequence_result = @sequence.start
       assert sequence_result.pass?, 'The sequence should be marked as pass.'

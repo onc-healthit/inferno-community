@@ -7,6 +7,6 @@ test_sets:
   developer:
     view: default
     tests: 
-      - name: Evaluate Measure
+      - name: Quality Reporting
         sequences:
           - MeasureSequence
