@@ -58,6 +58,7 @@ def generate_tests(metadata)
 
     create_resource_profile_test(sequence)
     create_must_support_test(sequence)
+    create_unfiltered_test(sequence)
     create_references_resolved_test(sequence)
   end
 end
@@ -114,8 +115,9 @@ def create_search_test(sequence, search_param)
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
+        @search_results = {}
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        @search_results['#{search_param[:names].join(',')}'] = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
@@ -125,7 +127,8 @@ def create_search_test(sequence, search_param)
 #{get_search_params(search_param[:names], sequence)}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-        assert_response_ok(reply))
+        assert_response_ok(reply)
+        @search_results['#{search_param[:names].join(',')}'] = reply&.resource&.entry&.map { |entry| entry&.resource })
     end
   search_test[:test_code] += get_comparator_searches(search_param[:names], sequence)
   sequence[:tests] << search_test
@@ -218,6 +221,25 @@ def create_resource_profile_test(sequence)
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('#{sequence[:resource]}'))
 
+  sequence[:tests] << test
+end
+
+def create_unfiltered_test(sequence)
+  test = {
+    tests_that: 'No results are being filtered. Each resource returned from a ',
+    index: sequence[:tests].length + 1,
+    link: ''
+  }
+  test[:test_code] = %(
+        @search_results.each do |params, resources|
+          narrow_params = params.split(',')
+          wider_searches = @search_results.select do |k, v|
+            k.split(',').all? { |param| narrow_params.include? param }
+          end
+          wider_searches.values.each do |wider_resources|
+            assert resources.all? { |narrow_resource| wider_resources.include? narrow_resource }
+          end
+        end)
   sequence[:tests] << test
 end
 

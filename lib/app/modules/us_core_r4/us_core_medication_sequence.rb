@@ -108,9 +108,29 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'No results are being filtered. Each resource returned from a ' do
         metadata do
           id '06'
+          link ''
+          desc %(
+          )
+          versions :r4
+        end
+
+        @search_results.each do |params, resources|
+          narrow_params = params.split(',')
+          wider_searches = @search_results.select do |k, v|
+            k.split(',').all? { |param| narrow_params.include? param }
+          end
+          wider_searches.values.each do |wider_resources|
+            assert resources.all? { |narrow_resource| wider_resources.include? narrow_resource }
+          end
+        end
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '07'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

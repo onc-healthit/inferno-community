@@ -51,6 +51,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -79,8 +80,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
+        @search_results = {}
         @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        @device_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        @search_results['patient'] = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
@@ -105,6 +107,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['patient,type'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Device read resource supported' do
@@ -196,9 +199,29 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'No results are being filtered. Each resource returned from a ' do
         metadata do
           id '09'
+          link ''
+          desc %(
+          )
+          versions :r4
+        end
+
+        @search_results.each do |params, resources|
+          narrow_params = params.split(',')
+          wider_searches = @search_results.select do |k, v|
+            k.split(',').all? { |param| narrow_params.include? param }
+          end
+          wider_searches.values.each do |wider_resources|
+            assert resources.all? { |narrow_resource| wider_resources.include? narrow_resource }
+          end
+        end
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

@@ -105,8 +105,9 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
+        @search_results = {}
         @patient = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        @patient_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        @search_results['_id'] = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
@@ -130,6 +131,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['identifier'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Server returns expected results from Patient search by name' do
@@ -151,6 +153,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['name'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Server returns expected results from Patient search by birthdate+name' do
@@ -173,6 +176,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['birthdate,name'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Server returns expected results from Patient search by gender+name' do
@@ -195,6 +199,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['gender,name'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Server returns expected results from Patient search by family+gender' do
@@ -217,6 +222,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['family,gender'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Server returns expected results from Patient search by birthdate+family' do
@@ -239,6 +245,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @search_results['birthdate,family'] = reply&.resource&.entry&.map { |entry| entry&.resource }
       end
 
       test 'Patient read resource supported' do
@@ -356,9 +363,29 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'No results are being filtered. Each resource returned from a ' do
         metadata do
           id '14'
+          link ''
+          desc %(
+          )
+          versions :r4
+        end
+
+        @search_results.each do |params, resources|
+          narrow_params = params.split(',')
+          wider_searches = @search_results.select do |k, v|
+            k.split(',').all? { |param| narrow_params.include? param }
+          end
+          wider_searches.values.each do |wider_resources|
+            assert resources.all? { |narrow_resource| wider_resources.include? narrow_resource }
+          end
+        end
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '15'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )
