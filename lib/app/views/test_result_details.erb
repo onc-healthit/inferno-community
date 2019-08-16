@@ -27,7 +27,13 @@
         <div class="result-details-icon result-details-icon-skip">
           <span class="oi oi-warning" title="Skip" aria-hidden="true"></span>
         </div>
+      <% when 'omit' %>
+        <div class="result-details-icon result-details-icon-omit">
+          <span class="oi oi-media-record" title="Minus" aria-hidden="true"></span>
+        </div>
+      
       <% end %>
+
       <%# TODO: Make this dependent on a flag for community/guided edition %>
       <% unless @test_result.required %> [OPTIONAL] <% end %>
       <%= @test_result.test_id + ': ' +@test_result.name %>

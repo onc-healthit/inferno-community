@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../utils/result_statuses'
+require_relative '../utils/logging'
 
 module Inferno
   module Models
@@ -23,6 +24,8 @@ module Inferno
       property :skip_count, Integer, default: 0
       property :optional_passed, Integer, default: 0
       property :optional_total, Integer, default: 0
+      property :required_omitted, Integer, default: 0
+      property :optional_omitted, Integer, default: 0
 
       property :app_version, String
 
@@ -55,14 +58,25 @@ module Inferno
           'required_passed',
           'required_total',
           'error_count',
+          'todo_count',
           'skip_count',
           'optional_passed',
-          'optional_total'
+          'optional_total',
+          'required_omitted',
+          'optional_omitted'
         ].each { |field| send("#{field}=", 0) }
       end
 
       def result_count
         test_results.length
+      end
+
+      def total_omitted
+        required_omitted + optional_omitted
+      end
+
+      def total_required_tests_except_omitted
+        required_total - required_omitted
       end
 
       def update_result_counts
@@ -79,6 +93,13 @@ module Inferno
             else
               self.optional_passed += 1
             end
+            self.result = result.result unless error? || fail? || skip?
+          when ResultStatuses::OMIT
+            if result.required
+              self.required_omitted += 1
+            else
+              self.optional_omitted += 1
+            end
           when ResultStatuses::TODO
             self.todo_count += 1
           when ResultStatuses::FAIL
@@ -92,13 +113,14 @@ module Inferno
             end
           when ResultStatuses::SKIP
             if result.required
+              self.result = result.result if pass? || self.result.nil?
               self.skip_count += 1
-              self.result = result.result if pass?
             end
           when ResultStatuses::WAIT
             self.result = result.result
           end
         end
+        self.result = ResultStatuses::PASS if self.result.nil?
       end
 
       def self.normalize_url(url)

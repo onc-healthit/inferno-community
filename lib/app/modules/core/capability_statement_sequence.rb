@@ -62,7 +62,7 @@ module Inferno
           )
         end
 
-        skip_if_tls_disabled
+        omit_if_tls_disabled
 
         assert_tls_1_2 @instance.url
 

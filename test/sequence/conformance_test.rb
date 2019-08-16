@@ -31,7 +31,7 @@ class ConformanceSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
-    assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
+    assert sequence_result.test_results.all? { |r| r.pass? || r.skip? || r.omit? }, 'All tests should pass'
     # assert sequence_result.test_results.all?{|r| r.test_warnings.empty? }, 'There should not be any warnings.'
   end
 

@@ -103,7 +103,7 @@ def execute(instance, sequences)
             puts "    #{req}"
           end
         end
-      elsif sequence_result.error?
+      elsif result.error?
         print 'X error'.magenta
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
@@ -111,6 +111,10 @@ def execute(instance, sequences)
           puts "      #{req}"
         end
         fails = true
+      elsif result.omit?
+        print '* omit'.light_black
+        print " - #{result.test_id} #{result.name}\n"
+        puts "    Message: #{result.message}"
       end
     end
     print "\n" + sequence.sequence_name + ' Sequence Result: '
@@ -139,6 +143,7 @@ def execute(instance, sequences)
     error_count = sequence_results.count(&:error?).to_s
     print(', ' + error_count.yellow + ' error')
   end
+
   puts "\n=============================================\n"
 
   return_value = 0
