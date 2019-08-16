@@ -46,7 +46,7 @@
             <span class="oi oi-warning" data-toggle="tooltip" title="Test is waiting for a server launch or redirect"></span>
           </div>
       <% else %>
-          <div class="result-details-icon result-details-icon-warning"></div>
+          <div class="result-details-icon result-details-icon-warning" style="float:right;"></div>
       <% end %>
 
       <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
@@ -54,7 +54,7 @@
             <span class="oi oi-arrow-thick-right"></span>
           </div>
       <% else %>
-          <div class="result-details-icon result-details-icon-requests"></div>
+          <div class="result-details-icon result-details-icon-requests" style="float:right;"></div>
       <% end %>
 
       <% unless result.request_responses.find{ |f| f.direction == 'inbound'}.nil? %>
@@ -62,7 +62,7 @@
             <span class="oi oi-arrow-thick-left"></span>
           </div>
       <% else %>
-          <div class="result-details-icon result-details-icon-requests"></div>
+          <div class="result-details-icon result-details-icon-requests" style="float:right;"></div>
       <% end %>
 
       <% if result.result == 'todo' %> TODO: <% end %>
