@@ -11,8 +11,8 @@ module Inferno
 
       test_id_prefix 'Location' # change me
 
-      mark_delayed :location
-      requires :token, :location
+      mark_delayed :Location
+      requires :token
       conformance_supports :Location
 
       def validate_resource_item(resource, property, value)
@@ -59,7 +59,9 @@ module Inferno
           versions :r4
         end
 
-        @location = fetch_resource('Location', @instance.location)
+        location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location'}&.resource_id
+        skip 'No Location references found from the prior searches' if location_id.nil?
+        @location = fetch_resource('Location', location_id)
         @resources_found = !@location.nil?
       end
 

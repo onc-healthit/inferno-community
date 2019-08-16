@@ -101,7 +101,9 @@ def create_read_test(sequence)
   }
 
   read_test[:test_code] = %(
-        @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', @instance.#{sequence[:resource].downcase})
+        #{sequence[:resource].downcase}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}'}&.resource_id
+        skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].downcase}_id.nil?
+        @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', #{sequence[:resource].downcase}_id)
         @resources_found = !@#{sequence[:resource].downcase}.nil?)
   sequence[:tests] << read_test
 end

@@ -263,7 +263,6 @@ module Inferno
       end
 
       def self.mark_delayed(resource)
-        Inferno::Models::TestingInstance.send('property', resource, String)
         @@delayed_sequences << resource
       end
 
@@ -727,7 +726,7 @@ module Inferno
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if @@delayed_sequences.include? resource_class.downcase.to_sym
+                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if @@delayed_sequences.include? resource_class.to_sym
               rescue NameError
                 next
               end

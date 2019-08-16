@@ -11,8 +11,8 @@ module Inferno
 
       test_id_prefix 'Organization' # change me
 
-      mark_delayed :organization
-      requires :token, :organization
+      mark_delayed :Organization
+      requires :token
       conformance_supports :Organization
 
       def validate_resource_item(resource, property, value)
@@ -47,7 +47,9 @@ module Inferno
           versions :r4
         end
 
-        @organization = fetch_resource('Organization', @instance.organization)
+        organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization'}&.resource_id
+        skip 'No Organization references found from the prior searches' if organization_id.nil?
+        @organization = fetch_resource('Organization', organization_id)
         @resources_found = !@organization.nil?
       end
 
