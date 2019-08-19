@@ -11,9 +11,9 @@ module Inferno
 
       test_id_prefix 'Location' # change me
 
-      mark_delayed :Location
       requires :token
       conformance_supports :Location
+      mark_delayed
 
       def validate_resource_item(resource, property, value)
         case property
@@ -59,7 +59,7 @@ module Inferno
           versions :r4
         end
 
-        location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location'}&.resource_id
+        location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
         skip 'No Location references found from the prior searches' if location_id.nil?
         @location = fetch_resource('Location', location_id)
         @resources_found = !@location.nil?

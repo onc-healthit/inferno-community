@@ -11,9 +11,9 @@ module Inferno
 
       test_id_prefix 'PractitionerRole' # change me
 
-      mark_delayed :PractitionerRole
       requires :token
       conformance_supports :PractitionerRole
+      mark_delayed
 
       def validate_resource_item(resource, property, value)
         case property
@@ -47,7 +47,7 @@ module Inferno
           versions :r4
         end
 
-        practitionerrole_id = @instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole'}&.resource_id
+        practitionerrole_id = @instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole' }&.resource_id
         skip 'No PractitionerRole references found from the prior searches' if practitionerrole_id.nil?
         @practitionerrole = fetch_resource('PractitionerRole', practitionerrole_id)
         @resources_found = !@practitionerrole.nil?

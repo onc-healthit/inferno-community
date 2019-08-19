@@ -39,7 +39,7 @@ module Inferno
       @@defines = {}
       @@versions = {}
       @@test_metadata = Hash.new { |hash, key| hash[key] = [] }
-      
+
       @@optional = []
       @@show_uris = []
       @@delayed_sequences = []
@@ -262,8 +262,8 @@ module Inferno
         @@versions[sequence_name] || FHIR::VERSIONS
       end
 
-      def self.mark_delayed(resource)
-        @@delayed_sequences << resource
+      def self.mark_delayed
+        @@delayed_sequences << @@conformance_supports[sequence_name].first
       end
 
       def self.missing_requirements(instance, recurse = false)

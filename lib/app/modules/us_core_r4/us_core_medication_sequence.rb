@@ -11,9 +11,9 @@ module Inferno
 
       test_id_prefix 'Medication' # change me
 
-      mark_delayed :Medication
       requires :token
       conformance_supports :Medication
+      mark_delayed
 
       details %(
 
@@ -33,7 +33,7 @@ module Inferno
           versions :r4
         end
 
-        medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication'}&.resource_id
+        medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
         skip 'No Medication references found from the prior searches' if medication_id.nil?
         @medication = fetch_resource('Medication', medication_id)
         @resources_found = !@medication.nil?
