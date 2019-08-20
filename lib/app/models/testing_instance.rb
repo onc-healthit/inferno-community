@@ -226,10 +226,6 @@ module Inferno
 
       private
 
-      def interaction_supported?(capabilities, interaction_code)
-        capabilities&.interaction&.any? { |i| i.code == interaction_code }
-      end
-
       def group_result(results)
         return :skip if results[:skip].positive?
         return :fail if results[:fail].positive?
