@@ -13,7 +13,7 @@ module Inferno
 
       requires :token
       conformance_supports :PractitionerRole
-      mark_delayed
+      delayed_sequence
 
       def validate_resource_item(resource, property, value)
         case property

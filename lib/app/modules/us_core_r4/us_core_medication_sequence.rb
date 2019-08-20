@@ -13,7 +13,7 @@ module Inferno
 
       requires :token
       conformance_supports :Medication
-      mark_delayed
+      delayed_sequence
 
       details %(
 

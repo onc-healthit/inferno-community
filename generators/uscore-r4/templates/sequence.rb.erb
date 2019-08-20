@@ -13,7 +13,7 @@ module Inferno
 
       requires :token<%=", :patient_id" unless delayed_sequence%>
       conformance_supports :<%=resource%><%="
-      mark_delayed" if delayed_sequence%>
+      delayed_sequence" if delayed_sequence%>
 <%=search_validator%>
       details %(
 

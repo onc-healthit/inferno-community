@@ -262,8 +262,8 @@ module Inferno
         @@versions[sequence_name] || FHIR::VERSIONS
       end
 
-      def self.mark_delayed
-        @@delayed_sequences << @@conformance_supports[sequence_name].first
+      def self.delayed_sequence
+        @@delayed_sequences << sequence_name
       end
 
       def self.missing_requirements(instance, recurse = false)
@@ -719,6 +719,7 @@ module Inferno
       end
 
       def save_delayed_sequence_references(resource)
+        delayed_resource_types = @@conformance_supports.select { |sequence, _resources| @@delayed_sequences.include? sequence }.values.flatten
         walk_resource(resource) do |value, meta, _path|
           next if meta['type'] != 'Reference'
 
@@ -726,7 +727,7 @@ module Inferno
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if @@delayed_sequences.include? resource_class.to_sym
+                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
               rescue NameError
                 next
               end
