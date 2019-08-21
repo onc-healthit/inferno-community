@@ -78,7 +78,8 @@ class OAuth2EndpointsTest < MiniTest::Test
     end
   end
 
-  def test_launch_response_no_iss
+  def test_launch_response_unknown_iss
+    bad_iss = 'http://example.com/UNKNOWN_ISS'
     instance = create_testing_instance(url: 'http://example.com/no_iss')
     sequence_result = create_sequence_result(
       testing_instance: instance,
@@ -91,16 +92,18 @@ class OAuth2EndpointsTest < MiniTest::Test
 
     EventMachine.run do
       cookies = { 'HTTP_COOKIE' => "instance_id_test_set=#{instance.id}/" }
-      get '/inferno/oauth2/static/launch', {}, cookies
+      get "/inferno/oauth2/static/launch?iss=#{bad_iss}", {}, cookies
 
       assert last_response.ok?
 
       redirect_path = "#{Inferno::BASE_PATH}/#{instance.id}/test_sets/#{sequence_result.test_set_id}/#SMARTonFHIRTesting/#{sequence_result.test_case_id}"
       assert last_response.body.include? js_redirect(redirect_path)
 
-      assert sequence_result.test_results.any? do |result|
-        result.fail? && result.message == 'No iss for redirect'
+      failure_found = sequence_result.test_results.any? do |result|
+        result.fail? && result.message == "Unknown iss: #{bad_iss}"
       end
+
+      assert failure_found
       break
     end
   end
@@ -182,9 +185,11 @@ class OAuth2EndpointsTest < MiniTest::Test
       redirect_path = "#{Inferno::BASE_PATH}/#{instance.id}/test_sets/#{sequence_result.test_set_id}/#SMARTonFHIRTesting/#{sequence_result.test_case_id}"
       assert last_response.body.include? js_redirect(redirect_path)
 
-      assert sequence_result.test_results.any? do |result|
+      failure_found = sequence_result.test_results.any? do |result|
         result.fail? && result.message.start_with?('State provided in redirect')
       end
+
+      assert failure_found
       break
     end
   end

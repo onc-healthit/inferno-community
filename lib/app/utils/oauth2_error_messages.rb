@@ -41,8 +41,8 @@ module Inferno
         )
       end
 
-      def no_iss_error_message
-        'No iss for redirect'
+      def unknown_iss_error_message
+        params[:iss].present? ? "Unknown iss: #{params[:iss]}" : 'No iss for redirect'
       end
 
       def no_running_test_error_message
