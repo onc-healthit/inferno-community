@@ -89,5 +89,20 @@ module Inferno
       target_range = get_fhir_period_range(target_value)
       fhir_date_comparer(search_range, target_range, comparator)
     end
+
+    def validate_filters(search_results)
+      search_results.each do |narrow_params, resources|
+        # find the searches whose params are a subset of the current search params
+        wider_searches = search_results.select do |wider_params, _v|
+          wider_params != narrow_params && narrow_params.split(',').all? { |param| wider_params.split(',').include? param }
+        end
+        # check if all the resources from current search are included in the wider search
+        wider_searches.values.each do |wider_resources|
+          assert resources.all? do |narrow_resource|
+            wider_resources.include? narrow_resource
+          end
+        end
+      end
+    end
   end
 end

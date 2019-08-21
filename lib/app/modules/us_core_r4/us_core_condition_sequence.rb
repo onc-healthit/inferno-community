@@ -268,7 +268,6 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @condition_ary&.any?
         must_support_confirmed = {}
         must_support_elements = [
           'Condition.clinicalStatus',
@@ -278,36 +277,28 @@ module Inferno
           'Condition.subject'
         ]
         must_support_elements.each do |path|
-          @condition_ary&.each do |resource|
-            truncated_path = path.gsub('Condition.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
+          @search_results.each do |_params, resources|
+            resources&.each do |resource|
+              truncated_path = path.gsub('Condition.', '')
+              must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+              break if must_support_confirmed[path]
+            end
           end
-          resource_count = @condition_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Condition resource(s)" unless must_support_confirmed[path]
+          skip "Could not find #{path} in any of the provided Condition resource(s)" unless must_support_confirmed[path]
         end
-        @instance.save!
       end
 
       test 'No results are being filtered. Each resource returned from a ' do
         metadata do
           id '12'
-          link ''
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
-        @search_results.each do |params, resources|
-          narrow_params = params.split(',')
-          wider_searches = @search_results.select do |k, v|
-            k.split(',').all? { |param| narrow_params.include? param }
-          end
-          wider_searches.values.each do |wider_resources|
-            assert resources.all? { |narrow_resource| wider_resources.include? narrow_resource }
-          end
-        end
+        validate_filters(@search_results)
       end
 
       test 'All references can be resolved' do

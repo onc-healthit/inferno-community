@@ -159,9 +159,6 @@ def create_must_support_test(sequence)
   }
 
   test[:test_code] += %(
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].downcase}_ary&.any?)
-
-  test[:test_code] += %(
         must_support_confirmed = {})
 
   extensions_list = []
@@ -194,19 +191,17 @@ def create_must_support_test(sequence)
           #{elements_list.join(",\n          ")}
         ]
         must_support_elements.each do |path|
-          @#{sequence[:resource].downcase}_ary&.each do |resource|
-            truncated_path = path.gsub('#{sequence[:resource]}.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
+          @search_results.each do |_params, resources|
+            resources&.each do |resource|
+              truncated_path = path.gsub('#{sequence[:resource]}.', '')
+              must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+              break if must_support_confirmed[path]
+            end
           end
-          resource_count = @#{sequence[:resource].downcase}_ary.length
 
-          skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
+          skip "Could not find \#{path} in any of the provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
         end)
   end
-
-  test[:test_code] += %(
-        @instance.save!)
 
   sequence[:tests] << test
 end
@@ -228,18 +223,10 @@ def create_unfiltered_test(sequence)
   test = {
     tests_that: 'No results are being filtered. Each resource returned from a ',
     index: sequence[:tests].length + 1,
-    link: ''
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
   test[:test_code] = %(
-        @search_results.each do |params, resources|
-          narrow_params = params.split(',')
-          wider_searches = @search_results.select do |k, v|
-            k.split(',').all? { |param| narrow_params.include? param }
-          end
-          wider_searches.values.each do |wider_resources|
-            assert resources.all? { |narrow_resource| wider_resources.include? narrow_resource }
-          end
-        end)
+        validate_filters(@search_results))
   sequence[:tests] << test
 end
 
