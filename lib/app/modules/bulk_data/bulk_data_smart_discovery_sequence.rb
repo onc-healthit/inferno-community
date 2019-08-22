@@ -74,37 +74,9 @@ module Inferno
         options
       end
 
-      test 'Retrieve Authorization from Well Known endpoint' do
-        metadata do
-          id '01'
-          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
-          desc %(
-            The authorization endpoints accepted by a FHIR resource server can be exposed as a Well-Known Uniform Resource Identifier
-          )
-        end
-
-        oauth_configuration_url = @instance.url.chomp('/') + '/.well-known/smart-configuration'
-        oauth_configuration_response = LoggedRestClient.get(oauth_configuration_url)
-        assert_response_ok(oauth_configuration_response)
-        oauth_configuration_response_body = JSON.parse(oauth_configuration_response.body)
-
-        assert !oauth_configuration_response_body.nil?, 'No authorization response body available'
-        @well_known_authorize_url = oauth_configuration_response_body['authorization_endpoint']
-        @well_known_token_url = oauth_configuration_response_body['token_endpoint']
-        capabilities = oauth_configuration_response_body['capabilities']
-        register_url = oauth_configuration_response_body['registration_endpoint']
-
-        @instance.update(oauth_authorize_endpoint: @well_known_authorize_url, oauth_token_endpoint: @well_known_token_url, oauth_register_endpoint: register_url)
-
-        assert !@well_known_authorize_url.blank?, 'No authorize URI provided in response.'
-        assert !@well_known_token_url.blank?, 'No token URI provided in response.'
-        assert !capabilities.nil?, 'The response did not contain capabilities as required'
-        assert capabilities.is_a?(Array), 'The capabilities response is not an array'
-      end
-
       test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
         metadata do
-          id '02'
+          id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
           desc %(
 
@@ -149,22 +121,6 @@ module Inferno
         end
 
         @instance.update(oauth_authorize_endpoint: @conformance_authorize_url, oauth_token_endpoint: @conformance_token_url, oauth_register_endpoint: registration_url)
-      end
-
-      test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
-        metadata do
-          id '03'
-          link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
-          desc %(
-
-           If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
-
-          )
-        end
-
-        assert @well_known_authorize_url == @conformance_authorize_url, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
-
-        assert @well_known_token_url == @conformance_token_url, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
       end
     end
   end
