@@ -14,9 +14,7 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      def content_location
-        @@content_location
-      end
+      @content_location = nil
 
       # export
       def export_kick_off
@@ -48,6 +46,8 @@ module Inferno
 
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test 'Server returns "202 Accepted" and "Cotent-location" for $export operation' do
