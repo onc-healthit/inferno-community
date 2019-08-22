@@ -43,7 +43,7 @@ module Inferno
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
-          versions :r4
+          versions :stu3
         end
 
         @client.set_no_auth
@@ -56,15 +56,17 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
-          versions :r4
+          versions :stu3
         end
 
         reply = export_kick_off
 
+        # Shall return 202
         assert_response_accepted(reply)
 
         @content_location = reply.response[:headers]['content-location']
 
+        # Shall have Content-location
         assert !@content_location.empty?, 'Server must include Cotent-Location header for $export request'
       end
     end
