@@ -2,7 +2,7 @@
 
 require_relative '../../test_helper'
 
-class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
+class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
     @instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
@@ -99,6 +99,6 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     sequence_result = @sequence.start
     failures = sequence_result.failures
 
-    assert !failures.empty?, 'est_export_fail_no_content_location should fail'
+    assert !failures.empty?, 'test_export_fail_no_content_location should fail'
   end
 end
