@@ -50,7 +50,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     WebMock.reset!
 
     # $export kick off
-    stub_request(:get, "http://www.example.com/Patient/$export")
+    stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @request_headers)
       .to_return(
         status: 202,
@@ -72,7 +72,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     WebMock.reset!
 
     # $export kick off
-    stub_request(:get, "http://www.example.com/Patient/$export")
+    stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @request_headers)
       .to_return(
         status: 200,
@@ -82,14 +82,14 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     sequence_result = @sequence.start
     failures = sequence_result.failures
 
-    assert !failures.empty?, "test_export_fail_wrong_status should fail"
+    assert !failures.empty?, 'test_export_fail_wrong_status should fail'
   end
 
   def test_export_fail_no_content_location
     WebMock.reset!
 
     # $export kick off
-    stub_request(:get, "http://www.example.com/Patient/$export")
+    stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @request_headers)
       .to_return(
         status: 202,
@@ -99,6 +99,6 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     sequence_result = @sequence.start
     failures = sequence_result.failures
 
-    assert !failures.empty?, "est_export_fail_no_content_location should fail"
+    assert !failures.empty?, 'est_export_fail_no_content_location should fail'
   end
 end
