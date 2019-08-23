@@ -46,16 +46,20 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @content_location = 'http://www.example.com/status'
   end
 
-  def full_sequence_stubs
-    WebMock.reset!
-
-    # $export kick off
+  def include_export_sub
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @export_request_header)
       .to_return(
         status: 202,
         headers: { content_location: @content_location }
       )
+  end
+
+  def full_sequence_stubs
+    WebMock.reset!
+
+    # $export kick off
+    include_export_sub
 
     # status check
     stub_request(:get, @content_location)
@@ -67,7 +71,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def test_all_pass
+  def test_all_pass()
     full_sequence_stubs
 
     sequence_result = @sequence.start
@@ -107,18 +111,21 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should fail'
   end
 
-  # def test_status_check_fail_wrong_status_code
-  #   WebMock.reset!
+  def test_status_check_fail_wrong_status_code
+    WebMock.reset!
 
-  #   # status check
-  #   stub_request(:get, 'http://www.example.com/status')
-  #     .with(headers: @status_request_header)
-  #     .to_return(
-  #       status: 201,
-  #       headers: { content_type: 'application/json' }
-  #     )
+    include_export_sub
 
-  #   sequence_result = @sequence
-  #   assert !sequence_result.pass?, 'test_status_check_fail_wrong_content_type should fail'
-  # end
+    # status check
+    stub_request(:get, 'http://www.example.com/status')
+      .with(headers: @status_request_header)
+      .to_return(
+        status: 201,
+        headers: { content_type: 'application/json' }
+      )
+
+    sequence_result = @sequence.start
+    binding.pry
+    assert !sequence_result.pass?, 'test_status_check_fail_wrong_status_code should fail'
+  end
 end
