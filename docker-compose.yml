@@ -3,6 +3,8 @@ services:
   ruby_server:
     build:
       context: ./
+    volumes:
+      - ./config.yml:/var/www/inferno/config.yml
     ports:
      - "4567:8080"
   nginx_server:
