@@ -17,10 +17,10 @@ module Inferno
       @content_location = nil
 
       # export
-      def export_kick_off
+      def export_kick_off(klass)
         headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
-        url = '/Patient/$export'
+        url = "/#{klass}/$export"
 
         reply = @client.get(url, @client.fhir_headers(headers))
         reply
@@ -50,7 +50,7 @@ module Inferno
         @client.set_bearer_token(@instance.token)
       end
 
-      test 'Server returns "202 Accepted" and "Cotent-location" for $export operation' do
+      test 'Server shall return "202 Accepted" and "Cotent-location" for $export operation' do
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -59,8 +59,8 @@ module Inferno
           versions :stu3
         end
 
-        reply = export_kick_off
-
+        reply = export_kick_off('Patient')
+     
         # Shall return 202
         assert_response_accepted(reply)
 
