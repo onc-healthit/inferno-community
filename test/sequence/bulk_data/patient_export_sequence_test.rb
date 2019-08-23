@@ -71,7 +71,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def test_all_pass()
+  def test_all_pass
     full_sequence_stubs
 
     sequence_result = @sequence.start
@@ -125,7 +125,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
 
     sequence_result = @sequence.start
-    binding.pry
     assert !sequence_result.pass?, 'test_status_check_fail_wrong_status_code should fail'
   end
 end
