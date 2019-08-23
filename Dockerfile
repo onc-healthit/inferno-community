@@ -17,6 +17,7 @@ COPY public /var/www/inferno/public
 COPY resources /var/www/inferno/resources
 COPY config* /var/www/inferno/
 COPY Rakefile /var/www/inferno/
+COPY test /var/www/inferno/test
 COPY lib /var/www/inferno/lib
 
 ### Set up environment
