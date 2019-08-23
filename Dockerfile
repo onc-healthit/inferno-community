@@ -8,7 +8,7 @@ COPY Gemfile* /var/www/inferno/
 RUN gem install bundler
 # Throw an error if Gemfile & Gemfile.lock are out of sync
 RUN bundle config --global frozen 1
-RUN bundle install --without test
+RUN bundle install
 
 ### Install Inferno
 
