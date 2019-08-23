@@ -25,43 +25,43 @@ module Inferno
     def assert_response_ok(response, error_message = '')
       return if assertion_negated([200, 201].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 200, 201, but found #{response.code}.#{' ' + error_message}" # ,response.body
+      raise AssertionException, "Bad response code: expected 200, 201, but found #{response.code}.#{' ' + error_message}"
     end
 
     def assert_response_accepted(response, error_message = '')
       return if assertion_negated([202].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 202, but found #{response.code}.#{' ' + error_message}" # ,response.body
+      raise AssertionException, "Bad response code: expected 202, but found #{response.code}.#{' ' + error_message}"
     end
 
     def assert_response_not_found(response)
       return if assertion_negated([404].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 404, but found #{response.code}" # ,response.body
+      raise AssertionException, "Bad response code: expected 404, but found #{response.code}"
     end
 
     def assert_response_unauthorized(response)
       return if assertion_negated([401, 406].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 401 or 406, but found #{response.code}" # ,response.body
+      raise AssertionException, "Bad response code: expected 401 or 406, but found #{response.code}"
     end
 
     def assert_response_bad_or_unauthorized(response)
       return if assertion_negated([400, 401].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 400 or 401, but found #{response.code}" # ,response.body
+      raise AssertionException, "Bad response code: expected 400 or 401, but found #{response.code}"
     end
 
     def assert_response_bad(response)
       return if assertion_negated([400].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 400, but found #{response.code}" # ,response.body
+      raise AssertionException, "Bad response code: expected 400, but found #{response.code}"
     end
 
     def assert_response_conflict(response)
       return if assertion_negated([409, 412].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 409 or 412, but found #{response.code}" # ,response.body
+      raise AssertionException, "Bad response code: expected 409 or 412, but found #{response.code}"
     end
 
     def assert_navigation_links(bundle)
@@ -80,7 +80,7 @@ module Inferno
       rescue StandardError
         found = nil
       end
-      raise AssertionException, "Expected FHIR Bundle but found: #{found.class.name.demodulize}" # ,response.body
+      raise AssertionException, "Expected FHIR Bundle but found: #{found.class.name.demodulize}"
     end
 
     def assert_bundle_transactions_okay(response)
@@ -144,13 +144,13 @@ module Inferno
     def assert_response_code(response, code)
       return if assertion_negated(code.to_s == response.code.to_s)
 
-      raise AssertionException, "Bad response code: expected #{code}, but found #{response.code}" # ,response.body
+      raise AssertionException, "Bad response code: expected #{code}, but found #{response.code}"
     end
 
     def assert_resource_type(response, resource_type)
       return if assertion_negated(!response.resource.nil? && response.resource.class == resource_type)
 
-      raise AssertionException, "Bad response type: expected #{resource_type}, but found #{response.resource.class}." # ,response.body
+      raise AssertionException, "Bad response type: expected #{resource_type}, but found #{response.resource.class}."
     end
 
     def assertion_negated(expression)

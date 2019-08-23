@@ -14,24 +14,20 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      @content_location = nil
-
       # export
       def export_kick_off(klass)
         headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
         url = "/#{klass}/$export"
 
-        reply = @client.get(url, @client.fhir_headers(headers))
-        reply
+        @client.get(url, @client.fhir_headers(headers))
       end
 
       # status check
       def export_check_status
         headers = { accept: 'application/json' }
 
-        reply = @client.get(@content_location, @client.fhir_headers(headers))
-        reply
+        @client.get(@content_location, @client.fhir_headers(headers))
       end
 
       def assert_status_reponse_required_field(response_body)
