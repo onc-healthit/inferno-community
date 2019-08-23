@@ -60,7 +60,7 @@ module Inferno
         end
 
         reply = export_kick_off('Patient')
-     
+
         # Shall return 202
         assert_response_accepted(reply)
 
