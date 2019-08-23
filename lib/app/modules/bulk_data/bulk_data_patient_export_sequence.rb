@@ -26,6 +26,14 @@ module Inferno
         reply
       end
 
+      # status check
+      def export_check_status()
+        headers = { accept: 'application/json' }
+
+        reply = @client.get(@content_location, @client.fhir_headers(headers))
+        reply
+      end
+
       details %(
 
         The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
@@ -53,7 +61,7 @@ module Inferno
       test 'Server shall return "202 Accepted" and "Cotent-location" for $export operation' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           desc %(
           )
           versions :stu3
@@ -67,8 +75,54 @@ module Inferno
         @content_location = reply.response[:headers]['content-location']
 
         # Shall have Content-location
-        assert !@content_location.empty?, 'Server must include Cotent-Location header for $export request'
+        assert @content_location.present?, 'Server must include Cotent-Location header for $export request'
       end
+
+      test 'Server shall return "202 Accepted" or "200 OK"' do
+        metadata do
+          id '03'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
+          desc %(
+          )
+          versions :stu3
+        end
+
+        code = 0
+        retry_after = 1
+
+        # exit if status code is 200
+        while code != 200
+          reply = export_check_status
+
+          # Shall return 200 or 202
+          code = reply.code
+
+          # continue if status code is 202
+          if code == 202
+            r = reply.response[:header]['retry_after']
+            binding.pry
+            if r.empty?
+              retry_after = retry_after * 2 - 1
+            else
+              retry_after = r
+            end
+
+            sleep retry_after
+
+            next
+          end
+  
+          assert code == 200, "Bad response code: expected 200, 202, but found #{code}."          
+        end
+
+        # Content-Type shall be 'application/json'
+        assert_resource_content_type(reply, 'application/json')
+
+        response_body = JSON.parse(reply.body)
+
+        # Shall have transactionTime
+        assert !response_body['transactionTime'].empty?, 'Complete Status shall have transactionTime'
+      end      
     end
   end
 end

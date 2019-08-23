@@ -4,6 +4,10 @@ require_relative '../../test_helper'
 
 class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
+    @complete_status = JSON({
+      :transactionTime => '2019-08-23T10:21'
+    })
+
     @instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
       client_name: 'Inferno',
@@ -31,19 +35,15 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       read_supported: true
     )
 
-    @request_headers = {
-      'Accept' => 'application/fhir+json',
-      'Accept-Charset' => 'utf-8',
-      'Accept-Encoding' => 'gzip, deflate',
-      'Authorization' => 'Bearer 99897979',
-      'Host' => 'www.example.com',
-      'User-Agent' => 'Ruby FHIR Client'
-    }
+    @export_request_header = { accept: 'application/fhir+json', prefer: 'respond-async' }
+    @status_request_header = { accept: 'application/json' }
 
     client = FHIR::Client.new(@instance.url)
     client.use_r4
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
+
+    @content_location = "http://www.example.com/status"
   end
 
   def full_sequence_stubs
@@ -51,11 +51,20 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @request_headers)
+      .with(headers: @export_request_header)
       .to_return(
         status: 202,
-        headers: { content_location: 'http://www.example.com' }
-      )
+        headers: { content_location: @content_location }
+      )    
+    
+    # status check
+    stub_request(:get, @content_location)
+    .with(headers: @status_request_header)
+    .to_return(
+      status: 200,
+      headers: { content_type: 'application/json' },
+      body: @complete_status
+    )
   end
 
   def test_all_pass
@@ -73,16 +82,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @request_headers)
+      .with(headers: @export_request_header)
       .to_return(
         status: 200,
-        headers: { content_location: 'http://www.example.com' }
-      )
+        headers: { content_location: @content_location }
+      )      
 
-    sequence_result = @sequence.start
-    failures = sequence_result.failures
-
-    assert !failures.empty?, 'test_export_fail_wrong_status should fail'
+    sequence_result = @sequence.start    
+    assert !sequence_result.pass?, 'test_export_fail_wrong_status should fail'
   end
 
   def test_export_fail_no_content_location
@@ -90,15 +97,29 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @request_headers)
+      .with(headers: @export_request_header)
       .to_return(
         status: 202,
         headers: { content_type: 'application/fhir+json; charset=UTF-8' }
       )
 
     sequence_result = @sequence.start
-    failures = sequence_result.failures
-
-    assert !failures.empty?, 'test_export_fail_no_content_location should fail'
+    binding.pry
+    assert !sequence_result.pass?, 'test_export_fail_no_content_location should fail'
   end
+
+  def test_status_check_fail_wrong_status_code
+    WebMock.reset!
+
+    # status check
+    stub_request(:get, 'http://www.example.com/status')
+    .with(headers: @status_request_header)
+    .to_return(
+      status: 201,
+      headers: { content_type: 'application/json' }
+    )
+
+    sequence_result = @sequence.
+    assert !sequence_result.pass?, 'test_status_check_fail_wrong_content_type should fail'
+  end  
 end
