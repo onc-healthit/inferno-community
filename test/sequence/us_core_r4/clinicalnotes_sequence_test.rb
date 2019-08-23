@@ -5,7 +5,6 @@ require_relative '../../test_helper'
 class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
   def setup
     @patient_id = 1234
-    binding.pry
     @docref_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_docref_bundle))
     @diagrpt_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_diagrpt_bundle))
 

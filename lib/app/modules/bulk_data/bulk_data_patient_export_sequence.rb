@@ -27,7 +27,7 @@ module Inferno
       end
 
       # status check
-      def export_check_status()
+      def export_check_status
         headers = { accept: 'application/json' }
 
         reply = @client.get(@content_location, @client.fhir_headers(headers))
@@ -100,19 +100,18 @@ module Inferno
           # continue if status code is 202
           if code == 202
             r = reply.response[:header]['retry_after']
-            binding.pry
-            if r.empty?
-              retry_after = retry_after * 2 - 1
-            else
-              retry_after = r
-            end
+            retry_after = if r.empty?
+                            retry_after * 2 - 1
+                          else
+                            r
+                          end
 
             sleep retry_after
 
             next
           end
-  
-          assert code == 200, "Bad response code: expected 200, 202, but found #{code}."          
+
+          assert code == 200, "Bad response code: expected 200, 202, but found #{code}."
         end
 
         # Content-Type shall be 'application/json'
@@ -122,7 +121,7 @@ module Inferno
 
         # Shall have transactionTime
         assert !response_body['transactionTime'].empty?, 'Complete Status shall have transactionTime'
-      end      
+      end
     end
   end
 end

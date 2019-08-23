@@ -4,9 +4,9 @@ require_relative '../../test_helper'
 
 class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
-    @complete_status = JSON({
-      :transactionTime => '2019-08-23T10:21'
-    })
+    @complete_status = JSON(
+      transactionTime: '2019-08-23T10:21'
+    )
 
     @instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
@@ -43,7 +43,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
 
-    @content_location = "http://www.example.com/status"
+    @content_location = 'http://www.example.com/status'
   end
 
   def full_sequence_stubs
@@ -55,16 +55,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       .to_return(
         status: 202,
         headers: { content_location: @content_location }
-      )    
-    
+      )
+
     # status check
     stub_request(:get, @content_location)
-    .with(headers: @status_request_header)
-    .to_return(
-      status: 200,
-      headers: { content_type: 'application/json' },
-      body: @complete_status
-    )
+      .with(headers: @status_request_header)
+      .to_return(
+        status: 200,
+        headers: { content_type: 'application/json' },
+        body: @complete_status
+      )
   end
 
   def test_all_pass
@@ -86,9 +86,9 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       .to_return(
         status: 200,
         headers: { content_location: @content_location }
-      )      
+      )
 
-    sequence_result = @sequence.start    
+    sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_wrong_status should fail'
   end
 
@@ -104,22 +104,21 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
 
     sequence_result = @sequence.start
-    binding.pry
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should fail'
   end
 
-  def test_status_check_fail_wrong_status_code
-    WebMock.reset!
+  # def test_status_check_fail_wrong_status_code
+  #   WebMock.reset!
 
-    # status check
-    stub_request(:get, 'http://www.example.com/status')
-    .with(headers: @status_request_header)
-    .to_return(
-      status: 201,
-      headers: { content_type: 'application/json' }
-    )
+  #   # status check
+  #   stub_request(:get, 'http://www.example.com/status')
+  #     .with(headers: @status_request_header)
+  #     .to_return(
+  #       status: 201,
+  #       headers: { content_type: 'application/json' }
+  #     )
 
-    sequence_result = @sequence.
-    assert !sequence_result.pass?, 'test_status_check_fail_wrong_content_type should fail'
-  end  
+  #   sequence_result = @sequence
+  #   assert !sequence_result.pass?, 'test_status_check_fail_wrong_content_type should fail'
+  # end
 end
