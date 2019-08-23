@@ -67,7 +67,7 @@ module Inferno
         @content_location = reply.response[:headers]['content-location']
 
         # Shall have Content-location
-        assert !@content_location.empty?, 'Server must include Cotent-Location header for $export request'
+        assert @content_location.present?, 'Server must include Cotent-Location header for $export request'
       end
     end
   end

@@ -31,14 +31,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       read_supported: true
     )
 
-    @request_headers = {
-      'Accept' => 'application/fhir+json',
-      'Accept-Charset' => 'utf-8',
-      'Accept-Encoding' => 'gzip, deflate',
-      'Authorization' => 'Bearer 99897979',
-      'Host' => 'www.example.com',
-      'User-Agent' => 'Ruby FHIR Client'
-    }
+    @export_request_headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
     client = FHIR::Client.new(@instance.url)
     client.use_r4
@@ -51,7 +44,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @request_headers)
+      .with(headers: @export_request_headers)
       .to_return(
         status: 202,
         headers: { content_location: 'http://www.example.com' }
@@ -73,16 +66,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @request_headers)
+      .with(headers: @export_request_headers)
       .to_return(
         status: 200,
         headers: { content_location: 'http://www.example.com' }
       )
 
     sequence_result = @sequence.start
-    failures = sequence_result.failures
-
-    assert !failures.empty?, 'test_export_fail_wrong_status should fail'
+    assert !sequence_result.pass?, 'test_export_fail_wrong_status should fail'
   end
 
   def test_export_fail_no_content_location
@@ -90,15 +81,13 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @request_headers)
+      .with(headers: @export_request_headers)
       .to_return(
         status: 202,
         headers: { content_type: 'application/fhir+json; charset=UTF-8' }
       )
 
     sequence_result = @sequence.start
-    failures = sequence_result.failures
-
-    assert !failures.empty?, 'test_export_fail_no_content_location should fail'
+    assert !sequence_result.pass?, 'test_export_fail_no_content_location should fail'
   end
 end
