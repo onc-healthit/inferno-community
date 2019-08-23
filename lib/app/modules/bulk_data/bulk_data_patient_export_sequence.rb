@@ -14,8 +14,6 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      @content_location = nil
-
       # export
       def export_kick_off(klass)
         headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
@@ -24,8 +22,7 @@ module Inferno
         url += "/#{klass}" if klass.present?
         url += '/$export'
 
-        reply = @client.get(url, @client.fhir_headers(headers))
-        reply
+        @client.get(url, @client.fhir_headers(headers))
       end
 
       details %(

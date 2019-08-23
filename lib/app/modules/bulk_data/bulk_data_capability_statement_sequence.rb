@@ -90,6 +90,22 @@ module Inferno
         formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
+
+      test 'FHIR server capability instantiate from CapabilityStatment-bulk-data' do
+        metadata do
+          id '05'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
+          desc %(
+
+            To declare conformance with this IG, a server should include the following URL in its own CapabilityStatement.instantiates:
+            http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html
+
+          )
+          optional
+        end
+
+        assert @conformance.instantiates&.include?('http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html'), 'CapabilityStatement did not instantiate from "http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html"'
+      end
     end
   end
 end
