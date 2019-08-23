@@ -16,6 +16,7 @@ RUN mkdir data
 COPY public /var/www/inferno/public
 COPY resources /var/www/inferno/resources
 COPY config* /var/www/inferno/
+COPY Rakefile /var/www/inferno/
 COPY lib /var/www/inferno/lib
 
 ### Set up environment
