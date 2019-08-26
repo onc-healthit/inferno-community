@@ -19,22 +19,10 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @instance.save!
 
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
-      resource_type: 'Patient',
-      resource_id: @patient_id
-    )
-
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: 'DocumentReference',
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true
-    )
-
     @export_request_headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
     client = FHIR::Client.new(@instance.url)
-    client.use_r4
+    client.use_stu3
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
