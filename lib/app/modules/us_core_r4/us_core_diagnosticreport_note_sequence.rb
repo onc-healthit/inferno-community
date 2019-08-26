@@ -368,7 +368,7 @@ module Inferno
         end
       end
 
-      test 'No results are being filtered. Each resource returned from a ' do
+      test 'No results are being filtered.' do
         metadata do
           id '15'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'

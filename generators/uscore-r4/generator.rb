@@ -221,7 +221,7 @@ end
 
 def create_unfiltered_test(sequence)
   test = {
-    tests_that: 'No results are being filtered. Each resource returned from a ',
+    tests_that: 'No results are being filtered.',
     index: sequence[:tests].length + 1,
     link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
   }
