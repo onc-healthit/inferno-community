@@ -34,6 +34,12 @@ module Inferno
         reply
       end
 
+      def assert_status_reponse_required_field(response_body)
+        ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
+          assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
+        end
+      end
+
       details %(
 
         The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
@@ -71,11 +77,10 @@ module Inferno
 
         # Shall return 202
         assert_response_accepted(reply)
-
         @content_location = reply.response[:headers]['content-location']
 
         # Shall have Content-location
-        assert @content_location.present?, 'Server must include Cotent-Location header for $export request'
+        assert @content_location.present?, 'Export response header did not include "Cotent-Location"'
       end
 
       test 'Server shall return "202 Accepted" or "200 OK"' do
@@ -99,13 +104,13 @@ module Inferno
 
           # continue if status code is 202
           if code == 202
-            r = reply.response[:header]['retry_after']
-            retry_after = if r.empty?
-                            retry_after * 2 - 1
-                          else
+            r = reply.response[:headers]['retry_after']
+            retry_after = if r.present?
                             r
+                          else
+                            retry_after * 2
                           end
-
+            binding.pry
             sleep retry_after
 
             next
@@ -120,7 +125,10 @@ module Inferno
         response_body = JSON.parse(reply.body)
 
         # Shall have transactionTime
-        assert !response_body['transactionTime'].empty?, 'Complete Status shall have transactionTime'
+        assert_status_reponse_required_field(response_body)
+
+        @output = response_body['output']
+        binding.pry
       end
     end
   end

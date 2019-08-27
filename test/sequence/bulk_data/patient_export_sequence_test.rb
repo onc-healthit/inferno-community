@@ -4,9 +4,13 @@ require_relative '../../test_helper'
 
 class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
-    @complete_status = JSON(
-      transactionTime: '2019-08-23T10:21'
-    )
+    @complete_status = {
+      'transactionTime' => '2019-08-01',
+      'request' => '[base]/Patient/$export?_type=Patient,Observation',
+      'requiresAccessToken' => 'true',
+      'output' => 'output',
+      'error' => 'error'
+    }
 
     @instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
@@ -23,18 +27,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @instance.save!
 
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
-      resource_type: 'Patient',
-      resource_id: @patient_id
-    )
-
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: 'DocumentReference',
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true
-    )
-
     @export_request_header = { accept: 'application/fhir+json', prefer: 'respond-async' }
     @status_request_header = { accept: 'application/json' }
 
@@ -46,29 +38,31 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @content_location = 'http://www.example.com/status'
   end
 
-  def include_export_sub
+  def include_export_sub(code = 202, headers = { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @export_request_header)
       .to_return(
-        status: 202,
-        headers: { content_location: @content_location }
+        status: code,
+        headers: headers
       )
+  end
+
+  # status check
+  def include_status_check_sub(code = 200, response_body = @complete_status)
+    stub_request(:get, @content_location)
+    .with(headers: @status_request_header)
+    .to_return(
+      status: code,
+      headers: { content_type: 'application/json' },
+      body: response_body.to_json
+    )
   end
 
   def full_sequence_stubs
     WebMock.reset!
 
-    # $export kick off
     include_export_sub
-
-    # status check
-    stub_request(:get, @content_location)
-      .with(headers: @status_request_header)
-      .to_return(
-        status: 200,
-        headers: { content_type: 'application/json' },
-        body: @complete_status
-      )
+    include_status_check_sub
   end
 
   def test_all_pass
@@ -84,13 +78,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_wrong_status
     WebMock.reset!
 
-    # $export kick off
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_header)
-      .to_return(
-        status: 200,
-        headers: { content_location: @content_location }
-      )
+    include_export_sub(200)
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_wrong_status should fail'
@@ -99,13 +87,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_no_content_location
     WebMock.reset!
 
-    # $export kick off
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_header)
-      .to_return(
-        status: 202,
-        headers: { content_type: 'application/fhir+json; charset=UTF-8' }
-      )
+    include_export_sub(202, {})
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should fail'
@@ -115,16 +97,22 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     WebMock.reset!
 
     include_export_sub
-
-    # status check
-    stub_request(:get, 'http://www.example.com/status')
-      .with(headers: @status_request_header)
-      .to_return(
-        status: 201,
-        headers: { content_type: 'application/json' }
-      )
+    include_status_check_sub(201)
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_status_check_fail_wrong_status_code should fail'
+  end
+
+  def test_status_check_fail_no_output
+    WebMock.reset!
+
+    response_body = @complete_status.clone
+    response_body.delete('output')
+
+    include_export_sub
+    include_status_check_sub(200, response_body)
+
+    sequence_result = @sequence.start
+    assert !sequence_result.pass?, 'test_status_check_fail_no_output should fail'
   end
 end
