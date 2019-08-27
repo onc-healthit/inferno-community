@@ -36,6 +36,12 @@ module Inferno
         end
       end
 
+      def assert_status_reponse_required_field(response_body)
+        ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
+          assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
+        end
+      end
+
       details %(
 
         The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
