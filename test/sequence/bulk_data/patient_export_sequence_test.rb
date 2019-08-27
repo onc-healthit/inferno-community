@@ -27,8 +27,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @instance.save!
 
-    @export_request_header = { accept: 'application/fhir+json', prefer: 'respond-async' }
-    @status_request_header = { accept: 'application/json' }
+    @export_request_headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
+    @status_request_headers = { accept: 'application/json' }
 
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
@@ -40,7 +40,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
   def include_export_sub(code = 202, headers = { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_header)
+      .with(headers: @export_request_headers)
       .to_return(
         status: code,
         headers: headers
@@ -50,7 +50,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   # status check
   def include_status_check_sub(code = 200, response_body = @complete_status)
     stub_request(:get, @content_location)
-      .with(headers: @status_request_header)
+      .with(headers: @status_request_headers)
       .to_return(
         status: code,
         headers: { content_type: 'application/json' },
