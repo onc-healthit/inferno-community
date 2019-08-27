@@ -112,7 +112,6 @@ module Inferno
                           else
                             retry_after * 2
                           end
-            binding.pry
             sleep retry_after
 
             next
@@ -130,7 +129,6 @@ module Inferno
         assert_status_reponse_required_field(response_body)
 
         @output = response_body['output']
-        binding.pry
       end
     end
   end

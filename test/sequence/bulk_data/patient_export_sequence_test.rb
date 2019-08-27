@@ -50,12 +50,12 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   # status check
   def include_status_check_sub(code = 200, response_body = @complete_status)
     stub_request(:get, @content_location)
-    .with(headers: @status_request_header)
-    .to_return(
-      status: code,
-      headers: { content_type: 'application/json' },
-      body: response_body.to_json
-    )
+      .with(headers: @status_request_header)
+      .to_return(
+        status: code,
+        headers: { content_type: 'application/json' },
+        body: response_body.to_json
+      )
   end
 
   def full_sequence_stubs
