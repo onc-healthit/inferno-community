@@ -19,7 +19,13 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @instance.save!
 
-    @export_request_headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
+    @export_request_headers = { accept: 'application/fhir+json',
+                                prefer: 'respond-async',
+                                authorization: "Bearer #{@instance.token}" }
+
+    @export_request_headers_no_token = { accept: 'application/fhir+json', prefer: 'respond-async' }
+
+    @content_location = 'http://www.example.com/status'
 
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
@@ -27,20 +33,25 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
 
-  def full_sequence_stubs
-    WebMock.reset!
+  def include_export_sub(code = 202, headers = { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: @export_request_headers_no_token)
+      .to_return(
+        status: 401
+      )
 
-    # $export kick off
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @export_request_headers)
       .to_return(
-        status: 202,
-        headers: { content_location: 'http://www.example.com' }
+        status: code,
+        headers: headers
       )
   end
 
   def test_all_pass
-    full_sequence_stubs
+    WebMock.reset!
+
+    include_export_sub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
@@ -52,30 +63,20 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_wrong_status
     WebMock.reset!
 
-    # $export kick off
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_headers)
-      .to_return(
-        status: 200,
-        headers: { content_location: 'http://www.example.com' }
-      )
+    include_export_sub(200)
 
     sequence_result = @sequence.start
-    assert !sequence_result.pass?, 'test_export_fail_wrong_status should fail'
+    assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with status code 200'
+    assert sequence_result.failures.first.message.include?('202'), "assert message #{sequence_result.failures.first.message} is not expected for status code 200."
   end
 
   def test_export_fail_no_content_location
     WebMock.reset!
 
-    # $export kick off
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_headers)
-      .to_return(
-        status: 202,
-        headers: { content_type: 'application/fhir+json; charset=UTF-8' }
-      )
+    include_export_sub(202, {})
 
     sequence_result = @sequence.start
-    assert !sequence_result.pass?, 'test_export_fail_no_content_location should fail'
+    assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with empty header'
+    assert sequence_result.failures.first.message.include?('Content-Location'), "assert message #{sequence_result.failures.first.message} is not expected for empty header."
   end
 end
