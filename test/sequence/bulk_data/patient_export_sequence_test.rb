@@ -31,7 +31,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @status_request_header = { accept: 'application/json' }
 
     client = FHIR::Client.new(@instance.url)
-    client.use_r4
+    client.use_stu3
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
 

@@ -49,10 +49,10 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects Patient search without authorization' do
+      test 'Server rejects $export request without authorization' do
         metadata do
           id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           desc %(
           )
           versions :stu3
@@ -61,7 +61,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
+        reply = export_kick_off('Patient')
         @client.set_bearer_token(@instance.token)
+        assert_response_unauthorized reply
       end
 
       test 'Server shall return "202 Accepted" and "Cotent-location" for $export operation' do
