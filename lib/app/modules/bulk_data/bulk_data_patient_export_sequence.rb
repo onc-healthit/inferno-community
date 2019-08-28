@@ -54,7 +54,7 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server shall return "202 Accepted" and "Cotent-location" for $export operation' do
+      test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
