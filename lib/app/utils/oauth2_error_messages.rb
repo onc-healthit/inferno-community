@@ -41,8 +41,12 @@ module Inferno
         )
       end
 
+      def unknown_iss_error_message
+        params[:iss].present? ? "Unknown iss: #{params[:iss]}" : no_iss_error_message
+      end
+
       def no_iss_error_message
-        'No iss for redirect'
+        'No iss querystring parameter provided to launch uri'
       end
 
       def no_running_test_error_message
