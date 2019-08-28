@@ -10,6 +10,9 @@ test_sets:
       - name: Prerequisites
         sequences:
           - ValueSetSequence
-      - name: Quality Reporting
+      - name: CMS130 Quality Reporting
         sequences:
-          - MeasureSequence
+          - CMS130ReportingSequence
+      - name: CMS165 Quality Reporting
+        sequences:
+          - CMS165ReportingSequence
