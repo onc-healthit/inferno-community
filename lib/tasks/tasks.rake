@@ -497,8 +497,8 @@ namespace :terminology do |_argv|
                                     _eventId: 'submit'
                                   },
                                   max_redirects: 0)
-    rescue RestClient::ExceptionWithResponse => err
-      follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
+    rescue RestClient::ExceptionWithResponse => e
+      follow_redirect(e.response.headers[:location], e.response.headers[:set_cookie])
     end
     puts 'Finished Downloading!'
   end
