@@ -41,18 +41,7 @@ def print_requests(result)
 end
 
 def execute(instance, sequences)
-  client = FHIR::Client.new(instance.url)
-
-  case instance.module.fhir_version
-  when 'stu3'
-    client.use_stu3
-  when 'dstu2'
-    client.use_dstu2
-  else
-    client.use_r4
-  end
-
-  client.default_json
+  client = FHIR::Client.for_testing_instance(instance)
 
   sequence_results = []
 
@@ -114,7 +103,7 @@ def execute(instance, sequences)
             puts "    #{req}"
           end
         end
-      elsif sequence_result.error?
+      elsif result.error?
         print 'X error'.magenta
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
@@ -122,6 +111,10 @@ def execute(instance, sequences)
           puts "      #{req}"
         end
         fails = true
+      elsif result.omit?
+        print '* omit'.light_black
+        print " - #{result.test_id} #{result.name}\n"
+        puts "    Message: #{result.message}"
       end
     end
     print "\n" + sequence.sequence_name + ' Sequence Result: '
@@ -150,6 +143,7 @@ def execute(instance, sequences)
     error_count = sequence_results.count(&:error?).to_s
     print(', ' + error_count.yellow + ' error')
   end
+
   puts "\n=============================================\n"
 
   return_value = 0
@@ -503,8 +497,8 @@ namespace :terminology do |_argv|
                                     _eventId: 'submit'
                                   },
                                   max_redirects: 0)
-    rescue RestClient::ExceptionWithResponse => err
-      follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
+    rescue RestClient::ExceptionWithResponse => e
+      follow_redirect(e.response.headers[:location], e.response.headers[:set_cookie])
     end
     puts 'Finished Downloading!'
   end

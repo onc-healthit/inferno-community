@@ -97,7 +97,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     assert_requested(stub_refresh_register)
 
     assert sequence_result.fail?, 'Sequence should fail.'
-    assert sequence_result.test_results.select(&:pass?).length == 1, 'Only one test should pass (the tls testing sequence).'
+    assert sequence_result.test_results.select(&:pass?).empty?, 'No tests should pass (the tls testing sequence).'
   end
 
   def test_inactive

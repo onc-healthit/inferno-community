@@ -2,7 +2,7 @@
 
 require_relative '../../test_helper'
 
-class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
+class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
   def setup
     @patient_id = 1234
     @docref_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_docref_bundle))
@@ -28,17 +28,12 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
       resource_id: @patient_id
     )
 
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: 'DocumentReference',
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true
-    )
+    set_resource_support(@instance, 'DocumentReference')
 
     @request_headers = {
       'Accept' => 'application/fhir+json',
       'Accept-Charset' => 'utf-8',
-      'Accept-Encoding' => 'gzip, deflate',
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
       'Authorization' => 'Bearer 99897979',
       'Host' => 'www.example.com',
       'User-Agent' => 'Ruby FHIR Client'
@@ -47,7 +42,7 @@ class UsCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     client = FHIR::Client.new(@instance.url)
     client.use_r4
     client.default_json
-    @sequence = Inferno::Sequence::UsCoreR4ClinicalNotesSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::USCoreR4ClinicalNotesSequence.new(@instance, client, true)
   end
 
   def full_sequence_stubs

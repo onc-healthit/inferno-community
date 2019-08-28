@@ -42,7 +42,8 @@ module Inferno
               fhir_version: instance.fhir_version,
               app_version: VERSION,
               resource_references: instance.resource_references.count,
-              supported_resources: instance.supported_resources.count,
+              resources_tested: instance.module.resources_to_test.length,
+              supported_resources: instance.testable_resources.empty? ? '?' : instance.testable_resources.length,
               request_response: request_response_count,
               latest_sequence_time: latest_sequence_time,
               final_result: instance.final_result(params[:test_set_id]),
@@ -124,16 +125,7 @@ module Inferno
 
             instance.save!
 
-            client = FHIR::Client.new(instance.url)
-            case instance.fhir_version
-            when 'stu3'
-              client.use_stu3
-            when 'dstu2'
-              client.use_dstu2
-            else
-              client.use_r4
-            end
-            client.default_json
+            client = FHIR::Client.for_testing_instance(instance)
             submitted_test_cases = params[:test_case].split(',')
 
             instance.reload # ensure that we have all the latest data

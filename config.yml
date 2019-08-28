@@ -17,7 +17,7 @@ disable_verify_peer: false
 # When running in a docker container, we have to listen to other than just 'localhost' which is the default
 bind: '0.0.0.0'
 
-# Skip TLS tests
+# Omit TLS tests
 disable_tls_tests: false
 
 # Default scopes
