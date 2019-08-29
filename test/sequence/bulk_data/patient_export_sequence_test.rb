@@ -33,12 +33,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @export_request_headers_no_token = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
+    @status_request_headers = { accept: 'application/json',
+                                authorization: "Bearer #{@instance.token}" }
+
     @content_location = 'http://www.example.com/status'
 
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
+  end
 
   def include_export_sub(code = 202, headers = { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
@@ -66,17 +70,11 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def full_sequence_stubs
-    WebMock.reset!
-
-    include_export_sub
-    include_status_check_sub
-  end
-
   def test_all_pass
     WebMock.reset!
 
     include_export_sub
+    include_status_check_sub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
