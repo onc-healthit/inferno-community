@@ -3,19 +3,14 @@
 require_relative '../../test_helper'
 
 class BulkDataCapabilityStatementSequenceTest < MiniTest::Test
-  REQUEST_HEADERS = { 'Accept' => 'application/fhir+json',
-                      'Accept-Charset' => 'utf-8',
-                      'Accept-Encoding' => 'gzip, deflate',
-                      'Host' => 'www.example.com',
-                      'User-Agent' => 'Ruby FHIR Client' }.freeze
-
-  RESPONSE_HEADERS = { 'content-type' => 'application/json+fhir;charset=UTF-8' }.freeze
-
   def setup
     instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
       selected_module: 'bulk_data'
     )
+
+    @request_headers = { accept: 'application/fhir+json' }
+    @response_headers = { content_type: 'application/json+fhir'}
 
     instance.save!
 
@@ -30,8 +25,8 @@ class BulkDataCapabilityStatementSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
     stub_request(:get, 'http://www.example.com/metadata')
-      .with(headers: REQUEST_HEADERS)
-      .to_return(status: 200, body: @conformance.to_json, headers: RESPONSE_HEADERS)
+      .with(headers: @request_headers)
+      .to_return(status: 200, body: @conformance.to_json, headers: @response_headers)
 
     sequence_result = @sequence.start
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
