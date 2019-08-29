@@ -18,7 +18,9 @@ module Inferno
       def export_kick_off(klass)
         headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
-        url = "/#{klass}/$export"
+        url = ''
+        url += "/#{klass}" if klass.present?
+        url += '/$export'
 
         @client.get(url, @client.fhir_headers(headers))
       end
@@ -68,7 +70,7 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server shall return "202 Accepted" and "Cotent-location" for $export operation' do
+      test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
@@ -84,7 +86,7 @@ module Inferno
         @content_location = reply.response[:headers]['content-location']
 
         # Shall have Content-location
-        assert @content_location.present?, 'Export response header did not include "Cotent-Location"'
+        assert @content_location.present?, 'Export response header did not include "Content-Location"'
       end
 
       test 'Server shall return "202 Accepted" or "200 OK"' do

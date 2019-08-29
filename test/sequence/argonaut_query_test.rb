@@ -26,7 +26,10 @@ class ArgonautQueryTest < MiniTest::Test
                                                      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
                                                      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                                                      scopes: 'launch openid patient/*.* profile')
-    @instance.save_supported_resources(@conformance)
+    Inferno::Models::ServerCapabilities.create(
+      testing_instance_id: @instance.id,
+      capabilities: @conformance.as_json
+    )
     @instance.resource_references << Inferno::Models::ResourceReference.new(
       resource_type: 'Patient',
       resource_id: @patient_id

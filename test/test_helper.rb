@@ -14,7 +14,6 @@ require 'json/jwt'
 test_log_filename = File.join('tmp', 'test.log')
 FileUtils.rm test_log_filename if File.exist? test_log_filename
 
-# require File.expand_path '../../app.rb', __FILE__
 require_relative '../lib/app'
 
 def load_json_fixture(file)
@@ -81,6 +80,29 @@ def get_client(instance)
   client.use_dstu2
   client.default_json
   client
+end
+
+def set_resource_support(instance, resource)
+  interactions = ['read', 'search-type', 'history-instance', 'vread'].map do |interaction|
+    {
+      code: interaction
+    }
+  end
+  Inferno::Models::ServerCapabilities.create(
+    testing_instance_id: instance.id,
+    capabilities: {
+      rest: [
+        {
+          resource: [
+            {
+              type: resource.to_s,
+              interaction: interactions
+            }
+          ]
+        }
+      ]
+    }
+  )
 end
 
 FHIR::DSTU2::StructureDefinition.clear_all_validates_vs
