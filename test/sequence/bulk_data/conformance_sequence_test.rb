@@ -10,7 +10,7 @@ class BulkDataCapabilityStatementSequenceTest < MiniTest::Test
     )
 
     @request_headers = { accept: 'application/fhir+json' }
-    @response_headers = { content_type: 'application/json+fhir'}
+    @response_headers = { content_type: 'application/json+fhir' }
 
     instance.save!
 
