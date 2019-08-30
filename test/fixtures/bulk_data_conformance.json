@@ -79,21 +79,21 @@
           ],
           "operation": [
               {
-                  "name": "everything",
+                  "name": "export",
                   "definition": {
-                      "reference": "OperationDefinition/Patient--everything"
+                      "reference": "OperationDefinition/BulkDataExport"
                   }
               },
               {
-                  "name": "everything",
+                  "name": "patient-export",
                   "definition": {
-                      "reference": "OperationDefinition/Group-i-everything"
+                      "reference": "OperationDefinition/PatientLevelExport"
                   }
               },
               {
-                  "name": "get-resource-counts",
+                  "name": "group-export",
                   "definition": {
-                      "reference": "OperationDefinition/-s-get-resource-counts"
+                      "reference": "OperationDefinition/GroupLevelExport"
                   }
               }
           ]

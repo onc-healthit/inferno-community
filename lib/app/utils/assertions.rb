@@ -25,13 +25,13 @@ module Inferno
     def assert_response_ok(response, error_message = '')
       return if assertion_negated([200, 201].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 200, 201, but found #{response.code}.#{' ' + error_message}"
+      raise AssertionException, "Bad response code: expected 200, 201, but found #{response.code}. #{error_message}"
     end
 
-    def assert_response_accepted(response, error_message = '')
+    def assert_response_accepted(response)
       return if assertion_negated([202].include?(response.code))
 
-      raise AssertionException, "Bad response code: expected 202, but found #{response.code}.#{' ' + error_message}"
+      raise AssertionException, "Bad response code: expected 202, but found #{response.code}"
     end
 
     def assert_response_not_found(response)
@@ -272,6 +272,10 @@ module Inferno
     def assert_valid_http_uri(uri, message = nil)
       error_message = message || "\"#{uri}\" is not a valid URI"
       assert (uri =~ /\A#{URI.regexp(['http', 'https'])}\z/), error_message
+    end
+
+    def assert_operation_supported(server_capabilities, op_name)
+      assert server_capabilities.operation_supported?(op_name), "FHIR server capability statement did not support #{op_name} operation"
     end
   end
 end

@@ -14,7 +14,6 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      # export
       def export_kick_off(klass)
         headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
@@ -62,12 +61,10 @@ module Inferno
 
         reply = export_kick_off('Patient')
 
-        # Shall return 202
         assert_response_accepted(reply)
 
         @content_location = reply.response[:headers]['content-location']
 
-        # Shall have Content-location
         assert @content_location.present?, 'Server response must have "Content-Location" in header for $export request'
       end
     end

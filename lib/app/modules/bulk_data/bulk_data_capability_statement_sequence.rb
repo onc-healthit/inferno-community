@@ -57,6 +57,8 @@ module Inferno
         * [SMART on FHIR Conformance](http://hl7.org/fhir/smart-app-launch/conformance/index.html)
       )
 
+      def assert_operation(op_name); end
+
       test 'FHIR server capability states JSON support' do
         metadata do
           id '04'
@@ -91,7 +93,7 @@ module Inferno
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
-      test 'FHIR server capability instantiate from CapabilityStatment-bulk-data' do
+      test 'FHIR server capability SHOULD instantiate from CapabilityStatment-bulk-data' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
@@ -105,6 +107,69 @@ module Inferno
         end
 
         assert @conformance.instantiates&.include?('http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html'), 'CapabilityStatement did not instantiate from "http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html"'
+      end
+
+      test 'FHIR server capability SHOULD have export operation' do
+        metadata do
+          id '06'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
+          desc %(
+
+            These OperationDefinitions have been defined for this implementation guide.
+              * Export: export any data from a FHIR server
+              * Patient Export: export patient data from a FHIR server
+              * Group Export: export data for groups of patients from a FHIR server
+
+          )
+          optional
+        end
+
+        begin
+          Inferno::Models::ServerCapabilities.create(
+            testing_instance_id: @instance.id,
+            capabilities: @conformance.as_json
+          )
+        rescue StandardError
+          assert false, 'Capability Statement could not be parsed.'
+        end
+
+        assert_operation_supported(@instance.server_capabilities, 'export')
+      end
+
+      test 'FHIR server capability SHOULD have export operation' do
+        metadata do
+          id '07'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
+          desc %(
+
+            These OperationDefinitions have been defined for this implementation guide.
+              * Export: export any data from a FHIR server
+              * Patient Export: export patient data from a FHIR server
+              * Group Export: export data for groups of patients from a FHIR server
+
+          )
+          optional
+        end
+
+        assert_operation_supported(@instance.server_capabilities, 'patient-export')
+      end
+
+      test 'FHIR server capability SHOULD have group-export operation' do
+        metadata do
+          id '07'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
+          desc %(
+
+            These OperationDefinitions have been defined for this implementation guide.
+              * Export: export any data from a FHIR server
+              * Patient Export: export patient data from a FHIR server
+              * Group Export: export data for groups of patients from a FHIR server
+
+          )
+          optional
+        end
+
+        assert_operation_supported(@instance.server_capabilities, 'group-export')
       end
     end
   end

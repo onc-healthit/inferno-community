@@ -33,7 +33,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
 
-  def include_export_sub(code = 202, headers = { content_location: @content_location })
+  def include_export_stub(code = 202, headers = { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @export_request_headers_no_token)
       .to_return(
