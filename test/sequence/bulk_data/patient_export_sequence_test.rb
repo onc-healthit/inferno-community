@@ -51,7 +51,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
-    include_export_sub
+    include_export_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
