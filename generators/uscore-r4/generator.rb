@@ -98,7 +98,8 @@ def create_search_test(sequence, search_param)
   search_test = {
     tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
     index: sequence[:tests].length + 1,
-    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html',
+    optional: search_param[:expectation] == 'SHOULD'
   }
 
   is_first_search = search_test[:index] == 2 # if first search - fix this check later
