@@ -2,6 +2,7 @@
 
 require 'dm-core'
 require 'dm-migrations'
+require_relative 'server_capabilities'
 require_relative '../utils/result_statuses'
 
 module Inferno
@@ -55,8 +56,8 @@ module Inferno
       property :must_support_confirmed, String, default: ''
 
       has n, :sequence_results
-      has n, :supported_resources, order: [:index.asc]
       has n, :resource_references
+      has 1, :server_capabilities
 
       def latest_results
         sequence_results.each_with_object({}) do |result, hash|
@@ -159,77 +160,30 @@ module Inferno
         reload
       end
 
-      def save_supported_resources(conformance)
-        resources = ['Patient',
-                     'AllergyIntolerance',
-                     'CarePlan',
-                     'CareTeam',
-                     'Condition',
-                     'Device',
-                     'DiagnosticReport',
-                     'DocumentReference',
-                     'Encounter',
-                     'ExplanationOfBenefit',
-                     'Goal',
-                     'Immunization',
-                     'Location',
-                     'Medication',
-                     'MedicationDispense',
-                     'MedicationStatement',
-                     'MedicationRequest',
-                     'MedicationOrder',
-                     'Observation',
-                     'Organization',
-                     'Procedure',
-                     'DocumentReference',
-                     'Provenance',
-                     'Practitioner',
-                     'PractitionerRole']
+      def testable_resources
+        self.module.resources_to_test & (server_capabilities&.supported_resources || Set.new)
+      end
 
-        supported_resource_capabilities =
-          conformance
-            .rest.first.resource
-            .select { |resource| resources.include? resource.type }
-            .index_by(&:type)
+      def supported_resource_interactions
+        return [] if server_capabilities.blank?
 
-        supported_resources.each(&:destroy)
-        save!
-
-        resources.each_with_index do |resource_name, index|
-          capabilities = supported_resource_capabilities[resource_name]
-
-          supported_resources << SupportedResource.create(
-            resource_type: resource_name,
-            index: index,
-            testing_instance_id: id,
-            supported: !capabilities.nil?,
-            read_supported: interaction_supported?(capabilities, 'read'),
-            vread_supported: interaction_supported?(capabilities, 'vread'),
-            search_supported: interaction_supported?(capabilities, 'search-type'),
-            history_supported: interaction_supported?(capabilities, 'history-instance')
-          )
+        resources = testable_resources
+        server_capabilities.supported_interactions.select do |interactions|
+          resources.include? interactions[:resource_type]
         end
-
-        save!
       end
 
       def conformance_supported?(resource, methods = [])
-        resource_support = supported_resources.find { |r| r.resource_type == resource.to_s }
-        return false if resource_support.nil? || !resource_support.supported
+        resource_support = supported_resource_interactions.find do |interactions|
+          interactions[:resource_type] == resource.to_s
+        end
+
+        return false if resource_support.blank?
 
         methods.all? do |method|
-          case method
-          when :read
-            resource_support.read_supported
-          when :search
-            resource_support.search_supported
-          when :history
-            resource_support.history_supported
-          when :vread
-            resource_support.vread_supported
-          else
-            false
-          end
+          method = method == :history ? 'history-instance' : method.to_s
+
+          resource_support[:interactions].include? method
         end
       end
 
@@ -271,10 +225,6 @@ module Inferno
       end
 
       private
-
-      def interaction_supported?(capabilities, interaction_code)
-        capabilities&.interaction&.any? { |i| i.code == interaction_code }
-      end
 
       def group_result(results)
         return :skip if results[:skip].positive?

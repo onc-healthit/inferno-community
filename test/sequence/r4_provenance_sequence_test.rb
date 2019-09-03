@@ -49,12 +49,7 @@ class R4ProvenanceSequenceTest < MiniTest::Test
       resource_id: @patient_id
     )
 
-    @instance.supported_resources << Inferno::Models::SupportedResource.create(
-      resource_type: 'Provenance',
-      testing_instance_id: @instance.id,
-      supported: true,
-      read_supported: true
-    )
+    set_resource_support(@instance, 'Provenance')
 
     client = FHIR::Client.new(@instance.url)
     client.use_r4

@@ -33,6 +33,13 @@ module Inferno
     end
   end
 
+  class OmitException < RuntimeError
+    def initialize(message = '')
+      super(message)
+      Inferno.logger.info "OmitException: #{message}"
+    end
+  end
+
   class WaitException < RuntimeError
     attr_accessor :endpoint
     def initialize(endpoint)

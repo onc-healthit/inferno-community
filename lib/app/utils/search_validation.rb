@@ -43,7 +43,7 @@ module Inferno
         !target_range[:start].nil? && !target_range[:end].nil? && search_range[:start] <= target_range[:start] && search_range[:end] >= target_range[:end]
       when 'ne' # the range of the search value does not fully contain the range of the target value
         target_range[:start].nil? || target_range[:end].nil? || search_range[:start] > target_range[:start] || search_range[:end] < target_range[:end]
-      when 'gt' #	the range above the search value intersects (i.e. overlaps) with the range of the target value
+      when 'gt' #  the range above the search value intersects (i.e. overlaps) with the range of the target value
         target_range[:end].nil? || search_range[:end] < target_range[:end]
       when 'lt' # the range below the search value intersects (i.e. overlaps) with the range of the target value
         target_range[:start].nil? || search_range[:start] > target_range[:start]

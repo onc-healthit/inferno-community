@@ -21,7 +21,7 @@ test_sets:
           Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
           registration information to be entered into the system under test.  Once registered, the tester should be provided
           a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
-          the ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
+          the ability to provide required service metadata through the discovery endpoints, including OAuth endpoints,
           supported resources and searches.
         input_instructions: |
           Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 

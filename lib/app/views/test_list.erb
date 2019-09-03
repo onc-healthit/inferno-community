@@ -36,29 +36,27 @@
           <div class="result-details-icon result-details-icon-todo">
             <span class="oi oi-minus"></span>
           </div>
+      <% when 'omit' %>
+        <div class="result-details-icon result-details-icon-omit" data-toggle="tooltip" title="Test was omitted and does not affect passing or failed scores">
+          <span class="oi oi-media-record" aria-hidden="true"></span>
+        </div>
       <% end %>
       <% if result.test_warnings.length > 0 %>
-          <div class="result-details-icon result-details-icon-warning" data-toggle="tooltip" title="<%= result.test_warnings.length %> warning(s).  Warnings do not result in a test failure.">
-            <span class="oi oi-warning"></span>
+          <div class="result-details-icon result-details-icon-warning" style="float:right;" data-toggle="tooltip" title="<%= result.test_warnings.length %> warning(s).  Warnings do not result in a test failure.">
+            <span class="oi oi-warning" data-toggle="tooltip" title="Test is waiting for a server launch or redirect"></span>
           </div>
-      <% else %>
-          <div class="result-details-icon result-details-icon-warning"></div>
       <% end %>
 
       <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
-          <div class="result-details-icon result-details-icon-requests" data-toggle="tooltip" title="Test contains outbound http requests.">
+          <div class="result-details-icon result-details-icon-requests" style="float:right;" data-toggle="tooltip" title="Test contains outbound http requests.">
             <span class="oi oi-arrow-thick-right"></span>
           </div>
-      <% else %>
-          <div class="result-details-icon result-details-icon-requests"></div>
       <% end %>
 
       <% unless result.request_responses.find{ |f| f.direction == 'inbound'}.nil? %>
-          <div class="result-details-icon result-details-icon-requests" data-toggle="tooltip" title="Test contains inbound http requests.">
+          <div class="result-details-icon result-details-icon-requests" style="float:right;" data-toggle="tooltip" title="Test contains inbound http requests.">
             <span class="oi oi-arrow-thick-left"></span>
           </div>
-      <% else %>
-          <div class="result-details-icon result-details-icon-requests"></div>
       <% end %>
 
       <% if result.result == 'todo' %> TODO: <% end %>

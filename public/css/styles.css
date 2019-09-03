@@ -750,6 +750,10 @@ body {
   color: #00e1e1;
 }
 
+.result-details-icon-omit {
+  color: #999;
+}
+
 .result-details-icon-todo {
   color: #336699;
 }
@@ -760,12 +764,10 @@ body {
 
 .result-details-icon-warning {
   color: #FF9500;
-  float: right;
 }
 
 .result-details-icon-requests {
   color: #336699;
-  float: right;
 }
 
 .result-details-message {

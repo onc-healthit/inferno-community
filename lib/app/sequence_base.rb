@@ -257,6 +257,10 @@ module Inferno
         @@conformance_supports[sequence_name] || []
       end
 
+      def self.resources_to_test
+        conformance_supports.map(&:to_s)
+      end
+
       def self.versions(*versions)
         @@versions[sequence_name] = versions unless versions.empty?
         @@versions[sequence_name] || FHIR::VERSIONS
@@ -420,6 +424,9 @@ module Inferno
             result.skip!
             result.message = e.message
             result.details = e.details
+          rescue OmitException => e
+            result.omit!
+            result.message = e.message
           rescue StandardError => e
             Inferno.logger.error "Fatal Error: #{e.message}"
             Inferno.logger.error e.backtrace
@@ -481,6 +488,10 @@ module Inferno
 
       def pass(message = '')
         raise PassException, message
+      end
+
+      def omit(message = '')
+        raise OmitException, message
       end
 
       def skip(message = '', details = nil)
