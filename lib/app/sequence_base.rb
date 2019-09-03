@@ -350,7 +350,6 @@ module Inferno
       def self.extends_sequence(klass)
         @@test_metadata[klass.sequence_name].each do |metadata|
           @@test_metadata[sequence_name] << metadata
-          @@test_metadata[sequence_name].last[:test_index] = @@test_metadata[sequence_name].length - 1
           define_method metadata[:method_name], metadata[:method]
         end
       end
