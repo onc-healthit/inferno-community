@@ -734,14 +734,12 @@ module Inferno
         walk_resource(resource) do |value, meta, _path|
           next if meta['type'] != 'Reference'
 
-          begin
-            if value.relative?
-              begin
-                resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
-              rescue NameError
-                next
-              end
+          if value.relative?
+            begin
+              resource_class = value.resource_class.name.demodulize
+              @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+            rescue NameError
+              next
             end
           end
         end
