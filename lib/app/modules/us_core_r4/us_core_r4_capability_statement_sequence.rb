@@ -86,7 +86,8 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert_valid_conformance
+
         formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
@@ -115,7 +116,7 @@ module Inferno
                                  'permission-patient',
                                  'permission-user']
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
+        assert_valid_conformance
 
         extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
         assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
@@ -140,7 +141,7 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
+        assert_valid_conformance
 
         assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in capability statement.'
       end

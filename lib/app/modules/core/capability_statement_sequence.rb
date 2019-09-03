@@ -134,7 +134,7 @@ module Inferno
         @conformance = @client.conformance_statement
         assert_response_ok @client.reply
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
+        assert_valid_conformance
 
         begin
           @server_capabilities = Inferno::Models::ServerCapabilities.create(
