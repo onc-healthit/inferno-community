@@ -28,8 +28,8 @@ module Inferno
         end
       end
 
-      def operation_supported?(op_name)
-        statement.rest.any? { |r| r.operation.any? { |x| x.name == op_name } }
+      def operation_supported?(operation_name)
+        statement.rest.any? { |rest| rest.operation.any? { |operation| operation.name == operation_name } }
       end
 
       private

@@ -63,7 +63,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_wrong_status
     WebMock.reset!
 
-    include_export_sub(200)
+    include_export_stub(200)
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with status code 200'
@@ -73,7 +73,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_no_content_location
     WebMock.reset!
 
-    include_export_sub(202, {})
+    include_export_stub(202, {})
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with empty header'

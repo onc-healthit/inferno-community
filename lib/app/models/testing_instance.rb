@@ -187,11 +187,6 @@ module Inferno
         end
       end
 
-      def operation_supported?(op_name)
-        operation = server_capabilities.capabilities.rest&.first&.operation&.select { |x| x.name == op_name }
-        operation.present?
-      end
-
       def save_resource_reference(type, id, profile = nil)
         resource_references
           .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
