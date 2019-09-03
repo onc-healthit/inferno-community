@@ -128,7 +128,7 @@ module Inferno
 
       test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do
         metadata do
-          id '05'
+          id '06'
           link 'https://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
            The Argonaut Data Query Implementation Guide states:
