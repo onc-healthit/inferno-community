@@ -142,15 +142,6 @@ module Inferno
 
         assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
 
-        begin
-          Inferno::Models::ServerCapabilities.create(
-            testing_instance_id: @instance.id,
-            capabilities: @conformance.as_json
-          )
-        rescue StandardError
-          assert false, 'Capability Statement could not be parsed.'
-        end
-
         assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in capability statement.'
       end
     end
