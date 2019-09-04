@@ -44,7 +44,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
 
-  def include_export_sub(code = 202, headers = { content_location: @content_location })
+  def include_export_stub(code = 202, headers = { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @export_request_headers_no_token)
       .to_return(
@@ -60,7 +60,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   end
 
   # status check
-  def include_status_check_sub(code = 200, response_body = @complete_status)
+  def include_status_check_stub(code = 200, response_body = @complete_status)
     stub_request(:get, @content_location)
       .with(headers: @status_request_headers)
       .to_return(
@@ -73,8 +73,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
-    include_export_sub
-    include_status_check_sub
+    include_status_check_stub
+    include_export_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
@@ -86,7 +86,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_wrong_status
     WebMock.reset!
 
-    include_export_sub(200)
+    include_export_stub(200)
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with status code 200'
@@ -96,7 +96,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_no_content_location
     WebMock.reset!
 
-    include_export_sub(202, {})
+    include_export_stub(202, {})
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with empty header'
@@ -106,8 +106,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_status_check_fail_wrong_status_code
     WebMock.reset!
 
-    include_export_sub
-    include_status_check_sub(201)
+    include_export_stub
+    include_status_check_stub(201)
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_status_check_fail_wrong_status_code should fail'
@@ -119,8 +119,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     response_body = @complete_status.clone
     response_body.delete('output')
 
-    include_export_sub
-    include_status_check_sub(200, response_body)
+    include_export_stub
+    include_status_check_stub(200, response_body)
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'test_status_check_fail_no_output should fail'

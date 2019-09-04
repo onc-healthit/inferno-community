@@ -64,4 +64,26 @@ class ServerCapabilitiesTest < MiniTest::Test
 
     assert @capabilities.supported_interactions == expected_interactions
   end
+
+  def test_operation_supported_pass
+    conformance = load_json_fixture(:bulk_data_conformance)
+
+    server_capabilities = Inferno::Models::ServerCapabilities.new(
+      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+      capabilities: conformance.as_json
+    )
+
+    assert server_capabilities.operation_supported?('patient-export')
+  end
+
+  def test_operation_supported_fail_invalid_name
+    conformance = load_json_fixture(:bulk_data_conformance)
+
+    server_capabilities = Inferno::Models::ServerCapabilities.new(
+      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+      capabilities: conformance.as_json
+    )
+
+    assert !server_capabilities.operation_supported?('this_is_a_test')
+  end
 end
