@@ -14,27 +14,47 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      def export_kick_off(klass)
-        headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
+      def assert_export_kick_off(klass)
+        reply = export_kick_off(klass)
 
-        url = ''
-        url += "/#{klass}" if klass.present?
-        url += '/$export'
+        assert_response_accepted(reply)
+        @content_location = reply.response[:headers]['content-location']
 
-        @client.get(url, @client.fhir_headers(headers))
+        assert @content_location.present?, 'Export response header did not include "Content-Location"'
       end
 
-      # status check
-      def export_check_status
+      def assert_export_status(content_location = @content_location)
+        code = 0
+        retry_after = 1
         headers = { accept: 'application/json' }
 
-        @client.get(@content_location, @client.fhir_headers(headers))
-      end
+        while code != 200
+          reply = @client.get(content_location, @client.fhir_headers(headers))
+          code = reply.code
 
-      def assert_status_reponse_required_field(response_body)
-        ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
-          assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
+          # continue if status code is 202
+          if code == 202
+            r = reply.response[:headers]['retry_after']
+            retry_after = if r.present?
+                            r
+                          else
+                            retry_after * 2
+                          end
+            sleep retry_after
+
+            next
+          end
+
+          assert code == 200, "Bad response code: expected 200, 202, but found #{code}."
         end
+
+        assert_resource_content_type(reply, 'application/json')
+
+        response_body = JSON.parse(reply.body)
+
+        assert_status_reponse_required_field(response_body)
+
+        @output = response_body['output']
       end
 
       details %(
@@ -72,13 +92,7 @@ module Inferno
           versions :stu3
         end
 
-        reply = export_kick_off('Patient')
-
-        assert_response_accepted(reply)
-        @content_location = reply.response[:headers]['content-location']
-
-        # Shall have Content-location
-        assert @content_location.present?, 'Export response header did not include "Content-Location"'
+        assert_export_kick_off('Patient')
       end
 
       test 'Server shall return "202 Accepted" or "200 OK"' do
@@ -90,41 +104,25 @@ module Inferno
           versions :stu3
         end
 
-        code = 0
-        retry_after = 1
+        assert_export_status
+      end
 
-        # exit if status code is 200
-        while code != 200
-          reply = export_check_status
+      private
 
-          # Shall return 200 or 202
-          code = reply.code
+      def export_kick_off(klass)
+        headers = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
-          # continue if status code is 202
-          if code == 202
-            r = reply.response[:headers]['retry_after']
-            retry_after = if r.present?
-                            r
-                          else
-                            retry_after * 2
-                          end
-            sleep retry_after
+        url = ''
+        url += "/#{klass}" if klass.present?
+        url += '/$export'
 
-            next
-          end
+        @client.get(url, @client.fhir_headers(headers))
+      end
 
-          assert code == 200, "Bad response code: expected 200, 202, but found #{code}."
+      def assert_status_reponse_required_field(response_body)
+        ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
+          assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
         end
-
-        # Content-Type shall be 'application/json'
-        assert_resource_content_type(reply, 'application/json')
-
-        response_body = JSON.parse(reply.body)
-
-        # Shall have transactionTime
-        assert_status_reponse_required_field(response_body)
-
-        @output = response_body['output']
       end
     end
   end

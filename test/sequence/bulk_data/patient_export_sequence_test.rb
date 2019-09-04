@@ -44,34 +44,36 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
 
-  def include_export_stub(code = 202, headers = { content_location: @content_location })
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_headers_no_token)
-      .to_return(
-        status: 401
-      )
-
+  def include_export_stub(status_code: 202,
+                          response_headers: { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: @export_request_headers)
       .to_return(
-        status: code,
-        headers: headers
+        status: status_code,
+        headers: response_headers
       )
   end
 
-  # status check
-  def include_status_check_stub(code = 200, response_body = @complete_status)
+  def include_status_check_stub(status_code: 200,
+                                response_headers: { content_type: 'application/json' },
+                                response_body: @complete_status)
     stub_request(:get, @content_location)
       .with(headers: @status_request_headers)
       .to_return(
-        status: code,
-        headers: { content_type: 'application/json' },
+        status: status_code,
+        headers: response_headers,
         body: response_body.to_json
       )
   end
 
   def test_all_pass
     WebMock.reset!
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: @export_request_headers_no_token)
+      .to_return(
+        status: 401
+      )
 
     include_status_check_stub
     include_export_stub
@@ -86,31 +88,31 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_export_fail_wrong_status
     WebMock.reset!
 
-    include_export_stub(200)
+    include_export_stub(status_code: 200)
 
-    sequence_result = @sequence.start
-    assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with status code 200'
-    assert sequence_result.failures.first.message.include?('202'), "assert message #{sequence_result.failures.first.message} is not expected for status code 200."
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_export_kick_off('Patient')
+    end
   end
 
   def test_export_fail_no_content_location
     WebMock.reset!
 
-    include_export_stub(202, {})
+    include_export_stub(response_headers: {})
 
-    sequence_result = @sequence.start
-    assert !sequence_result.pass?, 'test_export_fail_no_content_location should pass with empty header'
-    assert sequence_result.failures.first.message.include?('Content-Location'), "assert message #{sequence_result.failures.first.message} is not expected for empty header."
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_export_kick_off('Patient')
+    end
   end
 
   def test_status_check_fail_wrong_status_code
     WebMock.reset!
 
-    include_export_stub
-    include_status_check_stub(201)
+    include_status_check_stub(status_code: 201)
 
-    sequence_result = @sequence.start
-    assert !sequence_result.pass?, 'test_status_check_fail_wrong_status_code should fail'
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_export_status(@content_location)
+    end
   end
 
   def test_status_check_fail_no_output
@@ -119,10 +121,20 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     response_body = @complete_status.clone
     response_body.delete('output')
 
-    include_export_stub
-    include_status_check_stub(200, response_body)
+    include_status_check_stub(response_body: response_body)
 
-    sequence_result = @sequence.start
-    assert !sequence_result.pass?, 'test_status_check_fail_no_output should fail'
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_export_status(@content_location)
+    end
+  end
+
+  def test_status_check_fail_invalid_response_header
+    WebMock.reset!
+
+    include_status_check_stub(response_headers: { content_type: 'application/xml' })
+
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_export_status(@content_location)
+    end
   end
 end
