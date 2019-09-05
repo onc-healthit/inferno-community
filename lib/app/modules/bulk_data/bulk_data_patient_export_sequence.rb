@@ -24,29 +24,9 @@ module Inferno
       end
 
       def assert_export_status(content_location = @content_location)
-        code = 0
-        retry_after = 1
-        headers = { accept: 'application/json' }
+        reply = export_status_check(content_location)
 
-        while code != 200
-          reply = @client.get(content_location, @client.fhir_headers(headers))
-          code = reply.code
-
-          # continue if status code is 202
-          if code == 202
-            r = reply.response[:headers]['retry_after']
-            retry_after = if r.present?
-                            r
-                          else
-                            retry_after * 2
-                          end
-            sleep retry_after
-
-            next
-          end
-
-          assert code == 200, "Bad response code: expected 200, 202, but found #{code}."
-        end
+        assert reply.code == 200, "Bad response code: expected 200, 202, but found #{reply.code}."
 
         assert_resource_content_type(reply, 'application/json')
 
@@ -117,6 +97,24 @@ module Inferno
         url += '/$export'
 
         @client.get(url, @client.fhir_headers(headers))
+      end
+
+      def export_status_check(url, headers = { accept: 'application/json' })
+        wait_time = 1
+        reply = nil
+
+        loop do
+          reply = @client.get(url, @client.fhir_headers(headers))
+
+          break if reply.code != 202
+
+          retry_after = reply.response[:headers]['retry-after']
+          wait_time = (retry_after.presence || wait_time * 2).to_i
+
+          sleep wait_time
+        end
+
+        reply
       end
 
       def assert_status_reponse_required_field(response_body)
