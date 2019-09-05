@@ -49,8 +49,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        specialty_val = @practitionerrole&.specialty&.coding&.first&.code
+        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
         search_params = { 'specialty': specialty_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         @client.set_bearer_token(@instance.token)

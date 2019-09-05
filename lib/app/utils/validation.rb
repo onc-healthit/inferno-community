@@ -19,7 +19,7 @@ module Inferno
     RESOURCES = { dstu2: {}, stu3: {}, r4: {} }
     VALUESETS = {}
 
-    VERSION_MAP = { '1.0.2' => :dstu2, '3.0.1' => :stu3, '4.0.0' => :r4 }
+    VERSION_MAP = { '1.0.2' => :dstu2, '3.0.1' => :stu3, '4.0.0' => :r4 }.freeze
 
     Dir.glob(validation_packs).each do |definition|
       json = File.read(definition)
@@ -52,6 +52,15 @@ module Inferno
       outpatient: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-outpatient-claim',
       pde: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-pde-claim',
       snf: 'https://bluebutton.cms.gov/assets/ig/StructureDefinition-bluebutton-snf-claim'
+    }.freeze
+
+    US_CORE_R4_URIS = {
+      smoking_status: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus',
+      diagnostic_report_lab: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab',
+      diagnostic_report_note: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note',
+      observation_lab: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
+      pediatric_bmi_age: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+      pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
     }.freeze
 
     def self.guess_profile(resource, version)
@@ -133,7 +142,23 @@ module Inferno
       return if resource.blank?
 
       candidates = RESOURCES[:r4][resource.resourceType]
-      return candidates.first if candidates.present?
+      return if candidates.blank?
+
+      if resource.resourceType == 'Observation'
+        return DEFINITIONS[US_CORE_R4_URIS[:smoking_status]] if resource&.code&.coding&.any? { |coding| coding&.code == '72166-2' }
+
+        return DEFINITIONS[US_CORE_R4_URIS[:observation_results]] if resource&.category&.coding&.any? { |coding| coding&.code == 'laboratory' }
+
+        return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if resource&.code&.coding&.any? { |coding| coding&.code == '59576-9' }
+
+        return DEFINITIONS[US_CORE_R4_URIS[:pediatric_weight_height]] if resource&.code&.coding&.any? { |coding| coding&.code == '77606-2' }
+      elsif resource.resourceType == 'DiagnosticReport'
+        return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.coding&.any? { |coding| coding&.code == 'LAB' }
+
+        return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_note]]
+      end
+
+      candidates.first
     end
   end
 end

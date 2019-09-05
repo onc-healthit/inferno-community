@@ -92,7 +92,7 @@ module Inferno
 
         @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @observation_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
@@ -258,7 +258,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Observation')
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
       end
 
       test 'At least one of every must support element is provided in any Observation for this patient.' do

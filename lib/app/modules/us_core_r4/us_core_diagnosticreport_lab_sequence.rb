@@ -92,7 +92,7 @@ module Inferno
 
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @diagnosticreport_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
 
@@ -322,7 +322,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('DiagnosticReport')
+        test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
       end
 
       test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do
