@@ -11,7 +11,7 @@ module Inferno
 
       description 'Demonstrate the ONC SMART Standalone Launch Sequence.'
 
-      test_id_prefix 'OELS'
+      test_id_prefix 'OSLS'
 
       requires :client_id, :confidential_client, :client_secret, :oauth_authorize_endpoint, :oauth_token_endpoint, :scopes, :initiate_login_uri, :redirect_uris
 
