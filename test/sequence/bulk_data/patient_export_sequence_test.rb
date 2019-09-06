@@ -44,6 +44,17 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
 
+  def include_export_stub_no_token
+    headers = @export_request_headers.clone
+    headers.delete(:authorization)
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: headers)
+      .to_return(
+        status: 401
+      )
+  end
+
   def include_export_stub(status_code: 202,
                           response_headers: { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
@@ -51,6 +62,28 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       .to_return(
         status: status_code,
         headers: response_headers
+      )
+  end
+
+  def include_export_stub_invalid_accept
+    headers = @export_request_headers.clone
+    headers[:accept] = 'application/fhir+xml'
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: headers)
+      .to_return(
+        status: 400
+      )
+  end
+
+  def include_export_stub_invalid_prefer
+    headers = @export_request_headers.clone
+    headers[:prefer] = 'return=representation'
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: headers)
+      .to_return(
+        status: 400
       )
   end
 
@@ -69,14 +102,11 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_headers_no_token)
-      .to_return(
-        status: 401
-      )
-
-    include_status_check_stub
+    include_export_stub_no_token
     include_export_stub
+    include_export_stub_invalid_accept
+    include_export_stub_invalid_prefer
+    include_status_check_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
