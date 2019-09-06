@@ -15,7 +15,7 @@ module Inferno
       conformance_supports :Patient
 
       def assert_export_kick_off(klass)
-        reply = export_kick_off(klass: klass)
+        reply = export_kick_off(klass)
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -24,17 +24,17 @@ module Inferno
       end
 
       def assert_export_kick_off_fail_invalid_accept(klass)
-        reply = export_kick_off(klass: klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
+        reply = export_kick_off(klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
         assert_response_bad(reply)
       end
 
       def assert_export_kick_off_fail_invalid_prefer(klass)
-        reply = export_kick_off(klass: klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
+        reply = export_kick_off(klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
         assert_response_bad(reply)
       end
 
-      def assert_export_status(content_location = @content_location)
-        reply = export_status_check(content_location)
+      def assert_export_status(url = @content_location)
+        reply = export_status_check(url)
 
         assert reply.code == 200, "Bad response code: expected 200, 202, but found #{reply.code}."
 
@@ -47,13 +47,17 @@ module Inferno
         @output = response_body['output']
       end
 
+      def assert_file_request(output = @output)
+        reply = export_file_request(output)
+      end
+
       details %(
 
         The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
         [Bulk Data Access Implementation Guide](https://build.fhir.org/ig/HL7/bulk-data/)
 
       )
-
+ 
       @resources_found = false
 
       test 'Server rejects $export request without authorization' do
@@ -68,7 +72,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = export_kick_off(klass: 'Patient')
+        reply = export_kick_off('Patient')
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -121,9 +125,21 @@ module Inferno
         assert_export_status
       end
 
+      test 'Server shall return file in ndjson format' do
+        metadata do
+          id '06'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          desc %(
+          )
+          versions :stu3
+        end
+
+        assert_file_request
+      end
+
       private
 
-      def export_kick_off(klass: nil, id: nil, headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
+      def export_kick_off(klass, id: nil, headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
         url += "/#{klass}" if klass.present?
         url += "/#{id}" if id.present?
@@ -132,7 +148,8 @@ module Inferno
         @client.get(url, @client.fhir_headers(headers))
       end
 
-      def export_status_check(url, headers = { accept: 'application/json' })
+      def export_status_check(url)
+        headers = { accept: 'application/json' }
         wait_time = 1
         reply = nil
 
@@ -148,6 +165,13 @@ module Inferno
         end
 
         reply
+      end
+
+      def export_file_request(output)
+        output.each do |item|
+          reply = @client.get(url)
+          binding.pry
+        end
       end
 
       def assert_status_reponse_required_field(response_body)
