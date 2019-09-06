@@ -25,11 +25,11 @@ Include:
 * The URL of the FHIR server being tested
 * The Test ID, if it's a problem with a specific test.
 * Any required configuration options (client ID, client secret, etc.)
-* Anything else needed to make the issue occur
+* Anything else needed to make the issue occur.
 
 
 **Expected behavior**
-Tell us what should happen
+Tell us what should happen.
 
 
 

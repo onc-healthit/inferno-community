@@ -4,7 +4,7 @@ applicable, note it's not applicable ("N/A") and check the box. For example, ext
 Requests do not require ticket links.
 
 **Submitter:**
-- [ ] This pull request describes why these changes were made.
+- [ ] This pull request describes why these changes were made
 - [ ] Internal ticket for this PR:
 - [ ] Internal ticket links to this PR
 - [ ] Internal ticket is properly labeled (Community/Program)
