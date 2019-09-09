@@ -105,6 +105,20 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     end
   end
 
+  def test_status_check_skip_timeout
+    WebMock.reset!
+    stub_request(:get, @content_location)
+      .with(headers: @status_request_headers)
+      .to_return(
+        status: 202,
+        headers: { content_type: 'application/json', 'retry-after': '1' }
+      )
+
+    assert_raises Inferno::SkipException do
+      @sequence.assert_export_status(@content_location, timeout: 1)
+    end
+  end
+
   def test_status_check_fail_wrong_status_code
     WebMock.reset!
 
