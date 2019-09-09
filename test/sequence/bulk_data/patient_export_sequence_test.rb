@@ -8,7 +8,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       'transactionTime' => '2019-08-01',
       'request' => '[base]/Patient/$export?_type=Patient,Observation',
       'requiresAccessToken' => 'true',
-      'output' => 'output',
+      'output' => [{'type' => 'Patient', 'url' => 'http://www.example.com/patient-export-file'}],
       'error' => 'error'
     }
 

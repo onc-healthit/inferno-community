@@ -57,7 +57,7 @@ module Inferno
         [Bulk Data Access Implementation Guide](https://build.fhir.org/ig/HL7/bulk-data/)
 
       )
- 
+
       @resources_found = false
 
       test 'Server rejects $export request without authorization' do
@@ -125,17 +125,17 @@ module Inferno
         assert_export_status
       end
 
-      test 'Server shall return file in ndjson format' do
-        metadata do
-          id '06'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-          desc %(
-          )
-          versions :stu3
-        end
+      # test 'Server shall return file in ndjson format' do
+      #   metadata do
+      #     id '06'
+      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+      #     desc %(
+      #     )
+      #     versions :stu3
+      #   end
 
-        assert_file_request
-      end
+      #   assert_file_request
+      # end
 
       private
 
