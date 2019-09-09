@@ -110,13 +110,10 @@ module Inferno
         loop do
           reply = @client.get(url, @client.fhir_headers(headers))
 
-          break if reply.code != 202
-
           wait_time = get_wait_time(wait_time, reply)
+          seconds_used = Time.now - start + wait_time
 
-          seconds_used = Time.now - start
-
-          break if seconds_used + wait_time > timeout
+          break if reply.code != 202 || seconds_used  > timeout
 
           sleep wait_time
         end
