@@ -113,7 +113,7 @@ module Inferno
           wait_time = get_wait_time(wait_time, reply)
           seconds_used = Time.now - start + wait_time
 
-          break if reply.code != 202 || seconds_used  > timeout
+          break if reply.code != 202 || seconds_used > timeout
 
           sleep wait_time
         end
