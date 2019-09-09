@@ -33,12 +33,14 @@ module Inferno
         assert_response_bad(reply)
       end
 
-      def assert_export_status(url = @content_location)
-        reply = export_status_check(url)
+      def assert_export_status(url, timeout: 180)
+        reply = export_status_check(url, timeout)
+
+        skip "Server took more than #{timeout} seconds to process the request." if reply.code == 202
 
         assert reply.code == 200, "Bad response code: expected 200, 202, but found #{reply.code}."
 
-        assert_resource_content_type(reply, 'application/json')
+        assert_response_content_type(reply, 'application/json')
 
         response_body = JSON.parse(reply.body)
 
@@ -122,7 +124,7 @@ module Inferno
           versions :stu3
         end
 
-        assert_export_status
+        assert_export_status(@content_location)
       end
 
       # test 'Server shall return file in ndjson format' do
@@ -148,18 +150,19 @@ module Inferno
         @client.get(url, @client.fhir_headers(headers))
       end
 
-      def export_status_check(url)
-        headers = { accept: 'application/json' }
+      def export_status_check(url, timeout)
         wait_time = 1
         reply = nil
+        headers = { accept: 'application/json' }
+        start = Time.now
 
         loop do
           reply = @client.get(url, @client.fhir_headers(headers))
 
-          break if reply.code != 202
+          wait_time = get_wait_time(wait_time, reply)
+          seconds_used = Time.now - start + wait_time
 
-          retry_after = reply.response[:headers]['retry-after']
-          wait_time = (retry_after.presence || wait_time * 2).to_i
+          break if reply.code != 202 || seconds_used > timeout
 
           sleep wait_time
         end
@@ -171,6 +174,17 @@ module Inferno
         output.each do |item|
           reply = @client.get(url)
           binding.pry
+        end
+      end
+      
+      def get_wait_time(wait_time, reply)
+        retry_after = reply.response[:headers]['retry-after']
+        retry_after_int = (retry_after.presence || 0).to_i
+
+        if retry_after_int.positive?
+          retry_after_int
+        else
+          wait_time * 2
         end
       end
 
