@@ -112,14 +112,7 @@ module Inferno
 
           break if reply.code != 202
 
-          retry_after = reply.response[:headers]['retry-after']
-          retry_after_int = (retry_after.presence || 0).to_i
-
-          wait_time = if retry_after_int.positive?
-                        retry_after_int
-                      else
-                        wait_time * 2
-                      end
+          wait_time = get_wait_time(wait_time, reply)
 
           seconds_used = Time.now - start
 
@@ -129,6 +122,17 @@ module Inferno
         end
 
         reply
+      end
+
+      def get_wait_time(wait_time, reply)
+        retry_after = reply.response[:headers]['retry-after']
+        retry_after_int = (retry_after.presence || 0).to_i
+
+        if retry_after_int.positive?
+          retry_after_int
+        else
+          wait_time * 2
+        end
       end
 
       def assert_status_reponse_required_field(response_body)
