@@ -26,6 +26,10 @@ module Inferno
       def assert_export_status(url, timeout: 180)
         reply = export_status_check(url, timeout)
 
+        # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
+        # export_status_check processes reponses with status 202 code 
+        # and returns server response when status code is not 202 or timed out         
+
         skip "Server took more than #{timeout} seconds to process the request." if reply.code == 202
 
         assert reply.code == 200, "Bad response code: expected 200, 202, but found #{reply.code}."
@@ -54,7 +58,6 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           desc %(
           )
-          versions :stu3
         end
 
         @client.set_no_auth
@@ -71,7 +74,6 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           desc %(
           )
-          versions :stu3
         end
 
         assert_export_kick_off('Patient')
@@ -83,7 +85,6 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           desc %(
           )
-          versions :stu3
         end
 
         assert_export_status(@content_location)
