@@ -27,8 +27,8 @@ module Inferno
         reply = export_status_check(url, timeout)
 
         # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
-        # export_status_check processes reponses with status 202 code 
-        # and returns server response when status code is not 202 or timed out         
+        # export_status_check processes reponses with status 202 code
+        # and returns server response when status code is not 202 or timed out
 
         skip "Server took more than #{timeout} seconds to process the request." if reply.code == 202
 
