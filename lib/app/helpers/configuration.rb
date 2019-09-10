@@ -40,10 +40,6 @@ module Inferno
         def tls_testing_supported?
           TlsTester.testing_supported?
         end
-
-        def show_tutorial
-          settings.show_tutorial
-        end
       end
     end
   end
