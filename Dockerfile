@@ -25,4 +25,4 @@ COPY lib /var/www/inferno/lib
 ENV APP_ENV=production
 EXPOSE 4567
 
-CMD ["rackup", "-o", "0.0.0.0"]
+CMD ["bundle", "exec", "rackup", "-o", "0.0.0.0"]
