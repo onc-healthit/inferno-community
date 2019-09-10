@@ -14,13 +14,14 @@ PROFILE_URIS = {
   smoking_status: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json',
   diagnostic_report_lab: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
   diagnostic_report_note: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json',
-  observation_lab: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
+  lab_results: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
   pediatric_bmi_age: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json',
   pediatric_weight_height: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
 }.freeze
 
 def validation_profile_uri(sequence)
-  "Inferno::ValidationUtil::US_CORE_R4_URIS[:#{PROFILE_URIS.key(sequence[:profile])}]" if PROFILE_URIS.key(sequence[:profile])
+  profile_uri = PROFILE_URIS.key(sequence[:profile])
+  "Inferno::ValidationUtil::US_CORE_R4_URIS[:#{profile_uri}]" if profile_uri
 end
 
 def run
@@ -115,6 +116,12 @@ def create_search_test(sequence, search_param)
   }
 
   is_first_search = search_test[:index] == 2 # if first search - fix this check later
+  save_resource_ids_in_bundle_arguments = [
+    "versioned_resource_class('#{sequence[:resource]}')",
+    'reply',
+    validation_profile_uri(sequence)
+  ].compact.join(', ')
+
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}
@@ -129,7 +136,7 @@ def create_search_test(sequence, search_param)
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)})
+        save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
       %(
@@ -350,7 +357,7 @@ def search_param_constants(search_parameters, sequence)
   return "patient: @instance.patient_id, name: 'Boston'" if search_parameters == ['name'] && (['Location', 'Organization'].include? sequence[:resource])
   return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
   return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:smoking_status]
-  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:observation_lab]
+  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:lab_results]
   return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_weight_height]
   return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
   return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
