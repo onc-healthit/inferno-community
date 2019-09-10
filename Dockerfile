@@ -1,4 +1,4 @@
-FROM ruby:2.5.5
+FROM ruby:2.5.6
 
 WORKDIR /var/www/inferno
 
