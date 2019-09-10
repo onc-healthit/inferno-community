@@ -788,3 +788,11 @@ namespace :terminology do |_argv|
     Inferno::Terminology.create_validators(validator_type)
   end
 end
+
+namespace :generator do |_argv|
+  desc 'Generate US Core R4 Tests'
+  task :us_core_r4 do
+    path = File.expand_path('../../generators/uscore-r4/generator.rb', __dir__)
+    system('ruby', path)
+  end
+end

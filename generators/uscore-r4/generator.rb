@@ -7,8 +7,8 @@ require 'net/http'
 require 'fhir_models'
 require_relative './metadata_extractor'
 
-OUT_PATH = '../../lib/app/modules'
-RESOURCE_PATH = '../../resources/us_core_r4/'
+OUT_PATH = File.expand_path('../../lib/app/modules', __dir__)
+RESOURCE_PATH = File.expand_path('../../resources/us_core_r4', __dir__)
 
 def run
   redownload_files = (ARGV&.first == '-d')
@@ -66,7 +66,7 @@ def generate_sequence(sequence)
   puts "Generating #{sequence[:name]}\n"
   file_name = OUT_PATH + '/us_core_r4/' + sequence[:name].downcase + '_sequence.rb'
 
-  template = ERB.new(File.read('./templates/sequence.rb.erb'))
+  template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
   output =   template.result_with_hash(sequence)
   FileUtils.mkdir_p(OUT_PATH + '/us_core_r4') unless File.directory?(OUT_PATH + '/us_core_r4')
   File.write(file_name, output)
@@ -419,7 +419,7 @@ end
 def generate_module(module_info)
   file_name = OUT_PATH + '/us_core_module.yml'
 
-  template = ERB.new(File.read('./templates/module.yml.erb'))
+  template = ERB.new(File.read(File.join(__dir__, 'templates/module.yml.erb')))
   output = template.result_with_hash(module_info)
 
   File.write(file_name, output)
