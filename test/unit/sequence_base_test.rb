@@ -2,7 +2,7 @@
 
 require_relative '../test_helper'
 
-class DelayedResourceTestSequence < MiniTest::Test
+class SequenceBaseTest < MiniTest::Test
   def setup
     allergy_intolerance_bundle = FHIR.from_contents(load_fixture(:us_core_r4_allergy_intolerance))
     @allergy_intolerance_resource = allergy_intolerance_bundle.entry.first.resource
