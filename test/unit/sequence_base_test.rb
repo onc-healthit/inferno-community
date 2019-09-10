@@ -24,7 +24,7 @@ class SequenceBaseTest < MiniTest::Test
     client = FHIR::Client.new(@instance.url)
     client.use_r4
     client.default_json
-    @sequence = Inferno::Sequence::USCoreR4AllergyintoleranceSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
   end
 
   def test_save_delayed_resource_references
