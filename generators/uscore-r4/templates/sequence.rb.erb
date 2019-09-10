@@ -26,8 +26,8 @@ module Inferno
       test '<%=test[:tests_that]%>' do
         metadata do
           id '<%=format('%02d', test[:index])%>'
-          link '<%=test[:link]%>'<%='
-          optional' if test[:optional]%>
+          link '<%=test[:link]%>'<%if test[:optional]%>
+          optional<%end%>
           desc %(
           )
           versions :r4
