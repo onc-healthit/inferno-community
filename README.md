@@ -1,4 +1,4 @@
-<img src="https://github.com/onc-healthit/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
+<img src="https://raw.githubusercontent.com/onc-healthit/inferno/master/public/images/inferno_logo.png" width="300px" />
 
 [![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno)
 
