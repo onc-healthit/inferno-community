@@ -8,6 +8,7 @@ Requests do not require ticket links.
 - [ ] Internal ticket for this PR:
 - [ ] Internal ticket links to this PR
 - [ ] Internal ticket is properly labeled (Community/Program)
+- [ ] Internal ticket has a justification for its Community/Program label
 - [ ] Code diff has been reviewed for extraneous/missing code
 - [ ] Tests are included and test edge cases
 - [ ] Tests/code quality metrics have been run locally and pass
@@ -16,13 +17,15 @@ Requests do not require ticket links.
 **Reviewer 1:**
 
 Name:
-- [ ] Code is maintainable and reusable, reuses existing code and infrastructure where appropriate, and accomplishes the task's purpose
+- [ ] Code is maintainable and reusable, reuses existing code and infrastructure
+      where appropriate, and accomplishes the task's purpose
 - [ ] The tests appropriately test the new code, including edge cases
 - [ ] You have tried to break the code
 
 **Reviewer 2:**
 
 Name:
-- [ ] Code is maintainable and reusable, reuses existing code and infrastructure where appropriate, and accomplishes the task's purpose
+- [ ] Code is maintainable and reusable, reuses existing code and infrastructure
+      where appropriate, and accomplishes the task's purpose
 - [ ] The tests appropriately test the new code, including edge cases
 - [ ] You have tried to break the code
