@@ -18,9 +18,10 @@ test_sets:
         - ManualRegistrationSequence
         - StandaloneLaunchSequence
         - EHRLaunchSequence
-      - name: US Core R4
+      - name: US Core R4 Patient Based Profiles
         run_all: true
-        sequences:<% sequences.each do |sequence| %>
+        sequences:<% non_delayed_sequences.each do |sequence| %>
         - <%=sequence[:classname]%><% end %>
         - R4ProvenanceSequence
-        - USCoreR4ClinicalNotesSequence
+        - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
+        - <%=sequence[:classname]%><% end %>

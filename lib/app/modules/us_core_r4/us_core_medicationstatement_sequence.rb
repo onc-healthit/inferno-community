@@ -89,6 +89,7 @@ module Inferno
         @medicationstatement = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @medicationstatement_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('MedicationStatement'), reply)
+        save_delayed_sequence_references(@medicationstatement)
         validate_search_reply(versioned_resource_class('MedicationStatement'), reply, search_params)
       end
 

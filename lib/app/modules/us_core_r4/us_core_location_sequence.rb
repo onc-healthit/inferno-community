@@ -11,8 +11,9 @@ module Inferno
 
       test_id_prefix 'Location' # change me
 
-      requires :token, :patient_id
+      requires :token
       conformance_supports :Location
+      delayed_sequence
 
       def validate_resource_item(resource, property, value)
         case property
@@ -22,7 +23,7 @@ module Inferno
           assert value_found, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
           assert value_found, 'address on resource does not match address requested'
 
         when 'address-city'
@@ -49,9 +50,24 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects Location search without authorization' do
+      test 'Can read Location from the server' do
         metadata do
           id '01'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
+        skip 'No Location references found from the prior searches' if location_id.nil?
+        @location = fetch_resource('Location', location_id)
+        @resources_found = !@location.nil?
+      end
+
+      test 'Server rejects Location search without authorization' do
+        metadata do
+          id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -61,7 +77,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
+        name_val = resolve_element_from_path(@location, 'name')
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -70,14 +88,16 @@ module Inferno
 
       test 'Server returns expected results from Location search by name' do
         metadata do
-          id '02'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
+        name_val = resolve_element_from_path(@location, 'name')
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
@@ -91,12 +111,13 @@ module Inferno
         @location = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @location_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
+        save_delayed_sequence_references(@location)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test 'Server returns expected results from Location search by address' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -106,7 +127,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_val = resolve_element_from_path(@location, 'address')
+        address_val = resolve_element_from_path(@location, 'address.city')
         search_params = { 'address': address_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -117,7 +138,7 @@ module Inferno
 
       test 'Server returns expected results from Location search by address-city' do
         metadata do
-          id '04'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -139,7 +160,7 @@ module Inferno
 
       test 'Server returns expected results from Location search by address-state' do
         metadata do
-          id '05'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -161,7 +182,7 @@ module Inferno
 
       test 'Server returns expected results from Location search by address-postalcode' do
         metadata do
-          id '06'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -179,21 +200,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
-      end
-
-      test 'Location read resource supported' do
-        metadata do
-          id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Location, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@location, versioned_resource_class('Location'))
       end
 
       test 'Location vread resource supported' do

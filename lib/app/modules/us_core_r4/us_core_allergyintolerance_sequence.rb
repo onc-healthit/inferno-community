@@ -83,6 +83,7 @@ module Inferno
         @allergyintolerance = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @allergyintolerance_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
+        save_delayed_sequence_references(@allergyintolerance)
         validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
       end
 

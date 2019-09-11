@@ -93,6 +93,7 @@ module Inferno
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @diagnosticreport_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply)
+        save_delayed_sequence_references(@diagnosticreport)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
 

@@ -93,6 +93,7 @@ module Inferno
         @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @procedure_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
+        save_delayed_sequence_references(@procedure)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
       end
 

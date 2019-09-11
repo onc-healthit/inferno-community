@@ -89,6 +89,7 @@ module Inferno
         @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @immunization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Immunization'), reply)
+        save_delayed_sequence_references(@immunization)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
       end
 

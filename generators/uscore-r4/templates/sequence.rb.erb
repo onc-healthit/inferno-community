@@ -11,8 +11,9 @@ module Inferno
 
       test_id_prefix '<%=resource%>' # change me
 
-      requires :token, :patient_id
-      conformance_supports :<%=resource%>
+      requires :token<%=", :patient_id" unless delayed_sequence%>
+      conformance_supports :<%=resource%><%="
+      delayed_sequence" if delayed_sequence%>
 <%=search_validator%>
       details %(
 
