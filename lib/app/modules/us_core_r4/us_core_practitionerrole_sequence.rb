@@ -11,8 +11,9 @@ module Inferno
 
       test_id_prefix 'PractitionerRole' # change me
 
-      requires :token, :patient_id
+      requires :token
       conformance_supports :PractitionerRole
+      delayed_sequence
 
       def validate_resource_item(resource, property, value)
         case property
@@ -37,9 +38,24 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects PractitionerRole search without authorization' do
+      test 'Can read PractitionerRole from the server' do
         metadata do
           id '01'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        practitionerrole_id = @instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole' }&.resource_id
+        skip 'No PractitionerRole references found from the prior searches' if practitionerrole_id.nil?
+        @practitionerrole = fetch_resource('PractitionerRole', practitionerrole_id)
+        @resources_found = !@practitionerrole.nil?
+      end
+
+      test 'Server rejects PractitionerRole search without authorization' do
+        metadata do
+          id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -60,7 +76,7 @@ module Inferno
 
       test 'Server returns expected results from PractitionerRole search by specialty' do
         metadata do
-          id '02'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -83,12 +99,13 @@ module Inferno
         @practitionerrole = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @practitionerrole_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
+        save_delayed_sequence_references(@practitionerrole)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
       test 'Server returns expected results from PractitionerRole search by practitioner' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -105,21 +122,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
         assert_response_ok(reply)
-      end
-
-      test 'PractitionerRole read resource supported' do
-        metadata do
-          id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:PractitionerRole, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))
       end
 
       test 'PractitionerRole vread resource supported' do

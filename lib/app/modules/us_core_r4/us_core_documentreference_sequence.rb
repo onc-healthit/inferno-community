@@ -105,6 +105,7 @@ module Inferno
         @documentreference = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @documentreference_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('DocumentReference'), reply)
+        save_delayed_sequence_references(@documentreference)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
       end
 
@@ -200,6 +201,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -222,6 +224,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

@@ -13,7 +13,7 @@ class MetadataExtractor
   end
 
   def get_json_from_uri(uri)
-    filename = RESOURCE_PATH + uri.split('/').last
+    filename = File.join(RESOURCE_PATH, uri.split('/').last)
     unless File.exist?(filename)
       puts "Downloading #{uri}\n"
       json_result = Net::HTTP.get(URI(uri))

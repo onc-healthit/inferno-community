@@ -13,17 +13,19 @@ gem 'json-jwt'
 gem 'kramdown'
 gem 'pry'
 gem 'pry-byebug'
-gem 'rack-test'
 gem 'rake'
 gem 'rb-readline'
 gem 'rest-client'
-gem 'rubocop', require: false
 gem 'selenium-webdriver'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sqlite3'
 gem 'thin'
 gem 'time_difference'
-gem 'webmock'
 
-gem 'simplecov', require: false, group: :test
+group :test do
+  gem 'rack-test'
+  gem 'rubocop', require: false
+  gem 'simplecov', require: false
+  gem 'webmock'
+end

@@ -86,7 +86,8 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert_valid_conformance
+
         formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
@@ -115,14 +116,11 @@ module Inferno
                                  'permission-patient',
                                  'permission-user']
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
+        assert_valid_conformance
 
-        extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
-        assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
-        capabilities = extensions.select { |x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
-        assert !capabilities.nil?, 'No SMART capabilities listed in capability.'
-        available_capabilities = capabilities.map(&:valueCode)
-        missing_capabilities = (required_capabilities - available_capabilities)
+        assert @server_capabilities.smart_support?, 'No SMART capabilities listed in conformance.'
+
+        missing_capabilities = (required_capabilities - @server_capabilities.smart_capabilities)
         assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
       end
 
@@ -140,16 +138,7 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
-
-        begin
-          Inferno::Models::ServerCapabilities.create(
-            testing_instance_id: @instance.id,
-            capabilities: @conformance.as_json
-          )
-        rescue StandardError
-          assert false, 'Capability Statement could not be parsed.'
-        end
+        assert_valid_conformance
 
         assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in capability statement.'
       end

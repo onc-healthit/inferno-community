@@ -11,8 +11,9 @@ module Inferno
 
       test_id_prefix 'Medication' # change me
 
-      requires :token, :patient_id
+      requires :token
       conformance_supports :Medication
+      delayed_sequence
 
       details %(
 
@@ -23,7 +24,7 @@ module Inferno
 
       @resources_found = false
 
-      test 'Medication read resource supported' do
+      test 'Can read Medication from the server' do
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -32,10 +33,10 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@medication, versioned_resource_class('Medication'))
+        medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
+        skip 'No Medication references found from the prior searches' if medication_id.nil?
+        @medication = fetch_resource('Medication', medication_id)
+        @resources_found = !@medication.nil?
       end
 
       test 'Medication vread resource supported' do
