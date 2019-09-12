@@ -1,0 +1,44 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "measure-report",
+      "resource": {
+        "id": "MitreTestScript-cms165-individual-report",
+        "resourceType": "MeasureReport",
+        "type": "individual",
+        "measure": {
+          "reference": "Measure/MitreTestScript-measure-exm165-FHIR3"
+        }
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Patient",
+        "url": "http://localhost:8080/Patient.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1.ndjosn"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Condition",
+        "url": "http://localhost:8080/Condition.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-2.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Encounter",
+        "url": "http://localhost:8080/Encounter.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-3.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Observation",
+        "url": "http://localhost:8080/Observation.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-4.ndjson"
+      }
+    }
+  ]
+}

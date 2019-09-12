@@ -34,6 +34,12 @@ module Inferno
       raise AssertionException, "Bad response code: expected 202, but found #{response.code}"
     end
 
+    def assert_response_accepted(response)
+      return if assersion_negated([202].include?(response.code))
+
+      raise AssertionException, "Bad response code: expected 202, but found #{response.code}"
+    end
+
     def assert_response_not_found(response)
       return if assertion_negated([404].include?(response.code))
 

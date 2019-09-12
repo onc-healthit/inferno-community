@@ -16,3 +16,6 @@ test_sets:
       - name: CMS165 Quality Reporting
         sequences:
           - CMS165ReportingSequence
+      - name: CMS165 Bulk Data Reporting
+        sequences:
+          - CMS165BulkDataReportingSequence

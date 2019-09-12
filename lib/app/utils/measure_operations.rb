@@ -29,5 +29,12 @@ module Inferno
     def get_measure_resources_by_name(measure_name)
       @client.get "Measure?name=#{measure_name}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
+
+    def async_submit_data(measure_id, params_resource)
+      @client.post("Measure/#{measure_id}/$submit-data",
+                   params_resource,
+                   @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON,
+                                        prefer: 'respond-async'))
+    end
   end
 end
