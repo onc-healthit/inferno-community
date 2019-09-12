@@ -11,7 +11,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       'transactionTime' => '2019-08-01',
       'request' => '[base]/Patient/$export?_type=Patient,Observation',
       'requiresAccessToken' => 'true',
-      'output' => [{'type' => 'Patient', 'url' => @file_location}],
+      'output' => [{ 'type' => 'Patient', 'url' => @file_location }],
       'error' => 'error'
     }
 
@@ -40,7 +40,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
                                 authorization: "Bearer #{@instance.token}" }
 
     @file_request_headers = { accept: 'application/fhir+ndjson',
-                                  authorization: "Bearer #{@instance.token}" }
+                              authorization: "Bearer #{@instance.token}" }
 
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
 
@@ -203,10 +203,10 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   end
 
   def test_output_file_fail_no_url
-    output = [{'type' => 'Patient', 'count' => 1}]
+    output = [{ 'type' => 'Patient', 'count' => 1 }]
 
     assert_raises Inferno::AssertionException do
       @sequence.assert_output_files(output)
     end
-  end  
+  end
 end

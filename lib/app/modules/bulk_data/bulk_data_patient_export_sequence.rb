@@ -67,9 +67,8 @@ module Inferno
           reply = @client.get(url, @client.fhir_headers(headers))
           assert_response_content_type(reply, 'application/fhir+ndjson')
           lines = reply.body.split("\n")
-          lines.each do |line|  
+          lines.each do |line|
             resource = FHIR.from_contents(line)
-            binding.pry
             assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
             errors = resource.validate
             assert errors.empty?, errors.join("<br/>\n")
@@ -193,7 +192,7 @@ module Inferno
 
         reply
       end
-      
+
       def get_wait_time(wait_time, reply)
         retry_after = reply.response[:headers]['retry-after']
         retry_after_int = (retry_after.presence || 0).to_i
