@@ -4,11 +4,14 @@ require_relative '../../test_helper'
 
 class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
+    @content_location = 'http://www.example.com/status'
+    @file_location = 'http://www.example.com/patient_export.ndjson'
+
     @complete_status = {
       'transactionTime' => '2019-08-01',
       'request' => '[base]/Patient/$export?_type=Patient,Observation',
       'requiresAccessToken' => 'true',
-      'output' => [{'type' => 'Patient', 'url' => 'http://www.example.com/patient-export-file'}],
+      'output' => [{'type' => 'Patient', 'url' => @file_location}],
       'error' => 'error'
     }
 
@@ -36,7 +39,10 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @status_request_headers = { accept: 'application/json',
                                 authorization: "Bearer #{@instance.token}" }
 
-    @content_location = 'http://www.example.com/status'
+    @file_request_headers = { accept: 'application/fhir+ndjson',
+                                  authorization: "Bearer #{@instance.token}" }
+
+    @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
 
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
@@ -99,6 +105,19 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_file_request_stub(response_headers: { content_type: 'application/fhir+ndjson' })
+    headers = @export_request_headers.clone
+    headers[:prefer] = 'return=representation'
+
+    stub_request(:get, @file_location)
+      .with(headers: @file_request_headers)
+      .to_return(
+        status: 200,
+        headers: response_headers,
+        body: @patient_export
+      )
+  end
+
   def test_all_pass
     WebMock.reset!
 
@@ -107,6 +126,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
     include_status_check_stub
+    include_file_request_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
@@ -181,4 +201,12 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       @sequence.assert_export_status(@content_location)
     end
   end
+
+  def test_output_file_fail_no_url
+    output = [{'type' => 'Patient', 'count' => 1}]
+
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_output_files(output)
+    end
+  end  
 end

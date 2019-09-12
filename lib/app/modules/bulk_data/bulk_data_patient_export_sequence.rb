@@ -47,10 +47,35 @@ module Inferno
         assert_status_reponse_required_field(response_body)
 
         @output = response_body['output']
+
+        assert_output_files(@output)
       end
 
-      def assert_file_request(output = @output)
-        reply = export_file_request(output)
+      def assert_output_files(output)
+        output.each do |file|
+          ['type', 'url'].each do |key|
+            assert file.key?(key), "Output file did not contain \"#{key}\" as required"
+          end
+        end
+      end
+
+      def assert_file_request(output)
+        headers = { accept: 'application/fhir+ndjson' }
+        output.each do |file|
+          url = file['url']
+          type = file['type']
+          reply = @client.get(url, @client.fhir_headers(headers))
+          assert_response_content_type(reply, 'application/fhir+ndjson')
+          lines = reply.body.split("\n")
+          lines.each do |line|  
+            resource = FHIR.from_contents(line)
+            binding.pry
+            assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
+            errors = resource.validate
+            assert errors.empty?, errors.join("<br/>\n")
+          end
+          # assert each line is a valid FHIR resource
+        end
       end
 
       details %(
@@ -127,17 +152,16 @@ module Inferno
         assert_export_status(@content_location)
       end
 
-      # test 'Server shall return file in ndjson format' do
-      #   metadata do
-      #     id '06'
-      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-      #     desc %(
-      #     )
-      #     versions :stu3
-      #   end
+      test 'Server shall return file in ndjson format' do
+        metadata do
+          id '06'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          desc %(
+          )
+        end
 
-      #   assert_file_request
-      # end
+        assert_file_request(@output)
+      end
 
       private
 
@@ -168,13 +192,6 @@ module Inferno
         end
 
         reply
-      end
-
-      def export_file_request(output)
-        output.each do |item|
-          reply = @client.get(url)
-          binding.pry
-        end
       end
       
       def get_wait_time(wait_time, reply)
