@@ -53,7 +53,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Documentreference Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-documentreference)
+        returned will be checked for consistency against the [Documentreference Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
 
       )
 
@@ -315,7 +315,7 @@ module Inferno
       test 'DocumentReference resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '13'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-documentreference.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           desc %(
           )
           versions :r4

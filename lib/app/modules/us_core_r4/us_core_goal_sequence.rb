@@ -37,7 +37,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Goal Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-goal)
+        returned will be checked for consistency against the [Goal Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal)
 
       )
 
@@ -195,7 +195,7 @@ module Inferno
       test 'Goal resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-goal.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           desc %(
           )
           versions :r4

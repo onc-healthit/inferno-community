@@ -6,9 +6,17 @@ require 'fileutils'
 require 'net/http'
 require 'fhir_models'
 require_relative './metadata_extractor'
+require_relative '../../lib/app/utils/validation'
 
 OUT_PATH = File.expand_path('../../lib/app/modules', __dir__)
 RESOURCE_PATH = File.expand_path('../../resources/us_core_r4', __dir__)
+
+PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+
+def validation_profile_uri(sequence)
+  profile_uri = PROFILE_URIS.key(sequence[:profile])
+  "Inferno::ValidationUtil::US_CORE_R4_URIS[:#{profile_uri}]" if profile_uri
+end
 
 def run
   redownload_files = (ARGV&.first == '-d')
@@ -138,6 +146,12 @@ def create_search_test(sequence, search_param)
   }
 
   is_first_search = search_param == find_first_search(sequence)
+  save_resource_ids_in_bundle_arguments = [
+    "versioned_resource_class('#{sequence[:resource]}')",
+    'reply',
+    validation_profile_uri(sequence)
+  ].compact.join(', ')
+
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}
@@ -152,7 +166,7 @@ def create_search_test(sequence, search_param)
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
+        save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
         save_delayed_sequence_references(@#{sequence[:resource].downcase})
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
@@ -253,7 +267,7 @@ def create_resource_profile_test(sequence)
   }
   test[:test_code] = %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('#{sequence[:resource]}'))
+        test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
 
   sequence[:tests] << test
 end
@@ -374,12 +388,12 @@ def search_param_constants(search_parameters, sequence)
   return "patient: @instance.patient_id, category: 'assess-plan'" if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
   return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
   return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
-  return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json'
-  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json'
-  return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
-  return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json'
-  return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json'
-  return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+  return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:smoking_status]
+  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:lab_results]
+  return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_weight_height]
+  return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
+  return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
+  return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_note]
 end
 
 def create_search_validation(sequence)

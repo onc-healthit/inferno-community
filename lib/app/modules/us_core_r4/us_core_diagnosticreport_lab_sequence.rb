@@ -45,7 +45,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [DiagnosticreportLab Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab)
+        returned will be checked for consistency against the [DiagnosticreportLab Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
 
       )
 
@@ -92,7 +92,7 @@ module Inferno
 
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @diagnosticreport_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
         save_delayed_sequence_references(@diagnosticreport)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
@@ -320,14 +320,14 @@ module Inferno
       test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '13'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           desc %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('DiagnosticReport')
+        test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
       end
 
       test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do

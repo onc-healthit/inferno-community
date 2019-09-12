@@ -31,7 +31,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Device Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-device)
+        returned will be checked for consistency against the [Device Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-device)
 
       )
 
@@ -158,7 +158,7 @@ module Inferno
       test 'Device resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-device.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-device'
           desc %(
           )
           versions :r4

@@ -31,7 +31,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Careteam Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam)
+        returned will be checked for consistency against the [Careteam Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
 
       )
 
@@ -131,7 +131,7 @@ module Inferno
       test 'CareTeam resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           desc %(
           )
           versions :r4
