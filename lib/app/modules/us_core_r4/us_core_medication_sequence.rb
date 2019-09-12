@@ -18,7 +18,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Medication Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication)
+        returned will be checked for consistency against the [Medication Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication)
 
       )
 
@@ -72,7 +72,7 @@ module Inferno
       test 'Medication resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           desc %(
           )
           versions :r4

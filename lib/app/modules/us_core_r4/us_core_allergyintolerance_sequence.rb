@@ -31,7 +31,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Allergyintolerance Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance)
+        returned will be checked for consistency against the [Allergyintolerance Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance)
 
       )
 
@@ -158,7 +158,7 @@ module Inferno
       test 'AllergyIntolerance resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-allergyintolerance.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           desc %(
           )
           versions :r4

@@ -39,7 +39,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Practitioner Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitioner)
+        returned will be checked for consistency against the [Practitioner Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner)
 
       )
 
@@ -164,7 +164,7 @@ module Inferno
       test 'Practitioner resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitioner.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           desc %(
           )
           versions :r4

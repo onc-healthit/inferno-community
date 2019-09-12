@@ -41,7 +41,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Procedure Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-procedure)
+        returned will be checked for consistency against the [Procedure Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure)
 
       )
 
@@ -230,7 +230,7 @@ module Inferno
       test 'Procedure resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '09'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-procedure.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           desc %(
           )
           versions :r4

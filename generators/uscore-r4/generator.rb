@@ -6,18 +6,12 @@ require 'fileutils'
 require 'net/http'
 require 'fhir_models'
 require_relative './metadata_extractor'
+require_relative '../../lib/app/utils/validation'
 
 OUT_PATH = File.expand_path('../../lib/app/modules', __dir__)
 RESOURCE_PATH = File.expand_path('../../resources/us_core_r4', __dir__)
 
-PROFILE_URIS = {
-  smoking_status: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json',
-  diagnostic_report_lab: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
-  diagnostic_report_note: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json',
-  lab_results: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
-  pediatric_bmi_age: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json',
-  pediatric_weight_height: 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
-}.freeze
+PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
 def validation_profile_uri(sequence)
   profile_uri = PROFILE_URIS.key(sequence[:profile])

@@ -44,7 +44,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Location Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-location)
+        returned will be checked for consistency against the [Location Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-location)
 
       )
 
@@ -235,7 +235,7 @@ module Inferno
       test 'Location resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '10'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-location.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           desc %(
           )
           versions :r4

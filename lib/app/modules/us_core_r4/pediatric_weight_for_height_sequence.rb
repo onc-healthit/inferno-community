@@ -45,7 +45,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [PediatricWeightForHeight Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height)
+        returned will be checked for consistency against the [PediatricWeightForHeight Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height)
 
       )
 
@@ -254,7 +254,7 @@ module Inferno
       test 'Observation resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '10'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
           desc %(
           )
           versions :r4
