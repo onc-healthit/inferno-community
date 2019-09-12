@@ -96,7 +96,7 @@ module Inferno
       end
     end
 
-    def assert_resource_content_type(client_reply, content_type)
+    def assert_response_content_type(client_reply, content_type)
       header = client_reply.response[:headers]['content-type']
       response_content_type = header
       response_content_type = header[0, header.index(';')] unless header.index(';').nil?
@@ -276,6 +276,14 @@ module Inferno
 
     def assert_operation_supported(server_capabilities, op_name)
       assert server_capabilities.operation_supported?(op_name), "FHIR server capability statement did not support #{op_name} operation"
+    end
+
+    def assert_valid_conformance(conformance = @conformance)
+      conformance_resource_name = versioned_conformance_class.name.demodulize
+      assert(
+        conformance.class == versioned_conformance_class,
+        "Expected valid #{conformance_resource_name} resource."
+      )
     end
   end
 end

@@ -40,7 +40,7 @@ module Inferno
             halt 500, no_instance_for_iss_error_message if @instance.nil?
 
             if @instance.waiting_on_sequence&.wait?
-              @error_message = no_iss_error_message
+              @error_message = unknown_iss_error_message
               resume_execution
             else
               redirect "#{base_path}/#{cookies[:instance_id_test_set]}/?error=no_ehr_launch&iss=#{params[:iss]}"

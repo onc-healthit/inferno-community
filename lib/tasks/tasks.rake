@@ -497,8 +497,8 @@ namespace :terminology do |_argv|
                                     _eventId: 'submit'
                                   },
                                   max_redirects: 0)
-    rescue RestClient::ExceptionWithResponse => err
-      follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
+    rescue RestClient::ExceptionWithResponse => e
+      follow_redirect(e.response.headers[:location], e.response.headers[:set_cookie])
     end
     puts 'Finished Downloading!'
   end
@@ -786,5 +786,13 @@ namespace :terminology do |_argv|
     Inferno::Terminology.register_umls_db args.database
     Inferno::Terminology.load_valuesets_from_directory('resources', true)
     Inferno::Terminology.create_validators(validator_type)
+  end
+end
+
+namespace :generator do |_argv|
+  desc 'Generate US Core R4 Tests'
+  task :us_core_r4 do
+    path = File.expand_path('../../generators/uscore-r4/generator.rb', __dir__)
+    system('ruby', path)
   end
 end

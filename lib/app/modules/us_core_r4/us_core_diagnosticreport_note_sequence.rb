@@ -45,7 +45,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [DiagnosticreportNote Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note)
+        returned will be checked for consistency against the [DiagnosticreportNote Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
 
       )
 
@@ -92,7 +92,8 @@ module Inferno
 
         @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @diagnosticreport_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
+        save_delayed_sequence_references(@diagnosticreport)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
 
@@ -153,6 +154,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -184,6 +186,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -206,6 +209,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -225,6 +229,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -315,14 +320,14 @@ module Inferno
       test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '13'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note'
           desc %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('DiagnosticReport')
+        test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
       end
 
       test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do

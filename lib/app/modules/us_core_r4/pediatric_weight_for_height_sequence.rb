@@ -45,7 +45,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [PediatricWeightForHeight Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height)
+        returned will be checked for consistency against the [PediatricWeightForHeight Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height)
 
       )
 
@@ -92,7 +92,8 @@ module Inferno
 
         @observation = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @observation_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_weight_height])
+        save_delayed_sequence_references(@observation)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
@@ -153,6 +154,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -184,6 +186,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -251,14 +254,14 @@ module Inferno
       test 'Observation resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '10'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
           desc %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Observation')
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_weight_height])
       end
 
       test 'At least one of every must support element is provided in any Observation for this patient.' do

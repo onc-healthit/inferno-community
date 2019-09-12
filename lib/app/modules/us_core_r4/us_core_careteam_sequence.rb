@@ -31,7 +31,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Careteam Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam)
+        returned will be checked for consistency against the [Careteam Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
 
       )
 
@@ -79,6 +79,7 @@ module Inferno
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @careteam_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
+        save_delayed_sequence_references(@careteam)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
@@ -130,7 +131,7 @@ module Inferno
       test 'CareTeam resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           desc %(
           )
           versions :r4

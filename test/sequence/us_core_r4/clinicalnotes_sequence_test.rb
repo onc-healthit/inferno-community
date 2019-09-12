@@ -33,7 +33,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     @request_headers = {
       'Accept' => 'application/fhir+json',
       'Accept-Charset' => 'utf-8',
-      'Accept-Encoding' => 'gzip, deflate',
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
       'Authorization' => 'Bearer 99897979',
       'Host' => 'www.example.com',
       'User-Agent' => 'Ruby FHIR Client'

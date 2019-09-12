@@ -6,9 +6,17 @@ require 'fileutils'
 require 'net/http'
 require 'fhir_models'
 require_relative './metadata_extractor'
+require_relative '../../lib/app/utils/validation'
 
-OUT_PATH = '../../lib/app/modules'
-RESOURCE_PATH = '../../resources/us_core_r4/'
+OUT_PATH = File.expand_path('../../lib/app/modules', __dir__)
+RESOURCE_PATH = File.expand_path('../../resources/us_core_r4', __dir__)
+
+PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+
+def validation_profile_uri(sequence)
+  profile_uri = PROFILE_URIS.key(sequence[:profile])
+  "Inferno::ValidationUtil::US_CORE_R4_URIS[:#{profile_uri}]" if profile_uri
+end
 
 def run
   redownload_files = (ARGV&.first == '-d')
@@ -31,8 +39,15 @@ def generate_search_validators(metadata)
 end
 
 def generate_tests(metadata)
+  # first isolate the profiles that don't have patient searches
+  mark_delayed_sequences(metadata)
+
   metadata[:sequences].each do |sequence|
     puts "Generating test #{sequence[:name]}"
+
+    # read reference if sequence contains no search sequences
+    create_read_test(sequence) if sequence[:delayed_sequence]
+
     # authorization test
     create_authorization_test(sequence)
 
@@ -52,6 +67,7 @@ def generate_tests(metadata)
       .each do |interaction|
         # specific edge cases
         interaction[:code] = 'history' if interaction[:code] == 'history-instance'
+        next if interaction[:code] == 'read' && sequence[:delayed_sequence]
 
         create_interaction_test(sequence, interaction)
       end
@@ -62,14 +78,42 @@ def generate_tests(metadata)
   end
 end
 
+def mark_delayed_sequences(metadata)
+  metadata[:sequences].each do |sequence|
+    sequence[:delayed_sequence] = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
+  end
+  metadata[:delayed_sequences] = metadata[:sequences].select { |seq| seq[:delayed_sequence] }
+  metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:delayed_sequence] }
+end
+
+def find_first_search(sequence)
+  sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
+    sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+end
+
 def generate_sequence(sequence)
   puts "Generating #{sequence[:name]}\n"
   file_name = OUT_PATH + '/us_core_r4/' + sequence[:name].downcase + '_sequence.rb'
 
-  template = ERB.new(File.read('./templates/sequence.rb.erb'))
+  template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
   output =   template.result_with_hash(sequence)
   FileUtils.mkdir_p(OUT_PATH + '/us_core_r4') unless File.directory?(OUT_PATH + '/us_core_r4')
   File.write(file_name, output)
+end
+
+def create_read_test(sequence)
+  read_test = {
+    tests_that: "Can read #{sequence[:resource]} from the server",
+    index: sequence[:tests].length + 1,
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+  }
+
+  read_test[:test_code] = %(
+        #{sequence[:resource].downcase}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
+        skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].downcase}_id.nil?
+        @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', #{sequence[:resource].downcase}_id)
+        @resources_found = !@#{sequence[:resource].downcase}.nil?)
+  sequence[:tests] << read_test
 end
 
 def create_authorization_test(sequence)
@@ -79,8 +123,7 @@ def create_authorization_test(sequence)
     link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
   }
 
-  first_search = sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
-                 sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+  first_search = find_first_search(sequence)
   return if first_search.nil?
 
   authorization_test[:test_code] = %(
@@ -98,10 +141,17 @@ def create_search_test(sequence, search_param)
   search_test = {
     tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
     index: sequence[:tests].length + 1,
-    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html',
+    optional: search_param[:expectation] != 'SHALL'
   }
 
-  is_first_search = search_test[:index] == 2 # if first search - fix this check later
+  is_first_search = search_param == find_first_search(sequence)
+  save_resource_ids_in_bundle_arguments = [
+    "versioned_resource_class('#{sequence[:resource]}')",
+    'reply',
+    validation_profile_uri(sequence)
+  ].compact.join(', ')
+
   search_test[:test_code] =
     if is_first_search
       %(#{get_search_params(search_param[:names], sequence)}
@@ -116,7 +166,8 @@ def create_search_test(sequence, search_param)
 
         @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        save_resource_ids_in_bundle(versioned_resource_class('#{sequence[:resource]}'), reply)
+        save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
+        save_delayed_sequence_references(@#{sequence[:resource].downcase})
         validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
     else
       %(
@@ -216,7 +267,7 @@ def create_resource_profile_test(sequence)
   }
   test[:test_code] = %(
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('#{sequence[:resource]}'))
+        test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
 
   sequence[:tests] << test
 end
@@ -259,6 +310,8 @@ def get_value_path_by_type(type)
     '.code'
   when 'HumanName'
     '.family'
+  when 'Address'
+    '.city'
   else
     ''
   end
@@ -334,14 +387,13 @@ end
 def search_param_constants(search_parameters, sequence)
   return "patient: @instance.patient_id, category: 'assess-plan'" if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
   return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
-  return "patient: @instance.patient_id, name: 'Boston'" if search_parameters == ['name'] && (['Location', 'Organization'].include? sequence[:resource])
   return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
-  return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-smokingstatus.json'
-  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json'
-  return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-weight-for-height.json'
-  return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-pediatric-bmi-for-age.json'
-  return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json'
-  return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+  return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:smoking_status]
+  return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:lab_results]
+  return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_weight_height]
+  return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
+  return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
+  return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_note]
 end
 
 def create_search_validation(sequence)
@@ -418,7 +470,7 @@ end
 def generate_module(module_info)
   file_name = OUT_PATH + '/us_core_module.yml'
 
-  template = ERB.new(File.read('./templates/module.yml.erb'))
+  template = ERB.new(File.read(File.join(__dir__, 'templates/module.yml.erb')))
   output = template.result_with_hash(module_info)
 
   File.write(file_name, output)

@@ -11,8 +11,9 @@ module Inferno
 
       test_id_prefix 'Organization' # change me
 
-      requires :token, :patient_id
+      requires :token
       conformance_supports :Organization
+      delayed_sequence
 
       def validate_resource_item(resource, property, value)
         case property
@@ -22,7 +23,7 @@ module Inferno
           assert value_found, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
           assert value_found, 'address on resource does not match address requested'
 
         end
@@ -31,15 +32,30 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Organization Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-organization)
+        returned will be checked for consistency against the [Organization Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization)
 
       )
 
       @resources_found = false
 
-      test 'Server rejects Organization search without authorization' do
+      test 'Can read Organization from the server' do
         metadata do
           id '01'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
+        skip 'No Organization references found from the prior searches' if organization_id.nil?
+        @organization = fetch_resource('Organization', organization_id)
+        @resources_found = !@organization.nil?
+      end
+
+      test 'Server rejects Organization search without authorization' do
+        metadata do
+          id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -49,7 +65,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
+        name_val = resolve_element_from_path(@organization, 'name')
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -58,14 +76,16 @@ module Inferno
 
       test 'Server returns expected results from Organization search by name' do
         metadata do
-          id '02'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, name: 'Boston' }
+        name_val = resolve_element_from_path(@organization, 'name')
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
@@ -79,12 +99,13 @@ module Inferno
         @organization = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @organization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
+        save_delayed_sequence_references(@organization)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
       test 'Server returns expected results from Organization search by address' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -94,28 +115,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
-        address_val = resolve_element_from_path(@organization, 'address')
+        address_val = resolve_element_from_path(@organization, 'address.city')
         search_params = { 'address': address_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         assert_response_ok(reply)
-      end
-
-      test 'Organization read resource supported' do
-        metadata do
-          id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Organization, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@organization, versioned_resource_class('Organization'))
       end
 
       test 'Organization vread resource supported' do
@@ -151,7 +157,7 @@ module Inferno
       test 'Organization resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-organization.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           desc %(
           )
           versions :r4

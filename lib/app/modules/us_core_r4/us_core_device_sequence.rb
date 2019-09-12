@@ -31,7 +31,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Device Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-device)
+        returned will be checked for consistency against the [Device Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-device)
 
       )
 
@@ -51,6 +51,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -82,6 +83,7 @@ module Inferno
         @device = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @device_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
+        save_delayed_sequence_references(@device)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
 
@@ -89,6 +91,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -155,7 +158,7 @@ module Inferno
       test 'Device resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-device.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-device'
           desc %(
           )
           versions :r4

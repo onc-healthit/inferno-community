@@ -33,12 +33,18 @@ module Inferno
         assert_response_bad(reply)
       end
 
-      def assert_export_status(content_location = @content_location)
-        reply = export_status_check(content_location)
+      def assert_export_status(url, timeout: 180)
+        reply = export_status_check(url, timeout)
+
+        # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
+        # export_status_check processes reponses with status 202 code
+        # and returns server response when status code is not 202 or timed out
+
+        skip "Server took more than #{timeout} seconds to process the request." if reply.code == 202
 
         assert reply.code == 200, "Bad response code: expected 200, 202, but found #{reply.code}."
 
-        assert_resource_content_type(reply, 'application/json')
+        assert_response_content_type(reply, 'application/json')
 
         response_body = JSON.parse(reply.body)
 
@@ -62,7 +68,6 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           desc %(
           )
-          versions :stu3
         end
 
         @client.set_no_auth
@@ -79,7 +84,6 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           desc %(
           )
-          versions :stu3
         end
 
         assert_export_kick_off('Patient')
@@ -115,10 +119,9 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           desc %(
           )
-          versions :stu3
         end
 
-        assert_export_status
+        assert_export_status(@content_location)
       end
 
       private
@@ -132,22 +135,35 @@ module Inferno
         @client.get(url, @client.fhir_headers(headers))
       end
 
-      def export_status_check(url, headers = { accept: 'application/json' })
+      def export_status_check(url, timeout)
         wait_time = 1
         reply = nil
+        headers = { accept: 'application/json' }
+        start = Time.now
 
         loop do
           reply = @client.get(url, @client.fhir_headers(headers))
 
-          break if reply.code != 202
+          wait_time = get_wait_time(wait_time, reply)
+          seconds_used = Time.now - start + wait_time
 
-          retry_after = reply.response[:headers]['retry-after']
-          wait_time = (retry_after.presence || wait_time * 2).to_i
+          break if reply.code != 202 || seconds_used > timeout
 
           sleep wait_time
         end
 
         reply
+      end
+
+      def get_wait_time(wait_time, reply)
+        retry_after = reply.response[:headers]['retry-after']
+        retry_after_int = (retry_after.presence || 0).to_i
+
+        if retry_after_int.positive?
+          retry_after_int
+        else
+          wait_time * 2
+        end
       end
 
       def assert_status_reponse_required_field(response_body)

@@ -42,7 +42,7 @@ class PatientSequenceTest < MiniTest::Test
       'User-Agent' => 'Ruby FHIR Client',
       'Authorization' => "Bearer #{@instance.token}",
       'Host' => 'www.example.com',
-      'Accept-Encoding' => 'gzip, deflate'
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3'
     }
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end
