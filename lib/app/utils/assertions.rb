@@ -96,14 +96,14 @@ module Inferno
       end
     end
 
-    def assert_resource_content_type(client_reply, content_type)
+    def assert_response_content_type(client_reply, content_type)
       header = client_reply.response[:headers]['content-type']
       response_content_type = header
       response_content_type = header[0, header.index(';')] unless header.index(';').nil?
 
-      return if assertion_negated(response_content_type == "application/fhir+#{content_type}")
+      return if assertion_negated(response_content_type == content_type)
 
-      raise AssertionException.new "Expected content-type application/fhir+#{content_type} but found #{response_content_type}", response_content_type
+      raise AssertionException.new "Expected content-type #{content_type} but found #{response_content_type}", response_content_type
     end
 
     # Based on MIME Types defined in
