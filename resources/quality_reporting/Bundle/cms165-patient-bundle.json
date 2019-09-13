@@ -1,0 +1,232 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+            "extension": [
+              {
+                "url": "ombCategory",
+                "valueCoding": {
+                  "system": "urn:oid:2.16.840.1.113883.6.238",
+                  "code": "2054-5",
+                  "display": "Black or African American"
+                }
+              }
+            ]
+          },
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+            "extension": [
+              {
+                "url": "ombCategory",
+                "valueCoding": {
+                  "system": "urn:oid:2.16.840.1.113883.6.238",
+                  "code": "2186-5",
+                  "display": "Not Hispanic or Latino"
+                }
+              }
+            ]
+          }
+        ],
+        "identifier": [
+          {
+            "use": "usual",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MR",
+                  "display": "Medical Record Number"
+                }
+              ]
+            },
+            "system": "http://hospital.smarthealthit.org",
+            "value": "999999993"
+          }
+        ],
+        "name": [
+          {
+            "family": "Doe",
+            "given": [
+              "Jill"
+            ]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1975-08-25"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-2",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition"
+          ]
+        },
+        "verificationStatus": "confirmed",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "encounter-diagnosis",
+                "display": "Encounter Diagnosis"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "65518004",
+              "display": "Labile diastolic hypertension (disorder)"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1"
+        },
+        "assertedDate": "2019-01-12T13:51:21-07:00"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Condition/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-2"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-3",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter"
+          ]
+        },
+        "status": "finished",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "IMP",
+          "display": "inpatient encounter"
+        },
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://www.ama-assn.org/go/cpt",
+                "code": "99202"
+              }
+            ]
+          }
+        ],
+        "subject": {
+          "reference": "Patient/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1"
+        },
+        "period": {
+          "start": "2019-07-17T13:51:21-06:00",
+          "end": "2019-07-17T16:51:21-06:00"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Encounter/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-3"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-4",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/StructureDefinition/vitalsigns"
+          ]
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "85354-9",
+              "display": "Blood pressure panel with all children optional"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1"
+        },
+        "context": {
+          "reference": "Encounter/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-3"
+        },
+        "effectiveDateTime": "2019-02-03T13:51:21-07:00",
+        "component": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8480-6",
+                  "display": "Systolic blood pressure"
+                }
+              ]
+            },
+            "valueQuantity": {
+              "value": 111,
+              "unit": "mmHg",
+              "system": "http://unitsofmeasure.org",
+              "code": "mm[Hg]"
+            }
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8462-4",
+                  "display": "Diastolic blood pressure"
+                }
+              ]
+            },
+            "valueQuantity": {
+              "value": 73,
+              "unit": "mmHg",
+              "system": "http://unitsofmeasure.org",
+              "code": "mm[Hg]"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-4"
+      }
+    }
+  ]
+}

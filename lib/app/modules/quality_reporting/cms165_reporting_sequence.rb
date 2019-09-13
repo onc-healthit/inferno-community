@@ -17,16 +17,20 @@ module Inferno
                   '<a href="/inferno/resources/quality_reporting/Bundle/cms165vs-bundle.json">the CMS165 ValueSet Bundle</a> '\
                   'to your FHIR server, and observe the status codes in the response to ensure all resources '\
                   'saved sucessfully. <br/>'\
-                  '2) POST '\
-                  '<a href="/inferno/resources/quality_reporting/Bundle/cms165-bundle.json">this Bundle</a> '\
+                  '2) POST the '\
+                  '<a href="/inferno/resources/quality_reporting/Bundle/cms165-bundle.json">measure Bundle</a> '\
                   'to your FHIR server, and observe the status codes in the response to ensure all resources '\
-                  'saved sucessfully.'
+                  'saved sucessfully. <br/>'\
+                  '3) POST the '\
+                  '<a href="/inferno/resources/quality_reporting/Bundle/cms165-patient-bundle.json">patient Bundle</a> '\
+                  'to your FHIR server, and observe the status codes in the response to ensure all resources '\
+                  'saved sucessfully. <br/>'
 
       # These values are based on the content of the CMS165 bundle used for this module.
-      measure_id = 'MMitreTestScript-measure-exm165-FHIR3'
-      patient_id = ''
-      period_start = ''
-      period_end = ''
+      measure_id = 'MitreTestScript-measure-exm165-FHIR3'
+      patient_id = 'bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1'
+      period_start = '2019'
+      period_end = '2019'
 
       test 'Evaluate Measure' do
         metadata do
