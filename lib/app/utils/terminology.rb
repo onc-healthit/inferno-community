@@ -220,6 +220,7 @@ module Inferno
           bfilter.include? probe
         end
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
+        FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
       end
     end
 

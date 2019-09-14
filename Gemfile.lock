@@ -1,3 +1,13 @@
+GIT
+  remote: https://github.com/fhir-crucible/fhir_models.git
+  revision: de39bd17674246ad69745ef50724856c3d34e944
+  specs:
+    fhir_models (4.0.1)
+      bcp47 (>= 0.3)
+      date_time_precision (>= 0.8)
+      mime-types (>= 3.0)
+      nokogiri (>= 1.10.4)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -99,11 +109,6 @@ GEM
       rest-client (~> 2.0)
       tilt (>= 1.1)
     fhir_dstu2_models (1.0.10)
-      bcp47 (>= 0.3)
-      date_time_precision (>= 0.8)
-      mime-types (>= 3.0)
-      nokogiri (>= 1.10.4)
-    fhir_models (4.0.1)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 3.0)
@@ -234,6 +239,7 @@ DEPENDENCIES
   data_mapper
   dm-sqlite-adapter
   fhir_client
+  fhir_models!
   json-jwt
   kramdown
   pry
