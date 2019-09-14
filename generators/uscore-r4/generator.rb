@@ -10,7 +10,7 @@ require_relative './metadata_extractor'
 require_relative '../../lib/app/utils/validation'
 
 OUT_PATH = File.expand_path('../../lib/app/modules', __dir__)
-RESOURCE_PATH = File.expand_path('../../resources/us_core_v301', __dir__)
+RESOURCE_PATH = File.expand_path('../../resources/us_core_v3.0.1', __dir__)
 
 PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
@@ -94,11 +94,11 @@ end
 
 def generate_sequence(sequence)
   puts "Generating #{sequence[:name]}\n"
-  file_name = OUT_PATH + '/us_core_v301/' + sequence[:name].downcase + '_sequence.rb'
+  file_name = OUT_PATH + '/us_core_r4/' + sequence[:name].downcase + '_sequence.rb'
 
   template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
   output =   template.result_with_hash(sequence)
-  FileUtils.mkdir_p(OUT_PATH + '/us_core_v301') unless File.directory?(OUT_PATH + '/us_core_v301')
+  FileUtils.mkdir_p(OUT_PATH + '/us_core_r4') unless File.directory?(OUT_PATH + '/us_core_r4')
   File.write(file_name, output)
 end
 

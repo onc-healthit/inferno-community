@@ -145,6 +145,14 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, onset_date_val)
+          comparator_search_params = { 'patient': patient_val, 'onset-date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Server returns expected results from Condition search by patient+code' do

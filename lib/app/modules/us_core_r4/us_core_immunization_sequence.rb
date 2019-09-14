@@ -137,6 +137,14 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         assert_response_ok(reply)
+
+        ['gt', 'lt', 'le'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, date_val)
+          comparator_search_params = { 'patient': patient_val, 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
+          assert_response_ok(reply)
+        end
       end
 
       test 'Immunization read resource supported' do

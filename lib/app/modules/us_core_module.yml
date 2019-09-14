@@ -1,6 +1,6 @@
 name: us_core_v301
-title: US Core STU3 v3.0.1 (FHIR R4)
-description : US Core CI Build v3.0.1
+title: US Core STU3 v3.0.1
+description : US Core STU3 v3.0.1
 fhir_version: r4
 default_test_set: ad_hoc_testing
 test_sets:
