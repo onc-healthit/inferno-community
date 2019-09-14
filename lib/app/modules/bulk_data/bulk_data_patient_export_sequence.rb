@@ -71,7 +71,8 @@ module Inferno
             resource = FHIR.from_contents(line)
             assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
             errors = resource.validate
-            assert errors.empty?, errors.join("<br/>\n")
+            message = errors.join("<br/>\n") unless errors.empty?
+            assert errors.empty?, message
           end
           # assert each line is a valid FHIR resource
         end

@@ -106,9 +106,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   end
 
   def include_file_request_stub(response_headers: { content_type: 'application/fhir+ndjson' })
-    headers = @export_request_headers.clone
-    headers[:prefer] = 'return=representation'
+    stub_request(:get, @file_location)
+      .with(headers: @file_request_headers)
+      .to_return(
+        status: 200,
+        headers: response_headers,
+        body: @patient_export
+      )
+  end
 
+  def include_file_request_stub_unmatched_type(response_headers: { content_type: 'application/fhir+ndjson' })
     stub_request(:get, @file_location)
       .with(headers: @file_request_headers)
       .to_return(
@@ -207,6 +214,17 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     assert_raises Inferno::AssertionException do
       @sequence.assert_output_files(output)
+    end
+  end
+
+  def test_file_request_fail_unmatched_type
+    unmatched_type_output = @complete_status['output'].clone
+    unmatched_type_output.first['type'] = 'Condition'
+
+    include_file_request_stub
+
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_file_request(unmatched_type_output)
     end
   end
 end
