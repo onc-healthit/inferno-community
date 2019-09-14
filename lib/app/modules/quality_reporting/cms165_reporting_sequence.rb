@@ -29,8 +29,8 @@ module Inferno
       # These values are based on the content of the CMS165 bundle used for this module.
       measure_id = 'MitreTestScript-measure-exm165-FHIR3'
       patient_id = 'bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1'
-      period_start = '2019'
-      period_end = '2019'
+      period_start = '2019-01-01'
+      period_end = '2019-12-31'
 
       test 'Evaluate Measure' do
         metadata do
