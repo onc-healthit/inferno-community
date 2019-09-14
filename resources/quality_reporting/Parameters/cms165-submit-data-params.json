@@ -15,29 +15,106 @@
     {
       "name": "resource",
       "resource": {
-        "resourceType": "Patient",
-        "url": "http://localhost:8080/Patient.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1.ndjosn"
+        "resourceType": "AllergyIntolerance",
+        "url": "http://localhost:8080/1.AllergyIntolerance.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "CarePlan",
+        "url": "http://localhost:8080/1.CarePlan.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Claim",
+        "url": "http://localhost:8080/1.Claim.ndjson"
       }
     },
     {
       "name": "resource",
       "resource": {
         "resourceType": "Condition",
-        "url": "http://localhost:8080/Condition.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-2.ndjson"
+        "url": "http://localhost:8080/1.Condition.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "url": "http://localhost:8080/1.DiagnosticReport.ndjson"
       }
     },
     {
       "name": "resource",
       "resource": {
         "resourceType": "Encounter",
-        "url": "http://localhost:8080/Encounter.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-3.ndjson"
+        "url": "http://localhost:8080/1.Encounter.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "ExplanationOfBenefit",
+        "url": "http://localhost:8080/1.ExplanationOfBenefit.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Goal",
+        "url": "http://localhost:8080/1.Goal.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "ImagingStudy",
+        "url": "http://localhost:8080/1.ImagingStudy.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Immunization",
+        "url": "http://localhost:8080/1.Immunization.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "url": "http://localhost:8080/1.MedicationRequest.ndjson"
       }
     },
     {
       "name": "resource",
       "resource": {
         "resourceType": "Observation",
-        "url": "http://localhost:8080/Observation.bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-4.ndjson"
+        "url": "http://localhost:8080/1.Observation.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Organization",
+        "url": "http://localhost:8080/1.Organization.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Patient",
+        "url": "http://localhost:8080/1.Patient.ndjson"
+      }
+    },
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Practitioner",
+        "url": "http://localhost:8080/1.Practitioner.ndjson"
       }
     }
   ]
