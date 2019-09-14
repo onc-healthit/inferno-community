@@ -287,7 +287,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:create])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_create_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
@@ -302,7 +301,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
@@ -318,7 +316,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
@@ -334,7 +331,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))

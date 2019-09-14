@@ -253,7 +253,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:create])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_create_reply(@documentreference, versioned_resource_class('DocumentReference'))
@@ -268,7 +267,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@documentreference, versioned_resource_class('DocumentReference'))
@@ -284,7 +282,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@documentreference, versioned_resource_class('DocumentReference'))
@@ -300,7 +297,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@documentreference, versioned_resource_class('DocumentReference'))

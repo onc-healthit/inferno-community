@@ -175,7 +175,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@procedure, versioned_resource_class('Procedure'))
@@ -191,7 +190,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@procedure, versioned_resource_class('Procedure'))
@@ -207,7 +205,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@procedure, versioned_resource_class('Procedure'))

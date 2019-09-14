@@ -119,7 +119,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@device, versioned_resource_class('Device'))
@@ -135,7 +134,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@device, versioned_resource_class('Device'))
@@ -151,7 +149,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@device, versioned_resource_class('Device'))

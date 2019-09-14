@@ -134,7 +134,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))
@@ -150,7 +149,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))

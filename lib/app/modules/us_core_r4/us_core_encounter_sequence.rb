@@ -260,7 +260,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@encounter, versioned_resource_class('Encounter'))
@@ -276,7 +275,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
@@ -292,7 +290,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))

@@ -134,7 +134,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@organization, versioned_resource_class('Organization'))
@@ -150,7 +149,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:history])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@organization, versioned_resource_class('Organization'))

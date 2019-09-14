@@ -192,7 +192,6 @@ def create_interaction_test(sequence, interaction)
   }
 
   interaction_test[:test_code] = %(
-        skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_#{interaction[:code]}_reply(@#{sequence[:resource].downcase}, versioned_resource_class('#{sequence[:resource]}')))
