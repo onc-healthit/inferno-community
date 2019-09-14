@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that Location resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Location' # change me
+      test_id_prefix 'USCL' # change me
 
       requires :token
       conformance_supports :Location
@@ -75,7 +75,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         name_val = resolve_element_from_path(@location, 'name')
         search_params = { 'name': name_val }
@@ -206,6 +206,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -221,6 +222,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

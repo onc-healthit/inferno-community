@@ -7,9 +7,9 @@ module Inferno
 
       title 'DiagnosticReport for Report and Note exchange Tests'
 
-      description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
+      description 'Verify that DiagnosticReport for Report and Note exchange resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'DiagnosticReport' # change me
+      test_id_prefix 'USCDRRN' # change me
 
       requires :token, :patient_id
       conformance_supports :DiagnosticReport
@@ -61,7 +61,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         search_params = { patient: @instance.patient_id, code: 'LP29684-5' }
 
@@ -97,9 +97,30 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+code' do
+      test 'Server returns expected results from DiagnosticReport search by patient' do
         metadata do
           id '03'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@diagnosticreport.nil?, 'Expected valid DiagnosticReport resource to be present'
+
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from DiagnosticReport search by patient+code' do
+        metadata do
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -121,7 +142,7 @@ module Inferno
 
       test 'Server returns expected results from DiagnosticReport search by patient+category+date' do
         metadata do
-          id '04'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -140,19 +161,11 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
         metadata do
-          id '05'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -172,19 +185,11 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient+status' do
         metadata do
-          id '06'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -207,7 +212,7 @@ module Inferno
 
       test 'Server returns expected results from DiagnosticReport search by patient+category' do
         metadata do
-          id '07'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -227,7 +232,7 @@ module Inferno
 
       test 'Server returns expected results from DiagnosticReport search by patient+category+date' do
         metadata do
-          id '08'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -247,19 +252,11 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'DiagnosticReport create resource supported' do
         metadata do
-          id '09'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -274,7 +271,7 @@ module Inferno
 
       test 'DiagnosticReport read resource supported' do
         metadata do
-          id '10'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -289,8 +286,9 @@ module Inferno
 
       test 'DiagnosticReport vread resource supported' do
         metadata do
-          id '11'
+          id '12'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -304,8 +302,9 @@ module Inferno
 
       test 'DiagnosticReport history resource supported' do
         metadata do
-          id '12'
+          id '13'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -319,7 +318,7 @@ module Inferno
 
       test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '13'
+          id '14'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note'
           desc %(
           )
@@ -332,7 +331,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do
         metadata do
-          id '14'
+          id '15'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           desc %(
           )
@@ -369,7 +368,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '15'
+          id '16'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

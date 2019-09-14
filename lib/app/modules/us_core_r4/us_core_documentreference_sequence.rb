@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that DocumentReference resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'DocumentReference' # change me
+      test_id_prefix 'USCDR' # change me
 
       requires :token, :patient_id
       conformance_supports :DocumentReference
@@ -69,7 +69,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
@@ -130,7 +130,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+category' do
+      test 'Server returns expected results from DocumentReference search by patient+category+date' do
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -144,7 +144,8 @@ module Inferno
 
         patient_val = @instance.patient_id
         category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
-        search_params = { 'patient': patient_val, 'category': category_val }
+        date_val = resolve_element_from_path(@documentreference, 'date')
+        search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -152,7 +153,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+category+date' do
+      test 'Server returns expected results from DocumentReference search by patient+category' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -166,8 +167,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
-        date_val = resolve_element_from_path(@documentreference, 'date')
-        search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -242,14 +242,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, period_val)
-          comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'DocumentReference create resource supported' do
@@ -286,6 +278,7 @@ module Inferno
         metadata do
           id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -301,6 +294,7 @@ module Inferno
         metadata do
           id '12'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

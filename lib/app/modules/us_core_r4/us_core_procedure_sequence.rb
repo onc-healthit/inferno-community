@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Procedure' # change me
+      test_id_prefix 'USCP' # change me
 
       requires :token, :patient_id
       conformance_supports :Procedure
@@ -57,7 +57,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
@@ -117,14 +117,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'Server returns expected results from Procedure search by patient+code+date' do
@@ -149,14 +141,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'Server returns expected results from Procedure search by patient+status' do
@@ -201,6 +185,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -216,6 +201,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

@@ -7,9 +7,9 @@ module Inferno
 
       title 'Laboratory Result Observation Tests'
 
-      description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
+      description 'Verify that Laboratory Result Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Observation' # change me
+      test_id_prefix 'USCLRO' # change me
 
       requires :token, :patient_id
       conformance_supports :Observation
@@ -61,7 +61,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         search_params = { patient: @instance.patient_id, category: 'laboratory' }
 
@@ -140,51 +140,11 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
-      end
-
-      test 'Server returns expected results from Observation search by patient+code+date' do
-        metadata do
-          id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@observation.nil?, 'Expected valid Observation resource to be present'
-
-        patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
-        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
-        search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'Server returns expected results from Observation search by patient+category+status' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -199,6 +159,30 @@ module Inferno
         category_val = resolve_element_from_path(@observation, 'category.coding.code')
         status_val = resolve_element_from_path(@observation, 'status')
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from Observation search by patient+code+date' do
+        metadata do
+          id '06'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
+
+        patient_val = @instance.patient_id
+        code_val = resolve_element_from_path(@observation, 'code.coding.code')
+        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
+        search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -225,6 +209,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -240,6 +225,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -277,6 +263,7 @@ module Inferno
         must_support_confirmed = {}
         must_support_elements = [
           'Observation.status',
+          'Observation.category',
           'Observation.category',
           'Observation.code',
           'Observation.subject',

@@ -4,7 +4,7 @@ require File.expand_path '../test_helper.rb', __dir__
 
 class TestInstanceTest < MiniTest::Test
   def setup
-    @instance = Inferno::Models::TestingInstance.create(selected_module: 'us_core_r4')
+    @instance = Inferno::Models::TestingInstance.create(selected_module: 'us_core_v301')
   end
 
   def test_conformance_supported

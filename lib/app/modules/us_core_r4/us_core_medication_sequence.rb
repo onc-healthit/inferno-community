@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that Medication resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Medication' # change me
+      test_id_prefix 'USCM' # change me
 
       requires :token
       conformance_supports :Medication
@@ -43,6 +43,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -58,6 +59,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

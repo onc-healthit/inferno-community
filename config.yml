@@ -42,7 +42,7 @@ modules:
   - onc
   - onc_r4
   - smart
-  - us_core_r4
+  - us_core_v301
   - argonaut
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link

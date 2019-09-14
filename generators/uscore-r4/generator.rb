@@ -5,11 +5,12 @@ require 'pry'
 require 'fileutils'
 require 'net/http'
 require 'fhir_models'
+require 'fhir_dstu2_models'
 require_relative './metadata_extractor'
 require_relative '../../lib/app/utils/validation'
 
 OUT_PATH = File.expand_path('../../lib/app/modules', __dir__)
-RESOURCE_PATH = File.expand_path('../../resources/us_core_r4', __dir__)
+RESOURCE_PATH = File.expand_path('../../resources/us_core_v301', __dir__)
 
 PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
@@ -93,11 +94,11 @@ end
 
 def generate_sequence(sequence)
   puts "Generating #{sequence[:name]}\n"
-  file_name = OUT_PATH + '/us_core_r4/' + sequence[:name].downcase + '_sequence.rb'
+  file_name = OUT_PATH + '/us_core_v301/' + sequence[:name].downcase + '_sequence.rb'
 
   template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
   output =   template.result_with_hash(sequence)
-  FileUtils.mkdir_p(OUT_PATH + '/us_core_r4') unless File.directory?(OUT_PATH + '/us_core_r4')
+  FileUtils.mkdir_p(OUT_PATH + '/us_core_v301') unless File.directory?(OUT_PATH + '/us_core_v301')
   File.write(file_name, output)
 end
 
@@ -128,7 +129,7 @@ def create_authorization_test(sequence)
 
   authorization_test[:test_code] = %(
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 #{get_search_params(first_search[:names], sequence)}
         reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -186,7 +187,8 @@ def create_interaction_test(sequence, interaction)
   interaction_test = {
     tests_that: "#{sequence[:resource]} #{interaction[:code]} resource supported",
     index: sequence[:tests].length + 1,
-    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+    link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html',
+    optional: interaction[:expectation] != 'SHALL'
   }
 
   interaction_test[:test_code] = %(

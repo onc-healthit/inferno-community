@@ -580,6 +580,10 @@ module Inferno
           end
         end
       end
+      
+      def validate_create_reply(resource, klass)
+        todo 'create validation not implemented'
+      end
 
       def validate_read_reply(resource, klass)
         assert !resource.nil?, "No #{klass.name.demodulize} resources available from search."

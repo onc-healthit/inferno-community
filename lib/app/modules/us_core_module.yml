@@ -1,6 +1,6 @@
-name: us_core_r4
-title: US Core R4
-description : US Core R4
+name: us_core_v301
+title: US Core STU3 v3.0.1 (FHIR R4)
+description : US Core CI Build v3.0.1
 fhir_version: r4
 default_test_set: ad_hoc_testing
 test_sets:
@@ -25,7 +25,7 @@ test_sets:
         - USCoreR4CareplanSequence
         - USCoreR4CareteamSequence
         - USCoreR4ConditionSequence
-        - USCoreR4DeviceSequence
+        - USCoreR4ImplantableDeviceSequence
         - USCoreR4DiagnosticreportNoteSequence
         - USCoreR4DiagnosticreportLabSequence
         - USCoreR4DocumentreferenceSequence
@@ -33,11 +33,11 @@ test_sets:
         - USCoreR4GoalSequence
         - USCoreR4ImmunizationSequence
         - USCoreR4MedicationrequestSequence
-        - USCoreR4MedicationstatementSequence
         - USCoreR4SmokingstatusSequence
         - PediatricWeightForHeightSequence
         - USCoreR4ObservationLabSequence
         - PediatricBmiForAgeSequence
+        - USCoreR4PulseOximetrySequence
         - USCoreR4PatientSequence
         - USCoreR4ProcedureSequence
         - R4ProvenanceSequence
@@ -47,3 +47,4 @@ test_sets:
         - USCoreR4OrganizationSequence
         - USCoreR4PractitionerSequence
         - USCoreR4PractitionerroleSequence
+        - USCoreR4ProvenanceSequence

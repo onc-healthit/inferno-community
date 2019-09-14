@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'AllergyIntolerance' # change me
+      test_id_prefix 'USCAI' # change me
 
       requires :token, :patient_id
       conformance_supports :AllergyIntolerance
@@ -47,7 +47,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
@@ -129,6 +129,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -144,6 +145,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

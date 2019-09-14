@@ -41,6 +41,7 @@ class MetadataExtractor
     profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
     {
       name: base_name.tr('-', '_'),
+      test_id_prefix: "USC#{profile_title.split('').select{|c| c.upcase == c && c != ' ' }.join}",
       classname: base_name
         .split('-')
         .map(&:capitalize)
@@ -64,7 +65,8 @@ class MetadataExtractor
       sequences: []
     }
 
-    resources.each do |resource|
+    resources.select{|r| r['type'] != 'ValueSet'}.each do |resource|
+      binding.pry if resource['supportedProfile'].nil?
       resource['supportedProfile'].each do |supported_profile|
         new_sequence = build_new_sequence(resource, supported_profile)
 
@@ -184,7 +186,11 @@ class MetadataExtractor
         param_metadata[:contains_multiple] = false
       end
       search_param_definition['comparator']&.each_with_index do |comparator, index|
-        expectation = search_param_definition['_comparator'][index]['extension'].first['valueCode']
+        expectation_extension = search_param_definition['_comparator']
+        expectation = 'MAY'
+        if !expectation_extension.nil?
+          expectation = expectation_extension[index]['extension'].first['valueCode']
+        end
         param_metadata[:comparators][comparator.to_sym] = expectation
       end
       sequence[:search_param_descriptions][param] = param_metadata

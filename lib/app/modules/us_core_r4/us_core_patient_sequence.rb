@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Patient' # change me
+      test_id_prefix 'USCP' # change me
 
       requires :token, :patient_id
       conformance_supports :Patient
@@ -76,7 +76,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         search_params = { '_id': @instance.patient_id }
 
@@ -263,6 +263,7 @@ module Inferno
         metadata do
           id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -278,6 +279,7 @@ module Inferno
         metadata do
           id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -336,6 +338,7 @@ module Inferno
           'Patient.telecom',
           'Patient.telecom.system',
           'Patient.telecom.value',
+          'Patient.telecom.use',
           'Patient.gender',
           'Patient.birthDate',
           'Patient.address',
@@ -343,6 +346,7 @@ module Inferno
           'Patient.address.city',
           'Patient.address.state',
           'Patient.address.postalCode',
+          'Patient.address.period',
           'Patient.communication',
           'Patient.communication.language'
         ]

@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that Condition resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Condition' # change me
+      test_id_prefix 'USCC' # change me
 
       requires :token, :patient_id
       conformance_supports :Condition
@@ -61,7 +61,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
@@ -101,7 +101,7 @@ module Inferno
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
       end
 
-      test 'Server returns expected results from Condition search by patient+onset-date' do
+      test 'Server returns expected results from Condition search by patient+clinical-status' do
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -115,24 +115,16 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        onset_date_val = resolve_element_from_path(@condition, 'onsetDateTime')
-        search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
+        clinical_status_val = resolve_element_from_path(@condition, 'clinicalStatus.coding.code')
+        search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, onset_date_val)
-          comparator_search_params = { 'patient': patient_val, 'onset-date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
-      test 'Server returns expected results from Condition search by patient+category' do
+      test 'Server returns expected results from Condition search by patient+onset-date' do
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -146,8 +138,8 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@condition, 'category.coding.code')
-        search_params = { 'patient': patient_val, 'category': category_val }
+        onset_date_val = resolve_element_from_path(@condition, 'onsetDateTime')
+        search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -178,7 +170,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Condition search by patient+clinical-status' do
+      test 'Server returns expected results from Condition search by patient+category' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -192,8 +184,8 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = resolve_element_from_path(@condition, 'clinicalStatus.coding.code')
-        search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        category_val = resolve_element_from_path(@condition, 'category.coding.code')
+        search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -220,6 +212,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -235,6 +228,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4

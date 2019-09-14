@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that Encounter resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Encounter' # change me
+      test_id_prefix 'USCE' # change me
 
       requires :token, :patient_id
       conformance_supports :Encounter
@@ -69,7 +69,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
@@ -150,14 +150,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'date': comparator_val, 'patient': patient_val }
-          reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
       test 'Server returns expected results from Encounter search by identifier' do
@@ -205,32 +197,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Encounter search by class+patient' do
-        metadata do
-          id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-
-        class_val = resolve_element_from_path(@encounter, 'class.code')
-        patient_val = @instance.patient_id
-        search_params = { 'class': class_val, 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test 'Server returns expected results from Encounter search by patient+type' do
         metadata do
-          id '08'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           desc %(
@@ -244,6 +213,29 @@ module Inferno
         patient_val = @instance.patient_id
         type_val = resolve_element_from_path(@encounter, 'type.coding.code')
         search_params = { 'patient': patient_val, 'type': type_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from Encounter search by class+patient' do
+        metadata do
+          id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
+
+        class_val = resolve_element_from_path(@encounter, 'class.code')
+        patient_val = @instance.patient_id
+        search_params = { 'class': class_val, 'patient': patient_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -270,6 +262,7 @@ module Inferno
         metadata do
           id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -285,6 +278,7 @@ module Inferno
         metadata do
           id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
