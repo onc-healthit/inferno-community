@@ -244,7 +244,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@goal)

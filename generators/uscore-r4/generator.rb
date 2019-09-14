@@ -281,7 +281,6 @@ def create_references_resolved_test(sequence)
   }
 
   test[:test_code] = %(
-        skip_if_not_supported(:#{sequence[:resource]}, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@#{sequence[:resource].downcase}))
