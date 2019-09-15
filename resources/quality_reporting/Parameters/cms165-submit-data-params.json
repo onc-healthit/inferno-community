@@ -1,121 +1,13 @@
 {
-  "resourceType": "Parameters",
-  "parameter": [
+  "inputFormat": "application/fhir+ndjson",
+  "inputSource": "http://localhost:8080/cqf-ruler",
+  "storageDetail": {
+    "type": "https"
+  },
+  "input": [
     {
-      "name": "measure-report",
-      "resource": {
-        "id": "MitreTestScript-cms165-individual-report",
-        "resourceType": "MeasureReport",
-        "type": "individual",
-        "measure": {
-          "reference": "Measure/MitreTestScript-measure-exm165-FHIR3"
-        }
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "AllergyIntolerance",
-        "url": "http://localhost:8080/1.AllergyIntolerance.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "CarePlan",
-        "url": "http://localhost:8080/1.CarePlan.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Claim",
-        "url": "http://localhost:8080/1.Claim.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Condition",
-        "url": "http://localhost:8080/1.Condition.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "DiagnosticReport",
-        "url": "http://localhost:8080/1.DiagnosticReport.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Encounter",
-        "url": "http://localhost:8080/1.Encounter.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "ExplanationOfBenefit",
-        "url": "http://localhost:8080/1.ExplanationOfBenefit.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Goal",
-        "url": "http://localhost:8080/1.Goal.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "ImagingStudy",
-        "url": "http://localhost:8080/1.ImagingStudy.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Immunization",
-        "url": "http://localhost:8080/1.Immunization.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "MedicationRequest",
-        "url": "http://localhost:8080/1.MedicationRequest.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Observation",
-        "url": "http://localhost:8080/1.Observation.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Organization",
-        "url": "http://localhost:8080/1.Organization.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Patient",
-        "url": "http://localhost:8080/1.Patient.ndjson"
-      }
-    },
-    {
-      "name": "resource",
-      "resource": {
-        "resourceType": "Practitioner",
-        "url": "http://localhost:8080/1.Practitioner.ndjson"
-      }
+      "type": "Bundle",
+      "url": "https://github.com/mgramigna/connectathon/raw/64fb126f19412d7d0275a067d768328429826fef/resources/fhir3/ndjson/exm165-bulk-data.ndjson"
     }
   ]
 }
