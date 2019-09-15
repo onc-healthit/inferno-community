@@ -88,7 +88,7 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert @conformance.class.name.demodulize == versioned_conformance_class.name.demodulize, 'Expected valid Conformance resource'
         formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
@@ -106,7 +106,7 @@ module Inferno
           optional
         end
 
-        assert @conformance.instantiates&.include?('http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html'), 'CapabilityStatement did not instantiate from "http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html"'
+        assert @conformance.instantiates&.include?('http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data'), 'CapabilityStatement did not instantiate from "http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html"'
       end
 
       test 'FHIR server capability SHOULD have export operation' do
@@ -136,7 +136,7 @@ module Inferno
         assert_operation_supported(@instance.server_capabilities, 'export')
       end
 
-      test 'FHIR server capability SHOULD have export operation' do
+      test 'FHIR server capability SHOULD have patient-export operation' do
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'

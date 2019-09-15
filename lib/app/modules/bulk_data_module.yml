@@ -1,7 +1,6 @@
 name: bulk_data
 title: FHIR Bulk Data Access Implementation Guide STU1
 description: Bulk Data Access Testing
-fhir_version: stu3
 default_test_set: developer
 test_sets:
   developer:

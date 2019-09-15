@@ -393,7 +393,7 @@ module Inferno
             test_index: test_index
           )
           begin
-            fhir_version_included = @instance.fhir_version.present? && versions.include?(@instance.fhir_version&.to_sym)
+            fhir_version_included = !@instance.fhir_version.present? || versions.include?(@instance.fhir_version&.to_sym)
             skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
             Inferno.logger.info "Starting Test: #{test_id} [#{name}]"
             instance_eval(&block)

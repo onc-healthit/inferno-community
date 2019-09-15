@@ -44,6 +44,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
 
+    @search_params = {'_type' => 'Patient'}
+
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
     client.default_json
@@ -64,6 +66,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def include_export_stub(status_code: 202,
                           response_headers: { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_type_patient(status_code: 202,
+                                       response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_type=Patient')
       .with(headers: @export_request_headers)
       .to_return(
         status: status_code,
@@ -125,15 +137,24 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_delete_request_stub
+    stub_request(:delete, @content_location)
+      .to_return(
+        status: 202
+      )
+  end
+
   def test_all_pass
     WebMock.reset!
 
     include_export_stub_no_token
+    include_export_stub_type_patient
     include_export_stub
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
     include_status_check_stub
     include_file_request_stub
+    include_delete_request_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
@@ -213,7 +234,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     output = [{ 'type' => 'Patient', 'count' => 1 }]
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_output_files(output)
+      @sequence.assert_output_files(output, false)
     end
   end
 

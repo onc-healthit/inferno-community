@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-#require_relative 'bulk_data_export_sequence_base'
 
 module Inferno
   module Sequence
@@ -18,15 +17,15 @@ module Inferno
       def assert_export_kick_off(klass, search_params: nil)
         reply = export_kick_off(klass, search_params: search_params)
 
-        if search_params.present? && reply.code > 400
-          response_body = JSON.parse(reply.body)
-          message = ''
-          response_body['issue'].each do |issue|
-            message += issue['diagnostics'].presence || ''
-          end
+        # if search_params.present? && reply.code > 400
+        #   response_body = JSON.parse(reply.body)
+        #   message = ''
+        #   response_body['issue'].each do |issue|
+        #     message += issue['diagnostics'].presence || ''
+        #   end
 
-          skip message
-        end
+        #   skip message
+        # end
 
         @search_params_applied = true
 
@@ -61,16 +60,16 @@ module Inferno
 
         @output = response_body['output']
 
-        assert_output_files(@output, @search_params_applied)
+        assert_output_files(@output)
       end
 
-      def assert_output_files(output, check_parameters)
-        search_type = @search_params['_type'].split(',').map(&:strip) if @search_params.present?
+      def assert_output_files(output)
+        search_type = @search_params['_type'].split(',').map(&:strip)
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
 
-            next unless check_parameters && search_type.present?
+            next unless @search_type_applied
 
             search_type.each do |type|
               assert file['type'] == type, "Output file had type #{file[type]} not specified in export parameter #{@search_params['_type']}"
@@ -153,9 +152,9 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @search_type_applied
+        skip('Skip testing $export without parameters')
 
-        assert_export_kick_off('Patient')
+        assert_export_kick_off('Patient') if @search_type_applied
       end
 
       test 'Server shall reject for $export operation with invalid Accept header' do
