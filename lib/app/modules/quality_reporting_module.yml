@@ -10,12 +10,12 @@ test_sets:
       - name: Prerequisites
         sequences:
           - ValueSetSequence
+      - name: CMS165 Bulk Data Reporting
+        sequences:
+          - CMS165BulkDataReportingSequence
       - name: CMS130 Quality Reporting
         sequences:
           - CMS130ReportingSequence
       - name: CMS165 Quality Reporting
         sequences:
           - CMS165ReportingSequence
-      - name: CMS165 Bulk Data Reporting
-        sequences:
-          - CMS165BulkDataReportingSequence

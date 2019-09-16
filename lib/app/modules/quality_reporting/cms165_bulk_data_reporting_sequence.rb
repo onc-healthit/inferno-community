@@ -38,7 +38,6 @@ module Inferno
           seconds_used = Time.now - start + wait_time
 
           break if reply.code != 202 || seconds_used > timeout
-          assert_response_accepted(reply)
 
           sleep wait_time
         end
@@ -75,12 +74,13 @@ module Inferno
         # Check the status on loop until the job is finished
         content_loc = async_submit_data_response.headers[:content_location]
         polling_response = status_check(content_loc, 180)
-        operation_outcome = FHIR::STU3.from_contents(polling_response.body)
-        assert(!operation_outcome.nil?)
+        assert_response_ok(polling_response)
+        # operation_outcome = FHIR::STU3.from_contents(polling_response.body)
+        # assert(!operation_outcome.nil?)
 
-        operation_outcome.issue.each do |i|
-          assert(i.code == 'informational')
-        end
+        # operation_outcome.issue.each do |i|
+        #   assert(i.code == 'informational')
+        # end
 
         input_source_client = FHIR::Client.new(submit_data_payload['inputSource'])
 

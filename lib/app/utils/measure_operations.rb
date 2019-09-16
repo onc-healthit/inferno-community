@@ -31,9 +31,15 @@ module Inferno
     end
 
     def async_submit_data(measure_id, params_resource)
-      LoggedRestClient.post("http://localhost:3000/import",
-                   params_resource.to_json,
-                   {'Content-Type': 'application/json', prefer: 'respond-async'})
+      headers = {
+        'Accept': 'application/fhir+json',
+        'Content-Type': 'application/json',
+        'Prefer': 'respond-async',
+        'Accept-Encoding': 'gzip, deflate',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      }
+      LoggedRestClient.post(@instance.url + '/$import', params_resource.to_json, headers)
     end
   end
 end
