@@ -41,10 +41,10 @@
             </div>
             <div class="col">
               <div class="metrics-value-small">
-                <%=report_summary[:supported_resources]%>
+                <%=report_summary[:supported_resources]%> / <%=report_summary[:resources_tested]%>
               </div>
               <div class="text-muted">
-                Supported References
+                Supported Resources
               </div>
             </div>
           </div>
@@ -145,11 +145,14 @@
                         </span> - 
                         <div class="sequence-out-of">
                           <% if sequence_results[test_case.id].nil? %>
-                            <%= test_case.sequence.test_count %> tests
+                            <%= test_case.sequence.test_count %> <% 'test'.pluralize(test_case.sequence.test_count) %>
                           <% else %>
-                            <%= sequence_results[test_case.id].required_passed %>/<%= sequence_results[test_case.id].required_total%> Required Tests Passed
+                            <%= sequence_results[test_case.id].required_passed %>/<%= sequence_results[test_case.id].total_required_tests_except_omitted%> Required Tests Passed
                             <% if sequence_results[test_case.id].optional_total > 0%> -
                               <%= sequence_results[test_case.id].optional_passed%>/<%= sequence_results[test_case.id].optional_total%> Optional Tests Passed
+                            <% end%>
+                            <% if sequence_results[test_case.id].total_omitted.positive?%> -
+                               <%= sequence_results[test_case.id].total_omitted %> <%= 'Test'.pluralize(sequence_results[test_case.id].total_omitted) %> Omitted
                             <% end%>
                           <% end %>
                         </div>

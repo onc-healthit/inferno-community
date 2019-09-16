@@ -3,6 +3,8 @@
 module Inferno
   module Sequence
     class ArgonautCareTeamSequence < SequenceBase
+      PROFILE = Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]
+
       group 'Argonaut Profile Conformance'
 
       title 'Care Team'
@@ -73,10 +75,10 @@ module Inferno
         resource_count = reply.try(:resource).try(:entry).try(:length) || 0
         @resources_found = resource_count.positive?
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_unless @resources_found, 'No resources appear to be available for this patient. Please use patients with more information.'
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply, PROFILE)
       end
 
       test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
@@ -88,9 +90,9 @@ module Inferno
           )
           versions :dstu2
         end
-        test_resources_against_profile('CarePlan', Inferno::ValidationUtil::ARGONAUT_URIS[:care_team])
-        skip_unless @profiles_encountered.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]), 'No CareTeams found.'
-        assert !@profiles_failed.include?(Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]), "CareTeams failed validation.<br/>#{@profiles_failed[Inferno::ValidationUtil::ARGONAUT_URIS[:care_team]]}"
+        test_resources_against_profile('CarePlan', PROFILE)
+        skip_unless @profiles_encountered.include?(PROFILE), 'No CareTeams found.'
+        assert !@profiles_failed.include?(PROFILE), "CareTeams failed validation.<br/>#{@profiles_failed[PROFILE]}"
       end
 
       test 'All references can be resolved' do

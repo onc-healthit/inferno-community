@@ -26,5 +26,19 @@ module FHIR
         RUBY
       end
     end
+
+    def self.for_testing_instance(instance)
+      new(instance.url).tap do |client|
+        case instance.fhir_version
+        when 'stu3'
+          client.use_stu3
+        when 'dstu2'
+          client.use_dstu2
+        else
+          client.use_r4
+        end
+        client.default_json
+      end
+    end
   end
 end

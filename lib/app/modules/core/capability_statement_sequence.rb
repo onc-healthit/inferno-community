@@ -62,7 +62,7 @@ module Inferno
           )
         end
 
-        skip_if_tls_disabled
+        omit_if_tls_disabled
 
         assert_tls_1_2 @instance.url
 
@@ -71,9 +71,25 @@ module Inferno
         end
       end
 
-      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
+      test 'FHIR version of the server matches the FHIR version expected by tests' do
         metadata do
           id '02'
+          link 'http://www.hl7.org/fhir/directory.cfml'
+          desc %(
+            Checks that the FHIR version of the server matches the FHIR version expected by the tests.
+            This test will inspect the CapabilityStatement returned by the server to verify the FHIR version of the server.
+          )
+        end
+
+        pass 'Tests are not version dependent' if @instance.fhir_version.blank?
+
+        # @client.detect_version is a symbol
+        assert_equal(@instance.fhir_version.upcase, @client.detect_version.to_s.upcase, 'FHIR client version does not match with instance version.')
+      end
+
+      test 'FHIR server supports the conformance interaction that defines how it supports resources' do
+        metadata do
+          id '03'
           link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
           desc %(
             The conformance 'whole system' interaction provides a method to get the conformance statement for
@@ -89,8 +105,22 @@ module Inferno
 
             [http://hl7.org/fhir/DSTU2/http.html#conformance](http://hl7.org/fhir/DSTU2/http.html#conformance)
 
+            for STU3 FHIR:
+
+            >  Applications SHALL return a Capability Statement that specifies which resource types and interactions are supported for the GET command.
+
+            [http://hl7.org/fhir/STU3/http.html#capabilities](http://hl7.org/fhir/STU3/http.html#capabilities)
+
+            or for R4 FHIR:
+
+            > Applications SHALL return a resource that describes the functionality of the server end-point.
+
+            [http://hl7.org/fhir/R4/http.html#capabilities](http://hl7.org/fhir/R4/http.html#capabilities)
+
             It does this by checking that the server responds with an HTTP OK 200 status code and that the body of the
-            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html).
+            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html),
+            [STU3 CapabilityStatement resource](http://hl7.org/fhir/STU3/capabilitystatement.html), or
+            [R4 CapabilityStatement resource](http://hl7.org/fhir/R4/capabilitystatement.html).
             This test does not inspect the content of the Conformance resource to see if it contains the required information.
             It only checks to see if the RESTful interaction is supported and returns a valid Conformance resource.
 
@@ -104,7 +134,16 @@ module Inferno
         @conformance = @client.conformance_statement
         assert_response_ok @client.reply
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
+        assert_valid_conformance
+
+        begin
+          @server_capabilities = Inferno::Models::ServerCapabilities.create(
+            testing_instance_id: @instance.id,
+            capabilities: @conformance.as_json
+          )
+        rescue StandardError
+          assert false, 'Capability Statement could not be parsed.'
+        end
       end
     end
   end

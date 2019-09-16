@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4CareteamSequence < SequenceBase
+    class USCoreR4CareteamSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
-      title 'Careteam Tests'
+      title 'CareTeam Tests'
 
       description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
@@ -18,10 +18,12 @@ module Inferno
         case property
 
         when 'patient'
-          assert resource&.subject&.reference&.include?(value), 'patient on resource does not match patient requested'
+          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found, 'patient on resource does not match patient requested'
 
         when 'status'
-          assert resource&.status == value, 'status on resource did not match status requested'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         end
       end
@@ -29,7 +31,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Careteam Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam)
+        returned will be checked for consistency against the [Careteam Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
 
       )
 
@@ -47,7 +49,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), patient: @instance.patient_id)
+        search_params = { patient: @instance.patient_id, status: 'active' }
+
+        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -67,14 +71,16 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @careteam = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+        @careteam_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
+        save_delayed_sequence_references(@careteam)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
       test 'CareTeam read resource supported' do
@@ -122,10 +128,10 @@ module Inferno
         validate_history_reply(@careteam, versioned_resource_class('CareTeam'))
       end
 
-      test 'CareTeam resources associated with Patient conform to Argonaut profiles' do
+      test 'CareTeam resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-careteam.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           desc %(
           )
           versions :r4
@@ -135,9 +141,40 @@ module Inferno
         test_resources_against_profile('CareTeam')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any CareTeam for this patient.' do
         metadata do
           id '07'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @careteam_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'CareTeam.status',
+          'CareTeam.subject',
+          'CareTeam.participant',
+          'CareTeam.participant.role',
+          'CareTeam.participant.member'
+        ]
+        must_support_elements.each do |path|
+          @careteam_ary&.each do |resource|
+            truncated_path = path.gsub('CareTeam.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @careteam_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided CareTeam resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

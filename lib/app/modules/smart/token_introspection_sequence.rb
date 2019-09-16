@@ -39,7 +39,7 @@ module Inferno
           )
         end
 
-        skip_if_tls_disabled
+        omit_if_tls_disabled
         assert_tls_1_2 @instance.oauth_introspection_endpoint
         warning do
           assert_deny_previous_tls @instance.oauth_introspection_endpoint
@@ -70,7 +70,7 @@ module Inferno
         @introspection_response_body = JSON.parse(@introspection_response.body)
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
-        FHIR.logger.debug "Introspection response: #{@introspection_response}"
+        Inferno.logger.debug "Introspection response: #{@introspection_response}"
 
         assert !(@introspection_response['error'] || @introspection_response['error_description']), 'Got an error from the introspection endpoint'
       end
@@ -106,7 +106,7 @@ module Inferno
         expected_scopes = @instance.scopes.split(' ')
         actual_scopes = @introspection_response_body['scope'].split(' ')
 
-        FHIR.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"
+        Inferno.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"
 
         missing_scopes = (expected_scopes - actual_scopes)
         assert missing_scopes.empty?, "Introspection response did not include expected scopes: #{missing_scopes}"
@@ -167,7 +167,7 @@ module Inferno
         @introspection_response_body = JSON.parse(@introspection_response.body)
         assert !@introspection_response_body.nil?, 'No refresh token introspection response body'
 
-        FHIR.logger.debug "Refresh Token Introspection response: #{@introspection_response}"
+        Inferno.logger.debug "Refresh Token Introspection response: #{@introspection_response}"
 
         assert !(@introspection_response['error'] || @introspection_response['error_description']), 'Got an error from the introspection endpoint'
       end

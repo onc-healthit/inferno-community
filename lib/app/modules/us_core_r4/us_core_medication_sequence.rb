@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4MedicationSequence < SequenceBase
+    class USCoreR4MedicationSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Medication Tests'
@@ -11,53 +11,37 @@ module Inferno
 
       test_id_prefix 'Medication' # change me
 
-      requires :token, :patient_id
+      requires :token
       conformance_supports :Medication
+      delayed_sequence
 
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Medication Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication)
+        returned will be checked for consistency against the [Medication Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication)
 
       )
 
       @resources_found = false
 
-      test 'Server rejects Medication search without authorization' do
+      test 'Can read Medication from the server' do
         metadata do
           id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
-
-        reply = get_resource_by_params(versioned_resource_class('Medication'), patient: @instance.patient_id)
-        @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
-      end
-
-      test 'Medication read resource supported' do
-        metadata do
-          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@medication, versioned_resource_class('Medication'))
+        medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
+        skip 'No Medication references found from the prior searches' if medication_id.nil?
+        @medication = fetch_resource('Medication', medication_id)
+        @resources_found = !@medication.nil?
       end
 
       test 'Medication vread resource supported' do
         metadata do
-          id '03'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -72,7 +56,7 @@ module Inferno
 
       test 'Medication history resource supported' do
         metadata do
-          id '04'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -85,10 +69,10 @@ module Inferno
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Medication resources associated with Patient conform to Argonaut profiles' do
+      test 'Medication resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-medication.json'
+          id '04'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           desc %(
           )
           versions :r4
@@ -96,6 +80,33 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Medication')
+      end
+
+      test 'At least one of every must support element is provided in any Medication for this patient.' do
+        metadata do
+          id '05'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medication_ary&.any?
+        must_support_confirmed = {}
+        must_support_elements = [
+          'Medication.code'
+        ]
+        must_support_elements.each do |path|
+          @medication_ary&.each do |resource|
+            truncated_path = path.gsub('Medication.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @medication_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Medication resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
       end
 
       test 'All references can be resolved' do

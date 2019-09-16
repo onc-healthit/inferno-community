@@ -15,7 +15,7 @@ class InstancePageTest < MiniTest::Test
     follow_redirect! while last_response.status == 302
     assert last_response.ok?
     @instance_path = last_request.url
-    instance_id = @instance_path.split('/').last(2).first # second to last
+    instance_id = @instance_path.split('/').last(3).first # third to last
     @instance = Inferno::Models::TestingInstance.get(instance_id)
     assert !@instance.nil?, "No instance id #{instance_id}"
   end

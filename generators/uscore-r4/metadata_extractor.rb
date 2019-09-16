@@ -1,19 +1,23 @@
 # frozen_string_literal: true
 
 class MetadataExtractor
-  CAPABILITY_STATEMENT_URI = 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.json'
+  CAPABILITY_STATEMENT_URI = 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.json'
 
   def profile_uri(profile)
-    "https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-#{profile}.json"
+    "http://hl7.org/fhir/us/core/StructureDefinition/#{profile}"
+  end
+
+  def profile_json_uri(profile)
+    "https://www.hl7.org/fhir/us/core/StructureDefinition-#{profile}.json"
   end
 
   def search_param_uri(resource, param)
     param = 'id' if param == '_id'
-    "https://build.fhir.org/ig/HL7/US-Core-R4/SearchParameter-us-core-#{resource.downcase}-#{param}.json"
+    "https://www.hl7.org/fhir/us/core/SearchParameter-us-core-#{resource.downcase}-#{param}.json"
   end
 
   def get_json_from_uri(uri)
-    filename = RESOURCE_PATH + uri.split('/').last
+    filename = File.join(RESOURCE_PATH, uri.split('/').last)
     unless File.exist?(filename)
       puts "Downloading #{uri}\n"
       json_result = Net::HTTP.get(URI(uri))
@@ -31,6 +35,30 @@ class MetadataExtractor
     @metadata
   end
 
+  def build_new_sequence(resource, profile)
+    base_name = profile.split('StructureDefinition/')[1]
+    profile_json = get_json_from_uri(profile_json_uri(base_name))
+    profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
+    {
+      name: base_name.tr('-', '_'),
+      classname: base_name
+        .split('-')
+        .map(&:capitalize)
+        .join
+        .gsub('UsCore', 'USCoreR4') + 'Sequence',
+      resource: resource['type'],
+      profile: profile_uri(base_name), # link in capability statement is incorrect,
+      profile_json: profile_json_uri(base_name),
+      title: profile_title,
+      interactions: [],
+      searches: [],
+      search_param_descriptions: {},
+      element_descriptions: {},
+      must_supports: [],
+      tests: []
+    }
+  end
+
   def extract_metadata_from_resources(resources)
     data = {
       sequences: []
@@ -38,35 +66,15 @@ class MetadataExtractor
 
     resources.each do |resource|
       resource['supportedProfile'].each do |supported_profile|
-        new_sequence = {
-          name: supported_profile.split('StructureDefinition/')[1].tr('-', '_'),
-          classname: supported_profile
-            .split('StructureDefinition/')[1]
-            .split('-')
-            .map(&:capitalize)
-            .join
-            .gsub('UsCore', 'UsCoreR4') + 'Sequence',
-          resource: resource['type'],
-          profile: profile_uri(supported_profile.split('StructureDefinition/')[1]), # link in capability statement is incorrect
-          interactions: [],
-          searches: [],
-          search_param_descriptions: {},
-          element_descriptions: {},
-          tests: []
-        }
+        new_sequence = build_new_sequence(resource, supported_profile)
 
-        # add each basic search type
         add_basic_searches(resource, new_sequence)
-
-        # add each search combination
         add_combo_searches(resource, new_sequence)
-
-        # add each interaction
         add_interactions(resource, new_sequence)
 
-        profile_definition = get_json_from_uri(new_sequence[:profile])
+        profile_definition = get_json_from_uri(new_sequence[:profile_json])
+        add_must_support_elements(profile_definition, new_sequence)
         add_search_param_descriptions(profile_definition, new_sequence)
-
         add_element_definitions(profile_definition, new_sequence)
 
         data[:sequences] << new_sequence
@@ -119,6 +127,39 @@ class MetadataExtractor
     end
   end
 
+  def add_must_support_elements(profile_definition, sequence)
+    profile_definition['snapshot']['element'].select { |el| el['mustSupport'] }.each do |element|
+      if element['path'].end_with? 'extension'
+        sequence[:must_supports] <<
+          {
+            type: 'extension',
+            id: element['id'],
+            path: element['path'],
+            url: element['type'].first['profile'].first
+          }
+        next
+      end
+
+      path = element['path']
+      if path.include? '[x]'
+        choice_el = profile_definition['snapshot']['element'].find { |el| el['id'] == (path.split('[x]').first + '[x]') }
+        choice_el['type'].each do |type|
+          sequence[:must_supports] <<
+            {
+              type: 'element',
+              path: path.gsub('[x]', type['code'].slice(0).capitalize + type['code'].slice(1..-1))
+            }
+        end
+      else
+        sequence[:must_supports] <<
+          {
+            type: 'element',
+            path: path
+          }
+      end
+    end
+  end
+
   def add_search_param_descriptions(profile_definition, sequence)
     sequence[:search_param_descriptions].each_key do |param|
       search_param_definition = get_json_from_uri(search_param_uri(sequence[:resource], param.to_s))
@@ -130,16 +171,23 @@ class MetadataExtractor
         path = path_parts[0]
       end
       profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
+      param_metadata = {
+        path: path,
+        comparators: {}
+      }
       if !profile_element.nil?
-        sequence[:search_param_descriptions][param][:type] = profile_element['type'].first['code']
-        sequence[:search_param_descriptions][param][:path] = path
-        sequence[:search_param_descriptions][param][:contains_multiple] = (profile_element['max'] == '*')
+        param_metadata[:type] = profile_element['type'].first['code']
+        param_metadata[:contains_multiple] = (profile_element['max'] == '*')
       else
         # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
-        sequence[:search_param_descriptions][param][:type] = search_param_definition['type']
-        sequence[:search_param_descriptions][param][:path] = path
-        sequence[:search_param_descriptions][param][:contains_multiple] = false
+        param_metadata[:type] = search_param_definition['type']
+        param_metadata[:contains_multiple] = false
       end
+      search_param_definition['comparator']&.each_with_index do |comparator, index|
+        expectation = search_param_definition['_comparator'][index]['extension'].first['valueCode']
+        param_metadata[:comparators][comparator.to_sym] = expectation
+      end
+      sequence[:search_param_descriptions][param] = param_metadata
     end
   end
 
@@ -160,9 +208,9 @@ class MetadataExtractor
 
   def add_special_cases
     category_first_profiles = [
-      'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-lab.json',
-      'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-observation-lab.json',
-      'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-diagnosticreport-note.json'
+      PROFILE_URIS[:diagnostic_report_lab],
+      PROFILE_URIS[:lab_results],
+      PROFILE_URIS[:diagnostic_report_note]
     ]
 
     # search by patient first

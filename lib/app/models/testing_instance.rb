@@ -2,6 +2,7 @@
 
 require 'dm-core'
 require 'dm-migrations'
+require_relative 'server_capabilities'
 require_relative '../utils/result_statuses'
 
 module Inferno
@@ -52,9 +53,11 @@ module Inferno
 
       property :dynamic_registration_token, String
 
+      property :must_support_confirmed, String, default: ''
+
       has n, :sequence_results
-      has n, :supported_resources, order: [:index.asc]
       has n, :resource_references
+      has 1, :server_capabilities
 
       def latest_results
         sequence_results.each_with_object({}) do |result, hash|
@@ -157,90 +160,71 @@ module Inferno
         reload
       end
 
-      def save_supported_resources(conformance)
-        resources = ['Patient',
-                     'AllergyIntolerance',
-                     'CarePlan',
-                     'Condition',
-                     'Device',
-                     'DiagnosticReport',
-                     'DocumentReference',
-                     'Encounter',
-                     'ExplanationOfBenefit',
-                     'Goal',
-                     'Immunization',
-                     'Medication',
-                     'MedicationDispense',
-                     'MedicationStatement',
-                     'MedicationOrder',
-                     'Observation',
-                     'Procedure',
-                     'DocumentReference',
-                     'Provenance']
+      def testable_resources
+        self.module.resources_to_test & (server_capabilities&.supported_resources || Set.new)
+      end
 
-        supported_resource_capabilities =
-          conformance
-            .rest.first.resource
-            .select { |resource| resources.include? resource.type }
-            .each_with_object({}) { |resource, hash| hash[resource.type] = resource }
+      def supported_resource_interactions
+        return [] if server_capabilities.blank?
 
-        supported_resources.each(&:destroy)
-        save!
-
-        resources.each_with_index do |resource_name, index|
-          capabilities = supported_resource_capabilities[resource_name]
-
-          supported_resources << SupportedResource.create(
-            resource_type: resource_name,
-            index: index,
-            testing_instance_id: id,
-            supported: !capabilities.nil?,
-            read_supported: interaction_supported?(capabilities, 'read'),
-            vread_supported: interaction_supported?(capabilities, 'vread'),
-            search_supported: interaction_supported?(capabilities, 'search-type'),
-            history_supported: interaction_supported?(capabilities, 'history-instance')
-          )
+        resources = testable_resources
+        server_capabilities.supported_interactions.select do |interactions|
+          resources.include? interactions[:resource_type]
         end
-
-        save!
       end
 
       def conformance_supported?(resource, methods = [])
-        resource_support = supported_resources.find { |r| r.resource_type == resource.to_s }
-        return false if resource_support.nil? || !resource_support.supported
+        resource_support = supported_resource_interactions.find do |interactions|
+          interactions[:resource_type] == resource.to_s
+        end
+
+        return false if resource_support.blank?
 
         methods.all? do |method|
-          case method
-          when :read
-            resource_support.read_supported
-          when :search
-            resource_support.search_supported
-          when :history
-            resource_support.history_supported
-          when :vread
-            resource_support.vread_supported
-          else
-            false
-          end
+          method = method == :history ? 'history-instance' : method.to_s
+
+          resource_support[:interactions].include? method
         end
       end
 
-      def post_resource_references(resource_type: nil, resource_id: nil)
-        resource_references.each do |ref|
-          ref.destroy if (ref.resource_type == resource_type) && (ref.resource_id == resource_id)
-        end
-        resource_references << ResourceReference.new(resource_type: resource_type,
-                                                     resource_id: resource_id)
+      def save_resource_reference(type, id, profile = nil)
+        resource_references
+          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
+          .each(&:destroy)
+
+        new_reference = ResourceReference.new(
+          resource_type: type,
+          resource_id: id,
+          profile: profile
+        )
+        resource_references << new_reference
+
         save!
         # Ensure the instance resource references are accurate
         reload
       end
 
-      private
+      def save_resource_ids_in_bundle(klass, reply, profile = nil)
+        return if reply&.resource&.entry&.blank?
 
-      def interaction_supported?(capabilities, interaction_code)
-        capabilities&.interaction&.any? { |i| i.code == interaction_code }
+        reply.resource.entry
+          .select { |entry| entry.resource.class == klass }
+          .each do |entry|
+          save_resource_reference(klass.name.demodulize, entry.resource.id, profile)
+        end
       end
+
+      def versioned_conformance_class
+        if fhir_version == 'dstu2'
+          FHIR::DSTU2::Conformance
+        elsif fhir_version == 'stu3'
+          FHIR::STU3::CapabilityStatement
+        else
+          FHIR::CapabilityStatement
+        end
+      end
+
+      private
 
       def group_result(results)
         return :skip if results[:skip].positive?

@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class UsCoreR4PatientSequence < SequenceBase
+    class USCoreR4PatientSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Patient Tests'
@@ -18,38 +18,49 @@ module Inferno
         case property
 
         when '_id'
-          assert resource&.id == value, '_id on resource did not match _id requested'
+          value_found = can_resolve_path(resource, 'id') { |value_in_resource| value_in_resource == value }
+          assert value_found, '_id on resource does not match _id requested'
 
         when 'birthdate'
+          value_found = can_resolve_path(resource, 'birthDate') do |date|
+            validate_date_search(value, date)
+          end
+          assert value_found, 'birthdate on resource does not match birthdate requested'
 
         when 'family'
-          assert resource&.name&.family == value, 'family on resource did not match family requested'
+          value_found = can_resolve_path(resource, 'name.family') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'family on resource does not match family requested'
 
         when 'gender'
-          assert resource&.gender == value, 'gender on resource did not match gender requested'
+          value_found = can_resolve_path(resource, 'gender') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'gender on resource does not match gender requested'
 
         when 'given'
-          assert resource&.name&.given == value, 'given on resource did not match given requested'
+          value_found = can_resolve_path(resource, 'name.given') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'given on resource does not match given requested'
 
         when 'identifier'
-          assert resource&.identifier&.any? { |identifier| identifier.value == value }, 'identifier on resource did not match identifier requested'
+          value_found = can_resolve_path(resource, 'identifier.value') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'identifier on resource does not match identifier requested'
 
         when 'name'
-          found = resource&.name&.any? do |name|
-            name.text&.include?(value) ||
-              name.family.include?(value) ||
-              name.given.any { |given| given&.include?(value) } ||
-              name.prefix.any { |prefix| prefix.include?(value) } ||
-              name.suffix.any { |suffix| suffix.include?(value) }
+          value = value.downcase
+          value_found = can_resolve_path(resource, 'name') do |name|
+            name&.text&.start_with?(value) ||
+              name&.family&.downcase&.include?(value) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
-          assert found, 'name on resource does not match name requested'
+          assert value_found, 'name on resource does not match name requested'
+
         end
       end
 
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Patient Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient)
+        returned will be checked for consistency against the [Patient Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient)
 
       )
 
@@ -67,7 +78,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = get_resource_by_params(versioned_resource_class('Patient'), patient: @instance.patient_id)
+        search_params = { '_id': @instance.patient_id }
+
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -87,14 +100,16 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply.try(:resource).try(:entry).try(:length) || 0
+        resource_count = reply&.resource&.entry&.length || 0
         @resources_found = true if resource_count.positive?
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @patient = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+        @patient_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
+        save_delayed_sequence_references(@patient)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
 
       test 'Server returns expected results from Patient search by identifier' do
@@ -109,10 +124,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        identifier_val = @patient&.identifier&.first&.value
+        identifier_val = resolve_element_from_path(@patient, 'identifier.value')
         search_params = { 'identifier': identifier_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -128,10 +145,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        name_val = @patient&.name&.first&.family
+        name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -147,11 +166,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = @patient&.birthDate
-        name_val = @patient&.name&.first&.family
+        birthdate_val = resolve_element_from_path(@patient, 'birthDate')
+        name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'birthdate': birthdate_val, 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -167,11 +188,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        gender_val = @patient&.gender
-        name_val = @patient&.name&.first&.family
+        gender_val = resolve_element_from_path(@patient, 'gender')
+        name_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'gender': gender_val, 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -179,6 +202,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -187,11 +211,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        family_val = @patient&.name&.first&.family
-        gender_val = @patient&.gender
+        family_val = resolve_element_from_path(@patient, 'name.family')
+        gender_val = resolve_element_from_path(@patient, 'gender')
         search_params = { 'family': family_val, 'gender': gender_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -199,6 +225,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -207,11 +234,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = @patient&.birthDate
-        family_val = @patient&.name&.first&.family
+        birthdate_val = resolve_element_from_path(@patient, 'birthDate')
+        family_val = resolve_element_from_path(@patient, 'name.family')
         search_params = { 'birthdate': birthdate_val, 'family': family_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
       end
 
@@ -260,10 +289,10 @@ module Inferno
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
 
-      test 'Patient resources associated with Patient conform to Argonaut profiles' do
+      test 'Patient resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '12'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-patient.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           desc %(
           )
           versions :r4
@@ -273,9 +302,66 @@ module Inferno
         test_resources_against_profile('Patient')
       end
 
-      test 'All references can be resolved' do
+      test 'At least one of every must support element is provided in any Patient for this patient.' do
         metadata do
           id '13'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          desc %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @patient_ary&.any?
+        must_support_confirmed = {}
+        extensions_list = {
+          'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
+          'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
+          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
+        }
+        extensions_list.each do |id, url|
+          @patient_ary&.each do |resource|
+            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
+            break if must_support_confirmed[id]
+          end
+          skip "Could not find #{id} in any of the #{@patient_ary.length} provided Patient resource(s)" unless must_support_confirmed[id]
+        end
+
+        must_support_elements = [
+          'Patient.identifier',
+          'Patient.identifier.system',
+          'Patient.identifier.value',
+          'Patient.name',
+          'Patient.name.family',
+          'Patient.name.given',
+          'Patient.telecom',
+          'Patient.telecom.system',
+          'Patient.telecom.value',
+          'Patient.gender',
+          'Patient.birthDate',
+          'Patient.address',
+          'Patient.address.line',
+          'Patient.address.city',
+          'Patient.address.state',
+          'Patient.address.postalCode',
+          'Patient.communication',
+          'Patient.communication.language'
+        ]
+        must_support_elements.each do |path|
+          @patient_ary&.each do |resource|
+            truncated_path = path.gsub('Patient.', '')
+            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            break if must_support_confirmed[path]
+          end
+          resource_count = @patient_ary.length
+
+          skip "Could not find #{path} in any of the #{resource_count} provided Patient resource(s)" unless must_support_confirmed[path]
+        end
+        @instance.save!
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '14'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           desc %(
           )

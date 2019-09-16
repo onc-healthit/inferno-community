@@ -21,7 +21,7 @@ test_sets:
           Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
           registration information to be entered into the system under test.  Once registered, the tester should be provided
           a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
-          the ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
+          the ability to provide required service metadata through the discovery endpoints, including OAuth endpoints,
           supported resources and searches.
         input_instructions: |
           Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 
@@ -109,45 +109,45 @@ test_sets:
           - patient_id
           - token
         sequences:
-          - sequence: UsCoreR4PatientSequence
+          - sequence: USCoreR4PatientSequence
             title: Patient
-          - sequence: UsCoreR4AllergyintoleranceSequence
+          - sequence: USCoreR4AllergyintoleranceSequence
             title: Allergy Intolerance
-          - sequence: UsCoreR4CareplanSequence
+          - sequence: USCoreR4CareplanSequence
             title: Careplan
-          - sequence: UsCoreR4CareteamSequence
+          - sequence: USCoreR4CareteamSequence
             title: Careteam
-          - sequence: UsCoreR4ConditionSequence
+          - sequence: USCoreR4ConditionSequence
             title: Condition
-          - sequence: UsCoreR4DeviceSequence
+          - sequence: USCoreR4DeviceSequence
             title: Device
-          - sequence: UsCoreR4DiagnosticreportNoteSequence
+          - sequence: USCoreR4DiagnosticreportNoteSequence
             title: Diagnostic Report Note
-          - sequence: UsCoreR4DiagnosticreportLabSequence
+          - sequence: USCoreR4DiagnosticreportLabSequence
             title: Diagnostic Report Lab
-          - sequence: UsCoreR4DocumentreferenceSequence
+          - sequence: USCoreR4DocumentreferenceSequence
             title: Document Reference
-          - sequence: UsCoreR4EncounterSequence
+          - sequence: USCoreR4EncounterSequence
             title: Encounter
-          - sequence: UsCoreR4GoalSequence
+          - sequence: USCoreR4GoalSequence
             title: Goal
-          - sequence: UsCoreR4ImmunizationSequence
+          - sequence: USCoreR4ImmunizationSequence
             title: Immunization
-          - sequence: UsCoreR4MedicationSequence
+          - sequence: USCoreR4MedicationSequence
             title: Medication
-          - sequence: UsCoreR4MedicationrequestSequence
+          - sequence: USCoreR4MedicationrequestSequence
             title: Medication Request
-          - sequence: UsCoreR4MedicationstatementSequence
+          - sequence: USCoreR4MedicationstatementSequence
             title: Medication Statement
-          - sequence: UsCoreR4SmokingstatusSequence
+          - sequence: USCoreR4SmokingstatusSequence
             title: Smoking Status
           - sequence: PediatricWeightForHeightSequence
             title: Pediatric Weight for Height
-          - sequence: UsCoreR4ObservationLabSequence
+          - sequence: USCoreR4ObservationLabSequence
             title: Observation Lab
           - sequence: PediatricBmiForAgeSequence
             title: BMI For Age
-          - sequence: UsCoreR4ProcedureSequence
+          - sequence: USCoreR4ProcedureSequence
             title: Procedure
           - sequence: R4ProvenanceSequence
             title: Provenance

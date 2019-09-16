@@ -2,6 +2,7 @@
 
 require 'fhir_client'
 require 'pry'
+require 'pry-byebug'
 require 'dm-core'
 require 'csv'
 require 'colorize'
@@ -40,18 +41,7 @@ def print_requests(result)
 end
 
 def execute(instance, sequences)
-  client = FHIR::Client.new(instance.url)
-
-  case instance.module.fhir_version
-  when 'stu3'
-    client.use_stu3
-  when 'dstu2'
-    client.use_dstu2
-  else
-    client.use_r4
-  end
-
-  client.default_json
+  client = FHIR::Client.for_testing_instance(instance)
 
   sequence_results = []
 
@@ -113,7 +103,7 @@ def execute(instance, sequences)
             puts "    #{req}"
           end
         end
-      elsif sequence_result.error?
+      elsif result.error?
         print 'X error'.magenta
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
@@ -121,6 +111,10 @@ def execute(instance, sequences)
           puts "      #{req}"
         end
         fails = true
+      elsif result.omit?
+        print '* omit'.light_black
+        print " - #{result.test_id} #{result.name}\n"
+        puts "    Message: #{result.message}"
       end
     end
     print "\n" + sequence.sequence_name + ' Sequence Result: '
@@ -149,12 +143,20 @@ def execute(instance, sequences)
     error_count = sequence_results.count(&:error?).to_s
     print(', ' + error_count.yellow + ' error')
   end
+
   puts "\n=============================================\n"
 
   return_value = 0
   return_value = 1 if fails
 
   return_value
+end
+
+def file_path(filename)
+  return filename unless ENV['RACK_ENV'] == 'test'
+
+  FileUtils.mkdir_p 'tmp'
+  File.join('tmp', filename)
 end
 
 namespace :inferno do |_argv|
@@ -186,8 +188,10 @@ namespace :inferno do |_argv|
       end
     end
 
-    File.write(args.filename, csv_out)
-    puts "Writing to #{args.filename}"
+    filename = file_path(args.filename)
+
+    File.write(filename, csv_out)
+    Inferno.logger.info "Writing to #{filename}"
   end
 
   desc 'Generate automated run script'
@@ -493,8 +497,8 @@ namespace :terminology do |_argv|
                                     _eventId: 'submit'
                                   },
                                   max_redirects: 0)
-    rescue RestClient::ExceptionWithResponse => err
-      follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
+    rescue RestClient::ExceptionWithResponse => e
+      follow_redirect(e.response.headers[:location], e.response.headers[:set_cookie])
     end
     puts 'Finished Downloading!'
   end
@@ -782,5 +786,13 @@ namespace :terminology do |_argv|
     Inferno::Terminology.register_umls_db args.database
     Inferno::Terminology.load_valuesets_from_directory('resources', true)
     Inferno::Terminology.create_validators(validator_type)
+  end
+end
+
+namespace :generator do |_argv|
+  desc 'Generate US Core R4 Tests'
+  task :us_core_r4 do
+    path = File.expand_path('../../generators/uscore-r4/generator.rb', __dir__)
+    system('ruby', path)
   end
 end

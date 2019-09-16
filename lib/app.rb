@@ -9,6 +9,7 @@ require 'fhir_client'
 require 'rest-client'
 require 'time_difference'
 require 'pry'
+require 'pry-byebug'
 require 'dm-core'
 require 'dm-migrations'
 require 'jwt'
@@ -20,7 +21,7 @@ require_relative 'app/utils/logging'
 require_relative 'app/endpoint'
 require_relative 'app/utils/secure_random_base62'
 require_relative 'app/sequence_base'
-require_relative 'app/module'
+require_relative 'app/models/module'
 require_relative 'version'
 require_relative 'app/models'
 require_relative 'app/utils/terminology'
@@ -30,8 +31,8 @@ module Inferno
     attr_reader :app
     def initialize
       @app = Rack::Builder.app do
-        Endpoint.subclasses.each do |e|
-          map(e.prefix) { run(e.new) }
+        Endpoint.subclasses.each do |endpoint|
+          map(endpoint.prefix) { run(endpoint.new) }
         end
       end
     end

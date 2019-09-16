@@ -5,9 +5,6 @@ app_name: Inferno
 # There are a few exceptions, such as "/" and "/landing".
 base_path: "inferno"
 
-# Show or hide tutorials
-show_tutorial: true
-
 # Useful during development to purge the database on each reload
 purge_database_on_reload: false
 
@@ -17,7 +14,7 @@ disable_verify_peer: false
 # When running in a docker container, we have to listen to other than just 'localhost' which is the default
 bind: '0.0.0.0'
 
-# Skip TLS tests
+# Omit TLS tests
 disable_tls_tests: false
 
 # Default scopes
@@ -58,7 +55,7 @@ presets:
     inferno_uri: https://inferno.healthit.gov
     client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
     client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
-    instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
   site_test_healthit_gov:
     name: SITE DSTU2 FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
@@ -66,7 +63,7 @@ presets:
     inferno_uri: https://infernotest.healthit.gov
     client_id: TrToU5piE-dJ1g6PBG1elFV4r9KLmH
     client_secret: ckFqb1ZhbmFMQS13WDE0c1dTLWxSdGRLSE8yUXpWNS1vSnd6azNrMmU3Y0JPdDRja3U=
-    instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
   site_local:
     name: SITE DSTU2 FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
@@ -74,4 +71,4 @@ presets:
     inferno_uri: http://localhost:4567
     client_id: Yg0o6sJ8I8CfVVyHz1eA0m8jv6sXwe
     client_secret: UDVrTXlna0NvcGRQZ1VhMkZaZzQ0R1FxVGdtTWxFMXVoT3pPd1VRMUN4MFVkV25Gejk=
-    instructions: https://github.com/siteadmin/inferno/wiki/SITE-Preset-Instructions
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions

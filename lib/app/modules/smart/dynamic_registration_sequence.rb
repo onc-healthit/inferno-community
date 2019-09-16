@@ -44,7 +44,7 @@ module Inferno
           )
         end
 
-        skip_if_tls_disabled
+        omit_if_tls_disabled
         skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
 
         assert_tls_1_2 @instance.oauth_register_endpoint

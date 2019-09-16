@@ -59,7 +59,7 @@ module Inferno
 
       test 'FHIR server capability states JSON support' do
         metadata do
-          id '03'
+          id '04'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           desc %(
 
@@ -86,14 +86,15 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert_valid_conformance
+
         formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'Capability Statement describes SMART on FHIR core capabilities' do
         metadata do
-          id '04'
+          id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
           optional
           desc %(
@@ -115,20 +116,17 @@ module Inferno
                                  'permission-patient',
                                  'permission-user']
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
+        assert_valid_conformance
 
-        extensions = @conformance.try(:rest).try(:first).try(:security).try(:extension)
-        assert !extensions.nil?, 'No SMART capabilities listed in conformance.'
-        capabilities = extensions.select { |x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/capabilities' }
-        assert !capabilities.nil?, 'No SMART capabilities listed in capability.'
-        available_capabilities = capabilities.map(&:valueCode)
-        missing_capabilities = (required_capabilities - available_capabilities)
+        assert @server_capabilities.smart_support?, 'No SMART capabilities listed in conformance.'
+
+        missing_capabilities = (required_capabilities - @server_capabilities.smart_capabilities)
         assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
       end
 
       test 'Capability Statement lists supported Argonaut profiles, operations and search parameters' do
         metadata do
-          id '05'
+          id '06'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           desc %(
            The Argonaut Data Query Implementation Guide states:
@@ -140,13 +138,7 @@ module Inferno
           )
         end
 
-        assert @conformance.class == versioned_conformance_class, 'Expected valid Capability resource'
-
-        begin
-          @instance.save_supported_resources(@conformance)
-        rescue StandardError
-          assert false, 'Capability Statement could not be parsed.'
-        end
+        assert_valid_conformance
 
         assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in capability statement.'
       end
