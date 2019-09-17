@@ -21,7 +21,7 @@ module Inferno
                   'saved sucessfully.'
 
       # These values are based on the content of the measure-col bundle used for this module.
-      measure_id = 'MitreTestScript-measure-col'
+      measure_name = 'EXM130'
       patient_id = 'MitreTestScript-test-Patient-410'
       observation_id = 'MitreTestScript-test-Observation-32794'
       period_start = '2017'
@@ -50,7 +50,7 @@ module Inferno
           'denominator': 1
         }.freeze
 
-        evaluate_measure_response = evaluate_measure(measure_id, PARAMS.compact)
+        evaluate_measure_response = evaluate_measure(measure_name, PARAMS.compact)
         assert_response_ok evaluate_measure_response
 
         # Load response body into a FHIR MeasureReport class
@@ -75,7 +75,7 @@ module Inferno
           desc 'Run the $collect-data operation for a measure that should contain an individual in the IPP, Denominator, and Numerator'
         end
 
-        collect_data_response = collect_data(measure_id, PARAMS.compact)
+        collect_data_response = collect_data(measure_name, PARAMS.compact)
         assert_response_ok collect_data_response
 
         # Load response body into a FHIR Parameters class
