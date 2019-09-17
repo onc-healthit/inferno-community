@@ -99,6 +99,7 @@ module Inferno
 
       def assert_delete_request(url)
         reply = @client.delete(url, {})
+        skip 'Server did not accept client request to delete export file after export completed' if reply.code > 400
         assert_response_accepted(reply)
       end
 
@@ -153,7 +154,7 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @search_type_applied
+        skip 'Skip testing $export without parameters' if @search_params_applied
 
         assert_export_kick_off('Patient')
       end
