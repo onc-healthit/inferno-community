@@ -53,7 +53,15 @@ module Inferno
         'authorization_endpoint',
         'token_endpoint',
         'capabilities'
-      ]
+      ].freeze
+
+      RECOMMENDED_WELL_KNOWN_FIELDS = [
+        'scopes_supported',
+        'response_types_supported',
+        'management_endpoint',
+        'introspection_endpoint',
+        'revocation_endpoint'
+      ].freeze
 
       test 'Retrieve Configuration from well-known endpoint' do
         metadata do
@@ -74,6 +82,12 @@ module Inferno
         @well_known_configuration = JSON.parse(well_known_configuration_response.body)
         @well_known_authorize_url = @well_known_configuration['authorization_endpoint']
         @well_known_token_url = @well_known_configuration['token_endpoint']
+        @instance.update(
+          oauth_authorize_endpoint: @well_known_authorize_url,
+          oauth_token_endpoint: @well_known_token_url,
+          oauth_register_endpoint: @well_known_configuration['registration_endpoint']
+        )
+
         assert @well_known_configuration.present?, 'No .well-known/smart-configuration body'
       end
 
@@ -90,19 +104,28 @@ module Inferno
         missing_fields = REQUIRED_WELL_KNOWN_FIELDS - @well_known_configuration.keys
         assert missing_fields.empty?, "The following required fields are missing: #{missing_fields.join(', ')}"
 
-        @instance.update(
-          oauth_authorize_endpoint: @well_known_authorize_url,
-          oauth_token_endpoint: @well_known_token_url,
-          oauth_register_endpoint: @well_known_configuration['registration_endpoint']
-        )
-
         capabilities = @well_known_configuration['capabilities']
         assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
       end
 
-      test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
+      test 'Configuration from well-known endpoint contains recommended fields' do
         metadata do
           id '03'
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
+          optional
+          desc %(
+            The JSON from .well-known/smart-configuration contains the following
+            recommended fields: #{RECOMMENDED_WELL_KNOWN_FIELDS.join(', ')}
+          )
+        end
+
+        missing_fields = RECOMMENDED_WELL_KNOWN_FIELDS - @well_known_configuration.keys
+        assert missing_fields.empty?, "The following recommended fields are missing: #{missing_fields.join(', ')}"
+      end
+
+      test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
+        metadata do
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
           description %(
            If a server requires SMART on FHIR authorization for access, its
@@ -157,7 +180,7 @@ module Inferno
 
       test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
         metadata do
-          id '04'
+          id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
           description %(
            If a server requires SMART on FHIR authorization for access, its
