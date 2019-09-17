@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-#require_relative 'bulk_data_export_sequence_base'
 
 module Inferno
   module Sequence

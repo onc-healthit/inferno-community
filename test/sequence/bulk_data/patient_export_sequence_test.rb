@@ -44,7 +44,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
 
-    @search_params = {'_type' => 'Patient'}
+    @search_params = { '_type' => 'Patient' }
 
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
