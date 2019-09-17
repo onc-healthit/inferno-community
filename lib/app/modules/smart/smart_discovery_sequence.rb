@@ -15,18 +15,28 @@ module Inferno
       details %(
         # Background
 
-        The #{title} Sequence test looks for authorization endpoints as described by the [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/conformance/index.html#smart-on-fhir-oauth-authorization-endpoints)
-        The SMART launch framework uses OAuth 2.0 to *authorize* apps, like Inferno, to access certain information on a FHIR server.  The authorization service accessed at the endpoint allows
-        users to give these apps permission without sharing their credentials with the application itself.  Instead, the application
-        receives an access token which allows it to access resources on the server.  The access token itself has a limited lifetime
-        and permission scopes associated with it.  A refresh token may also be provided to the application in order to obtain another access token.
-        Unlike access tokens, a refresh token is not shared with the resource server.  If OpenID Connect is used, an id token may be provided as well.
-        The id token can be used to *authenticate* the user.  The id token is digitally signed and allows the identity of the user to be verified.
+        The #{title} Sequence test looks for authorization endpoints as
+        described by the [SMART App Launch
+        Framework](http://hl7.org/fhir/smart-app-launch/conformance/index.html#smart-on-fhir-oauth-authorization-endpoints)
+        The SMART launch framework uses OAuth 2.0 to *authorize* apps, like
+        Inferno, to access certain information on a FHIR server. The
+        authorization service accessed at the endpoint allows users to give
+        these apps permission without sharing their credentials with the
+        application itself. Instead, the application receives an access token
+        which allows it to access resources on the server. The access token
+        itself has a limited lifetime and permission scopes associated with it.
+        A refresh token may also be provided to the application in order to
+        obtain another access token. Unlike access tokens, a refresh token is
+        not shared with the resource server. If OpenID Connect is used, an id
+        token may be provided as well. The id token can be used to
+        *authenticate* the user. The id token is digitally signed and allows the
+        identity of the user to be verified.
 
         # Test Methodology
 
-        This test suite will access both the `/metadata` and `/.well-known/smart-configuration` endpoints.
-        Both endpoints will be checked for:
+        This test suite will access both the `/metadata` and
+        `/.well-known/smart-configuration` endpoints. Both endpoints will be
+        checked for:
 
         * An OAuth 2.0 Authorization endpoint
         * An OAuth 2.0 Token endpoint
@@ -39,42 +49,64 @@ module Inferno
 
        )
 
-      test 'Retrieve Authorization from Well Known endpoint' do
+      REQUIRED_WELL_KNOWN_FIELDS = [
+        'authorization_endpoint',
+        'token_endpoint',
+        'capabilities'
+      ]
+
+      test 'Retrieve Configuration from well-known endpoint' do
         metadata do
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
           description %(
-            The authorization endpoints accepted by a FHIR resource server can be exposed as a Well-Known Uniform Resource Identifier
+            The authorization endpoints accepted by a FHIR resource server can
+            be exposed as a Well-Known Uniform Resource Identifier
           )
         end
 
-        oauth_configuration_url = @instance.url.chomp('/') + '/.well-known/smart-configuration'
-        oauth_configuration_response = LoggedRestClient.get(oauth_configuration_url)
-        assert_response_ok(oauth_configuration_response)
-        oauth_configuration_response_body = JSON.parse(oauth_configuration_response.body)
+        well_known_configuration_url = @instance.url.chomp('/') + '/.well-known/smart-configuration'
+        well_known_configuration_response = LoggedRestClient.get(well_known_configuration_url)
+        assert_response_ok(well_known_configuration_response)
+        assert_response_content_type(well_known_configuration_response, 'application/json')
+        assert_valid_json(well_known_configuration_response.body)
 
-        assert !oauth_configuration_response_body.nil?, 'No authorization response body available'
-        @well_known_authorize_url = oauth_configuration_response_body['authorization_endpoint']
-        @well_known_token_url = oauth_configuration_response_body['token_endpoint']
-        capabilities = oauth_configuration_response_body['capabilities']
-        register_url = oauth_configuration_response_body['registration_endpoint']
+        @well_known_configuration = JSON.parse(well_known_configuration_response.body)
+        @well_known_authorize_url = @well_known_configuration['authorization_endpoint']
+        @well_known_token_url = @well_known_configuration['token_endpoint']
+        assert @well_known_configuration.present?, 'No .well-known/smart-configuration body'
+      end
 
-        @instance.update(oauth_authorize_endpoint: @well_known_authorize_url, oauth_token_endpoint: @well_known_token_url, oauth_register_endpoint: register_url)
+      test 'Configuration from well-known endpoint contains required fields' do
+        metadata do
+          id '02'
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
+          desc %(
+            The JSON from .well-known/smart-configuration contains the following
+            required fields: #{REQUIRED_WELL_KNOWN_FIELDS.join(', ')}
+          )
+        end
 
-        assert !@well_known_authorize_url.blank?, 'No authorize URI provided in response.'
-        assert !@well_known_token_url.blank?, 'No token URI provided in response.'
-        assert !capabilities.nil?, 'The response did not contain capabilities as required'
-        assert capabilities.is_a?(Array), 'The capabilities response is not an array'
+        missing_fields = REQUIRED_WELL_KNOWN_FIELDS - @well_known_configuration.keys
+        assert missing_fields.empty?, "The following required fields are missing: #{missing_fields.join(', ')}"
+
+        @instance.update(
+          oauth_authorize_endpoint: @well_known_authorize_url,
+          oauth_token_endpoint: @well_known_token_url,
+          oauth_register_endpoint: @well_known_configuration['registration_endpoint']
+        )
+
+        capabilities = @well_known_configuration['capabilities']
+        assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
       end
 
       test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
         metadata do
-          id '02'
+          id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
           description %(
-
-           If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
-
+           If a server requires SMART on FHIR authorization for access, its
+           metadata must support automated discovery of OAuth2 endpoints
           )
         end
 
@@ -83,9 +115,9 @@ module Inferno
         assert !oauth_metadata.nil?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
         @conformance_authorize_url = oauth_metadata[:authorize_url]
         @conformance_token_url = oauth_metadata[:token_url]
-        assert !@conformance_authorize_url.blank?, 'No authorize URI provided in Conformance/CapabilityStatement resource'
+        assert @conformance_authorize_url.present?, 'No authorize URI provided in Conformance/CapabilityStatement resource'
         assert_valid_http_uri @conformance_authorize_url, "Invalid authorize url: '#{@conformance_authorize_url}'"
-        assert !@conformance_token_url.blank?, 'No token URI provided in conformance statement.'
+        assert @conformance_token_url.present?, 'No token URI provided in conformance statement.'
         assert_valid_http_uri @conformance_token_url, "Invalid token url: '#{@conformance_token_url}'"
 
         warning do
@@ -108,25 +140,28 @@ module Inferno
           security_info = @conformance.rest.first.security.extension.find { |x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
           registration_url = security_info.extension.find { |x| x.url == 'register' }
           registration_url = registration_url.value if registration_url
-          assert !registration_url.blank?, 'No dynamic registration endpoint in conformance.'
+          assert registration_url.present?, 'No dynamic registration endpoint in conformance.'
           assert_valid_http_uri registration_url, "Invalid registration url: '#{registration_url}'"
 
           manage_url = security_info.extension.find { |x| x.url == 'manage' }
           manage_url = manage_url.value if manage_url
-          assert !manage_url.blank?, 'No user-facing authorization management workflow entry point for this FHIR server.'
+          assert manage_url.present?, 'No user-facing authorization management workflow entry point for this FHIR server.'
         end
 
-        @instance.update(oauth_authorize_endpoint: @conformance_authorize_url, oauth_token_endpoint: @conformance_token_url, oauth_register_endpoint: registration_url)
+        @instance.update(
+          oauth_authorize_endpoint: @conformance_authorize_url,
+          oauth_token_endpoint: @conformance_token_url,
+          oauth_register_endpoint: registration_url
+        )
       end
 
       test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
         metadata do
-          id '03'
+          id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
           description %(
-
-           If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
-
+           If a server requires SMART on FHIR authorization for access, its
+           metadata must support automated discovery of OAuth2 endpoints
           )
         end
 

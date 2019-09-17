@@ -47,7 +47,7 @@ module Inferno
         It collects the following information that is saved in the testing session for use by later tests:
 
         * List of resources supported
-        * List of queries parameters supported
+        * List of query parameters supported
         * SMART on FHIR endpoints
 
         For more information of the Conformance Statement, visit these links:
