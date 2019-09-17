@@ -10,7 +10,7 @@ module Inferno
       requires :url
       defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
 
-      description 'Retrieve authorization server endpoints for SMART on FHIR'
+      description "Retrieve server's SMART on FHIR configuration"
 
       details %(
         # Background
@@ -103,9 +103,6 @@ module Inferno
 
         missing_fields = REQUIRED_WELL_KNOWN_FIELDS - @well_known_configuration.keys
         assert missing_fields.empty?, "The following required fields are missing: #{missing_fields.join(', ')}"
-
-        capabilities = @well_known_configuration['capabilities']
-        assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
       end
 
       test 'Configuration from well-known endpoint contains recommended fields' do
