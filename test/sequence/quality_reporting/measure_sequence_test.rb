@@ -6,7 +6,7 @@ require File.expand_path '../../test_helper.rb', __dir__
 class MeasureSequenceTest < MiniTest::Test
   REQUEST_HEADERS = { 'Accept' => 'application/fhir+json',
                       'Accept-Charset' => 'utf-8',
-                      'Accept-Encoding' => 'gzip, deflate',
+                      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
                       'Format' => 'application/fhir+json',
                       'Host' => 'www.example.com',
                       'User-Agent' => 'Ruby FHIR Client' }.freeze

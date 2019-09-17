@@ -27,19 +27,19 @@ module Inferno
       period_start = '2017'
       period_end = '2017'
 
+      # Parameters appended to the url for $evaluate-measure and $collect-data calls
+      PARAMS = {
+        'patient': patient_id,
+        'periodStart': period_start,
+        'periodEnd': period_end
+      }.freeze
+
       test 'Evaluate Measure' do
         metadata do
           id '01'
           link 'https://hl7.org/fhir/STU3/measure-operations.html#evaluate-measure'
           desc 'Run the $evaluate-measure operation for an individual that should be in the IPP and Denominator'
         end
-
-        # Parameters appended to the url for $evaluate-measure call
-        PARAMS = {
-          'patient': patient_id,
-          'periodStart': period_start,
-          'periodEnd': period_end
-        }.freeze
 
         # TODO: The way we handle expected results are going to change in the future
         # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
@@ -74,13 +74,6 @@ module Inferno
           link 'https://hl7.org/fhir/measure-operation-collect-data.html'
           desc 'Run the $collect-data operation for a measure that should contain an individual in the IPP, Denominator, and Numerator'
         end
-
-        # Parameters appended to the url for $evaluate-measure call
-        PARAMS = {
-          'patient': patient_id,
-          'periodStart': period_start,
-          'periodEnd': period_end
-        }.freeze
 
         collect_data_response = collect_data(measure_id, PARAMS.compact)
         assert_response_ok collect_data_response

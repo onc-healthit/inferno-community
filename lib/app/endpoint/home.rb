@@ -230,14 +230,6 @@ module Inferno
         end
 
         # Returns a specific testing instance test page
-        get '/:id/?' do
-          instance = Inferno::Models::TestingInstance.get(params[:id])
-          halt 404 if instance.nil?
-
-          redirect "#{base_path}/#{instance.id}/#{instance.module.default_test_set}/#{'?error=' + params[:error] unless params[:error].nil?}"
-        end
-
-        # Returns a specific testing instance test page
         get '/:id/:test_set/?' do
           instance = Inferno::Models::TestingInstance.get(params[:id])
           halt 404 if instance.nil?
