@@ -50,6 +50,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     client.use_stu3
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
+    @sequence.run_all_kick_off_tests = true
+    @sequence.klass = :Patient
   end
 
   def include_export_stub_no_token
@@ -158,6 +160,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
+
     assert failures.empty?, "All tests should pass. First error: #{failures&.first&.message}"
     assert !sequence_result.skip?, 'No tests should be skipped.'
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
@@ -169,7 +172,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(status_code: 200)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_kick_off('Patient')
+      @sequence.assert_export_kick_off
     end
   end
 
@@ -179,7 +182,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(response_headers: {})
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_kick_off('Patient')
+      @sequence.assert_export_kick_off
     end
   end
 
