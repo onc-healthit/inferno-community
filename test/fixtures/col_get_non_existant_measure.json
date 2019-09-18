@@ -1,0 +1,15 @@
+{
+    "resourceType": "Bundle",
+    "id": "91e20322-5a2d-455d-8cf5-8ad50255e628",
+    "meta": {
+      "lastUpdated": "2019-09-18T14:41:09.278+00:00"
+    },
+    "type": "searchset",
+    "total": 0,
+    "link": [
+      {
+        "relation": "self",
+        "url": "http://localhost:8080/cqf-ruler-dstu3/fhir/Measure?name=foobar"
+      }
+    ]
+  }

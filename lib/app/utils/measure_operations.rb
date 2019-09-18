@@ -18,12 +18,17 @@ module Inferno
 
     def collect_data(measure_name, params = {})
       params_string = params.empty? ? '' : "?#{params.to_query}"
-      @client.get "Measure/name=#{measure_name}&_sort=_lastUpdated//$collect-data#{params_string}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
+      @client.get "Measure/name=#{measure_name}&_sort=_lastUpdated/$collect-data#{params_string}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
 
     def data_requirements
       # TODO
       nil
     end
+
+    def get_measure_resources_by_name(measure_name)
+      @client.get "Measure/name=#{measure_name}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
+    end
+
   end
 end

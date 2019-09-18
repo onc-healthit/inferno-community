@@ -34,6 +34,15 @@ module Inferno
         'periodEnd': period_end
       }.freeze
 
+      # TODO: The way we handle expected results are going to change in the future
+      # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
+      # For now, we are going to keep if with these individual canned expected results
+      EXPECTED_RESULTS = {
+        'initial-population': 1,
+        'numerator': 1,
+        'denominator': 1
+      }.freeze
+
       test 'Evaluate Measure' do
         metadata do
           id '01'
@@ -41,14 +50,10 @@ module Inferno
           desc 'Run the $evaluate-measure operation for an individual that should be in the IPP and Denominator'
         end
 
-        # TODO: The way we handle expected results are going to change in the future
-        # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
-        # For now, we are going to keep if with these individual canned expected results
-        EXPECTED_RESULTS = {
-          'initial-population': 1,
-          'numerator': 1,
-          'denominator': 1
-        }.freeze
+        # Check that measure exists
+        measure_resource_response = get_measure_resources_by_name(measure_name)
+        assert_response_ok measure_resource_response
+        assert(JSON.parse(measure_resource_response.body)['total'] > 0, "#{measure_name} not found")
 
         evaluate_measure_response = evaluate_measure(measure_name, PARAMS.compact)
         assert_response_ok evaluate_measure_response
@@ -74,6 +79,11 @@ module Inferno
           link 'https://hl7.org/fhir/measure-operation-collect-data.html'
           desc 'Run the $collect-data operation for a measure that should contain an individual in the IPP, Denominator, and Numerator'
         end
+
+        # Check that measure exists
+        measure_resource_response = get_measure_resources_by_name(measure_name)
+        assert_response_ok measure_resource_response
+        assert(JSON.parse(measure_resource_response.body)['total'] > 0, "#{measure_name} not found")
 
         collect_data_response = collect_data(measure_name, PARAMS.compact)
         assert_response_ok collect_data_response
