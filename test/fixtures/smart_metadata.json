@@ -1,0 +1,61 @@
+{
+  "resourceType": "CapabilityStatement",
+  "publisher": "Not provided",
+  "date": "2018-02-10T04:02:11+00:00",
+  "kind": "instance",
+  "fhirVersion": "4.0.0",
+  "acceptUnknown": "extensions",
+  "format": [
+    "application/xml+fhir",
+    "application/json+fhir"
+  ],
+  "rest": [
+    {
+      "mode": "server",
+      "security": {
+        "extension": [
+          {
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
+            "extension": [
+              {
+                "url": "authorize",
+                "valueUri": "https://www.example.com/authorize"
+              },
+              {
+                "url": "token",
+                "valueUri": "https://www.example.com/token"
+              },
+              {
+                "url": "register",
+                "valueUri": "https://www.example.com/register"
+              },
+              {
+                "url": "manage",
+                "valueUri": "https://www.example.com/manage"
+              },
+              {
+                "url": "introspect",
+                "valueUri": "https://www.example.com/introspect"
+              },
+              {
+                "url": "revoke",
+                "valueUri": "https://www.example.com/revoke"
+              }
+            ]
+          }
+        ],
+        "service": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/restful-security-service",
+                "code": "SMART-on-FHIR"
+              }
+            ],
+            "text": "OAuth2 using SMART-on-FHIR profile (see http://docs.smarthealthit.org)"
+          }
+        ]
+      }
+    }
+  ]
+}
