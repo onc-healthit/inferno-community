@@ -18,9 +18,9 @@ module Inferno
       details %(
         # Background
 
-        The #{title} Sequence test looks for authorization endpoints as
-        described by the [SMART App Launch
-        Framework](http://hl7.org/fhir/smart-app-launch/conformance/index.html#smart-on-fhir-oauth-authorization-endpoints)
+        The #{title} Sequence test looks for authorization endpoints and SMART
+        capabilities as described by the [SMART App Launch
+        Framework](http://hl7.org/fhir/smart-app-launch/conformance/index.html).
         The SMART launch framework uses OAuth 2.0 to *authorize* apps, like
         Inferno, to access certain information on a FHIR server. The
         authorization service accessed at the endpoint allows users to give
@@ -37,19 +37,16 @@ module Inferno
 
         # Test Methodology
 
-        This test suite will access both the `/metadata` and
-        `/.well-known/smart-configuration` endpoints. Both endpoints will be
-        checked for:
-
-        * An OAuth 2.0 Authorization endpoint
-        * An OAuth 2.0 Token endpoint
+        This test suite will examine the SMART on FHIR configuration contained
+        in both the `/metadata` and `/.well-known/smart-configuration`
+        endpoints.
 
         For more information see:
 
         * [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/index.html)
         * [The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
         * [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)
-       )
+      )
 
       REQUIRED_SMART_CAPABILITIES = [
         'launch-ehr',
@@ -68,11 +65,11 @@ module Inferno
       test 'Well-known configuration declares support for required capabilities' do
         metadata do
           id '06'
-          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
-          desc %(
-           A SMART on FHIR server SHALL convey its capabilities to app
-           developers by listing a set of the capabilities. The following
-           capabilities are required: #{REQUIRED_SMART_CAPABILITIES.join(', ')}
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-well-known'
+          description %(
+            A SMART on FHIR server SHALL convey its capabilities to app
+            developers by listing a set of the capabilities. The following
+            capabilities are required: #{REQUIRED_SMART_CAPABILITIES.join(', ')}
           )
         end
 
