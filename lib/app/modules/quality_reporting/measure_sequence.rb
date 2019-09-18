@@ -53,7 +53,7 @@ module Inferno
         # Check that measure exists
         measure_resource_response = get_measure_resources_by_name(measure_name)
         assert_response_ok measure_resource_response
-        assert(JSON.parse(measure_resource_response.body)['total'] > 0, "#{measure_name} not found")
+        assert(JSON.parse(measure_resource_response.body)['total'].positive?, "#{measure_name} not found")
 
         evaluate_measure_response = evaluate_measure(measure_name, PARAMS.compact)
         assert_response_ok evaluate_measure_response
@@ -83,7 +83,7 @@ module Inferno
         # Check that measure exists
         measure_resource_response = get_measure_resources_by_name(measure_name)
         assert_response_ok measure_resource_response
-        assert(JSON.parse(measure_resource_response.body)['total'] > 0, "#{measure_name} not found")
+        assert(JSON.parse(measure_resource_response.body)['total'].positive?, "#{measure_name} not found")
 
         collect_data_response = collect_data(measure_name, PARAMS.compact)
         assert_response_ok collect_data_response
