@@ -5,7 +5,6 @@ require_relative '../smart/ehr_launch_sequence'
 module Inferno
   module Sequence
     class OncEHRLaunchSequence < EHRLaunchSequence
-      extends_sequence EHRLaunchSequence
 
       title 'ONC EHR Launch Sequence'
 

@@ -5,8 +5,6 @@ require_relative '../core/capability_statement_sequence'
 module Inferno
   module Sequence
     class ArgonautConformanceSequence < CapabilityStatementSequence
-      extends_sequence CapabilityStatementSequence
-
       title 'Conformance Statement'
 
       test_id_prefix 'C'

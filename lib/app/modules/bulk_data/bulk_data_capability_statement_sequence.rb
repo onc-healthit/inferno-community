@@ -5,7 +5,6 @@ require_relative '../core/capability_statement_sequence'
 module Inferno
   module Sequence
     class BulkDataCapabilityStatementSequence < CapabilityStatementSequence
-      extends_sequence CapabilityStatementSequence
 
       title 'Capability Statement'
 

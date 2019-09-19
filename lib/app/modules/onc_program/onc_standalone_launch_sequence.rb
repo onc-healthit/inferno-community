@@ -5,7 +5,6 @@ require_relative '../smart/standalone_launch_sequence'
 module Inferno
   module Sequence
     class OncStandaloneLaunchSequence < StandaloneLaunchSequence
-      extends_sequence StandaloneLaunchSequence
 
       title 'ONC Standalone Launch Sequence'
 

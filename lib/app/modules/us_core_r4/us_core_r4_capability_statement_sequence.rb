@@ -5,7 +5,6 @@ require_relative '../core/capability_statement_sequence'
 module Inferno
   module Sequence
     class UsCoreR4CapabilityStatementSequence < CapabilityStatementSequence
-      extends_sequence CapabilityStatementSequence
 
       title 'Capability Statement'
 

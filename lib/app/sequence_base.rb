@@ -353,7 +353,9 @@ module Inferno
       end
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
-      def self.extends_sequence(klass)
+      # Note: this is now called automatically when a class inherits from sequence_base
+      # or any class that inherits from it.
+      def self.inherited(klass)
         @@test_metadata[klass.sequence_name].each do |metadata|
           @@test_metadata[sequence_name] << metadata
           define_method metadata[:method_name], metadata[:method]
