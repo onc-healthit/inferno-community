@@ -16,7 +16,7 @@ class MeasureSequenceTest < MiniTest::Test
       measure_id: 'MitreTestScript-measure-col',
       example_measurereport: :col_measure_report,
       mock_collect_data_response: :col_collect_data_response,
-      mock_get_measure_response: :col_get_measure_resource
+      mock_get_measure_response: :exm130_get_measure_resource
       # Add new Measures/params here...
     }
   ].freeze
@@ -50,7 +50,7 @@ class MeasureSequenceTest < MiniTest::Test
         .to_return(status: 200, body: collect_data_response.to_json, headers: {})
 
       # Mock a request for measure resource with name EXM130
-      stub_request(:get, %r{Measure/name\=EXM130$})
+      stub_request(:get, /Measure\?name=EXM130/)
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 200, body: measure_resource.to_json, headers: {})
 
@@ -63,12 +63,12 @@ class MeasureSequenceTest < MiniTest::Test
   def test_non_existant_measure_fails
     WebMock.reset!
     # This is the webmock response that will cause the test to fail, it reports 0 measure resources found
-    measure_resource = load_json_fixture(:col_get_non_existant_measure)
+    no_measure_resource = load_json_fixture(:get_non_existant_measure)
 
     # Mock a request for measure resource with name EXM130, response will not be included
-    stub_request(:get, %r{Measure/name\=EXM130$})
+    stub_request(:get, /Measure\?name=EXM130/)
       .with(headers: REQUEST_HEADERS)
-      .to_return(status: 200, body: measure_resource.to_json, headers: {})
+      .to_return(status: 200, body: no_measure_resource.to_json, headers: {})
 
     sequence_result = @sequence.start
     assert !sequence_result.pass?, 'The sequence should not be marked as pass. Non-existant measure should not be found'

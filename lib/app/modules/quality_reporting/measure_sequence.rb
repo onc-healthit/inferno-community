@@ -55,7 +55,8 @@ module Inferno
         assert_response_ok measure_resource_response
         assert(JSON.parse(measure_resource_response.body)['total'].positive?, "#{measure_name} not found")
 
-        evaluate_measure_response = evaluate_measure(measure_name, PARAMS.compact)
+        measure_id = JSON.parse(measure_resource_response.body)['entry'][0]['resource']['id']
+        evaluate_measure_response = evaluate_measure(measure_id, PARAMS.compact)
         assert_response_ok evaluate_measure_response
 
         # Load response body into a FHIR MeasureReport class
@@ -85,7 +86,8 @@ module Inferno
         assert_response_ok measure_resource_response
         assert(JSON.parse(measure_resource_response.body)['total'].positive?, "#{measure_name} not found")
 
-        collect_data_response = collect_data(measure_name, PARAMS.compact)
+        measure_id = JSON.parse(measure_resource_response.body)['entry'][0]['resource']['id']
+        collect_data_response = collect_data(measure_id, PARAMS.compact)
         assert_response_ok collect_data_response
 
         # Load response body into a FHIR Parameters class
