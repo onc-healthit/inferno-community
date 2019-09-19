@@ -54,9 +54,9 @@ module Inferno
         measure_resource_response = get_measure_resources_by_name(measure_name)
         assert_response_ok measure_resource_response
         bundle = FHIR::Bundle.new(JSON.parse(measure_resource_response.body))
-        assert(bundle&.total.positive?, "#{measure_name} not found")
+        assert(bundle&.total&.positive?, "#{measure_name} not found")
 
-        measure_id = bundle&.entry[0]&.resource&.id
+        measure_id = bundle.entry[0].resource.id
         evaluate_measure_response = evaluate_measure(measure_id, PARAMS.compact)
         assert_response_ok evaluate_measure_response
 
@@ -86,9 +86,9 @@ module Inferno
         measure_resource_response = get_measure_resources_by_name(measure_name)
         assert_response_ok measure_resource_response
         bundle = FHIR::Bundle.new(JSON.parse(measure_resource_response.body))
-        assert(bundle&.total.positive?, "#{measure_name} not found")
+        assert(bundle&.total&.positive?, "#{measure_name} not found")
 
-        measure_id = bundle&.entry[0]&.resource&.id
+        measure_id = bundle.entry[0].resource.id
         collect_data_response = collect_data(measure_id, PARAMS.compact)
         assert_response_ok collect_data_response
 
