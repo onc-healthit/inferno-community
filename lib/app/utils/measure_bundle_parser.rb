@@ -3,7 +3,7 @@
 module Inferno
   module MeasureBundleParserUtil
     def get_library_by_id(measurebundle, library_id)
-      measurebundle['entry'].filter { |m| m['resource']['id'] == library_id }.first
+      measurebundle['entry'].select { |m| m['resource']['id'] == library_id }.first
     end
 
     def get_related_libraries(library)

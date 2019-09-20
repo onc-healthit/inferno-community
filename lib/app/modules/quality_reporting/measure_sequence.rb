@@ -13,7 +13,8 @@ module Inferno
 
       description 'Tests measure operations for a given FHIR Measure. <br/><br/>'\
                   'Prior to running tests, you must: <br/>'\
-                  '1) Have all the VSAC ValueSets on your FHIR server. If you need them, they can be downloaded from the '\
+                  '1) Verify all needed VSAC ValueSets are on your FHIR server using the ValueSetSequence above. '\
+                  'If any are missing, they can be downloaded from the '\
                   '<a href="https://cts.nlm.nih.gov/fhir/">NIH VSAC FHIR server</a>.<br/>'\
                   '2) POST '\
                   '<a href="/inferno/resources/quality_reporting/Bundle/measure-col-bundle.json">this Bundle</a> '\

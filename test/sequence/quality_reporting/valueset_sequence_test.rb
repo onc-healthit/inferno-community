@@ -31,8 +31,7 @@ class ValueSetSequenceTest < MiniTest::Test
     WebMock.reset!
 
     MEASURES_TO_TEST.each do
-      # Mock a request for ValueSet?url=<url> to return 200
-      stub_request(:get, /ValueSet/)
+      stub_request(:get, %r{http\:\/\/www\.example\.com\/ValueSet\/([0-9]+\.)+[0-9]+})
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 200, body: '', headers: {})
 
@@ -46,8 +45,7 @@ class ValueSetSequenceTest < MiniTest::Test
     WebMock.reset!
 
     MEASURES_TO_TEST.each do
-      # Mock a request for ValueSet?url=<url> to return 404
-      stub_request(:get, /ValueSet/)
+      stub_request(:get, %r{http\:\/\/www\.example\.com\/ValueSet\/([0-9]+\.)+[0-9]+})
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 404, body: '', headers: {})
 

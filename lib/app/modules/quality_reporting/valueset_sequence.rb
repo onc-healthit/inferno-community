@@ -28,10 +28,12 @@ module Inferno
         library = get_library_by_id(measurebundle, main_library_id)
         valueset_urls = get_all_dependent_valuesets(library, measurebundle)
 
+        missing_valuesets = []
         valueset_urls.each do |vs_url|
           res = @client.get "ValueSet/#{vs_url}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
-          assert_response_ok res
+          missing_valuesets << vs_url if res.response[:code] != 200
         end
+        assert_equal [], missing_valuesets, 'Expected there to be no missing ValueSets'
       end
     end
   end
