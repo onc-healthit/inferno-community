@@ -19,7 +19,7 @@ module Inferno
         @resource_by_path = Hash.new {}
         @resources_by_type = Hash.new { |h, k| h[k] = [] }
         Dir.glob("#{resource_file_path}/**/*.*") do |resource| # note one extra "*"
-          if File.file?(resource) && resource.end_with?('json','xml')
+          if File.file?(resource) && resource.end_with?('json', 'xml')
 
             # We should consider using the native Ruby models instead of JSON
             # There were problems with round-tripping certain SearchParameters though
