@@ -49,4 +49,20 @@ class TestInstanceTest < MiniTest::Test
     assert !@instance.conformance_supported?(:Patient, [:read, :search])
     assert @instance.conformance_supported?(:Observation, [:read])
   end
+
+  def test_fhir_version_match
+    fhir_versions = [:dstu2, :stu3]
+
+    # Returns true if no version is set
+    @instance.instance_variable_set(:@module, OpenStruct.new(fhir_version: nil))
+    assert @instance.fhir_version_match?(fhir_versions)
+
+    # Returns true if version matches
+    @instance.instance_variable_set(:@module, OpenStruct.new(fhir_version: 'dstu2'))
+    assert @instance.fhir_version_match?(fhir_versions)
+
+    # Returns false if version doesn't match
+    @instance.instance_variable_set(:@module, OpenStruct.new(fhir_version: 'r4'))
+    assert !@instance.fhir_version_match?(fhir_versions)
+  end
 end
