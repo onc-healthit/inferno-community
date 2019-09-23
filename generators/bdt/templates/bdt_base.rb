@@ -3,7 +3,7 @@ module Inferno
   module Sequence
     class BDTBase < SequenceBase
 
-      BDT_URL = 'http://localhost:4500/execute/'
+      BDT_URL = 'http://bdt_adapter:4500/execute/'
 
       def run_bdt(path)
         url = "#{BDT_URL}#{path}"
