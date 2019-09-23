@@ -25,5 +25,9 @@ module Inferno
       # TODO
       nil
     end
+
+    def get_measure_resources_by_name(measure_name)
+      @client.get "Measure?name=#{measure_name}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
+    end
   end
 end

@@ -1,0 +1,118 @@
+{
+  "resourceType": "Bundle",
+  "id": "7e75b287-9d86-450a-98d2-0df3727a2466",
+  "meta": {
+    "lastUpdated": "2019-09-19T15:03:19.772+00:00"
+  },
+  "type": "searchset",
+  "total": 1,
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://localhost:8080/cqf-ruler-dstu3/fhir/Measure?_sort=_lastUpdated&name=EXM130"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "http://localhost:8080/cqf-ruler-dstu3/fhir/Measure/MitreTestScript-measure-col",
+      "resource": {
+        "resourceType": "Measure",
+        "id": "MitreTestScript-measure-col",
+        "meta": {
+          "versionId": "1",
+          "lastUpdated": "2019-09-19T15:03:04.662+00:00"
+        },
+        "text": {
+          "status": "generated"
+        },
+        "identifier": [
+          {
+            "use": "official",
+            "system": "http://hl7.org/fhir/cqi/ecqm/Measure/Identifier/payer-extract",
+            "value": "COL"
+          }
+        ],
+        "version": "1.0.0",
+        "name": "EXM130",
+        "title": "Colorectal Cancer Screening. Cohort Definition",
+        "status": "active",
+        "experimental": true,
+        "date": "2015-03-08",
+        "description": "Colorectal Cancer Screening. Cohort Definition",
+        "topic": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/c80-doc-typecodes",
+                "code": "57024-2"
+              }
+            ]
+          }
+        ],
+        "library": [
+          {
+            "reference": "Library/MitreTestScript-library-col-logic"
+          }
+        ],
+        "scoring": {
+          "coding": [
+            {
+              "code": "proportion"
+            }
+          ]
+        },
+        "group": [
+          {
+            "identifier": {
+              "value": "COL-cohort"
+            },
+            "population": [
+              {
+                "identifier": {
+                  "value": "initial-population"
+                },
+                "code": {
+                  "coding": [
+                    {
+                      "code": "initial-population"
+                    }
+                  ]
+                },
+                "criteria": "Initial Population"
+              },
+              {
+                "identifier": {
+                  "value": "numerator"
+                },
+                "code": {
+                  "coding": [
+                    {
+                      "code": "numerator"
+                    }
+                  ]
+                },
+                "criteria": "Numerator"
+              },
+              {
+                "identifier": {
+                  "value": "denominator"
+                },
+                "code": {
+                  "coding": [
+                    {
+                      "code": "denominator"
+                    }
+                  ]
+                },
+                "criteria": "Denominator"
+              }
+            ]
+          }
+        ]
+      },
+      "search": {
+        "mode": "match"
+      }
+    }
+  ]
+}

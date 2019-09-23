@@ -15,7 +15,8 @@ class MeasureSequenceTest < MiniTest::Test
     {
       measure_id: 'MitreTestScript-measure-col',
       example_measurereport: :col_measure_report,
-      mock_collect_data_response: :col_collect_data_response
+      mock_collect_data_response: :col_collect_data_response,
+      mock_get_measure_response: :exm130_get_measure_resource
       # Add new Measures/params here...
     }
   ].freeze
@@ -36,6 +37,7 @@ class MeasureSequenceTest < MiniTest::Test
       # Set other variables needed
       measure_report = load_json_fixture(req[:example_measurereport])
       collect_data_response = load_json_fixture(req[:mock_collect_data_response])
+      measure_resource = load_json_fixture(req[:mock_get_measure_response])
 
       # Mock a request for $evaluate-measure
       stub_request(:get, /\$evaluate-measure/)
@@ -47,9 +49,28 @@ class MeasureSequenceTest < MiniTest::Test
         .with(headers: REQUEST_HEADERS)
         .to_return(status: 200, body: collect_data_response.to_json, headers: {})
 
+      # Mock a request for measure resource with name EXM130
+      stub_request(:get, /Measure\?name=EXM130/)
+        .with(headers: REQUEST_HEADERS)
+        .to_return(status: 200, body: measure_resource.to_json, headers: {})
+
       sequence_result = @sequence.start
       assert sequence_result.pass?, 'The sequence should be marked as pass.'
       assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
     end
+  end
+
+  def test_non_existant_measure_fails
+    WebMock.reset!
+    # This is the webmock response that will cause the test to fail, it reports 0 measure resources found
+    no_measure_resource = load_json_fixture(:get_non_existant_measure)
+
+    # Mock a request for measure resource with name EXM130, response will not be included
+    stub_request(:get, /Measure\?name=EXM130/)
+      .with(headers: REQUEST_HEADERS)
+      .to_return(status: 200, body: no_measure_resource.to_json, headers: {})
+
+    sequence_result = @sequence.start
+    assert !sequence_result.pass?, 'The sequence should not be marked as pass. Non-existant measure should not be found'
   end
 end

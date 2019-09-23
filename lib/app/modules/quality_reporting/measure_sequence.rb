@@ -21,7 +21,7 @@ module Inferno
                   'saved sucessfully.'
 
       # These values are based on the content of the measure-col bundle used for this module.
-      measure_id = 'MitreTestScript-measure-col'
+      measure_name = 'EXM130'
       patient_id = 'MitreTestScript-test-Patient-410'
       observation_id = 'MitreTestScript-test-Observation-32794'
       period_start = '2017'
@@ -34,6 +34,15 @@ module Inferno
         'periodEnd': period_end
       }.freeze
 
+      # TODO: The way we handle expected results are going to change in the future
+      # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
+      # For now, we are going to keep if with these individual canned expected results
+      EXPECTED_RESULTS = {
+        'initial-population': 1,
+        'numerator': 1,
+        'denominator': 1
+      }.freeze
+
       test 'Evaluate Measure' do
         metadata do
           id '01'
@@ -41,15 +50,13 @@ module Inferno
           desc 'Run the $evaluate-measure operation for an individual that should be in the IPP and Denominator'
         end
 
-        # TODO: The way we handle expected results are going to change in the future
-        # Eventually, we will have test bundles that will be calculated as the "gold standard" for calc results
-        # For now, we are going to keep if with these individual canned expected results
-        EXPECTED_RESULTS = {
-          'initial-population': 1,
-          'numerator': 1,
-          'denominator': 1
-        }.freeze
+        # Check that measure exists
+        measure_resource_response = get_measure_resources_by_name(measure_name)
+        assert_response_ok measure_resource_response
+        bundle = FHIR::Bundle.new(JSON.parse(measure_resource_response.body))
+        assert(bundle&.total&.positive?, "#{measure_name} not found")
 
+        measure_id = bundle.entry[0].resource.id
         evaluate_measure_response = evaluate_measure(measure_id, PARAMS.compact)
         assert_response_ok evaluate_measure_response
 
@@ -75,6 +82,13 @@ module Inferno
           desc 'Run the $collect-data operation for a measure that should contain an individual in the IPP, Denominator, and Numerator'
         end
 
+        # Check that measure exists
+        measure_resource_response = get_measure_resources_by_name(measure_name)
+        assert_response_ok measure_resource_response
+        bundle = FHIR::Bundle.new(JSON.parse(measure_resource_response.body))
+        assert(bundle&.total&.positive?, "#{measure_name} not found")
+
+        measure_id = bundle.entry[0].resource.id
         collect_data_response = collect_data(measure_id, PARAMS.compact)
         assert_response_ok collect_data_response
 
