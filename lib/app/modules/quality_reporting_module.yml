@@ -6,7 +6,10 @@ fhir_version: stu3
 test_sets:
   developer:
     view: default
-    tests: 
+    tests:
+      - name: Prerequisites
+        sequences:
+          - ValueSetSequence
       - name: Quality Reporting
         sequences:
           - MeasureSequence
