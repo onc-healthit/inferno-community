@@ -68,7 +68,7 @@
                 </span> - 
                 <div class="sequence-out-of">
                   <% if sequence_results[test_case.id].nil? %>
-                    <%= test_case.sequence.test_count %> tests
+                    <%= test_case.sequence.test_count %> <%= 'test'.pluralize(test_case.sequence.test_count) %>
                   <% else %>
                     <%= sequence_results[test_case.id].required_passed %>/<%= sequence_results[test_case.id].total_required_tests_except_omitted %> Required Tests Passed
 
@@ -77,7 +77,7 @@
                     <% end%>
 
                     <% if sequence_results[test_case.id].total_omitted.positive?%> -
-                      <%= sequence_results[test_case.id].total_omitted %> Test <% if sequence_results[test_case.id].total_omitted != 1%>s<% end%> Omitted
+                      <%= sequence_results[test_case.id].total_omitted %> <%= 'Test'.pluralize(sequence_results[test_case.id].total_omitted) %> Omitted
                     <% end%>
                   <% end %>
                   -

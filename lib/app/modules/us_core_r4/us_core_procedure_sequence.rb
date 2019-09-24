@@ -41,7 +41,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Procedure Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-procedure)
+        returned will be checked for consistency against the [Procedure Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure)
 
       )
 
@@ -61,6 +61,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -92,6 +93,7 @@ module Inferno
         @procedure = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @procedure_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
+        save_delayed_sequence_references(@procedure)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
       end
 
@@ -129,6 +131,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -160,6 +163,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -226,7 +230,7 @@ module Inferno
       test 'Procedure resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '09'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-procedure.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           desc %(
           )
           versions :r4

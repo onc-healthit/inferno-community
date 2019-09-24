@@ -37,7 +37,7 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Immunization Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-immunization)
+        returned will be checked for consistency against the [Immunization Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization)
 
       )
 
@@ -57,6 +57,7 @@ module Inferno
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -88,6 +89,7 @@ module Inferno
         @immunization = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @immunization_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Immunization'), reply)
+        save_delayed_sequence_references(@immunization)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
       end
 
@@ -95,6 +97,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -125,6 +128,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           desc %(
           )
           versions :r4
@@ -191,7 +195,7 @@ module Inferno
       test 'Immunization resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-immunization.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           desc %(
           )
           versions :r4

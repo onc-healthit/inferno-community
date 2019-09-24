@@ -11,8 +11,9 @@ module Inferno
 
       test_id_prefix 'Practitioner' # change me
 
-      requires :token, :patient_id
+      requires :token
       conformance_supports :Practitioner
+      delayed_sequence
 
       def validate_resource_item(resource, property, value)
         case property
@@ -38,15 +39,30 @@ module Inferno
       details %(
 
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
-        returned will be checked for consistency against the [Practitioner Argonaut Profile](https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitioner)
+        returned will be checked for consistency against the [Practitioner Argonaut Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner)
 
       )
 
       @resources_found = false
 
-      test 'Server rejects Practitioner search without authorization' do
+      test 'Can read Practitioner from the server' do
         metadata do
           id '01'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          desc %(
+          )
+          versions :r4
+        end
+
+        practitioner_id = @instance.resource_references.find { |reference| reference.resource_type == 'Practitioner' }&.resource_id
+        skip 'No Practitioner references found from the prior searches' if practitioner_id.nil?
+        @practitioner = fetch_resource('Practitioner', practitioner_id)
+        @resources_found = !@practitioner.nil?
+      end
+
+      test 'Server rejects Practitioner search without authorization' do
+        metadata do
+          id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -56,8 +72,9 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        name_val = @practitioner&.name&.first&.family
+        name_val = resolve_element_from_path(@practitioner, 'name.family')
         search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -66,7 +83,7 @@ module Inferno
 
       test 'Server returns expected results from Practitioner search by name' do
         metadata do
-          id '02'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -89,12 +106,13 @@ module Inferno
         @practitioner = reply.try(:resource).try(:entry).try(:first).try(:resource)
         @practitioner_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
         save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
+        save_delayed_sequence_references(@practitioner)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
 
       test 'Server returns expected results from Practitioner search by identifier' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -111,21 +129,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
         assert_response_ok(reply)
-      end
-
-      test 'Practitioner read resource supported' do
-        metadata do
-          id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Practitioner, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_read_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
 
       test 'Practitioner vread resource supported' do
@@ -161,7 +164,7 @@ module Inferno
       test 'Practitioner resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-practitioner.json'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           desc %(
           )
           versions :r4
