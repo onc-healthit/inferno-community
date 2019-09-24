@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 module Inferno
- module WebUtils
+  module WebUtils
     def get_with_retry(url, timeout)
       wait_time = 1
       reply = nil
-      headers = { accept: 'application/json' }
       start = Time.now
 
       loop do
@@ -30,6 +31,5 @@ module Inferno
         wait_time * 2
       end
     end
-
   end
 end

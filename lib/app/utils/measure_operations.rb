@@ -30,7 +30,7 @@ module Inferno
       @client.get "Measure?name=#{measure_name}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
 
-    def async_submit_data(measure_id, params_resource)
+    def async_submit_data(params_resource)
       headers = {
         'Accept': 'application/fhir+json',
         'Content-Type': 'application/json',
