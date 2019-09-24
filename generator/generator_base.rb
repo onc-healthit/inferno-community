@@ -37,7 +37,7 @@ module Inferno
         @resources_by_type['ImplementationGuide'].first
       end
 
-      def capability_statement(mode)
+      def capability_statement(mode = 'server')
         @resources_by_type['CapabilityStatement'].find { |re| re['rest'].any? { |r| r['mode'] == mode } }
       end
 
