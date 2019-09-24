@@ -10,12 +10,11 @@ module Inferno
       measure.library.map { |lib| lib.reference.sub 'Library/', '' }
     end
 
-    def get_data_requirements(library)
-      library['resource']['dataRequirement']
-    end
-
     def get_valueset_urls(library)
-      library.dataRequirement.map { |dr| dr.codeFilter[0].valueSetString.sub 'urn:oid:', '' }.uniq
+      value_set_strings = library.dataRequirement.map { |dr| dr.codeFilter[0].valueSetString }
+      value_set_strings = value_set_strings.compact.uniq
+      # Grab only the oid part of each valueSetString
+      value_set_strings.map { |s| s[/([0-9]+\.)+[0-9]+/] }
     end
 
     def get_all_dependent_valuesets(measure, bundle)
