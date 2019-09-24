@@ -7,7 +7,9 @@ test_sets:
   developer:
     view: default
     tests:
-      - name: Quality Reporting
+      - name: Prerequisites
         sequences:
           - ValueSetSequence
+      - name: Quality Reporting
+        sequences:
           - MeasureSequence

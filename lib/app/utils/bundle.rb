@@ -2,8 +2,8 @@
 
 module Inferno
   module BundleParserUtil
-    def get_resource_by_id(bundle, resouce_id)
-      bundle.entry.select { |e| e.resource.id == resouce_id }.first.resource
+    def get_resource_by_id(bundle, resource_id)
+      bundle.entry.select { |e| e.resource.id == resource_id }.first.resource
     end
 
     def get_related_library_ids(measure)
