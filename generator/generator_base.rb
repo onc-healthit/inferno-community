@@ -9,6 +9,9 @@ require 'fhir_models'
 module Inferno
   module Generator
     class Base
+
+      attr_accessor :path, :extras, :resource_by_path, :resources_by_type
+
       def initialize(path, extras)
         @path = path
         @extras = extras
