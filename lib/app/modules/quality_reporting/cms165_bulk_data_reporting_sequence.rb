@@ -6,6 +6,7 @@ module Inferno
   module Sequence
     class CMS165BulkDataReportingSequence < SequenceBase
       include MeasureOperations
+      include WebUtils
 
       title 'CMS165 Bulk Data Reporting'
 
@@ -25,37 +26,6 @@ module Inferno
       # These values are based on the content of the CMS165 bundle used for this module.
       measure_id = 'MitreTestScript-measure-exm165-FHIR3'
 
-      def status_check(url, timeout)
-        wait_time = 1
-        reply = nil
-        headers = { accept: 'application/json' }
-        start = Time.now
-
-        loop do
-          reply = @client.get(url)
-
-          wait_time = get_wait_time(wait_time, reply)
-          seconds_used = Time.now - start + wait_time
-
-          break if reply.code != 202 || seconds_used > timeout
-
-          sleep wait_time
-        end
-
-        reply
-      end
-
-      def get_wait_time(wait_time, reply)
-        retry_after = reply.response[:headers]['retry-after']
-        retry_after_int = (retry_after.presence || 0).to_i
-
-        if retry_after_int.positive?
-          retry_after_int
-        else
-          wait_time * 2
-        end
-      end
-
       test 'Bulk Data Import' do
         metadata do
           id '01'
@@ -73,7 +43,7 @@ module Inferno
         # Use the content-location in the response to check the status of the import
         # Check the status on loop until the job is finished
         content_loc = async_submit_data_response.headers[:content_location]
-        polling_response = status_check(content_loc, 180)
+        polling_response = get_with_retry(content_loc, 180)
         assert_response_ok(polling_response)
         # operation_outcome = FHIR::STU3.from_contents(polling_response.body)
         # assert(!operation_outcome.nil?)
