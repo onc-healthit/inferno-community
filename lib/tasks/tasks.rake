@@ -7,6 +7,7 @@ require 'dm-core'
 require 'csv'
 require 'colorize'
 require 'optparse'
+require 'rubocop/rake_task'
 
 require_relative '../app'
 require_relative '../app/endpoint'
@@ -368,6 +369,17 @@ namespace :inferno do |_argv|
     end
 
     exit execute(instance, sequences)
+  end
+
+  desc 'Generate Tests'
+  task :generate, [:generator, :path] do |_t, args|
+    require_relative("../../generator/#{args.generator}/#{args.generator}_generator")
+    generator_class = Inferno::Generator::Base.subclasses.first do |c|
+      c.name.demodulize.downcase.start_with?(args.generator)
+    end
+
+    generator = generator_class.new(args.path, args.extras)
+    generator.run
   end
 end
 
@@ -789,10 +801,6 @@ namespace :terminology do |_argv|
   end
 end
 
-namespace :generator do |_argv|
-  desc 'Generate US Core R4 Tests'
-  task :us_core_r4 do
-    path = File.expand_path('../../generators/uscore-r4/generator.rb', __dir__)
-    system('ruby', path)
-  end
+RuboCop::RakeTask.new(:rubocop) do |t|
+  t.options = ['--display-cop-names']
 end
