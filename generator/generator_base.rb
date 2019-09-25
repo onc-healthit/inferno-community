@@ -9,7 +9,6 @@ require 'fhir_models'
 module Inferno
   module Generator
     class Base
-
       attr_accessor :path, :extras, :resource_by_path, :resources_by_type
 
       def initialize(path, extras)
@@ -28,20 +27,22 @@ module Inferno
             # There were problems with round-tripping certain SearchParameters though
             new_resource_json = JSON.parse(File.read(resource))
             new_resource = FHIR.from_contents(File.read(resource))
-            @resource_by_path[resource_path(new_resource)] = new_resource_json
+            resource_by_path[resource_path(new_resource)] = new_resource_json
             type = new_resource.class.name.demodulize
             type = 'CapabilityStatement' if type == 'Conformance'
-            @resources_by_type[type].push(new_resource_json)
+            resources_by_type[type].push(new_resource_json)
           end
         end
       end
 
       def ig_resource
-        @resources_by_type['ImplementationGuide'].first
+        resources_by_type['ImplementationGuide'].first
       end
 
       def capability_statement(mode = 'server')
-        @resources_by_type['CapabilityStatement'].find { |re| re['rest'].any? { |r| r['mode'] == mode } }
+        resources_by_type['CapabilityStatement'].find do |capability_statement_resource|
+          capability_statement_resource['rest'].any? { |r| r['mode'] == mode }
+        end
       end
 
       def resource_path(resource)
@@ -49,7 +50,6 @@ module Inferno
       end
 
       def format_output
-        # system('sh', "rubocop -x --display-only-fail-level-offenses #{sequence_out_path}/")
         system("rubocop -x --display-only-fail-level-offenses #{sequence_out_path}")
       end
 
@@ -58,10 +58,10 @@ module Inferno
         format_output
       end
 
-      # subclass must implement the following:
-      # def generate
-
-      # end
+      # subclass must implement the following
+      def generate
+        raise StandardError('Method not implemented.')
+      end
 
       def sequence_prefix
         version = ig_resource['version'].delete('.')
@@ -74,11 +74,11 @@ module Inferno
       end
 
       def sequence_out_path
-        File.expand_path("./lib/app/modules/#{@path}")
+        File.expand_path("#{module_yml_out_path}/#{path}")
       end
 
       def resource_file_path
-        File.expand_path("./resources/#{@path}")
+        File.expand_path("./resources/#{path}")
       end
     end
   end

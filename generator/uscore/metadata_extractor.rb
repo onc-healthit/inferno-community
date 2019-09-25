@@ -9,10 +9,6 @@ module Inferno
         "http://hl7.org/fhir/us/core/StructureDefinition/#{profile}"
       end
 
-      def profile_json_uri(profile)
-        "https://www.hl7.org/fhir/us/core/StructureDefinition-#{profile}.json"
-      end
-
       def search_param_path(resource, param)
         param = 'id' if param == '_id'
         "SearchParameter/us-core-#{resource.downcase}-#{param}"
@@ -59,7 +55,6 @@ module Inferno
           class_name: class_name,
           resource: resource['type'],
           profile: profile_uri(base_name), # link in capability statement is incorrect,
-          profile_json: profile_json_uri(base_name),
           title: profile_title,
           interactions: [],
           searches: [],
