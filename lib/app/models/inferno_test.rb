@@ -38,12 +38,26 @@ module Inferno
         @optional
       end
 
+      def required?
+        !optional?
+      end
+
       def desc(description = nil)
         @description ||= description
       end
 
       def versions(*versions)
         @versions ||= versions
+      end
+
+      def metadata_hash
+        {
+          test_id: id,
+          name: name,
+          description: desc,
+          required: required?,
+          url: link
+        }
       end
     end
   end

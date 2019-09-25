@@ -376,6 +376,7 @@ module Inferno
             name: test.name,
             required: !test.optional?,
             description: test.desc,
+            url: test.link,
             versions: test.versions.join(','),
             result: ResultStatuses::PASS,
             test_index: test.index
