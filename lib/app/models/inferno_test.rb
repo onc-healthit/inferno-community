@@ -1,11 +1,12 @@
 module Inferno
   module Sequence
     class InfernoTest
-      attr_reader :sequence, :test_block
+      attr_reader :name, :index, :test_block
 
-      def initialize(sequence, &test_block)
-        @sequence = sequence
+      def initialize(name, index, &test_block)
+        @name = name
         @test_block = test_block
+        @index = index
         load_metadata
       end
 
@@ -30,7 +31,11 @@ module Inferno
       end
 
       def optional
-        @optional ||= true
+        @optional = true
+      end
+
+      def optional?
+        @optional
       end
 
       def desc(description = nil)
