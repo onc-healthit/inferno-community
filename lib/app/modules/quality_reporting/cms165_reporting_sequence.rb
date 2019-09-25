@@ -13,15 +13,11 @@ module Inferno
 
       description 'Tests measure operations for CMS165 (Controlling High Blood Pressure). <br/><br/>'\
                   'Prior to running tests, you must: <br/>'\
-                  '1) POST '\
-                  '<a href="/inferno/resources/quality_reporting/Bundle/cms165vs-bundle.json">the CMS165 ValueSet Bundle</a> '\
+                  '1) POST the '\
+                  '<a href="/inferno/resources/quality_reporting/Bundle/cms165-bundle.json">CMS165 Measure and Value Set Bundle</a> '\
                   'to your FHIR server, and observe the status codes in the response to ensure all resources '\
                   'saved sucessfully. <br/>'\
                   '2) POST the '\
-                  '<a href="/inferno/resources/quality_reporting/Bundle/cms165-bundle.json">measure Bundle</a> '\
-                  'to your FHIR server, and observe the status codes in the response to ensure all resources '\
-                  'saved sucessfully. <br/>'\
-                  '3) POST the '\
                   '<a href="/inferno/resources/quality_reporting/Bundle/cms165-patient-bundle.json">patient Bundle</a> '\
                   'to your FHIR server, and observe the status codes in the response to ensure all resources '\
                   'saved sucessfully. <br/>'
