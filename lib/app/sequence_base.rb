@@ -54,7 +54,7 @@ module Inferno
       delegate :versioned_conformance_class, to: :@instance
       delegate :save_resource_ids_in_bundle, to: :@instance
 
-      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
+      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
         @instance = instance
         @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
@@ -62,7 +62,6 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
-        # @metadata_only = metadata_only
       end
 
       def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
