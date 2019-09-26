@@ -385,35 +385,15 @@ module Inferno
               skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
               Inferno.logger.info "Starting Test: #{test.id} [#{test.name}]"
               instance_eval(&test.test_block)
-            rescue AssertionException, ClientException => e
-              result.fail!
-              result.message = e.message
-              result.details = e.details
-            rescue PassException => e
-              result.pass!
-              result.message = e.message
-            rescue TodoException => e
-              result.todo!
-              result.message = e.message
-            rescue WaitException => e
-              result.wait!
-              result.wait_at_endpoint = e.endpoint
-            rescue RedirectException => e
-              result.wait!
-              result.wait_at_endpoint = e.endpoint
-              result.redirect_to_url = e.url
-            rescue SkipException => e
-              result.skip!
-              result.message = e.message
-              result.details = e.details
-            rescue OmitException => e
-              result.omit!
-              result.message = e.message
             rescue StandardError => e
-              Inferno.logger.error "Fatal Error: #{e.message}"
-              Inferno.logger.error e.backtrace
-              result.error!
-              result.message = "Fatal Error: #{e.message}"
+              if e.respond_to? :update_result
+                e.update_result(result)
+              else
+                Inferno.logger.error "Fatal Error: #{e.message}"
+                Inferno.logger.error e.backtrace
+                result.error!
+                result.message = "Fatal Error: #{e.message}"
+              end
             end
 
             result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
