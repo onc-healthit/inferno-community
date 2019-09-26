@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../test_helper'
-class ONCProgramProvenanceTest < MiniTest::Test
+class ONCSMARTDiscoveryTest < MiniTest::Test
   def setup
     instance = get_test_instance
     client = get_client(instance)
