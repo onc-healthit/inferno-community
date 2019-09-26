@@ -365,7 +365,7 @@ module Inferno
       end
 
       def wrap_test(test)
-        lambda do |sequence|
+        lambda do |_sequence|
           @test_warnings = []
           @links = []
           @requires = []

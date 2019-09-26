@@ -13,20 +13,9 @@ module Inferno
         load_metadata
       end
 
-      def metadata
-        yield
-        raise MetadataException # Prevent the rest of the test from running
-      end
-
-      def load_metadata
-        begin
-          instance_eval(&test_block)
-        rescue MetadataException
-        end
-      end
-
       def id(id = nil)
         return @id if id.blank?
+
         @id = "#{id_prefix}-#{id}"
       end
 
@@ -47,7 +36,7 @@ module Inferno
       end
 
       def desc(description = nil)
-        @description ||= description
+        @desc ||= description
       end
 
       def versions(*versions)
@@ -62,6 +51,18 @@ module Inferno
           required: required?,
           url: link
         }
+      end
+
+      private
+
+      def metadata
+        yield
+        raise MetadataException # Prevent the rest of the test from running
+      end
+
+      def load_metadata
+        instance_eval(&test_block)
+      rescue MetadataException # rubocop:disable Lint/HandleExceptions
       end
     end
   end
