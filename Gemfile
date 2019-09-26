@@ -11,7 +11,6 @@ gem 'dm-sqlite-adapter'
 gem 'fhir_client'
 gem 'json-jwt'
 gem 'kramdown'
-gem 'minitest'
 gem 'pry'
 gem 'pry-byebug'
 gem 'rake'
@@ -25,6 +24,7 @@ gem 'thin'
 gem 'time_difference'
 
 group :test do
+  gem 'minitest'
   gem 'rack-test'
   gem 'rubocop', require: false
   gem 'simplecov', require: false
