@@ -1,18 +1,21 @@
+# frozen_string_literal: true
+
 module Inferno
   module Sequence
     class InfernoTest
-      attr_reader :name, :index, :test_block
+      attr_reader :name, :index, :id_prefix, :test_block
 
-      def initialize(name, index, &test_block)
+      def initialize(name, index, id_prefix, &test_block)
         @name = name
-        @test_block = test_block
         @index = index
+        @id_prefix = id_prefix
+        @test_block = test_block
         load_metadata
       end
 
       def metadata
         yield
-        raise MetadataException
+        raise MetadataException # Prevent the rest of the test from running
       end
 
       def load_metadata
@@ -23,7 +26,8 @@ module Inferno
       end
 
       def id(id = nil)
-        @id ||= id
+        return @id if id.blank?
+        @id = "#{id_prefix}-#{id}"
       end
 
       def link(link = nil)

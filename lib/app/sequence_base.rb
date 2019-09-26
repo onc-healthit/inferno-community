@@ -361,7 +361,7 @@ module Inferno
       def self.test(name, &block)
         @@test_index += 1
 
-        tests << InfernoTest.new(name, @@test_index, &block)
+        tests << InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
       end
 
       def wrap_test(test)
