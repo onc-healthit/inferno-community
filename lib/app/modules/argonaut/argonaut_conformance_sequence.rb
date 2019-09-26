@@ -88,7 +88,7 @@ module Inferno
 
         assert_valid_conformance
 
-        formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
+        formats = ['json', 'application/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
