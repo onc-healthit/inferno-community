@@ -1,0 +1,1147 @@
+{
+  "resourceType": "ImplementationGuide",
+  "id": "hl7.fhir.uv.ips",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><h2>InternationalPatientSummaryIG</h2><p>The official URL for this implementation guide is: </p><pre>http://hl7.org/fhir/uv/ips/ImplementationGuide/hl7.fhir.uv.ips</pre></div>"
+  },
+  "url": "http://hl7.org/fhir/uv/ips/ImplementationGuide/hl7.fhir.uv.ips",
+  "version": "0.3.0",
+  "name": "InternationalPatientSummaryIG",
+  "title": "International Patient Summary Implementation Guide",
+  "status": "active",
+  "date": "2019-08-08T03:08:00+00:00",
+  "publisher": "Health Level Seven International - Patient Care Work Group",
+  "contact": [
+    {
+      "telecom": [
+        {
+          "system": "other",
+          "value": "http://www.hl7.org/Special/committees/patientcare/index.cfm"
+        }
+      ]
+    }
+  ],
+  "jurisdiction": [
+    {
+      "coding": [
+        {
+          "system": "http://unstats.un.org/unsd/methods/m49/m49.htm",
+          "code": "001",
+          "display": "World"
+        }
+      ]
+    }
+  ],
+  "packageId": "hl7.fhir.uv.ips",
+  "license": "CC0-1.0",
+  "fhirVersion": [
+    "4.0.0"
+  ],
+  "definition": {
+    "grouping": [
+      {
+        "name": "base"
+      }
+    ],
+    "resource": [
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Bundle-IPS-examples-Bundle-01.html"
+          }
+        ],
+        "reference": {
+          "reference": "Bundle/IPS-examples-Bundle-01"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Medication-eumfh-39-07-1.html"
+          }
+        ],
+        "reference": {
+          "reference": "Medication/eumfh-39-07-1"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "MedicationStatement-eumfh-39-07-1.html"
+          }
+        ],
+        "reference": {
+          "reference": "MedicationStatement/eumfh-39-07-1"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Immunization-75680.html"
+          }
+        ],
+        "reference": {
+          "reference": "Immunization/75680"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "AllergyIntolerance-eumfh-39-07-1.html"
+          }
+        ],
+        "reference": {
+          "reference": "AllergyIntolerance/eumfh-39-07-1"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Condition-eumfh-39-07-1.html"
+          }
+        ],
+        "reference": {
+          "reference": "Condition/eumfh-39-07-1"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Procedure-eumfh-39-07-1.html"
+          }
+        ],
+        "reference": {
+          "reference": "Procedure/eumfh-39-07-1"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Practitioner-eumfh-39-07.html"
+          }
+        ],
+        "reference": {
+          "reference": "Practitioner/eumfh-39-07"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Patient-eumfh-39-07.html"
+          }
+        ],
+        "reference": {
+          "reference": "Patient/eumfh-39-07"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "Patient-66033.html"
+          }
+        ],
+        "reference": {
+          "reference": "Patient/66033"
+        },
+        "exampleBoolean": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-pregnancy-status-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/pregnancy-status-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-absent-or-unknown-allergies-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/absent-or-unknown-allergies-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-absent-or-unknown-devices-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/absent-or-unknown-devices-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-absent-or-unknown-immunizations-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/absent-or-unknown-immunizations-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-med-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/med-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-imaging-txtobs-code-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/imaging-txtobs-code-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-imaging-linear-measure-code-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/imaging-linear-measure-code-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-imaging-numobs-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/imaging-numobs-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-imaging-volume-measure-code-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/imaging-volume-measure-code-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-imaging-area-measure-code-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/imaging-area-measure-code-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-specimen-type-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/specimen-type-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-specimen-collection-method-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/specimen-collection-method-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-absent-or-unknown-medications-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/absent-or-unknown-medications-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-absent-or-unknown-procedures-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/absent-or-unknown-procedures-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-absent-or-unknown-problems-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/absent-or-unknown-problems-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-allergy-intolerance-substance-condition-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/allergy-intolerance-substance-condition-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-allergy-reaction-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/allergy-reaction-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-condition-severity-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/condition-severity-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-core-problem-list-disorders-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/core-problem-list-disorders-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-current-smoking-status-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/current-smoking-status-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-edd-method-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/edd-method-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-imaging-observations-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/imaging-observations-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-laboratory-and-vital-signs-observations.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/laboratory-and-vital-signs-observations"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-laboratory-tests-and-panels-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/laboratory-tests-and-panels-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-lab-result-coded-value-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/lab-result-coded-value-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-medical-devices-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/medical-devices-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-medicine-active-substances-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/medicine-active-substances-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-medicine-doseform.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/medicine-doseform"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-medicine-route-of-administration.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/medicine-route-of-administration"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-observation-codes-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/observation-codes-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-pathology-and-vital-signs-observations.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/pathology-and-vital-signs-observations"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-pathology-result-coded-value-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/pathology-result-coded-value-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-personal-relationship-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/personal-relationship-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-problem-type-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/problem-type-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-procedures-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/procedures-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-sub-observation-category-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/sub-observation-category-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-target-site-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/target-site-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-pregnancies-summary-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/pregnancies-summary-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-vaccines-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/vaccines-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-whoatc-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/whoatc-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "CodeSystem-absent-unknown-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "CodeSystem/absent-unknown-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Condition-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Condition-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-CodeableConcept-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/CodeableConcept-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-abatement-dateTime-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/abatement-dateTime-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Coding-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Coding-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Composition-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Composition-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Device-observer-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Device-observer-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-DeviceUseStatement-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/DeviceUseStatement-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Device-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Device-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-ImagingStudy-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/ImagingStudy-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Immunization-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Immunization-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-MedicationStatement-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/MedicationStatement-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Medication-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Medication-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-alcoholuse-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-alcoholuse-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-media-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-media-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-imaging-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-imaging-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-laboratory-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-laboratory-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-member-imaging-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-member-imaging-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-member-laboratory-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-member-laboratory-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-member-pathology-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-member-pathology-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-pathology-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-pathology-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-pregnancy-edd-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-pregnancy-edd-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-pregnancy-outcome-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-pregnancy-outcome-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-pregnancy-status-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-pregnancy-status-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-tobaccouse-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-tobaccouse-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Observation-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Observation-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-DiagnosticReport-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/DiagnosticReport-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Organization-laboratory-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Organization-laboratory-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Organization-observation-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Organization-observation-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-participant-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/participant-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Patient-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Patient-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Practitioner-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Practitioner-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Procedure-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Procedure-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Quantity-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Quantity-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Range-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Range-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Ratio-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Ratio-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-Specimen-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/Specimen-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "StructureDefinition-AllergyIntolerance-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "StructureDefinition/AllergyIntolerance-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-lab-blood-abo-rh-grp-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/lab-blood-abo-rh-grp-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-microorganism-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/microorganism-uv-ips"
+        },
+        "exampleBoolean": false
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/implementationguide-page",
+            "valueUri": "ValueSet-lab-absence-presence-uv-ips.html"
+          }
+        ],
+        "reference": {
+          "reference": "ValueSet/lab-absence-presence-uv-ips"
+        },
+        "exampleBoolean": false
+      }
+    ],
+    "page": {
+      "nameUrl": "index.md",
+      "title": "International Patient Summary Home",
+      "generation": "markdown"
+    }
+  }
+}

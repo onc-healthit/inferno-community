@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+module Inferno
+  module Sequence
+    class <%=classname%> < SequenceBase
+      group 'US Core R4 Profile Conformance'
+
+      title '<%=title%> Tests'
+
+      description 'Verify that <%=resource%> resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
+
+      test_id_prefix '<%=resource%>' # change me
+
+      requires :token, :patient_id
+      conformance_supports :<%=resource%>
+
+      details %(
+
+        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.  The resources
+        returned will be checked for consistency against the [<%= classname.gsub('USCoreR4','').gsub('Sequence','') %> Argonaut Profile](<%=profile.gsub('.json','')%>)
+
+      )
+
+      @resources_found = false<% tests.each do |test|%>
+
+      test '<%=test[:tests_that]%>' do
+        metadata do
+          id '<%=format('%02d', test[:index])%>'
+          link '<%=test[:link]%>'
+          desc %(
+          )
+          versions :r4
+        end
+<%=test[:test_code]%>
+      end<% end%>
+    end
+  end
+end
