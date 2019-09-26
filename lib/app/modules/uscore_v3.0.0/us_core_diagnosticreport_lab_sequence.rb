@@ -87,8 +87,15 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @diagnosticreport = reply.try(:resource).try(:entry).try(:first).try(:resource)
+        @diagnosticreport = reply&.resource&.entry&.first&.resource
         @diagnosticreport_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        page_count = 1
+        next_bundle = reply&.resource&.next_bundle
+        until next_bundle.nil? || page_count == 100
+          @diagnosticreport_ary += next_bundle&.entry&.map { |entry| entry&.resource }
+          next_bundle = next_bundle.next_bundle
+          page_count += 1
+        end
         save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
         save_delayed_sequence_references(@diagnosticreport)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
