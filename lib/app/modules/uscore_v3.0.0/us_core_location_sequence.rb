@@ -106,14 +106,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @location = reply&.resource&.entry&.first&.resource
-        @location_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
-        page_count = 1
-        next_bundle = reply&.resource&.next_bundle
-        until next_bundle.nil? || page_count == 100
-          @location_ary += next_bundle&.entry&.map { |entry| entry&.resource }
-          next_bundle = next_bundle.next_bundle
-          page_count += 1
-        end
+        @location_ary = fetch_all_search_results(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
         save_delayed_sequence_references(@location)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
