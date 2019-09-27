@@ -88,8 +88,7 @@ module Inferno
 
         assert_valid_conformance
 
-        formats = ['json', 'application/json', 'application/json+fhir', 'application/fhir+json']
-        assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
+        assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'Capability Statement describes SMART on FHIR core capabilities' do
