@@ -166,7 +166,7 @@ module Inferno
         inferno_tests.each do |inferno_test|
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
-          result = instance_eval(&wrap_test(inferno_test))
+          result = instance_exec(&wrap_test(inferno_test))
 
           # Check to see if we are in headless mode and should redirect
 
@@ -365,11 +365,8 @@ module Inferno
       end
 
       def wrap_test(test)
-        lambda do |_sequence|
+        lambda do
           @test_warnings = []
-          @links = []
-          @requires = []
-          @validates = []
           Models::TestResult.new(
             test_id: test.id,
             name: test.name,
