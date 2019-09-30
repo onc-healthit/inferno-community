@@ -17,7 +17,7 @@ module Inferno
       description 'Retrieve information about supported server functionality in the Conformance Statement.'
       details %(
         # Background
-         The #{title} Sequence tests a FHIR server's ability to formally describe features
+        The #{title} Sequence tests a FHIR server's ability to formally describe features
         supported by the API by using the [Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html) resource.
         The features described in the Conformance Statement must be consistent with the required capabilities of an
         Argonaut server.  The Conformance Statement must also advertise the location of the required SMART on FHIR endpoints
