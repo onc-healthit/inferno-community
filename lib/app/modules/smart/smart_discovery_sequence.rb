@@ -59,6 +59,20 @@ module Inferno
         'revocation_endpoint'
       ].freeze
 
+      SMART_OAUTH_EXTENSION_URL = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
+
+      REQUIRED_OAUTH_ENDPOINTS = [
+        { url: 'authorize', description: 'authorization' },
+        { url: 'token', description: 'token' }
+      ].freeze
+
+      OPTIONAL_OAUTH_ENDPOINTS = [
+        { url: 'register', description: 'dynamic registration' },
+        { url: 'manage', description: 'authorization management' },
+        { url: 'introspect', description: 'token introspection' },
+        { url: 'revoke', description: 'token revocation' }
+      ].freeze
+
       test 'Retrieve Configuration from well-known endpoint' do
         metadata do
           id '01'
@@ -78,6 +92,11 @@ module Inferno
         @well_known_configuration = JSON.parse(well_known_configuration_response.body)
         @well_known_authorize_url = @well_known_configuration['authorization_endpoint']
         @well_known_token_url = @well_known_configuration['token_endpoint']
+        @well_known_register_url = @well_known_configuration['registration_endpoint']
+        @well_known_manage_url = @well_known_configuration['management_endpoint']
+        @well_known_introspect_url = @well_known_configuration['introspection_endpoint']
+        @well_known_revoke_url = @well_known_configuration['revocation_endpoint']
+
         @instance.update(
           oauth_authorize_endpoint: @well_known_authorize_url,
           oauth_token_endpoint: @well_known_token_url,
@@ -128,46 +147,53 @@ link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
 
         @conformance = @client.conformance_statement
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
-        assert !oauth_metadata.nil?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
-        @conformance_authorize_url = oauth_metadata[:authorize_url]
-        @conformance_token_url = oauth_metadata[:token_url]
-        assert @conformance_authorize_url.present?, 'No authorize URI provided in Conformance/CapabilityStatement resource'
-        assert_valid_http_uri @conformance_authorize_url, "Invalid authorize url: '#{@conformance_authorize_url}'"
-        assert @conformance_token_url.present?, 'No token URI provided in conformance statement.'
-        assert_valid_http_uri @conformance_token_url, "Invalid token url: '#{@conformance_token_url}'"
+
+        assert oauth_metadata.present?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
+
+        REQUIRED_OAUTH_ENDPOINTS.each do |endpoint|
+          url = oauth_metadata[:"#{endpoint[:url]}_url"]
+          instance_variable_set(:"@conformance_#{endpoint[:url]}_url", url)
+
+          assert url.present?, "No #{endpoint[:description]} URI provided in Conformance/CapabilityStatement resource"
+          assert_valid_http_uri url, "Invalid #{endpoint[:description]} url: '#{url}'"
+        end
 
         warning do
-          service = []
+          services = []
           @conformance.try(:rest)&.each do |endpoint|
             endpoint.try(:security).try(:service)&.each do |sec_service|
               sec_service.try(:coding)&.each do |coding|
-                service << coding.code
+                services << coding.code
               end
             end
           end
 
-          assert !service.empty?, 'No security services listed. Conformance/CapabilityStatement.rest.security.service should be SMART-on-FHIR.'
-          assert service.any? { |any_service| any_service == 'SMART-on-FHIR' }, "Conformance/CapabilityStatement.rest.security.service set to #{service.map { |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
+          assert !services.empty?, 'No security services listed. Conformance/CapabilityStatement.rest.security.service should be SMART-on-FHIR.'
+          assert services.any? { |service| service == 'SMART-on-FHIR' }, "Conformance/CapabilityStatement.rest.security.service set to #{services.map { |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
         end
 
-        registration_url = nil
+        security_extensions =
+          @conformance.rest.first.security&.extension
+            &.find { |extension| extension.url == SMART_OAUTH_EXTENSION_URL }
+            &.extension
 
-        warning do
-          security_info = @conformance.rest.first.security.extension.find { |x| x.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris' }
-          registration_url = security_info.extension.find { |x| x.url == 'register' }
-          registration_url = registration_url.value if registration_url
-          assert registration_url.present?, 'No dynamic registration endpoint in conformance.'
-          assert_valid_http_uri registration_url, "Invalid registration url: '#{registration_url}'"
+        OPTIONAL_OAUTH_ENDPOINTS.each do |endpoint|
+          warning do
+            url =
+              security_extensions
+                &.find { |extension| extension.url == endpoint[:url] }
+                &.value
 
-          manage_url = security_info.extension.find { |x| x.url == 'manage' }
-          manage_url = manage_url.value if manage_url
-          assert manage_url.present?, 'No user-facing authorization management workflow entry point for this FHIR server.'
+            assert url.present?, "No #{endpoint[:description]} endpoint in conformance."
+            assert_valid_http_uri url, "Invalid #{endpoint[:description]} url: '#{url}'"
+            instance_variable_set(:"@conformance_#{endpoint[:url]}_url", url)
+          end
         end
 
         @instance.update(
           oauth_authorize_endpoint: @conformance_authorize_url,
           oauth_token_endpoint: @conformance_token_url,
-          oauth_register_endpoint: registration_url
+          oauth_register_endpoint: @conformance_register_url
         )
       end
 
@@ -181,9 +207,19 @@ link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
           )
         end
 
-        assert @well_known_authorize_url == @conformance_authorize_url, 'The authorization url is not consistent between the well-known endpoint response and the conformance statement'
+        (REQUIRED_OAUTH_ENDPOINTS + OPTIONAL_OAUTH_ENDPOINTS).each do |endpoint|
+          url = endpoint[:url]
+          well_known_url = instance_variable_get(:"@well_known_#{url}_url")
+          conformance_url = instance_variable_get(:"@conformance_#{url}_url")
 
-        assert @well_known_token_url == @conformance_token_url, 'The token url is not consistent between the well-known endpoint response and the conformance statement'
+          assert well_known_url == conformance_url, %(
+            The #{endpoint[:description]} url is not consistent between the
+            well-known configuration and the conformance statement:
+
+            Well-known #{url} url: #{well_known_url}
+            Conformance #{url} url: #{conformance_url}
+          )
+        end
       end
     end
   end
