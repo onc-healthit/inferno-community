@@ -184,10 +184,11 @@ namespace :inferno do |_argv|
     csv_out = CSV.generate do |csv|
       csv << ['Version', VERSION, 'Generated', Time.now]
       csv << ['', '', '', '', '']
-      csv << ['Test ID', 'Sequence/Group', 'Test Name', 'Required?', 'Reference URI']
+      csv << ['Test ID', 'Reference', 'Sequence/Group', 'Test Name', 'Required?', 'Reference URI']
       flat_tests.each do |test|
         csv << [
           test[:test_id],
+          test[:ref],
           test[:sequence].split('::').last,
           test[:name],
           test[:sequence_required] && test[:required],

@@ -23,6 +23,10 @@ module Inferno
         @link ||= link
       end
 
+      def ref(ref = nil)
+        @ref ||= ref
+      end
+
       def optional
         @optional = true
       end
@@ -49,7 +53,8 @@ module Inferno
           name: name,
           description: desc,
           required: required?,
-          url: link
+          url: link,
+          ref: ref
         }
       end
 

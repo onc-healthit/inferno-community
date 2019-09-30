@@ -370,6 +370,7 @@ module Inferno
           Models::TestResult.new(
             test_id: test.id,
             name: test.name,
+            ref: test.ref,
             required: !test.optional?,
             description: test.desc,
             url: test.link,

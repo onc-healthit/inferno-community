@@ -10,6 +10,7 @@ describe InfernoTest do
   PREFIX = 'PREFIX'
   TEST_ID = 123
   LINK = 'LINK'
+  REF = 'REF'
   DESCRIPTION = 'DESCRIPTION'
 
   before do
@@ -41,6 +42,17 @@ describe InfernoTest do
     it 'sets and returns the link' do
       @base_test.link(LINK)
       assert @base_test.link == LINK
+    end
+  end
+
+  describe '#ref' do
+    it 'returns nil if no ref has been set' do
+      assert @base_test.ref.nil?
+    end
+
+    it 'sets and returns the ref' do
+      @base_test.ref(REF)
+      assert @base_test.ref == REF
     end
   end
 
@@ -95,12 +107,14 @@ describe InfernoTest do
       @base_test.id(TEST_ID)
       @base_test.desc(DESCRIPTION)
       @base_test.link(LINK)
+      @base_test.ref(REF)
       assert @base_test.metadata_hash == {
         test_id: "#{PREFIX}-#{TEST_ID}",
         name: NAME,
         description: DESCRIPTION,
         required: true,
-        url: LINK
+        url: LINK,
+        ref: REF
       }
     end
   end
