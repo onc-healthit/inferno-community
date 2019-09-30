@@ -112,7 +112,7 @@ module Inferno
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
           description %(
             The JSON from .well-known/smart-configuration contains the following
-            required fields: #{REQUIRED_WELL_KNOWN_FIELDS.join(', ')}
+            required fields: #{REQUIRED_WELL_KNOWN_FIELDS.map { |field| "`#{field}`" }.join(', ')}
           )
         end
 
@@ -127,7 +127,7 @@ module Inferno
           optional
           description %(
             The JSON from .well-known/smart-configuration contains the following
-            recommended fields: #{RECOMMENDED_WELL_KNOWN_FIELDS.join(', ')}
+            recommended fields: #{RECOMMENDED_WELL_KNOWN_FIELDS.map { |field| "`#{field}`" }.join(', ')}
           )
         end
 
