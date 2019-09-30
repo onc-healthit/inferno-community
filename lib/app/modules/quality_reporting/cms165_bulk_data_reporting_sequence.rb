@@ -25,7 +25,7 @@ module Inferno
       test 'Bulk Data Import' do
         metadata do
           id '01'
-          link 'https://hl7.org/fhir/STU3/measure-operations.html#evaluate-measure'
+          link 'https://github.com/smart-on-fhir/bulk-import/blob/master/import.md'
           desc 'Run bulk data $import operation for CMS165'
         end
 
