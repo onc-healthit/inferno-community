@@ -17,44 +17,42 @@ module Inferno
       description 'Retrieve information about supported server functionality in the Capability Statement.'
       details %(
         # Background
-         The #{title} Sequence tests a FHIR server's ability to formally describe features
-        supported by the API by using the [Capability Statement](https://www.hl7.org/fhir/capabilitystatement.html) resource.
-        The features described in the Capability Statement must be consistent with the required capabilities of an
-        Argonaut server.  The Capability Statement must also advertise the location of the required SMART on FHIR endpoints
+        The #{title} Sequence tests a FHIR server's ability to formally describe features supported by the API by
+        using the [Capability Statement](https://www.hl7.org/fhir/capabilitystatement.html) resource.
+        The features described in the Capability Statement must be consistent with the required capabilities of a
+        US Core server.  The Capability Statement must also advertise the location of the required SMART on FHIR endpoints
         that enable authenticated access to the FHIR server resources.
 
-        Not all servers are expected to implement all possible queries and data elements described in the Argonaut API.
-        For example, the Argonaut specification requires that the Patient resource and only one other Argonaut resource are required.
-        Implementing the Capability Statement resource allows clients to dynamically determine which of these resources
-        are supported at runtime, instead of having to specifically write the application to accommodate every known server implementation
-        at development time.  Similarly, by providing information about the location of SMART on FHIR OAuth 2.0 endpoints,
-        the client does not have to be hard-coded with information about the authorization services associated with
-        every FHIR API.
+        The Capability Statement resource allows clients to determine which resources are supported by a FHIR Server.
+        Not all servers are expected to implement all possible queries and data elements described in the US Core API.
+        For example, the US Core Implementation Guide requires that the Patient resource and
+        only one additional resource profile from the US Core Profiles.
 
-        Note that the name of this resource changed to 'Capability Statement' in STU3 to better describe the intent of this resource.
-        This test refers to it as the Capability Statement as that is what it was called in DSTU2.
+
+        Note that the name of this resource changed to from 'Conformance Statement' to 'CapabilityStatement' in STU3
+        to better describe the intent of this resource.
+        This test refers to it as the Capability Statement.
 
         # Test Methodology
 
-        This test suite accesses the server endpoint at `/metadata` using a `GET` request.  It parses the Capability Statement and
-        verifies that the server claims support of following features:
+        This test suite accesses the server endpoint at `/metadata` using a `GET` request.
+        It parses the Capability Statement and verifies that :
 
-        * JSON encoding of resources
-        * Patient resource
-        * At least one of the other resources that form the basis of Argonaut profiles
-        * SMART on FHIR authorization
+        * The endpoint is secured by an appropriate cryptographic protocol
+        * The resource matches the expected FHIR version defined by the tests
+        * The resource is a valid FHIR resource
+        * The server claims support for JSON encoding of resources
+        * The server claims support for the Patient resource
 
         It collects the following information that is saved in the testing session for use by later tests:
 
         * List of resources supported
         * List of queries parameters supported
-        * SMART on FHIR endpoints
 
         For more information of the Capability Statement, visit these links:
 
-        * [Capability](https://www.hl7.org/fhir/capabilitystatement.html)
-        * [Argonaut Capability Requirements](http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html)
-        * [SMART on FHIR Conformance](http://hl7.org/fhir/smart-app-launch/conformance/index.html)
+        * [Capability Statement](https://www.hl7.org/fhir/capabilitystatement.html)
+        * [DSTU2 Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html)
       )
 
       test 'FHIR server capability states JSON support' do
@@ -124,15 +122,18 @@ module Inferno
         assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
       end
 
-      test 'Capability Statement lists supported Argonaut profiles, operations and search parameters' do
+      test 'Capability Statement lists supported US Core profiles, operations and search parameters' do
         metadata do
           id '06'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           desc %(
-           The Argonaut Data Query Implementation Guide states:
+           The US Core Implementation Guide states:
 
            ```
-           The Argonaut Data Query Server SHALL... Declare a Capability Statement identifying the list of profiles, operations, search parameter supported.
+           The US Core Server SHALL:
+
+               1. Support the US Core Patient resource profile.
+               2. Support at least one additional resource profile from the list of US Core Profiles.
            ```
 
           )
