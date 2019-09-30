@@ -1,0 +1,18 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "1"
+      }
+    }
+  ],
+  "link": [
+    {
+      "relation": "next",
+      "url": "http://www.example.com/2"
+    }
+  ]
+}

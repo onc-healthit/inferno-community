@@ -807,7 +807,7 @@ module Inferno
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema
-        when 'gt', 'ge' 
+        when 'gt', 'ge'
           comparator + (DateTime.xmlschema(date) - 1).xmlschema
         else
           ''
@@ -817,10 +817,14 @@ module Inferno
       def fetch_all_search_results(bundle)
         resources = bundle&.entry&.map { |entry| entry&.resource }
         page_count = 1
+        next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
         next_bundle = bundle.next_bundle
+        assert next_bundle_link.nil? || !next_bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
         until next_bundle.nil? || page_count == 20
           resources += next_bundle&.entry&.map { |entry| entry&.resource }
+          next_bundle_link = next_bundle&.link&.find { |link| link.relation == 'next' }&.url
           next_bundle = next_bundle.next_bundle
+          assert next_bundle_link.nil? || !next_bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
           page_count += 1
         end
         resources
