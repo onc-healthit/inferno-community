@@ -67,7 +67,7 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         name_val = resolve_element_from_path(@practitioner, 'name.family')
         search_params = { 'name': name_val }
