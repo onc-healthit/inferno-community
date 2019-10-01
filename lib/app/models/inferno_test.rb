@@ -56,7 +56,7 @@ module Inferno
         {
           test_id: id,
           name: name,
-          description: desc,
+          description: description,
           required: required?,
           url: link,
           ref: ref
