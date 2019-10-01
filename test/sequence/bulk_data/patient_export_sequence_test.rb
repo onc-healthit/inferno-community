@@ -44,6 +44,17 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
   end
 
+  def include_export_stub_no_token
+    headers = @export_request_headers.clone
+    headers.delete(:authorization)
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: headers)
+      .to_return(
+        status: 401
+      )
+  end
+
   def include_export_stub(status_code: 202,
                           response_headers: { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
@@ -51,6 +62,28 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       .to_return(
         status: status_code,
         headers: response_headers
+      )
+  end
+
+  def include_export_stub_invalid_accept
+    headers = @export_request_headers.clone
+    headers[:accept] = 'application/fhir+xml'
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: headers)
+      .to_return(
+        status: 400
+      )
+  end
+
+  def include_export_stub_invalid_prefer
+    headers = @export_request_headers.clone
+    headers[:prefer] = 'return=representation'
+
+    stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: headers)
+      .to_return(
+        status: 400
       )
   end
 
@@ -69,14 +102,11 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
-    stub_request(:get, 'http://www.example.com/Patient/$export')
-      .with(headers: @export_request_headers_no_token)
-      .to_return(
-        status: 401
-      )
-
-    include_status_check_stub
+    include_export_stub_no_token
     include_export_stub
+    include_export_stub_invalid_accept
+    include_export_stub_invalid_prefer
+    include_status_check_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
@@ -91,7 +121,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(status_code: 200)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_kick_off('Patient')
+      @sequence.check_export_kick_off('Patient')
     end
   end
 
@@ -101,7 +131,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(response_headers: {})
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_kick_off('Patient')
+      @sequence.check_export_kick_off('Patient')
     end
   end
 
@@ -115,7 +145,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
 
     assert_raises Inferno::SkipException do
-      @sequence.assert_export_status(@content_location, timeout: 1)
+      @sequence.check_export_status(@content_location, timeout: 1)
     end
   end
 
@@ -125,7 +155,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_status_check_stub(status_code: 201)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_status(@content_location)
+      @sequence.check_export_status(@content_location)
     end
   end
 
@@ -138,7 +168,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_status_check_stub(response_body: response_body)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_status(@content_location)
+      @sequence.check_export_status(@content_location)
     end
   end
 
@@ -148,7 +178,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_status_check_stub(response_headers: { content_type: 'application/xml' })
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_status(@content_location)
+      @sequence.check_export_status(@content_location)
     end
   end
 end
