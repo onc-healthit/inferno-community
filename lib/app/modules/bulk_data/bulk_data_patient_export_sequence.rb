@@ -14,7 +14,7 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      def assert_export_kick_off(klass)
+      def check_export_kick_off(klass)
         reply = export_kick_off(klass: klass)
 
         assert_response_accepted(reply)
@@ -23,17 +23,17 @@ module Inferno
         assert @content_location.present?, 'Export response header did not include "Content-Location"'
       end
 
-      def assert_export_kick_off_fail_invalid_accept(klass)
+      def check_export_kick_off_fail_invalid_accept(klass)
         reply = export_kick_off(klass: klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
         assert_response_bad(reply)
       end
 
-      def assert_export_kick_off_fail_invalid_prefer(klass)
+      def check_export_kick_off_fail_invalid_prefer(klass)
         reply = export_kick_off(klass: klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
         assert_response_bad(reply)
       end
 
-      def assert_export_status(url, timeout: 180)
+      def check_export_status(url, timeout: 180)
         reply = export_status_check(url, timeout)
 
         # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
@@ -86,7 +86,7 @@ module Inferno
           )
         end
 
-        assert_export_kick_off('Patient')
+        check_export_kick_off('Patient')
       end
 
       test 'Server shall reject for $export operation with invalid Accept header' do
@@ -98,7 +98,7 @@ module Inferno
           versions :stu3
         end
 
-        assert_export_kick_off_fail_invalid_accept('Patient')
+        check_export_kick_off_fail_invalid_accept('Patient')
       end
 
       test 'Server shall reject for $export operation with invalid Prefer header' do
@@ -110,7 +110,7 @@ module Inferno
           versions :stu3
         end
 
-        assert_export_kick_off_fail_invalid_prefer('Patient')
+        check_export_kick_off_fail_invalid_prefer('Patient')
       end
 
       test 'Server shall return "202 Accepted" or "200 OK"' do
@@ -121,7 +121,7 @@ module Inferno
           )
         end
 
-        assert_export_status(@content_location)
+        check_export_status(@content_location)
       end
 
       private
