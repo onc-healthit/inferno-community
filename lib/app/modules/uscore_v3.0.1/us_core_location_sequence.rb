@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Location resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Location' # change me
+      test_id_prefix 'USCL'
 
       requires :token
       conformance_supports :Location

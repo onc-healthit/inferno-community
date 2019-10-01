@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that CareTeam resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'CareTeam' # change me
+      test_id_prefix 'USCCT'
 
       requires :token, :patient_id
       conformance_supports :CareTeam

@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that DocumentReference resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'DocumentReference' # change me
+      test_id_prefix 'USCDR'
 
       requires :token, :patient_id
       conformance_supports :DocumentReference

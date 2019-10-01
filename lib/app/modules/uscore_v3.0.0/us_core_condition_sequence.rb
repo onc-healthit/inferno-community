@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Condition resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Condition' # change me
+      test_id_prefix 'USCC'
 
       requires :token, :patient_id
       conformance_supports :Condition

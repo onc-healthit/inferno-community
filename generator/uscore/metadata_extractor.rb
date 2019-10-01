@@ -41,6 +41,8 @@ module Inferno
         profile_json = @resource_by_path[base_path]
         reformatted_version = ig_resource['version'].delete('.')
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
+        module_prefix = 'USC'
+        test_id_prefix = "#{module_prefix}#{profile_title.split('').select { |c| c.upcase == c && c != ' ' }.join}"
         class_name = base_name
           .split('-')
           .map(&:capitalize)
@@ -53,6 +55,7 @@ module Inferno
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,
+          test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile_uri(base_name), # link in capability statement is incorrect,
           title: profile_title,
