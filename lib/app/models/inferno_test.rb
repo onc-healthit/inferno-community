@@ -39,8 +39,13 @@ module Inferno
         !optional?
       end
 
-      def desc(description = nil)
-        @desc ||= description
+      def description(description = nil)
+        @description ||= description
+      end
+
+      def desc(desc = nil)
+        Inferno.logger.warn "'desc' has been deprecated. Use 'description' instead. Called from #{caller.first}"
+        description(desc)
       end
 
       def versions(*versions)
