@@ -40,13 +40,6 @@ class ONCProgramProvenanceTest < MiniTest::Test
                          'User-Agent' => 'Ruby FHIR Client',
                          'Authorization' => "Bearer #{@instance.token}" }
 
-    @extended_request_headers = { 'Accept' => 'application/json+fhir',
-                                  'Accept-Charset' => 'utf-8',
-                                  'User-Agent' => 'Ruby FHIR Client',
-                                  'Accept-Encoding' => 'gzip, deflate',
-                                  'Host' => 'www.example.com',
-                                  'Authorization' => "Bearer #{@instance.token}" }
-
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end
 
@@ -67,26 +60,6 @@ class ONCProgramProvenanceTest < MiniTest::Test
       .with(headers: @request_headers)
       .to_return(status: 200,
                  body: @resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # history should return a history bundle
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # vread should return an instance
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: @resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    stub_request(:get, uri_template)
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: @resource_bundle.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     # Stub Patient for Reference Resolution Tests

@@ -14,7 +14,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
       base_url: 'http://localhost:4567',
       client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
       client_id: SecureRandom.uuid,
-      selected_module: 'us_core_r4',
+      selected_module: 'uscore_v3.0.1',
       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       scopes: 'launch openid patient/*.* profile',
@@ -33,7 +33,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     @request_headers = {
       'Accept' => 'application/fhir+json',
       'Accept-Charset' => 'utf-8',
-      'Accept-Encoding' => 'gzip, deflate',
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
       'Authorization' => 'Bearer 99897979',
       'Host' => 'www.example.com',
       'User-Agent' => 'Ruby FHIR Client'
