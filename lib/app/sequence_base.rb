@@ -815,16 +815,13 @@ module Inferno
       end
 
       def fetch_all_bundled_resources(bundle)
-        resources = bundle&.entry&.map { |entry| entry&.resource }
         page_count = 1
-        next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
-        next_bundle = bundle.next_bundle
-        assert next_bundle_link.nil? || !next_bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
-        until next_bundle.nil? || page_count == 20
-          resources += next_bundle&.entry&.map { |entry| entry&.resource }
-          next_bundle_link = next_bundle&.link&.find { |link| link.relation == 'next' }&.url
-          next_bundle = next_bundle.next_bundle
-          assert next_bundle_link.nil? || !next_bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
+        resources = []
+        until bundle.nil? || page_count == 20
+          resources += bundle&.entry&.map { |entry| entry&.resource }
+          next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
+          bundle = bundle.next_bundle
+          assert next_bundle_link.nil? || !bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
           page_count += 1
         end
         resources
