@@ -224,7 +224,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_file_request_stub
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_file_request(unmatched_type_output)
+      @sequence.check_file_request(unmatched_type_output)
     end
   end
 end
