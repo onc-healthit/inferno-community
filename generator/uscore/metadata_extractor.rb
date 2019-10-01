@@ -42,12 +42,8 @@ module Inferno
         reformatted_version = ig_resource['version'].delete('.')
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
         module_prefix = 'USC'
-        test_id_prefix = "#{module_prefix}#{profile_title.split('').select { |c| c.upcase == c && c != ' ' }.join}"
-        class_name = base_name
-          .split('-')
-          .map(&:capitalize)
-          .join
-          .gsub('UsCore', "USCore#{reformatted_version}") + 'Sequence'
+        test_id_prefix = module_prefix + profile_title.split('').select { |c| c.upcase == c && c != ' ' }.join
+        class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{reformatted_version}") + 'Sequence'
 
         # In case the profile doesn't start with US Core
         class_name = "USCore#{reformatted_version}#{class_name}" unless class_name.start_with? 'USCore'
