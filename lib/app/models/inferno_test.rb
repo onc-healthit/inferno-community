@@ -44,7 +44,7 @@ module Inferno
       end
 
       def desc(desc = nil)
-        Inferno.logger.warn "'desc' has been deprecated. Use 'description' instead. Called from #{caller.first}"
+        Inferno.logger.warn "'desc' has been deprecated. Use 'description' instead. Called from #{caller(0..0).first}"
         description(desc)
       end
 
