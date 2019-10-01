@@ -1,0 +1,49 @@
+name: uscore_v3.0.0
+title: US Core R4 v3.0.0
+description : US Core R4 v3.0.0
+fhir_version: r4
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests:
+      - name: Discovery
+        sequences:
+        - UsCoreR4CapabilityStatementSequence
+        - SMARTDiscoverySequence
+        run_all: true
+      - name: Authorization and Authentication
+        sequences:
+        - DynamicRegistrationSequence
+        - ManualRegistrationSequence
+        - StandaloneLaunchSequence
+        - EHRLaunchSequence
+      - name: US Core R4 Patient Based Profiles
+        run_all: true
+        sequences:
+        - USCore300AllergyintoleranceSequence
+        - USCore300CareplanSequence
+        - USCore300CareteamSequence
+        - USCore300ConditionSequence
+        - USCore300DeviceSequence
+        - USCore300DiagnosticreportNoteSequence
+        - USCore300DiagnosticreportLabSequence
+        - USCore300DocumentreferenceSequence
+        - USCore300EncounterSequence
+        - USCore300GoalSequence
+        - USCore300ImmunizationSequence
+        - USCore300MedicationrequestSequence
+        - USCore300MedicationstatementSequence
+        - USCore300SmokingstatusSequence
+        - USCore300PediatricWeightForHeightSequence
+        - USCore300ObservationLabSequence
+        - USCore300PediatricBmiForAgeSequence
+        - USCore300PatientSequence
+        - USCore300ProcedureSequence
+        - R4ProvenanceSequence
+        - USCoreR4ClinicalNotesSequence
+        - USCore300LocationSequence
+        - USCore300MedicationSequence
+        - USCore300OrganizationSequence
+        - USCore300PractitionerSequence
+        - USCore300PractitionerroleSequence

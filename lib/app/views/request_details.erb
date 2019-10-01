@@ -9,6 +9,15 @@
 <div class="modal-body">
   <div class="test-result-details-response-values">
     <div class="test-result-details-header">Request</div>
+    <% if rr.direction == 'outbound' %>
+      <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
+    <% else %>
+      <span class="oi oi-arrow-thick-left" title="inbound requests" aria-hidden="true"></span>
+    <% end %>
+    &nbsp;
+    <%= rr.request_method.upcase %> &nbsp;
+    <%= rr.response_code %> &nbsp;
+    <%= rr.request_url %>
     <div class="test-result-details-subheader">Headers</div>
     <ul>
       <% valid_json?(rr.request_headers) && JSON.parse(rr.request_headers).each do |header_name, header_value| %>
