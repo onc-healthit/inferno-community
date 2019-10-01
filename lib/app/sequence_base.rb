@@ -361,7 +361,7 @@ module Inferno
       def self.test(name, &block)
         @@test_index += 1
 
-        tests << InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
+        tests << Test.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
       end
 
       def wrap_test(test)
@@ -400,7 +400,7 @@ module Inferno
         end
       end
 
-      # Metadata loading is handled by InfernoTest
+      # Metadata loading is handled by Test
       def metadata; end
 
       def todo(message = '')

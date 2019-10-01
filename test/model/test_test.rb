@@ -2,9 +2,9 @@
 
 require File.expand_path '../test_helper.rb', __dir__
 
-InfernoTest = Inferno::Sequence::InfernoTest
+Test = Inferno::Sequence::Test
 
-describe InfernoTest do
+describe Test do
   NAME = 'NAME'
   INDEX = 1
   PREFIX = 'PREFIX'
@@ -14,12 +14,12 @@ describe InfernoTest do
   DESCRIPTION = 'DESCRIPTION'
 
   before do
-    @base_test = InfernoTest.new(NAME, INDEX, PREFIX, &proc {})
+    @base_test = Test.new(NAME, INDEX, PREFIX, &proc {})
   end
 
   describe '.initialize' do
-    it 'creates an InfernoTest instance' do
-      assert @base_test.instance_of? InfernoTest
+    it 'creates an Test instance' do
+      assert @base_test.instance_of? Test
     end
   end
 
