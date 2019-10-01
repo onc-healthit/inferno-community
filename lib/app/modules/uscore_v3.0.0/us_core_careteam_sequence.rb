@@ -74,7 +74,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @careteam = reply&.resource&.entry&.first&.resource
-        @careteam_ary = fetch_all_search_results(reply&.resource)
+        @careteam_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
         save_delayed_sequence_references(@careteam)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)

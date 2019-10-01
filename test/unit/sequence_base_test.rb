@@ -49,7 +49,7 @@ class SequenceBaseTest < MiniTest::Test
     resource.recorder = new_reference
   end
 
-  describe '#fetch_all_search_results' do
+  describe '#fetch_all_bundled_resources' do
     before do
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))
       @bundle2 = load_fixture(:bundle_2)
@@ -64,7 +64,7 @@ class SequenceBaseTest < MiniTest::Test
       stub_request(:get, @bundle1.link.first.url)
         .to_return(body: @bundle2)
 
-      all_resources = @sequence.fetch_all_search_results(@bundle1)
+      all_resources = @sequence.fetch_all_bundled_resources(@bundle1)
       assert all_resources.map(&:id) == ['1', '2']
     end
 
@@ -73,8 +73,13 @@ class SequenceBaseTest < MiniTest::Test
         .to_return(body: '', status: 404)
 
       assert_raises Inferno::AssertionException do
-        @sequence.fetch_all_search_results(@bundle1)
+        @sequence.fetch_all_bundled_resources(@bundle1)
       end
+    end
+
+    it 'returns resources when no next page' do
+      all_resources = @sequence.fetch_all_bundled_resources(FHIR.from_contents(@bundle2))
+      assert all_resources.map(&:id) == ['2']
     end
   end
 end

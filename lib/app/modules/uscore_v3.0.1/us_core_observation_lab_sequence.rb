@@ -88,7 +88,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         @observation = reply&.resource&.entry&.first&.resource
-        @observation_ary = fetch_all_search_results(reply&.resource)
+        @observation_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
         save_delayed_sequence_references(@observation)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)

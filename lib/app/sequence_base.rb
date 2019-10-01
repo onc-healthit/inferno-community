@@ -814,7 +814,7 @@ module Inferno
         end
       end
 
-      def fetch_all_search_results(bundle)
+      def fetch_all_bundled_resources(bundle)
         resources = bundle&.entry&.map { |entry| entry&.resource }
         page_count = 1
         next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
