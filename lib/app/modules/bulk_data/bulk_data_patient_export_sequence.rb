@@ -15,7 +15,7 @@ module Inferno
       conformance_supports :Patient
 
       def check_export_kick_off(klass)
-        reply = export_kick_off(klass: klass)
+        reply = export_kick_off(klass)
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -24,16 +24,18 @@ module Inferno
       end
 
       def check_export_kick_off_fail_invalid_accept(klass)
-        reply = export_kick_off(klass: klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
+        reply = export_kick_off(klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
         assert_response_bad(reply)
       end
 
       def check_export_kick_off_fail_invalid_prefer(klass)
-        reply = export_kick_off(klass: klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
+        reply = export_kick_off(klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
         assert_response_bad(reply)
       end
 
-      def check_export_status(url, timeout: 180)
+      def check_export_status(url = @content_location, timeout: 180)
+        skip 'Server response did not have Content-Location in header' unless url.present?
+
         reply = export_status_check(url, timeout)
 
         # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
@@ -51,6 +53,41 @@ module Inferno
         assert_status_reponse_required_field(response_body)
 
         @output = response_body['output']
+
+        assert_output_has_type_url
+      end
+
+      def assert_output_has_type_url(output = @output)
+        skip 'Sever response did not have output data' unless output.present?
+
+        output.each do |file|
+          ['type', 'url'].each do |key|
+            assert file.key?(key), "Output file did not contain \"#{key}\" as required"
+          end
+        end
+      end
+
+      def check_file_request(output = @output)
+        skip 'Content-Location from server response was emtpy' unless output.present?
+
+        headers = { accept: 'application/fhir+ndjson' }
+        output.each do |file|
+          url = file['url']
+          type = file['type']
+          reply = @client.get(url, @client.fhir_headers(headers))
+          assert_response_content_type(reply, 'application/fhir+ndjson')
+
+          check_ndjson(reply.body, type)
+        end
+      end
+
+      def check_ndjson(ndjson, type)
+        ndjson.each_line do |line|
+          resource = FHIR.from_contents(line)
+          assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
+          errors = resource.validate
+          assert errors.empty?, errors.to_s
+        end
       end
 
       details %(
@@ -73,7 +110,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = export_kick_off(klass: 'Patient')
+        reply = export_kick_off('Patient')
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -121,15 +158,26 @@ module Inferno
           )
         end
 
-        check_export_status(@content_location)
+        check_export_status
+      end
+
+      test 'Server shall return file in ndjson format' do
+        metadata do
+          id '06'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          desc %(
+          )
+        end
+
+        check_file_request
       end
 
       private
 
-      def export_kick_off(klass: nil, id: nil, headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
+      def export_kick_off(klass, id: nil, headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
         url += "/#{klass}" if klass.present?
-        url += "/#{id}" if id.present?
+        url += "/#{id}" if klass.present? && id.present?
         url += '/$export'
 
         @client.get(url, @client.fhir_headers(headers))

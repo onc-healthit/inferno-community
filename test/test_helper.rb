@@ -25,6 +25,11 @@ def load_fixture(file)
   File.read(File.join(root, 'fixtures', "#{file}.json"))
 end
 
+def load_fixture_with_extension(file_name)
+  root = File.dirname(File.absolute_path(__FILE__))
+  File.read(File.join(root, 'fixtures', file_name))
+end
+
 def save_fixture(_file_name, content)
   root = File.dirname(File.absolute_path(__FILE__))
   File.write(File.join(root, 'fixtures', file.to_s), content)
