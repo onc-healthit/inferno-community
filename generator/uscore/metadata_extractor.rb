@@ -42,7 +42,7 @@ module Inferno
         index = 0
 
         while claimed_test_id_prefixes.include?(test_id_prefix)
-          raise "Could not generate a unique test_if prefix for #{title}" if index > last_title_word.length
+          raise "Could not generate a unique test_id prefix for #{title}" if index > last_title_word.length
 
           test_id_prefix += last_title_word[index].upcase
           index += 1
