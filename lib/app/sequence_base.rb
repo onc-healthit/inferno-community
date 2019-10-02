@@ -12,7 +12,7 @@ require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
-require_relative 'models/inferno_test'
+require_relative 'models/test'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
