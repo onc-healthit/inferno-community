@@ -2,18 +2,22 @@
 
 module Inferno
   module WebUtils
-    def get_with_retry(url, timeout)
+    def self.get_with_retry(url, timeout, fhir_client)
       wait_time = 1
       reply = nil
       start = Time.now
 
       loop do
-        reply = @client.get(url)
-
-        wait_time = get_retry_or_backoff_time(wait_time, reply)
-        seconds_used = Time.now - start + wait_time
-
-        break if reply.code != 202 || seconds_used > timeout
+        reply = nil
+        begin
+          reply = fhir_client.client.get(url)
+        rescue RestClient::TooManyRequests => e
+          reply = e.response
+          wait_time = get_retry_or_backoff_time(wait_time, reply)
+          seconds_used = Time.now - start
+        end
+        # exit loop if we get response we want, or timeout reached
+        break if reply.code == 202 || reply.code == 200 || seconds_used > timeout
 
         sleep wait_time
       end
@@ -21,12 +25,15 @@ module Inferno
       reply
     end
 
-    def get_retry_or_backoff_time(wait_time, reply)
-      retry_after = reply.response[:headers]['retry-after']
-      retry_after_int = (retry_after.presence || 0).to_i
+    def self.get_retry_or_backoff_time(wait_time, reply)
+      retry_after = -1
+      unless reply.headers.nil?
+        reply.headers.symbolize_keys
+        retry_after = reply.headers[:retry_after].to_i || -1
+      end
 
-      if retry_after_int.positive?
-        retry_after_int
+      if retry_after.positive?
+        retry_after
       else
         wait_time * 2
       end
