@@ -76,13 +76,17 @@ module Inferno
           type = file['type']
           reply = @client.get(url, @client.fhir_headers(headers))
           assert_response_content_type(reply, 'application/fhir+ndjson')
-          reply.body.each_line do |line|
-            resource = FHIR.from_contents(line)
-            assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
-            errors = resource.validate
-            message = errors.join("<br/>\n") unless errors.empty?
-            assert errors.empty?, message
-          end
+
+          check_ndjson(reply.body, type)
+        end
+      end
+
+      def check_ndjson(ndjson, type)
+        ndjson.each_line do |line|
+          resource = FHIR.from_contents(line)
+          assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
+          errors = resource.validate
+          assert errors.empty?, errors.to_s
         end
       end
 

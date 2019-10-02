@@ -231,4 +231,12 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       @sequence.check_file_request(unmatched_type_output)
     end
   end
+
+  def test_file_request_fail_invalid_resource
+    invalid_patient_export = @patient_export.sub('male', '001')
+
+    assert_raises Inferno::AssertionException do
+      @sequence.check_ndjson(invalid_patient_export, 'Patient')
+    end
+  end
 end
