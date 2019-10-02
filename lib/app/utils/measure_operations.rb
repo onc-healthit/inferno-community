@@ -29,5 +29,17 @@ module Inferno
     def get_measure_resources_by_name(measure_name)
       @client.get "Measure?name=#{measure_name}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
+
+    def async_submit_data(params_resource)
+      headers = {
+        'Accept': 'application/fhir+json',
+        'Content-Type': 'application/json',
+        'Prefer': 'respond-async',
+        'Accept-Encoding': 'gzip, deflate',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      }
+      LoggedRestClient.post(@instance.url + '/$import', params_resource.to_json, headers)
+    end
   end
 end

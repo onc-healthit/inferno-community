@@ -4,14 +4,14 @@ require_relative '../../utils/measure_operations'
 
 module Inferno
   module Sequence
-    class MeasureSequence < SequenceBase
+    class CMS130ReportingSequence < SequenceBase
       include MeasureOperations
 
-      title 'FHIR Quality Reporting'
+      title 'CMS130 Quality Reporting'
 
-      test_id_prefix 'eCQM'
+      test_id_prefix 'CMS130'
 
-      description 'Tests measure operations for a given FHIR Measure. <br/><br/>'\
+      description 'Tests measure operations for CMS130 (Colorectal Cancer Screening). <br/><br/>'\
                   'Prior to running tests, you must: <br/>'\
                   '1) Verify all needed VSAC ValueSets are on your FHIR server using the ValueSetSequence above. '\
                   'If any are missing, they can be downloaded from the '\

@@ -27,7 +27,7 @@ class MeasureSequenceTest < MiniTest::Test
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
     client.default_json
-    @sequence = Inferno::Sequence::MeasureSequence.new(@instance, client, true)
+    @sequence = Inferno::Sequence::CMS130ReportingSequence.new(@instance, client, true)
   end
 
   def test_all_pass
