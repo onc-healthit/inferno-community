@@ -35,14 +35,31 @@ module Inferno
         metadata[:description] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
       end
 
+      def generate_unique_test_id_prefix(title)
+        module_prefix = 'USC'
+        test_id_prefix = module_prefix + title.split('').select { |c| c.upcase == c && c != ' ' }.join
+        last_title_word = title.split(test_id_prefix.last).last
+        index = 0
+
+        while claimed_test_id_prefixes.include?(test_id_prefix)
+          raise "Could not generate a unique test_if prefix for #{title}" if index > last_title_word.length
+
+          test_id_prefix += last_title_word[index].upcase
+          index += 1
+        end
+
+        claimed_test_id_prefixes << test_id_prefix
+
+        test_id_prefix
+      end
+
       def build_new_sequence(resource, profile)
         base_path = profile.split('us/core/').last
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
         reformatted_version = ig_resource['version'].delete('.')
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
-        module_prefix = 'USC'
-        test_id_prefix = module_prefix + profile_title.split('').select { |c| c.upcase == c && c != ' ' }.join
+        test_id_prefix = generate_unique_test_id_prefix(profile_title)
         class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{reformatted_version}") + 'Sequence'
 
         # In case the profile doesn't start with US Core

@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'USCP'
+      test_id_prefix 'USCPROC'
 
       requires :token, :patient_id
       conformance_supports :Procedure

@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Provenance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'USCP'
+      test_id_prefix 'USCPROV'
 
       requires :token
       conformance_supports :Provenance

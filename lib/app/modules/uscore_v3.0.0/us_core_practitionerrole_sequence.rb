@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that PractitionerRole resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'USCPR'
+      test_id_prefix 'USCPRO'
 
       requires :token
       conformance_supports :PractitionerRole
