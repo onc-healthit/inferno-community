@@ -15,7 +15,7 @@ class ModuleValidationTest < MiniTest::Test
       unique_sequences = inferno_module.sequences.uniq
       test_ids = unique_sequences.flat_map(&:tests).map { |test| test[:test_id] }
       duplicate_id = test_ids.detect { |t| test_ids.count(t) > 1 }
-      assert duplicate_id.nil?, "Found at least one duplicated test-id in module #{inferno_module.name}: #{duplicate_id}"
+      assert duplicate_id.nil?, "Found at least one duplicated test_id in module #{inferno_module.name}: #{duplicate_id}."
     end
   end
 end
