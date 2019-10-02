@@ -152,6 +152,12 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     end
   end
 
+  def test_status_check_skip_no_content_location
+    assert_raises Inferno::SkipException do
+      @sequence.check_export_status('')
+    end
+  end
+
   def test_status_check_skip_timeout
     WebMock.reset!
     stub_request(:get, @content_location)
@@ -196,6 +202,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     assert_raises Inferno::AssertionException do
       @sequence.check_export_status(@content_location)
+    end
+  end
+
+  def test_output_file_skip_empty_output
+    output = []
+
+    assert_raises Inferno::SkipException do
+      @sequence.assert_output_has_type_url(output)
     end
   end
 

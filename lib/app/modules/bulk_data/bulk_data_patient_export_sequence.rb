@@ -33,7 +33,9 @@ module Inferno
         assert_response_bad(reply)
       end
 
-      def check_export_status(url, timeout: 180)
+      def check_export_status(url = @content_location, timeout: 180)
+        skip 'Server response did not have Content-Location in header' unless url.present?
+
         reply = export_status_check(url, timeout)
 
         # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
@@ -52,10 +54,12 @@ module Inferno
 
         @output = response_body['output']
 
-        assert_output_has_type_url(@output)
+        assert_output_has_type_url
       end
 
-      def assert_output_has_type_url(output)
+      def assert_output_has_type_url(output = @output)
+        skip 'Sever response did not have output data' unless output.present?
+
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
@@ -63,7 +67,9 @@ module Inferno
         end
       end
 
-      def check_file_request(output)
+      def check_file_request(output = @output)
+        skip 'Content-Location from server response was emtpy' unless output.present?
+
         headers = { accept: 'application/fhir+ndjson' }
         output.each do |file|
           url = file['url']
@@ -148,7 +154,7 @@ module Inferno
           )
         end
 
-        check_export_status(@content_location)
+        check_export_status
       end
 
       test 'Server shall return file in ndjson format' do
@@ -159,7 +165,7 @@ module Inferno
           )
         end
 
-        check_file_request(@output)
+        check_file_request
       end
 
       private
@@ -167,7 +173,7 @@ module Inferno
       def export_kick_off(klass, id: nil, headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
         url += "/#{klass}" if klass.present?
-        url += "/#{id}" if id.present?
+        url += "/#{id}" if klass.present? && id.present?
         url += '/$export'
 
         @client.get(url, @client.fhir_headers(headers))
