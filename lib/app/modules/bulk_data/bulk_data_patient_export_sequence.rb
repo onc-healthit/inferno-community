@@ -52,10 +52,10 @@ module Inferno
 
         @output = response_body['output']
 
-        assert_output_files(@output)
+        assert_output_has_type_url(@output)
       end
 
-      def assert_output_files(output)
+      def assert_output_has_type_url(output)
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
@@ -70,15 +70,13 @@ module Inferno
           type = file['type']
           reply = @client.get(url, @client.fhir_headers(headers))
           assert_response_content_type(reply, 'application/fhir+ndjson')
-          lines = reply.body.split("\n")
-          lines.each do |line|
+          reply.body.each_line do |line|
             resource = FHIR.from_contents(line)
             assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
             errors = resource.validate
             message = errors.join("<br/>\n") unless errors.empty?
             assert errors.empty?, message
           end
-          # assert each line is a valid FHIR resource
         end
       end
 

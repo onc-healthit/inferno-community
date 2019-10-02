@@ -115,16 +115,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def include_file_request_stub_unmatched_type(response_headers: { content_type: 'application/fhir+ndjson' })
-    stub_request(:get, @file_location)
-      .with(headers: @file_request_headers)
-      .to_return(
-        status: 200,
-        headers: response_headers,
-        body: @patient_export
-      )
-  end
-
   def test_all_pass
     WebMock.reset!
 
@@ -213,7 +203,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     output = [{ 'type' => 'Patient', 'count' => 1 }]
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_output_files(output)
+      @sequence.assert_output_has_type_url(output)
     end
   end
 
