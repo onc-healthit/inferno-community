@@ -156,7 +156,7 @@ module Inferno
 
       test 'FHIR server capability SHOULD have group-export operation' do
         metadata do
-          id '07'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
           desc %(
 
