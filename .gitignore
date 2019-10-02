@@ -12,4 +12,3 @@ coverage
 tmp/*
 .vscode/*
 resources/terminology/*
-.ruby-version
