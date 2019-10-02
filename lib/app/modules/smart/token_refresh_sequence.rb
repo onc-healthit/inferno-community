@@ -56,7 +56,8 @@ module Inferno
         LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
       end
 
-      test 'Refresh token exchange fails when provided invalid Refresh Token.' do
+      INVALID_REFRESH_TOKEN_TEST = 'Refresh token exchange fails when provided invalid Refresh Token.'
+      test INVALID_REFRESH_TOKEN_TEST do
         metadata do
           id '01'
           link 'https://tools.ietf.org/html/rfc6749'
@@ -68,7 +69,8 @@ module Inferno
         assert_response_bad_or_unauthorized token_response
       end
 
-      test 'Refresh token exchange fails when provided invalid Client ID.' do
+      INVALID_CLIENT_ID_TEST = 'Refresh token exchange fails when provided invalid Client ID.'
+      test INVALID_CLIENT_ID_TEST do
         metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc6749'
@@ -144,7 +146,9 @@ module Inferno
         end
       end
 
-      test 'Server successfully refreshes the access token when optional scope parameter omitted.' do
+      REFRESH_WITHOUT_SCOPE_PARAMETER_TEST =
+        'Server successfully refreshes the access token when optional scope parameter omitted.'
+      test REFRESH_WITHOUT_SCOPE_PARAMETER_TEST do
         metadata do
           id '03'
           link 'https://tools.ietf.org/html/rfc6749'
@@ -168,7 +172,9 @@ module Inferno
         validate_and_save_refresh_response(token_response)
       end
 
-      test 'Server successfully refreshes the access token when optional scope parameter provided.' do
+      REFRESH_WITH_SCOPE_PARAMETER_TEST =
+        'Server successfully refreshes the access token when optional scope parameter provided.'
+      test REFRESH_WITH_SCOPE_PARAMETER_TEST do
         metadata do
           id '04'
           link 'https://tools.ietf.org/html/rfc6749'
