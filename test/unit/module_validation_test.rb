@@ -14,7 +14,7 @@ class ModuleValidationTest < MiniTest::Test
     errors = []
     @modules&.each do |inferno_module|
       unique_sequences = inferno_module.sequences.uniq
-      test_ids = unique_sequences.flat_map(&:tests).map { |test| test[:test_id] }
+      test_ids = unique_sequences.flat_map(&:tests).map(&:id)
       duplicate_id = test_ids.detect { |t| test_ids.count(t) > 1 }
       errors << "#{inferno_module.name} (#{duplicate_id})" unless duplicate_id.nil?
     end
