@@ -67,6 +67,17 @@ describe InfernoTest do
     end
   end
 
+  describe '#description' do
+    it 'returns nil if no description has been set' do
+      assert @base_test.description.nil?
+    end
+
+    it 'sets and returns the description' do
+      @base_test.description(DESCRIPTION)
+      assert @base_test.description == DESCRIPTION
+    end
+  end
+
   describe '#versions' do
     it 'returns an empty array if no versions have been set' do
       assert @base_test.versions == []
@@ -105,7 +116,7 @@ describe InfernoTest do
   describe '#metadata_hash' do
     it 'returns a metadata hash' do
       @base_test.id(TEST_ID)
-      @base_test.desc(DESCRIPTION)
+      @base_test.description(DESCRIPTION)
       @base_test.link(LINK)
       @base_test.ref(REF)
       assert @base_test.metadata_hash == {
