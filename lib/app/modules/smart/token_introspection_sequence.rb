@@ -34,7 +34,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://tools.ietf.org/html/rfc7662'
-          desc %(
+          description %(
             The server MUST support Transport Layer Security (TLS) 1.2.
           )
         end
@@ -50,7 +50,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc7662'
-          desc %(
+          description %(
             A resource server is capable of calling the introspection endpoint.
           )
         end
@@ -79,7 +79,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://tools.ietf.org/html/rfc7662'
-          desc %(
+          description %(
             A current access token is listed as active.
           )
         end
@@ -96,7 +96,7 @@ module Inferno
           id '04'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
-          desc %(
+          description %(
             The scopes we received alongside the Access token match those from the introspection response.
           )
         end
@@ -120,7 +120,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://tools.ietf.org/html/rfc7662'
-          desc %(
+          description %(
             The Access token should have a lifetime of at least 60 minutes.
           )
         end
@@ -145,7 +145,7 @@ module Inferno
           id '06'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
-          desc %(
+          description %(
             A resource server is capable of calling the introspection endpoint.
           )
         end
@@ -177,7 +177,7 @@ module Inferno
           id '07'
           link 'https://tools.ietf.org/html/rfc7662'
           optional
-          desc %(
+          description %(
             A current access token is listed as active.
           )
         end

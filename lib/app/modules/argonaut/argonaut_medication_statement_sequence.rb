@@ -45,7 +45,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
-          desc %(
+          description %(
             A MedicationStatement search does not work without proper authorization.
           )
           versions :dstu2
@@ -65,7 +65,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
-          desc %(
+          description %(
             A server is capable of returning a patient's medications.
           )
           versions :dstu2
@@ -94,7 +94,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -113,7 +113,7 @@ module Inferno
           id '04'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -132,7 +132,7 @@ module Inferno
           id '05'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -150,7 +150,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medicationstatement.html'
-          desc %(
+          description %(
             MedicationStatement resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
@@ -166,7 +166,7 @@ module Inferno
           id '07'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
           versions :dstu2
-          desc %(
+          description %(
             Medication resources must conform to the Argonaut profile
                )
         end
@@ -188,7 +188,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the MedicationStatement resource should be resolveable.
           )
           versions :dstu2
@@ -207,7 +207,7 @@ module Inferno
           id '09'
           link 'https://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-medication.html'
           versions :dstu2
-          desc %(
+          description %(
             Medication resources must conform to the Argonaut profile
                )
         end

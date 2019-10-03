@@ -60,7 +60,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://tools.ietf.org/html/rfc6749'
-          desc %(
+          description %(
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
 
@@ -72,7 +72,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc6749'
-          desc %(
+          description %(
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
 
@@ -148,7 +148,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://tools.ietf.org/html/rfc6749'
-          desc %(
+          description %(
             Server successfully exchanges refresh token at OAuth token endpoint without providing scope in
             the body of the request.
 
@@ -172,7 +172,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://tools.ietf.org/html/rfc6749'
-          desc %(
+          description %(
             Server successfully exchanges refresh token at OAuth token endpoint while providing scope in
             the body of the request.
 

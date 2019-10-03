@@ -43,7 +43,7 @@ module Inferno
         metadata do
           id '11'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
-          desc %(
+          description %(
             The scopes being input must follow the guidelines specified in the smart-app-launch guide
           )
         end

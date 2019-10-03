@@ -64,7 +64,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
           )
           versions :dstu2
@@ -85,7 +85,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careteam.html'
-          desc %(
+          description %(
             CareTeam resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
@@ -99,7 +99,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the CareTeam resource should be resolveable.
           )
           versions :dstu2
