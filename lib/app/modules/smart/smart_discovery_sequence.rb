@@ -43,7 +43,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
-          desc %(
+          description %(
             The authorization endpoints accepted by a FHIR resource server can be exposed as a Well-Known Uniform Resource Identifier
           )
         end
@@ -71,7 +71,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
-          desc %(
+          description %(
 
            If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
 
@@ -123,7 +123,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/capability-statement/'
-          desc %(
+          description %(
 
            If a server requires SMART on FHIR authorization for access, its metadata must support automated discovery of OAuth2 endpoints
 

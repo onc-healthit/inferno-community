@@ -68,7 +68,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A CarePlan search does not work without proper authorization.
           )
           versions :dstu2
@@ -86,7 +86,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's Assessment and Plan of Treatment information.
           )
           versions :dstu2
@@ -112,7 +112,7 @@ module Inferno
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             A server SHOULD be capable of returning a patient's Assessment and Plan of Treatment information over a specified time period.
           )
           versions :dstu2
@@ -135,7 +135,7 @@ module Inferno
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             A server SHOULD be capable returning all of a patient's active Assessment and Plan of Treatment information.
           )
           versions :dstu2
@@ -154,7 +154,7 @@ module Inferno
           id '05'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             A server SHOULD be capable returning a patient's active Assessment and Plan of Treatment information over a specified time period.
           )
           versions :dstu2
@@ -175,7 +175,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -192,7 +192,7 @@ module Inferno
           id '07'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -209,7 +209,7 @@ module Inferno
           id '08'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -225,7 +225,7 @@ module Inferno
         metadata do
           id '09'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-careplan.html'
-          desc %(
+          description %(
             CarePlan resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
@@ -239,7 +239,7 @@ module Inferno
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the CarePlan resource should be resolveable.
           )
           versions :dstu2

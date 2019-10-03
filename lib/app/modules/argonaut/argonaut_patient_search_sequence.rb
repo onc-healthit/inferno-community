@@ -38,7 +38,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A patient read does not work without authorization.
           )
           versions :dstu2
@@ -56,7 +56,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -73,7 +73,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server returns valid FHIR Patient resources according to the [Data Access Framework (DAF) Patient Profile](http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).
           )
           versions :dstu2
@@ -89,7 +89,7 @@ module Inferno
       test 'Patient has address' do
         metadata do
           id '04'
-          desc %(
+          description %(
             Additional Patient resource requirement
           )
           versions :dstu2
@@ -104,7 +104,7 @@ module Inferno
       test 'Patient has telecom' do
         metadata do
           id '05'
-          desc %(
+          description %(
             Additional Patient resource requirement
           )
           versions :dstu2
@@ -121,7 +121,7 @@ module Inferno
       #   metadata {
       #     id '00'
       #     optional
-      #     desc %(
+      #     description %(
       #       Additional Patient resource requirement
       #     )
       #   }
@@ -137,7 +137,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A Patient search does not work without proper authorization.          )
           versions :dstu2
         end
@@ -157,7 +157,7 @@ module Inferno
         metadata do
           id '07'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters: identifier.
           )
           versions :dstu2
@@ -175,7 +175,7 @@ module Inferno
         metadata do
           id '08'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
           )
           versions :dstu2
@@ -197,7 +197,7 @@ module Inferno
         metadata do
           id '09'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
           )
           versions :dstu2
@@ -219,7 +219,7 @@ module Inferno
         metadata do
           id '10'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server has exposed a FHIR Patient search endpoint supporting at a minimum the following search parameters when at least 2 (example name and gender) are present: name, gender, birthdate.
           )
           versions :dstu2
@@ -240,7 +240,7 @@ module Inferno
           id '11'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.          )
           versions :dstu2
         end
@@ -253,7 +253,7 @@ module Inferno
           id '12'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -266,7 +266,7 @@ module Inferno
         metadata do
           id '13'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the Patient resource should be resolveable.
           )
           versions :dstu2

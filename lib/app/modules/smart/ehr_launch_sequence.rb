@@ -37,7 +37,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             Client browser sent from EHR server to launch URI of client app as described in SMART EHR Launch Sequence.
           )
         end
@@ -49,7 +49,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             The EHR is required to provide a reference to the EHR FHIR endpoint in the iss queystring parameter, and an
             opaque identifier for the launch in the launch querystring parameter.
           )
@@ -67,7 +67,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
             opaque identifier for the launch in the launch querystring parameter.
           )
@@ -84,7 +84,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
            Client browser redirected from OAuth server to redirect URI of client app as described in SMART authorization sequence.
           )
         end
@@ -115,7 +115,7 @@ module Inferno
         metadata do
           id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             Code and state are required querystring parameters. State must be the exact value received from the client.
           )
         end
@@ -129,7 +129,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             Apps MUST assure that sensitive information (authentication secrets, authorization codes, tokens) is transmitted ONLY to authenticated servers, over TLS-secured channels.
           )
         end
@@ -145,7 +145,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://tools.ietf.org/html/rfc6749'
-          desc %(
+          description %(
             If the request failed verification or is invalid, the authorization server returns an error response.
           )
         end
@@ -174,7 +174,7 @@ module Inferno
         metadata do
           id '08'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             After obtaining an authorization code, the app trades the code for an access token via HTTP POST to the
             EHR authorization server's token endpoint URL, using content-type application/x-www-form-urlencoded,
             as described in section [4.1.3 of RFC6749](https://tools.ietf.org/html/rfc6749#section-4.1.3).          )
@@ -202,7 +202,7 @@ module Inferno
         metadata do
           id '09'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             The EHR authorization server shall return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
             access_token, token_type, and scope are required. access_token must be Bearer.
           )
@@ -260,7 +260,7 @@ module Inferno
         metadata do
           id '10'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
-          desc %(
+          description %(
             The authorization servers response must include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache.
           )
         end

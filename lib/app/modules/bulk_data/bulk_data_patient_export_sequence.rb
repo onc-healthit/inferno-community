@@ -103,7 +103,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
-          desc %(
+          description %(
           )
         end
 
@@ -119,7 +119,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
-          desc %(
+          description %(
           )
         end
 
@@ -130,7 +130,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -142,7 +142,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -154,7 +154,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
-          desc %(
+          description %(
           )
         end
 
@@ -165,7 +165,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-          desc %(
+          description %(
           )
         end
 

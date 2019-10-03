@@ -61,7 +61,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
 
             FHIR provides multiple [representation formats](https://www.hl7.org/fhir/DSTU2/formats.html) for resources, including JSON and XML.
             Argonaut profiles require servers to use the JSON representation:
@@ -97,7 +97,7 @@ module Inferno
           id '05'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
           optional
-          desc %(
+          description %(
 
            A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.
 
@@ -128,7 +128,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
            The Argonaut Data Query Implementation Guide states:
 
            ```

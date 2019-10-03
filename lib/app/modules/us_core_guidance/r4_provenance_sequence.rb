@@ -33,7 +33,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/R4/provenance.html'
-          desc %(
+          description %(
             A Provenance search should not work without providing proper
             authorization. This test attempts to search for Provenance resources
             associated with a patient without providing a bearer token as is
@@ -53,7 +53,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://www.hl7.org/fhir/R4/provenance.html'
-          desc %(
+          description %(
             A server should be capable of returning Provenance resources related
             to a patient resource.
 
@@ -74,7 +74,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://www.hl7.org/fhir/R4/provenance.html'
-          desc %(
+          description %(
             The server should make read interactions available for Provenance
             resources.
           )
