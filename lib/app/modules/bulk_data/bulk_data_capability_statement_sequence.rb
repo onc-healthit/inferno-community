@@ -73,7 +73,7 @@ module Inferno
             The FHIR capability interaction require servers to describe which formats are available for clients to use.
             The server must explicitly state that JSON is supported.  This is located in the
             [format element](https://www.hl7.org/fhir/capabilitystatement-definitions.html#CapabilityStatement.format)
-            of the Capability Resource.
+            of the CapabilityStatement Resource.
 
             This test checks that one of the following values are located in the format field.
 
