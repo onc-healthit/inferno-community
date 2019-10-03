@@ -372,7 +372,7 @@ module Inferno
             name: test.name,
             ref: test.ref,
             required: !test.optional?,
-            description: test.desc,
+            description: test.description,
             url: test.link,
             versions: test.versions.join(','),
             result: ResultStatuses::PASS,
