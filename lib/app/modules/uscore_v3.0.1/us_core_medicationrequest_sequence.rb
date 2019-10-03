@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that MedicationRequest resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'MedicationRequest' # change me
+      test_id_prefix 'USCMR'
 
       requires :token, :patient_id
       conformance_supports :MedicationRequest

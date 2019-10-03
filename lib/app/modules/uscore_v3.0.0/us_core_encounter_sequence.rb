@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Encounter resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Encounter' # change me
+      test_id_prefix 'USCE'
 
       requires :token, :patient_id
       conformance_supports :Encounter

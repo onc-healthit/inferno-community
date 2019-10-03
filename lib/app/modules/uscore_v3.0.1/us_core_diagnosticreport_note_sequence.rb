@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that DiagnosticReport resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'DiagnosticReport' # change me
+      test_id_prefix 'USCDRRN'
 
       requires :token, :patient_id
       conformance_supports :DiagnosticReport

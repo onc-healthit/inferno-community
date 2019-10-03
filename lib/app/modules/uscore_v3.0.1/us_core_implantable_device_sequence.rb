@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Device resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Device' # change me
+      test_id_prefix 'USCID'
 
       requires :token, :patient_id
       conformance_supports :Device

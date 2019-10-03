@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'AllergyIntolerance' # change me
+      test_id_prefix 'USCAI'
 
       requires :token, :patient_id
       conformance_supports :AllergyIntolerance

@@ -9,11 +9,13 @@ require 'fhir_models'
 module Inferno
   module Generator
     class Base
-      attr_accessor :path, :extras, :resource_by_path, :resources_by_type
+      attr_accessor :path, :extras, :resource_by_path, :resources_by_type,
+                    :claimed_test_id_prefixes
 
       def initialize(path, extras)
         @path = path
         @extras = extras
+        @claimed_test_id_prefixes = Set.new
         load_resources
       end
 

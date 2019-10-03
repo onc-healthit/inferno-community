@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Observation' # change me
+      test_id_prefix 'USCLRO'
 
       requires :token, :patient_id
       conformance_supports :Observation

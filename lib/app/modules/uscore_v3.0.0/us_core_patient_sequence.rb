@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Patient' # change me
+      test_id_prefix 'USCP'
 
       requires :token, :patient_id
       conformance_supports :Patient

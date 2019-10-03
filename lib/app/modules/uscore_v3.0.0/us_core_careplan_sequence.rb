@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that CarePlan resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'CarePlan' # change me
+      test_id_prefix 'USCCP'
 
       requires :token, :patient_id
       conformance_supports :CarePlan

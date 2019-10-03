@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Organization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Organization' # change me
+      test_id_prefix 'USCO'
 
       requires :token
       conformance_supports :Organization
