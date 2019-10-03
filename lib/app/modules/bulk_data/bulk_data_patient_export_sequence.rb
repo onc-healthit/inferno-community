@@ -14,6 +14,8 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
+      attr_writer :run_all_kick_off_tests
+
       def check_export_kick_off(klass, search_params: nil)
         reply = export_kick_off(klass, search_params: search_params)
 
@@ -27,7 +29,7 @@ module Inferno
           skip message
         end
 
-        @search_params_applied = true
+        @skip_export_no_parameter = true
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -72,6 +74,8 @@ module Inferno
       def assert_output_has_type_url(output = @output, check_parameters = @search_params)
         skip 'Sever response did not have output data' unless output.present?
 
+        search_type = @search_params['_type'].split(',').map(&:strip) if @search_params.present?
+
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
@@ -108,16 +112,16 @@ module Inferno
         end
       end
 
-      def assert_delete_request(url)
+      def check_delete_request(url)
         reply = @client.delete(url, {})
         skip 'Server did not accept client request to delete export file after export completed' if reply.code > 400
         assert_response_accepted(reply)
       end
 
-      def assert_cancel_request(_klass)
+      def check_cancel_request(_klass)
         @content_location = nil
-        assert_export_kick_off('Patient')
-        assert_delete_request(@content_location)
+        check_export_kick_off('Patient')
+        check_delete_request(@content_location)
       end
 
       details %(
@@ -154,7 +158,7 @@ module Inferno
         end
 
         @search_params = { '_type' => 'Patient' }
-        assert_export_kick_off('Patient', search_params: @search_params)
+        check_export_kick_off('Patient', search_params: @search_params)
       end
 
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
@@ -165,7 +169,7 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @search_params_applied
+        skip 'Skip testing $export without parameters' if @search_params_applied && !@run_all_kick_off_tests
 
         check_export_kick_off('Patient')
       end
@@ -223,7 +227,7 @@ module Inferno
           optional
         end
 
-        assert_delete_request(@content_location)
+        check_delete_request(@content_location)
       end
 
       test 'Server shall return "202 Accepted" for cancel export request' do
@@ -234,14 +238,14 @@ module Inferno
           )
         end
 
-        assert_cancel_request('Patient')
+        check_cancel_request('Patient')
       end
 
       private
 
-      def export_kick_off(klass,
-                          search_params: nil,
+      def export_kick_off(klass = nil,
                           id: nil,
+                          search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
         url += "/#{klass}" if klass.present?
