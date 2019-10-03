@@ -239,7 +239,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     output = [{ 'type' => 'Patient', 'count' => 1 }]
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_output_has_type_url(output, false)
+      @sequence.assert_output_has_type_url(output)
+    end
+  end
+
+  def test_output_file_fail_unmached_type
+    search_params = { '_type' => 'Condition' }
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_output_has_type_url(@complete_status['output'], search_params)
     end
   end
 

@@ -17,8 +17,12 @@ module Inferno
       attr_writer :run_all_kick_off_tests
 
       def check_export_kick_off(klass, search_params: nil)
+        @search_params = search_params
+
         reply = export_kick_off(klass, search_params: search_params)
 
+        # Servers unable to support _type SHOULD return an error and OperationOutcome resource
+        # so clients can re-submit a request omitting the _type parameter.
         if search_params.present? && reply.code > 400
           response_body = JSON.parse(reply.body)
           message = ''
@@ -29,7 +33,7 @@ module Inferno
           skip message
         end
 
-        @skip_export_no_parameter = true
+        @server_support_type_parameter = search_params.present?
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -71,21 +75,18 @@ module Inferno
         assert_output_has_type_url
       end
 
-      def assert_output_has_type_url(output = @output, check_parameters = @search_params)
+      def assert_output_has_type_url(output = @output,
+                                     search_params = @search_params)
         skip 'Sever response did not have output data' unless output.present?
 
-        search_type = @search_params['_type'].split(',').map(&:strip) if @search_params.present?
+        search_type = search_params['_type'].split(',').map(&:strip) if search_params.present? && search_params.key?('_type')
 
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
-
-            next unless check_parameters && search_type.present?
-
-            search_type.each do |type|
-              assert file['type'] == type, "Output file had type #{file[type]} not specified in export parameter #{@search_params['_type']}"
-            end
           end
+
+          assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
         end
       end
 
@@ -157,8 +158,7 @@ module Inferno
           )
         end
 
-        @search_params = { '_type' => 'Patient' }
-        check_export_kick_off('Patient', search_params: @search_params)
+        check_export_kick_off('Patient', search_params: { '_type' => 'Patient' })
       end
 
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
@@ -169,7 +169,7 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @search_params_applied && !@run_all_kick_off_tests
+        skip 'Skip testing $export without parameters' if @server_support_type_parameter && !@run_all_kick_off_tests
 
         check_export_kick_off('Patient')
       end
