@@ -88,7 +88,6 @@ module Inferno
           )
         end
 
-        assert @conformance.class.name.demodulize == versioned_conformance_class.name.demodulize, 'Expected valid Conformance resource'
         formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
@@ -100,7 +99,7 @@ module Inferno
           desc %(
 
             To declare conformance with this IG, a server should include the following URL in its own CapabilityStatement.instantiates:
-            http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html
+            http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data
 
           )
           optional

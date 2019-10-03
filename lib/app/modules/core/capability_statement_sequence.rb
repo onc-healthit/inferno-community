@@ -134,10 +134,6 @@ module Inferno
         @conformance = @client.conformance_statement
         assert_response_ok @client.reply
 
-        # if @instance.fhir_version.blank?
-        #   assert @conformance.class.name.demodulize == versioned_conformance_class.name.demodulize, 'Expected valid Conformance resource.'
-        # else
-        #   assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
         assert_valid_conformance
 
         begin
