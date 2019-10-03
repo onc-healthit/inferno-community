@@ -69,8 +69,8 @@ module Inferno
           end
           code_system_hash[code] = description
         end
-      rescue StandardError => error
-        Inferno.logger.error error
+      rescue StandardError => e
+        Inferno.logger.error e
       end
 
       begin
@@ -86,8 +86,8 @@ module Inferno
           code_system_hash[code] = description if code_system_hash[code].nil?
           @@core_snomed[code] = description
         end
-      rescue StandardError => error
-        Inferno.logger.error error
+      rescue StandardError => e
+        Inferno.logger.error e
       end
 
       begin
@@ -98,8 +98,8 @@ module Inferno
           @@common_ucum << code
         end
         @@common_ucum.uniq!
-      rescue StandardError => error
-        Inferno.logger.error error
+      rescue StandardError => e
+        Inferno.logger.error e
       end
 
       @@loaded = true

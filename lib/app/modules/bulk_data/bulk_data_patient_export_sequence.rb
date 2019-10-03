@@ -14,7 +14,7 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      def assert_export_kick_off(klass, search_params: nil)
+      def check_export_kick_off(klass, search_params: nil)
         reply = export_kick_off(klass, search_params: search_params)
 
         if search_params.present? && reply.code > 400
@@ -35,18 +35,24 @@ module Inferno
         assert @content_location.present?, 'Export response header did not include "Content-Location"'
       end
 
-      def assert_export_kick_off_fail_invalid_accept(klass)
+      def check_export_kick_off_fail_invalid_accept(klass)
         reply = export_kick_off(klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
         assert_response_bad(reply)
       end
 
-      def assert_export_kick_off_fail_invalid_prefer(klass)
+      def check_export_kick_off_fail_invalid_prefer(klass)
         reply = export_kick_off(klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
         assert_response_bad(reply)
       end
 
-      def assert_export_status(url, timeout: 180)
+      def check_export_status(url = @content_location, timeout: 180)
+        skip 'Server response did not have Content-Location in header' unless url.present?
+
         reply = export_status_check(url, timeout)
+
+        # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
+        # export_status_check processes reponses with status 202 code
+        # and returns server response when status code is not 202 or timed out
 
         skip "Server took more than #{timeout} seconds to process the request." if reply.code == 202
 
@@ -60,11 +66,12 @@ module Inferno
 
         @output = response_body['output']
 
-        assert_output_files(@output, @search_params_applied)
+        assert_output_has_type_url
       end
 
-      def assert_output_files(output, check_parameters)
-        search_type = @search_params['_type'].split(',').map(&:strip) if @search_params.present?
+      def assert_output_has_type_url(output = @output, check_parameters = @search_params)
+        skip 'Sever response did not have output data' unless output.present?
+
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
@@ -78,21 +85,26 @@ module Inferno
         end
       end
 
-      def assert_file_request(output)
+      def check_file_request(output = @output)
+        skip 'Content-Location from server response was emtpy' unless output.present?
+
         headers = { accept: 'application/fhir+ndjson' }
         output.each do |file|
           url = file['url']
           type = file['type']
           reply = @client.get(url, @client.fhir_headers(headers))
           assert_response_content_type(reply, 'application/fhir+ndjson')
-          lines = reply.body.split("\n")
-          lines.each do |line|
-            resource = FHIR.from_contents(line)
-            assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
-            errors = resource.validate
-            message = errors.join("<br/>\n") unless errors.empty?
-            assert errors.empty?, message
-          end
+
+          check_ndjson(reply.body, type)
+        end
+      end
+
+      def check_ndjson(ndjson, type)
+        ndjson.each_line do |line|
+          resource = FHIR.from_contents(line)
+          assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
+          errors = resource.validate
+          assert errors.empty?, errors.to_s
         end
       end
 
@@ -155,7 +167,7 @@ module Inferno
 
         skip 'Skip testing $export without parameters' if @search_params_applied
 
-        assert_export_kick_off('Patient')
+        check_export_kick_off('Patient')
       end
 
       test 'Server shall reject for $export operation with invalid Accept header' do
@@ -166,7 +178,7 @@ module Inferno
           )
         end
 
-        assert_export_kick_off_fail_invalid_accept('Patient')
+        check_export_kick_off_fail_invalid_accept('Patient')
       end
 
       test 'Server shall reject for $export operation with invalid Prefer header' do
@@ -177,7 +189,7 @@ module Inferno
           )
         end
 
-        assert_export_kick_off_fail_invalid_prefer('Patient')
+        check_export_kick_off_fail_invalid_prefer('Patient')
       end
 
       test 'Server shall return "202 Accepted" or "200 OK"' do
@@ -188,7 +200,7 @@ module Inferno
           )
         end
 
-        assert_export_status(@content_location)
+        check_export_status
       end
 
       test 'Server shall return file in ndjson format' do
@@ -199,7 +211,7 @@ module Inferno
           )
         end
 
-        assert_file_request(@output)
+        check_file_request
       end
 
       test 'Server should return "202 Accepted" for delete export content' do
@@ -233,7 +245,7 @@ module Inferno
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
         url += "/#{klass}" if klass.present?
-        url += "/#{id}" if id.present?
+        url += "/#{id}" if klass.present? && id.present?
         url += '/$export'
 
         uri = Addressable::URI.parse(url)

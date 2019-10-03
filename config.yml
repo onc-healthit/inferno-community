@@ -5,9 +5,6 @@ app_name: Inferno
 # There are a few exceptions, such as "/" and "/landing".
 base_path: "inferno"
 
-# Show or hide tutorials
-show_tutorial: true
-
 # Useful during development to purge the database on each reload
 purge_database_on_reload: false
 
@@ -45,9 +42,9 @@ modules:
   - onc
   - onc_r4
   - smart
-  - us_core_r4
   - argonaut
-  - bulk_data
+  - uscore_v3.0.0
+  - uscore_v3.0.1
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:

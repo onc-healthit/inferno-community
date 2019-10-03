@@ -1,19 +1,12 @@
 version: '3'
 services:
-  # the main ruby server
   ruby_server:
-    # build the image from ./Dockerfile (this installs the dependencies into the image)
     build:
       context: ./
-    # map the project directory into the running container
     volumes:
-      - .:/var/www/inferno
-    # expose the internal application to direct HTTP requests
-    #ports:
-    #  - "4567:8080"
-    # run the application
-    working_dir: /var/www/inferno
-    command: rackup -o 0.0.0.0
+      - ./config.yml:/var/www/inferno/config.yml
+    ports:
+     - "4567:8080"
   nginx_server:
     image: nginx
     volumes:

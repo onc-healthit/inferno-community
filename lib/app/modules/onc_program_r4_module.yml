@@ -21,7 +21,7 @@ test_sets:
           Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
           registration information to be entered into the system under test.  Once registered, the tester should be provided
           a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
-          the ability to provide required service metatdata through the discovery endpoints, including OAuth endpoints,
+          the ability to provide required service metadata through the discovery endpoints, including OAuth endpoints,
           supported resources and searches.
         input_instructions: |
           Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 
@@ -109,45 +109,29 @@ test_sets:
           - patient_id
           - token
         sequences:
-          - sequence: USCoreR4PatientSequence
-            title: Patient
-          - sequence: USCoreR4AllergyintoleranceSequence
-            title: Allergy Intolerance
-          - sequence: USCoreR4CareplanSequence
-            title: Careplan
-          - sequence: USCoreR4CareteamSequence
-            title: Careteam
-          - sequence: USCoreR4ConditionSequence
-            title: Condition
-          - sequence: USCoreR4DeviceSequence
-            title: Device
-          - sequence: USCoreR4DiagnosticreportNoteSequence
-            title: Diagnostic Report Note
-          - sequence: USCoreR4DiagnosticreportLabSequence
-            title: Diagnostic Report Lab
-          - sequence: USCoreR4DocumentreferenceSequence
-            title: Document Reference
-          - sequence: USCoreR4EncounterSequence
-            title: Encounter
-          - sequence: USCoreR4GoalSequence
-            title: Goal
-          - sequence: USCoreR4ImmunizationSequence
-            title: Immunization
-          - sequence: USCoreR4MedicationSequence
-            title: Medication
-          - sequence: USCoreR4MedicationrequestSequence
-            title: Medication Request
-          - sequence: USCoreR4MedicationstatementSequence
-            title: Medication Statement
-          - sequence: USCoreR4SmokingstatusSequence
-            title: Smoking Status
-          - sequence: PediatricWeightForHeightSequence
-            title: Pediatric Weight for Height
-          - sequence: USCoreR4ObservationLabSequence
-            title: Observation Lab
-          - sequence: PediatricBmiForAgeSequence
-            title: BMI For Age
-          - sequence: USCoreR4ProcedureSequence
-            title: Procedure
-          - sequence: R4ProvenanceSequence
-            title: Provenance
+          - USCore300AllergyintoleranceSequence
+          - USCore300CareplanSequence
+          - USCore300CareteamSequence
+          - USCore300ConditionSequence
+          - USCore300DeviceSequence
+          - USCore300DiagnosticreportNoteSequence
+          - USCore300DiagnosticreportLabSequence
+          - USCore300DocumentreferenceSequence
+          - USCore300EncounterSequence
+          - USCore300GoalSequence
+          - USCore300ImmunizationSequence
+          - USCore300MedicationrequestSequence
+          - USCore300MedicationstatementSequence
+          - USCore300SmokingstatusSequence
+          - USCore300PediatricWeightForHeightSequence
+          - USCore300ObservationLabSequence
+          - USCore300PediatricBmiForAgeSequence
+          - USCore300PatientSequence
+          - USCore300ProcedureSequence
+          - R4ProvenanceSequence
+          - USCoreR4ClinicalNotesSequence
+          - USCore300LocationSequence
+          - USCore300MedicationSequence
+          - USCore300OrganizationSequence
+          - USCore300PractitionerSequence
+          - USCore300PractitionerroleSequence

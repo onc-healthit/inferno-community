@@ -43,7 +43,7 @@ class ArgonautProcedureSequenceTest < MiniTest::Test
     @extended_request_headers = { 'Accept' => 'application/json+fhir',
                                   'Accept-Charset' => 'utf-8',
                                   'User-Agent' => 'Ruby FHIR Client',
-                                  'Accept-Encoding' => 'gzip, deflate',
+                                  'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
                                   'Host' => 'www.example.com',
                                   'Authorization' => "Bearer #{@instance.token}" }
 
