@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class Test
+    class InfernoTest
       attr_reader :name, :index, :id_prefix, :test_block
 
       def initialize(name, index, id_prefix, &test_block)

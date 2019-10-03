@@ -12,7 +12,7 @@ require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
-require_relative 'models/test'
+require_relative 'models/inferno_test'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -361,7 +361,7 @@ module Inferno
       def self.test(name, &block)
         @@test_index += 1
 
-        tests << Test.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
+        tests << InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
       end
 
       def wrap_test(test)
@@ -400,7 +400,7 @@ module Inferno
         end
       end
 
-      # Metadata loading is handled by Test
+      # Metadata loading is handled by InfernoTest
       def metadata; end
 
       def todo(message = '')
