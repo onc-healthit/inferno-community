@@ -79,7 +79,7 @@ module Inferno
                                      search_params = @search_params)
         skip 'Sever response did not have output data' unless output.present?
 
-        search_type = search_params['_type'].split(',').map(&:strip) if search_params.present? && search_params.key?('_type')
+        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
         output.each do |file|
           ['type', 'url'].each do |key|
