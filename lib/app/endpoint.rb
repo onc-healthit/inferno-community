@@ -20,6 +20,7 @@ module Inferno
       Inferno::EXTRAS = settings.include_extras
 
       if settings.logging_enabled
+        $stdout.sync = true # output in Docker is heavily delayed without this
         Inferno.logger =
           if ENV['RACK_ENV'] == 'test'
             FileUtils.mkdir_p 'tmp'

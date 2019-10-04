@@ -7,6 +7,7 @@ require 'dm-core'
 require 'csv'
 require 'colorize'
 require 'optparse'
+require 'rubocop/rake_task'
 
 require_relative '../app'
 require_relative '../app/endpoint'
@@ -369,6 +370,17 @@ namespace :inferno do |_argv|
 
     exit execute(instance, sequences)
   end
+
+  desc 'Generate Tests'
+  task :generate, [:generator, :path] do |_t, args|
+    require_relative("../../generator/#{args.generator}/#{args.generator}_generator")
+    generator_class = Inferno::Generator::Base.subclasses.first do |c|
+      c.name.demodulize.downcase.start_with?(args.generator)
+    end
+
+    generator = generator_class.new(args.path, args.extras)
+    generator.run
+  end
 end
 
 namespace :terminology do |_argv|
@@ -497,8 +509,8 @@ namespace :terminology do |_argv|
                                     _eventId: 'submit'
                                   },
                                   max_redirects: 0)
-    rescue RestClient::ExceptionWithResponse => err
-      follow_redirect(err.response.headers[:location], err.response.headers[:set_cookie])
+    rescue RestClient::ExceptionWithResponse => e
+      follow_redirect(e.response.headers[:location], e.response.headers[:set_cookie])
     end
     puts 'Finished Downloading!'
   end
@@ -787,4 +799,8 @@ namespace :terminology do |_argv|
     Inferno::Terminology.load_valuesets_from_directory('resources', true)
     Inferno::Terminology.create_validators(validator_type)
   end
+end
+
+RuboCop::RakeTask.new(:rubocop) do |t|
+  t.options = ['--display-cop-names']
 end

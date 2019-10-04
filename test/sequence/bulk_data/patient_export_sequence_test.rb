@@ -129,16 +129,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def include_file_request_stub_unmatched_type(response_headers: { content_type: 'application/fhir+ndjson' })
-    stub_request(:get, @file_location)
-      .with(headers: @file_request_headers)
-      .to_return(
-        status: 200,
-        headers: response_headers,
-        body: @patient_export
-      )
-  end
-
   def include_delete_request_stub
     stub_request(:delete, @content_location)
       .to_return(
@@ -172,7 +162,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(status_code: 200)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_kick_off
+      @sequence.check_export_kick_off
     end
   end
 
@@ -182,7 +172,13 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(response_headers: {})
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_kick_off
+      @sequence.check_export_kick_off
+    end
+  end
+
+  def test_status_check_skip_no_content_location
+    assert_raises Inferno::SkipException do
+      @sequence.check_export_status('')
     end
   end
 
@@ -196,7 +192,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
 
     assert_raises Inferno::SkipException do
-      @sequence.assert_export_status(@content_location, timeout: 1)
+      @sequence.check_export_status(@content_location, timeout: 1)
     end
   end
 
@@ -206,7 +202,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_status_check_stub(status_code: 201)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_status(@content_location)
+      @sequence.check_export_status(@content_location)
     end
   end
 
@@ -219,7 +215,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_status_check_stub(response_body: response_body)
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_status(@content_location)
+      @sequence.check_export_status(@content_location)
     end
   end
 
@@ -229,7 +225,15 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_status_check_stub(response_headers: { content_type: 'application/xml' })
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_export_status(@content_location)
+      @sequence.check_export_status(@content_location)
+    end
+  end
+
+  def test_output_file_skip_empty_output
+    output = []
+
+    assert_raises Inferno::SkipException do
+      @sequence.assert_output_has_type_url(output)
     end
   end
 
@@ -237,7 +241,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     output = [{ 'type' => 'Patient', 'count' => 1 }]
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_output_files(output, false)
+      @sequence.assert_output_has_type_url(output)
+    end
+  end
+
+  def test_output_file_fail_unmached_type
+    search_params = { '_type' => 'Condition' }
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_output_has_type_url(@complete_status['output'], search_params)
     end
   end
 
@@ -248,7 +259,15 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_file_request_stub
 
     assert_raises Inferno::AssertionException do
-      @sequence.assert_file_request(unmatched_type_output)
+      @sequence.check_file_request(unmatched_type_output)
+    end
+  end
+
+  def test_file_request_fail_invalid_resource
+    invalid_patient_export = @patient_export.sub('male', '001')
+
+    assert_raises Inferno::AssertionException do
+      @sequence.check_ndjson(invalid_patient_export, 'Patient')
     end
   end
 end

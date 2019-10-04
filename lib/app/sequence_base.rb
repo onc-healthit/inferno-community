@@ -11,6 +11,7 @@ require_relative 'utils/web_driver'
 require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
+require_relative 'models/testing_instance'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -41,6 +42,7 @@ module Inferno
 
       @@optional = []
       @@show_uris = []
+      @@delayed_sequences = []
 
       @@test_id_prefixes = {}
 
@@ -264,6 +266,10 @@ module Inferno
         @@versions[sequence_name] || FHIR::VERSIONS
       end
 
+      def self.delayed_sequence
+        @@delayed_sequences << sequence_name
+      end
+
       def self.missing_requirements(instance, recurse = false)
         return [] unless @@requires.key?(sequence_name)
 
@@ -350,7 +356,6 @@ module Inferno
       def self.extends_sequence(klass)
         @@test_metadata[klass.sequence_name].each do |metadata|
           @@test_metadata[sequence_name] << metadata
-          @@test_metadata[sequence_name].last[:test_index] = @@test_metadata[sequence_name].length - 1
           define_method metadata[:method_name], metadata[:method]
         end
       end
@@ -393,7 +398,7 @@ module Inferno
             test_index: test_index
           )
           begin
-            fhir_version_included = !@instance.fhir_version.present? || versions.include?(@instance.fhir_version&.to_sym)
+            fhir_version_included = @instance.fhir_version.present? && versions.include?(@instance.fhir_version&.to_sym)
             skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
             Inferno.logger.info "Starting Test: #{test_id} [#{name}]"
             instance_eval(&block)
@@ -721,6 +726,22 @@ module Inferno
         end
 
         assert(problems.empty?, problems.join("<br/>\n"))
+      end
+
+      def save_delayed_sequence_references(resource)
+        delayed_resource_types = @@conformance_supports.select { |sequence, _resources| @@delayed_sequences.include? sequence }.values.flatten
+        walk_resource(resource) do |value, meta, _path|
+          next if meta['type'] != 'Reference'
+
+          if value.relative?
+            begin
+              resource_class = value.resource_class.name.demodulize
+              @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+            rescue NameError
+              next
+            end
+          end
+        end
       end
 
       def check_resource_against_profile(resource, resource_type, specified_profile = nil)

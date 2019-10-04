@@ -105,8 +105,22 @@ module Inferno
 
             [http://hl7.org/fhir/DSTU2/http.html#conformance](http://hl7.org/fhir/DSTU2/http.html#conformance)
 
+            for STU3 FHIR:
+
+            >  Applications SHALL return a Capability Statement that specifies which resource types and interactions are supported for the GET command.
+
+            [http://hl7.org/fhir/STU3/http.html#capabilities](http://hl7.org/fhir/STU3/http.html#capabilities)
+
+            or for R4 FHIR:
+
+            > Applications SHALL return a resource that describes the functionality of the server end-point.
+
+            [http://hl7.org/fhir/R4/http.html#capabilities](http://hl7.org/fhir/R4/http.html#capabilities)
+
             It does this by checking that the server responds with an HTTP OK 200 status code and that the body of the
-            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html).
+            response contains a valid [DSTU2 Conformance resource](http://hl7.org/fhir/DSTU2/conformance.html),
+            [STU3 CapabilityStatement resource](http://hl7.org/fhir/STU3/capabilitystatement.html), or
+            [R4 CapabilityStatement resource](http://hl7.org/fhir/R4/capabilitystatement.html).
             This test does not inspect the content of the Conformance resource to see if it contains the required information.
             It only checks to see if the RESTful interaction is supported and returns a valid Conformance resource.
 
@@ -120,10 +134,15 @@ module Inferno
         @conformance = @client.conformance_statement
         assert_response_ok @client.reply
 
-        if @instance.fhir_version.blank?
-          assert @conformance.class.name.demodulize == versioned_conformance_class.name.demodulize, 'Expected valid Conformance resource.'
-        else
-          assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource.'
+        assert_valid_conformance
+
+        begin
+          @server_capabilities = Inferno::Models::ServerCapabilities.create(
+            testing_instance_id: @instance.id,
+            capabilities: @conformance.as_json
+          )
+        rescue StandardError
+          assert false, 'Capability Statement could not be parsed.'
         end
       end
     end
