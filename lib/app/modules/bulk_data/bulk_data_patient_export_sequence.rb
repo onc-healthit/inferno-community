@@ -14,7 +14,7 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      attr_writer :run_all_kick_off_tests
+      attr_accessor :run_all_kick_off_tests
 
       def check_export_kick_off(klass, search_params: nil)
         @search_params = search_params
@@ -23,17 +23,17 @@ module Inferno
 
         # Servers unable to support _type SHOULD return an error and OperationOutcome resource
         # so clients can re-submit a request omitting the _type parameter.
-        if search_params.present? && reply.code > 400
+        if search_params&.key?('_type') && reply.code >= 400
           response_body = JSON.parse(reply.body)
-          message = ''
-          response_body['issue'].each do |issue|
-            message += issue['diagnostics'].presence || ''
-          end
+          message = response_body['issue']
+            .map { |issue| issue['diagnostics'].presence }
+            .compact
+            .join(' ')
 
           skip message
         end
 
-        @server_support_type_parameter = search_params.present?
+        @server_support_type_parameter = search_params&.key?('_type')
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -79,7 +79,7 @@ module Inferno
                                      search_params = @search_params)
         skip 'Sever response did not have output data' unless output.present?
 
-        search_type = search_params['_type'].split(',').map(&:strip) if search_params.present? && search_params.key?('_type')
+        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
         output.each do |file|
           ['type', 'url'].each do |key|
@@ -115,7 +115,7 @@ module Inferno
 
       def check_delete_request(url)
         reply = @client.delete(url, {})
-        skip 'Server did not accept client request to delete export file after export completed' if reply.code > 400
+        skip 'Server did not accept client request to delete export file after export completed' if reply.code >= 400
         assert_response_accepted(reply)
       end
 
@@ -236,6 +236,7 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           desc %(
           )
+          optional
         end
 
         check_cancel_request('Patient')
