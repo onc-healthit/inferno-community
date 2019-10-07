@@ -55,6 +55,35 @@ module Inferno
         * [DSTU2 Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html)
       )
 
+      PROFILES = [
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient',
+        'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+        'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry',
+        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus',
+        'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+      ].freeze
+
       test 'FHIR server capability states JSON support' do
         metadata do
           id '04'
@@ -85,26 +114,33 @@ module Inferno
         assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
-      test 'Capability Statement lists supported US Core profiles, operations and search parameters' do
+      test 'Capability Statement lists support for required US Core Profiles' do
         metadata do
           id '05'
-          link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
-          desc %(
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
+          description %(
            The US Core Implementation Guide states:
 
            ```
            The US Core Server SHALL:
-
-               1. Support the US Core Patient resource profile.
-               2. Support at least one additional resource profile from the list of US Core Profiles.
+           1. Support the US Core Patient resource profile.
+           2. Support at least one additional resource profile from the list of
+              US Core Profiles.
            ```
-
           )
         end
 
+        patient_profile = PROFILES.find { |profile| profile.end_with? 'patient' }
+
         assert_valid_conformance
 
-        assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in capability statement.'
+        assert @server_capabilities.supported_profiles.include?(patient_profile), 'US Core Patient profile not supported'
+
+        other_profiles = PROFILES.reject { |profile| profile == patient_profile }
+
+        other_profiles_supported = other_profiles & @server_capabilities.supported_profiles
+
+        assert other_profiles_supported.present?, 'No US Core profiles other than Patient are supported'
       end
     end
   end
