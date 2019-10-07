@@ -13,11 +13,15 @@ module Inferno
 
       requires :token
 
-      attr_writer :klass, :run_all_kick_off_tests
+      attr_accessor :run_all_kick_off_tests
+
+      def endpoint
+        ''
+      end
 
       def check_export_kick_off(search_params: nil)
         @search_params = search_params
-        reply = export_kick_off(@klass, search_params: search_params)
+        reply = export_kick_off(endpoint, search_params: search_params)
 
         # Servers unable to support _type SHOULD return an error and OperationOutcome resource
         # so clients can re-submit a request omitting the _type parameter.
@@ -40,12 +44,12 @@ module Inferno
       end
 
       def check_export_kick_off_fail_invalid_accept
-        reply = export_kick_off(@klass, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
+        reply = export_kick_off(endpoint, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
         assert_response_bad(reply)
       end
 
       def check_export_kick_off_fail_invalid_prefer
-        reply = export_kick_off(@klass, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
+        reply = export_kick_off(endpoint, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
         assert_response_bad(reply)
       end
 
@@ -143,7 +147,7 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = export_kick_off(@klass)
+        reply = export_kick_off(endpoint)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
@@ -156,7 +160,7 @@ module Inferno
           )
         end
 
-        check_export_kick_off(search_params: { '_type' => @klass })
+        check_export_kick_off(search_params: { '_type' => endpoint })
       end
 
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
@@ -167,7 +171,7 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @server_support_type_parameter && !@run_all_kick_off_tests
+        skip 'Skip testing $export without parameters' if @server_support_type_parameter && !run_all_kick_off_tests
 
         check_export_kick_off
       end
@@ -241,13 +245,13 @@ module Inferno
 
       private
 
-      def export_kick_off(klass = nil,
+      def export_kick_off(endpoint = nil,
                           id: nil,
                           search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
-        url += "/#{klass}" if klass.present?
-        url += "/#{id}" if klass.present? && id.present?
+        url += "/#{endpoint}" if endpoint.present?
+        url += "/#{id}" if endpoint.present? && id.present?
         url += '/$export'
 
         uri = Addressable::URI.parse(url)

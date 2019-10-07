@@ -51,7 +51,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
     @sequence.run_all_kick_off_tests = true
-    @sequence.klass = :Patient
   end
 
   def include_export_stub_no_token
