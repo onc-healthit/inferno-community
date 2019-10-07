@@ -127,7 +127,9 @@ module Inferno
           optional
           description %(
             The JSON from .well-known/smart-configuration contains the following
-            recommended fields: #{RECOMMENDED_WELL_KNOWN_FIELDS.map { |field| "`#{field}`" }.join(', ')}
+            recommended fields: #{RECOMMENDED_WELL_KNOWN_FIELDS.map { |field| "`#{field}`" }.join(', ')}.
+
+            This test is optional because these fields are recommended, not required.
           )
         end
 
@@ -138,10 +140,10 @@ module Inferno
       test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
         metadata do
           id '04'
-link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
           description %(
             If a server requires SMART on FHIR authorization for access, its
-            metadata must support automated discovery of OAuth2 endpoints
+            metadata must support automated discovery of OAuth2 endpoints.
           )
         end
 
@@ -200,10 +202,10 @@ link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
       test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
         metadata do
           id '05'
-link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
           description %(
-            If a server requires SMART on FHIR authorization for access, its
-            metadata must support automated discovery of OAuth2 endpoints
+           If a server requires SMART on FHIR authorization for access, its
+           metadata must support automated discovery of OAuth2 endpoints.
           )
         end
 
