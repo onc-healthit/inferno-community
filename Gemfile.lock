@@ -236,6 +236,7 @@ DEPENDENCIES
   fhir_client
   json-jwt
   kramdown
+  minitest
   pry
   pry-byebug
   rack-test

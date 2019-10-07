@@ -133,6 +133,12 @@ module Inferno
         self.module.fhir_version
       end
 
+      def fhir_version_match?(versions)
+        return true if fhir_version.blank?
+
+        versions.include? fhir_version.to_sym
+      end
+
       def module
         @module ||= Inferno::Module.get(selected_module)
       end

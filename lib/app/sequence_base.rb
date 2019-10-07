@@ -379,8 +379,7 @@ module Inferno
             test_index: test.index
           ).tap do |result|
             begin
-              fhir_version_included = @instance.fhir_version.present? && self.class.versions.include?(@instance.fhir_version&.to_sym)
-              skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
+              skip_unless(@instance.fhir_version_match?(self.class.versions), 'This test does not run with this FHIR version')
               Inferno.logger.info "Starting Test: #{test.id} [#{test.name}]"
               instance_eval(&test.test_block)
             rescue StandardError => e
