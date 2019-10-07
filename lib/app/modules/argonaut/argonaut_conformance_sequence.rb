@@ -47,7 +47,7 @@ module Inferno
         It collects the following information that is saved in the testing session for use by later tests:
 
         * List of resources supported
-        * List of queries parameters supported
+        * List of query parameters supported
         * SMART on FHIR endpoints
 
         For more information of the Conformance Statement, visit these links:
@@ -92,41 +92,9 @@ module Inferno
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
-      test 'Conformance Statement describes SMART on FHIR core capabilities' do
-        metadata do
-          id '05'
-          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
-          optional
-          description %(
-
-           A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.
-
-          )
-        end
-
-        required_capabilities = ['launch-ehr',
-                                 'launch-standalone',
-                                 'client-public',
-                                 'client-confidential-symmetric',
-                                 'sso-openid-connect',
-                                 'context-ehr-patient',
-                                 'context-standalone-patient',
-                                 'context-standalone-encounter',
-                                 'permission-offline',
-                                 'permission-patient',
-                                 'permission-user']
-
-        assert_valid_conformance
-
-        assert @server_capabilities.smart_support?, 'No SMART capabilities listed in conformance.'
-
-        missing_capabilities = (required_capabilities - @server_capabilities.smart_capabilities)
-        assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
-      end
-
       test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do
         metadata do
-          id '06'
+          id '05'
           link 'https://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           description %(
            The Argonaut Data Query Implementation Guide states:

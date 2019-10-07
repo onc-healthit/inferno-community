@@ -31,7 +31,7 @@ test_sets:
           - sequence: ManualRegistrationSequence
             title: Manual App Registration
           - sequence: UsCoreR4CapabilityStatementSequence
-          - SMARTDiscoverySequence
+          - ONCSMARTDiscoverySequence
       - name: Standalone Patient App
         overview: |
           Demonstrate the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
