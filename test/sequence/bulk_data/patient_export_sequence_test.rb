@@ -84,6 +84,17 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_export_stub_type_patient_not_supports(status_code: 400,
+                                                    response_headers: { content_location: @content_location })
+
+    stub_request(:get, 'http://www.example.com/Patient/$export?_type=Patient')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
   def include_export_stub_invalid_accept
     headers = @export_request_headers.clone
     headers[:accept] = 'application/fhir+xml'
@@ -152,6 +163,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     assert failures.empty?, "All tests should pass. First error: #{failures&.first&.message}"
     assert !sequence_result.skip?, 'No tests should be skipped.'
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
+  end
+
+  def test_export_type_patient_skip_not_supports
+    WebMock.reset!
+
+    include_export_stub_type_patient_not_supports
+
+    assert_raises Inferno::SkipException do
+      @sequence.check_export_kick_off('Patient', search_params: { '_type' => 'Patient' })
+    end
   end
 
   def test_export_fail_wrong_status

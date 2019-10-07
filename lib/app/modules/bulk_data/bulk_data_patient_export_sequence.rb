@@ -21,19 +21,14 @@ module Inferno
 
         reply = export_kick_off(klass, search_params: search_params)
 
+        @server_supports_type_parameter = search_params&.key?('_type')
+
         # Servers unable to support _type SHOULD return an error and OperationOutcome resource
         # so clients can re-submit a request omitting the _type parameter.
-        if search_params&.key?('_type') && reply.code >= 400
-          response_body = JSON.parse(reply.body)
-          message = response_body['issue']
-            .map { |issue| issue['diagnostics'].presence }
-            .compact
-            .join(' ')
-
-          skip message
+        if @server_supports_type_parameter && is_4xx_error?(reply)
+          @server_supports_type_parameter = false
+          skip 'Server does not support _type operation parameter'
         end
-
-        @server_support_type_parameter = search_params&.key?('_type')
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -115,7 +110,7 @@ module Inferno
 
       def check_delete_request(url)
         reply = @client.delete(url, {})
-        skip 'Server did not accept client request to delete export file after export completed' if reply.code >= 400
+        skip 'Server did not accept client request to delete export file after export completed' if is_4xx_error?(reply)
         assert_response_accepted(reply)
       end
 
@@ -169,7 +164,7 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @server_support_type_parameter && !@run_all_kick_off_tests
+        skip 'Skip testing $export without parameters' if @server_supports_type_parameter && !run_all_kick_off_tests
 
         check_export_kick_off('Patient')
       end
@@ -299,6 +294,10 @@ module Inferno
         ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
           assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
         end
+      end
+
+      def is_4xx_error?(response)
+        response.code >= 400 && response.code < 500
       end
     end
   end
