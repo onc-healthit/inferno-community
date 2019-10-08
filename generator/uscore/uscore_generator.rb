@@ -389,7 +389,7 @@ module Inferno
         return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
         return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
         return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_note]
-        return "patient: @instance.patient_id, code: '2708-6'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pulse_oximetry]
+        return "patient: @instance.patient_id, code: '59408-5'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pulse_oximetry]
       end
 
       def create_search_validation(sequence)

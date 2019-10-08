@@ -153,6 +153,8 @@ module Inferno
         return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if resource&.code&.coding&.any? { |coding| coding&.code == '59576-9' }
 
         return DEFINITIONS[US_CORE_R4_URIS[:pediatric_weight_height]] if resource&.code&.coding&.any? { |coding| coding&.code == '77606-2' }
+
+        return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if resource&.code&.coding&.any? { |coding| coding&.code == '59408-5' }
       elsif resource.resourceType == 'DiagnosticReport'
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 
