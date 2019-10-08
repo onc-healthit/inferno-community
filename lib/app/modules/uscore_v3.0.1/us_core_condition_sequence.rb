@@ -112,7 +112,7 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = resolve_element_from_path(@condition, 'clinicalStatus.coding.code')
+        clinical_status_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -135,7 +135,7 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        onset_date_val = resolve_element_from_path(@condition, 'onsetDateTime')
+        onset_date_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'onsetDateTime'))
         search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -166,7 +166,7 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@condition, 'code.coding.code')
+        code_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
         search_params = { 'patient': patient_val, 'code': code_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -189,7 +189,7 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@condition, 'category.coding.code')
+        category_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
         search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

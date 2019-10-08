@@ -101,7 +101,7 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = resolve_element_from_path(@medicationrequest, 'status')
+        status_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
         search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -124,7 +124,7 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        authoredon_val = resolve_element_from_path(@medicationrequest, 'authoredOn')
+        authoredon_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
         search_params = { 'patient': patient_val, 'authoredon': authoredon_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

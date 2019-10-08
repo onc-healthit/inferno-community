@@ -69,7 +69,7 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        name_val = resolve_element_from_path(@practitioner, 'name.family')
+        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -87,7 +87,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = resolve_element_from_path(@practitioner, 'name.family')
+        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -119,7 +119,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
 
-        identifier_val = resolve_element_from_path(@practitioner, 'identifier.value')
+        identifier_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
         search_params = { 'identifier': identifier_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

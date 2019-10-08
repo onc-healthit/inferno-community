@@ -43,7 +43,7 @@ module Inferno
           create_read_test(sequence) if sequence[:delayed_sequence]
 
           # authorization test
-          create_authorization_test(sequence)
+          create_authorization_test(sequence) 
 
           # make tests for each SHALL and SHOULD search param, SHALL's first
           sequence[:searches]
@@ -283,12 +283,10 @@ module Inferno
       end
 
       def resolve_element_path(search_param_description)
-        type = search_param_description[:type]
-        element_path = search_param_description[:path] + get_value_path_by_type(type)
-        element_path.gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
+        element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
         path_parts = element_path.split('.')
-        resource_val = "@#{path_parts.shift.downcase}"
-        "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
+        resource_val = "@#{path_parts.shift.downcase}_ary"
+        "get_value_for_search_param(resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}'))"
       end
 
       def get_value_path_by_type(type)
@@ -430,6 +428,17 @@ module Inferno
                 end
                 assert value_found, '#{element} on resource does not match #{element} requested'
       )
+          when 'Address'
+            search_validators += %(
+                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |address|
+                  address&.text.starts_with(value) ||
+                    address&.city&.starts_with(value) ||
+                    address&.state&.starts_with(value) ||
+                    address&.postalCode&.starts_with(value) ||
+                    address&.country&.starts_with(value)
+                end
+                assert value_found, '#{element} on resource does not match #{element} requested'
+            )
           else
             # searching by patient requires special case because we are searching by a resource identifier
             # references can also be URL's, so we made need to resolve those url's

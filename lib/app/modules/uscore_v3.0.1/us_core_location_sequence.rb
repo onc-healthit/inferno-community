@@ -21,7 +21,13 @@ module Inferno
           assert value_found, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
+          value_found = can_resolve_path(resource, 'address') do |address|
+            address&.text.starts_with(value) ||
+              address&.city&.starts_with(value) ||
+              address&.state&.starts_with(value) ||
+              address&.postalCode&.starts_with(value) ||
+              address&.country&.starts_with(value)
+          end
           assert value_found, 'address on resource does not match address requested'
 
         when 'address-city'
@@ -74,7 +80,7 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        name_val = resolve_element_from_path(@location, 'name')
+        name_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -92,7 +98,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = resolve_element_from_path(@location, 'name')
+        name_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -124,7 +130,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_val = resolve_element_from_path(@location, 'address.city')
+        address_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
         search_params = { 'address': address_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -146,7 +152,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_city_val = resolve_element_from_path(@location, 'address.city')
+        address_city_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
         search_params = { 'address-city': address_city_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -168,7 +174,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_state_val = resolve_element_from_path(@location, 'address.state')
+        address_state_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
         search_params = { 'address-state': address_state_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -190,7 +196,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        address_postalcode_val = resolve_element_from_path(@location, 'address.postalCode')
+        address_postalcode_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
         search_params = { 'address-postalcode': address_postalcode_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

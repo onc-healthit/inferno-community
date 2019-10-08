@@ -121,7 +121,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        identifier_val = resolve_element_from_path(@patient, 'identifier.value')
+        identifier_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
         search_params = { 'identifier': identifier_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -142,7 +142,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        name_val = resolve_element_from_path(@patient, 'name.family')
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -163,8 +163,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = resolve_element_from_path(@patient, 'birthDate')
-        name_val = resolve_element_from_path(@patient, 'name.family')
+        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
         search_params = { 'birthdate': birthdate_val, 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -185,8 +185,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        gender_val = resolve_element_from_path(@patient, 'gender')
-        name_val = resolve_element_from_path(@patient, 'name.family')
+        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
         search_params = { 'gender': gender_val, 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -208,8 +208,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        family_val = resolve_element_from_path(@patient, 'name.family')
-        gender_val = resolve_element_from_path(@patient, 'gender')
+        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
+        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
         search_params = { 'family': family_val, 'gender': gender_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -231,8 +231,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = resolve_element_from_path(@patient, 'birthDate')
-        family_val = resolve_element_from_path(@patient, 'name.family')
+        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
+        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
         search_params = { 'birthdate': birthdate_val, 'family': family_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

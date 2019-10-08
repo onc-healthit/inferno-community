@@ -107,7 +107,7 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
+        code_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
         search_params = { 'patient': patient_val, 'code': code_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -129,8 +129,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@observation, 'category.coding.code')
-        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
+        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -153,8 +153,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@observation, 'category.coding.code')
-        status_val = resolve_element_from_path(@observation, 'status')
+        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
+        status_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -177,8 +177,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
-        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
+        code_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

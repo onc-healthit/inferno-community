@@ -118,7 +118,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        id_val = resolve_element_from_path(@documentreference, 'id')
+        id_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'id'))
         search_params = { '_id': id_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -140,8 +140,8 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
-        date_val = resolve_element_from_path(@documentreference, 'date')
+        category_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'date'))
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -163,7 +163,7 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@documentreference, 'category.coding.code')
+        category_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
         search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -185,7 +185,7 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = resolve_element_from_path(@documentreference, 'type.coding.code')
+        type_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
         search_params = { 'patient': patient_val, 'type': type_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -208,7 +208,7 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = resolve_element_from_path(@documentreference, 'status')
+        status_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'status'))
         search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -231,8 +231,8 @@ module Inferno
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = resolve_element_from_path(@documentreference, 'type.coding.code')
-        period_val = resolve_element_from_path(@documentreference, 'context.period.start')
+        type_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
+        period_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'context.period'))
         search_params = { 'patient': patient_val, 'type': type_val, 'period': period_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

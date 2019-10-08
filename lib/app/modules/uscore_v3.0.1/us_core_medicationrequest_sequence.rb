@@ -59,7 +59,7 @@ module Inferno
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
-        intent_val = resolve_element_from_path(@medicationrequest, 'intent')
+        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
         search_params = { 'patient': patient_val, 'intent': intent_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -78,7 +78,7 @@ module Inferno
         end
 
         patient_val = @instance.patient_id
-        intent_val = resolve_element_from_path(@medicationrequest, 'intent')
+        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
         search_params = { 'patient': patient_val, 'intent': intent_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -111,8 +111,8 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        intent_val = resolve_element_from_path(@medicationrequest, 'intent')
-        status_val = resolve_element_from_path(@medicationrequest, 'status')
+        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+        status_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
         search_params = { 'patient': patient_val, 'intent': intent_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -135,8 +135,8 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        intent_val = resolve_element_from_path(@medicationrequest, 'intent')
-        encounter_val = resolve_element_from_path(@medicationrequest, 'encounter.reference')
+        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+        encounter_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'encounter'))
         search_params = { 'patient': patient_val, 'intent': intent_val, 'encounter': encounter_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -159,8 +159,8 @@ module Inferno
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
         patient_val = @instance.patient_id
-        intent_val = resolve_element_from_path(@medicationrequest, 'intent')
-        authoredon_val = resolve_element_from_path(@medicationrequest, 'authoredOn')
+        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+        authoredon_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
         search_params = { 'patient': patient_val, 'intent': intent_val, 'authoredon': authoredon_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
