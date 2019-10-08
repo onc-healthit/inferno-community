@@ -22,7 +22,7 @@ module Inferno
 
         when 'address'
           value_found = can_resolve_path(resource, 'address') do |address|
-            address&.text.starts_with(value) ||
+            address&.text&.starts_with(value) ||
               address&.city&.starts_with(value) ||
               address&.state&.starts_with(value) ||
               address&.postalCode&.starts_with(value) ||

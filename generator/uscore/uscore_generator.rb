@@ -43,7 +43,7 @@ module Inferno
           create_read_test(sequence) if sequence[:delayed_sequence]
 
           # authorization test
-          create_authorization_test(sequence) 
+          create_authorization_test(sequence)
 
           # make tests for each SHALL and SHOULD search param, SHALL's first
           sequence[:searches]
@@ -431,7 +431,7 @@ module Inferno
           when 'Address'
             search_validators += %(
                 value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |address|
-                  address&.text.starts_with(value) ||
+                  address&.text&.starts_with(value) ||
                     address&.city&.starts_with(value) ||
                     address&.state&.starts_with(value) ||
                     address&.postalCode&.starts_with(value) ||
