@@ -1,13 +1,13 @@
 {
   "inputFormat": "application/fhir+ndjson",
-  "inputSource": "http://localhost:8080/cqf-ruler",
+  "inputSource": "http:/cqf_ruler:8080/cqf-ruler",
   "storageDetail": {
     "type": "https"
   },
   "input": [
     {
       "type": "Bundle",
-      "url": "https://raw.githubusercontent.com/mgramigna/connectathon/exm165_bulk_data/resources/fhir3/ndjson/exm165-bulk-data.ndjson"
+      "url": "http://ndjson_server:8080/cms165-bundle.ndjson"
     }
   ]
 }

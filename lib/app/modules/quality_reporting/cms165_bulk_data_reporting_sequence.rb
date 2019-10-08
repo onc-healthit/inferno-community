@@ -39,7 +39,7 @@ module Inferno
         # Use the content-location in the response to check the status of the import
         # Check the status on loop until the job is finished
         content_loc = async_submit_data_response.headers[:content_location]
-        polling_response = get_with_retry(content_loc, 180, @client)
+        polling_response = WebUtils.get_with_retry(content_loc, 180, @client)
 
         # Once the loop breaks, should receive 200 OK
         assert_response_ok(polling_response)
