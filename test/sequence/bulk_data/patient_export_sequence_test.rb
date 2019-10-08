@@ -44,10 +44,13 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
 
+    @search_params = { '_type' => 'Patient' }
+
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
+    @sequence.run_all_kick_off_tests = true
   end
 
   def include_export_stub_no_token
@@ -64,6 +67,27 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def include_export_stub(status_code: 202,
                           response_headers: { content_location: @content_location })
     stub_request(:get, 'http://www.example.com/Patient/$export')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_type_patient(status_code: 202,
+                                       response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_type=Patient')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_type_patient_not_supports(status_code: 400,
+                                                    response_headers: { content_location: @content_location })
+
+    stub_request(:get, 'http://www.example.com/Patient/$export?_type=Patient')
       .with(headers: @export_request_headers)
       .to_return(
         status: status_code,
@@ -115,21 +139,40 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_delete_request_stub
+    stub_request(:delete, @content_location)
+      .to_return(
+        status: 202
+      )
+  end
+
   def test_all_pass
     WebMock.reset!
 
     include_export_stub_no_token
+    include_export_stub_type_patient
     include_export_stub
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
     include_status_check_stub
     include_file_request_stub
+    include_delete_request_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
     assert failures.empty?, "All tests should pass. First error: #{failures&.first&.message}"
     assert !sequence_result.skip?, 'No tests should be skipped.'
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
+  end
+
+  def test_export_type_patient_skip_not_supports
+    WebMock.reset!
+
+    include_export_stub_type_patient_not_supports
+
+    assert_raises Inferno::SkipException do
+      @sequence.check_export_kick_off('Patient', search_params: { '_type' => 'Patient' })
+    end
   end
 
   def test_export_fail_wrong_status
@@ -218,6 +261,13 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     assert_raises Inferno::AssertionException do
       @sequence.assert_output_has_type_url(output)
+    end
+  end
+
+  def test_output_file_fail_unmached_type
+    search_params = { '_type' => 'Condition' }
+    assert_raises Inferno::AssertionException do
+      @sequence.assert_output_has_type_url(@complete_status['output'], search_params)
     end
   end
 
