@@ -52,7 +52,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A Smoking Status search does not work without proper authorization.
           )
           versions :dstu2
@@ -72,7 +72,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning a patient's smoking status.
           )
           versions :dstu2
@@ -93,7 +93,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
             Smoking Status resources associated with Patient conform to Argonaut profiles
           )
           versions :dstu2

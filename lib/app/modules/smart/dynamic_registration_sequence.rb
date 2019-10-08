@@ -39,7 +39,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          desc %(
+          description %(
             The client registration endpoint MUST be protected by a transport layer security.
           )
         end
@@ -57,7 +57,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://tools.ietf.org/html/rfc7591'
-          desc %(
+          description %(
             The client registration endpoint MUST accept HTTP POST messages with request parameters encoded in the entity body using the "application/json" format.
           )
         end
@@ -91,7 +91,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://tools.ietf.org/html/rfc7591'
-          desc %(
+          description %(
             When an OAuth 2.0 error condition occurs, such as the client presenting an invalid initial access token, the authorization server returns an error response appropriate to the OAuth 2.0 token type.
           )
         end
@@ -106,7 +106,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://tools.ietf.org/html/rfc7591'
-          desc %(
+          description %(
             The server responds with an HTTP 201 Created status code and a body of type "application/json" with content as described in Section 3.2.1.
           )
         end

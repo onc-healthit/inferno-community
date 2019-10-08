@@ -58,7 +58,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -106,7 +106,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -118,7 +118,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -130,7 +130,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -142,7 +142,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -154,7 +154,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -166,7 +166,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -178,7 +178,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -190,7 +190,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -202,7 +202,7 @@ module Inferno
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          desc %(
+          description %(
           )
           versions :r4
         end

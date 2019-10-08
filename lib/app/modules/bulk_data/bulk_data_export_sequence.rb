@@ -26,20 +26,14 @@ module Inferno
       def check_export_kick_off(search_params: nil)
         @search_params = search_params
         reply = export_kick_off(endpoint, id: resource_id, search_params: search_params)
+        @server_supports_type_parameter = search_params&.key?('_type')
 
         # Servers unable to support _type SHOULD return an error and OperationOutcome resource
         # so clients can re-submit a request omitting the _type parameter.
-        if search_params.present? && reply.code > 400
-          response_body = JSON.parse(reply.body)
-          message = ''
-          response_body['issue'].each do |issue|
-            message += issue['diagnostics'].presence || ''
-          end
-
-          skip message
+        if @server_supports_type_parameter && is_4xx_error?(reply)
+          @server_supports_type_parameter = false
+          skip 'Server does not support _type operation parameter'
         end
-
-        @server_support_type_parameter = search_params.present?
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -85,7 +79,7 @@ module Inferno
                                      search_params = @search_params)
         skip 'Sever response did not have output data' unless output.present?
 
-        search_type = search_params['_type'].split(',').map(&:strip) if search_params.present? && search_params.key?('_type')
+        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
         output.each do |file|
           ['type', 'url'].each do |key|
@@ -121,7 +115,7 @@ module Inferno
 
       def check_delete_request(url)
         reply = @client.delete(url, {})
-        skip 'Server did not accept client request to delete export file after export completed' if reply.code > 400
+        skip 'Server did not accept client request to delete export file after export completed' if is_4xx_error?(reply)
         assert_response_accepted(reply)
       end
 
@@ -133,8 +127,8 @@ module Inferno
 
       details %(
 
-        The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
-        [Bulk Data Access Implementation Guide](https://build.fhir.org/ig/HL7/bulk-data/)
+      The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
+      [Bulk Data Access Implementation Guide](https://build.fhir.org/ig/HL7/bulk-data/)
 
       )
 
@@ -144,7 +138,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
-          desc %(
+          description %(
           )
         end
 
@@ -171,11 +165,11 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
-          desc %(
+          description %(
           )
         end
 
-        skip 'Skip testing $export without parameters' if @server_support_type_parameter && !run_all_kick_off_tests
+        skip 'Skip testing $export without parameters' if @server_supports_type_parameter && !run_all_kick_off_tests
 
         check_export_kick_off
       end
@@ -184,7 +178,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
-          desc %(
+          description %(
           )
         end
 
@@ -195,7 +189,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
-          desc %(
+          description %(
           )
         end
 
@@ -206,7 +200,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
-          desc %(
+          description %(
           )
         end
 
@@ -217,7 +211,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-          desc %(
+          description %(
           )
         end
 
@@ -242,6 +236,7 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           desc %(
           )
+          optional
         end
 
         check_cancel_request
@@ -304,6 +299,10 @@ module Inferno
         ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
           assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
         end
+      end
+
+      def is_4xx_error?(response)
+        response.code >= 400 && response.code < 500
       end
     end
   end

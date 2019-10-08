@@ -16,9 +16,9 @@ class SequenceValidationTest < MiniTest::Test
     # questionable requirements
     excluded_tests << 'Patient supports $everything operation'
 
-    test_list = @sequences.map do |sequence|
-      test_list = sequence.tests.map { |test| test[:sequence] = sequence.name; test }
-    end.flatten
+    test_list = @sequences.flat_map do |sequence|
+      sequence.tests.map { |test| test.metadata_hash.merge(sequence: sequence.name) }
+    end
 
     test_list.reject! { |test| excluded_tests.include?(test[:name]) }
 
@@ -27,7 +27,6 @@ class SequenceValidationTest < MiniTest::Test
         test[:description].nil? ||
         !valid_uri?(test[:url]) ||
         test[:test_id].nil?
-      # || test[:ref].nil? # no refs yet
     end
 
     empty = incomplete_metadata_tests.empty?
@@ -56,16 +55,16 @@ class SequenceValidationTest < MiniTest::Test
 
     errors = []
 
-    Inferno::Sequence::SequenceBase.subclasses.each do |seq|
-      ids = seq.tests.reduce([]) do |out, hash|
-        if hash[:test_id].nil?
+    Inferno::Sequence::SequenceBase.subclasses.each do |sequence|
+      ids = sequence.tests.map(&:metadata_hash).reduce([]) do |out, metadata|
+        if metadata[:test_id].nil?
           out
         else
-          out << hash[:test_id].scan(/\d{2}/)[0, 2].join.to_i
+          out << metadata[:test_id].scan(/\d{2}/)[0, 2].join.to_i
         end
       end.sort
       all_in_order = ids.each_cons(2).all? { |x, y| y == x + 1 }
-      errors << seq.sequence_name unless all_in_order && (ids.first != 0)
+      errors << sequence.sequence_name unless all_in_order && (ids.first != 0)
     end
 
     assert errors.empty?, "Sequence(s) #{errors.join(',')} do not have incrementing test id numbers"\

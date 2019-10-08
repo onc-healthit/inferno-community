@@ -15,7 +15,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A patient read does not work without authorization.
           )
           versions :stu3
@@ -33,7 +33,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the BlueButton Profiles the server chooses to support.
           )
           versions :stu3
@@ -50,7 +50,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server returns valid FHIR Patient resources according to the [Data Access Framework (DAF) Patient Profile](http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).
           )
           versions :stu3
@@ -67,7 +67,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the Patient resource should be resolveable.
           )
           versions :stu3

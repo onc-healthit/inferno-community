@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Organization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Organization' # change me
+      test_id_prefix 'USCO'
 
       requires :token
       conformance_supports :Organization
@@ -39,7 +39,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -54,7 +54,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -75,7 +75,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -104,7 +104,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -125,7 +125,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -140,7 +140,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -155,7 +155,7 @@ module Inferno
         metadata do
           id '07'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -168,7 +168,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -209,7 +209,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
           )
           versions :r4
         end

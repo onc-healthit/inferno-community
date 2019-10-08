@@ -63,7 +63,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
 
             FHIR provides multiple [representation formats](https://www.hl7.org/fhir/DSTU2/formats.html) for resources, including JSON and XML.
             Argonaut profiles require servers to use the JSON representation:
@@ -96,7 +96,7 @@ module Inferno
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
-          desc %(
+          description %(
 
             To declare conformance with this IG, a server should include the following URL in its own CapabilityStatement.instantiates:
             http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data
@@ -112,7 +112,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
-          desc %(
+          description %(
 
             These OperationDefinitions have been defined for this implementation guide.
               * Export: export any data from a FHIR server
@@ -139,7 +139,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
-          desc %(
+          description %(
 
             These OperationDefinitions have been defined for this implementation guide.
               * Export: export any data from a FHIR server
@@ -155,9 +155,9 @@ module Inferno
 
       test 'FHIR server capability SHOULD have group-export operation' do
         metadata do
-          id '07'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/operations/index.html'
-          desc %(
+          description %(
 
             These OperationDefinitions have been defined for this implementation guide.
               * Export: export any data from a FHIR server

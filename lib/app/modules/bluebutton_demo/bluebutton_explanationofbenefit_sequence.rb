@@ -24,7 +24,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -43,7 +43,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -60,7 +60,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -73,7 +73,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -86,7 +86,7 @@ module Inferno
         metadata do
           id '05'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -99,7 +99,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -112,7 +112,7 @@ module Inferno
         metadata do
           id '07'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -125,7 +125,7 @@ module Inferno
         metadata do
           id '08'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -138,7 +138,7 @@ module Inferno
         metadata do
           id '09'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
@@ -151,7 +151,7 @@ module Inferno
         metadata do
           id '10'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-smokingstatus.html'
-          desc %(
+          description %(
           )
           versions :stu3
         end
