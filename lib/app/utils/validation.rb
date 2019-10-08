@@ -60,7 +60,8 @@ module Inferno
       diagnostic_report_note: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note',
       lab_results: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
       pediatric_bmi_age: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
-      pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
+      pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
+      pulse_oximetry: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry'
     }.freeze
 
     def self.guess_profile(resource, version)
