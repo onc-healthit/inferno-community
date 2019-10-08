@@ -18,10 +18,14 @@ module Inferno
       def endpoint
         ''
       end
+      
+      def resource_id
+        ''
+      end
 
       def check_export_kick_off(search_params: nil)
         @search_params = search_params
-        reply = export_kick_off(endpoint, search_params: search_params)
+        reply = export_kick_off(endpoint, id: resource_id, search_params: search_params)
 
         # Servers unable to support _type SHOULD return an error and OperationOutcome resource
         # so clients can re-submit a request omitting the _type parameter.

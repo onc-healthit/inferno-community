@@ -13,4 +13,5 @@ test_sets:
       - name: Patient export
         sequences:
           - BulkDataPatientExportSequence
+          - BulkDataGroupExportSequence
 

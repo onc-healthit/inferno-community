@@ -5,6 +5,8 @@ require_relative 'bulk_data_export_sequence'
 module Inferno
   module Sequence
     class BulkDataGroupExportSequence < BulkDataExportSequence
+      extends_sequence BulkDataExportSequence
+
       group 'Bulk Data Group Export'
 
       title 'Group Compartment Export Tests'
@@ -13,9 +15,15 @@ module Inferno
 
       test_id_prefix 'Group'
 
-      requires :token, :group_id
+      requires :group_id, :token
 
-      @klass = :Group
+      def endpoint
+        'Group'
+      end
+
+      def resource_id
+        @instance.group_id
+      end
     end
   end
 end

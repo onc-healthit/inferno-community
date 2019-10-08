@@ -55,6 +55,8 @@ module Inferno
 
       property :must_support_confirmed, String, default: ''
 
+      property :group_id, String
+
       has n, :sequence_results
       has n, :resource_references
       has 1, :server_capabilities

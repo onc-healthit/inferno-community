@@ -397,6 +397,12 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
+              label: 'Group ID',
+              instance: instance,
+              value: instance.group_id,
+              })%>              
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
