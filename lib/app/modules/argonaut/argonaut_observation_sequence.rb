@@ -59,7 +59,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             An Observation Results search does not work without proper authorization.
           )
           versions :dstu2
@@ -77,7 +77,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's laboratory results queried by category.
           )
           versions :dstu2
@@ -102,7 +102,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's laboratory results queried by category code and date range.
           )
           versions :dstu2
@@ -123,7 +123,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's laboratory results queried by category and code.
           )
           versions :dstu2
@@ -145,7 +145,7 @@ module Inferno
           id '05'
           optional
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server SHOULD be capable of returning all of a patient's laboratory results queried by category and one or more codes and date range.
           )
           versions :dstu2
@@ -168,7 +168,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A Smoking Status search does not work without proper authorization.
           )
           versions :dstu2
@@ -189,7 +189,7 @@ module Inferno
         metadata do
           id '07'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning a patient's smoking status.
           )
           versions :dstu2
@@ -208,7 +208,7 @@ module Inferno
         metadata do
           id '08'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -225,7 +225,7 @@ module Inferno
           id '09'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -242,7 +242,7 @@ module Inferno
           id '10'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -258,7 +258,7 @@ module Inferno
         metadata do
           id '11'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-observationresults.html'
-          desc %(
+          description %(
             Observation Result resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
@@ -273,7 +273,7 @@ module Inferno
         metadata do
           id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the Observation resource should be resolveable.
           )
           versions :dstu2

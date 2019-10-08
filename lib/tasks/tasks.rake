@@ -174,9 +174,10 @@ namespace :inferno do |_argv|
 
     flat_tests = sequences.map do |klass|
       klass.tests.map do |test|
-        test[:sequence] = klass.to_s
-        test[:sequence_required] = !klass.optional?
-        test
+        test.metadata_hash.merge(
+          sequence: klass.to_s,
+          sequence_required: !klass.optional?
+        )
       end
     end.flatten
 
@@ -185,7 +186,14 @@ namespace :inferno do |_argv|
       csv << ['', '', '', '', '']
       csv << ['Test ID', 'Reference', 'Sequence/Group', 'Test Name', 'Required?', 'Reference URI']
       flat_tests.each do |test|
-        csv << [test[:test_id], test[:ref], test[:sequence].split('::').last, test[:name], test[:sequence_required] && test[:required], test[:url]]
+        csv << [
+          test[:test_id],
+          test[:ref],
+          test[:sequence].split('::').last,
+          test[:name],
+          test[:sequence_required] && test[:required],
+          test[:url]
+        ]
       end
     end
 

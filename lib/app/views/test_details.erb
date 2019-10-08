@@ -1,7 +1,7 @@
 <div class="modal-header">
   <h5 class="modal-title" id="exampleModalLabel">
-    <%=@test_metadata[:test_id] %>:
-    Test Details: <%=@test_metadata[:name] %>
+    <%=@test.id %>:
+    Test Details: <%=@test.name %>
   </h5>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
@@ -10,19 +10,12 @@
 <div class="modal-body">
   <div class="test-result-details">
 
-    <% unless @test_metadata[:description].nil? %>
+    <% if @test.description.present? %>
       <div class="test-result-details-description">
-        <%= markdown_to_html(@test_metadata[:description]) %>
-        <a class="test-result-details-url"target="_blank" href="<%= @test_metadata[:url] %>"><%= @test_metadata[:url] %></a>
-      </div>
-    <% end %>
-
-    <% unless @test_metadata[:details].nil? %>
-      <div class="test-result-details-details">
-        <%= markdown_to_html(@test_metadata[:details]) %>
+        <%= markdown_to_html(@test.description) %>
+        <a class="test-result-details-url"target="_blank" href="<%= @test.link %>"><%= @test.link %></a>
       </div>
     <% end %>
   </div>
-
 </div>
 

@@ -51,7 +51,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A Goal search does not work without proper authorization.
           )
           versions :dstu2
@@ -69,7 +69,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's goals.
           )
           versions :dstu2
@@ -94,7 +94,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of all of a patient's goals over a specified time period.
           )
           versions :dstu2
@@ -115,7 +115,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -132,7 +132,7 @@ module Inferno
           id '05'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -149,7 +149,7 @@ module Inferno
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           optional
-          desc %(
+          description %(
             All servers SHOULD make available the vread and history-instance interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :dstu2
@@ -165,7 +165,7 @@ module Inferno
         metadata do
           id '07'
           link 'http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-goal.html'
-          desc %(
+          description %(
             Goal resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2
@@ -177,7 +177,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
             All references in the Goal resource should be resolveable.
           )
           versions :dstu2
