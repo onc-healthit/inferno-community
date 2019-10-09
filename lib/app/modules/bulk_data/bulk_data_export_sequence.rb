@@ -16,16 +16,20 @@ module Inferno
       attr_accessor :run_all_kick_off_tests
 
       def endpoint
-        ''
+        nil
       end
-      
+
       def resource_id
-        ''
+        nil
+      end
+
+      def type_parameter
+        endpoint
       end
 
       def check_export_kick_off(search_params: nil)
         @search_params = search_params
-        reply = export_kick_off(endpoint, id: resource_id, search_params: search_params)
+        reply = export_kick_off(endpoint, resource_id, search_params: search_params)
         @server_supports_type_parameter = search_params&.key?('_type')
 
         # Servers unable to support _type SHOULD return an error and OperationOutcome resource
@@ -42,18 +46,17 @@ module Inferno
       end
 
       def check_export_kick_off_fail_invalid_accept
-        reply = export_kick_off(endpoint, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
+        reply = export_kick_off(endpoint, resource_id, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
         assert_response_bad(reply)
       end
 
       def check_export_kick_off_fail_invalid_prefer
-        reply = export_kick_off(endpoint, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
+        reply = export_kick_off(endpoint, resource_id, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
         assert_response_bad(reply)
       end
 
       def check_export_status(url = @content_location, timeout: 180)
         skip 'Server response did not have Content-Location in header' unless url.present?
-
         reply = export_status_check(url, timeout)
 
         # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code
@@ -71,13 +74,11 @@ module Inferno
         assert_status_reponse_required_field(response_body)
 
         @output = response_body['output']
-
-        assert_output_has_type_url
       end
 
       def assert_output_has_type_url(output = @output,
                                      search_params = @search_params)
-        skip 'Sever response did not have output data' unless output.present?
+        assert output.present?, 'Sever response did not have output data'
 
         search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
@@ -91,7 +92,7 @@ module Inferno
       end
 
       def check_file_request(output = @output)
-        skip 'Content-Location from server response was emtpy' unless output.present?
+        skip 'Sever response did not have output data' unless output.present?
 
         headers = { accept: 'application/fhir+ndjson' }
         output.each do |file|
@@ -145,25 +146,14 @@ module Inferno
         @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
 
-        reply = export_kick_off(endpoint)
+        reply = export_kick_off(endpoint, resource_id)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
 
-      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with parameters' do
-        metadata do
-          id '02'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          desc %(
-          )
-        end
-
-        check_export_kick_off(search_params: { '_type' => endpoint })
-      end
-
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
         metadata do
-          id '03'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           description %(
           )
@@ -176,7 +166,7 @@ module Inferno
 
       test 'Server shall reject for $export operation with invalid Accept header' do
         metadata do
-          id '04'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
           )
@@ -187,7 +177,7 @@ module Inferno
 
       test 'Server shall reject for $export operation with invalid Prefer header' do
         metadata do
-          id '05'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
           )
@@ -196,9 +186,9 @@ module Inferno
         check_export_kick_off_fail_invalid_prefer
       end
 
-      test 'Server shall return "202 Accepted" or "200 OK"' do
+      test 'Server shall return "202 Accepted" or "200 OK" for status check' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           description %(
           )
@@ -207,22 +197,34 @@ module Inferno
         check_export_status
       end
 
-      test 'Server shall return file in ndjson format' do
+      test 'Completed Status Check shall return output with type and url' do
         metadata do
-          id '07'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          id '06'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           description %(
           )
         end
 
-        check_file_request
+        assert_output_has_type_url
       end
+
+      # test 'Server shall export resources required by Patient Compartment' do
+      #   metadata do
+      #     id '07'
+      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
+      #     description %(
+      #     )
+      #   end
+
+      #   assert_output_has_type_url
+      # end
+
 
       test 'Server should return "202 Accepted" for delete export content' do
         metadata do
-          id '08'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
-          desc %(
+          description %(
           )
           optional
         end
@@ -232,9 +234,9 @@ module Inferno
 
       test 'Server shall return "202 Accepted" for cancel export request' do
         metadata do
-          id '09'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
-          desc %(
+          description %(
           )
           optional
         end
@@ -242,10 +244,32 @@ module Inferno
         check_cancel_request
       end
 
+      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with parameters' do
+        metadata do
+          id '09'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
+          description %(
+          )
+        end
+
+        check_export_kick_off(search_params: { '_type' => type_parameter })
+      end
+
+      # test 'Server shall return file in ndjson format' do
+      #   metadata do
+      #     id '06'
+      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+      #     description %(
+      #     )
+      #   end
+
+      #   check_file_request
+      # end
+
       private
 
       def export_kick_off(endpoint = nil,
-                          id: nil,
+                          id = nil,
                           search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''

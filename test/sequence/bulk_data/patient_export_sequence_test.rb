@@ -249,10 +249,10 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     end
   end
 
-  def test_output_file_skip_empty_output
+  def test_output_file_fail_empty_output
     output = []
 
-    assert_raises Inferno::SkipException do
+    assert_raises Inferno::AssertionException do
       @sequence.assert_output_has_type_url(output)
     end
   end
