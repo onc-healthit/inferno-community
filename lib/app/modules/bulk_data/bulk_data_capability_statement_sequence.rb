@@ -80,9 +80,6 @@ module Inferno
             * json
             * application/json
             * application/fhir+json
-
-            This test supports the [Bulk Data US Core Data for Interoperability Use Case](https://build.fhir.org/ig/HL7/bulk-data/#us-core-data-for-interoperability)
-
           )
         end
 
