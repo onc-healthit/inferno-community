@@ -159,8 +159,6 @@ module Inferno
           )
         end
 
-        skip 'Skip testing $export without parameters' if @server_supports_type_parameter && !run_all_kick_off_tests
-
         check_export_kick_off
       end
 
@@ -255,16 +253,18 @@ module Inferno
         check_export_kick_off(search_params: { '_type' => type_parameter })
       end
 
-      # test 'Server shall return file in ndjson format' do
-      #   metadata do
-      #     id '06'
-      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-      #     description %(
-      #     )
-      #   end
+      test 'Server shall return FHIR resources in ndjson file' do
+        metadata do
+          id '10'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          description %(
+          )
+        end
 
-      #   check_file_request
-      # end
+        check_export_status
+        assert_output_has_type_url if @server_supports_type_parameter
+        check_file_request
+      end
 
       private
 
