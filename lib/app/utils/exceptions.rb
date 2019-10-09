@@ -98,6 +98,9 @@ module Inferno
 
   class MetadataException < RuntimeError
   end
+
+  class InvalidMetadataException < RuntimeError
+  end
 end
 
 # monkey patch this exception from fhir_client

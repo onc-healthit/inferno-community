@@ -4,10 +4,6 @@ require_relative '../../test_helper'
 
 describe Inferno::Sequence::TokenRefreshSequence do
   SEQUENCE = Inferno::Sequence::TokenRefreshSequence
-  INVALID_REFRESH_TOKEN_TEST = SEQUENCE::INVALID_REFRESH_TOKEN_TEST
-  INVALID_CLIENT_ID_TEST = SEQUENCE::INVALID_CLIENT_ID_TEST
-  REFRESH_WITH_SCOPE_PARAMETER_TEST = SEQUENCE::REFRESH_WITH_SCOPE_PARAMETER_TEST
-  REFRESH_WITHOUT_SCOPE_PARAMETER_TEST = SEQUENCE::REFRESH_WITHOUT_SCOPE_PARAMETER_TEST
 
   let(:full_body) do
     {
@@ -24,9 +20,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     @instance = Inferno::Models::TestingInstance.new(oauth_token_endpoint: @token_endpoint, scopes: 'jkl')
   end
 
-  describe INVALID_REFRESH_TOKEN_TEST do
+  describe 'invalid refresh token test' do
     before do
-      @test = SEQUENCE[INVALID_REFRESH_TOKEN_TEST]
+      @test = SEQUENCE[:invalid_refresh_token]
       @sequence = SEQUENCE.new(@instance, @client)
     end
 
@@ -47,9 +43,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
   end
 
-  describe INVALID_CLIENT_ID_TEST do
+  describe 'invalid client id test' do
     before do
-      @test = SEQUENCE[INVALID_CLIENT_ID_TEST]
+      @test = SEQUENCE[:invalid_client_id]
       @sequence = SEQUENCE.new(@instance, @client)
     end
 
@@ -70,9 +66,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
   end
 
-  describe REFRESH_WITH_SCOPE_PARAMETER_TEST do
+  describe 'refresh with scope parameter test' do
     before do
-      @test = SEQUENCE[REFRESH_WITH_SCOPE_PARAMETER_TEST]
+      @test = SEQUENCE[:refresh_with_scope]
       @sequence = SEQUENCE.new(@instance, @client)
     end
 
@@ -93,9 +89,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
   end
 
-  describe REFRESH_WITHOUT_SCOPE_PARAMETER_TEST do
+  describe 'refresh without scope parameter test' do
     before do
-      @test = SEQUENCE[REFRESH_WITHOUT_SCOPE_PARAMETER_TEST]
+      @test = SEQUENCE[:refresh_without_scope]
       @sequence = SEQUENCE.new(@instance, @client)
     end
 

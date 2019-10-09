@@ -311,8 +311,8 @@ module Inferno
         @tests ||= []
       end
 
-      def self.[](name)
-        tests.find { |test| test.name == name }
+      def self.[](key)
+        tests.find { |test| test.key == key }
       end
 
       def optional?
