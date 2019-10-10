@@ -2,6 +2,23 @@
 <div class="container">
   <div class="main index-page">
 
+    <% if modules.length == 1%>
+      <h1><%=modules.first.title%></h1>
+      <div class="index-description">
+        <%= markdown_to_html(modules.first.description) %>
+      </div>
+    <% else %>
+      <h1>Inferno FHIR Testing</h1>
+      <div class="headline">
+        <p>
+          Inferno is an open source tool that tests whether patients can access their health data. It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
+        </p>
+        <p>
+          Please choose a test set and enter a FHIR URI to begin testing.
+        </p>
+      </div>
+    <% end%>
+
     <% unless tls_testing_supported? %>
       <div class="alert alert-warning" role="alert">
         TLS testing does not appear to be available on this platform.
@@ -9,50 +26,40 @@
       </div>
     <% end %>
 
-    <% if modules.length == 1%>
-      <div class="index-description">
-        <h2><%=modules.first.title%></h2>
-        <%= markdown_to_html(modules.first.description) %>
-      </div>
-    <% else %>
-      <p class='headline'>
-          Inferno is an open source tool that tests whether patients can access their health data. It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
-          <br><br>
-          Please choose a test set and enter a FHIR URI to begin testing.
-      </p>
-
-    <% end%>
-
-    <h2>Start Testing</h2>
 
     <form method="POST" action="<%=base_path%>/">
-      <input type="hidden" name="client_endpoint_key" value="static" />
-      <%= erb(:module_options,{},modules: modules) %>
-      <div class="form-group">
-        <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
-        <div class="input-group">
-          <input type="url" required class="form-control form-control-lg" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
-          <div class="input-group-btn">
-            <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
-          </div>
-        </div>
-
-      </div>
-
-      <% if presets.present? %>
-        <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
+      <fieldset>
+        <legend>Start Testing</legend>
+        <input type="hidden" name="client_endpoint_key" value="static" />
+        <%= erb(:module_options,{},modules: modules) %>
         <div class="form-group">
-          <span class="oi oi-lightbulb"></span> Optionally, choose a preset vendor configuration to test:
-          <select class="custom-select custom-select-lg" name="preset" style="margin-left: 10px;" id="preset-select">
-            <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">None</option>
-            <% presets.each do |preset| %>
-              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
-            <% end %>
-            <input type="hidden" name="preset" id="preset" value="" />
-          </select>
-          <a id="instructions-link" href="" target="_blank" style="display:none">Click here for instructions.</a>
+          <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
+          <div class="input-group">
+            <input type="url" required class="form-control form-control-lg" id="fhir_server" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
+            <div class="input-group-btn">
+              <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
+            </div>
+          </div>
+
         </div>
-      <% end %>
+
+        <% if presets.present? %>
+          <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
+          <div class="form-group">
+            <label for="preset-select" class="preset-label">
+              <span class="oi oi-lightbulb"></span> Optionally, choose a preset vendor configuration to test:
+            </label>
+            <select class="custom-select custom-select-lg" name="preset" style="margin-left: 10px;" id="preset-select">
+              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">None</option>
+              <% presets.each do |preset| %>
+                <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
+              <% end %>
+              <input type="hidden" name="preset" id="preset" value="" />
+            </select>
+            <a id="instructions-link" class="instructions-link" href="" target="_blank" style="display:none">Instructions</a>
+          </div>
+        <% end %>
+      </fieldset>
     </form>
 
     <div class='alert alert-warning'>

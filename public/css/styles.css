@@ -126,7 +126,7 @@ body {
 /* ------------------------- INDEX -------------------------------- */
 .headline {
   font-size: 1.8rem;
-  margin: 3rem 0 1rem;
+  margin: 1rem 0;
   font-weight: 100;
 }
 .logo {
@@ -152,6 +152,14 @@ body {
   height: 60px;
 }
 
+.index-page h1 {
+  margin-top: 2rem;
+}
+
+.index-page .instructions-link {
+  margin-left: 5px;
+}
+
 .index-page .form-check{
   font-size: 1.3rem;
 }
@@ -161,15 +169,21 @@ body {
   background-color: #999;
 }
 
-.index-page h2 {
+.index-page legend {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 2rem;
+  font-weight: 500;
   margin: 30px 0 10px;
-
 }
 
 .index-page .index-description p {
   font-size: 1.4rem;
-  margin: 40px 0;
+  margin: 20px 0;
 
+}
+
+.index-page .preset-label{
+  font-size: 1.3rem;
 }
 
 /* ------------------------- MAIN -------------------------------- */

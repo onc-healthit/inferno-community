@@ -348,7 +348,7 @@ $(function(){
     var modules = $('#preset-select option:selected').data('module_names').split(",");
     var preset = all[preset_id] == undefined ? "" : all[preset_id];
     
-    if (preset != "") {
+    if (preset !== "") {
       document.getElementById("preset-select").selectedIndex = Object.keys(all).indexOf(preset_id) + 1;
     }
 
@@ -358,14 +358,19 @@ $(function(){
     var preset_on = $el.val() == '' ? false : true;
 
     if (preset_on) {
-      modules.forEach(function(mod){document.getElementById(mod).disabled = true});
-      document.getElementById(preset.module).checked = true;
-      document.getElementById(preset.module).disabled = false;
+      modules.forEach(function(mod){$(document.getElementById(mod)).attr('disabled', true);});
+      presetCheck = document.getElementById(preset.module);
+      if(presetCheck){
+        $(presetCheck).prop("checked", true);
+        $(presetCheck).attr("disabled", false);
+      }
+
       document.getElementById("preset").value = JSON.stringify(preset);
       document.getElementById("instructions-link").style.display = preset.instructions == null ? "none" : "";
       document.getElementById("instructions-link").href = preset.instructions;
+
     } else {
-      modules.forEach(function(mod){document.getElementById(mod).disabled = false});
+      modules.forEach(function(mod){$(document.getElementById(mod)).attr('disabled', false)});
       document.getElementById("preset").value = "";
       document.getElementById("instructions-link").style.display = "none";
     }
