@@ -39,6 +39,24 @@
     </script>
 
     <%= yield %>
+
+    <!-- global modals -->
+    <div class="modal fade" id="ServerStatusModal" tabindex="-1" role="dialog" aria-labelledby="ServerStatusModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ServerStatusModalLabel">Server State</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <%= erb(:server_state, {}, {}) %>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer class="footer">
       <div class="container row">
         <div class="col-sm text-left">
@@ -48,7 +66,9 @@
           <a target="_blank" href="https://github.com/onc-healthit/inferno/issues">Issues</a>
         </div>
         <div class="col-sm text-right">
-          Version <%= version %>
+          <a href="#" data-toggle="modal" data-target="#ServerStatusModal">
+            Version <%= version %>
+          </a>
         </div>
       </div>
     </footer>

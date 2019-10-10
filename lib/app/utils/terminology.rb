@@ -127,11 +127,16 @@ module Inferno
         # Register the validators with FHIR Models for validation
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
         FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
+        @@loaded_validators[validator[:url]] = validator[:count]
       end
     end
 
     def self.get_valueset(url)
       @known_valuesets[url].valueset || raise(UnknownValueSetException, url)
+    end
+
+    def self.loaded_validators
+      @@loaded_validators
     end
 
     class UnknownValueSetException < StandardError

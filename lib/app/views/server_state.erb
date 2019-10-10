@@ -1,0 +1,19 @@
+<div id="server-state">
+  <h4>Valuesets Used in Inferno:</h4>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Valueset URL</th>
+        <th>Code count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+        <tr>
+          <td><%= url %></td>
+          <td><%= count %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
