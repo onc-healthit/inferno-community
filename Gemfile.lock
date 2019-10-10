@@ -228,6 +228,7 @@ PLATFORMS
 
 DEPENDENCIES
   addressable
+  ast
   base62-rb
   bloomer
   colorize
@@ -237,6 +238,7 @@ DEPENDENCIES
   json-jwt
   kramdown
   minitest
+  parser
   pry
   pry-byebug
   rack-test
