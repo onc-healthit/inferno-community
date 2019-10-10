@@ -3,6 +3,12 @@
 module Inferno
   module Sequence
     class CapabilityStatementSequence < SequenceBase
+      # The acceptable MIME-types for JSON
+      # https://www.hl7.org/fhir/json.html
+      def json_formats
+        ['json', 'application/json', 'application/fhir+json']
+      end
+
       title 'Capability Statement'
 
       test_id_prefix 'C'

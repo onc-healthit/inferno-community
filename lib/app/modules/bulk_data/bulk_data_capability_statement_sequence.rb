@@ -62,31 +62,26 @@ module Inferno
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           description %(
 
-            FHIR provides multiple [representation formats](https://www.hl7.org/fhir/DSTU2/formats.html) for resources, including JSON and XML.
-            Argonaut profiles require servers to use the JSON representation:
+            FHIR provides multiple [representation formats](https://www.hl7.org/fhir/formats.html) for resources, including JSON and XML.
+            US Core profiles require servers to use the [JSON representation](https://www.hl7.org/fhir/json.html):
 
-            ```
-            The Argonaut Data Query Server shall support JSON resource format for all Argonaut Data Query interactions.
-            ```
-            [http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html](http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html)
+            [```The US Core Server **SHALL** Support json source formats for all US Core interactions.```](https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html)
 
-            The FHIR capability interaction require servers to describe which formats are available for clients to use.  The server must
-            explicitly state that JSON is supported. This is located in the [format element](https://www.hl7.org/fhir/capabilitystatement-definitions.html#CapabilityStatement.format)
-            of the Capability Resource.
+            The FHIR capability interaction require servers to describe which formats are available for clients to use.
+            The server must explicitly state that JSON is supported.  This is located in the
+            [format element](https://www.hl7.org/fhir/capabilitystatement-definitions.html#CapabilityStatement.format)
+            of the CapabilityStatement Resource.
 
-            This test checks that one of the following values are located in the [format field](https://www.hl7.org/fhir/DSTU2/json.html).
+            This test checks that one of the following values are located in the format field.
 
             * json
             * application/json
-            * application/json+fhir
-
-            Note that FHIR changed the FHIR-specific JSON mime type to `application/fhir+json` in later versions of the specification.
-
+            * application/fhir+json
           )
         end
 
-        formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
-        assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
+        assert @conformance.class == versioned_conformance_class, 'Expected valid Conformance resource'
+        assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'FHIR server capability SHOULD instantiate from CapabilityStatment-bulk-data' do

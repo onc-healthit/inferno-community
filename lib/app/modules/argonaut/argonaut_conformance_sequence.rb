@@ -7,6 +7,13 @@ module Inferno
     class ArgonautConformanceSequence < CapabilityStatementSequence
       extends_sequence CapabilityStatementSequence
 
+      # The acceptable MIME-types for JSON
+      # https://hl7.org/fhir/DSTU2/json.html
+      def json_formats
+        # 'application/json+fhir' changed to 'application/fhir+json' in STU3
+        ['json', 'application/json', 'application/json+fhir']
+      end
+
       title 'Conformance Statement'
 
       test_id_prefix 'C'
@@ -88,8 +95,7 @@ module Inferno
 
         assert_valid_conformance
 
-        formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
-        assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
+        assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do
