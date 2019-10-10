@@ -18,7 +18,7 @@ module Inferno
         wait_time = get_retry_or_backoff_time(wait_time, reply)
         seconds_used = Time.now - start
         # exit loop if we get a successful response or timeout reached
-        break if (reply.code >= 200 && reply.code < 300) || (seconds_used > timeout)
+        break if (reply.code != 202 && reply.code != 429) || (seconds_used > timeout)
 
         sleep wait_time
       end
