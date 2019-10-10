@@ -24,6 +24,7 @@ gem 'thin'
 gem 'time_difference'
 
 group :test do
+  gem 'minitest'
   gem 'rack-test'
   gem 'rubocop', require: false
   gem 'simplecov', require: false

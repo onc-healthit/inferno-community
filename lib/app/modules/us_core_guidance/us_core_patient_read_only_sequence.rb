@@ -16,7 +16,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A patient read does not work without authorization.
           )
           versions :r4
@@ -34,7 +34,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
           versions :r4
@@ -51,7 +51,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server returns valid FHIR Patient resources according to the [Data Access Framework (DAF) Patient Profile](http://www.fhir.org/guides/argonaut/r2/StructureDefinition-argo-patient.html).
           )
           versions :r4
@@ -67,7 +67,7 @@ module Inferno
       test 'Patient has address' do
         metadata do
           id '04'
-          desc %(
+          description %(
             Additional Patient resource requirement
           )
           versions :r4
@@ -82,7 +82,7 @@ module Inferno
       test 'Patient has telecom' do
         metadata do
           id '05'
-          desc %(
+          description %(
             Additional Patient resource requirement
           )
           versions :r4
@@ -99,7 +99,7 @@ module Inferno
       #   metadata {
       #     id '00'
       #     optional
-      #     desc %(
+      #     description %(
       #       Additional Patient resource requirement
       #     )
       #   }
@@ -115,7 +115,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://www.hl7.org/fhir/r4references.html'
-          desc %(
+          description %(
             All references in the Patient resource should be resolveable.
           )
           versions :r4

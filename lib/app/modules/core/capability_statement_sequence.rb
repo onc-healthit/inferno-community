@@ -50,7 +50,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          desc %(
+          description %(
             All exchange of production data should be secured with TLS/SSL v1.2.
           )
         end
@@ -68,7 +68,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.hl7.org/fhir/directory.cfml'
-          desc %(
+          description %(
             Checks that the FHIR version of the server matches the FHIR version expected by the tests.
             This test will inspect the CapabilityStatement returned by the server to verify the FHIR version of the server.
           )
@@ -84,7 +84,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
-          desc %(
+          description %(
             The conformance 'whole system' interaction provides a method to get the conformance statement for
             the FHIR server.  This test checks that the server responds to a `GET` request at the following endpoint:
 

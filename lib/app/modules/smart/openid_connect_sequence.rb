@@ -39,7 +39,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
-          desc %(
+          description %(
             Examine the ID token for its issuer property.
           )
         end
@@ -63,7 +63,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
-          desc %(
+          description %(
             Examine the ID token for its issuer property.
           )
         end
@@ -78,7 +78,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
-          desc %(
+          description %(
             Perform a GET {issuer}/.well-known/openid-configuration.
           )
         end
@@ -99,7 +99,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
-          desc %(
+          description %(
             Fetch the JSON Web Key of the server by following the "jwks_uri" property.
           )
         end
@@ -120,7 +120,7 @@ module Inferno
         metadata do
           id '05'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
-          desc %(
+          description %(
             Validate the token's signature against the public key.
           )
         end
@@ -141,7 +141,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation'
-          desc %(
+          description %(
             Validate the ID token claims.
           )
         end
@@ -168,7 +168,7 @@ module Inferno
         metadata do
           id '07'
           link 'http://docs.smarthealthit.org/authorization/scopes-and-launch-context/'
-          desc %(
+          description %(
             Extract the fhirUser claim and treat it as the URL of a FHIR resource.
           )
         end

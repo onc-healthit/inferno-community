@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that <%=resource%> resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix '<%=resource%>' # change me
+      test_id_prefix '<%=test_id_prefix%>'
 
       requires :token<%=", :patient_id" unless delayed_sequence%>
       conformance_supports :<%=resource%><%="
@@ -26,7 +26,7 @@ module Inferno
           id '<%=format('%02d', test[:index])%>'
           link '<%=test[:link]%>'<%if test[:optional]%>
           optional<%end%>
-          desc %(
+          description %(
           )
           versions :r4
         end

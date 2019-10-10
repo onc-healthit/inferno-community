@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Procedure resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Procedure' # change me
+      test_id_prefix 'USCPROC'
 
       requires :token, :patient_id
       conformance_supports :Procedure
@@ -48,13 +48,13 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         patient_val = @instance.patient_id
         search_params = { 'patient': patient_val }
@@ -69,7 +69,7 @@ module Inferno
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -98,7 +98,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -121,7 +121,7 @@ module Inferno
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -145,7 +145,7 @@ module Inferno
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -167,7 +167,7 @@ module Inferno
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -182,7 +182,7 @@ module Inferno
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -197,7 +197,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -212,7 +212,7 @@ module Inferno
         metadata do
           id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -225,7 +225,7 @@ module Inferno
         metadata do
           id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -256,7 +256,7 @@ module Inferno
         metadata do
           id '11'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
           )
           versions :r4
         end

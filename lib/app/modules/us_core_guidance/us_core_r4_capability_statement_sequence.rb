@@ -59,7 +59,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
 
             FHIR provides multiple [representation formats](https://www.hl7.org/fhir/DSTU2/formats.html) for resources, including JSON and XML.
             Argonaut profiles require servers to use the JSON representation:
@@ -90,41 +90,9 @@ module Inferno
         assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
-      test 'Capability Statement describes SMART on FHIR core capabilities' do
-        metadata do
-          id '05'
-          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/'
-          optional
-          desc %(
-
-           A SMART on FHIR server can convey its capabilities to app developers by listing a set of the capabilities.
-
-          )
-        end
-
-        required_capabilities = ['launch-ehr',
-                                 'launch-standalone',
-                                 'client-public',
-                                 'client-confidential-symmetric',
-                                 'sso-openid-connect',
-                                 'context-ehr-patient',
-                                 'context-standalone-patient',
-                                 'context-standalone-encounter',
-                                 'permission-offline',
-                                 'permission-patient',
-                                 'permission-user']
-
-        assert_valid_conformance
-
-        assert @server_capabilities.smart_support?, 'No SMART capabilities listed in conformance.'
-
-        missing_capabilities = (required_capabilities - @server_capabilities.smart_capabilities)
-        assert missing_capabilities.empty?, "Conformance statement does not list required SMART capabilties: #{missing_capabilities.join(', ')}"
-      end
-
       test 'Capability Statement lists supported US Core profiles, operations and search parameters' do
         metadata do
-          id '06'
+          id '05'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           desc %(
            The US Core Implementation Guide states:

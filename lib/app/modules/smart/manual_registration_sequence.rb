@@ -42,7 +42,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
-          desc %(
+          description %(
             Received client id (and client secret if necessary)
           )
         end

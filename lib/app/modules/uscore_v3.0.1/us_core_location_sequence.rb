@@ -7,7 +7,7 @@ module Inferno
 
       description 'Verify that Location resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'Location' # change me
+      test_id_prefix 'USCL'
 
       requires :token
       conformance_supports :Location
@@ -51,7 +51,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -66,13 +66,13 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         name_val = resolve_element_from_path(@location, 'name')
         search_params = { 'name': name_val }
@@ -87,7 +87,7 @@ module Inferno
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -116,7 +116,7 @@ module Inferno
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -138,7 +138,7 @@ module Inferno
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -160,7 +160,7 @@ module Inferno
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -182,7 +182,7 @@ module Inferno
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -203,7 +203,7 @@ module Inferno
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -218,7 +218,7 @@ module Inferno
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -233,7 +233,7 @@ module Inferno
         metadata do
           id '10'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -246,7 +246,7 @@ module Inferno
         metadata do
           id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
-          desc %(
+          description %(
           )
           versions :r4
         end
@@ -281,7 +281,7 @@ module Inferno
         metadata do
           id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
-          desc %(
+          description %(
           )
           versions :r4
         end

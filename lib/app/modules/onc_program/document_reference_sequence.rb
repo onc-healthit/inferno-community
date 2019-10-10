@@ -25,7 +25,7 @@ module Inferno
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
-          desc %(
+          description %(
             A DocumentReference search should not work without providing proper authorization.
           )
         end
@@ -43,7 +43,7 @@ module Inferno
           id '02'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
-          desc %(
+          description %(
             A server should be capable of returning DocumentReferences related to a patient.
           )
         end
@@ -59,7 +59,7 @@ module Inferno
           id '03'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
-          desc %(
+          description %(
             The server should make read interactions available for DocumentReference resources.
           )
         end
@@ -72,7 +72,7 @@ module Inferno
           id '04'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
-          desc %(
+          description %(
             The server should make history interactions available for DocumentReference resources.
           )
         end
@@ -84,7 +84,7 @@ module Inferno
           id '05'
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
           optional
-          desc %(
+          description %(
             The server should make vread interactions available for DocumentReference resources.
           )
         end
@@ -97,7 +97,7 @@ module Inferno
           id '06'
           optional
           link 'https://www.hl7.org/fhir/DSTU2/documentreference.html'
-          desc %(
+          description %(
             DocumentReferences should contain content regarding the document.
           )
         end

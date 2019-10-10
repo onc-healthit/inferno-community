@@ -122,7 +122,7 @@ module Inferno
 
         authorization_test[:test_code] = %(
               @client.set_no_auth
-              skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+              omit 'Do not test if no bearer token set' if @instance.token.blank?
       #{get_search_params(first_search[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)
