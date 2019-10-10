@@ -96,8 +96,12 @@ module Inferno
       end
     end
 
-    def assert_response_content_type(client_reply, content_type)
-      header = client_reply.response[:headers]['content-type']
+    def assert_response_content_type(reply, content_type)
+      header = if reply.respond_to? :response # response from FHIR::Client
+                 reply.response[:headers]['content-type']
+               else # response from LoggedRestClient
+                 reply.headers[:content_type]
+               end
       response_content_type = header
       response_content_type = header[0, header.index(';')] unless header.index(';').nil?
 

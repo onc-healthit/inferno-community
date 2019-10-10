@@ -122,7 +122,7 @@ module Inferno
 
         authorization_test[:test_code] = %(
               @client.set_no_auth
-              skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+              omit 'Do not test if no bearer token set' if @instance.token.blank?
       #{get_search_params(first_search[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)
@@ -158,8 +158,8 @@ module Inferno
 
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-              @#{sequence[:resource].downcase} = reply.try(:resource).try(:entry).try(:first).try(:resource)
-              @#{sequence[:resource].downcase}_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+              @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
+              @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
               save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].downcase})
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
