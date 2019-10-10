@@ -240,7 +240,7 @@ module Inferno
 
       private
 
-      def export_kick_off(endpoint = nil,
+      def export_kick_off(endpoint,
                           id: nil,
                           search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
