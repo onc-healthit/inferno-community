@@ -11,7 +11,7 @@ module Inferno
 
       title 'Patient Compartment Export Tests'
 
-      description 'Verify that patient compartment export on the Bulk Data server follow the Bulk Data Access Implementation Guide'
+      description 'Verify that patient compartment export on the Bulk Data server follows the Bulk Data Access Implementation Guide'
 
       test_id_prefix 'Patient'
 
