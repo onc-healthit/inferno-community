@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that system level export on the Bulk Data server follow the Bulk Data Access Implementation Guide'
 
-      test_id_prefix 'System'
+      test_id_prefix 'BulkData'
 
       requires :token
 
@@ -55,7 +55,12 @@ module Inferno
         assert_response_bad(reply)
       end
 
-      def check_export_status(url = @content_location, timeout: 180)
+      def check_export_kick_off_fail_invalid_parameter(search_params)
+        reply = export_kick_off(endpoint, resource_id, search_params: search_params)
+        assert_response_bad(reply)
+      end
+
+      def check_export_status(url = @content_location, timeout: 180, save_output: false)
         skip 'Server response did not have Content-Location in header' unless url.present?
         reply = export_status_check(url, timeout)
 
@@ -74,6 +79,10 @@ module Inferno
         assert_status_reponse_required_field(response_body)
 
         @output = response_body['output']
+        
+        if save_output
+          @saved_output = @output.clone
+        end
       end
 
       def assert_output_has_type_url(output = @output,
@@ -91,18 +100,21 @@ module Inferno
         end
       end
 
-      def check_file_request(output = @output)
+      def check_file_request(output = @output, index:0)
         skip 'Sever response did not have output data' unless output.present?
+        check_output_file(output[index])
+      end
+
+      def check_output_file(file)
+        return unless file.present?
 
         headers = { accept: 'application/fhir+ndjson' }
-        output.each do |file|
-          url = file['url']
-          type = file['type']
-          reply = @client.get(url, @client.fhir_headers(headers))
-          assert_response_content_type(reply, 'application/fhir+ndjson')
+        url = file['url']
+        type = file['type']
+        reply = @client.get(url, @client.fhir_headers(headers))
+        assert_response_content_type(reply, 'application/fhir+ndjson')
 
-          check_ndjson(reply.body, type)
-        end
+        check_ndjson(reply.body, type)
       end
 
       def check_ndjson(ndjson, type)
@@ -192,7 +204,7 @@ module Inferno
           )
         end
 
-        check_export_status
+        check_export_status(save_output: true)
       end
 
       test 'Completed Status Check shall return output with type and url' do
@@ -206,17 +218,16 @@ module Inferno
         assert_output_has_type_url
       end
 
-      # test 'Server shall export resources required by Patient Compartment' do
-      #   metadata do
-      #     id '07'
-      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
-      #     description %(
-      #     )
-      #   end
+      test 'Server shall return FHIR resources in ndjson file' do
+        metadata do
+          id '10'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          description %(
+          )
+        end
 
-      #   assert_output_has_type_url
-      # end
-
+        check_file_request
+      end
 
       test 'Server should return "202 Accepted" for delete export content' do
         metadata do
@@ -242,33 +253,48 @@ module Inferno
         check_cancel_request
       end
 
-      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with parameters' do
+      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with _type parameters' do
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
           )
+          optional
         end
 
         check_export_kick_off(search_params: { '_type' => type_parameter })
       end
 
-      test 'Server shall return FHIR resources in ndjson file' do
+      test 'Server shall return FHIR resources required by _type filter' do
         metadata do
           id '10'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
+          optional
         end
 
+        skip 'Server does not support _type parameter' unless @server_supports_type_parameter
+
         check_export_status
-        assert_output_has_type_url if @server_supports_type_parameter
-        check_file_request
+        assert_output_has_type_url
+      end
+
+      test 'Server shall reject $export operation with invalid _type parameters' do
+        metadata do
+          id '10'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          description %(
+          )
+          optional
+        end
+
+        check_export_kick_off_fail_invalid_parameter({'_type' => 'UnknownResource'})
       end
 
       private
 
-      def export_kick_off(endpoint = nil,
+      def export_kick_off(endpoint,
                           id = nil,
                           search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
