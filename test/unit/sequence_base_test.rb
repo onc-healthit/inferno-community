@@ -49,7 +49,7 @@ class SequenceBaseTest < MiniTest::Test
     resource.recorder = new_reference
   end
 
-  describe '#retrieves value for search param' do
+  describe '#get_value_for_search_param' do
     before do
       instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
       client = FHIR::Client.new('')
@@ -57,35 +57,23 @@ class SequenceBaseTest < MiniTest::Test
     end
 
     it 'returns value from period' do
-      element = FHIR::Period.new
-      element.start = 'now'
-      assert @sequence.get_value_for_search_param(element) == 'now'
-
-      element.start = nil
-      element.end = 'now'
-      assert @sequence.get_value_for_search_param(element) == 'now'
+      { start: 'now', end: 'later' }.each do |key, value|
+        element = FHIR::Period.new(key => value)
+        assert @sequence.get_value_for_search_param(element) == value
+      end
     end
 
     it 'returns value from address' do
-      element = FHIR::Address.new
-      element.state = 'mass'
-      assert @sequence.get_value_for_search_param(element) == 'mass'
-
-      element = FHIR::Address.new
-      element.text = 'mitre'
-      assert @sequence.get_value_for_search_param(element) == 'mitre'
-
-      element = FHIR::Address.new
-      element.postalCode = '12345'
-      assert @sequence.get_value_for_search_param(element) == '12345'
-
-      element = FHIR::Address.new
-      element.city = 'boston'
-      assert @sequence.get_value_for_search_param(element) == 'boston'
-
-      element = FHIR::Address.new
-      element.country = 'usa'
-      assert @sequence.get_value_for_search_param(element) == 'usa'
+      {
+        state: 'mass',
+        text: 'mitre',
+        postalCode: '12345',
+        city: 'boston',
+        country: 'usa'
+      }.each do |key, value|
+        element = FHIR::Address.new(key => value)
+        assert @sequence.get_value_for_search_param(element) == value
+      end
     end
   end
 end

@@ -738,7 +738,7 @@ module Inferno
         when FHIR::Coding
           element.code
         when FHIR::HumanName
-          element.family || element.given || element.text
+          element.family || element.given&.first || element.text
         when FHIR::Address
           element.text || element.city || element.state || element.postalCode || element.country
         else
