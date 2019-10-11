@@ -76,7 +76,7 @@
         <div class='row align-items-center'>
           <div class='col'>
             <% if group.test_cases.length > 1 %>
-              <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
+              <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
             <% end %>
             <h3>
               <%= group.name %>
