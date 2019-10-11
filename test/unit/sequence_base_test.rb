@@ -76,7 +76,7 @@ class SequenceBaseTest < MiniTest::Test
       end
     end
   end
-  
+
   describe '#fetch_all_bundled_resources' do
     before do
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))
