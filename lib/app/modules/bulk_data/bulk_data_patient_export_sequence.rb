@@ -14,8 +14,21 @@ module Inferno
       requires :token
       conformance_supports :Patient
 
-      def check_export_kick_off(klass)
-        reply = export_kick_off(klass)
+      attr_accessor :run_all_kick_off_tests
+
+      def check_export_kick_off(klass, search_params: nil)
+        @search_params = search_params
+
+        reply = export_kick_off(klass, search_params: search_params)
+
+        @server_supports_type_parameter = search_params&.key?('_type')
+
+        # Servers unable to support _type SHOULD return an error and OperationOutcome resource
+        # so clients can re-submit a request omitting the _type parameter.
+        if @server_supports_type_parameter && is_4xx_error?(reply)
+          @server_supports_type_parameter = false
+          skip 'Server does not support _type operation parameter'
+        end
 
         assert_response_accepted(reply)
         @content_location = reply.response[:headers]['content-location']
@@ -57,13 +70,18 @@ module Inferno
         assert_output_has_type_url
       end
 
-      def assert_output_has_type_url(output = @output)
+      def assert_output_has_type_url(output = @output,
+                                     search_params = @search_params)
         skip 'Sever response did not have output data' unless output.present?
+
+        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
           end
+
+          assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
         end
       end
 
@@ -88,6 +106,18 @@ module Inferno
           errors = resource.validate
           assert errors.empty?, errors.to_s
         end
+      end
+
+      def check_delete_request(url)
+        reply = @client.delete(url, {})
+        skip 'Server did not accept client request to delete export file after export completed' if is_4xx_error?(reply)
+        assert_response_accepted(reply)
+      end
+
+      def check_cancel_request(_klass)
+        @content_location = nil
+        check_export_kick_off('Patient')
+        check_delete_request(@content_location)
       end
 
       details %(
@@ -115,24 +145,36 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
+      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with parameters' do
         metadata do
           id '02'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
+          desc %(
+          )
+        end
+
+        check_export_kick_off('Patient', search_params: { '_type' => 'Patient' })
+      end
+
+      test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
+        metadata do
+          id '03'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           description %(
           )
         end
+
+        skip 'Skip testing $export without parameters' if @server_supports_type_parameter && !run_all_kick_off_tests
 
         check_export_kick_off('Patient')
       end
 
       test 'Server shall reject for $export operation with invalid Accept header' do
         metadata do
-          id '03'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
           )
-          versions :stu3
         end
 
         check_export_kick_off_fail_invalid_accept('Patient')
@@ -140,11 +182,10 @@ module Inferno
 
       test 'Server shall reject for $export operation with invalid Prefer header' do
         metadata do
-          id '04'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
           )
-          versions :stu3
         end
 
         check_export_kick_off_fail_invalid_prefer('Patient')
@@ -152,7 +193,7 @@ module Inferno
 
       test 'Server shall return "202 Accepted" or "200 OK"' do
         metadata do
-          id '05'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           description %(
           )
@@ -163,7 +204,7 @@ module Inferno
 
       test 'Server shall return file in ndjson format' do
         metadata do
-          id '06'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
@@ -172,15 +213,46 @@ module Inferno
         check_file_request
       end
 
+      test 'Server should return "202 Accepted" for delete export content' do
+        metadata do
+          id '08'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
+          desc %(
+          )
+          optional
+        end
+
+        check_delete_request(@content_location)
+      end
+
+      test 'Server shall return "202 Accepted" for cancel export request' do
+        metadata do
+          id '09'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
+          desc %(
+          )
+          optional
+        end
+
+        check_cancel_request('Patient')
+      end
+
       private
 
-      def export_kick_off(klass, id: nil, headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
+      def export_kick_off(klass = nil,
+                          id: nil,
+                          search_params: nil,
+                          headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''
         url += "/#{klass}" if klass.present?
         url += "/#{id}" if klass.present? && id.present?
         url += '/$export'
 
-        @client.get(url, @client.fhir_headers(headers))
+        uri = Addressable::URI.parse(url)
+        uri.query_values = search_params if search_params.present?
+        full_url = uri.to_s
+
+        @client.get(full_url, @client.fhir_headers(headers))
       end
 
       def export_status_check(url, timeout)
@@ -214,10 +286,18 @@ module Inferno
         end
       end
 
+      def delete_request(url)
+        @client.delete(url)
+      end
+
       def assert_status_reponse_required_field(response_body)
         ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
           assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
         end
+      end
+
+      def is_4xx_error?(response)
+        response.code >= 400 && response.code < 500
       end
     end
   end

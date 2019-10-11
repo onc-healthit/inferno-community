@@ -12,7 +12,7 @@
       "description": "SMART Sample Bulk FHIR Server"
   },
   "instantiates": [
-    "http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html"
+    "http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data"
   ],  
   "fhirVersion": "3.0.1",
   "acceptUnknown": "extensions",

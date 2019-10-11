@@ -42,6 +42,5 @@ class ConformanceSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
     assert sequence_result.fail?
-    assert sequence_result.test_results.reject(&:required).length == 1 # SMART capabilities
   end
 end

@@ -76,4 +76,38 @@ class SequenceBaseTest < MiniTest::Test
       end
     end
   end
+  
+  describe '#fetch_all_bundled_resources' do
+    before do
+      @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))
+      @bundle2 = load_fixture(:bundle_2)
+
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      client = FHIR::Client.new('')
+      @bundle1.client = client
+      @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
+    end
+
+    it 'returns resources from all bundles' do
+      stub_request(:get, @bundle1.link.first.url)
+        .to_return(body: @bundle2)
+
+      all_resources = @sequence.fetch_all_bundled_resources(@bundle1)
+      assert all_resources.map(&:id) == ['1', '2']
+    end
+
+    it 'fails on 404' do
+      stub_request(:get, @bundle1.link.first.url)
+        .to_return(body: '', status: 404)
+
+      assert_raises Inferno::AssertionException do
+        @sequence.fetch_all_bundled_resources(@bundle1)
+      end
+    end
+
+    it 'returns resources when no next page' do
+      all_resources = @sequence.fetch_all_bundled_resources(FHIR.from_contents(@bundle2))
+      assert all_resources.map(&:id) == ['2']
+    end
+  end
 end

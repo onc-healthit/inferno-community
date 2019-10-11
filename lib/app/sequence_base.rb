@@ -379,8 +379,7 @@ module Inferno
             test_index: test.index
           ).tap do |result|
             begin
-              fhir_version_included = @instance.fhir_version.present? && self.class.versions.include?(@instance.fhir_version&.to_sym)
-              skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
+              skip_unless(@instance.fhir_version_match?(self.class.versions), 'This test does not run with this FHIR version')
               Inferno.logger.info "Starting Test: #{test.id} [#{test.name}]"
               instance_eval(&test.test_block)
             rescue StandardError => e
@@ -755,6 +754,19 @@ module Inferno
         else
           ''
         end
+      end
+
+      def fetch_all_bundled_resources(bundle)
+        page_count = 1
+        resources = []
+        until bundle.nil? || page_count == 20
+          resources += bundle&.entry&.map { |entry| entry&.resource }
+          next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
+          bundle = bundle.next_bundle
+          assert next_bundle_link.nil? || !bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
+          page_count += 1
+        end
+        resources
       end
     end
 
