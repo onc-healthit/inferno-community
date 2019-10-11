@@ -42,12 +42,43 @@ class AssertionTracker
       @assertion_locations ||= []
     end
 
+    def assertion_calls
+      @assertion_calls ||= Hash.new { |hash, key| hash[key] = [] }
+    end
+
     def assertion?(method_name)
       assertion_method_names.include? method_name
     end
 
     def add_assertion_location(location)
       assertion_locations << location
+    end
+
+    def add_assertion_call(location, result)
+      assertion_calls[location] << result
+    end
+  end
+end
+
+class AssertionReporter
+  class << self
+    def print
+      AssertionTracker.assertion_locations.sort.each do |location|
+        results = AssertionTracker.assertion_calls[location]
+        puts "#{location.ljust(location_width)}   Pass: #{pass_count(results).to_s.rjust(3)}  Fail: #{fail_count(results).to_s.rjust(3)}"
+      end
+    end
+
+    def location_width
+      @location_width ||= AssertionTracker.assertion_calls.keys.max_by(&:length).length
+    end
+
+    def pass_count(results)
+      results.count { |result| result }
+    end
+
+    def fail_count(results)
+      results.count { |result| !result }
     end
   end
 end
@@ -62,4 +93,4 @@ Dir.glob(sequence_paths).sort.each do |sequence_file_name|
   processor.process(ast)
 end
 
-puts AssertionTracker.assertion_locations
+puts "\n### Assertion locations loaded ###\n\n"
