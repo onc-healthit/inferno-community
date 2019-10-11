@@ -361,8 +361,7 @@ $(function(){
       modules.forEach(function(mod){$(document.getElementById(mod)).attr('disabled', true);});
       presetCheck = document.getElementById(preset.module);
       if(presetCheck){
-        $(presetCheck).prop("checked", true);
-        $(presetCheck).attr("disabled", false);
+        $(presetCheck).prop("checked", true).attr("disabled", false);
       }
 
       document.getElementById("preset").value = JSON.stringify(preset);
@@ -374,7 +373,6 @@ $(function(){
       document.getElementById("preset").value = "";
       document.getElementById("instructions-link").style.display = "none";
     }
-
   }
 
   // Call when we initially load
