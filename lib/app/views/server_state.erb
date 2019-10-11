@@ -1,19 +1,25 @@
 <div id="server-state">
   <h4>Valuesets Used in Inferno:</h4>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Valueset URL</th>
-        <th>Concept Count</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+  <% if Inferno::Terminology.loaded_validators.count.zero? %>
+    <p>No valuesets are loaded. To load valueset validators, follow the instructions
+    <a href="https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators" target="_blank">in our wiki</a>.
+    </p>
+  <% else %>
+    <table class="table table-striped">
+      <thead>
         <tr>
-          <td><%= url %></td>
-          <td><%= count %></td>
+          <th>Valueset URL</th>
+          <th>Concept Count</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+          <tr>
+            <td><%= url %></td>
+            <td><%= count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <% end #if %>
 </div>
