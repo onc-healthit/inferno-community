@@ -6,6 +6,10 @@ html {
   min-width: 960px;
 }
 
+a {
+  color: #004fa5;
+}
+
 @font-face {
   font-family: 'Source Sans Pro';
   src: url('../source-sans/SourceSansPro-Regular.ttf') format('truetype'),
@@ -332,7 +336,8 @@ body {
   padding: 0;
   vertical-align: initial;
   border: none;
-  color: #007bff;
+  color: #00308c;
+  font-weight: bold;
   background: none;
 }
  .sequence-expand-button:hover {
@@ -413,7 +418,7 @@ body {
 }
 
 .sequence-score-error {
-  background-color: #f0f;
+  background-color: #900390;
   color: #fff;
   border: 2px solid #fff;
   padding-top: 3px;
@@ -482,7 +487,7 @@ body {
 }
 
 .group-nav-score-error {
-  background-color: #f0f;
+  background-color: #900390;
   color: #fff;
   border: 2px solid #fff;
   padding-top: 3px;
@@ -539,7 +544,7 @@ body {
 }
 
 .group-score-error {
-  background-color: #f0f;
+  background-color: #900390;
   color: #fff;
   border: 2px solid #fff;
   padding-top: 3px;
@@ -678,7 +683,7 @@ body {
 }
 
 .nav.nav-tabs.result-details-tabs .nav-link{
-  color: #007bff;
+  color: #00308c;
   padding: .25rem .8rem;
 }
 
@@ -704,7 +709,7 @@ body {
   padding: 0;
   vertical-align: initial;
   border: none;
-  color: #007bff;
+  color: #1679c7;
   background: none;
   cursor: pointer;
 }
@@ -718,7 +723,7 @@ body {
   padding: 0;
   vertical-align: initial;
   border: none;
-  color: #007bff;
+  color: #00308c;
   background: none;
   cursor: pointer;
 }
@@ -750,7 +755,7 @@ body {
 }
 
 .result-details-icon-error {
-  color: #f0f;
+  color: #900390;
   padding-top: 3px;
   font-weight: bold;
   width: 11px;
