@@ -125,20 +125,11 @@ module Inferno
         end
       end
 
-      def check_delete_request
-        reply = delete_export
-        skip 'Server did not accept client request to delete export file after export completed' if is_4xx_error?(reply)
-        assert_response_accepted(reply)
-      end
-
       def check_cancel_request
         @content_location = nil
         check_export_kick_off
-        check_delete_request
-      end
-
-      def delete_export(url = @content_location)
-        @client.delete(url, {})
+        reply = @client.delete(@content_location, {})
+        assert_response_accepted(reply)
       end
 
       details %(
@@ -232,21 +223,9 @@ module Inferno
         check_file_request
       end
 
-      test 'Server shall return "202 Accepted" for delete export request' do
-        metadata do
-          id '08'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
-          description %(
-          )
-          optional
-        end
-
-        check_delete_request
-      end
-
       test 'Server shall return "202 Accepted" for cancel export request' do
         metadata do
-          id '09'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           description %(
           )
@@ -258,7 +237,7 @@ module Inferno
 
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation with _type parameters' do
         metadata do
-          id '10'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
           )
@@ -270,7 +249,7 @@ module Inferno
 
       test 'Server shall return FHIR resources required by _type filter' do
         metadata do
-          id '11'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
@@ -281,12 +260,11 @@ module Inferno
 
         check_export_status
         assert_output_has_correct_type
-        delete_export
       end
 
       test 'Server shall reject $export operation with invalid _type parameters' do
         metadata do
-          id '12'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
