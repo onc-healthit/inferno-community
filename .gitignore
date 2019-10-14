@@ -12,3 +12,4 @@ coverage
 tmp/*
 .vscode/*
 resources/terminology/*
+resources/quality_reporting/NDJson

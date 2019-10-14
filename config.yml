@@ -37,6 +37,8 @@ include_extras: true
 
 badge_text: Community
 
+ndjson_service_type: local
+
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
   - quality_reporting

@@ -18,6 +18,7 @@ module Inferno
       Inferno::ENVIRONMENT = settings.environment
       Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
       Inferno::EXTRAS = settings.include_extras
+      Inferno::NDJSON_SERVICE_TYPE = settings.ndjson_service_type.to_sym
 
       if settings.logging_enabled
         $stdout.sync = true # output in Docker is heavily delayed without this
