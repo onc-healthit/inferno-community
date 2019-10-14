@@ -81,8 +81,8 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @medicationrequest = reply.try(:resource).try(:entry).try(:first).try(:resource)
-        @medicationrequest_ary = reply&.resource&.entry&.map { |entry| entry&.resource }
+        @medicationrequest = reply&.resource&.entry&.first&.resource
+        @medicationrequest_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
         save_delayed_sequence_references(@medicationrequest)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)

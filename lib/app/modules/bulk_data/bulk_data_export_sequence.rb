@@ -303,7 +303,11 @@ module Inferno
       private
 
       def export_kick_off(endpoint,
+<<<<<<< HEAD
                           id = nil,
+=======
+                          id: nil,
+>>>>>>> e3640888dc7ccfba66647b614728e0849bd53102
                           search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''

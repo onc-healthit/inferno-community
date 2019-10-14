@@ -7,6 +7,13 @@ module Inferno
     class ArgonautConformanceSequence < CapabilityStatementSequence
       extends_sequence CapabilityStatementSequence
 
+      # The acceptable MIME-types for JSON
+      # https://hl7.org/fhir/DSTU2/json.html
+      def json_formats
+        # 'application/json+fhir' changed to 'application/fhir+json' in STU3
+        ['json', 'application/json', 'application/json+fhir']
+      end
+
       title 'Conformance Statement'
 
       test_id_prefix 'C'
@@ -17,7 +24,7 @@ module Inferno
       description 'Retrieve information about supported server functionality in the Conformance Statement.'
       details %(
         # Background
-         The #{title} Sequence tests a FHIR server's ability to formally describe features
+        The #{title} Sequence tests a FHIR server's ability to formally describe features
         supported by the API by using the [Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html) resource.
         The features described in the Conformance Statement must be consistent with the required capabilities of an
         Argonaut server.  The Conformance Statement must also advertise the location of the required SMART on FHIR endpoints
@@ -26,7 +33,7 @@ module Inferno
         Not all servers are expected to implement all possible queries and data elements described in the Argonaut API.
         For example, the Argonaut specification requires that the Patient resource and only one other Argonaut resource are required.
         Implementing the Conformance Statement resource allows clients to dynamically determine which of these resources
-        are supported at runtime, instead of having to specifically write the application to accomidate every known server implementation
+        are supported at runtime, instead of having to specifically write the application to accommodate every known server implementation
         at development time.  Similarly, by providing information about the location of SMART on FHIR OAuth 2.0 endpoints,
         the client does not have to be hard-coded with information about the authorization services associated with
         every FHIR API.
@@ -88,8 +95,7 @@ module Inferno
 
         assert_valid_conformance
 
-        formats = ['json', 'applcation/json', 'application/json+fhir', 'application/fhir+json']
-        assert formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
+        assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
       test 'Conformance Statement lists supported Argonaut profiles, operations and search parameters' do

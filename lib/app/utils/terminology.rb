@@ -18,102 +18,7 @@ module Inferno
       'http://hl7.org/fhir/sid/cvx' => 'CVX'
     }.freeze
 
-    @@term_root = File.join('resources', 'terminology')
-
-    @@loaded = false
-    @@top_lab_code_descriptions = {}
-    @@known_codes = {}
-    @@core_snomed = {}
-    @@common_ucum = []
-
     @known_valuesets = {}
-
-    def self.reset
-      @@loaded = false
-      @@top_lab_code_descriptions = {}
-      @@known_codes = {}
-      @@core_snomed = {}
-      @@common_ucum = []
-    end
-    private_class_method :reset
-
-    def self.load_terminology
-      return if @@loaded
-
-      begin
-        # load the top lab codes
-        filename = File.join(@@term_root, 'terminology_loinc_2000.txt')
-        raw = File.open(filename, 'r:UTF-8', &:read)
-        raw.split("\n").each do |line|
-          row = line.split('|')
-          @@top_lab_code_descriptions[row[0]] = row[1] unless row[1].nil?
-        end
-      rescue StandardError => e
-        Inferno.logger.error e
-      end
-
-      begin
-        # load the known codes
-        filename = File.join(@@term_root, 'terminology_umls.txt')
-        raw = File.open(filename, 'r:UTF-8', &:read)
-        raw.split("\n").each do |line|
-          row = line.split('|')
-          code_system = row[0]
-          code = row[1]
-          description = row[2]
-          if @@known_codes[code_system]
-            code_system_hash = @@known_codes[code_system]
-          else
-            code_system_hash = {}
-            @@known_codes[code_system] = code_system_hash
-          end
-          code_system_hash[code] = description
-        end
-      rescue StandardError => e
-        Inferno.logger.error e
-      end
-
-      begin
-        # load the core snomed codes
-        @@known_codes['SNOMED'] = {} if @@known_codes['SNOMED'].nil?
-        code_system_hash = @@known_codes['SNOMED']
-        filename = File.join(@@term_root, 'terminology_snomed_core.txt')
-        raw = File.open(filename, 'r:UTF-8', &:read)
-        raw.split("\n").each do |line|
-          row = line.split('|')
-          code = row[0]
-          description = row[1]
-          code_system_hash[code] = description if code_system_hash[code].nil?
-          @@core_snomed[code] = description
-        end
-      rescue StandardError => e
-        Inferno.logger.error e
-      end
-
-      begin
-        # load common UCUM codes
-        filename = File.join(@@term_root, 'terminology_ucum.txt')
-        raw = File.open(filename, 'r:UTF-8', &:read)
-        raw.split("\n").each do |code|
-          @@common_ucum << code
-        end
-        @@common_ucum.uniq!
-      rescue StandardError => e
-        Inferno.logger.error e
-      end
-
-      @@loaded = true
-    end
-
-    def self.get_description(system, code)
-      load_terminology
-      @@known_codes[system][code] if @@known_codes[system]
-    end
-
-    def self.lab_description(code)
-      load_terminology
-      @@top_lab_code_descriptions[code]
-    end
 
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
       directory += '/**/' if include_subdirectories
@@ -219,7 +124,9 @@ module Inferno
           probe = "#{coding['system']}|#{coding['code']}"
           bfilter.include? probe
         end
+        # Register the validators with FHIR Models for validation
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
+        FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
       end
     end
 
