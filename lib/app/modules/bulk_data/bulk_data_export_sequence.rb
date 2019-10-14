@@ -27,6 +27,10 @@ module Inferno
         endpoint
       end
 
+      def save_output?
+        false
+      end
+
       def check_export_kick_off(search_params: nil)
         @search_params = search_params
         reply = export_kick_off(endpoint, resource_id, search_params: search_params)
@@ -60,7 +64,7 @@ module Inferno
         assert_response_bad(reply)
       end
 
-      def check_export_status(url = @content_location, timeout: 180, save_output: false)
+      def check_export_status(url = @content_location, timeout: 180)
         skip 'Server response did not have Content-Location in header' unless url.present?
         reply = export_status_check(url, timeout)
 
@@ -79,34 +83,33 @@ module Inferno
         assert_status_reponse_required_field(response_body)
 
         @output = response_body['output']
-        
-        if save_output
-          @saved_output = @output.clone
-        end
       end
 
-      def assert_output_has_type_url(output = @output,
-                                     search_params = @search_params)
+      def assert_output_has_type_url(output = @output)
         assert output.present?, 'Sever response did not have output data'
-
-        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
         output.each do |file|
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
           end
+        end
+      end
 
-          assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
+      def assert_output_has_correct_type(output = @output,
+        search_params = @search_params)
+        assert output.present?, 'Sever response did not have output data'
+
+        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
+
+        output.each do |file|
+        assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
         end
       end
 
       def check_file_request(output = @output, index:0)
         skip 'Sever response did not have output data' unless output.present?
-        check_output_file(output[index])
-      end
 
-      def check_output_file(file)
-        return unless file.present?
+        file = output[index]
 
         headers = { accept: 'application/fhir+ndjson' }
         url = file['url']
@@ -126,8 +129,8 @@ module Inferno
         end
       end
 
-      def check_delete_request(url)
-        reply = @client.delete(url, {})
+      def check_delete_request
+        reply = delete_export
         skip 'Server did not accept client request to delete export file after export completed' if is_4xx_error?(reply)
         assert_response_accepted(reply)
       end
@@ -135,7 +138,11 @@ module Inferno
       def check_cancel_request
         @content_location = nil
         check_export_kick_off
-        check_delete_request(@content_location)
+        check_delete_request
+      end
+
+      def delete_export(url = @content_location)
+        @client.delete(url, {})
       end
 
       details %(
@@ -204,7 +211,7 @@ module Inferno
           )
         end
 
-        check_export_status(save_output: true)
+        check_export_status
       end
 
       test 'Completed Status Check shall return output with type and url' do
@@ -220,7 +227,7 @@ module Inferno
 
       test 'Server shall return FHIR resources in ndjson file' do
         metadata do
-          id '10'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
@@ -229,16 +236,16 @@ module Inferno
         check_file_request
       end
 
-      test 'Server should return "202 Accepted" for delete export content' do
+      test 'Server shall return "202 Accepted" for delete export request' do
         metadata do
-          id '07'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           description %(
           )
           optional
         end
 
-        check_delete_request(@content_location)
+        check_delete_request
       end
 
       test 'Server shall return "202 Accepted" for cancel export request' do
@@ -277,12 +284,13 @@ module Inferno
         skip 'Server does not support _type parameter' unless @server_supports_type_parameter
 
         check_export_status
-        assert_output_has_type_url
+        assert_output_has_correct_type
+        delete_export
       end
 
       test 'Server shall reject $export operation with invalid _type parameters' do
         metadata do
-          id '10'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
@@ -339,10 +347,6 @@ module Inferno
         else
           wait_time * 2
         end
-      end
-
-      def delete_request(url)
-        @client.delete(url)
       end
 
       def assert_status_reponse_required_field(response_body)

@@ -13,13 +13,15 @@ module Inferno
 
       description 'Verify that Group compartment export on the Bulk Data server follow ONC Health IT Certification'
 
-      test_id_prefix 'ONC-Group'      
+      test_id_prefix 'ONC-Group'    
+
+      requires :group_id, :token
 
       def required_resources
         ['AllergyIntolerance', 'CarePlan', 'CareTeam', 'Condition', 'Device', 'DiagnosticReport', 'DocumentReference', 'Goal', 'Immunization', 'Medication', 'MedicationStatement', 'MedicatinRequest', 'Observation', 'Patient', 'Procedure']
       end
 
-      def check_output_type(output = @saved_output)
+      def check_output_type(output = @output)
         
         output_types = output.map{|file| file['type']}
 

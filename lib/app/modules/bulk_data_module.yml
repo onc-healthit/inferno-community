@@ -14,5 +14,4 @@ test_sets:
         sequences:
           - BulkDataPatientExportSequence
           - BulkDataGroupExportSequence
-          - OncBulkDataGroupExportSequence
 
