@@ -152,9 +152,30 @@ module Inferno
         validate_history_reply(@device, versioned_resource_class('Device'))
       end
 
-      test 'Device resources associated with Patient conform to US Core R4 profiles' do
+      test 'A Server SHALL be capable of supporting the following _revincludes: Provenance:target' do
         metadata do
           id '07'
+          link 'https://www.hl7.org/fhir/search.html#revinclude'
+          description %(
+          )
+          versions :r4
+        end
+
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params['_revinclude'] = 'Provenance:target'
+        reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        provenance_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Provenance' }
+        assert provenance_results.any?, 'No provenance resources were returned from this search'
+      end
+
+      test 'Device resources associated with Patient conform to US Core R4 profiles' do
+        metadata do
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
           )
@@ -167,7 +188,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Device for this patient.' do
         metadata do
-          id '08'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -204,7 +225,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

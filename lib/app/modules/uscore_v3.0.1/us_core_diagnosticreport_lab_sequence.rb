@@ -335,9 +335,28 @@ module Inferno
         validate_history_reply(@diagnosticreport, versioned_resource_class('DiagnosticReport'))
       end
 
-      test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
+      test 'A Server SHALL be capable of supporting the following _revincludes: Provenance:target' do
         metadata do
           id '14'
+          link 'https://www.hl7.org/fhir/search.html#revinclude'
+          description %(
+          )
+          versions :r4
+        end
+
+        search_params = { patient: @instance.patient_id, category: 'LAB' }
+
+        search_params['_revinclude'] = 'Provenance:target'
+        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        provenance_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Provenance' }
+        assert provenance_results.any?, 'No provenance resources were returned from this search'
+      end
+
+      test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
+        metadata do
+          id '15'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
           )
@@ -350,7 +369,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do
         metadata do
-          id '15'
+          id '16'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -388,7 +407,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '16'
+          id '17'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

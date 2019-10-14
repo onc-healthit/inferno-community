@@ -94,6 +94,7 @@ module Inferno
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)
             add_interactions(resource, new_sequence)
+            add_revinclude_targets(resource, new_sequence)
 
             base_path = new_sequence[:profile].split('us/core/').last
             profile_definition = @resource_by_path[base_path]
@@ -148,6 +149,10 @@ module Inferno
           }
           sequence[:interactions] << new_interaction
         end
+      end
+
+      def add_revinclude_targets(resource, sequence)
+        sequence[:revincludes] = resource['searchRevInclude'] || []
       end
 
       def add_must_support_elements(profile_definition, sequence)
