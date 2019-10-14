@@ -160,6 +160,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
+
     assert failures.empty?, "All tests should pass. First error: #{failures&.first&.message}"
     assert !sequence_result.skip?, 'No tests should be skipped.'
     assert sequence_result.pass?, 'The sequence should be marked as pass.'
@@ -171,7 +172,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub_type_patient_not_supports
 
     assert_raises Inferno::SkipException do
-      @sequence.check_export_kick_off('Patient', search_params: { '_type' => 'Patient' })
+      @sequence.check_export_kick_off(search_params: { '_type' => 'Patient' })
     end
   end
 
@@ -181,7 +182,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(status_code: 200)
 
     assert_raises Inferno::AssertionException do
-      @sequence.check_export_kick_off('Patient')
+      @sequence.check_export_kick_off
     end
   end
 
@@ -191,7 +192,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub(response_headers: {})
 
     assert_raises Inferno::AssertionException do
-      @sequence.check_export_kick_off('Patient')
+      @sequence.check_export_kick_off
     end
   end
 
