@@ -96,17 +96,17 @@ module Inferno
       end
 
       def assert_output_has_correct_type(output = @output,
-        search_params = @search_params)
+                                         search_params = @search_params)
         assert output.present?, 'Sever response did not have output data'
 
         search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
         output.each do |file|
-        assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
+          assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
         end
       end
 
-      def check_file_request(output = @output, index:0)
+      def check_file_request(output = @output, index: 0)
         skip 'Sever response did not have output data' unless output.present?
 
         file = output[index]
@@ -250,7 +250,7 @@ module Inferno
 
       test 'Server shall return "202 Accepted" for cancel export request' do
         metadata do
-          id '08'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           description %(
           )
@@ -262,7 +262,7 @@ module Inferno
 
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation with _type parameters' do
         metadata do
-          id '09'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
           )
@@ -274,7 +274,7 @@ module Inferno
 
       test 'Server shall return FHIR resources required by _type filter' do
         metadata do
-          id '10'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
@@ -290,24 +290,20 @@ module Inferno
 
       test 'Server shall reject $export operation with invalid _type parameters' do
         metadata do
-          id '11'
+          id '12'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
           )
           optional
         end
 
-        check_export_kick_off_fail_invalid_parameter({'_type' => 'UnknownResource'})
+        check_export_kick_off_fail_invalid_parameter('_type' => 'UnknownResource')
       end
 
       private
 
       def export_kick_off(endpoint,
-<<<<<<< HEAD
                           id = nil,
-=======
-                          id: nil,
->>>>>>> e3640888dc7ccfba66647b614728e0849bd53102
                           search_params: nil,
                           headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
         url = ''

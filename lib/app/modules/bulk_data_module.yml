@@ -10,8 +10,7 @@ test_sets:
       - name: Discovery
         sequences:
           - BulkDataCapabilityStatementSequence
-      - name: Patient export
+      - name: Group Export
         sequences:
-          - BulkDataPatientExportSequence
           - BulkDataGroupExportSequence
 
