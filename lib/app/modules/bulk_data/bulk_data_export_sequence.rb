@@ -24,11 +24,7 @@ module Inferno
       end
 
       def type_parameter
-        endpoint
-      end
-
-      def save_output?
-        false
+        'Patient'
       end
 
       def check_export_kick_off(search_params: nil)

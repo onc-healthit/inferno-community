@@ -24,10 +24,6 @@ module Inferno
       def resource_id
         @instance.group_id
       end
-
-      def type_parameter
-        'Patient'
-      end
     end
   end
 end
