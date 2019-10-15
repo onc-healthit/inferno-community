@@ -26,13 +26,11 @@ class NDJsonServiceTest < MiniTest::Test
   end
 
   def test_file_not_exists
-    begin
-      # Should throw an exception
-      @ndjson_service.generate_ndjson('./this/does/not/exist')
-      assert false
-    rescue
-      assert true
-    end
+    # Should throw an exception
+    @ndjson_service.generate_ndjson('./this/does/not/exist')
+    assert false
+  rescue StandardError
+    assert true
   end
 
   def test_generate_ndjson_url
