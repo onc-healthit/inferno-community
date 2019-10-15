@@ -311,6 +311,10 @@ module Inferno
         @tests ||= []
       end
 
+      def self.[](key)
+        tests.find { |test| test.key == key }
+      end
+
       def optional?
         self.class.optional?
       end
@@ -381,7 +385,7 @@ module Inferno
             begin
               skip_unless(@instance.fhir_version_match?(self.class.versions), 'This test does not run with this FHIR version')
               Inferno.logger.info "Starting Test: #{test.id} [#{test.name}]"
-              instance_eval(&test.test_block)
+              run_test(test)
             rescue StandardError => e
               if e.respond_to? :update_result
                 e.update_result(result)
@@ -397,6 +401,10 @@ module Inferno
             Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
         end
+      end
+
+      def run_test(test)
+        instance_eval(&test.test_block)
       end
 
       # Metadata loading is handled by InfernoTest
