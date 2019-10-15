@@ -131,7 +131,7 @@ module Inferno
       def check_cancel_request
         @content_location = nil
         check_export_kick_off
-        reply = @client.delete(@content_location, {})
+        reply = delete_request(@content_location)
         assert_response_accepted(reply)
       end
 
@@ -277,7 +277,7 @@ module Inferno
         check_export_kick_off_fail_invalid_parameter('_type' => 'UnknownResource')
       end
 
-      test 'Server should $export operation with _since parameters' do
+      test 'Server should accept $export operation with _since parameters' do
         metadata do
           id '12'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
@@ -287,6 +287,7 @@ module Inferno
         end
 
         check_export_kick_off(search_params: { '_type' => type_parameter, '_since' => '2019-01-01' })
+        delete_request(@content_location)
       end
 
       test 'Server shall rejct $export operation with invalid _since parameters' do
@@ -299,6 +300,45 @@ module Inferno
         end
 
         check_export_kick_off_fail_invalid_parameter('_type' => type_parameter, '_since' => '2018-13-13')
+      end
+
+      test 'Server should accept $export operation with _outputFormat=application/fhir+ndjson' do
+        metadata do
+          id '14'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
+          description %(
+          )
+          optional
+        end
+
+        check_export_kick_off(search_params: { '_outputFormat' => 'application/fhir+ndjson' })
+        delete_request(@content_location)
+      end
+
+      test 'Server should accept $export operation with _outputFormat=application/ndjson' do
+        metadata do
+          id '15'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
+          description %(
+          )
+          optional
+        end
+
+        check_export_kick_off(search_params: { '_outputFormat' => 'application/ndjson' })
+        delete_request(@content_location)
+      end
+
+      test 'Server should accept $export operation with _outputFormat=ndjson' do
+        metadata do
+          id '16'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
+          description %(
+          )
+          optional
+        end
+
+        check_export_kick_off(search_params: { '_outputFormat' => 'ndjson' })
+        delete_request(@content_location)
       end
 
       private
@@ -348,6 +388,10 @@ module Inferno
         else
           wait_time * 2
         end
+      end
+
+      def delete_request(url)
+        @client.delete(url, {})
       end
 
       def assert_status_reponse_required_field(response_body)

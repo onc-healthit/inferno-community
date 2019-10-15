@@ -94,6 +94,36 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_export_stub_outputformat_application_fhir_ndjson(status_code: 202,
+                                                               response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_outputFormat=application/fhir%2Bndjson')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_outputformat_application_ndjson(status_code: 202,
+                                                          response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_outputFormat=application/ndjson')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_outputformat_ndjson(status_code: 202,
+                                              response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_outputFormat=ndjson')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
   def include_export_stub_type_patient_not_supports(status_code: 400,
                                                     response_headers: { content_location: @content_location })
 
@@ -183,6 +213,9 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub_invalid_type
     include_export_stub_type_patient_since_2019
     include_export_stub_invalid_since
+    include_export_stub_outputformat_application_fhir_ndjson
+    include_export_stub_outputformat_application_ndjson
+    include_export_stub_outputformat_ndjson
     include_status_check_stub
     include_file_request_stub
     include_delete_request_stub
