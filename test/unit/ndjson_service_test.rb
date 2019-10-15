@@ -12,7 +12,17 @@ class NDJsonServiceTest < MiniTest::Test
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', base_url: 'http://localhost:4567', selected_module: 'quality_reporting')
     @ndjson_service = Inferno::NDJsonFactory.get_service(Inferno::NDJSON_SERVICE_TYPE, BUNDLES.map { |p| File.expand_path p, __dir__ }, @instance)
+  end
+
+  def test_generate_ndjson
     @ndjson_service.generate_ndjson
+
+    # ndjson file should be created
+    assert File.file?(@ndjson_service.output_file_path)
+
+    # Number of lines in the ndjson file should match the number of bundles we provide
+    file = File.open(@ndjson_service.output_file_path)
+    assert file.readlines.size == BUNDLES.length
   end
 
   def test_generate_ndjson_url

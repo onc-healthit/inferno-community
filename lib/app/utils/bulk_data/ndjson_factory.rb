@@ -4,6 +4,7 @@ require_relative './local_ndjson_service'
 
 module Inferno
   class NDJsonFactory
+    # Create an instance of an NDJson service based on the configured type in config.yml
     def self.get_service(type, files, testing_instance)
       case type
       when :local
