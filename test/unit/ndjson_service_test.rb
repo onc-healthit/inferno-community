@@ -11,11 +11,11 @@ class NDJsonServiceTest < MiniTest::Test
 
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', base_url: 'http://localhost:4567', selected_module: 'quality_reporting')
-    @ndjson_service = Inferno::NDJsonFactory.get_service(Inferno::NDJSON_SERVICE_TYPE, BUNDLES.map { |p| File.expand_path p, __dir__ }, @instance)
+    @ndjson_service = Inferno::NDJsonFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
   end
 
   def test_generate_ndjson
-    @ndjson_service.generate_ndjson
+    @ndjson_service.generate_ndjson(BUNDLES.map { |p| File.expand_path p, __dir__ })
 
     # ndjson file should be created
     assert File.file?(@ndjson_service.output_file_path)

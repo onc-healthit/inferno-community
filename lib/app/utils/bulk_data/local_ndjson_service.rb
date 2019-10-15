@@ -4,8 +4,8 @@ require_relative './base_ndjson_service'
 
 module Inferno
   class LocalNDJsonService < BaseNDJsonService
-    def initialize(file_paths, testing_instance)
-      super(file_paths, testing_instance)
+    def initialize(testing_instance)
+      super(testing_instance)
     end
 
     def generate_ndjson_url

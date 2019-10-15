@@ -36,8 +36,8 @@ module Inferno
         ].freeze
 
         # Generate a URL for the ndjson to give to the server based on the service type in config.yml
-        ndjson_service = NDJsonFactory.get_service(Inferno::NDJSON_SERVICE_TYPE, BUNDLES.map { |p| File.expand_path p, __dir__ }, @instance)
-        ndjson_service.generate_ndjson
+        ndjson_service = NDJsonFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
+        ndjson_service.generate_ndjson(BUNDLES.map { |p| File.expand_path p, __dir__ })
 
         # Initial async submit data call to kick off the job
         submit_data_payload = ndjson_service.generate_bulk_data_params
