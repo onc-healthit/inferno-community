@@ -25,6 +25,16 @@ class NDJsonServiceTest < MiniTest::Test
     assert file.readlines.size == BUNDLES.length
   end
 
+  def test_file_not_exists
+    begin
+      # Should throw an exception
+      @ndjson_service.generate_ndjson('./this/does/not/exist')
+      assert false
+    rescue
+      assert true
+    end
+  end
+
   def test_generate_ndjson_url
     url = @ndjson_service.generate_ndjson_url
 

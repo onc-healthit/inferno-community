@@ -27,9 +27,17 @@ module Inferno
 
       generator = NDJSON::Generator.new(@output_file_path)
       file_paths.each do |f|
+        # Ensure Bundle exists
         file_path = File.expand_path(f, __dir__)
-        json = JSON.parse(File.read(file_path))
-        generator.write(json)
+        raise "Bundle #{file_path} not found" unless File.file?(file_path)
+
+        begin
+          # Ensure Bundle is valid json and write it to the ndjson file
+          json = JSON.parse(File.read(file_path))
+          generator.write(json)
+        rescue JSON::ParserError
+          Inferno.logger.error "Bundle #{file_path} is not valid JSON"
+        end
       end
     end
 
