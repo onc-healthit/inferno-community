@@ -40,12 +40,6 @@ module Inferno
       raise AssertionException, "Bad response code: expected 202, but found #{response.code}"
     end
 
-    def assert_response_not_found(response)
-      return if assertion_negated([404].include?(response.code))
-
-      raise AssertionException, "Bad response code: expected 404, but found #{response.code}"
-    end
-
     def assert_response_unauthorized(response)
       return if assertion_negated([401, 406].include?(response.code))
 
@@ -64,18 +58,6 @@ module Inferno
       raise AssertionException, "Bad response code: expected 400, but found #{response.code}"
     end
 
-    def assert_response_conflict(response)
-      return if assertion_negated([409, 412].include?(response.code))
-
-      raise AssertionException, "Bad response code: expected 409 or 412, but found #{response.code}"
-    end
-
-    def assert_navigation_links(bundle)
-      return if assertion_negated(bundle.first_link && bundle.last_link && bundle.next_link)
-
-      raise AssertionException, 'Expecting first, next and last link to be present'
-    end
-
     def assert_bundle_response(response)
       return if assertion_negated(response.resource.class == FHIR::DSTU2::Bundle || response.resource.class == FHIR::Bundle)
 
@@ -87,19 +69,6 @@ module Inferno
         found = nil
       end
       raise AssertionException, "Expected FHIR Bundle but found: #{found.class.name.demodulize}"
-    end
-
-    def assert_bundle_transactions_okay(response)
-      response.resource.entry.each do |entry|
-        unless assertion_negated(!entry.response.nil?)
-          raise AssertionException, 'All Transaction/Batch Bundle.entry elements SHALL have a response.'
-        end
-
-        status = entry.response.status
-        unless assertion_negated(status && status.start_with?('200', '201', '204'))
-          raise AssertionException, "Expected all Bundle.entry.response.status to be 200, 201, or 204; but found: #{status}"
-        end
-      end
     end
 
     def assert_response_content_type(reply, content_type)
@@ -114,53 +83,6 @@ module Inferno
       return if assertion_negated(response_content_type == content_type)
 
       raise AssertionException.new "Expected content-type #{content_type} but found #{response_content_type}", response_content_type
-    end
-
-    # Based on MIME Types defined in
-    # http://hl7.org/fhir/2015May/http.html#2.1.0.6
-    def assert_valid_resource_content_type_present(client_reply)
-      header = client_reply.response[:headers]['content-type']
-      content_type = header
-      charset = encoding = nil
-
-      content_type = header[0, header.index(';')] unless header.index(';').nil?
-      charset = header[header.index('charset=') + 8..-1] unless header.index('charset=').nil?
-      encoding = Encoding.find(charset) unless charset.nil?
-
-      unless assertion_negated(encoding == Encoding::UTF_8)
-        raise AssertionException.new "Response content-type specifies encoding other than UTF-8: #{charset}", header
-      end
-
-      return if assertion_negated((content_type == FHIR::Formats::ResourceFormat::RESOURCE_XML) || (content_type == FHIR::Formats::ResourceFormat::RESOURCE_JSON))
-
-      raise AssertionException.new "Invalid FHIR content-type: #{content_type}", header
-    end
-
-    def assert_etag_present(client_reply)
-      header = client_reply.response[:headers]['etag']
-      assert assertion_negated(!header.nil?), 'ETag HTTP header is missing.'
-    end
-
-    def assert_last_modified_present(client_reply)
-      header = client_reply.response[:headers]['last-modified']
-      assert assertion_negated(!header.nil?), 'Last-modified HTTP header is missing.'
-    end
-
-    def assert_valid_content_location_present(client_reply)
-      header = client_reply.response[:headers]['location']
-      assert assertion_negated(!header.nil?), 'Location HTTP header is missing.'
-    end
-
-    def assert_response_code(response, code)
-      return if assertion_negated(code.to_s == response.code.to_s)
-
-      raise AssertionException, "Bad response code: expected #{code}, but found #{response.code}"
-    end
-
-    def assert_resource_type(response, resource_type)
-      return if assertion_negated(!response.resource.nil? && response.resource.class == resource_type)
-
-      raise AssertionException, "Bad response type: expected #{resource_type}, but found #{response.resource.class}."
     end
 
     def assertion_negated(expression)
