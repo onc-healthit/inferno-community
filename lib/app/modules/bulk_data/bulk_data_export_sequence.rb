@@ -102,15 +102,18 @@ module Inferno
         end
       end
 
+      def get_file(file)
+        headers = { accept: 'application/fhir+ndjson' }
+        url = file['url']
+        @client.get(url, @client.fhir_headers(headers))
+      end
+
       def check_file_request(output = @output, index: 0)
         skip 'Sever response did not have output data' unless output.present?
 
         file = output[index]
-
-        headers = { accept: 'application/fhir+ndjson' }
-        url = file['url']
         type = file['type']
-        reply = @client.get(url, @client.fhir_headers(headers))
+        reply = get_file(file)
         assert_response_content_type(reply, 'application/fhir+ndjson')
 
         check_ndjson(reply.body, type)
@@ -235,7 +238,7 @@ module Inferno
         check_cancel_request
       end
 
-      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with _type parameters' do
+      test 'Server should accept $export operation with _type parameters' do
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
@@ -274,9 +277,9 @@ module Inferno
         check_export_kick_off_fail_invalid_parameter('_type' => 'UnknownResource')
       end
 
-      test 'Server shall return "202 Accepted" and "Content-location" for $export operation with _since parameters' do
+      test 'Server should $export operation with _since parameters' do
         metadata do
-          id '09'
+          id '12'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
           )
@@ -284,6 +287,18 @@ module Inferno
         end
 
         check_export_kick_off(search_params: { '_type' => type_parameter, '_since' => '2019-01-01' })
+      end
+
+      test 'Server shall rejct $export operation with invalid _since parameters' do
+        metadata do
+          id '13'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
+          description %(
+          )
+          optional
+        end
+
+        check_export_kick_off_fail_invalid_parameter('_type' => type_parameter, '_since' => '2018-13-13')
       end
 
       private

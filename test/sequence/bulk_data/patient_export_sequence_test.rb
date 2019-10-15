@@ -84,6 +84,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_export_stub_type_patient_since_2019(status_code: 202,
+                                                  response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_since=2019-01-01&_type=Patient')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
   def include_export_stub_type_patient_not_supports(status_code: 400,
                                                     response_headers: { content_location: @content_location })
 
@@ -117,8 +127,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def include_export_stub_invalid_parameter
+  def include_export_stub_invalid_type
     stub_request(:get, 'http://www.example.com/Patient/$export?_type=UnknownResource')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: 400
+      )
+  end
+
+  def include_export_stub_invalid_since
+    stub_request(:get, 'http://www.example.com/Patient/$export?_since=2018-13-13&_type=Patient')
       .with(headers: @export_request_headers)
       .to_return(
         status: 400
@@ -158,11 +176,13 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     WebMock.reset!
 
     include_export_stub_no_token
-    include_export_stub_type_patient
     include_export_stub
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
-    include_export_stub_invalid_parameter
+    include_export_stub_type_patient
+    include_export_stub_invalid_type
+    include_export_stub_type_patient_since_2019
+    include_export_stub_invalid_since
     include_status_check_stub
     include_file_request_stub
     include_delete_request_stub
