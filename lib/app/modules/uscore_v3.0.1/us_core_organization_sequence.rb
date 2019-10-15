@@ -96,7 +96,7 @@ module Inferno
         @organization = reply&.resource&.entry&.first&.resource
         @organization_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
-        save_delayed_sequence_references(@organization)
+        save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 

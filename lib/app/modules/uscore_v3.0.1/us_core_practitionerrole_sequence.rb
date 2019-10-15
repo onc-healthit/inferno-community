@@ -96,7 +96,7 @@ module Inferno
         @practitionerrole = reply&.resource&.entry&.first&.resource
         @practitionerrole_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
-        save_delayed_sequence_references(@practitionerrole)
+        save_delayed_sequence_references(@practitionerrole_ary)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
@@ -151,9 +151,37 @@ module Inferno
         validate_history_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))
       end
 
-      test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
+      test 'A Server SHOULD be capable of supporting the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
         metadata do
           id '07'
+          link 'https://www.hl7.org/fhir/search.html#include'
+          description %(
+          )
+          versions :r4
+        end
+
+        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
+        search_params = { 'specialty': specialty_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params['_include'] = 'PractitionerRole:endpoint'
+        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        endpoint_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Endpoint' }
+        assert endpoint_results.any?, 'No endpoint resources were returned from this search'
+
+        search_params['_include'] = 'PractitionerRole:practitioner'
+        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        practitioner_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Practitioner' }
+        assert practitioner_results.any?, 'No practitioner resources were returned from this search'
+      end
+
+      test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
+        metadata do
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
           )
@@ -166,7 +194,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any PractitionerRole for this patient.' do
         metadata do
-          id '08'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -201,7 +229,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

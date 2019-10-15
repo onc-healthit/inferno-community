@@ -66,6 +66,7 @@ module Inferno
               create_interaction_test(sequence, interaction)
             end
 
+          create_include_test(sequence) if sequence[:include_params].any?
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
           create_references_resolved_test(sequence)
@@ -131,6 +132,29 @@ module Inferno
         sequence[:tests] << authorization_test
       end
 
+      def create_include_test(sequence)
+        include_test = {
+          tests_that: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}",
+          index: sequence[:tests].length + 1,
+          link: 'https://www.hl7.org/fhir/search.html#include'
+        }
+        first_search = find_first_search(sequence)
+        search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
+        include_test[:test_code] = search_params
+        sequence[:include_params].each do |include|
+          included_resource = include.split(':').last.capitalize # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
+          include_test[:test_code] += %(
+                search_params['_include'] = '#{include}'
+                reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+                assert_response_ok(reply)
+                assert_bundle_response(reply)
+                #{included_resource.downcase}_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == '#{included_resource}' }
+                assert #{included_resource.downcase}_results.any?, 'No #{included_resource.downcase} resources were returned from this search'
+          )
+        end
+        sequence[:tests] << include_test
+      end
+
       def create_search_test(sequence, search_param)
         search_test = {
           tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
@@ -161,7 +185,7 @@ module Inferno
               @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
               @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
               save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-              save_delayed_sequence_references(@#{sequence[:resource].downcase})
+              save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
           else
             %(

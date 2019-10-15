@@ -90,7 +90,7 @@ module Inferno
         @diagnosticreport = reply&.resource&.entry&.first&.resource
         @diagnosticreport_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
-        save_delayed_sequence_references(@diagnosticreport)
+        save_delayed_sequence_references(@diagnosticreport_ary)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
 

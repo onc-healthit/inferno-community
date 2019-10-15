@@ -102,7 +102,7 @@ module Inferno
         @documentreference = reply&.resource&.entry&.first&.resource
         @documentreference_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('DocumentReference'), reply)
-        save_delayed_sequence_references(@documentreference)
+        save_delayed_sequence_references(@documentreference_ary)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
       end
 
