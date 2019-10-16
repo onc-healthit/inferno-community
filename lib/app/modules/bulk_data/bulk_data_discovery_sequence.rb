@@ -16,7 +16,7 @@ module Inferno
         # Background
 
         The #{title} Sequence test looks for authorization endpoints and SMART
-        capabilities as described by the [SMART Backend Services: Authorization 
+        capabilities as described by the [SMART Backend Services: Authorization
         Guide](https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html).
       )
 
@@ -26,7 +26,6 @@ module Inferno
         'token_endpoint_auth_methods_supported',
         'token_endpoint_auth_signing_alg_values_supported'
       ].freeze
-
 
       SMART_OAUTH_EXTENSION_URL = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
 
