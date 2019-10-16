@@ -10,14 +10,19 @@ require 'minitest/autorun'
 require 'webmock/minitest'
 require 'rack/test'
 require 'json/jwt'
-require_relative '../find_assertions'
 
 test_log_filename = File.join('tmp', 'test.log')
 FileUtils.rm test_log_filename if File.exist? test_log_filename
 
-MiniTest.after_run {
-  AssertionReporter.print
-}
+def create_assertion_report?
+  ENV['ASSERTION_REPORT']&.downcase == 'true'
+end
+
+if create_assertion_report?
+  require_relative './support/sequence_coverage_reporting'
+
+  MiniTest.after_run { AssertionReporter.print }
+end
 
 require_relative '../lib/app'
 

@@ -38,7 +38,7 @@ describe Inferno::Assertions do
     end
 
     it 'does not raise an exception if JSON is valid' do
-      json = {a: '1'}.to_json
+      json = { a: '1' }.to_json
       @inferno_asserter.assert_valid_json(json)
     end
   end

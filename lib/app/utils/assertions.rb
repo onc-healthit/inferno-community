@@ -6,11 +6,13 @@ require 'uri'
 module Inferno
   module Assertions
     def assert(test, message = 'assertion failed, no message', data = '')
-      if ENV['RACK_ENV'] == 'test'
+      if ENV['RACK_ENV'] == 'test' && create_assertion_report?
         sequence_line_regex = %r{inferno/lib/app/modules/(\w+/\w+\.rb:\d+)}
         backtrace_location = caller_locations.find { |location| location.to_s.match? sequence_line_regex }
         call_site = backtrace_location&.to_s&.match(sequence_line_regex)&.[](1)
-        AssertionTracker.add_assertion_call(call_site, !!test) if call_site.present?
+        if call_site.present?
+          AssertionTracker.add_assertion_call(call_site, !!test) # rubocop:disable Style/DoubleNegation
+        end
       end
 
       raise AssertionException.new message, data unless test
