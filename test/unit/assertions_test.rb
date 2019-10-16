@@ -28,6 +28,21 @@ describe Inferno::Assertions do
     end
   end
 
+  describe '#assert_valid_json' do
+    it 'raises an AssertionException if JSON is invalid' do
+      exception = assert_raises(Inferno::AssertionException) do
+        @inferno_asserter.assert_valid_json('abc')
+      end
+
+      assert_equal(exception.message, 'Invalid JSON')
+    end
+
+    it 'does not raise an exception if JSON is valid' do
+      json = {a: '1'}.to_json
+      @inferno_asserter.assert_valid_json(json)
+    end
+  end
+
   describe '#assert_equal' do
     it 'raises an AssertionException if its arguments are not equal' do
       exception = assert_raises(Inferno::AssertionException) do

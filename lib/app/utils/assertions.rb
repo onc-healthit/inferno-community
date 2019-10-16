@@ -17,9 +17,9 @@ module Inferno
     end
 
     def assert_valid_json(json)
-      JSON.parse(json)
+      assert JSON.parse(json)
     rescue JSON::ParserError
-      raise AssertionException, 'Invalid JSON'
+      assert false, 'Invalid JSON'
     end
 
     def assert_equal(expected, actual, message = '', data = '')
