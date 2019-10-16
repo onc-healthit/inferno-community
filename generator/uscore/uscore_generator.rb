@@ -139,16 +139,17 @@ module Inferno
           link: 'https://www.hl7.org/fhir/search.html#revinclude'
         }
         first_search = find_first_search(sequence)
-        search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
+        search_params = first_search.nil? ? "\nsearch_params = {}" : get_search_params(first_search[:names], sequence)
+        revinclude_test[:test_code] = search_params
         sequence[:revincludes].each do |revinclude|
-          revinclude_test[:test_code] = %(
-        #{search_params}
+          resource_type = revinclude.split(':').first.downcase
+          revinclude_test[:test_code] += %(
                 search_params['_revinclude'] = '#{revinclude}'
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
-                provenance_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == '#{revinclude.split(':').first}' }
-                assert provenance_results.any?, 'No provenance resources were returned from this search'
+                #{resource_type}_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == '#{revinclude.split(':').first}' }
+                assert #{resource_type}_results.any?, 'No #{resource_type} resources were returned from this search'
           )
         end
         sequence[:tests] << revinclude_test
