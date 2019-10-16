@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require File.expand_path '../test_helper.rb', __dir__
-require_relative '../../lib/app/utils/bulk_data/ndjson_factory'
+require_relative '../../lib/app/utils/bulk_data/ndjson_service_factory'
 
 class NDJsonServiceTest < MiniTest::Test
   BUNDLES = [
@@ -11,7 +11,7 @@ class NDJsonServiceTest < MiniTest::Test
 
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', base_url: 'http://localhost:4567', selected_module: 'quality_reporting')
-    @ndjson_service = Inferno::NDJsonFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
+    @ndjson_service = Inferno::NDJSONServiceFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
   end
 
   def test_generate_ndjson

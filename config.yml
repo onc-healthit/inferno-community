@@ -37,6 +37,8 @@ include_extras: true
 
 badge_text: Community
 
+# Type of NDJSONService to use (see BaseNDJSONService class and NDJSONServiceFactory)
+# To create a new type, extend BaseNDJSONService and add a new case in NDJSONServiceFactory
 ndjson_service_type: local
 
 # module options: one or more must be set.  The first option in the list will be checked by default

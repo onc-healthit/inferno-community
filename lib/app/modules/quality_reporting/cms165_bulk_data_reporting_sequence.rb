@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../utils/measure_operations'
-require_relative '../../utils/bulk_data/ndjson_factory'
+require_relative '../../utils/bulk_data/ndjson_service_factory'
 
 module Inferno
   module Sequence
@@ -36,7 +36,7 @@ module Inferno
         ].freeze
 
         # Generate a URL for the ndjson to give to the server based on the service type in config.yml
-        ndjson_service = NDJsonFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
+        ndjson_service = NDJSONServiceFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
         ndjson_service.generate_ndjson(BUNDLES.map { |p| File.expand_path p, __dir__ })
 
         # Initial async submit data call to kick off the job
@@ -44,8 +44,10 @@ module Inferno
         async_submit_data_response = async_submit_data(submit_data_payload)
         assert_response_accepted(async_submit_data_response)
 
-        # Check the status on loop until the job is finished
+        # Use the content-location in the response to check the status of the import
         content_loc = async_submit_data_response.headers[:content_location]
+
+        # Check the status on loop until the job is finished
         polling_response = WebUtils.get_with_retry(content_loc, 180, @client)
 
         # Once the loop breaks, should receive 200 OK

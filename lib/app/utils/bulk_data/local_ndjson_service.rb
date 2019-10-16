@@ -3,7 +3,7 @@
 require_relative './base_ndjson_service'
 
 module Inferno
-  class LocalNDJsonService < BaseNDJsonService
+  class LocalNDJSONService < BaseNDJSONService
     def initialize(testing_instance)
       super(testing_instance)
     end

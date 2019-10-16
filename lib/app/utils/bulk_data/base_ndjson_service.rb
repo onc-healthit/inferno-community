@@ -4,7 +4,10 @@ require 'ndjson'
 require 'securerandom'
 
 module Inferno
-  class BaseNDJsonService
+  # Class for generating .ndjson files and a URL to serve them for bulk data $import
+  # Subclasses must implement the generate_ndjson_url function, which should return
+  # a full url where a GET request to the url will return the generated .ndjson file
+  class BaseNDJSONService
     attr_accessor :output_file_path
 
     # testing_instance - Inferno::Models::TestingInstance for the current sequence using the NDJson Service
