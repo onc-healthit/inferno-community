@@ -55,34 +55,38 @@ module Inferno
         * [DSTU2 Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html)
       )
 
-      PROFILES = [
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient',
-        'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
-        'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry',
-        'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus',
-        'http://hl7.org/fhir/StructureDefinition/vitalsigns'
-      ].freeze
+      PROFILES = {
+        'AllergyIntolerance' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'],
+        'CarePlan' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'],
+        'CareTeam' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'],
+        'Condition' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'],
+        'Device' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'],
+        'DiagnosticReport' => [
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note'
+        ],
+        'DocumentReference' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'],
+        'Encounter' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'],
+        'Goal' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'],
+        'Immunization' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'],
+        'Location' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'],
+        'Medication' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'],
+        'MedicationRequest' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'],
+        'Observation' => [
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
+          'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+          'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus',
+          'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+        ],
+        'Organization' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'],
+        'Patient' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'],
+        'Practitioner' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'],
+        'PractitionerRole' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'],
+        'Procedure' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'],
+        'Provenance' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance']
+      }.freeze
 
       test 'FHIR server capability states JSON support' do
         metadata do
@@ -130,17 +134,25 @@ module Inferno
           )
         end
 
-        patient_profile = PROFILES.find { |profile| profile.end_with? 'patient' }
-
         assert_valid_conformance
+        supported_resources = @server_capabilities.supported_resources
+        supported_profiles = @server_capabilities.supported_profiles
 
-        assert @server_capabilities.supported_profiles.include?(patient_profile), 'US Core Patient profile not supported'
+        assert supported_resources.include?('Patient'), 'US Core Patient profile not supported'
 
-        other_profiles = PROFILES.reject { |profile| profile == patient_profile }
+        other_resources = PROFILES.keys.reject { |resource_type| resource_type == 'Patient' }
+        other_resources_supported = other_resources.any? { |resource| supported_resources.include? resource }
+        assert other_resources_supported, 'No US Core resources other than Patient are supported'
 
-        other_profiles_supported = other_profiles & @server_capabilities.supported_profiles
-
-        assert other_profiles_supported.present?, 'No US Core profiles other than Patient are supported'
+        PROFILES.each do |resource, profiles|
+          next unless supported_resources.include? resource
+          profiles.each do |profile|
+            warning do
+              message = "CapabilityStatement does not claim support for US Core #{resource} profile: #{profile}"
+              assert supported_profiles.include? profile, message
+            end
+          end
+        end
       end
     end
   end
