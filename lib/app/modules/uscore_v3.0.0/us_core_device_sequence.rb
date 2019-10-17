@@ -98,7 +98,7 @@ module Inferno
         assert !@device.nil?, 'Expected valid Device resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = resolve_element_from_path(@device, 'type.coding.code')
+        type_val = get_value_for_search_param(resolve_element_from_path(@device_ary, 'type'))
         search_params = { 'patient': patient_val, 'type': type_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

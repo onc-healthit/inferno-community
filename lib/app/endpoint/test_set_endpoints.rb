@@ -86,12 +86,12 @@ module Inferno
             sequence.tests.each_with_index do |test, index|
               next if index < current_test_count
 
-              sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test[:test_id],
-                                                                              name: test[:name],
+              sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test.id,
+                                                                              name: test.name,
                                                                               result: 'cancel',
-                                                                              url: test[:url],
-                                                                              description: test[:description],
-                                                                              test_index: test[:test_index],
+                                                                              url: test.link,
+                                                                              description: test.description,
+                                                                              test_index: test.index,
                                                                               message: cancel_message)
             end
 

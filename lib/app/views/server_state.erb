@@ -1,0 +1,32 @@
+<div id="server-state">
+  <h4>Additional ValueSets and CodeSystems</h4>
+  <p>
+     Inferno is capable of validating ValueSet bindings even if they are not expanded within the core FHIR specification.
+     This typically occurs when Implementation Guides provide additional ValueSets, or if the ValueSet is too large to
+     be expanded and provided in the Core FHIR specification. Additionally, Inferno can check codes belong to a CodeSystem that they state membership to.
+     Below is a list of ValueSets and CodeSystems loaded into this runniing instance of Inferno.  Visit
+    <a href="https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators" target="_blank">our wiki</a> to see how to load additional
+    ValueSets and CodeSystems for validation.
+  <p>
+
+  <% if Inferno::Terminology.loaded_validators.count.zero? %>
+    <p>No additional ValueSets or CodeSystems beyond those provided within the Core FHIR specification are loaded.</p>
+  <% else %>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Valueset URL</th>
+          <th>Concept Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+          <tr>
+            <td><%= url %></td>
+            <td><%= count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <% end #if %>
+</div>
