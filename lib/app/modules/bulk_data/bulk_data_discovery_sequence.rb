@@ -30,16 +30,24 @@ module Inferno
       SMART_OAUTH_EXTENSION_URL = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
 
       REQUIRED_OAUTH_ENDPOINTS = [
-        { url: 'authorize', description: 'authorization' },
         { url: 'token', description: 'token' }
       ].freeze
 
-      OPTIONAL_OAUTH_ENDPOINTS = [
-        { url: 'register', description: 'dynamic registration' },
-        { url: 'manage', description: 'authorization management' },
-        { url: 'introspect', description: 'token introspection' },
-        { url: 'revoke', description: 'token revocation' }
-      ].freeze
+      def oauth2_metadata_from_conformance
+        options = {
+          token_url: nil
+        }
+        begin
+          @conformance.rest.each do |rest|
+            options.merge! @client.get_oauth2_metadata_from_service_definition(rest)
+          end
+        rescue StandardError => e
+          FHIR.logger.error "Failed to locate SMART-on-FHIR OAuth2 Security Extensions: #{e.message}"
+        end
+
+        options.delete_if { |_k, v| v.nil? }
+        options
+      end
 
       test 'Retrieve Configuration from well-known endpoint' do
         metadata do
@@ -104,7 +112,7 @@ module Inferno
         end
 
         @conformance = @client.conformance_statement
-        oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
+        oauth_metadata = oauth2_metadata_from_conformance
 
         assert oauth_metadata.present?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
 
@@ -130,28 +138,8 @@ module Inferno
           assert services.any? { |service| service == 'SMART-on-FHIR' }, "Conformance/CapabilityStatement.rest.security.service set to #{services.map { |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
         end
 
-        security_extensions =
-          @conformance.rest.first.security&.extension
-            &.find { |extension| extension.url == SMART_OAUTH_EXTENSION_URL }
-            &.extension
-
-        OPTIONAL_OAUTH_ENDPOINTS.each do |endpoint|
-          warning do
-            url =
-              security_extensions
-                &.find { |extension| extension.url == endpoint[:url] }
-                &.value
-
-            assert url.present?, "No #{endpoint[:description]} endpoint in conformance."
-            assert_valid_http_uri url, "Invalid #{endpoint[:description]} url: '#{url}'"
-            instance_variable_set(:"@conformance_#{endpoint[:url]}_url", url)
-          end
-        end
-
         @instance.update(
-          oauth_authorize_endpoint: @conformance_authorize_url,
-          oauth_token_endpoint: @conformance_token_url,
-          oauth_register_endpoint: @conformance_register_url
+          oauth_token_endpoint: @conformance_token_url
         )
       end
 

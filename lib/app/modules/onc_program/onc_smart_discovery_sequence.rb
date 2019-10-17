@@ -65,7 +65,7 @@ module Inferno
       test 'Well-known configuration declares support for required capabilities' do
         metadata do
           id '06'
-          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-well-known'
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#core-capabilities'
           description %(
             A SMART on FHIR server SHALL convey its capabilities to app
             developers by listing a set of the capabilities. The following

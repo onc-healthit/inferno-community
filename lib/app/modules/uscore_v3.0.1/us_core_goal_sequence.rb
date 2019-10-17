@@ -104,7 +104,7 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        target_date_val = resolve_element_from_path(@goal, 'target.dueDate')
+        target_date_val = get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
         search_params = { 'patient': patient_val, 'target-date': target_date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -135,7 +135,7 @@ module Inferno
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         patient_val = @instance.patient_id
-        lifecycle_status_val = resolve_element_from_path(@goal, 'lifecycleStatus')
+        lifecycle_status_val = get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
         search_params = { 'patient': patient_val, 'lifecycle-status': lifecycle_status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

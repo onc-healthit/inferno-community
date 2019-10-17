@@ -107,7 +107,7 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
 
         patient_val = @instance.patient_id
-        date_val = resolve_element_from_path(@procedure, 'occurrenceDateTime')
+        date_val = get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'occurrenceDateTime'))
         search_params = { 'patient': patient_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -130,8 +130,8 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@procedure, 'code.coding.code')
-        date_val = resolve_element_from_path(@procedure, 'occurrenceDateTime')
+        code_val = get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'code'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'occurrenceDateTime'))
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -154,7 +154,7 @@ module Inferno
         assert !@procedure.nil?, 'Expected valid Procedure resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = resolve_element_from_path(@procedure, 'status')
+        status_val = get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'status'))
         search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

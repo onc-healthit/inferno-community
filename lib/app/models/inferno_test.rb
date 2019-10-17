@@ -3,14 +3,22 @@
 module Inferno
   module Sequence
     class InfernoTest
-      attr_reader :name, :index, :id_prefix, :test_block
+      attr_reader :key, :index, :id_prefix, :test_block
 
-      def initialize(name, index, id_prefix, &test_block)
-        @name = name
+      def initialize(key_or_name, index, id_prefix, &test_block)
+        if key_or_name.instance_of? Symbol
+          @key = key_or_name
+        else
+          @name = key_or_name
+        end
         @index = index
         @id_prefix = id_prefix
         @test_block = test_block
         load_metadata
+      end
+
+      def name(name = nil)
+        @name ||= name
       end
 
       def id(id = nil)
@@ -72,7 +80,13 @@ module Inferno
 
       def load_metadata
         instance_eval(&test_block)
-      rescue MetadataException # rubocop:disable Lint/HandleExceptions
+      rescue MetadataException
+        validate_metadata
+      end
+
+      def validate_metadata
+        raise InvalidMetadataException, 'Test id must be populated' if id.blank?
+        raise InvalidMetadataException, 'Test name must be populated' if name.blank?
       end
     end
   end

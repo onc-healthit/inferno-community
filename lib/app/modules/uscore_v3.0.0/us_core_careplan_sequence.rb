@@ -104,8 +104,8 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@careplan, 'category.coding.code')
-        status_val = resolve_element_from_path(@careplan, 'status')
+        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
+        status_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -128,9 +128,9 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@careplan, 'category.coding.code')
-        status_val = resolve_element_from_path(@careplan, 'status')
-        date_val = resolve_element_from_path(@careplan, 'period.start')
+        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
+        status_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -161,8 +161,8 @@ module Inferno
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@careplan, 'category.coding.code')
-        date_val = resolve_element_from_path(@careplan, 'period.start')
+        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

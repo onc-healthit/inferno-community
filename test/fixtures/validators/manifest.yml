@@ -1,0 +1,9 @@
+---
+- :url: http://hl7.org/fhir/us/core/ValueSet/us-core-narrative-status
+  :file: hl7_org_fhir_us_core_ValueSet_us-core-narrative-status.msgpack
+  :count: 2
+  :type: bloom
+- :url: http://hl7.org/fhir/us/core/ValueSet/birthsex
+  :file: hl7_org_fhir_us_core_ValueSet_birthsex.msgpack
+  :count: 3
+  :type: bloom

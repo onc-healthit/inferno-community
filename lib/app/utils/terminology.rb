@@ -20,6 +20,9 @@ module Inferno
 
     @known_valuesets = {}
 
+    @loaded_validators = {}
+    class << self; attr_reader :loaded_validators; end
+
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
       directory += '/**/' if include_subdirectories
       valueset_files = Dir["#{directory}/ValueSet*"]
@@ -127,6 +130,7 @@ module Inferno
         # Register the validators with FHIR Models for validation
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
         FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
+        @loaded_validators[validator[:url]] = validator[:count]
       end
     end
 

@@ -118,7 +118,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        id_val = resolve_element_from_path(@encounter, 'id')
+        id_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'id'))
         search_params = { '_id': id_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -139,7 +139,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        date_val = resolve_element_from_path(@encounter, 'period.start')
+        date_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'period'))
         patient_val = @instance.patient_id
         search_params = { 'date': date_val, 'patient': patient_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
@@ -170,7 +170,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        identifier_val = resolve_element_from_path(@encounter, 'identifier.value')
+        identifier_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier'))
         search_params = { 'identifier': identifier_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -193,7 +193,7 @@ module Inferno
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
         patient_val = @instance.patient_id
-        status_val = resolve_element_from_path(@encounter, 'status')
+        status_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'status'))
         search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -215,7 +215,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        class_val = resolve_element_from_path(@encounter, 'class.code')
+        class_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class'))
         patient_val = @instance.patient_id
         search_params = { 'class': class_val, 'patient': patient_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
@@ -239,7 +239,7 @@ module Inferno
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
         patient_val = @instance.patient_id
-        type_val = resolve_element_from_path(@encounter, 'type.coding.code')
+        type_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'))
         search_params = { 'patient': patient_val, 'type': type_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
