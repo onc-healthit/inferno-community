@@ -21,7 +21,7 @@ end
 if create_assertion_report?
   require_relative './support/sequence_coverage_reporting'
 
-  MiniTest.after_run { AssertionReporter.print }
+  MiniTest.after_run { AssertionReporter.report }
 end
 
 require_relative '../lib/app'

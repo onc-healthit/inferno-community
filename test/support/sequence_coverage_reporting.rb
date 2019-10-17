@@ -68,18 +68,19 @@ end
 
 class AssertionReporter
   class << self
-    def print
-      AssertionTracker.assertion_locations.sort.each do |location|
-        results = AssertionTracker.assertion_calls[location]
-        puts "#{location.ljust(location_width)}   Pass: #{pass_count(results).to_s.rjust(3)}  Fail: #{fail_count(results).to_s.rjust(3)}"
-      end
-
+    def report
+      create_csv
       print_unknown_call_sites
     end
 
-    def location_width
-      # add 4 to account for line numbers
-      @location_width ||= AssertionTracker.assertion_locations.max_by(&:length).length
+    def create_csv
+      CSV.open(File.join(__dir__, '..', '..', 'sequence_coverage.csv'), 'wb') do |csv|
+        csv << ['Assertion Location', 'Pass Count', 'Fail Count']
+        AssertionTracker.assertion_locations.sort.each do |location|
+          results = AssertionTracker.assertion_calls[location]
+          csv << [location, pass_count(results), fail_count(results)]
+        end
+      end
     end
 
     def pass_count(results)
