@@ -245,28 +245,17 @@ module Inferno
           id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
+            Servers SHALL support [Newline Delimited JSON](http://ndjson.org),
+            but MAY choose to support additional output formats.
           )
         end
 
         check_file_request
       end
 
-      test 'Server shall return "202 Accepted" for delete export request' do
-        metadata do
-          id '08'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
-          description %(
-
-          )
-          optional
-        end
-
-        check_delete_request
-      end
-
       test 'Server shall return "202 Accepted" for cancel export request' do
         metadata do
-          id '09'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           description %(
             Response - Success
@@ -280,7 +269,7 @@ module Inferno
 
       test 'Server shall return "202 Accepted" and "Content-location" for $export operation with _type parameter' do
         metadata do
-          id '10'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
             Server shall accept $export operation with _type parameter
@@ -293,7 +282,7 @@ module Inferno
 
       test 'Server shall return FHIR resources required by _type parameter' do
         metadata do
-          id '11'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
             Only resources of the specified resource types(s) SHALL be included in the response.
@@ -313,10 +302,10 @@ module Inferno
 
       test 'Server shall reject $export operation with invalid _type parameter' do
         metadata do
-          id '12'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
-            Server SHALL return HTTP Code 4xx for invalid _type parameters
+            Server SHALL return HTTP Code 400 for invalid _type parameters
           )
           optional
         end
