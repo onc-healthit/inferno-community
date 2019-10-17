@@ -9,7 +9,7 @@ module Inferno
 
       description 'Verify that system level export on the Bulk Data server follow the Bulk Data Access Implementation Guide'
 
-      test_id_prefix 'BulkData'
+      test_id_prefix 'BD'
 
       requires :token
 
@@ -93,7 +93,7 @@ module Inferno
 
       def assert_output_has_correct_type(output = @output,
                                          search_params = @search_params)
-        assert output.present?, 'Sever response did not have output data'
+        assert output.present?, 'Server response did not have output data'
 
         search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
 
@@ -109,7 +109,7 @@ module Inferno
       end
 
       def check_file_request(output = @output, index: 0)
-        skip 'Sever response did not have output data' unless output.present?
+        skip 'Server response did not have output data' unless output.present?
 
         file = output[index]
         type = file['type']
@@ -149,6 +149,7 @@ module Inferno
           id '01'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           description %(
+            The FHIR server SHALL limit the data returned to only those FHIR resources for which the client is authorized.
           )
         end
 
@@ -165,28 +166,35 @@ module Inferno
           id '02'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           description %(
+            Response - Success
+            * HTTP Status Code of 202 Accepted
+            * Content-Location header with the absolute URL of an endpoint for subsequent status requests (polling location)
           )
         end
 
         check_export_kick_off
       end
 
-      test 'Server shall reject for $export operation with invalid Accept header' do
+      test 'Server shall reject $export operation with invalid Accept header' do
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
+            Accept (string, required)
+            * Specifies the format of the optional OperationOutcome resource response to the kick-off request. Currently, only application/fhir+json is supported.
           )
         end
 
         check_export_kick_off_fail_invalid_accept
       end
 
-      test 'Server shall reject for $export operation with invalid Prefer header' do
+      test 'Server shall reject $export operation with invalid Prefer header' do
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
+            Prefer (string, required)
+            * Specifies whether the response is immediate or asynchronous. The header SHALL be set to respond-async https://tools.ietf.org/html/rfc7240.
           )
         end
 
@@ -198,6 +206,11 @@ module Inferno
           id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           description %(
+            Clients SHOULD follow an exponential backoff approach when polling for status. Servers SHOULD respond with
+            * In-Progress Status: HTTP Status Code of 202 Accepted
+            * Complete Status: HTTP status of 200 OK and Content-Type header of application/json
+            The JSON object of Complete Status SHALL contain these required field:
+            transactionTime, request, requiresAccessToken, output, and error
           )
         end
 
@@ -209,7 +222,13 @@ module Inferno
           id '06'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           description %(
-          )
+            The value of output field is an array of file items with one entry for each generated file.
+            If no resources are returned from the kick-off request, the server SHOULD return an empty array.
+            Each file item SHALL contain the following fields:
+            - type - the FHIR resource type that is contained in the file.
+            Each file SHALL contain resources of only one type, but a server MAY create more than one file for each resource type returned.
+            - url - the path to the file. The format of the file SHOULD reflect that requested in the _outputFormat parameter of the initial kick-off request.
+         )
         end
 
         assert_output_has_type_url
@@ -220,6 +239,8 @@ module Inferno
           id '07'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
+            Servers SHALL support [Newline Delimited JSON](http://ndjson.org),
+            but MAY choose to support additional output formats.
           )
         end
 
@@ -231,6 +252,8 @@ module Inferno
           id '08'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           description %(
+            Response - Success
+            * HTTP Status Code of 202 Accepted
           )
           optional
         end
@@ -243,6 +266,7 @@ module Inferno
           id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
+            Server should accept $export operation with _type parameter
           )
           optional
         end
@@ -255,6 +279,10 @@ module Inferno
           id '10'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
+            Only resources of the specified resource types(s) SHALL be included in the response.
+            If this parameter is omitted, the server SHALL return all supported resources within the scope of the client authorization.
+            For Patient- and Group-level requests, the Patient Compartment SHOULD be used as a point of reference for
+            recommended resources to be returned.
           )
           optional
         end
@@ -270,6 +298,7 @@ module Inferno
           id '11'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
+            Server SHALL return HTTP Code 400 for invalid _type parameters
           )
           optional
         end
@@ -282,6 +311,7 @@ module Inferno
           id '12'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
+            Server should accept $export operation with _since parameter
           )
           optional
         end
@@ -295,6 +325,7 @@ module Inferno
           id '13'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
+            Server SHALL return HTTP Code 400 for invalid _since parameters
           )
           optional
         end
@@ -307,6 +338,7 @@ module Inferno
           id '14'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
+            Server should accept $export operation with parameter _outputFormat=application/fhir+ndjson
           )
           optional
         end
@@ -320,6 +352,7 @@ module Inferno
           id '15'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
+            Server should accept $export operation with parameter _outputFormat=application/ndjson
           )
           optional
         end
@@ -333,6 +366,7 @@ module Inferno
           id '16'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
+            Server should accept $export operation with parameter _outputFormat=ndjson
           )
           optional
         end
