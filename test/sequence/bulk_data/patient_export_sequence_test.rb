@@ -117,6 +117,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_export_stub_invalid_parameter
+    stub_request(:get, 'http://www.example.com/Patient/$export?_type=UnknownResource')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: 400
+      )
+  end
+
   def include_status_check_stub(status_code: 200,
                                 response_headers: { content_type: 'application/json' },
                                 response_body: @complete_status)
@@ -154,6 +162,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
+    include_export_stub_invalid_parameter
     include_status_check_stub
     include_file_request_stub
     include_delete_request_stub
@@ -249,10 +258,10 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     end
   end
 
-  def test_output_file_skip_empty_output
+  def test_output_file_fail_empty_output
     output = []
 
-    assert_raises Inferno::SkipException do
+    assert_raises Inferno::AssertionException do
       @sequence.assert_output_has_type_url(output)
     end
   end
@@ -268,7 +277,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_output_file_fail_unmached_type
     search_params = { '_type' => 'Condition' }
     assert_raises Inferno::AssertionException do
-      @sequence.assert_output_has_type_url(@complete_status['output'], search_params)
+      @sequence.assert_output_has_correct_type(@complete_status['output'], search_params)
     end
   end
 
