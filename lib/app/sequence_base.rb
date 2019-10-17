@@ -732,6 +732,27 @@ module Inferno
         nil
       end
 
+      def get_value_for_search_param(element)
+        case element
+        when FHIR::Period
+          element.start || element.end
+        when FHIR::Reference
+          element.reference
+        when FHIR::CodeableConcept
+          resolve_element_from_path(element, 'coding.code')
+        when FHIR::Identifier
+          element.value
+        when FHIR::Coding
+          element.code
+        when FHIR::HumanName
+          element.family || element.given&.first || element.text
+        when FHIR::Address
+          element.text || element.city || element.state || element.postalCode || element.country
+        else
+          element
+        end
+      end
+
       def date_comparator_value(comparator, date)
         case comparator
         when 'lt', 'le'
