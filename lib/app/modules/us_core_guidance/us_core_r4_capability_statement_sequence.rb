@@ -88,9 +88,10 @@ module Inferno
         'Provenance' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance']
       }.freeze
 
-      test 'FHIR server capability states JSON support' do
+      test :json_support do
         metadata do
           id '04'
+          name 'FHIR server capability states JSON support'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -118,9 +119,10 @@ module Inferno
         assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
-      test 'Capability Statement lists support for required US Core Profiles' do
+      test :profile_support do
         metadata do
           id '05'
+          name 'Capability Statement lists support for required US Core Profiles'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
            The US Core Implementation Guide states:
@@ -146,10 +148,11 @@ module Inferno
 
         PROFILES.each do |resource, profiles|
           next unless supported_resources.include? resource
+
           profiles.each do |profile|
             warning do
               message = "CapabilityStatement does not claim support for US Core #{resource} profile: #{profile}"
-              assert supported_profiles.include? profile, message
+              assert supported_profiles&.include?(profile), message
             end
           end
         end
