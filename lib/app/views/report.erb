@@ -17,7 +17,7 @@
           <div class="metrics-value">
             <%=report_summary[:final_result].to_s.upcase%>
           </div>
-          <div class="text-muted">
+          <div>
             Final Result
           </div>
         </div>
@@ -27,7 +27,7 @@
               <div class="metrics-value-small">
                 <%=report_summary[:request_response] %>
               </div>
-              <div class="text-muted">
+              <div>
                 Requests
               </div>
             </div>
@@ -35,7 +35,7 @@
               <div class="metrics-value-small">
                 <%=report_summary[:resource_references]%>
               </div>
-              <div class="text-muted">
+              <div>
                 Resource References
               </div>
             </div>
@@ -43,7 +43,7 @@
               <div class="metrics-value-small">
                 <%=report_summary[:supported_resources]%> / <%=report_summary[:resources_tested]%>
               </div>
-              <div class="text-muted">
+              <div>
                 Supported Resources
               </div>
             </div>
@@ -53,7 +53,7 @@
               <div class="metrics-value-small">
                 <%=report_summary[:fhir_version].upcase%>
               </div>
-              <div class="text-muted">
+              <div>
                 FHIR Version
               </div>
             </div>
@@ -61,7 +61,7 @@
               <div class="metrics-value-small">
                 <%=report_summary[:app_version]%>
               </div>
-              <div class="text-muted">
+              <div>
                 Inferno Version
               </div>
             </div>
