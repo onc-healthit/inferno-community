@@ -261,7 +261,7 @@ module Inferno
         check_cancel_request
       end
 
-      test 'Server should accept $export operation with _type parameters' do
+      test 'Server should accept $export operation with _type parameter' do
         metadata do
           id '09'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
@@ -293,7 +293,7 @@ module Inferno
         assert_output_has_correct_type
       end
 
-      test 'Server shall reject $export operation with invalid _type parameters' do
+      test 'Server shall reject $export operation with invalid _type parameter' do
         metadata do
           id '11'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
@@ -306,7 +306,7 @@ module Inferno
         check_export_kick_off_fail_invalid_parameter('_type' => 'UnknownResource')
       end
 
-      test 'Server should accept $export operation with _since parameters' do
+      test 'Server should accept $export operation with _since parameter' do
         metadata do
           id '12'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
@@ -320,7 +320,7 @@ module Inferno
         delete_request(@content_location)
       end
 
-      test 'Server shall rejct $export operation with invalid _since parameters' do
+      test 'Server shall rejct $export operation with invalid _since parameter' do
         metadata do
           id '13'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
@@ -333,12 +333,12 @@ module Inferno
         check_export_kick_off_fail_invalid_parameter('_type' => type_parameter, '_since' => '2018-13-13')
       end
 
-      test 'Server should accept $export operation with _outputFormat=application/fhir+ndjson' do
+      test 'Server should accept $export operation with parameter _outputFormat=application/fhir+ndjson' do
         metadata do
           id '14'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
-            Server should accept $export operation with _outputFormat parameter with value application/fhir+ndjson
+            Server should accept $export operation with parameter _outputFormat=application/fhir+ndjson
           )
           optional
         end
@@ -347,12 +347,12 @@ module Inferno
         delete_request(@content_location)
       end
 
-      test 'Server should accept $export operation with _outputFormat=application/ndjson' do
+      test 'Server should accept $export operation with parameter _outputFormat=application/ndjson' do
         metadata do
           id '15'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
-            Server should accept $export operation with _outputFormat parameter with value application/ndjson
+            Server should accept $export operation with parameter _outputFormat=application/ndjson
           )
           optional
         end
@@ -361,13 +361,12 @@ module Inferno
         delete_request(@content_location)
       end
 
-      test 'Server should accept $export operation with _outputFormat=ndjson' do
+      test 'Server should accept $export operation with parameter _outputFormat=ndjson' do
         metadata do
           id '16'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
-            Server should accept $export operation with _outputFormat parameter with value ndjson
-
+            Server should accept $export operation with parameter _outputFormat=ndjson
           )
           optional
         end

@@ -60,7 +60,8 @@ module Inferno
       diagnostic_report_note: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note',
       lab_results: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
       pediatric_bmi_age: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
-      pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
+      pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
+      pulse_oximetry: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry'
     }.freeze
 
     def self.guess_profile(resource, version)
@@ -152,6 +153,8 @@ module Inferno
         return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if resource&.code&.coding&.any? { |coding| coding&.code == '59576-9' }
 
         return DEFINITIONS[US_CORE_R4_URIS[:pediatric_weight_height]] if resource&.code&.coding&.any? { |coding| coding&.code == '77606-2' }
+
+        return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if resource&.code&.coding&.any? { |coding| coding&.code == '59408-5' }
       elsif resource.resourceType == 'DiagnosticReport'
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 

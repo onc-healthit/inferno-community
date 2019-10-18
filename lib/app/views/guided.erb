@@ -13,7 +13,7 @@
       <div class="container row row-no-padding align-items-center">
 
         <div class="col-8">
-          <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo'></a>
+          <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo Small'></a>
           <span class="server-name">
             <%=instance.url%>
           </span>
@@ -114,8 +114,8 @@
               <div class='align-items-center'>
                 <div class='group-overview-box'>
                   <% if group.test_cases.length > 1 %>
-                    
-                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
+
+                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
 
                   <% end %>
                   <h1>
@@ -334,11 +334,11 @@
           >
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
-            <label class="form-check-label" for="confidential_client_off_active">Public Client</label>
+            <label class="form-check-label" for="confidential_client_off">Public Client</label>
           </div>
           <div class="form-check form-check-inline" data-requiredby>
             <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
-            <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
+            <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
           </div>
 
         </div>
@@ -506,15 +506,14 @@
   </div>
 </div>
 
-<div class="modal fade" id="testResultDetailsModal" tabindex="-1" role="dialog" aria-labelledby="testResultDetailsModalLabel" aria-hidden="true">
+<div class="modal fade" id="testResultDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
     </div>
-
   </div>
 </div>
 
-<div class="modal fade" id="testDetailsModal" tabindex="-1" role="dialog" aria-labelledby="testDetailsModalLabel" aria-hidden="true">
+<div class="modal fade" id="testDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
     </div>
@@ -531,11 +530,11 @@
         </button>
       </div>
       <div class="modal-body">
-        <p>
+        <label for="save_uri">
           The results recorded during this testing session can be accessed at the following URI.
           Please save this URI if you would like to revisit these results, as this secret URI will not be published.
-        </p>
-          <input type="text" class="form-control" value="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/" readonly="readonly">
+        </label>
+        <input id="save_uri" type="text" class="form-control" value="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/" readonly="readonly">
         <p class='alert alert-warning'>
           This URI is not guaranteed to be permanently accessible.  The team maintaining this instance of Inferno may choose to periodically clear the database.  To ensure that test results are saved indefinitely, it is recommended that users download, install, and use Inferno on their own hardware.
         </p>
