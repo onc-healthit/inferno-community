@@ -114,8 +114,8 @@
               <div class='align-items-center'>
                 <div class='group-overview-box'>
                   <% if group.test_cases.length > 1 %>
-                    
-                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
+
+                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
 
                   <% end %>
                   <h1>
