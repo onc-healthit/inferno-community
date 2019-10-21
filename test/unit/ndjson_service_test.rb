@@ -12,37 +12,34 @@ class NDJsonServiceTest < MiniTest::Test
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', base_url: 'http://localhost:4567', selected_module: 'quality_reporting')
     @ndjson_service = Inferno::NDJSONServiceFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
+    @ndjson_result = @ndjson_service.generate_url_and_params(BUNDLES.map { |p| File.expand_path p, __dir__ })
   end
 
-  def test_generate_ndjson
-    @ndjson_service.generate_ndjson(BUNDLES.map { |p| File.expand_path p, __dir__ })
-
+  def test_generated_ndjson
     # ndjson file should be created
-    assert File.file?(@ndjson_service.output_file_path)
+    assert File.file?(@ndjson_result.output_file_path)
 
     # Number of lines in the ndjson file should match the number of bundles we provide
-    file = File.open(@ndjson_service.output_file_path)
+    file = File.open(@ndjson_result.output_file_path)
     assert file.readlines.size == BUNDLES.length
+  end
+
+  def test_generated_url
+    # Service should generate a valid URI
+    # NOTE: this is the only asssertion that makes sense in an Inferno unit test context
+    # The server is responsible for actually GETting this url, and SHOULD tell the client if it gets a 404
+    assert valid_uri?(@ndjson_result.url)
   end
 
   def test_file_not_exists
     # Should throw an exception
-    @ndjson_service.generate_ndjson('./this/does/not/exist')
+    @ndjson_service.generate_url_and_params('./this/does/not/exist')
     assert false
   rescue StandardError
     assert true
   end
 
-  def test_generate_ndjson_url
-    url = @ndjson_service.generate_ndjson_url
-
-    # Service should generate a valid URI
-    # NOTE: this is the only asssertion that makes sense in an Inferno unit test context
-    # The server is responsible for actually GETting this url, and SHOULD tell the client if it gets a 404
-    assert valid_uri?(url)
-  end
-
-  def test_get_params
+  def test_generated_params
     expected_params = {
       'inputFormat': 'application/fhir+ndjson',
       'inputSource': 'http://www.example.com',
@@ -51,10 +48,10 @@ class NDJsonServiceTest < MiniTest::Test
       },
       'input': [{
         'type': 'Bundle',
-        'url': @ndjson_service.generate_ndjson_url
+        'url': @ndjson_result.url
       }]
     }
 
-    assert_equal(@ndjson_service.generate_bulk_data_params, expected_params)
+    assert_equal(@ndjson_result.params, expected_params)
   end
 end

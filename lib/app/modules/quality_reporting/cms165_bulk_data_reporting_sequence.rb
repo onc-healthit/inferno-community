@@ -37,11 +37,10 @@ module Inferno
 
         # Generate a URL for the ndjson to give to the server based on the service type in config.yml
         ndjson_service = NDJSONServiceFactory.create_service(Inferno::NDJSON_SERVICE_TYPE, @instance)
-        ndjson_service.generate_ndjson(BUNDLES.map { |p| File.expand_path p, __dir__ })
+        ndjson_results = ndjson_service.generate_url_and_params(BUNDLES.map { |p| File.expand_path p, __dir__ })
 
         # Initial async submit data call to kick off the job
-        submit_data_payload = ndjson_service.generate_bulk_data_params
-        async_submit_data_response = async_submit_data(submit_data_payload)
+        async_submit_data_response = async_submit_data(ndjson_results.params)
         assert_response_accepted(async_submit_data_response)
 
         # Use the content-location in the response to check the status of the import
