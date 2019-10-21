@@ -49,9 +49,10 @@ module Inferno
         options
       end
 
-      test 'Retrieve Configuration from well-known endpoint' do
+      test :read_well_known_endpoint do
         metadata do
           id '01'
+          name 'Retrieve Configuration from well-known endpoint'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
           description %(
             The authorization endpoints accepted by a FHIR resource server can
@@ -67,17 +68,15 @@ module Inferno
         assert_valid_json(well_known_configuration_response.body)
 
         @well_known_configuration = JSON.parse(well_known_configuration_response.body)
-        @well_known_authorize_url = @well_known_configuration['authorization_endpoint']
         @well_known_token_url = @well_known_configuration['token_endpoint']
         @well_known_register_url = @well_known_configuration['registration_endpoint']
-        @well_known_manage_url = @well_known_configuration['management_endpoint']
-        @well_known_introspect_url = @well_known_configuration['introspection_endpoint']
-        @well_known_revoke_url = @well_known_configuration['revocation_endpoint']
+        @well_known_token_auth_methods = @well_known_configuration['token_endpoint_auth_methods_supported']
+        @well_known_token_auth_signings = @well_known_configuration['token_endpoint_auth_signing_alg_values_supported']
+        @well_known_scopes = @well_known_configuration['scopes_supported']
 
         @instance.update(
-          oauth_authorize_endpoint: @well_known_authorize_url,
           oauth_token_endpoint: @well_known_token_url,
-          oauth_register_endpoint: @well_known_configuration['registration_endpoint']
+          oauth_register_endpoint: @well_known_register_url
         )
 
         assert @well_known_configuration.present?, 'No .well-known/smart-configuration body'
