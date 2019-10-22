@@ -134,7 +134,7 @@ module Inferno
 
       def create_revinclude_test(sequence)
         revinclude_test = {
-          tests_that: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(',')}",
+          tests_that: "Server returns the appropriate resources from the following _revincludes: #{sequence[:revincludes].join(',')}",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude'
         }
@@ -142,14 +142,15 @@ module Inferno
         search_params = first_search.nil? ? "\nsearch_params = {}" : get_search_params(first_search[:names], sequence)
         revinclude_test[:test_code] = search_params
         sequence[:revincludes].each do |revinclude|
-          resource_type = revinclude.split(':').first.downcase
+          resource_name = revinclude.split(':').first
+          resource_variable = "#{resource_name.downcase}_results"
           revinclude_test[:test_code] += %(
                 search_params['_revinclude'] = '#{revinclude}'
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
-                #{resource_type}_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_type.capitalize}' }
-                assert #{resource_type}_results, 'No #{resource_type} resources were returned from this search'
+                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
+                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
           )
         end
         sequence[:tests] << revinclude_test

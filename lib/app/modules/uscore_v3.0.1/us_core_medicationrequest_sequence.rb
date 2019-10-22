@@ -214,7 +214,7 @@ module Inferno
         validate_history_reply(@medicationrequest, versioned_resource_class('MedicationRequest'))
       end
 
-      test 'A Server SHALL be capable of supporting the following _revincludes: Provenance:target' do
+      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
         metadata do
           id '09'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -233,7 +233,7 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
         provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No provenance resources were returned from this search'
+        assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
       test 'MedicationRequest resources associated with Patient conform to US Core R4 profiles' do
