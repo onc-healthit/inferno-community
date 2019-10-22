@@ -58,7 +58,7 @@ module Inferno
         metadata do
           id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A Vital Signs search does not work without proper authorization.
           )
           versions :dstu2
@@ -76,7 +76,7 @@ module Inferno
         metadata do
           id '02'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's vital signs that it supports.
           )
           versions :dstu2
@@ -101,7 +101,7 @@ module Inferno
         metadata do
           id '03'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning all of a patient's vital signs queried by date range.
           )
           versions :dstu2
@@ -122,7 +122,7 @@ module Inferno
         metadata do
           id '04'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server is capable of returning any of a patient's vital signs queried by one or more of the specified codes.
           )
           versions :dstu2
@@ -143,7 +143,7 @@ module Inferno
         metadata do
           id '05'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             A server SHOULD be capable of returning any of a patient's vital signs queried by one or more of the codes listed below and date range.
           )
           versions :dstu2
@@ -166,7 +166,7 @@ module Inferno
         metadata do
           id '06'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
-          desc %(
+          description %(
             Vital Signs resources associated with Patient conform to Argonaut profiles.
           )
           versions :dstu2

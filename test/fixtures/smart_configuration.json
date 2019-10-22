@@ -1,0 +1,32 @@
+{
+  "authorization_endpoint": "https://www.example.com/authorize",
+  "token_endpoint": "https://www.example.com/token",
+  "token_endpoint_auth_methods_supported": ["client_secret_basic"],
+  "registration_endpoint": "https://www.example.com/register",
+  "scopes_supported": [
+    "openid",
+    "profile",
+    "launch",
+    "launch/patient",
+    "patient/*.*",
+    "user/*.*",
+    "offline_access"
+  ],
+  "response_types_supported": ["code", "code id_token", "id_token", "refresh_token"],
+  "management_endpoint": "https://www.example.com/manage",
+  "introspection_endpoint": "https://www.example.com/introspect",
+  "revocation_endpoint": "https://www.example.com/revoke",
+  "capabilities": [
+    "launch-ehr",
+    "launch-standalone",
+    "client-public",
+    "client-confidential-symmetric",
+    "sso-openid-connect",
+    "context-ehr-patient",
+    "context-standalone-patient",
+    "context-standalone-encounter",
+    "permission-offline",
+    "permission-patient",
+    "permission-user"
+  ]
+}

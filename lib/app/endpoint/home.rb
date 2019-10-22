@@ -79,8 +79,8 @@ module Inferno
             x.sequence_name == params[:sequence_name]
           end
           halt 404 unless sequence
-          @test_metadata = sequence.tests[params[:test_index].to_i]
-          halt 404 unless @test_metadata
+          @test = sequence.tests[params[:test_index].to_i]
+          halt 404 unless @test.present?
           erb :test_details, layout: false
         end
 

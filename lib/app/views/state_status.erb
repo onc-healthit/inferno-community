@@ -1,17 +1,17 @@
 <div class="client-state">
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">FHIR URI</label>
+      <label class="col-sm-2 col-form-label" for="state_fhir_uri">FHIR URI</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.url %>" disabled>
+        <input type="text" class="form-control" id="state_fhir_uri" value="<%=instance.url %>" disabled>
       </div>
     </div>
 
     <% unless instance.fhir_version.nil? %>
       <div class="form-group row">
-        <label class="col-sm-2 col-form-label">FHIR Version</label>
+        <label class="col-sm-2 col-form-label" for="state_fhir_version">FHIR Version</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" value="<%=instance.fhir_version.upcase %>" disabled>
+          <input type="text" class="form-control" id="state_fhir_version"value="<%=instance.fhir_version.upcase %>" disabled>
         </div>
       </div>
     <% end %>
@@ -33,39 +33,39 @@
     <h4>OAuth Server Endpoints</h4>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">OAuth Auth</label>
+      <label class="col-sm-2 col-form-label" for="state_oauth_auth">OAuth Auth</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.oauth_authorize_endpoint %>" disabled>
+        <input type="text" class="form-control" id="state_oauth_auth" value="<%=instance.oauth_authorize_endpoint %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">OAuth Token</label>
+      <label class="col-sm-2 col-form-label" for="state_oauth_token">OAuth Token</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.oauth_token_endpoint %>" disabled>
+        <input type="text" class="form-control" id="state_oauth_token" value="<%=instance.oauth_token_endpoint %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">OAuth Reg</label>
+      <label class="col-sm-2 col-form-label" for="state_oauth_reg">OAuth Reg</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.oauth_register_endpoint %>" disabled>
+        <input type="text" class="form-control" id="state_oauth_reg" value="<%=instance.oauth_register_endpoint %>" disabled>
       </div>
     </div>
 
     <h4>Client OAuth Endpoints</h4>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Launch URI</label>
+      <label class="col-sm-2 col-form-label" for="state_launch_uri">Launch URI</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.initiate_login_uri %>" disabled>
+        <input type="text" class="form-control" id="state_launch_uri" value="<%=instance.initiate_login_uri %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Redir URI</label>
+      <label class="col-sm-2 col-form-label" for="state_redir_uri">Redir URI</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.redirect_uris %>" disabled>
+        <input type="text" class="form-control" id="state_redir_uri" value="<%=instance.redirect_uris %>" disabled>
       </div>
     </div>
 
@@ -73,46 +73,46 @@
     <h4>OAuth Client Data</h4>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Scopes</label>
+      <label class="col-sm-2 col-form-label" for="state_scopes">Scopes</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.scopes %>" disabled>
+        <input type="text" class="form-control" id="state_scopes" value="<%=instance.scopes %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Client ID</label>
+      <label class="col-sm-2 col-form-label" for="state_client_id">Client ID</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.client_id %>" disabled>
+        <input type="text" class="form-control" id="state_client_id" value="<%=instance.client_id %>" disabled>
       </div>
     </div>
 
     <% if instance.confidential_client %>
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Client Secret</label>
+      <label class="col-sm-2 col-form-label" for="state_client_secret">Client Secret</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.client_secret %>" disabled>
+        <input type="text" class="form-control" id="state_client_secret" value="<%=instance.client_secret %>" disabled>
       </div>
     </div>
     <%end %>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Client State</label>
+      <label class="col-sm-2 col-form-label" for="state_client_state">Client State</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.state %>" disabled>
+        <input type="text" class="form-control" id="state_client_state" value="<%=instance.state %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Bearer Token</label>
+      <label class="col-sm-2 col-form-label" for="state_bearer_token">Bearer Token</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.token %>" disabled>
+        <input type="text" class="form-control" id="state_bearer_token" value="<%=instance.token %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Refresh Token</label>
+      <label class="col-sm-2 col-form-label" for="state_refresh_token">Refresh Token</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" value="<%=instance.refresh_token %>" disabled>
+        <input type="text" class="form-control" id="state_refresh_token" value="<%=instance.refresh_token %>" disabled>
       </div>
     </div>
 
@@ -120,9 +120,9 @@
       <h4>Authorized Resources</h4>
       <%instance.resource_references.map(&:resource_type).uniq.each do |resource_type| %>
         <div class="form-group row">
-          <label class="col-sm-2 col-form-label"><%=resource_type %></label>
+          <label class="col-sm-2 col-form-label" for="state_<%=resource_type.downcase%>%>"><%=resource_type %></label>
           <div class="col-sm-10">
-            <texatarea readonly class="form-control" rows=3><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
+            <texatarea readonly class="form-control" id="state_<%=resource_type.downcase%>%>" rows=3><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
           </div>
         </div>
       <% end %>

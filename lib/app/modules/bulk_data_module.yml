@@ -1,8 +1,8 @@
 name: bulk_data
 title: FHIR Bulk Data Access Implementation Guide STU1
 description: Bulk Data Access Testing
-fhir_version: stu3
 default_test_set: developer
+fhir_version: stu3
 test_sets:
   developer:
     view: default
@@ -10,7 +10,7 @@ test_sets:
       - name: Discovery
         sequences:
           - BulkDataCapabilityStatementSequence
-      - name: Patient export
+      - name: Group Export
         sequences:
-          - BulkDataPatientExportSequence
+          - BulkDataGroupExportSequence
 

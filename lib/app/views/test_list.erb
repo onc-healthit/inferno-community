@@ -77,9 +77,9 @@
   <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
   <% sequence_class.tests[start_at..-1].each_with_index do |test, index| %>
     <li>
-      <strong><%= test[:test_id] %></strong>:
-        <% unless test[:required] %> OPTIONAL |  <% end %>
-        <%= test[:name] %>
+      <strong><%= test.id %></strong>:
+        <% if test.optional? %> OPTIONAL |  <% end %>
+        <%= test.name %>
         <button class="test-list-more"
                 data-module="<%=instance.module.name%>"
                 data-sequence-name="<%=sequence_class.sequence_name%>"

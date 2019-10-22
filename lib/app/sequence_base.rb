@@ -12,6 +12,7 @@ require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
+require_relative 'models/inferno_test'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -38,7 +39,6 @@ module Inferno
       @@conformance_supports = {}
       @@defines = {}
       @@versions = {}
-      @@test_metadata = Hash.new { |hash, key| hash[key] = [] }
 
       @@optional = []
       @@show_uris = []
@@ -54,7 +54,7 @@ module Inferno
       delegate :versioned_conformance_class, to: :@instance
       delegate :save_resource_ids_in_bundle, to: :@instance
 
-      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil, metadata_only = false)
+      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
         @instance = instance
         @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
@@ -62,7 +62,6 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
-        @metadata_only = metadata_only
       end
 
       def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
@@ -115,9 +114,7 @@ module Inferno
 
         output_results = save_output(sequence_name)
 
-        methods = self.methods.grep(/_test$/).sort[start_at..-1]
-
-        run_tests(methods, &block)
+        run_tests(self.class.tests[start_at..-1], &block)
 
         update_output(sequence_name, output_results)
 
@@ -165,11 +162,11 @@ module Inferno
           end
       end
 
-      def run_tests(methods)
-        methods.each do |test_method|
+      def run_tests(inferno_tests)
+        inferno_tests.each do |inferno_test|
           @client.requests = [] unless @client.nil?
           LoggedRestClient.clear_log
-          result = method(test_method).call
+          result = instance_exec(&wrap_test(inferno_test))
 
           # Check to see if we are in headless mode and should redirect
 
@@ -212,11 +209,11 @@ module Inferno
       end
 
       def self.test_count
-        new(nil, nil).test_count
+        tests.length
       end
 
       def test_count
-        methods.grep(/_test$/).length
+        self.class.test_count
       end
 
       def sequence_name
@@ -311,7 +308,11 @@ module Inferno
       end
 
       def self.tests
-        @@test_metadata[sequence_name]
+        @tests ||= []
+      end
+
+      def self.[](key)
+        tests.find { |test| test.key == key }
       end
 
       def optional?
@@ -354,10 +355,7 @@ module Inferno
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
       def self.extends_sequence(klass)
-        @@test_metadata[klass.sequence_name].each do |metadata|
-          @@test_metadata[sequence_name] << metadata
-          define_method metadata[:method_name], metadata[:method]
-        end
+        tests.concat(klass.tests)
       end
 
       # Defines a new test.
@@ -367,119 +365,50 @@ module Inferno
       def self.test(name, &block)
         @@test_index += 1
 
-        test_index = @@test_index
+        tests << InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
+      end
 
-        test_method = "#{@@test_index.to_s.rjust(4, '0')} #{name} test".downcase.tr(' ', '_').to_sym
-        @@test_metadata[sequence_name] << { name: name,
-                                            test_index: test_index,
-                                            required: true,
-                                            versions: FHIR::VERSIONS }
-
-        current_test = @@test_metadata[sequence_name].last
-
-        wrapped = lambda do
-          instance_eval(&block) if @metadata_only # just run the test to hit the metadata block
-
+      def wrap_test(test)
+        lambda do
           @test_warnings = []
-          @links = []
-          @requires = []
-          @validates = []
-          test_id = current_test[:test_id]
-          versions = current_test[:versions]
-          result = Models::TestResult.new(
-            test_id: test_id,
-            name: name,
-            ref: current_test[:ref],
-            required: current_test[:required],
-            description: current_test[:description],
-            url: current_test[:url],
-            versions: versions.join(','),
+          Models::TestResult.new(
+            test_id: test.id,
+            name: test.name,
+            ref: test.ref,
+            required: !test.optional?,
+            description: test.description,
+            url: test.link,
+            versions: test.versions.join(','),
             result: ResultStatuses::PASS,
-            test_index: test_index
-          )
-          begin
-            fhir_version_included = @instance.fhir_version.present? && versions.include?(@instance.fhir_version&.to_sym)
-            skip_unless(fhir_version_included, 'This test does not run with this FHIR version')
-            Inferno.logger.info "Starting Test: #{test_id} [#{name}]"
-            instance_eval(&block)
-          rescue AssertionException, ClientException => e
-            result.fail!
-            result.message = e.message
-            result.details = e.details
-          rescue PassException => e
-            result.pass!
-            result.message = e.message
-          rescue TodoException => e
-            result.todo!
-            result.message = e.message
-          rescue WaitException => e
-            result.wait!
-            result.wait_at_endpoint = e.endpoint
-          rescue RedirectException => e
-            result.wait!
-            result.wait_at_endpoint = e.endpoint
-            result.redirect_to_url = e.url
-          rescue SkipException => e
-            result.skip!
-            result.message = e.message
-            result.details = e.details
-          rescue OmitException => e
-            result.omit!
-            result.message = e.message
-          rescue StandardError => e
-            Inferno.logger.error "Fatal Error: #{e.message}"
-            Inferno.logger.error e.backtrace
-            result.error!
-            result.message = "Fatal Error: #{e.message}"
+            test_index: test.index
+          ).tap do |result|
+            begin
+              skip_unless(@instance.fhir_version_match?(self.class.versions), 'This test does not run with this FHIR version')
+              Inferno.logger.info "Starting Test: #{test.id} [#{test.name}]"
+              run_test(test)
+            rescue StandardError => e
+              if e.respond_to? :update_result
+                e.update_result(result)
+              else
+                Inferno.logger.error "Fatal Error: #{e.message}"
+                Inferno.logger.error e.backtrace
+                result.error!
+                result.message = "Fatal Error: #{e.message}"
+              end
+            end
+
+            result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
+            Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
-          result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
-          Inferno.logger.info "Finished Test: #{test_id} [#{result.result}]"
-          result
-        end
-
-        define_method test_method, wrapped
-
-        current_test[:method] = wrapped
-        current_test[:method_name] = test_method
-
-        instance = new(nil, nil, nil, nil, true)
-        begin
-          instance.send(test_method)
-        rescue MetadataException
         end
       end
 
-      def metadata
-        return unless @metadata_only
-
-        yield
-        raise MetadataException
+      def run_test(test)
+        instance_eval(&test.test_block)
       end
 
-      def id(test_id)
-        complete_test_id = @@test_id_prefixes[sequence_name] + '-' + test_id
-        @@test_metadata[sequence_name].last[:test_id] = complete_test_id
-      end
-
-      def link(link)
-        @@test_metadata[sequence_name].last[:url] = link
-      end
-
-      def ref(_ref)
-        @@test_metadata[sequence_name].last[:ref] = requirement
-      end
-
-      def optional
-        @@test_metadata[sequence_name].last[:required] = false
-      end
-
-      def desc(description)
-        @@test_metadata[sequence_name].last[:description] = description
-      end
-
-      def versions(*versions)
-        @@test_metadata[sequence_name].last[:versions] = versions
-      end
+      # Metadata loading is handled by InfernoTest
+      def metadata; end
 
       def todo(message = '')
         raise TodoException, message
@@ -803,6 +732,27 @@ module Inferno
         nil
       end
 
+      def get_value_for_search_param(element)
+        case element
+        when FHIR::Period
+          element.start || element.end
+        when FHIR::Reference
+          element.reference
+        when FHIR::CodeableConcept
+          resolve_element_from_path(element, 'coding.code')
+        when FHIR::Identifier
+          element.value
+        when FHIR::Coding
+          element.code
+        when FHIR::HumanName
+          element.family || element.given&.first || element.text
+        when FHIR::Address
+          element.text || element.city || element.state || element.postalCode || element.country
+        else
+          element
+        end
+      end
+
       def date_comparator_value(comparator, date)
         case comparator
         when 'lt', 'le'
@@ -812,6 +762,19 @@ module Inferno
         else
           ''
         end
+      end
+
+      def fetch_all_bundled_resources(bundle)
+        page_count = 1
+        resources = []
+        until bundle.nil? || page_count == 20
+          resources += bundle&.entry&.map { |entry| entry&.resource }
+          next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
+          bundle = bundle.next_bundle
+          assert next_bundle_link.nil? || !bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
+          page_count += 1
+        end
+        resources
       end
     end
 

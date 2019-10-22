@@ -55,6 +55,8 @@ module Inferno
 
       property :must_support_confirmed, String, default: ''
 
+      property :group_id, String
+
       has n, :sequence_results
       has n, :resource_references
       has 1, :server_capabilities
@@ -131,6 +133,12 @@ module Inferno
 
       def fhir_version
         self.module.fhir_version
+      end
+
+      def fhir_version_match?(versions)
+        return true if fhir_version.blank?
+
+        versions.include? fhir_version.to_sym
       end
 
       def module

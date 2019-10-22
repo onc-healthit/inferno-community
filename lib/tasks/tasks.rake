@@ -7,6 +7,7 @@ require 'dm-core'
 require 'csv'
 require 'colorize'
 require 'optparse'
+require 'rubocop/rake_task'
 
 require_relative '../app'
 require_relative '../app/endpoint'
@@ -173,9 +174,10 @@ namespace :inferno do |_argv|
 
     flat_tests = sequences.map do |klass|
       klass.tests.map do |test|
-        test[:sequence] = klass.to_s
-        test[:sequence_required] = !klass.optional?
-        test
+        test.metadata_hash.merge(
+          sequence: klass.to_s,
+          sequence_required: !klass.optional?
+        )
       end
     end.flatten
 
@@ -184,7 +186,14 @@ namespace :inferno do |_argv|
       csv << ['', '', '', '', '']
       csv << ['Test ID', 'Reference', 'Sequence/Group', 'Test Name', 'Required?', 'Reference URI']
       flat_tests.each do |test|
-        csv << [test[:test_id], test[:ref], test[:sequence].split('::').last, test[:name], test[:sequence_required] && test[:required], test[:url]]
+        csv << [
+          test[:test_id],
+          test[:ref],
+          test[:sequence].split('::').last,
+          test[:name],
+          test[:sequence_required] && test[:required],
+          test[:url]
+        ]
       end
     end
 
@@ -369,110 +378,20 @@ namespace :inferno do |_argv|
 
     exit execute(instance, sequences)
   end
+
+  desc 'Generate Tests'
+  task :generate, [:generator, :path] do |_t, args|
+    require_relative("../../generator/#{args.generator}/#{args.generator}_generator")
+    generator_class = Inferno::Generator::Base.subclasses.first do |c|
+      c.name.demodulize.downcase.start_with?(args.generator)
+    end
+
+    generator = generator_class.new(args.path, args.extras)
+    generator.run
+  end
 end
 
 namespace :terminology do |_argv|
-  desc 'post-process LOINC Top 2000 common lab results CSV'
-  task :process_loinc, [] do |_t, _args|
-    require 'find'
-    require 'csv'
-    puts 'Looking for `./resources/terminology/Top2000*.csv`...'
-    loinc_file = Find.find('resources/terminology').find { |f| /Top2000.*\.csv$/ =~f }
-    if loinc_file
-      output_filename = 'resources/terminology/terminology_loinc_2000.txt'
-      puts "Writing to #{output_filename}..."
-      output = File.open(output_filename, 'w:UTF-8')
-      line = 0
-      begin
-        CSV.foreach(loinc_file, encoding: 'iso-8859-1:utf-8', headers: true) do |row|
-          line += 1
-          next if row.length <= 1 || row[1].nil? # skip the categories
-
-          #              CODE    | DESC
-          output.write("#{row[0]}|#{row[1]}\n")
-        end
-      rescue StandardError => e
-        puts "Error at line #{line}"
-        puts e.message
-      end
-      output.close
-      puts 'Done.'
-    else
-      puts 'LOINC file not found.'
-      puts 'Download the LOINC Top 2000 Common Lab Results file'
-      puts '  -> https://loinc.org/download/loinc-top-2000-lab-observations-us-csv/'
-      puts 'copy it into your `./resources/terminology` folder, and rerun this task.'
-    end
-  end
-
-  desc 'post-process SNOMED Core Subset file'
-  task :process_snomed, [] do |_t, _args|
-    require 'find'
-    puts 'Looking for `./resources/terminology/SNOMEDCT_CORE_SUBSET*.txt`...'
-    snomed_file = Find.find('resources/terminology').find { |f| /SNOMEDCT_CORE_SUBSET.*\.txt$/ =~f }
-    if snomed_file
-      output_filename = 'resources/terminology/terminology_snomed_core.txt'
-      output = File.open(output_filename, 'w:UTF-8')
-      line = 0
-      begin
-        entire_file = File.read(snomed_file)
-        puts "Writing to #{output_filename}..."
-        entire_file.split("\n").each do |l|
-          row = l.split('|')
-          line += 1
-          next if line == 1 # skip the headers
-
-          #              CODE    | DESC
-          output.write("#{row[0]}|#{row[1]}\n")
-        end
-      rescue StandardError => e
-        puts "Error at line #{line}"
-        puts e.message
-      end
-      output.close
-      puts 'Done.'
-    else
-      puts 'SNOMEDCT file not found.'
-      puts 'Download the SNOMEDCT Core Subset file'
-      puts '  -> https://www.nlm.nih.gov/research/umls/Snomed/core_subset.html'
-      puts 'copy it into your `./resources/terminology` folder, and rerun this task.'
-    end
-  end
-
-  desc 'post-process common UCUM codes'
-  task :process_ucum, [] do |_t, _args|
-    require 'find'
-    puts 'Looking for `./resources/terminology/concepts.tsv`...'
-    ucum_file = Find.find('resources/terminology').find { |f| /concepts.tsv$/ =~f }
-    if ucum_file
-      output_filename = 'resources/terminology/terminology_ucum.txt'
-      output = File.open(output_filename, 'w:UTF-8')
-      line = 0
-      begin
-        entire_file = File.read(ucum_file)
-        puts "Writing to #{output_filename}..."
-        entire_file.split("\n").each do |l|
-          row = l.split("\t")
-          line += 1
-          next if line == 1 # skip the headers
-
-          output.write("#{row[0]}\n") # code
-          output.write("#{row[5]}\n") if row[0] != row[5] # synonym
-        end
-      rescue StandardError => e
-        puts "Error at line #{line}"
-        puts e.message
-      end
-      output.close
-      puts 'Done.'
-    else
-      puts 'UCUM concepts file not found.'
-      puts 'Download the UCUM concepts file'
-      puts '  -> http://download.hl7.de/documents/ucum/concepts.tsv'
-      puts 'copy it into your `./resources/terminology` folder, and rerun this task.'
-    end
-  end
-
   desc 'download and execute UMLS terminology data'
   task :download_umls, [:username, :password] do |_t, args|
     # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
@@ -789,10 +708,6 @@ namespace :terminology do |_argv|
   end
 end
 
-namespace :generator do |_argv|
-  desc 'Generate US Core R4 Tests'
-  task :us_core_r4 do
-    path = File.expand_path('../../generators/uscore-r4/generator.rb', __dir__)
-    system('ruby', path)
-  end
+RuboCop::RakeTask.new(:rubocop) do |t|
+  t.options = ['--display-cop-names']
 end
