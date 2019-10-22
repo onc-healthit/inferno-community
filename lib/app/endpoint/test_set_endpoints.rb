@@ -134,6 +134,7 @@ module Inferno
               sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
               total + sequence_test_count
             end
+            total_test_sequences = submitted_test_cases.count
 
             test_group = nil
             test_group = test_set.test_case_by_id(submitted_test_cases.first).test_group
@@ -185,6 +186,7 @@ module Inferno
                 end
 
                 sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
+                sequence_result.group_run = total_test_sequences > 1
 
                 all_test_cases << test_case.id
                 failed_test_cases << test_case.id if sequence_result.fail?

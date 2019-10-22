@@ -60,12 +60,13 @@ module Inferno
 
               client = FHIR::Client.for_testing_instance(@instance)
               sequence = test_case.sequence.new(@instance, client, settings.disable_tls_tests, sequence_result)
-              first_test_count = sequence.test_count
 
               timer_count = 0
               stayalive_timer_seconds = 20
 
               finished = false
+
+              total_tests = sequence_result.group_run ? test_group.test_cases.map { |test| test.sequence.test_count }.reduce(:+) : sequence.test_count
 
               stream :keep_open do |out|
                 EventMachine::PeriodicTimer.new(stayalive_timer_seconds) do
@@ -85,19 +86,25 @@ module Inferno
 
                 out << js_hide_wait_modal
                 out << js_show_test_modal
-                count = sequence_result.result_count
 
-                submitted_test_cases_count = sequence_result.next_test_cases.split(',')
-                total_tests = submitted_test_cases_count.reduce(first_test_count) do |total, set|
-                  sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
-                  total + sequence_test_count
-                end
+                previous_test_sequence_ids = sequence_result.group_run ? test_group.test_cases.map(&:id)&.split(sequence_result.test_case_id)&.first : []
+                previous_test_sequence_ids << sequence_result.test_case_id
+                previous_test_results = @instance.previous_test_results(previous_test_sequence_ids)
 
+                prev_count = previous_test_results.length
+                count = prev_count
                 sequence_result = sequence.resume(request, headers, request.params, @error_message) do |result|
+                  if count > prev_count
+                    rerun = nil
+                  else
+                    previous_test_results[-1] = result.result
+                    rerun = previous_test_results
+                  end
                   count += 1
-                  out << js_update_result(sequence, test_set, result, count, sequence.test_count, count, total_tests)
+                  out << js_update_result(sequence, test_set, result, count, sequence.test_count, count, total_tests, rerun)
                   @instance.save!
                 end
+
                 all_test_cases << test_case.id
                 failed_test_cases << test_case.id if sequence_result.fail?
                 @instance.sequence_results.push(sequence_result)
@@ -119,7 +126,7 @@ module Inferno
 
                 # continue processesing any afterwards
 
-                test_count = first_test_count
+                test_count = count
                 until next_test_case.nil?
                   test_case = test_set.test_case_by_id(next_test_case)
 

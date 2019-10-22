@@ -61,6 +61,12 @@ module Inferno
       has n, :resource_references
       has 1, :server_capabilities
 
+      def previous_test_results(previous_sequence_ids)
+        previous_test_cases = previous_sequence_ids.map { |sequence_id| latest_results_by_case[sequence_id.to_s] }
+        previous_test_results = previous_test_cases.map { |test_case| test_case&.test_results&.map(&:result) }
+        previous_test_results.flatten
+      end
+
       def latest_results
         sequence_results.each_with_object({}) do |result, hash|
           hash[result.name] = result if hash[result.name].nil? || hash[result.name].created_at < result.created_at
