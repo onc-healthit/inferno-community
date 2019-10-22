@@ -33,6 +33,8 @@ module Inferno
         { url: 'token', description: 'token' }
       ].freeze
 
+      attr_accessor :well_known_configuration, :conformance
+
       def oauth2_metadata_from_conformance
         options = {
           token_url: nil
@@ -65,9 +67,9 @@ module Inferno
         well_known_configuration_response = LoggedRestClient.get(well_known_configuration_url)
         assert_response_ok(well_known_configuration_response)
         assert_response_content_type(well_known_configuration_response, 'application/json')
-        assert_valid_json(well_known_configuration_response.body)
 
-        @well_known_configuration = JSON.parse(well_known_configuration_response.body)
+        @well_known_configuration = assert_valid_json(well_known_configuration_response.body)
+
         @well_known_token_url = @well_known_configuration['token_endpoint']
         @well_known_register_url = @well_known_configuration['registration_endpoint']
         @well_known_token_auth_methods = @well_known_configuration['token_endpoint_auth_methods_supported']
@@ -78,13 +80,12 @@ module Inferno
           oauth_token_endpoint: @well_known_token_url,
           oauth_register_endpoint: @well_known_register_url
         )
-
-        assert @well_known_configuration.present?, 'No .well-known/smart-configuration body'
       end
 
-      test 'Configuration from well-known endpoint contains required fields' do
+      test :validate_well_known_configuration do
         metadata do
           id '02'
+          name 'Well-Known Configuration contains required fields'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#advertising-server-conformance-with-smart-backend-services'
           description %(
             The JSON from .well-known/smart-configuration contains the following
@@ -99,9 +100,10 @@ module Inferno
         assert missing_fields.empty?, "The following required fields are missing: #{missing_fields.join(', ')}"
       end
 
-      test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
+      test :read_conformance_oauth_endpoins do
         metadata do
           id '03'
+          name 'Conformance/Capability Statement provides OAuth 2.0 endpoints'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
           description %(
             If a server requires SMART on FHIR authorization for access, its
