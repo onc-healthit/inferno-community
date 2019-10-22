@@ -148,8 +148,8 @@ module Inferno
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
-                #{resource_type}_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == '#{revinclude.split(':').first}' }
-                assert #{resource_type}_results.any?, 'No #{resource_type} resources were returned from this search'
+                #{resource_type}_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_type.capitalize}' }
+                assert #{resource_type}_results, 'No #{resource_type} resources were returned from this search'
           )
         end
         sequence[:tests] << revinclude_test
