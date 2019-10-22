@@ -30,6 +30,12 @@ module Inferno
         end
       end
 
+      def supported_profiles
+        statement.rest.flat_map(&:resource)
+          &.flat_map { |resource| resource.supportedProfile + [resource.profile] }
+          &.compact || []
+      end
+
       def operation_supported?(operation_name)
         statement.rest.any? { |rest| rest.operation.any? { |operation| operation.name == operation_name } }
       end
