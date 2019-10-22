@@ -49,6 +49,34 @@ class SequenceBaseTest < MiniTest::Test
     resource.recorder = new_reference
   end
 
+  describe '#get_value_for_search_param' do
+    before do
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
+    end
+
+    it 'returns value from period' do
+      { start: 'now', end: 'later' }.each do |key, value|
+        element = FHIR::Period.new(key => value)
+        assert @sequence.get_value_for_search_param(element) == value
+      end
+    end
+
+    it 'returns value from address' do
+      {
+        state: 'mass',
+        text: 'mitre',
+        postalCode: '12345',
+        city: 'boston',
+        country: 'usa'
+      }.each do |key, value|
+        element = FHIR::Address.new(key => value)
+        assert @sequence.get_value_for_search_param(element) == value
+      end
+    end
+  end
+
   describe '#fetch_all_bundled_resources' do
     before do
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))

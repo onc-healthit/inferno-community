@@ -55,9 +55,43 @@ module Inferno
         * [DSTU2 Conformance Statement](https://www.hl7.org/fhir/DSTU2/conformance.html)
       )
 
-      test 'FHIR server capability states JSON support' do
+      PROFILES = {
+        'AllergyIntolerance' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'],
+        'CarePlan' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'],
+        'CareTeam' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'],
+        'Condition' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'],
+        'Device' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'],
+        'DiagnosticReport' => [
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note'
+        ],
+        'DocumentReference' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'],
+        'Encounter' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'],
+        'Goal' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'],
+        'Immunization' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'],
+        'Location' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'],
+        'Medication' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'],
+        'MedicationRequest' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'],
+        'Observation' => [
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
+          'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+          'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus',
+          'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+        ],
+        'Organization' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'],
+        'Patient' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'],
+        'Practitioner' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'],
+        'PractitionerRole' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'],
+        'Procedure' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'],
+        'Provenance' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance']
+      }.freeze
+
+      test :json_support do
         metadata do
           id '04'
+          name 'FHIR server capability states JSON support'
           link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -85,26 +119,43 @@ module Inferno
         assert json_formats.any? { |format| @conformance.format.include? format }, 'Conformance does not state support for json.'
       end
 
-      test 'Capability Statement lists supported US Core profiles, operations and search parameters' do
+      test :profile_support do
         metadata do
           id '05'
-          link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
-          desc %(
+          name 'Capability Statement lists support for required US Core Profiles'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
+          description %(
            The US Core Implementation Guide states:
 
            ```
            The US Core Server SHALL:
-
-               1. Support the US Core Patient resource profile.
-               2. Support at least one additional resource profile from the list of US Core Profiles.
+           1. Support the US Core Patient resource profile.
+           2. Support at least one additional resource profile from the list of
+              US Core Profiles.
            ```
-
           )
         end
 
         assert_valid_conformance
+        supported_resources = @server_capabilities.supported_resources
+        supported_profiles = @server_capabilities.supported_profiles
 
-        assert @instance.conformance_supported?(:Patient, [:read]), 'Patient resource with read interaction is not listed in capability statement.'
+        assert supported_resources.include?('Patient'), 'US Core Patient profile not supported'
+
+        other_resources = PROFILES.keys.reject { |resource_type| resource_type == 'Patient' }
+        other_resources_supported = other_resources.any? { |resource| supported_resources.include? resource }
+        assert other_resources_supported, 'No US Core resources other than Patient are supported'
+
+        PROFILES.each do |resource, profiles|
+          next unless supported_resources.include? resource
+
+          profiles.each do |profile|
+            warning do
+              message = "CapabilityStatement does not claim support for US Core #{resource} profile: #{profile}"
+              assert supported_profiles&.include?(profile), message
+            end
+          end
+        end
       end
     end
   end

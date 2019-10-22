@@ -3,8 +3,6 @@
 require_relative '../../test_helper'
 
 describe Inferno::Sequence::TokenRefreshSequence do
-  SEQUENCE = Inferno::Sequence::TokenRefreshSequence
-
   let(:full_body) do
     {
       'access_token' => 'abc',
@@ -15,6 +13,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
   end
 
   before do
+    @sequence_class = Inferno::Sequence::TokenRefreshSequence
     @token_endpoint = 'http://www.example.com/token'
     @client = FHIR::Client.new('http://www.example.com/fhir')
     @instance = Inferno::Models::TestingInstance.new(oauth_token_endpoint: @token_endpoint, scopes: 'jkl')
@@ -22,13 +21,13 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
   describe 'invalid refresh token test' do
     before do
-      @test = SEQUENCE[:invalid_refresh_token]
-      @sequence = SEQUENCE.new(@instance, @client)
+      @test = @sequence_class[:invalid_refresh_token]
+      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'fails when the token refresh response has a success status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(refresh_token: SEQUENCE::INVALID_REFRESH_TOKEN))
+        .with(body: hash_including(refresh_token: @sequence_class::INVALID_REFRESH_TOKEN))
         .to_return(status: 200)
 
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -36,7 +35,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
     it 'succeeds when the token refresh response has an error status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(refresh_token: SEQUENCE::INVALID_REFRESH_TOKEN))
+        .with(body: hash_including(refresh_token: @sequence_class::INVALID_REFRESH_TOKEN))
         .to_return(status: 400)
 
       @sequence.run_test(@test)
@@ -45,13 +44,13 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
   describe 'invalid client id test' do
     before do
-      @test = SEQUENCE[:invalid_client_id]
-      @sequence = SEQUENCE.new(@instance, @client)
+      @test = @sequence_class[:invalid_client_id]
+      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'fails when the token refresh response has a success status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: SEQUENCE::INVALID_CLIENT_ID))
+        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
         .to_return(status: 200)
 
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -59,7 +58,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
     it 'succeeds when the token refresh has an error status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: SEQUENCE::INVALID_CLIENT_ID))
+        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
         .to_return(status: 400)
 
       @sequence.run_test(@test)
@@ -68,8 +67,8 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
   describe 'refresh with scope parameter test' do
     before do
-      @test = SEQUENCE[:refresh_with_scope]
-      @sequence = SEQUENCE.new(@instance, @client)
+      @test = @sequence_class[:refresh_with_scope]
+      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'succeeds when the token refresh succeeds' do
@@ -91,8 +90,8 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
   describe 'refresh without scope parameter test' do
     before do
-      @test = SEQUENCE[:refresh_without_scope]
-      @sequence = SEQUENCE.new(@instance, @client)
+      @test = @sequence_class[:refresh_without_scope]
+      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'succeeds when the token refresh succeeds' do
@@ -122,7 +121,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     before do
-      @sequence = SEQUENCE.new(@instance, @client)
+      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'fails when the token response has an error status' do

@@ -98,7 +98,7 @@ module Inferno
         assert !@allergyintolerance.nil?, 'Expected valid AllergyIntolerance resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = resolve_element_from_path(@allergyintolerance, 'clinicalStatus.coding.code')
+        clinical_status_val = get_value_for_search_param(resolve_element_from_path(@allergyintolerance_ary, 'clinicalStatus'))
         search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

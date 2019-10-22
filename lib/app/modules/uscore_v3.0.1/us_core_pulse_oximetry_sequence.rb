@@ -60,10 +60,7 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
-        search_params = { 'patient': patient_val, 'code': code_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = { patient: @instance.patient_id, code: '59408-5' }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -79,10 +76,7 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
-        search_params = { 'patient': patient_val, 'code': code_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = { patient: @instance.patient_id, code: '59408-5' }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
@@ -95,7 +89,7 @@ module Inferno
 
         @observation = reply&.resource&.entry&.first&.resource
         @observation_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
         save_delayed_sequence_references(@observation_ary)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
@@ -113,8 +107,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@observation, 'category.coding.code')
-        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
+        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
         search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -136,7 +130,7 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@observation, 'category.coding.code')
+        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
         search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -159,8 +153,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = resolve_element_from_path(@observation, 'category.coding.code')
-        status_val = resolve_element_from_path(@observation, 'status')
+        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
+        status_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
         search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -183,8 +177,8 @@ module Inferno
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
-        date_val = resolve_element_from_path(@observation, 'effectiveDateTime')
+        code_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
         search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -248,7 +242,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Observation')
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
       end
 
       test 'At least one of every must support element is provided in any Observation for this patient.' do

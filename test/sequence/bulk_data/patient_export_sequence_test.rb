@@ -84,6 +84,46 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_export_stub_type_patient_since_2019(status_code: 202,
+                                                  response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_since=2019-01-01&_type=Patient')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_outputformat_application_fhir_ndjson(status_code: 202,
+                                                               response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_outputFormat=application/fhir%2Bndjson')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_outputformat_application_ndjson(status_code: 202,
+                                                          response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_outputFormat=application/ndjson')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
+  def include_export_stub_outputformat_ndjson(status_code: 202,
+                                              response_headers: { content_location: @content_location })
+    stub_request(:get, 'http://www.example.com/Patient/$export?_outputFormat=ndjson')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: status_code,
+        headers: response_headers
+      )
+  end
+
   def include_export_stub_type_patient_not_supports(status_code: 400,
                                                     response_headers: { content_location: @content_location })
 
@@ -112,6 +152,22 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     stub_request(:get, 'http://www.example.com/Patient/$export')
       .with(headers: headers)
+      .to_return(
+        status: 400
+      )
+  end
+
+  def include_export_stub_invalid_type
+    stub_request(:get, 'http://www.example.com/Patient/$export?_type=UnknownResource')
+      .with(headers: @export_request_headers)
+      .to_return(
+        status: 400
+      )
+  end
+
+  def include_export_stub_invalid_since
+    stub_request(:get, 'http://www.example.com/Patient/$export?_since=2018-13-13&_type=Patient')
+      .with(headers: @export_request_headers)
       .to_return(
         status: 400
       )
@@ -150,10 +206,16 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     WebMock.reset!
 
     include_export_stub_no_token
-    include_export_stub_type_patient
     include_export_stub
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
+    include_export_stub_type_patient
+    include_export_stub_invalid_type
+    include_export_stub_type_patient_since_2019
+    include_export_stub_invalid_since
+    include_export_stub_outputformat_application_fhir_ndjson
+    include_export_stub_outputformat_application_ndjson
+    include_export_stub_outputformat_ndjson
     include_status_check_stub
     include_file_request_stub
     include_delete_request_stub
@@ -249,10 +311,10 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     end
   end
 
-  def test_output_file_skip_empty_output
+  def test_output_file_fail_empty_output
     output = []
 
-    assert_raises Inferno::SkipException do
+    assert_raises Inferno::AssertionException do
       @sequence.assert_output_has_type_url(output)
     end
   end
@@ -268,7 +330,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_output_file_fail_unmached_type
     search_params = { '_type' => 'Condition' }
     assert_raises Inferno::AssertionException do
-      @sequence.assert_output_has_type_url(@complete_status['output'], search_params)
+      @sequence.assert_output_has_correct_type(@complete_status['output'], search_params)
     end
   end
 
