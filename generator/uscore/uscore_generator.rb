@@ -142,14 +142,15 @@ module Inferno
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
         include_test[:test_code] = search_params
         sequence[:include_params].each do |include|
-          included_resource = include.split(':').last.capitalize # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
+          resource_name = include.split(':').last.capitalize
+          resource_variable = "#{resource_name.downcase}_results" # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
           include_test[:test_code] += %(
                 search_params['_include'] = '#{include}'
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
-                #{included_resource.downcase}_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == '#{included_resource}' }
-                assert #{included_resource.downcase}_results.any?, 'No #{included_resource.downcase} resources were returned from this search'
+                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
+                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
           )
         end
         sequence[:tests] << include_test

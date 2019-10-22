@@ -232,8 +232,8 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        medication_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Medication' }
-        assert medication_results.any?, 'No medication resources were returned from this search'
+        medication_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Medication' }
+        assert medication_results, 'No Medication resources were returned from this search'
       end
 
       test 'MedicationRequest resources associated with Patient conform to US Core R4 profiles' do

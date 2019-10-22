@@ -168,15 +168,15 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        endpoint_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Endpoint' }
-        assert endpoint_results.any?, 'No endpoint resources were returned from this search'
+        endpoint_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Endpoint' }
+        assert endpoint_results, 'No Endpoint resources were returned from this search'
 
         search_params['_include'] = 'PractitionerRole:practitioner'
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        practitioner_results = reply&.resource&.entry&.map(&:resource)&.select { |resource| resource.resourceType == 'Practitioner' }
-        assert practitioner_results.any?, 'No practitioner resources were returned from this search'
+        practitioner_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Practitioner' }
+        assert practitioner_results, 'No Practitioner resources were returned from this search'
       end
 
       test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
