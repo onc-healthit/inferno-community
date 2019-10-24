@@ -5,6 +5,11 @@ require 'parser/current'
 require 'pry'
 require_relative '../../lib/app/utils/assertions'
 
+# To generate a sequence coverage report, run the unit tests with the
+# ASSERTION_REPORT environment variable set to true:
+#
+# ASSERTION_REPORT=true bundle exec rake
+
 # AST processor which finds the location of each assertion in a sequence
 class SequenceProcessor
   include AST::Processor::Mixin
@@ -38,7 +43,6 @@ end
 # assertion is called
 class AssertionTracker
   class << self
-
     def assertion_method_names
       @assertion_method_names ||= Set.new(Inferno::Assertions.instance_methods)
     end
@@ -72,15 +76,16 @@ class AssertionTracker
 end
 
 class AssertionCallLocationFormatter
-  SEQUENCE_LINE_REGEX = %r{inferno/lib/app/(modules/\w+/\w+\.rb:\d+)}
-  LINE_REGEX = %r{inferno/lib/app/((?:\w+/?)+\.rb:\d+)}
-  ASSERTION_CALL_REGEX = %r{inferno/lib/app/utils/assertions.rb:\d+}
+  SEQUENCE_LINE_REGEX = %r{inferno/lib/app/(modules/\w+/\w+\.rb:\d+)}.freeze
+  LINE_REGEX = %r{inferno/lib/app/((?:\w+/?)+\.rb:\d+)}.freeze
+  ASSERTION_CALL_REGEX = %r{inferno/lib/app/utils/assertions.rb:\d+}.freeze
+  CALL_SEPARATOR = ' => '
 
   attr_accessor :sequence_call_index, :assertion_call_index
 
   def initialize
-    generate_sequence_call_index
     generate_assertion_call_index
+    generate_sequence_call_index
   end
 
   def backtrace
@@ -108,21 +113,40 @@ class AssertionCallLocationFormatter
     return if sequence_call_index.blank? || assertion_call_index.blank?
 
     (assertion_call_index...sequence_call_index).to_a.reverse.each do |index|
-      if backtrace[index].to_s.match?(/block .*in #{method_name}/)
-        self.sequence_call_index = index
-      end
+      self.sequence_call_index = index if backtrace[index].to_s.match?(/block .*in #{method_name}/)
     end
   end
 
   def location
     return unless sequence_call_index.present? && assertion_call_index.present?
+
     [backtrace[sequence_call_index], backtrace[assertion_call_index + 1]]
       .uniq
       .map { |location| location&.to_s&.match(LINE_REGEX)&.[](1) }
-      .join(' -> ')
+      .join(CALL_SEPARATOR)
   end
 end
 
+# This class generates a csv file with information on how many times each
+# assertion passed or failed in unit tests. The output differentiates direct and
+# indirect assertion calls. Direct assertion calls are assertions that are
+# called directly in a test or method being tested. Indirect assertion calls are
+# assertions that are called within a method that is called by the test being
+# tested.
+#
+# test '1' do
+#   assert true # direct assertion call
+# end
+#
+# test '2' do
+#   validate
+# end
+#
+# def validate
+#   assert true # Direct assertion call if we are unit testing the validate
+#               # method.
+#               # Indirect assertion call if we are unit testing test '2'.
+# end
 class AssertionReporter
   class << self
     def report
@@ -131,22 +155,50 @@ class AssertionReporter
 
     def create_csv
       CSV.open(File.join(__dir__, '..', '..', 'sequence_coverage.csv'), 'wb') do |csv|
-        csv << ['Assertion Location', 'Pass Count', 'Fail Count']
+        csv << [
+          'Assertion Location',
+          'Direct Pass Count',
+          'Direct Fail Count',
+          'Indirect Pass Count',
+          'Indirect Fail Count'
+        ]
         AssertionTracker.assertion_locations.sort.each do |location|
-          csv << [location, pass_count(location), fail_count(location)]
+          csv << [
+            location,
+            direct_pass_count(location),
+            direct_fail_count(location),
+            indirect_pass_count(location),
+            indirect_fail_count(location)
+          ]
         end
       end
     end
 
-    def pass_count(location)
+    def direct_call?(location)
+      location.include? AssertionCallLocationFormatter::CALL_SEPARATOR
+    end
+
+    def direct_pass_count(location)
+      AssertionTracker.assertion_calls[location].count { |result| result }
+    end
+
+    def direct_fail_count(location)
+      AssertionTracker.assertion_calls[location].count(&:!)
+    end
+
+    def indirect_pass_count(location)
+      return if direct_call? location
+
       AssertionTracker.assertion_calls.reduce(0) do |count, (key, results)|
-        key.end_with?(location) ? count + results.count { |result| result } : count
+        key.end_with?(location) && key != location ? count + results.count { |result| result } : count
       end
     end
 
-    def fail_count(location)
+    def indirect_fail_count(location)
+      return if direct_call? location
+
       AssertionTracker.assertion_calls.reduce(0) do |count, (key, results)|
-        key.end_with?(location) ? count + results.count(&:!) : count
+        key.end_with?(location) && key != location ? count + results.count(&:!) : count
       end
     end
   end
