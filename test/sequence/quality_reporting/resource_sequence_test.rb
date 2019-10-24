@@ -22,7 +22,6 @@ class ResourceSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
-    empty_bundle = FHIR::Bundle.new total: 0
     observation = FHIR::Observation.new id: 'abc'
     entry = FHIR::Bundle::Entry.new
     entry.resource = observation
@@ -32,19 +31,12 @@ class ResourceSequenceTest < MiniTest::Test
     # Mock three requests for GET Observation
     stub_request(:get, /Observation/)
       .with(headers: REQUEST_HEADERS)
-      .to_return({ status: 200, body: empty_bundle.to_json, headers: {} },
-                 { status: 200, body: bundle_with_one_resource.to_json, headers: {} },
-                 { status: 200, body: empty_bundle.to_json, headers: {} })
+      .to_return(status: 200, body: bundle_with_one_resource.to_json, headers: {})
 
     # Mock a request for POST Observation
     stub_request(:post, /Observation/)
       .with(headers: REQUEST_HEADERS)
       .to_return(status: 201, body: '', headers: {})
-
-    # Mock a request for DELETE Observation
-    stub_request(:delete, /Observation/)
-      .with(headers: REQUEST_HEADERS)
-      .to_return(status: 200, body: '', headers: {})
 
     sequence_result = @sequence.start
     assert sequence_result.pass?, 'The sequence should be marked as pass.'

@@ -9,7 +9,6 @@ test_sets:
     tests:
       - name: Prerequisites
         sequences:
-          - ResourceSequence
           - ValueSetSequence
       - name: CMS165 Bulk Data Reporting
         sequences:
@@ -20,3 +19,6 @@ test_sets:
       - name: CMS165 Quality Reporting
         sequences:
           - CMS165ReportingSequence
+      - name: ReportingActions
+        sequences:
+          - ResourceSequence

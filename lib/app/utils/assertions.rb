@@ -28,6 +28,12 @@ module Inferno
       raise AssertionException, "Bad response code: expected 200, 201, but found #{response.code}. #{error_message}"
     end
 
+    def assert_response_created(response, error_message = '')
+      return if assertion_negated([201].include?(response.code))
+
+      raise AssertionException, "Bad response code: expected 200, 201, but found #{response.code}. #{error_message}"
+    end
+
     def assert_response_accepted(response)
       return if assertion_negated([202].include?(response.code))
 

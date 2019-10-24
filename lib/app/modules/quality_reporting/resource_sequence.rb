@@ -27,30 +27,12 @@ module Inferno
         identifier = FHIR::Identifier.new value: id_string
         observation.identifier = [identifier]
 
-        get_bundle = lambda { |resource|
-          reply = @client.search FHIR::Observation, search: { parameters: { identifier: resource.identifier[0].value } }
-          assert_equal '200', reply.response[:code].to_s
-          reply.resource
-        }
-
-        # A resource that doesnt exist returns an empty bundle
-        bundle = get_bundle.call(observation)
-        assert_equal 0, bundle.total
-
         reply = @client.create observation
-        assert_equal '201', reply.response[:code].to_s
+        assert_response_created reply
 
-        bundle = get_bundle.call(observation)
-        assert_equal 1, bundle.total
-
-        # get the id from the bundle (id is set by the server)
-        observation_id = bundle.entry.first.resource.id
-
-        reply = @client.destroy FHIR::Observation, observation_id
-        assert_equal '200', reply.response[:code].to_s
-
-        bundle = get_bundle.call(observation)
-        assert_equal 0, bundle.total
+        reply = @client.search(FHIR::Observation, search: { parameters: { identifier: id_string } })
+        assert_response_ok reply
+        assert_equal 1, reply.resource.total
       end
     end
   end
