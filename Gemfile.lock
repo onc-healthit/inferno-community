@@ -139,6 +139,7 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.1.1)
     mustermann (1.0.3)
+    ndjson (1.0.0)
     netrc (0.11.0)
     nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
@@ -236,6 +237,7 @@ DEPENDENCIES
   fhir_client
   json-jwt
   kramdown
+  ndjson
   pry
   pry-byebug
   rack-test
