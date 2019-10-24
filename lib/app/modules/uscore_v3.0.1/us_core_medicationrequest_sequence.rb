@@ -224,7 +224,7 @@ module Inferno
         end
 
         patient_val = @instance.patient_id
-        intent_val = resolve_element_from_path(@medicationrequest, 'intent')
+        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
         search_params = { 'patient': patient_val, 'intent': intent_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

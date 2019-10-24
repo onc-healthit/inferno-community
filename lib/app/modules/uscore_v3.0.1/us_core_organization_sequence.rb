@@ -53,6 +53,7 @@ module Inferno
         organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
         skip 'No Organization references found from the prior searches' if organization_id.nil?
         @organization = fetch_resource('Organization', organization_id)
+        @organization_ary = Array.wrap(@organization)
         @resources_found = !@organization.nil?
       end
 

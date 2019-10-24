@@ -33,6 +33,7 @@ module Inferno
         medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
         skip 'No Medication references found from the prior searches' if medication_id.nil?
         @medication = fetch_resource('Medication', medication_id)
+        @medication_ary = Array.wrap(@medication)
         @resources_found = !@medication.nil?
       end
 

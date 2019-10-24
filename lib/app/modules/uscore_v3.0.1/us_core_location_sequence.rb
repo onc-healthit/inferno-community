@@ -65,6 +65,7 @@ module Inferno
         location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
         skip 'No Location references found from the prior searches' if location_id.nil?
         @location = fetch_resource('Location', location_id)
+        @location_ary = Array.wrap(@location)
         @resources_found = !@location.nil?
       end
 

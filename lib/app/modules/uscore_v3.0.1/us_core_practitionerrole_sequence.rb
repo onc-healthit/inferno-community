@@ -47,6 +47,7 @@ module Inferno
         practitionerrole_id = @instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole' }&.resource_id
         skip 'No PractitionerRole references found from the prior searches' if practitionerrole_id.nil?
         @practitionerrole = fetch_resource('PractitionerRole', practitionerrole_id)
+        @practitionerrole_ary = Array.wrap(@practitionerrole)
         @resources_found = !@practitionerrole.nil?
       end
 
@@ -160,7 +161,7 @@ module Inferno
           versions :r4
         end
 
-        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
+        specialty_val = get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
         search_params = { 'specialty': specialty_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

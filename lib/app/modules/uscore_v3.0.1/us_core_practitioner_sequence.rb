@@ -54,6 +54,7 @@ module Inferno
         practitioner_id = @instance.resource_references.find { |reference| reference.resource_type == 'Practitioner' }&.resource_id
         skip 'No Practitioner references found from the prior searches' if practitioner_id.nil?
         @practitioner = fetch_resource('Practitioner', practitioner_id)
+        @practitioner_ary = Array.wrap(@practitioner)
         @resources_found = !@practitioner.nil?
       end
 
