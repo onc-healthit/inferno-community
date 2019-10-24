@@ -112,7 +112,7 @@ class AssertionCallLocationFormatter
   def adjust_index_to_handle_blocks
     return if sequence_call_index.blank? || assertion_call_index.blank?
 
-    (assertion_call_index...sequence_call_index).to_a.reverse.each do |index|
+    (assertion_call_index...sequence_call_index).to_a.reverse_each do |index|
       self.sequence_call_index = index if backtrace[index].to_s.match?(/block .*in #{method_name}/)
     end
   end
