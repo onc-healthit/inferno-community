@@ -28,12 +28,10 @@ class ResourceSequenceTest < MiniTest::Test
     bundle_with_one_resource = FHIR::Bundle.new total: 1
     bundle_with_one_resource.entry = [entry]
 
-    # Mock three requests for GET Observation
     stub_request(:get, /Observation/)
       .with(headers: REQUEST_HEADERS)
       .to_return(status: 200, body: bundle_with_one_resource.to_json, headers: {})
 
-    # Mock a request for POST Observation
     stub_request(:post, /Observation/)
       .with(headers: REQUEST_HEADERS)
       .to_return(status: 201, body: '', headers: {})
@@ -43,31 +41,35 @@ class ResourceSequenceTest < MiniTest::Test
     assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
   end
 
-  # def test_post_fail
-  #   WebMock.reset!
-  #   empty_bundle = FHIR::Bundle.new
-  #   bundle_with_one_resource = FHIR::Bundle.new
-  #   bundle_with_one_resource.total = 1
+  def test_post_fail
+    WebMock.reset!
+    bundle_with_one_resource = FHIR::Bundle.new
+    bundle_with_one_resource.total = 1
 
-  #   # Mock three requests for GET Observation
-  #   stub_request(:get, /Observation/)
-  #     .with(headers: REQUEST_HEADERS)
-  #     .to_return({ status: 200, body: empty_bundle.to_s, headers: {} },
-  #                { status: 200, body: bundle_with_one_resource.to_s, headers: {} },
-  #                { status: 200, body: empty_bundle.to_s, headers: {} })
+    stub_request(:get, /Observation/)
+      .with(headers: REQUEST_HEADERS)
+      .to_return(status: 200, body: bundle_with_one_resource.to_s, headers: {})
 
-  #   # Mock a request for POST Observation
-  #   stub_request(:post, /Observation/)
-  #     .with(headers: REQUEST_HEADERS)
-  #     .to_return(status: 201, body: '', headers: {})
+    stub_request(:post, /Observation/)
+      .with(headers: REQUEST_HEADERS)
+      .to_return(status: 403, body: '', headers: {})
 
-  #   # Mock a request for DELETE Observation
-  #   stub_request(:delete, /Observation/)
-  #     .with(headers: REQUEST_HEADERS)
-  #     .to_return(status: 200, body: '', headers: {})
+    sequence_result = @sequence.start
+    assert sequence_result.fail?, 'The sequence should be marked as fail.'
+  end
 
-  #   sequence_result = @sequence.start
-  #   assert sequence_result.pass?, 'The sequence should be marked as pass.'
-  #   assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
-  # end
+  def test_get_fail
+    WebMock.reset!
+
+    stub_request(:get, /Observation/)
+      .with(headers: REQUEST_HEADERS)
+      .to_return(status: 404, body: '', headers: {})
+
+    stub_request(:post, /Observation/)
+      .with(headers: REQUEST_HEADERS)
+      .to_return(status: 201, body: '', headers: {})
+
+    sequence_result = @sequence.start
+    assert sequence_result.fail?, 'The sequence should be marked as fail.'
+  end
 end
