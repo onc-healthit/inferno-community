@@ -331,7 +331,6 @@ module Inferno
             if param == 'patient'
               '@instance.patient_id'
             else
-
               resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
             end
           search_values << "#{variable_name} = #{variable_value}"
