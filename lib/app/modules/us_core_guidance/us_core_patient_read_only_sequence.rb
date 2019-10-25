@@ -15,7 +15,7 @@ module Inferno
       test 'Server rejects patient read without proper authorization' do
         metadata do
           id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
             A patient read does not work without authorization.
           )
@@ -33,7 +33,7 @@ module Inferno
       test 'Server returns expected results from Patient read resource' do
         metadata do
           id '02'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
             All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
           )
