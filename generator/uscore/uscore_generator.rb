@@ -331,6 +331,7 @@ module Inferno
             if param == 'patient'
               '@instance.patient_id'
             else
+
               resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
             end
           search_values << "#{variable_name} = #{variable_value}"
@@ -432,11 +433,11 @@ module Inferno
           when 'Address'
             search_validators += %(
                 value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |address|
-                  address&.text&.starts_with(value) ||
-                    address&.city&.starts_with(value) ||
-                    address&.state&.starts_with(value) ||
-                    address&.postalCode&.starts_with(value) ||
-                    address&.country&.starts_with(value)
+                  address&.text&.start_with?(value) ||
+                    address&.city&.start_with?(value) ||
+                    address&.state&.start_with?(value) ||
+                    address&.postalCode&.start_with?(value) ||
+                    address&.country&.start_with?(value)
                 end
                 assert value_found, '#{element} on resource does not match #{element} requested'
             )
