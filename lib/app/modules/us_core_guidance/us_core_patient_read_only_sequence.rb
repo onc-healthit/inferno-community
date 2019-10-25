@@ -5,19 +5,24 @@ module Inferno
     class USCoreR4PatientReadOnlySequence < SequenceBase
       title 'Patient'
 
-      description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
+      description %(
+        Verify that Patient resources on the FHIR server follow the US Core
+        Implementation Guide
+      )
 
       test_id_prefix 'ARPA'
 
       requires :token, :patient_id
       conformance_supports :Patient
 
-      test 'Server rejects patient read without proper authorization' do
+      test :unauthenticated_read do
         metadata do
           id '01'
+          name 'Server rejects unauthorized Patient read request'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            A patient read does not work without authorization.
+            A server SHALL reject any unauthorized requests by returning an HTTP
+            401 unauthorized response code.
           )
           versions :r4
         end
@@ -30,12 +35,14 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Patient read resource' do
+      test :authenticated_read do
         metadata do
           id '02'
+          name 'Server returns Patient resource for an authorized read request'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            All servers SHALL make available the read interactions for the Argonaut Profiles the server chooses to support.
+            The US Core Server SHALL support the US Core Patient resource
+            profile.
           )
           versions :r4
         end
@@ -43,8 +50,8 @@ module Inferno
         patient_read_response = @client.read(versioned_resource_class('Patient'), @instance.patient_id)
         assert_response_ok patient_read_response
         @patient = patient_read_response.resource
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
-        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected resource to be valid Patient'
+        assert !@patient.nil?, 'Expected response to be a Patient resource'
+        assert @patient.is_a?(versioned_resource_class('Patient')), 'Expected response to be a Patient resource'
       end
     end
   end
