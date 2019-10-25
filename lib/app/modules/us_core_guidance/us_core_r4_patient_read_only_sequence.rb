@@ -10,7 +10,7 @@ module Inferno
         Implementation Guide
       )
 
-      test_id_prefix 'ARPA'
+      test_id_prefix 'USCPAR'
 
       requires :token, :patient_id
       conformance_supports :Patient
