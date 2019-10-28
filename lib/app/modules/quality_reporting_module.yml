@@ -19,3 +19,6 @@ test_sets:
       - name: CMS165 Quality Reporting
         sequences:
           - CMS165ReportingSequence
+      - name: ReportingActions
+        sequences:
+          - ResourceSequence
