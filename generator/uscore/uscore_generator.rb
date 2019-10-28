@@ -136,7 +136,7 @@ module Inferno
 
       def create_include_test(sequence)
         include_test = {
-          tests_that: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}",
+          tests_that: "Server returns the appropriate resource from the following _includes: #{sequence[:include_params].join(', ')}",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#include'
         }

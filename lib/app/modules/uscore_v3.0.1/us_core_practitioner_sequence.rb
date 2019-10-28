@@ -168,7 +168,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = resolve_element_from_path(@practitioner, 'name.family')
+        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

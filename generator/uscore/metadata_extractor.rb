@@ -154,6 +154,7 @@ module Inferno
 
       def add_include_search(resource, sequence)
         sequence[:include_params] = resource['searchInclude'] || []
+      end
 
       def add_revinclude_targets(resource, sequence)
         sequence[:revincludes] = resource['searchRevInclude'] || []

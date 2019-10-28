@@ -152,7 +152,7 @@ module Inferno
         validate_history_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))
       end
 
-      test 'A Server SHOULD be capable of supporting the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
+      test 'Server returns the appropriate resource from the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#include'
@@ -182,14 +182,14 @@ module Inferno
 
       test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
         metadata do
-          id '07'
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
           )
           versions :r4
         end
 
-        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
+        specialty_val = get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
         search_params = { 'specialty': specialty_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -203,7 +203,7 @@ module Inferno
 
       test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '08'
+          id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
           )
@@ -216,7 +216,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any PractitionerRole for this patient.' do
         metadata do
-          id '09'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -251,7 +251,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '10'
+          id '11'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )
