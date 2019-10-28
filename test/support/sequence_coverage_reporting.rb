@@ -2,7 +2,6 @@
 
 require 'ast'
 require 'parser/current'
-require 'pry'
 require_relative '../../lib/app/utils/assertions'
 
 # To generate a sequence coverage report, run the unit tests with the
@@ -103,7 +102,7 @@ class AssertionCallLocationFormatter
   end
 
   def method_name
-    @method_name ||= backtrace[sequence_call_index].to_s.match(/`(.*)'/)&.[](1)
+    @method_name ||= backtrace[sequence_call_index].to_s.match(/`(.*)'/)&.captures&.first
   end
 
   # This adjusts sequence_call_index so that when assertions are wrapped in a
@@ -112,7 +111,7 @@ class AssertionCallLocationFormatter
   def adjust_index_to_handle_blocks
     return if sequence_call_index.blank? || assertion_call_index.blank?
 
-    (assertion_call_index...sequence_call_index).to_a.reverse_each do |index|
+    (assertion_call_index...sequence_call_index).reverse_each do |index|
       self.sequence_call_index = index if backtrace[index].to_s.match?(/block .*in #{method_name}/)
     end
   end
@@ -122,7 +121,7 @@ class AssertionCallLocationFormatter
 
     [backtrace[sequence_call_index], backtrace[assertion_call_index + 1]]
       .uniq
-      .map { |location| location&.to_s&.match(LINE_REGEX)&.[](1) }
+      .map { |location| location&.to_s&.match(LINE_REGEX)&.captures&.first }
       .join(CALL_SEPARATOR)
   end
 end
@@ -179,7 +178,7 @@ class AssertionReporter
     end
 
     def direct_pass_count(location)
-      AssertionTracker.assertion_calls[location].count { |result| result }
+      AssertionTracker.assertion_calls[location].count(&:itself)
     end
 
     def direct_fail_count(location)
@@ -190,7 +189,8 @@ class AssertionReporter
       return if direct_call? location
 
       AssertionTracker.assertion_calls.reduce(0) do |count, (key, results)|
-        key.end_with?(location) && key != location ? count + results.count { |result| result } : count
+        indirect_call = key.end_with?(location) && key != location
+        indirect_call ? count + results.count(&:itself) : count
       end
     end
 
@@ -198,7 +198,8 @@ class AssertionReporter
       return if direct_call? location
 
       AssertionTracker.assertion_calls.reduce(0) do |count, (key, results)|
-        key.end_with?(location) && key != location ? count + results.count(&:!) : count
+        indirect_call = key.end_with?(location) && key != location
+        indirect_call ? count + results.count(&:!) : count
       end
     end
   end
