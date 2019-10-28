@@ -180,6 +180,27 @@ module Inferno
         assert practitioner_results, 'No Practitioner resources were returned from this search'
       end
 
+      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+        metadata do
+          id '07'
+          link 'https://www.hl7.org/fhir/search.html#revinclude'
+          description %(
+          )
+          versions :r4
+        end
+
+        specialty_val = resolve_element_from_path(@practitionerrole, 'specialty.coding.code')
+        search_params = { 'specialty': specialty_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params['_revinclude'] = 'Provenance:target'
+        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
+        assert provenance_results, 'No Provenance resources were returned from this search'
+      end
+
       test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '08'
