@@ -1,0 +1,26 @@
+<%# FIXME: This is ugly, but it works for now %>
+<% prerequisite_sequences = "<ul><li>" + instance.module.variable_defined_by(prerequisite).collect{|x| Object.const_get(x.to_s).title}.join('</li><li>') + "</li></ul>" %>
+
+<div class="form-group"
+     data-requiredby="<%=instance.module.variable_required_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
+     data-definedby="<%=instance.module.variable_defined_by(prerequisite).map {|seq| seq.sequence_name}.join(',')%>"
+     data-prerequisite="<%=prerequisite.to_s%>"
+     >
+
+    <label for="<%=prerequisite.to_s%>"><%=label%>
+      <% unless instance.module.variable_defined_by(prerequisite).empty? || value %>
+        <span class="oi oi-warning prerequisite-tooltip"
+              data-toggle='tooltip'
+              data-html='true'
+              title='You can enter this manually or populate it by running: <%=prerequisite_sequences%>'></span>
+      <% end %>
+    </label>
+    <div class="form-group">
+        <select class="custom-select custom-select-lg" name="<%=prerequisite.to_s%>" style="margin-left: 10px;" id="<%=prerequisite.to_s%>"">
+        <% instance.module.get_testable_measures().each do |measure| %>
+            <option value=<%=measure%>> <%=measure%> </option>
+        <% end %>
+        <input type="hidden" name="prerequisite_input" id="prerequisite_input" value=<%=value%> />
+        </select>
+    </div>
+</div>
