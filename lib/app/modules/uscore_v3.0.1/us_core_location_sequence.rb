@@ -65,6 +65,7 @@ module Inferno
         location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
         skip 'No Location references found from the prior searches' if location_id.nil?
         @location = fetch_resource('Location', location_id)
+        @location_ary = Array.wrap(@location)
         @resources_found = !@location.nil?
       end
 
@@ -114,7 +115,7 @@ module Inferno
         @location = reply&.resource&.entry&.first&.resource
         @location_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
-        save_delayed_sequence_references(@location)
+        save_delayed_sequence_references(@location_ary)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
@@ -244,7 +245,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = resolve_element_from_path(@location, 'name')
+        name_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

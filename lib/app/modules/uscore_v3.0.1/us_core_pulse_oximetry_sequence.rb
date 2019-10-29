@@ -90,7 +90,7 @@ module Inferno
         @observation = reply&.resource&.entry&.first&.resource
         @observation_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
-        save_delayed_sequence_references(@observation)
+        save_delayed_sequence_references(@observation_ary)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
@@ -241,10 +241,7 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        code_val = resolve_element_from_path(@observation, 'code.coding.code')
-        search_params = { 'patient': patient_val, 'code': code_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = { patient: @instance.patient_id, code: '59408-5' }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)

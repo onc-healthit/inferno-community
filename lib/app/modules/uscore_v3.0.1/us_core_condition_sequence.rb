@@ -94,7 +94,7 @@ module Inferno
         @condition = reply&.resource&.entry&.first&.resource
         @condition_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
-        save_delayed_sequence_references(@condition)
+        save_delayed_sequence_references(@condition_ary)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
       end
 

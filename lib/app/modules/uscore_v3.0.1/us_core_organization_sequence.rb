@@ -53,6 +53,7 @@ module Inferno
         organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
         skip 'No Organization references found from the prior searches' if organization_id.nil?
         @organization = fetch_resource('Organization', organization_id)
+        @organization_ary = Array.wrap(@organization)
         @resources_found = !@organization.nil?
       end
 
@@ -102,7 +103,7 @@ module Inferno
         @organization = reply&.resource&.entry&.first&.resource
         @organization_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
-        save_delayed_sequence_references(@organization)
+        save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
@@ -166,7 +167,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = resolve_element_from_path(@organization, 'name')
+        name_val = get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

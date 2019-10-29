@@ -33,12 +33,12 @@ class SequenceBaseTest < MiniTest::Test
 
     delayed_resources.each do |res|
       set_resource_reference(@allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(@allergy_intolerance_resource)
+      @sequence.save_delayed_sequence_references(Array.wrap(@allergy_intolerance_resource))
       assert @instance.resource_references.any? { |ref| ref.resource_type == res }, "#{res} reference should be saved"
     end
     some_non_delayed_resources.each do |res|
       set_resource_reference(@allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(@allergy_intolerance_resource)
+      @sequence.save_delayed_sequence_references(Array.wrap(@allergy_intolerance_resource))
       assert @instance.resource_references.none? { |ref| ref.resource_type == res }, "#{res} reference should not be saved"
     end
   end

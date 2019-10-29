@@ -54,6 +54,7 @@ module Inferno
         practitioner_id = @instance.resource_references.find { |reference| reference.resource_type == 'Practitioner' }&.resource_id
         skip 'No Practitioner references found from the prior searches' if practitioner_id.nil?
         @practitioner = fetch_resource('Practitioner', practitioner_id)
+        @practitioner_ary = Array.wrap(@practitioner)
         @resources_found = !@practitioner.nil?
       end
 
@@ -103,7 +104,7 @@ module Inferno
         @practitioner = reply&.resource&.entry&.first&.resource
         @practitioner_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
-        save_delayed_sequence_references(@practitioner)
+        save_delayed_sequence_references(@practitioner_ary)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
 
@@ -167,7 +168,7 @@ module Inferno
           versions :r4
         end
 
-        name_val = resolve_element_from_path(@practitioner, 'name.family')
+        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
