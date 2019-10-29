@@ -18,7 +18,7 @@ module Inferno
       test 'Check Measure Availability' do
         metadata do
           id '01'
-          link 'https://hl7.org/fhir/STU3/valueset-operations.html#expand'
+          link 'https://www.hl7.org/fhir/measure.html'
           desc 'Check to make sure specified measure is available on test server'
         end
         measure_id = @instance.measure_to_test
