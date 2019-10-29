@@ -22,7 +22,7 @@ module Inferno
           desc 'Check to make sure specified measure is available on test server'
         end
         measure_id = @instance.measure_to_test
-        query_response = @client.search(FHIR::Measure, search: {parameters: {_id: measure_id}})        
+        query_response = @client.search(FHIR::Measure, search: { parameters: { _id: measure_id } })
         assert_equal query_response.resource.total, 1, "Expected to find measure with id #{measure_id}"
       end
     end

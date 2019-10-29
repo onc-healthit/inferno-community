@@ -50,10 +50,10 @@ class MeasureAvailabilityTest < MiniTest::Test
 
   def test_measure_not_found
     WebMock.reset!
-    @instance.measure_to_test = "foobar"
-    stub_request(:get, "http://www.example.com/Measure?_id=foobar")
-    .with(headers: REQUEST_HEADERS)
-    .to_return(status: 404, body: '', headers: {})
+    @instance.measure_to_test = 'foobar'
+    stub_request(:get, 'http://www.example.com/Measure?_id=foobar')
+      .with(headers: REQUEST_HEADERS)
+      .to_return(status: 404, body: '', headers: {})
 
     sequence_result = @sequence.start
     assert sequence_result.fail?, 'The sequence should be marked as fail.'
