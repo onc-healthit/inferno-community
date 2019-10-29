@@ -39,9 +39,10 @@ module Inferno
         'Provenance'
       ]
 
-      test 'Patient-level access with OpenID Connect and Refresh Token scopes used.' do
+      test :onc_scopes do
         metadata do
           id '09'
+          name 'Patient-level access with OpenID Connect and Refresh Token scopes used.'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           description %(
             The scopes being input must follow the guidelines specified in the smart-app-launch guide
