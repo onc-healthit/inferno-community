@@ -76,3 +76,6 @@ presets:
     client_id: Yg0o6sJ8I8CfVVyHz1eA0m8jv6sXwe
     client_secret: UDVrTXlna0NvcGRQZ1VhMkZaZzQ0R1FxVGdtTWxFMXVoT3pPd1VRMUN4MFVkV25Gejk=
     instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
+
+# cqf-ruler data store endpoint
+cqf_ruler_endpoint: http://localhost:8080/cqf-ruler-dstu3/fhir/
