@@ -178,7 +178,7 @@ module Inferno
         validate_history_reply(@medicationrequest, versioned_resource_class('MedicationRequest'))
       end
 
-      test 'A Server SHOULD be capable of supporting the following _includes: MedicationRequest:medication' do
+      test 'Server returns the appropriate resource from the following _includes: MedicationRequest:medication' do
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/search.html#include'

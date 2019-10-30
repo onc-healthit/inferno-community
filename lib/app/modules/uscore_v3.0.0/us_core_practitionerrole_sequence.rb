@@ -152,7 +152,7 @@ module Inferno
         validate_history_reply(@practitionerrole, versioned_resource_class('PractitionerRole'))
       end
 
-      test 'A Server SHOULD be capable of supporting the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
+      test 'Server returns the appropriate resource from the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#include'
