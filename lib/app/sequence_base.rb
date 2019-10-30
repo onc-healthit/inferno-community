@@ -785,6 +785,6 @@ module Inferno
       end
     end
 
-    Dir.glob(File.join(__dir__, 'modules', '**', '*_sequence.rb')).each { |file| require file }
+    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).each { |file| require file }
   end
 end
