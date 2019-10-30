@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class ArgonautConditionSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'vital_signs_observation' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautVitalSignsSequence.new(@instance, client) # put sequence here
-    @resource_type = 'Observation'
+    @fixture = 'condition' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautConditionSequence.new(@instance, client) # put sequence here
+    @resource_type = 'Condition'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
@@ -19,7 +19,7 @@ class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
       entry.resource.meta.versionId = '1'
     end
 
-    @patient_id = @resource.subject.reference
+    @patient_id = @resource.patient.reference
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -40,16 +40,29 @@ class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
                          'User-Agent' => 'Ruby FHIR Client',
                          'Authorization' => "Bearer #{@instance.token}" }
 
+    @extended_request_headers = { 'Accept' => 'application/json+fhir',
+                                  'Accept-Charset' => 'utf-8',
+                                  'User-Agent' => 'Ruby FHIR Client',
+                                  'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+                                  'Host' => 'www.example.com',
+                                  'Authorization' => "Bearer #{@instance.token}" }
+
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,date,code}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?clinicalstatus,patient}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources
     stub_request(:get, uri_template)
+      .with(headers: @request_headers)
+      .to_return(
+        status: 200, body: @resource_bundle.to_json, headers: @response_headers
+      )
+
+    stub_request(:get, %r{http\://www\.example\.com/Condition\?clinicalstatus\=[^&]*\&patient\=[0-9a-zA-Z]+})
       .with(headers: @request_headers)
       .to_return(
         status: 200, body: @resource_bundle.to_json, headers: @response_headers
@@ -60,6 +73,26 @@ class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
       .with(headers: @request_headers)
       .to_return(status: 200,
                  body: @resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+
+    # history should return a history bundle
+    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
+      .with(headers: @extended_request_headers)
+      .to_return(status: 200,
+                 body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+
+    # vread should return an instance
+    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
+      .with(headers: @extended_request_headers)
+      .to_return(status: 200,
+                 body: @resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+
+    stub_request(:get, uri_template)
+      .with(headers: @extended_request_headers)
+      .to_return(status: 200,
+                 body: @resource_bundle.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     # Stub Patient for Reference Resolution Tests
@@ -73,6 +106,7 @@ class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
   end
 
   def test_all_pass
+    WebMock.reset!
     full_sequence_stubs
 
     sequence_result = @sequence.start

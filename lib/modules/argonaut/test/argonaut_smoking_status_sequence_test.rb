@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class ArgonautProcedureSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class ArgonautSmokingStatusSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'procedure' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautProcedureSequence.new(@instance, client) # put sequence here
-    @resource_type = 'Procedure'
+    @fixture = 'smoking_status' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautSmokingStatusSequence.new(@instance, client) # put sequence here
+    @resource_type = 'Observation'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
@@ -40,20 +40,12 @@ class ArgonautProcedureSequenceTest < MiniTest::Test
                          'User-Agent' => 'Ruby FHIR Client',
                          'Authorization' => "Bearer #{@instance.token}" }
 
-    @extended_request_headers = { 'Accept' => 'application/json+fhir',
-                                  'Accept-Charset' => 'utf-8',
-                                  'User-Agent' => 'Ruby FHIR Client',
-                                  'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-                                  'Host' => 'www.example.com',
-                                  'Authorization' => "Bearer #{@instance.token}" }
-
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    WebMock.reset!
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,code}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources
@@ -66,20 +58,6 @@ class ArgonautProcedureSequenceTest < MiniTest::Test
     # Read Resources
     stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
       .with(headers: @request_headers)
-      .to_return(status: 200,
-                 body: @resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # history should return a history bundle
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # vread should return an instance
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
-      .with(headers: @extended_request_headers)
       .to_return(status: 200,
                  body: @resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })

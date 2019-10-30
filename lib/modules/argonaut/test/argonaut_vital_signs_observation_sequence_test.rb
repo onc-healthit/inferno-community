@@ -1,26 +1,25 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class ArgonautMedicationStatementSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class ArgonautVitalSignsObservationSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'medication_statement' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautMedicationStatementSequence.new(@instance, client) # put sequence here
-    @resource_type = 'MedicationStatement'
+    @fixture = 'vital_signs_observation' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautVitalSignsSequence.new(@instance, client) # put sequence here
+    @resource_type = 'Observation'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
 
-    @medication_reference = load_json_fixture(:medication_reference)
     @resource_bundle = wrap_resources_in_bundle(@resource)
     @resource_bundle.entry.each do |entry|
       entry.resource.meta = FHIR::DSTU2::Meta.new unless entry.resource.meta
       entry.resource.meta.versionId = '1'
     end
 
-    @patient_id = @resource.patient.reference
+    @patient_id = @resource.subject.reference
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -41,19 +40,12 @@ class ArgonautMedicationStatementSequenceTest < MiniTest::Test
                          'User-Agent' => 'Ruby FHIR Client',
                          'Authorization' => "Bearer #{@instance.token}" }
 
-    @extended_request_headers = { 'Accept' => 'application/json+fhir',
-                                  'Accept-Charset' => 'utf-8',
-                                  'User-Agent' => 'Ruby FHIR Client',
-                                  'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-                                  'Host' => 'www.example.com',
-                                  'Authorization' => "Bearer #{@instance.token}" }
-
     @response_headers = { 'content-type' => 'application/json+fhir' }
   end
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,date,code}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources
@@ -69,25 +61,6 @@ class ArgonautMedicationStatementSequenceTest < MiniTest::Test
       .to_return(status: 200,
                  body: @resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: @resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # history should return a history bundle
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: wrap_resources_in_bundle(@resource, type: 'history').to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # vread should return an instance
-    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history/1")
-      .with(headers: @extended_request_headers)
-      .to_return(status: 200,
-                 body: @resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     # Stub Patient for Reference Resolution Tests
     stub_request(:get, %r{example.com/Patient/})
@@ -96,14 +69,6 @@ class ArgonautMedicationStatementSequenceTest < MiniTest::Test
             })
       .to_return(status: 200,
                  body: @patient_resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-    # Return Medication from a reference
-    stub_request(:get, %r{example.com/Medication/})
-      .with(headers: {
-              'Authorization' => "Bearer #{@instance.token}"
-            })
-      .to_return(status: 200,
-                 body: @medication_reference.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 

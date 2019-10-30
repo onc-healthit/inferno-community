@@ -1,18 +1,19 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class ArgonautAllergyIntoleranceSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class ArgonautMedicationStatementSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'allergy_intolerance'
-    @sequence = Inferno::Sequence::ArgonautAllergyIntoleranceSequence.new(@instance, client)
-    @resource_type = 'AllergyIntolerance'
+    @fixture = 'medication_statement' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautMedicationStatementSequence.new(@instance, client) # put sequence here
+    @resource_type = 'MedicationStatement'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
 
+    @medication_reference = load_json_fixture(:medication_reference)
     @resource_bundle = wrap_resources_in_bundle(@resource)
     @resource_bundle.entry.each do |entry|
       entry.resource.meta = FHIR::DSTU2::Meta.new unless entry.resource.meta
@@ -23,6 +24,7 @@ class ArgonautAllergyIntoleranceSequenceTest < MiniTest::Test
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
+    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
     # Assume we already have a patient
     @instance.resource_references << Inferno::Models::ResourceReference.new(
@@ -67,6 +69,11 @@ class ArgonautAllergyIntoleranceSequenceTest < MiniTest::Test
       .to_return(status: 200,
                  body: @resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}")
+      .with(headers: @extended_request_headers)
+      .to_return(status: 200,
+                 body: @resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
 
     # history should return a history bundle
     stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}/_history")
@@ -89,6 +96,14 @@ class ArgonautAllergyIntoleranceSequenceTest < MiniTest::Test
             })
       .to_return(status: 200,
                  body: @patient_resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+    # Return Medication from a reference
+    stub_request(:get, %r{example.com/Medication/})
+      .with(headers: {
+              'Authorization' => "Bearer #{@instance.token}"
+            })
+      .to_return(status: 200,
+                 body: @medication_reference.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class ArgonautObservationSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class CarePlanSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'observation' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautObservationSequence.new(@instance, client) # put sequence here
-    @resource_type = 'Observation'
+    @fixture = 'care_plan' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautCarePlanSequence.new(@instance, client) # put sequence here
+    @resource_type = 'CarePlan'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
@@ -23,7 +23,6 @@ class ArgonautObservationSequenceTest < MiniTest::Test
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
-    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
     # Assume we already have a patient
     @instance.resource_references << Inferno::Models::ResourceReference.new(
@@ -52,7 +51,7 @@ class ArgonautObservationSequenceTest < MiniTest::Test
 
   def full_sequence_stubs
     # Return 401 if no Authorization Header
-    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,category,laboratory,date}"
+    uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
     stub_request(:get, uri_template).to_return(status: 401)
 
     # Search Resources

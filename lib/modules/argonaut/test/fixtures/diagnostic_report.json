@@ -1,0 +1,34 @@
+{
+  "id": "00cc87e0-77e9-449b-b713-43c22502cf1f",
+  "status": "final",
+  "category": {
+    "coding": [
+      {
+        "system": "http://hl7.org/fhir/ValueSet/diagnostic-service-sections",
+        "code": "LAB"
+      }
+    ]
+  },
+  "code": {
+    "coding": [
+      {
+        "system": "http://loinc.org",
+        "code": "57698-3",
+        "display": "Lipid Panel"
+      }
+    ],
+    "text": "Lipid Panel"
+  },
+  "subject": {
+    "reference": "Patient/7ec866ca-4130-4a40-82a9-b67f2626a5df"
+  },
+  "encounter": {
+    "reference": "Encounter/593685e0-ba12-4b0d-9233-7b7772c8cc7e"
+  },
+  "effectiveDateTime": "2010-03-01T15:15:00-05:00",
+  "issued": "2010-03-01T15:15:00.091-05:00",
+  "performer": {
+    "reference": "Practitioner/c82c182f-c49e-4f66-9809-8dc66cb8ffb4"
+  },
+  "resourceType": "DiagnosticReport"
+}

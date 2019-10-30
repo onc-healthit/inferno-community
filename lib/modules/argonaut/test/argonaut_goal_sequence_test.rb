@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class DeviceSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class ArgonautGoalSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'device' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautDeviceSequence.new(@instance, client) # put sequence here
-    @resource_type = 'Device'
+    @fixture = 'goal' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautGoalSequence.new(@instance, client) # put sequence here
+    @resource_type = 'Goal'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
@@ -19,7 +19,7 @@ class DeviceSequenceTest < MiniTest::Test
       entry.resource.meta.versionId = '1'
     end
 
-    @patient_id = @resource.patient.reference
+    @patient_id = @resource.subject.reference
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)

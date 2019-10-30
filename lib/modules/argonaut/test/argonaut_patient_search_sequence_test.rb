@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
-class ArgonautGoalSequenceTest < MiniTest::Test
+require_relative '../../../../test/test_helper'
+class ArgonautPatientSearchSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
-    @fixture = 'goal' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautGoalSequence.new(@instance, client) # put sequence here
-    @resource_type = 'Goal'
+    @fixture = 'patient' # put fixture file name here
+    @sequence = Inferno::Sequence::ArgonautPatientSequence.new(@instance, client) # put sequence here
+    @resource_type = 'Patient'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
     assert_empty @resource.validate, "Setup failure: Resource fixture #{@fixture}.json not a valid #{@resource_type}."
@@ -19,7 +19,7 @@ class ArgonautGoalSequenceTest < MiniTest::Test
       entry.resource.meta.versionId = '1'
     end
 
-    @patient_id = @resource.subject.reference
+    @patient_id = @resource.id
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
@@ -38,7 +38,8 @@ class ArgonautGoalSequenceTest < MiniTest::Test
     @request_headers = { 'Accept' => 'application/json+fhir',
                          'Accept-Charset' => 'utf-8',
                          'User-Agent' => 'Ruby FHIR Client',
-                         'Authorization' => "Bearer #{@instance.token}" }
+                         'Authorization' => "Bearer #{@instance.token}",
+                         'Host' => 'www.example.com' }
 
     @extended_request_headers = { 'Accept' => 'application/json+fhir',
                                   'Accept-Charset' => 'utf-8',
@@ -54,6 +55,7 @@ class ArgonautGoalSequenceTest < MiniTest::Test
     # Return 401 if no Authorization Header
     uri_template = Addressable::Template.new "http://www.example.com/#{@resource_type}{?patient,target,start,end,userid,agent}"
     stub_request(:get, uri_template).to_return(status: 401)
+    stub_request(:get, "http://www.example.com/#{@resource_type}/#{@resource.id}").to_return(status: 401)
 
     # Search Resources
     stub_request(:get, uri_template)
@@ -81,15 +83,6 @@ class ArgonautGoalSequenceTest < MiniTest::Test
       .with(headers: @extended_request_headers)
       .to_return(status: 200,
                  body: @resource.to_json,
-                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
-
-    # Stub Patient for Reference Resolution Tests
-    stub_request(:get, %r{example.com/Patient/})
-      .with(headers: {
-              'Authorization' => "Bearer #{@instance.token}"
-            })
-      .to_return(status: 200,
-                 body: @patient_resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 
