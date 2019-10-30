@@ -22,7 +22,7 @@ def set_global_mocks
       headers: {
         'Accept' => '*/*',
         'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-        'Content-Type' => 'application/json+fhir',
+        'Content-Type' => 'application/fhir+json',
         'Host' => 'localhost:8080',
         'User-Agent' => 'rest-client/2.1.0 (darwin18.7.0 x86_64) ruby/2.5.6p201'
       }

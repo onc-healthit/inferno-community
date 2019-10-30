@@ -17,7 +17,7 @@
     </label>
     <div class="form-group">
         <select class="custom-select custom-select-lg" name="<%=prerequisite.to_s%>" style="margin-left: 10px;" id="<%=prerequisite.to_s%>"">
-        <% instance.module.testable_measures().each do |measure| %>
+        <% instance.module.testable_measures.each do |measure| %>
             <option value=<%=measure%>> <%=measure%> </option>
         <% end %>
         <input type="hidden" name="prerequisite_input" id="prerequisite_input" value=<%=value%> />

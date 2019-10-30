@@ -78,13 +78,12 @@ module Inferno
     end
 
     def testable_measures
-      cqfruler_client = FHIR::Client.new('http://localhost:8080/cqf-ruler-dstu3/fhir/')
-      headers = { 'content-type' => 'application/json+fhir' }
-      resp = cqfruler_client.client.get('http://localhost:8080/cqf-ruler-dstu3/fhir/Measure', headers)
-      bundle = FHIR::STU3::Bundle.new JSON.parse(resp.body)
-      measure_resources = bundle.entry.select { |e| e.resource.class == FHIR::STU3::Measure }
-      measure_ids = measure_resources.map { |measure| measure.resource.id }
-      @measures = measure_ids
+      cqf_ruler_client = FHIR::Client.new('http://localhost:8080/cqf-ruler-dstu3/fhir/')
+      headers = { 'content-type' => 'application/fhir+json' }
+      resp = cqf_ruler_client.client.get('http://localhost:8080/cqf-ruler-dstu3/fhir/Measure', headers)
+      bundle = FHIR::STU3::Bundle.new(JSON.parse(resp.body))
+      measure_resources = bundle.entry.select { |e| e.resource.instance_of? FHIR::STU3::Measure }
+      @measures = measure_resources.map { |measure| measure.resource.id }
     rescue StandardError
       @measures = []
     end
