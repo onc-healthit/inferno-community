@@ -22,11 +22,11 @@ module Inferno
 
         when 'address'
           value_found = can_resolve_path(resource, 'address') do |address|
-            address&.text&.starts_with(value) ||
-              address&.city&.starts_with(value) ||
-              address&.state&.starts_with(value) ||
-              address&.postalCode&.starts_with(value) ||
-              address&.country&.starts_with(value)
+            address&.text&.start_with?(value) ||
+              address&.city&.start_with?(value) ||
+              address&.state&.start_with?(value) ||
+              address&.postalCode&.start_with?(value) ||
+              address&.country&.start_with?(value)
           end
           assert value_found, 'address on resource does not match address requested'
 
