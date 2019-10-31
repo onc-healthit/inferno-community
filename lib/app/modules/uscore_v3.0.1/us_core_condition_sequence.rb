@@ -59,11 +59,7 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -98,7 +94,7 @@ module Inferno
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
       end
 
-      test 'Server returns expected results from Condition search by patient+clinical-status' do
+      test 'Server returns expected results from Condition search by patient+category' do
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -112,8 +108,8 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        clinical_status_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
-        search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        category_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
+        search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -152,7 +148,7 @@ module Inferno
         end
       end
 
-      test 'Server returns expected results from Condition search by patient+code' do
+      test 'Server returns expected results from Condition search by patient+clinical-status' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -166,8 +162,8 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        code_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
-        search_params = { 'patient': patient_val, 'code': code_val }
+        clinical_status_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
+        search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -175,7 +171,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Condition search by patient+category' do
+      test 'Server returns expected results from Condition search by patient+code' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -189,8 +185,8 @@ module Inferno
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
         patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
-        search_params = { 'patient': patient_val, 'category': category_val }
+        code_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
+        search_params = { 'patient': patient_val, 'code': code_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)

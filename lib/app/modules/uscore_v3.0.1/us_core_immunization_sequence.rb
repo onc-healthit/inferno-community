@@ -51,11 +51,7 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -90,32 +86,9 @@ module Inferno
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
       end
 
-      test 'Server returns expected results from Immunization search by patient+status' do
-        metadata do
-          id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
-
-        patient_val = @instance.patient_id
-        status_val = get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'status'))
-        search_params = { 'patient': patient_val, 'status': status_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
-        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test 'Server returns expected results from Immunization search by patient+date' do
         metadata do
-          id '04'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -142,6 +115,29 @@ module Inferno
           validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
           assert_response_ok(reply)
         end
+      end
+
+      test 'Server returns expected results from Immunization search by patient+status' do
+        metadata do
+          id '04'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
+
+        patient_val = @instance.patient_id
+        status_val = get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'status'))
+        search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
+        validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test 'Immunization read resource supported' do

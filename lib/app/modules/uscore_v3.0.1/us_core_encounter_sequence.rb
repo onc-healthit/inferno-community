@@ -67,11 +67,7 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -202,32 +198,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Encounter search by patient+type' do
-        metadata do
-          id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
-
-        patient_val = @instance.patient_id
-        type_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'))
-        search_params = { 'patient': patient_val, 'type': type_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test 'Server returns expected results from Encounter search by class+patient' do
         metadata do
-          id '08'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -241,6 +214,29 @@ module Inferno
         class_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class'))
         patient_val = @instance.patient_id
         search_params = { 'class': class_val, 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from Encounter search by patient+type' do
+        metadata do
+          id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
+
+        patient_val = @instance.patient_id
+        type_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'))
+        search_params = { 'patient': patient_val, 'type': type_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)

@@ -196,11 +196,21 @@ module Inferno
           profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
           param_metadata = {
             path: path,
-            comparators: {}
+            comparators: {},
+            values: []
           }
           if !profile_element.nil?
             param_metadata[:type] = profile_element['type'].first['code']
             param_metadata[:contains_multiple] = (profile_element['max'] == '*')
+            if param_metadata[:contains_multiple]
+              slices = profile_definition['snapshot']['element'].select { |el| el['path'] == path && el['sliceName'] }
+              slices.each do |slice|
+                param_metadata[:values] << slice['patternCodeableConcept']['coding'].first['code'] if slice['patternCodeableConcept']
+              end
+            end
+            param_metadata[:values] << profile_element['patternCodeableConcept']['coding'].first['code'] if profile_element['patternCodeableConcept']
+            fhir_metadata = FHIR.const_get(sequence[:resource])::METADATA[param.to_s]
+            param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten unless param_metadata[:values].any? || fhir_metadata.nil? || fhir_metadata['valid_codes'].nil?
           else
             # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
             param_metadata[:type] = search_param_definition['type']
@@ -233,9 +243,7 @@ module Inferno
 
       def add_special_cases(metadata)
         category_first_profiles = [
-          PROFILE_URIS[:diagnostic_report_lab],
-          PROFILE_URIS[:lab_results],
-          PROFILE_URIS[:diagnostic_report_note]
+          PROFILE_URIS[:lab_results]
         ]
 
         # search by patient first
@@ -255,6 +263,15 @@ module Inferno
             sequence[:searches].unshift(category_search)
           end
         end
+
+        # search by patient + intent first for medication request sequence
+        medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
+        intent_search = medication_request_sequence[:searches].find { |param| param[:names] == ['patient', 'intent'] }
+        unless intent_search.nil?
+          medication_request_sequence[:searches].delete(intent_search)
+          medication_request_sequence[:searches].unshift(intent_search)
+        end
+
         metadata
       end
     end

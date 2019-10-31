@@ -74,9 +74,7 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        search_params = { '_id': @instance.patient_id }
-
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -151,31 +149,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+name' do
-        metadata do
-          id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          description %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
-
-        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
-        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        search_params = { 'birthdate': birthdate_val, 'name': name_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test 'Server returns expected results from Patient search by gender+name' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -195,11 +171,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by family+gender' do
+      test 'Server returns expected results from Patient search by birthdate+name' do
         metadata do
-          id '07'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
           description %(
           )
           versions :r4
@@ -208,9 +183,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
-        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
-        search_params = { 'family': family_val, 'gender': gender_val }
+        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        search_params = { 'birthdate': birthdate_val, 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -220,7 +195,7 @@ module Inferno
 
       test 'Server returns expected results from Patient search by birthdate+family' do
         metadata do
-          id '08'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -234,6 +209,29 @@ module Inferno
         birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
         family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
         search_params = { 'birthdate': birthdate_val, 'family': family_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from Patient search by family+gender' do
+        metadata do
+          id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+
+        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
+        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
+        search_params = { 'family': family_val, 'gender': gender_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
