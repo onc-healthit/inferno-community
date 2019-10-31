@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../test_helper'
+require_relative '../../../../test/test_helper'
 
 class TokenIntrospectionSequenceTest < MiniTest::Test
   REQUEST_HEADERS = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }.freeze
