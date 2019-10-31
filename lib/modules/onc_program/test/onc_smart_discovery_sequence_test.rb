@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
+require_relative '../../../../test/test_helper'
 class ONCSMARTDiscoveryTest < MiniTest::Test
   def setup
     instance = get_test_instance
