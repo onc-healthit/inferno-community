@@ -110,4 +110,23 @@ class SequenceBaseTest < MiniTest::Test
       assert all_resources.map(&:id) == ['2']
     end
   end
+
+  describe '.test' do
+    it 'raises an error if two tests have duplicate keys' do
+      assert_raises(Inferno::InvalidKeyException) do
+        class InvalidKeySequence < Inferno::Sequence::SequenceBase
+          2.times do |index|
+            test :a do
+              metadata do
+                id "0#{index}"
+                name 'a'
+                description 'a'
+                link 'http://example.com'
+              end
+            end
+          end
+        end
+      end
+    end
+  end
 end

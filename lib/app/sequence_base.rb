@@ -364,8 +364,13 @@ module Inferno
       # block - The Block test to be executed
       def self.test(name, &block)
         @@test_index += 1
+        new_test = InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
 
-        tests << InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
+        if new_test.key.present? && tests.any? { |test| test.key == new_test.key }
+          raise InvalidKeyException, "Duplicate test key #{new_test.key.inspect} in #{self.name.demodulize}"
+        end
+
+        tests << new_test
       end
 
       def wrap_test(test)
