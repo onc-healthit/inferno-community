@@ -56,7 +56,7 @@ class SequenceValidationTest < MiniTest::Test
     errors = []
 
     Inferno::Sequence::SequenceBase.subclasses.each do |sequence|
-      next if sequence == Inferno::Sequence::InvalidKeySequence
+      next if sequence == SequenceBaseTest::InvalidKeySequence
 
       ids = sequence.tests.map(&:metadata_hash).reduce([]) do |out, metadata|
         if metadata[:test_id].nil?
