@@ -5,10 +5,10 @@ module Inferno
     class BulkDataDiscoverySequence < SequenceBase
       title 'Bulk Data Discovery'
 
-      test_id_prefix 'Discovery'
+      test_id_prefix 'BDD'
 
       requires :url
-      defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
+      defines :oauth_token_endpoint, :oauth_register_endpoint
 
       description "Retrieve server's SMART on FHIR configuration"
 
@@ -29,16 +29,10 @@ module Inferno
 
       SMART_OAUTH_EXTENSION_URL = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
 
-      REQUIRED_OAUTH_ENDPOINTS = [
-        { url: 'token', description: 'token' }
-      ].freeze
-
       attr_accessor :well_known_configuration, :conformance
 
       def oauth2_metadata_from_conformance
-        options = {
-          token_url: nil
-        }
+        options = {}
         begin
           @conformance.rest.each do |rest|
             options.merge! @client.get_oauth2_metadata_from_service_definition(rest)
@@ -47,8 +41,7 @@ module Inferno
           FHIR.logger.error "Failed to locate SMART-on-FHIR OAuth2 Security Extensions: #{e.message}"
         end
 
-        options.delete_if { |_k, v| v.nil? }
-        options
+        options.compact
       end
 
       test :read_well_known_endpoint do
@@ -69,16 +62,9 @@ module Inferno
         assert_response_content_type(well_known_configuration_response, 'application/json')
 
         @well_known_configuration = assert_valid_json(well_known_configuration_response.body)
-
-        @well_known_token_url = @well_known_configuration['token_endpoint']
-        @well_known_register_url = @well_known_configuration['registration_endpoint']
-        @well_known_token_auth_methods = @well_known_configuration['token_endpoint_auth_methods_supported']
-        @well_known_token_auth_signings = @well_known_configuration['token_endpoint_auth_signing_alg_values_supported']
-        @well_known_scopes = @well_known_configuration['scopes_supported']
-
         @instance.update(
-          oauth_token_endpoint: @well_known_token_url,
-          oauth_register_endpoint: @well_known_register_url
+          oauth_token_endpoint: @well_known_configuration['token_endpoint'],
+          oauth_register_endpoint: @well_known_configuration['registration_endpoint']
         )
       end
 
@@ -117,13 +103,10 @@ module Inferno
 
         assert oauth_metadata.present?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
 
-        REQUIRED_OAUTH_ENDPOINTS.each do |endpoint|
-          url = oauth_metadata[:"#{endpoint[:url]}_url"]
-          instance_variable_set(:"@conformance_#{endpoint[:url]}_url", url)
+        conformance_token_url = oauth_metadata[:token_url]
 
-          assert url.present?, "No #{endpoint[:description]} URI provided in Conformance/CapabilityStatement resource"
-          assert_valid_http_uri url, "Invalid #{endpoint[:description]} url: '#{url}'"
-        end
+        assert conformance_token_url.present?, 'No token URI provided in Conformance/CapabilityStatement resource'
+        assert_valid_http_uri conformance_token_url, "Invalid token url: '#{conformance_token_url}'"
 
         warning do
           services = []
@@ -140,34 +123,9 @@ module Inferno
         end
 
         @instance.update(
-          oauth_token_endpoint: @conformance_token_url
+          oauth_token_endpoint: conformance_token_url
         )
       end
-
-      # test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
-      #   metadata do
-      #     id '05'
-      #     link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
-      #     description %(
-      #      If a server requires SMART on FHIR authorization for access, its
-      #      metadata must support automated discovery of OAuth2 endpoints.
-      #     )
-      #   end
-
-      #   (REQUIRED_OAUTH_ENDPOINTS + OPTIONAL_OAUTH_ENDPOINTS).each do |endpoint|
-      #     url = endpoint[:url]
-      #     well_known_url = instance_variable_get(:"@well_known_#{url}_url")
-      #     conformance_url = instance_variable_get(:"@conformance_#{url}_url")
-
-      #     assert well_known_url == conformance_url, %(
-      #       The #{endpoint[:description]} url is not consistent between the
-      #       well-known configuration and the conformance statement:
-
-      #       Well-known #{url} url: #{well_known_url}
-      #       Conformance #{url} url: #{conformance_url}
-      #     )
-      #   end
-      # end
     end
   end
 end

@@ -9,9 +9,9 @@ module Inferno
 
       description 'Verify that system level export on the Bulk Data server follow the Bulk Data Access Implementation Guide'
 
-      test_id_prefix 'BD'
+      test_id_prefix 'BDE'
 
-      requires :token
+      requires :tokens
 
       attr_accessor :run_all_kick_off_tests
 
