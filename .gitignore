@@ -12,3 +12,4 @@ coverage
 tmp/*
 .vscode/*
 resources/terminology/*
+sequence_coverage.csv

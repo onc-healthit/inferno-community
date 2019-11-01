@@ -21,13 +21,18 @@ class ServerCapabilitiesTest < MiniTest::Test
             },
             {
               type: 'Condition',
+              profile: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
               interaction: [
                 { code: 'delete' },
                 { code: 'update' }
               ]
             },
             {
-              type: 'Observation'
+              type: 'Observation',
+              supportedProfile: [
+                'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+                'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
+              ]
             }
           ]
         }
@@ -119,5 +124,15 @@ class ServerCapabilitiesTest < MiniTest::Test
   def test_smart_capabilities
     assert @capabilities.smart_capabilities == []
     assert @smart_capabilities.smart_capabilities == ['launch-ehr', 'launch-standalone']
+  end
+
+  def test_supported_profiles
+    expected_profiles = [
+      'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
+      'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+      'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
+    ]
+
+    assert_equal(expected_profiles, @capabilities.supported_profiles)
   end
 end

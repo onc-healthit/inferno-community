@@ -60,8 +60,9 @@ module Inferno
         well_known_configuration_response = LoggedRestClient.get(well_known_configuration_url)
         assert_response_ok(well_known_configuration_response)
         assert_response_content_type(well_known_configuration_response, 'application/json')
+        assert_valid_json(well_known_configuration_response.body)
 
-        @well_known_configuration = assert_valid_json(well_known_configuration_response.body)
+        @well_known_configuration = JSON.parse(well_known_configuration_response.body)
         @instance.update(
           oauth_token_endpoint: @well_known_configuration['token_endpoint'],
           oauth_register_endpoint: @well_known_configuration['registration_endpoint']

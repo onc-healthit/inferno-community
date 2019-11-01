@@ -364,8 +364,13 @@ module Inferno
       # block - The Block test to be executed
       def self.test(name, &block)
         @@test_index += 1
+        new_test = InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
 
-        tests << InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
+        if new_test.key.present? && tests.any? { |test| test.key == new_test.key }
+          raise InvalidKeyException, "Duplicate test key #{new_test.key.inspect} in #{self.name.demodulize}"
+        end
+
+        tests << new_test
       end
 
       def wrap_test(test)
@@ -657,17 +662,19 @@ module Inferno
         assert(problems.empty?, problems.join("<br/>\n"))
       end
 
-      def save_delayed_sequence_references(resource)
+      def save_delayed_sequence_references(resources)
         delayed_resource_types = @@conformance_supports.select { |sequence, _resources| @@delayed_sequences.include? sequence }.values.flatten
-        walk_resource(resource) do |value, meta, _path|
-          next if meta['type'] != 'Reference'
+        resources.each do |resource|
+          walk_resource(resource) do |value, meta, _path|
+            next if meta['type'] != 'Reference'
 
-          if value.relative?
-            begin
-              resource_class = value.resource_class.name.demodulize
-              @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
-            rescue NameError
-              next
+            if value.relative?
+              begin
+                resource_class = value.resource_class.name.demodulize
+                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+              rescue NameError
+                next
+              end
             end
           end
         end

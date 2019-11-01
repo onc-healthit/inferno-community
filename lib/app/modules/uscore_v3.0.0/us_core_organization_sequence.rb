@@ -22,11 +22,11 @@ module Inferno
 
         when 'address'
           value_found = can_resolve_path(resource, 'address') do |address|
-            address&.text&.starts_with(value) ||
-              address&.city&.starts_with(value) ||
-              address&.state&.starts_with(value) ||
-              address&.postalCode&.starts_with(value) ||
-              address&.country&.starts_with(value)
+            address&.text&.start_with?(value) ||
+              address&.city&.start_with?(value) ||
+              address&.state&.start_with?(value) ||
+              address&.postalCode&.start_with?(value) ||
+              address&.country&.start_with?(value)
           end
           assert value_found, 'address on resource does not match address requested'
 
@@ -53,6 +53,7 @@ module Inferno
         organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
         skip 'No Organization references found from the prior searches' if organization_id.nil?
         @organization = fetch_resource('Organization', organization_id)
+        @organization_ary = Array.wrap(@organization)
         @resources_found = !@organization.nil?
       end
 
@@ -102,7 +103,7 @@ module Inferno
         @organization = reply&.resource&.entry&.first&.resource
         @organization_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
-        save_delayed_sequence_references(@organization)
+        save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 

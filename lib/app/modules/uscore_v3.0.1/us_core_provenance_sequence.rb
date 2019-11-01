@@ -33,6 +33,7 @@ module Inferno
         provenance_id = @instance.resource_references.find { |reference| reference.resource_type == 'Provenance' }&.resource_id
         skip 'No Provenance references found from the prior searches' if provenance_id.nil?
         @provenance = fetch_resource('Provenance', provenance_id)
+        @provenance_ary = Array.wrap(@provenance)
         @resources_found = !@provenance.nil?
       end
 

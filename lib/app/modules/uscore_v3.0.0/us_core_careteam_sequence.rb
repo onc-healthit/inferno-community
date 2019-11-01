@@ -76,7 +76,7 @@ module Inferno
         @careteam = reply&.resource&.entry&.first&.resource
         @careteam_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
-        save_delayed_sequence_references(@careteam)
+        save_delayed_sequence_references(@careteam_ary)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
