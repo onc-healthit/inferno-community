@@ -17,12 +17,13 @@ FileUtils.rm test_log_filename if File.exist? test_log_filename
 require_relative '../lib/app'
 
 def set_global_mocks
-  stub_request(:get, 'http://localhost:8080/cqf-ruler-dstu3/fhir/Measure')
+  measures_endpoint = Inferno::CQF_RULER + 'Measure'
+  stub_request(:get, measures_endpoint)
     .with(
       headers: {
         'Accept' => '*/*',
         'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-        'Content-Type' => 'application/fhir+json',
+        'Content-Type' => 'application/json+fhir',
         'Host' => 'localhost:8080',
         'User-Agent' => 'rest-client/2.1.0 (darwin18.7.0 x86_64) ruby/2.5.6p201'
       }
