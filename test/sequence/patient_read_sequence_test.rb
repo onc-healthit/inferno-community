@@ -55,13 +55,13 @@ class PatientSequenceTest < MiniTest::Test
     uri_template = Addressable::Template.new 'http://www.example.com/Patient{?identifier,family,gender,given,birthdate}'
     stub_request(:get, "http://www.example.com/Patient/#{@patient_id}")
       .to_return(
-        { status: 406, body: nil, headers: @response_headers },
+        { status: 401, body: nil, headers: @response_headers },
         status: 200, body: patient.to_json, headers: @response_headers
       )
 
     stub_request(:get, uri_template)
       .to_return(
-        { status: 406, body: nil, headers: @response_headers },
+        { status: 401, body: nil, headers: @response_headers },
         status: 200, body: patient.to_json, headers: @response_headers
       )
 

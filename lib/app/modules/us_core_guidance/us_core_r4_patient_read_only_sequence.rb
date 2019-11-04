@@ -2,15 +2,15 @@
 
 module Inferno
   module Sequence
-    class ArgonautPatientReadOnlySequence < SequenceBase
+    class USCoreR4PatientReadOnlySequence < SequenceBase
       title 'Patient'
 
       description %(
-        Verify that Patient resources on the FHIR server follow the Argonaut
-        Data Query Implementation Guide
+        Verify that Patient resources on the FHIR server follow the US Core
+        Implementation Guide
       )
 
-      test_id_prefix 'ARPA'
+      test_id_prefix 'USCPAR'
 
       requires :token, :patient_id
       conformance_supports :Patient
@@ -19,11 +19,12 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects unauthorized Patient read request'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            A patient read does not work without authorization.
+            A server SHALL reject any unauthorized requests by returning an HTTP
+            401 unauthorized response code.
           )
-          versions :dstu2
+          versions :r4
         end
 
         @client.set_no_auth
@@ -38,12 +39,12 @@ module Inferno
         metadata do
           id '02'
           name 'Server returns Patient resource for an authorized read request'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            All servers SHALL make available the read interactions for the
-            Argonaut Profiles the server chooses to support.
+            The US Core Server SHALL support the US Core Patient resource
+            profile.
           )
-          versions :dstu2
+          versions :r4
         end
 
         patient_read_response = @client.read(versioned_resource_class('Patient'), @instance.patient_id)

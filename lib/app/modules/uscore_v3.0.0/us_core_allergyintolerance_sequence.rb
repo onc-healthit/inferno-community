@@ -37,7 +37,7 @@ module Inferno
       test 'Server rejects AllergyIntolerance search without authorization' do
         metadata do
           id '01'
-          link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
           versions :r4
