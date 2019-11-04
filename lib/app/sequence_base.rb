@@ -453,8 +453,7 @@ module Inferno
         @test_warnings << e.message
       end
 
-      def get_resource_by_params(klass, params = {})
-        assert !params.empty?, 'No params for search'
+      def get_resource_by_params(klass, params)
         options = {
           search: {
             flag: false,

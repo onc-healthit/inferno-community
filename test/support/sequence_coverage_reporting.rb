@@ -75,8 +75,8 @@ class AssertionTracker
 end
 
 class AssertionCallLocationFormatter
-  SEQUENCE_LINE_REGEX = %r{inferno/lib/(modules/\w+/\w+\.rb:\d+)}.freeze
-  LINE_REGEX = %r{inferno/lib/((?:\w+/?)+\.rb:\d+)}.freeze
+  SEQUENCE_LINE_REGEX = %r{inferno/lib/(modules/[\w\.]+/\w+\.rb:\d+)}.freeze
+  LINE_REGEX = %r{inferno/lib/((?:[\w\.]+/?)+\.rb:\d+)}.freeze
   ASSERTION_CALL_REGEX = %r{inferno/lib/app/utils/assertions.rb:\d+}.freeze
   CALL_SEPARATOR = ' => '
 
