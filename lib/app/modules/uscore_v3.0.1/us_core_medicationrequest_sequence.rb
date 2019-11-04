@@ -85,13 +85,13 @@ module Inferno
 
           @medicationrequest = reply&.resource&.entry&.first&.resource
           @medicationrequest_ary = fetch_all_bundled_resources(reply&.resource)
+
+          save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
+          save_delayed_sequence_references(@medicationrequest_ary)
+          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
           break
         end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
-        save_delayed_sequence_references(@medicationrequest_ary)
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
       end
 
       test 'Server returns expected results from MedicationRequest search by patient+intent+status' do

@@ -83,13 +83,13 @@ module Inferno
 
           @careplan = reply&.resource&.entry&.first&.resource
           @careplan_ary = fetch_all_bundled_resources(reply&.resource)
+
+          save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
+          save_delayed_sequence_references(@careplan_ary)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
           break
         end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-        save_delayed_sequence_references(@careplan_ary)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
       end
 
       test 'Server returns expected results from CarePlan search by patient+category+date' do
