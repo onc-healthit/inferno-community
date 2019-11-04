@@ -63,9 +63,10 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects Patient search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects Patient search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -80,9 +81,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Patient search by _id' do
+      test :id_search do
         metadata do
           id '02'
+          name 'Server returns expected results from Patient search by _id'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
