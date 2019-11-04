@@ -136,7 +136,10 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, status: 'active' }
+        patient_val = @instance.patient_id
+        status_val = get_value_for_search_param(resolve_element_from_path(@careteam_ary, 'status'))
+        search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)

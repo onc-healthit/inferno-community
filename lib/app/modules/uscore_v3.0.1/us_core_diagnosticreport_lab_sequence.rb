@@ -293,7 +293,9 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, category: 'LAB' }
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
