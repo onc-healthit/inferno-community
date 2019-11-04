@@ -207,9 +207,18 @@ module Inferno
               slices.each do |slice|
                 param_metadata[:values] << slice['patternCodeableConcept']['coding'].first['code'] if slice['patternCodeableConcept']
               end
+            elsif param_metadata[:type] == 'CodeableConcept'
+              fixed_code_els = profile_definition['snapshot']['element'].select { |el| el['path'] == "#{profile_element['path']}.coding.code" && el['fixedCode'].present? }
+              param_metadata[:values] += fixed_code_els.map { |el| el['fixedCode'] } if fixed_code_els.any?
             end
             param_metadata[:values] << profile_element['patternCodeableConcept']['coding'].first['code'] if profile_element['patternCodeableConcept']
             fhir_metadata = FHIR.const_get(sequence[:resource])::METADATA[param.to_s]
+            valueset_binding = profile_element['binding']
+            if valueset_binding
+              value_set = resources_by_type['ValueSet'].find { |res| res['url'] == valueset_binding['valueSet'] }
+              codes = value_set['compose']['include'].reject { |code| code['concept'].nil? } if value_set.present?
+              param_metadata[:values] += codes.map { |code| code['concept'].first['code'] } if codes.present?
+            end
             param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten unless param_metadata[:values].any? || fhir_metadata.nil? || fhir_metadata['valid_codes'].nil?
           else
             # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]

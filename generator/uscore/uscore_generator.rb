@@ -415,10 +415,7 @@ module Inferno
       end
 
       def search_param_constants(search_parameters, sequence)
-        return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
-        return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:smoking_status]
         return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
-        return "patient: @instance.patient_id, code: '59408-5'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pulse_oximetry]
       end
 
       def create_search_validation(sequence)

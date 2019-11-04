@@ -60,19 +60,23 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, status: 'active' }
+        status_val = ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error']
+        status_val.each do |val|
+          search_params = { 'patient': @instance.patient_id, 'status': val }
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+          next unless @resources_found
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
-
+          @careteam = reply&.resource&.entry&.first&.resource
+          @careteam_ary = fetch_all_bundled_resources(reply&.resource)
+          break
+        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @careteam = reply&.resource&.entry&.first&.resource
-        @careteam_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
         save_delayed_sequence_references(@careteam)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
