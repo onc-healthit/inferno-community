@@ -44,6 +44,7 @@ modules:
   - smart
   - argonaut
   - uscore_v3.1.0
+  - bdt
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:

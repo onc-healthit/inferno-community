@@ -1,0 +1,40 @@
+# frozen_string_literal: true
+
+require_relative 'bdt_base'
+
+module Inferno
+  module Sequence
+    class <%=sequence_class_name%> < BDTBase
+
+      group 'FIXME'
+
+      title '<%=name %>'
+
+      description '<%=description %>'
+
+      test_id_prefix '<%=id%>'
+
+      requires :token
+      conformance_supports :CarePlan
+
+      details %(
+        <%= name %>
+      )
+      <% tests.each do |test|%>
+      test '<%=test[:name]%>' do
+        metadata do
+          id '<%= test[:id].split('-').last %>'
+          link 'http://bulkdatainfo'
+          description %(
+            <%= test[:description] %>
+          )
+          versions :r4
+        end
+
+        run_bdt('<%=test[:path]%>')
+
+      end<% end%>
+
+    end
+  end
+end
