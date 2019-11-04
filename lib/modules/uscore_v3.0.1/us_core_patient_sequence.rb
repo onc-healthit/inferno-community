@@ -111,9 +111,10 @@ module Inferno
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
 
-      test 'Server returns expected results from Patient search by identifier' do
+      test :identifier_search do
         metadata do
           id '03'
+          name 'Server returns expected results from Patient search by identifier'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
