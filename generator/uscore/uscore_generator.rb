@@ -66,6 +66,8 @@ module Inferno
               create_interaction_test(sequence, interaction)
             end
 
+          create_include_test(sequence) if sequence[:include_params].any?
+          create_revinclude_test(sequence) if sequence[:revincludes].any?
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
           create_references_resolved_test(sequence)
@@ -106,6 +108,7 @@ module Inferno
               #{sequence[:resource].downcase}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
               skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].downcase}_id.nil?
               @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', #{sequence[:resource].downcase}_id)
+              @#{sequence[:resource].downcase}_ary = Array.wrap(@#{sequence[:resource].downcase})
               @resources_found = !@#{sequence[:resource].downcase}.nil?)
         sequence[:tests] << read_test
       end
@@ -129,6 +132,54 @@ module Inferno
               assert_response_unauthorized reply)
 
         sequence[:tests] << authorization_test
+      end
+
+      def create_include_test(sequence)
+        include_test = {
+          tests_that: "Server returns the appropriate resource from the following _includes: #{sequence[:include_params].join(', ')}",
+          index: sequence[:tests].length + 1,
+          link: 'https://www.hl7.org/fhir/search.html#include'
+        }
+        first_search = find_first_search(sequence)
+        search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
+        include_test[:test_code] = search_params
+        sequence[:include_params].each do |include|
+          resource_name = include.split(':').last.capitalize
+          resource_variable = "#{resource_name.downcase}_results" # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
+          include_test[:test_code] += %(
+                search_params['_include'] = '#{include}'
+                reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+                assert_response_ok(reply)
+                assert_bundle_response(reply)
+                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
+                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
+          )
+        end
+        sequence[:tests] << include_test
+      end
+
+      def create_revinclude_test(sequence)
+        revinclude_test = {
+          tests_that: "Server returns the appropriate resources from the following _revincludes: #{sequence[:revincludes].join(',')}",
+          index: sequence[:tests].length + 1,
+          link: 'https://www.hl7.org/fhir/search.html#revinclude'
+        }
+        first_search = find_first_search(sequence)
+        search_params = first_search.nil? ? "\nsearch_params = {}" : get_search_params(first_search[:names], sequence)
+        revinclude_test[:test_code] = search_params
+        sequence[:revincludes].each do |revinclude|
+          resource_name = revinclude.split(':').first
+          resource_variable = "#{resource_name.downcase}_results"
+          revinclude_test[:test_code] += %(
+                search_params['_revinclude'] = '#{revinclude}'
+                reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+                assert_response_ok(reply)
+                assert_bundle_response(reply)
+                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
+                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
+          )
+        end
+        sequence[:tests] << revinclude_test
       end
 
       def create_search_test(sequence, search_param)
@@ -460,11 +511,11 @@ module Inferno
           when 'Address'
             search_validators += %(
                 value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |address|
-                  address&.text&.starts_with(value) ||
-                    address&.city&.starts_with(value) ||
-                    address&.state&.starts_with(value) ||
-                    address&.postalCode&.starts_with(value) ||
-                    address&.country&.starts_with(value)
+                  address&.text&.start_with?(value) ||
+                    address&.city&.start_with?(value) ||
+                    address&.state&.start_with?(value) ||
+                    address&.postalCode&.start_with?(value) ||
+                    address&.country&.start_with?(value)
                 end
                 assert value_found, '#{element} on resource does not match #{element} requested'
             )

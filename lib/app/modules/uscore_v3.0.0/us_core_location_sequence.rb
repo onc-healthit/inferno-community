@@ -22,11 +22,11 @@ module Inferno
 
         when 'address'
           value_found = can_resolve_path(resource, 'address') do |address|
-            address&.text&.starts_with(value) ||
-              address&.city&.starts_with(value) ||
-              address&.state&.starts_with(value) ||
-              address&.postalCode&.starts_with(value) ||
-              address&.country&.starts_with(value)
+            address&.text&.start_with?(value) ||
+              address&.city&.start_with?(value) ||
+              address&.state&.start_with?(value) ||
+              address&.postalCode&.start_with?(value) ||
+              address&.country&.start_with?(value)
           end
           assert value_found, 'address on resource does not match address requested'
 
@@ -65,6 +65,7 @@ module Inferno
         location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
         skip 'No Location references found from the prior searches' if location_id.nil?
         @location = fetch_resource('Location', location_id)
+        @location_ary = Array.wrap(@location)
         @resources_found = !@location.nil?
       end
 
@@ -114,7 +115,7 @@ module Inferno
         @location = reply&.resource&.entry&.first&.resource
         @location_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
-        save_delayed_sequence_references(@location)
+        save_delayed_sequence_references(@location_ary)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 

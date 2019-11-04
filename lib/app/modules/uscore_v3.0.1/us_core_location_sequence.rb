@@ -22,11 +22,11 @@ module Inferno
 
         when 'address'
           value_found = can_resolve_path(resource, 'address') do |address|
-            address&.text&.starts_with(value) ||
-              address&.city&.starts_with(value) ||
-              address&.state&.starts_with(value) ||
-              address&.postalCode&.starts_with(value) ||
-              address&.country&.starts_with(value)
+            address&.text&.start_with?(value) ||
+              address&.city&.start_with?(value) ||
+              address&.state&.start_with?(value) ||
+              address&.postalCode&.start_with?(value) ||
+              address&.country&.start_with?(value)
           end
           assert value_found, 'address on resource does not match address requested'
 
@@ -65,6 +65,7 @@ module Inferno
         location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
         skip 'No Location references found from the prior searches' if location_id.nil?
         @location = fetch_resource('Location', location_id)
+        @location_ary = Array.wrap(@location)
         @resources_found = !@location.nil?
       end
 
@@ -110,7 +111,7 @@ module Inferno
         @location = reply&.resource&.entry&.first&.resource
         @location_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
-        save_delayed_sequence_references(@location)
+        save_delayed_sequence_references(@location_ary)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
@@ -231,9 +232,30 @@ module Inferno
         validate_history_reply(@location, versioned_resource_class('Location'))
       end
 
-      test 'Location resources associated with Patient conform to US Core R4 profiles' do
+      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
         metadata do
           id '10'
+          link 'https://www.hl7.org/fhir/search.html#revinclude'
+          description %(
+          )
+          versions :r4
+        end
+
+        name_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params['_revinclude'] = 'Provenance:target'
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
+        assert provenance_results, 'No Provenance resources were returned from this search'
+      end
+
+      test 'Location resources associated with Patient conform to US Core R4 profiles' do
+        metadata do
+          id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
           )
@@ -246,7 +268,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Location for this patient.' do
         metadata do
-          id '11'
+          id '12'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -281,7 +303,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '12'
+          id '13'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

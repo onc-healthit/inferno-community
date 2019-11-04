@@ -101,6 +101,9 @@ module Inferno
 
   class InvalidMetadataException < RuntimeError
   end
+
+  class InvalidKeyException < RuntimeError
+  end
 end
 
 # monkey patch this exception from fhir_client
