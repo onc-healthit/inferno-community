@@ -94,6 +94,10 @@ describe Inferno::Models::TestingInstance do
       @instance.patient_id = '123'
 
       assert_equal '123', @instance.patient_id
+
+      @instance.patient_id = '456'
+
+      assert_equal '456', @instance.patient_id
     end
   end
 end
