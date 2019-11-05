@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'dm-timestamps'
+
 module Inferno
   module Models
     class ResourceReference
@@ -8,6 +10,7 @@ module Inferno
       property :resource_type, String
       property :resource_id, String
       property :profile, String
+      property :created_at, DateTime
 
       belongs_to :testing_instance
     end
