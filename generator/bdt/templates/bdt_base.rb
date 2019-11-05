@@ -3,7 +3,7 @@
 module Inferno
   module Sequence
     class BDTBase < SequenceBase
-      BDT_URL = 'http://localhost:4500/api/tests'
+      BDT_URL = 'http://bdt-service:4500/api/tests'
 
       BDT_CONFIG = {
         'path' => '5.0',
@@ -62,7 +62,7 @@ module Inferno
           'settings' => BDT_CONFIG
         }
         response = RestClient.post(BDT_URL, payload.to_json, content_type: :json, accept: :json)
-        response.body.split('\n').each do |chunk|
+        response.body.split("\n").each do |chunk|
           message = JSON.parse(chunk.strip)
 
           data = message['data']

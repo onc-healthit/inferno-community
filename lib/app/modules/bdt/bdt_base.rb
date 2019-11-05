@@ -3,7 +3,7 @@
 module Inferno
   module Sequence
     class BDTBase < SequenceBase
-      BDT_URL = 'http://localhost:4500/api/tests'
+      BDT_URL = 'http://bdt-service:4500/api/tests'
 
       BDT_CONFIG = {
         'path' => '5.0',
@@ -11,7 +11,15 @@ module Inferno
         'settings' => {
           'baseURL' => 'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAsImR1ciI6MTAsInRsdCI6MTUsIm0iOjF9/fhir',
           'tokenEndpoint' => 'https://bulk-data.smarthealthit.org/auth/token',
-          'clientId' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzIjp7ImtleXMiOlt7Imt0eSI6IkVDIiwiY3J2IjoiUC0zODQiLCJ4IjoiTTFyM0dVZDBZRHBXbHF0ZjRHYXJPcmN3SWoyRnhDQlFmQnN4QmlLUzdmTTl1Z1pVUlBialp6YjZ5bDZOSlFETCIsInkiOiJmUWVvRm9wTTc0VjlXSWRYR0NHX3NtVm56c2N4eGlXM0hNQnNjd2tiUlVRSWxqMmFrTTM2WVB4ZDF2Z2M5WWVJIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0Ijp0cnVlLCJraWQiOiJmMjkzOTdlZjQ0NmQ1YzE0ODBhZGViYmNiNTk5MTBiMyIsImFsZyI6IkVTMzg0In0seyJrdHkiOiJFQyIsImNydiI6IlAtMzg0IiwiZCI6IkxfOGh3VXlsbndoYWpNUGRqdkV0MTUtd0ZLbldDVEJ2WG1kSm5waTkySHN4TFVYWEwzS1ZidDlVYndFRjN2S0giLCJ4IjoiTTFyM0dVZDBZRHBXbHF0ZjRHYXJPcmN3SWoyRnhDQlFmQnN4QmlLUzdmTTl1Z1pVUlBialp6YjZ5bDZOSlFETCIsInkiOiJmUWVvRm9wTTc0VjlXSWRYR0NHX3NtVm56c2N4eGlXM0hNQnNjd2tiUlVRSWxqMmFrTTM2WVB4ZDF2Z2M5WWVJIiwia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia2lkIjoiZjI5Mzk3ZWY0NDZkNWMxNDgwYWRlYmJjYjU5OTEwYjMiLCJhbGciOiJFUzM4NCJ9XX0sImFjY2Vzc1Rva2Vuc0V4cGlyZUluIjoxNSwiaWF0IjoxNTU3NTAwNDIwfQ.2NJEarwScjRZZaDlpL1ixLxhWdfWFo_EFcaKJfL1oHE',
+          'clientId' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzIjp7ImtleXMiOlt7Imt0eSI6IkVDIiwiY3J2I' \
+                        'joiUC0zODQiLCJ4IjoiTTFyM0dVZDBZRHBXbHF0ZjRHYXJPcmN3SWoyRnhDQlFmQnN4QmlLUzdmTTl1Z1pVUlBialp6YjZ5bDZOSlFETCIsInkiOiJmUWV' \
+                        'vRm9wTTc0VjlXSWRYR0NHX3NtVm56c2N4eGlXM0hNQnNjd2tiUlVRSWxqMmFrTTM2WVB4ZDF2Z2M5WWVJIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0I' \
+                        'jp0cnVlLCJraWQiOiJmMjkzOTdlZjQ0NmQ1YzE0ODBhZGViYmNiNTk5MTBiMyIsImFsZyI6IkVTMzg0In0seyJrdHkiOiJFQyIsImNydiI6IlAtMzg0Iiw' \
+                        'iZCI6IkxfOGh3VXlsbndoYWpNUGRqdkV0MTUtd0ZLbldDVEJ2WG1kSm5waTkySHN4TFVYWEwzS1ZidDlVYndFRjN2S0giLCJ4IjoiTTFyM0dVZDBZRHBXb' \
+                        'HF0ZjRHYXJPcmN3SWoyRnhDQlFmQnN4QmlLUzdmTTl1Z1pVUlBialp6YjZ5bDZOSlFETCIsInkiOiJmUWVvRm9wTTc0VjlXSWRYR0NHX3NtVm56c2N4eGl' \
+                        'XM0hNQnNjd2tiUlVRSWxqMmFrTTM2WVB4ZDF2Z2M5WWVJIiwia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia2lkIjoiZjI5Mzk3ZWY0NDZkNWMxN' \
+                        'DgwYWRlYmJjYjU5OTEwYjMiLCJhbGciOiJFUzM4NCJ9XX0sImFjY2Vzc1Rva2Vuc0V4cGlyZUluIjoxNSwiaWF0IjoxNTU3NTAwNDIwfQ.2NJEarwScjRZ' \
+                        'ZaDlpL1ixLxhWdfWFo_EFcaKJfL1oHE',
           'systemExportEndpoint' => '/$export',
           'patientExportEndpoint' => '/Patient/$export',
           'groupExportEndpoint' => '/Group/6/$export',
@@ -54,7 +62,7 @@ module Inferno
           'settings' => BDT_CONFIG
         }
         response = RestClient.post(BDT_URL, payload.to_json, content_type: :json, accept: :json)
-        response.body.split('\n').each do |chunk|
+        response.body.split("\n").each do |chunk|
           message = JSON.parse(chunk.strip)
 
           data = message['data']
