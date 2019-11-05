@@ -29,7 +29,7 @@ class R4ProvenanceSequenceTest < MiniTest::Test
       ]
     }
 
-    @instance = Inferno::Models::TestingInstance.new(
+    @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -42,11 +42,10 @@ class R4ProvenanceSequenceTest < MiniTest::Test
       token: 99_897_979
     )
 
-    @instance.save!
-
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    Inferno::Models::ResourceReference.create(
       resource_type: 'Patient',
-      resource_id: @patient_id
+      resource_id: @patient_id,
+      testing_instance: @instance
     )
 
     set_resource_support(@instance, 'Provenance')

@@ -8,7 +8,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
     @docref_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_docref_bundle))
     @diagrpt_bundle = FHIR.from_contents(load_fixture(:us_core_r4_clinicalnotes_diagrpt_bundle))
 
-    @instance = Inferno::Models::TestingInstance.new(
+    @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -21,11 +21,10 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
       token: 99_897_979
     )
 
-    @instance.save!
-
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    Inferno::Models::ResourceReference.create(
       resource_type: 'Patient',
-      resource_id: @patient_id
+      resource_id: @patient_id,
+      testing_instance: @instance
     )
 
     set_resource_support(@instance, 'DocumentReference')
