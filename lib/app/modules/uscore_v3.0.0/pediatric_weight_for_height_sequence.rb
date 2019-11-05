@@ -59,9 +59,7 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        search_params = { patient: @instance.patient_id, code: '77606-2' }
-
+        search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -76,22 +74,26 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, code: '77606-2' }
+        code_val = ['77606-2']
+        code_val.each do |val|
+          search_params = { 'patient': @instance.patient_id, 'code': val }
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+          next unless @resources_found
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+          @observation = reply&.resource&.entry&.first&.resource
+          @observation_ary = fetch_all_bundled_resources(reply&.resource)
 
+          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_weight_height])
+          save_delayed_sequence_references(@observation_ary)
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          break
+        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @observation = reply&.resource&.entry&.first&.resource
-        @observation_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_weight_height])
-        save_delayed_sequence_references(@observation_ary)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
       test 'Server returns expected results from Observation search by patient+category' do
