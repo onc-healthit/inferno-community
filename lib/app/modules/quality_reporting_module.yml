@@ -9,6 +9,7 @@ test_sets:
     tests:
       - name: Prerequisites
         sequences:
+          - MeasureAvailability
           - ValueSetSequence
       - name: CMS165 Bulk Data Reporting
         sequences:

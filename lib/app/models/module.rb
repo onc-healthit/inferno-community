@@ -76,5 +76,18 @@ module Inferno
       this_module = YAML.load_file(file).deep_symbolize_keys
       new(this_module)
     end
+
+    def testable_measures
+      cqf_ruler_client = FHIR::Client.new(Inferno::CQF_RULER)
+      headers = { 'content-type' => 'application/json+fhir' }
+      measures_endpoint = Inferno::CQF_RULER + 'Measure'
+      resp = cqf_ruler_client.client.get(measures_endpoint, headers)
+      bundle = FHIR::STU3::Bundle.new JSON.parse(resp.body)
+      measure_resources = bundle.entry.select { |e| e.resource.class == FHIR::STU3::Measure }
+      measure_ids = measure_resources.map { |measure| measure.resource.id }
+      @measures = measure_ids
+    rescue StandardError
+      @measures = []
+    end
   end
 end

@@ -227,6 +227,11 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
+        <%= erb(:prerequisite_field_dropdown,{},{prerequisite: :measure_to_test,
+              label: 'Measure To Test',
+              instance: instance,
+              value: instance.measure_to_test,
+              })%>
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
