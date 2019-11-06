@@ -378,6 +378,7 @@ module Inferno
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
           )
         else
+          # assume only patient + one other parameter
           non_patient_search_param = search_parameters.find { |param| param != 'patient' }
           non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
           values_variable_name = param_value_name(non_patient_search_param)
