@@ -28,7 +28,7 @@ describe Inferno::Sequence::USCore301PatientSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal "Bad response code: expected 401 or 406, but found 200", exception.message
+      assert_equal "Bad response code: expected 401, but found 200", exception.message
     end
 
     it 'succeeds when the token refresh response has an error status' do
@@ -85,18 +85,16 @@ describe Inferno::Sequence::USCore301PatientSequence do
       assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
     end
 
-    # TODO: fix non-determinism of TestingInstance#patient_id
-    #
-    # it 'fails when the Patient id does not match the requested id' do
-    #   @instance.patient_id = @patient_id
-    #   stub_request(:get, "#{@base_url}/Patient")
-    #     .with(query: @query, headers: @auth_header)
-    #     .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Patient.new(id: 'ID')).to_json)
+    it 'fails when the Patient id does not match the requested id' do
+      @instance.patient_id = @patient_id
+      stub_request(:get, "#{@base_url}/Patient")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Patient.new(id: 'ID')).to_json)
 
-    #   exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-    #   assert_equal 'Server returned nil patient', exception.message
-    # end
+      assert_equal '_id on resource does not match _id requested', exception.message
+    end
 
     it 'fails when the Patient resource is invalid' do
       bad_patient = FHIR::Patient.new(id: @patient_id)
