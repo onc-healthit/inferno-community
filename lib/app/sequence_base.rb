@@ -13,6 +13,8 @@ require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
+require_relative 'utils/base_validator'
+require_relative 'utils/grahame_validator'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -500,8 +502,10 @@ module Inferno
         entries.each do |entry|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          base_resource_validation_errors = entry.resource.validate
-          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+          validator = Inferno::GrahameValidator.new
+          base_resource_validation_errors = validator.validate(entry.resource, versioned_resource_class)
+          assert base_resource_validation_errors[:fatals].empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors[:fatals]}"
+          assert base_resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors[:errors]}"
 
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
