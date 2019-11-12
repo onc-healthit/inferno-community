@@ -40,23 +40,24 @@ class MedicationOrderSequenceTest < MiniTest::Test
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
     @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
-    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                                     client_name: 'Inferno',
-                                                     base_url: 'http://localhost:4567',
-                                                     client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-                                                     client_id: SecureRandom.uuid,
-                                                     selected_module: 'argonaut',
-                                                     oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
-                                                     oauth_token_endpoint: 'http://oauth_reg.example.com/token',
-                                                     scopes: 'launch openid patient/*.* profile',
-                                                     token: 99_897_979)
-
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
+    @instance = Inferno::Models::TestingInstance.create(
+      url: 'http://www.example.com',
+      client_name: 'Inferno',
+      base_url: 'http://localhost:4567',
+      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
+      client_id: SecureRandom.uuid,
+      selected_module: 'argonaut',
+      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
+      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
+      scopes: 'launch openid patient/*.* profile',
+      token: 99_897_979
+    )
 
     # Assume we already have a patient
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    Inferno::Models::ResourceReference.create(
       resource_type: 'Patient',
-      resource_id: @patient_id
+      resource_id: @patient_id,
+      testing_instance: @instance
     )
 
     set_resource_support(@instance, 'MedicationOrder')

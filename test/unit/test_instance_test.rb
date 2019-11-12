@@ -74,4 +74,30 @@ describe Inferno::Models::TestingInstance do
       assert !@instance.fhir_version_match?(fhir_versions)
     end
   end
+
+  describe '#patient_id' do
+    it 'returns the id of the Patient reference which was created first' do
+      10.times do |index|
+        Inferno::Models::ResourceReference.create(
+          resource_type: 'Patient',
+          resource_id: index.to_s,
+          testing_instance: @instance
+        )
+      end
+
+      assert_equal '0', @instance.patient_id
+    end
+  end
+
+  describe '#patient_id=' do
+    it 'sets the patient id' do
+      @instance.patient_id = '123'
+
+      assert_equal '123', @instance.patient_id
+
+      @instance.patient_id = '456'
+
+      assert_equal '456', @instance.patient_id
+    end
+  end
 end
