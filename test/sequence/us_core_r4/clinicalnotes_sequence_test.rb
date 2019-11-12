@@ -14,7 +14,7 @@ class USCoreR4ClinicalNotesSequenceTest < MiniTest::Test
       base_url: 'http://localhost:4567',
       client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
       client_id: SecureRandom.uuid,
-      selected_module: 'uscore_v3.0.1',
+      selected_module: 'uscore_v3.1.0',
       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       scopes: 'launch openid patient/*.* profile',

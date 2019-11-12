@@ -4,7 +4,7 @@ require File.expand_path '../test_helper.rb', __dir__
 
 describe Inferno::Models::TestingInstance do
   before do
-    @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+    @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
   end
 
   describe '#conformance_supported?' do
