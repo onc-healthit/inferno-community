@@ -28,7 +28,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal "Bad response code: expected 401, but found 200", exception.message
+      assert_equal 'Bad response code: expected 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh response has an error status' do

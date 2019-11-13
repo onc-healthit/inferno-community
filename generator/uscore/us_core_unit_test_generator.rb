@@ -22,10 +22,11 @@ module Inferno
         File.write(file_name, unit_tests)
       end
 
-      def generate_authorization_test(key:, resource_type:, search_params:, class_name:)
+      def generate_authorization_test(key:, name:, resource_type:, search_params:, class_name:)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'authorization_unit_test.rb.erb')))
         test = template.result_with_hash(
           key: key,
+          name: name,
           resource_type: resource_type,
           search_param_string: search_params_to_string(search_params),
           dynamic_search_params: dynamic_search_params(search_params)
@@ -47,15 +48,10 @@ module Inferno
 
       def dynamic_search_param_string(param, value)
         param_info = dynamic_search_param(value)
-        path = param_info[:path]
+        path = param_info[:resource_path]
         variable_name = param_info[:variable_name]
-        variable_name = value.match(/(@\w+)/)[1]
         "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
       end
-
-      # def dynamic_search_params?(search_params)
-      #   search_params.any? { |_param, value| dynamic_search_param? value }
-      # end
 
       def dynamic_search_param?(param_value)
         param_value.start_with? 'get_value_for_search_param'
@@ -64,11 +60,11 @@ module Inferno
       def dynamic_search_params(search_params)
         search_params
           .select { |_param, value| dynamic_search_param?(value) }
-          .transform_value { |value| dynamic_search_param(value) }
+          .transform_values { |value| dynamic_search_param(value) }
       end
 
       def dynamic_search_param(param_value)
-        match = value.match(/(@\w+).*'([\w\.]+)'/)
+        match = param_value.match(/(@\w+).*'([\w\.]+)'/)
         {
           variable_name: match[1],
           resource_path: match[2]

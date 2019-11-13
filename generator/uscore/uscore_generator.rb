@@ -142,6 +142,7 @@ module Inferno
         sequence[:tests] << authorization_test
         unit_test_generator.generate_authorization_test(
           key: key,
+          name: sequence[:name],
           resource_type: sequence[:resource],
           search_params: get_search_param_hash(first_search[:names], sequence),
           class_name: sequence[:class_name]
@@ -493,16 +494,25 @@ module Inferno
       end
 
       def search_param_constants(search_parameters, sequence)
-        return { patient: '@instance.patient_id', category: 'assess-plan'} if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
-        return { patient: '@instance.patient_id', status: 'active' } if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
+        return { patient: '@instance.patient_id', category: 'assess-plan' } if search_parameters == ['patient', 'category'] &&
+                                                                               sequence[:resource] == 'CarePlan'
+        return { patient: '@instance.patient_id', status: 'active' } if search_parameters == ['patient', 'status'] &&
+                                                                        sequence[:resource] == 'CareTeam'
         return { '_id': '@instance.patient_id' } if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
-        return { patient: '@instance.patient_id', code: '72166-2' } if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:smoking_status]
-        return { patient: '@instance.patient_id', category: 'laboratory' } if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:lab_results]
-        return { patient: '@instance.patient_id', code: '77606-2' } if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_weight_height]
-        return { patient: '@instance.patient_id', code: '59576-9' } if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
-        return { patient: '@instance.patient_id', category: 'LAB' } if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
-        return { patient: '@instance.patient_id', code: 'LP29684-5' } if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_note]
-        return { patient: '@instance.patient_id', code: '59408-5' } if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pulse_oximetry]
+        return { patient: '@instance.patient_id', code: '72166-2' } if search_parameters == ['patient', 'code'] &&
+                                                                       sequence[:profile] == PROFILE_URIS[:smoking_status]
+        return { patient: '@instance.patient_id', category: 'laboratory' } if search_parameters == ['patient', 'category'] &&
+                                                                              sequence[:profile] == PROFILE_URIS[:lab_results]
+        return { patient: '@instance.patient_id', code: '77606-2' } if search_parameters == ['patient', 'code'] &&
+                                                                       sequence[:profile] == PROFILE_URIS[:pediatric_weight_height]
+        return { patient: '@instance.patient_id', code: '59576-9' } if search_parameters == ['patient', 'code'] &&
+                                                                       sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
+        return { patient: '@instance.patient_id', category: 'LAB' } if search_parameters == ['patient', 'category'] &&
+                                                                       sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
+        return { patient: '@instance.patient_id', code: 'LP29684-5' } if search_parameters == ['patient', 'category'] &&
+                                                                         sequence[:profile] == PROFILE_URIS[:diagnostic_report_note]
+        return { patient: '@instance.patient_id', code: '59408-5' } if search_parameters == ['patient', 'code'] &&
+                                                                       sequence[:profile] == PROFILE_URIS[:pulse_oximetry]
       end
 
       def create_search_validation(sequence)
