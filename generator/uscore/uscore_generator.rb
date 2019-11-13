@@ -3,6 +3,7 @@
 require_relative './metadata_extractor'
 require_relative '../../lib/app/utils/validation'
 require_relative '../generator_base'
+require_relative './us_core_unit_test_generator'
 
 module Inferno
   module Generator
@@ -10,6 +11,10 @@ module Inferno
       include USCoreMetadataExtractor
 
       PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+
+      def unit_test_generator
+        @unit_test_generator ||= USCoreUnitTestGenerator.new
+      end
 
       def validation_profile_uri(sequence)
         profile_uri = PROFILE_URIS.key(sequence[:profile])
@@ -22,6 +27,7 @@ module Inferno
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
           generate_sequence(sequence)
+          unit_test_generator.generate(sequence, sequence_out_path)
         end
         generate_module(metadata)
       end
@@ -134,12 +140,12 @@ module Inferno
               assert_response_unauthorized reply)
 
         sequence[:tests] << authorization_test
-        # unit_test_generator.generate_authorization_test(
-        {
+        unit_test_generator.generate_authorization_test(
           key: key,
-          resourceType: sequence[:resource],
-          search_param: first_search[:names]
-        }# )
+          resource_type: sequence[:resource],
+          search_params: get_search_param_hash(first_search[:names], sequence),
+          class_name: sequence[:class_name]
+        )
       end
 
       def create_include_test(sequence)
