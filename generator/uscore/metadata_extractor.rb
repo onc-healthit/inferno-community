@@ -230,26 +230,43 @@ module Inferno
 
       def add_valid_codes(profile_definition, profile_element, fhir_metadata, param_metadata, path)
         if param_metadata[:contains_multiple]
-          # look for values in slices if param is an array
-          slices = profile_definition['snapshot']['element'].select { |el| el['path'] == path && el['sliceName'] }
-          slices.each do |slice|
-            param_metadata[:values] << slice['patternCodeableConcept']['coding'].first['code'] if slice['patternCodeableConcept']
-          end
+          add_values_from_slices(param_metadata, profile_definition, path)
         elsif param_metadata[:type] == 'CodeableConcept'
-          # look for fixed codes if codeable concept
-          fixed_code_els = profile_definition['snapshot']['element'].select { |el| el['path'] == "#{profile_element['path']}.coding.code" && el['fixedCode'].present? }
-          param_metadata[:values] += fixed_code_els.map { |el| el['fixedCode'] }
+          add_values_from_fixed_codes(param_metadata, profile_definition, profile_element)
+          add_values_from_patterncodeableconcept(param_metadata, profile_element)
         end
-        param_metadata[:values] << profile_element['patternCodeableConcept']['coding'].first['code'] if profile_element['patternCodeableConcept']
-        # look for values in the valueset the element is bound to
+        add_values_from_valueset_binding(param_metadata, profile_element)
+        add_values_from_resource_metadata(param_metadata, fhir_metadata)
+      end
+
+      def add_values_from_slices(param_metadata, profile_definition, path)
+        slices = profile_definition['snapshot']['element'].select { |el| el['path'] == path && el['sliceName'] }
+        slices.each do |slice|
+          param_metadata[:values] << slice['patternCodeableConcept']['coding'].first['code'] if slice['patternCodeableConcept']
+        end
+      end
+
+      def add_values_from_fixed_codes(param_metadata, profile_definition, profile_element)
+        fixed_code_els = profile_definition['snapshot']['element'].select { |el| el['path'] == "#{profile_element['path']}.coding.code" && el['fixedCode'].present? }
+        param_metadata[:values] += fixed_code_els.map { |el| el['fixedCode'] }
+      end
+
+      def add_values_from_valueset_binding(param_metadata, profile_element)
         valueset_binding = profile_element['binding']
-        if valueset_binding
-          value_set = resources_by_type['ValueSet'].find { |res| res['url'] == valueset_binding['valueSet'] }
-          codes = value_set['compose']['include'].reject { |code| code['concept'].nil? } if value_set.present?
-          param_metadata[:values] += codes.map { |code| code['concept'].first['code'] } if codes.present?
-        end
-        # if none found so far, add all the valid codes from metadata (less strict)
-        param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten unless param_metadata[:values].any? || fhir_metadata.nil? || fhir_metadata['valid_codes'].nil?
+        return unless valueset_binding
+
+        value_set = resources_by_type['ValueSet'].find { |res| res['url'] == valueset_binding['valueSet'] }
+        codes = value_set['compose']['include'].reject { |code| code['concept'].nil? } if value_set.present?
+        param_metadata[:values] += codes.map { |code| code['concept'].first['code'] } if codes.present?
+      end
+
+      def add_values_from_patterncodeableconcept(param_metadata, profile_element)
+        param_metadata[:values] << profile_element['patternCodeableConcept']['coding'].first['code'] if profile_element['patternCodeableConcept']
+      end
+
+      def add_values_from_resource_metadata(param_metadata, fhir_metadata)
+        use_valid_codes = param_metadata[:values].blank? && fhir_metadata.present? && fhir_metadata['valid_codes'].present?
+        param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten if use_valid_codes
       end
 
       def add_element_definitions(profile_definition, sequence)
