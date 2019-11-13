@@ -5,16 +5,16 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTSystemSequence < BDTBase
-      group 'FIXME'
-
       title 'System'
 
       description 'System-level export'
 
       test_id_prefix 'System'
 
-      requires :token
-      conformance_supports :CarePlan
+      requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
+               :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
+               :bulk_fastest_resource, :bulk_requires_auth, :bulk_since_param, :bulk_jwks_url_auth, :bulk_jwks_url_auth, \
+               :bulk_public_key, :bulk_private_key
 
       details %(
         System

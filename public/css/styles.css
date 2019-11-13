@@ -273,8 +273,12 @@ body {
 
 #PrerequisitesModal label {
   margin-bottom: .1rem;
-  text-transform: uppercase;
   font-size: .9rem;
+  color: #000;
+}
+
+#PrerequisitesModal label small{
+  display: block;
   color: #666;
 }
 

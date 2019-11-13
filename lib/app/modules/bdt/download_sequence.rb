@@ -5,16 +5,16 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTDownloadSequence < BDTBase
-      group 'FIXME'
-
       title 'Download'
 
       description 'Download Endpoint'
 
       test_id_prefix 'Download'
 
-      requires :token
-      conformance_supports :CarePlan
+      requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
+               :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
+               :bulk_fastest_resource, :bulk_requires_auth, :bulk_since_param, :bulk_jwks_url_auth, :bulk_jwks_url_auth, \
+               :bulk_public_key, :bulk_private_key
 
       details %(
         Download
@@ -67,6 +67,18 @@ module Inferno
         end
 
         run_bdt('1.3')
+      end
+      test 'Rejects a download if the client scopes do not cover that resource type' do
+        metadata do
+          id '05'
+          link 'http://bulkdatainfo'
+          description %(
+            If the download endpoint requires authorization, it should also verify that the client has been granted access to the resource type that it attempts to download. This test makes an export and then it re-authorizes before downloading the first file, so that the download request is made with a token that does not provide access to the downloaded resource.
+          )
+          versions :r4
+        end
+
+        run_bdt('1.4')
       end
     end
   end

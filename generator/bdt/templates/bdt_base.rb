@@ -3,7 +3,7 @@
 module Inferno
   module Sequence
     class BDTBase < SequenceBase
-      BDT_URL = 'http://bdt-service:4500/api/tests'
+      BDT_URL = 'http://localhost:4500/api/tests'
 
       BDT_CONFIG = {
         'path' => '5.0',
@@ -56,10 +56,30 @@ module Inferno
         }
       }.freeze
 
+      def settings
+        {
+          'baseUrl' => @instance.bulk_url,
+          'tokenEndpoint' => @instance.bulk_token_endpoint,
+          'clientId' => @instance.bulk_client_id,
+          'systemExportEndpoint' => @instance.bulk_system_export_endpoint,
+          'patientExportEndpoint' => @instance.bulk_patient_export_endpoint,
+          'groupExportEndpoint' => @instance.bulk_group_export_endpoint,
+          'fastestResource' => @instance.bulk_fastest_resource,
+          'requiresAuth' => !@instance.bulk_requires_auth.nil?,
+          'sinceParam' => '_since',
+          'jwksUrlAuth' => true,
+          'jwksAuth' => true,
+          'strictSSL' => false,
+          'publicKey' => @instance.bulk_public_key,
+          'privateKey' => @instance.bulk_private_key
+        }
+      end
+
       def run_bdt(path)
+
         payload = {
           'path' => path,
-          'settings' => BDT_CONFIG
+          'settings' => settings
         }
         response = RestClient.post(BDT_URL, payload.to_json, content_type: :json, accept: :json)
         response.body.split("\n").each do |chunk|
@@ -115,6 +135,7 @@ module Inferno
           end
 
           omit 'Not supported' if data['status'] == 'not-supported'
+          binding.pry if data['status'] == 'not-supported'
 
           assert message['status'] != 'error', data['error']
         end

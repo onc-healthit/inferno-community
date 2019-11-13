@@ -13,20 +13,22 @@
           "children": [
             {
               "id": "Auth-01.0.0",
-              "name": "system-level export - requires authorization header",
-              "description": "The server should require authorization header",
+              "name": "Requires authorization header",
+              "description": "The server should require authorization header at the system-level export endpoint",
               "type": "test",
               "path": "0.0.0"
             },
             {
               "id": "Auth-01.0.1",
-              "name": "system-level export - rejects expired token",
+              "name": "Rejects expired token",
+              "description": "The server should reject expired tokens at the system-level export endpoint",
               "type": "test",
               "path": "0.0.1"
             },
             {
               "id": "Auth-01.0.2",
-              "name": "system-level export - rejects invalid token",
+              "name": "Rejects invalid token",
+              "description": "The server should reject invalid tokens at the system-level export endpoint",
               "type": "test",
               "path": "0.0.2"
             }
@@ -39,20 +41,22 @@
           "children": [
             {
               "id": "Auth-01.1.0",
-              "name": "patient-level export - requires authorization header",
-              "description": "The server should require authorization header",
+              "name": "Requires authorization header",
+              "description": "The server should require authorization header at the patient-level export endpoint",
               "type": "test",
               "path": "0.1.0"
             },
             {
               "id": "Auth-01.1.1",
-              "name": "patient-level export - rejects expired token",
+              "name": "Rejects expired token",
+              "description": "The server should reject expired tokens at the patient-level export endpoint",
               "type": "test",
               "path": "0.1.1"
             },
             {
               "id": "Auth-01.1.2",
-              "name": "patient-level export - rejects invalid token",
+              "name": "Rejects invalid token",
+              "description": "The server should reject invalid tokens at the patient-level export endpoint",
               "type": "test",
               "path": "0.1.2"
             }
@@ -65,20 +69,22 @@
           "children": [
             {
               "id": "Auth-01.2.0",
-              "name": "group-level export - requires authorization header",
-              "description": "The server should require authorization header",
+              "name": "Requires authorization header",
+              "description": "The server should require authorization header at the group-level export endpoint",
               "type": "test",
               "path": "0.2.0"
             },
             {
               "id": "Auth-01.2.1",
-              "name": "group-level export - rejects expired token",
+              "name": "Rejects expired token",
+              "description": "The server should reject expired tokens at the group-level export endpoint",
               "type": "test",
               "path": "0.2.1"
             },
             {
               "id": "Auth-01.2.2",
-              "name": "group-level export - rejects invalid token",
+              "name": "Rejects invalid token",
+              "description": "The server should reject invalid tokens at the group-level export endpoint",
               "type": "test",
               "path": "0.2.2"
             }
@@ -155,14 +161,14 @@
             {
               "id": "Auth-11",
               "name": "Requires scope",
-              "description": "",
+              "description": "The server should reject requests to the token endpoint that do not specify a scope",
               "type": "test",
               "path": "0.3.9"
             },
             {
               "id": "Auth-12",
               "name": "Rejects empty scope",
-              "description": "",
+              "description": "The server should reject requests to the token endpoint that are requesting an empty scope",
               "type": "test",
               "path": "0.3.10"
             },
@@ -204,7 +210,7 @@
             {
               "id": "Auth-18",
               "name": "validates the jku token header",
-              "description": "",
+              "description": "When present, the <code>jky</code> authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using <code>test-bad-jku</code> as <code>jky</code> header value and expects that to produce an error.",
               "type": "test",
               "path": "0.3.16"
             },
@@ -217,9 +223,17 @@
             },
             {
               "id": "Auth-20",
-              "name": "Authorization using JWKS URL",
+              "name": "Authorization using JWKS URL and ES384 keys",
+              "description": "Verify that the server supports JWKS URL authorization using ES384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.",
               "type": "test",
               "path": "0.3.18"
+            },
+            {
+              "id": "Auth-21",
+              "name": "Authorization using JWKS URL and RS384 keys",
+              "description": "Verify that the server supports JWKS URL authorization using RS384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.",
+              "type": "test",
+              "path": "0.3.19"
             }
           ],
           "path": "0.3"
@@ -258,6 +272,13 @@
           "description": "Runs a set of assertions to verify that:<ul><li>The server returns HTTP status of <b>200 OK</b></li><li>The server returns a <code>Content-Type</code> header that matches the file format being delivered. For files in ndjson format, MUST be <code>application/fhir+ndjson</code></li><li>The response body is valid FHIR <b>ndjson</b> (unless other format is requested)</li><li>An <code>Accept</code> header might be sent (optional, defaults to <code>application/fhir+ndjson</code>)</li></ul>",
           "type": "test",
           "path": "1.3"
+        },
+        {
+          "id": "Download-05",
+          "name": "Rejects a download if the client scopes do not cover that resource type",
+          "description": "If the download endpoint requires authorization, it should also verify that the client has been granted access to the resource type that it attempts to download. This test makes an export and then it re-authorizes before downloading the first file, so that the download request is made with a token that does not provide access to the downloaded resource.",
+          "type": "test",
+          "path": "1.4"
         }
       ],
       "path": "1"
@@ -563,14 +584,14 @@
         {
           "id": "Status-01",
           "name": "Responds with 202 for active transaction IDs",
-          "description": "<p>The status endpoint should return <b>202</b> status code until the export is completed.</p>See <a target=\"_blank\" href=\"https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---in-progress-status\">https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---in-progress-status</a>",
+          "description": "<p>The status endpoint should return <b>202</b> status code until the export is completed.</p>See <a target=\"_blank\" href=\"https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status\">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status</a>",
           "type": "test",
           "path": "5.0"
         },
         {
           "id": "Status-02",
           "name": "Replies properly in case of error",
-          "description": "Runs a set of assertions to verify that:<ul><li>The returned HTTP status code is 5XX</li><li>The server returns a FHIR OperationOutcome resource in JSON format</li></ul><p>Note that even if some of the requested resources cannot successfully be exported, the overall export operation MAY still succeed. In this case, the Response.error array of the completion response MUST be populated (see below) with one or more files in ndjson format containing FHIR OperationOutcome resources to indicate what went wrong.</p>See <a target=\"_blank\" href=\"https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---error-status-1\">https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---error-status-1</a>",
+          "description": "Runs a set of assertions to verify that:<ul><li>The returned HTTP status code is 5XX</li><li>The server returns a FHIR OperationOutcome resource in JSON format</li></ul><p>Note that even if some of the requested resources cannot successfully be exported, the overall export operation MAY still succeed. In this case, the Response.error array of the completion response MUST be populated (see below) with one or more files in ndjson format containing FHIR OperationOutcome resources to indicate what went wrong.</p>See <a target=\"_blank\" href=\"https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1\">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1</a>",
           "type": "test",
           "path": "5.1"
         },

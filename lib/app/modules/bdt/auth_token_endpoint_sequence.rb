@@ -5,16 +5,16 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTAuthTokenEndpointSequence < BDTBase
-      group 'FIXME'
-
       title 'Auth Token Endpoint'
 
       description 'Token endpoint'
 
       test_id_prefix 'Auth_Token_endpoint'
 
-      requires :token
-      conformance_supports :CarePlan
+      requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
+               :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
+               :bulk_fastest_resource, :bulk_requires_auth, :bulk_since_param, :bulk_jwks_url_auth, :bulk_jwks_url_auth, \
+               :bulk_public_key, :bulk_private_key
 
       details %(
         Auth Token Endpoint
@@ -133,7 +133,7 @@ module Inferno
           id '11'
           link 'http://bulkdatainfo'
           description %(
-
+            The server should reject requests to the token endpoint that do not specify a scope
           )
           versions :r4
         end
@@ -145,7 +145,7 @@ module Inferno
           id '12'
           link 'http://bulkdatainfo'
           description %(
-
+            The server should reject requests to the token endpoint that are requesting an empty scope
           )
           versions :r4
         end
@@ -217,7 +217,7 @@ module Inferno
           id '18'
           link 'http://bulkdatainfo'
           description %(
-
+            When present, the <code>jky</code> authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using <code>test-bad-jku</code> as <code>jky</code> header value and expects that to produce an error.
           )
           versions :r4
         end
@@ -236,17 +236,29 @@ module Inferno
 
         run_bdt('0.3.17')
       end
-      test 'Authorization using JWKS URL' do
+      test 'Authorization using JWKS URL and ES384 keys' do
         metadata do
           id '20'
           link 'http://bulkdatainfo'
           description %(
-
+            Verify that the server supports JWKS URL authorization using ES384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.
           )
           versions :r4
         end
 
         run_bdt('0.3.18')
+      end
+      test 'Authorization using JWKS URL and RS384 keys' do
+        metadata do
+          id '21'
+          link 'http://bulkdatainfo'
+          description %(
+            Verify that the server supports JWKS URL authorization using RS384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.
+          )
+          versions :r4
+        end
+
+        run_bdt('0.3.19')
       end
     end
   end

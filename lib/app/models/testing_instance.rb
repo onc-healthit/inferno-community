@@ -57,6 +57,22 @@ module Inferno
 
       property :group_id, String
 
+
+      # Bulk Data Parameters
+      property :bulk_url, String 
+      property :bulk_token_endpoint, String
+      property :bulk_client_id, String
+      property :bulk_system_export_endpoint, String
+      property :bulk_patient_export_endpoint, String 
+      property :bulk_group_export_endpoint, String
+      property :bulk_fastest_resource, String
+      property :bulk_requires_auth, String
+      property :bulk_since_param, String
+      property :bulk_jwks_url_auth, String
+      property :bulk_jwks_auth, String
+      property :bulk_public_key, String
+      property :bulk_private_key, String
+
       has n, :sequence_results
       has n, :resource_references
       has 1, :server_capabilities

@@ -5,16 +5,16 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTStatusSequence < BDTBase
-      group 'FIXME'
-
       title 'Status'
 
       description 'Status Endpoint'
 
       test_id_prefix 'Status'
 
-      requires :token
-      conformance_supports :CarePlan
+      requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
+               :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
+               :bulk_fastest_resource, :bulk_requires_auth, :bulk_since_param, :bulk_jwks_url_auth, :bulk_jwks_url_auth, \
+               :bulk_public_key, :bulk_private_key
 
       details %(
         Status
@@ -25,7 +25,7 @@ module Inferno
           id '01'
           link 'http://bulkdatainfo'
           description %(
-            <p>The status endpoint should return <b>202</b> status code until the export is completed.</p>See <a target="_blank" href="https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---in-progress-status">https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---in-progress-status</a>
+            <p>The status endpoint should return <b>202</b> status code until the export is completed.</p>See <a target="_blank" href="https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status</a>
           )
           versions :r4
         end
@@ -37,7 +37,7 @@ module Inferno
           id '02'
           link 'http://bulkdatainfo'
           description %(
-            Runs a set of assertions to verify that:<ul><li>The returned HTTP status code is 5XX</li><li>The server returns a FHIR OperationOutcome resource in JSON format</li></ul><p>Note that even if some of the requested resources cannot successfully be exported, the overall export operation MAY still succeed. In this case, the Response.error array of the completion response MUST be populated (see below) with one or more files in ndjson format containing FHIR OperationOutcome resources to indicate what went wrong.</p>See <a target="_blank" href="https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---error-status-1">https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#response---error-status-1</a>
+            Runs a set of assertions to verify that:<ul><li>The returned HTTP status code is 5XX</li><li>The server returns a FHIR OperationOutcome resource in JSON format</li></ul><p>Note that even if some of the requested resources cannot successfully be exported, the overall export operation MAY still succeed. In this case, the Response.error array of the completion response MUST be populated (see below) with one or more files in ndjson format containing FHIR OperationOutcome resources to indicate what went wrong.</p>See <a target="_blank" href="https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1</a>
           )
           versions :r4
         end
