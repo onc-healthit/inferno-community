@@ -67,6 +67,7 @@ module Inferno
           name 'Server rejects Patient search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -90,6 +91,9 @@ module Inferno
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by _id on the Patient resource
+
           )
           versions :r4
         end
@@ -119,6 +123,9 @@ module Inferno
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by identifier on the Patient resource
+
           )
           versions :r4
         end
@@ -141,6 +148,9 @@ module Inferno
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by name on the Patient resource
+
           )
           versions :r4
         end
@@ -163,6 +173,9 @@ module Inferno
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by gender+name on the Patient resource
+
           )
           versions :r4
         end
@@ -186,6 +199,9 @@ module Inferno
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by birthdate+name on the Patient resource
+
           )
           versions :r4
         end
@@ -210,6 +226,9 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD be able to support searching by birthdate+family on the Patient resource
+
           )
           versions :r4
         end
@@ -234,6 +253,9 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD be able to support searching by family+gender on the Patient resource
+
           )
           versions :r4
         end
@@ -258,6 +280,7 @@ module Inferno
           name 'Patient read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHALL make available read interactions on Patient
           )
           versions :r4
         end
@@ -274,6 +297,7 @@ module Inferno
           name 'Patient vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available vread interactions on Patient
           )
           versions :r4
         end
@@ -290,6 +314,7 @@ module Inferno
           name 'Patient history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available history interactions on Patient
           )
           versions :r4
         end
@@ -305,6 +330,7 @@ module Inferno
           id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -326,6 +352,9 @@ module Inferno
           id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
           )
           versions :r4
         end
@@ -337,8 +366,52 @@ module Inferno
       test 'At least one of every must support element is provided in any Patient for this patient.' do
         metadata do
           id '14'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Patient resources returned from prior searches too see if any of them provide the following must support elements:
+
+            Patient.identifier
+
+            Patient.identifier.system
+
+            Patient.identifier.value
+
+            Patient.name
+
+            Patient.name.family
+
+            Patient.name.given
+
+            Patient.telecom
+
+            Patient.telecom.system
+
+            Patient.telecom.value
+
+            Patient.telecom.use
+
+            Patient.gender
+
+            Patient.birthDate
+
+            Patient.address
+
+            Patient.address.line
+
+            Patient.address.city
+
+            Patient.address.state
+
+            Patient.address.postalCode
+
+            Patient.address.period
+
+            Patient.communication
+
+            Patient.communication.language
+
           )
           versions :r4
         end
@@ -399,6 +472,7 @@ module Inferno
           id '15'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

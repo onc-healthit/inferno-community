@@ -109,7 +109,8 @@ module Inferno
           tests_that: "Can read #{sequence[:resource]} from the server",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html',
+          description: "Reference to #{sequence[:resource]} can be resolved and read."
         }
 
         read_test[:test_code] = %(
@@ -139,7 +140,8 @@ module Inferno
           tests_that: "Server rejects #{sequence[:resource]} search without authorization",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior',
+          description: 'A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.'
         }
 
         first_search = find_first_search(sequence)
@@ -174,7 +176,8 @@ module Inferno
         include_test = {
           tests_that: "Server returns the appropriate resource from the following _includes: #{sequence[:include_params].join(', ')}",
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/search.html#include'
+          link: 'https://www.hl7.org/fhir/search.html#include',
+          description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}"
         }
         first_search = find_first_search(sequence)
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
@@ -198,7 +201,8 @@ module Inferno
         revinclude_test = {
           tests_that: "Server returns the appropriate resources from the following _revincludes: #{sequence[:revincludes].join(',')}",
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/search.html#revinclude'
+          link: 'https://www.hl7.org/fhir/search.html#revinclude',
+          description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}"
         }
         first_search = find_first_search(sequence)
         search_params = first_search.nil? ? "\nsearch_params = {}" : get_search_params(first_search[:names], sequence)
@@ -223,8 +227,16 @@ module Inferno
           tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html',
-          optional: search_param[:expectation] != 'SHALL'
+          optional: search_param[:expectation] != 'SHALL',
+          description: %(
+            A server #{search_param[:expectation]} be able to support searching by #{search_param[:names].join('+')} on the #{sequence[:resource]} resource
+          )
         }
+
+        find_comparators(search_param[:names], sequence).each do |param, comparators|
+          search_test[:description] += %(
+              including support for these #{param} comparators: #{comparators.keys.join(', ')})
+        end
 
         is_first_search = search_param == find_first_search(sequence)
 
@@ -252,7 +264,8 @@ module Inferno
           tests_that: "#{sequence[:resource]} #{interaction[:code]} interaction supported",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html',
+          description: "All servers #{interaction[:expectation]} make available #{interaction[:code]} interactions on #{sequence[:resource]}"
         }
 
         interaction_test[:test_code] = %(
@@ -277,10 +290,19 @@ module Inferno
         test = {
           tests_that: "At least one of every must support element is provided in any #{sequence[:resource]} for this patient.",
           index: sequence[:tests].length + 1,
-          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support',
-          test_code: ''
+          link: 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support',
+          test_code: '',
+          description: %(
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all #{sequence[:resource]} resources returned from prior searches too see if any of them provide the following must support elements:
+          )
         }
 
+        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+          test[:description] += %(
+            #{element[:path]}
+          )
+        end
         test[:test_code] += %(
               skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].underscore}_ary&.any?)
 
@@ -339,7 +361,10 @@ module Inferno
         test = {
           tests_that: "#{sequence[:resource]} resources associated with Patient conform to US Core R4 profiles",
           index: sequence[:tests].length + 1,
-          link: sequence[:profile]
+          link: sequence[:profile],
+          description: %(
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.)
         }
         test[:test_code] = %(
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -352,7 +377,8 @@ module Inferno
         test = {
           tests_that: 'All references can be resolved',
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link: 'https://www.hl7.org/fhir/DSTU2/references.html',
+          description: 'This test checks if references found in resources from prior searches can be resolved.'
         }
 
         test[:test_code] = %(
@@ -503,12 +529,10 @@ module Inferno
           "'#{param}': #{param_value_name(param)}"
         end
         search_assignments_str = "{ #{search_assignments.join(', ')} }"
-        search_params.each do |param|
+        param_comparators = find_comparators(search_params, sequence)
+        param_comparators.each do |param, comparators|
           param_val_name = param_value_name(param)
           param_info = sequence[:search_param_descriptions][param.to_sym]
-          comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
-          next if comparators.empty?
-
           type = param_info[:type]
           case type
           when 'Period', 'date'
@@ -523,6 +547,16 @@ module Inferno
           end
         end
         search_code
+      end
+
+      def find_comparators(search_params, sequence)
+        param_comparators = {}
+        search_params.each do |param|
+          param_info = sequence[:search_param_descriptions][param.to_sym]
+          comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
+          param_comparators[param] = comparators if comparators.present?
+        end
+        param_comparators
       end
 
       def search_param_constants(search_parameters, sequence)

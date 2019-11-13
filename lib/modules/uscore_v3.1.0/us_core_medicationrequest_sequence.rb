@@ -50,6 +50,7 @@ module Inferno
           name 'Server rejects MedicationRequest search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -74,6 +75,9 @@ module Inferno
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by patient+intent on the MedicationRequest resource
+
           )
           versions :r4
         end
@@ -105,6 +109,9 @@ module Inferno
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by patient+intent+status on the MedicationRequest resource
+
           )
           versions :r4
         end
@@ -130,6 +137,9 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD be able to support searching by patient+intent+encounter on the MedicationRequest resource
+
           )
           versions :r4
         end
@@ -155,6 +165,10 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD be able to support searching by patient+intent+authoredon on the MedicationRequest resource
+
+              including support for these authoredon comparators: gt, lt, le
           )
           versions :r4
         end
@@ -180,6 +194,7 @@ module Inferno
           name 'MedicationRequest read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHALL make available read interactions on MedicationRequest
           )
           versions :r4
         end
@@ -196,6 +211,7 @@ module Inferno
           name 'MedicationRequest vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available vread interactions on MedicationRequest
           )
           versions :r4
         end
@@ -212,6 +228,7 @@ module Inferno
           name 'MedicationRequest history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available history interactions on MedicationRequest
           )
           versions :r4
         end
@@ -227,6 +244,7 @@ module Inferno
           id '09'
           link 'https://www.hl7.org/fhir/search.html#include'
           description %(
+            A Server SHOULD be capable of supporting the following _includes: MedicationRequest:medication
           )
           versions :r4
         end
@@ -250,6 +268,7 @@ module Inferno
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -273,6 +292,9 @@ module Inferno
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
           )
           versions :r4
         end
@@ -284,8 +306,36 @@ module Inferno
       test 'At least one of every must support element is provided in any MedicationRequest for this patient.' do
         metadata do
           id '12'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all MedicationRequest resources returned from prior searches too see if any of them provide the following must support elements:
+
+            MedicationRequest.status
+
+            MedicationRequest.intent
+
+            MedicationRequest.reportedBoolean
+
+            MedicationRequest.reportedReference
+
+            MedicationRequest.medicationCodeableConcept
+
+            MedicationRequest.medicationReference
+
+            MedicationRequest.subject
+
+            MedicationRequest.encounter
+
+            MedicationRequest.authoredOn
+
+            MedicationRequest.requester
+
+            MedicationRequest.dosageInstruction
+
+            MedicationRequest.dosageInstruction.text
+
           )
           versions :r4
         end
@@ -324,6 +374,7 @@ module Inferno
           id '13'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

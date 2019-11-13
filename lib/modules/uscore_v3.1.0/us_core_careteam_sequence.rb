@@ -38,6 +38,7 @@ module Inferno
           name 'Server rejects CareTeam search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -62,6 +63,9 @@ module Inferno
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by patient+status on the CareTeam resource
+
           )
           versions :r4
         end
@@ -94,6 +98,7 @@ module Inferno
           name 'CareTeam read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHALL make available read interactions on CareTeam
           )
           versions :r4
         end
@@ -110,6 +115,7 @@ module Inferno
           name 'CareTeam vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available vread interactions on CareTeam
           )
           versions :r4
         end
@@ -126,6 +132,7 @@ module Inferno
           name 'CareTeam history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available history interactions on CareTeam
           )
           versions :r4
         end
@@ -141,6 +148,7 @@ module Inferno
           id '06'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -164,6 +172,9 @@ module Inferno
           id '07'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
           )
           versions :r4
         end
@@ -175,8 +186,22 @@ module Inferno
       test 'At least one of every must support element is provided in any CareTeam for this patient.' do
         metadata do
           id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all CareTeam resources returned from prior searches too see if any of them provide the following must support elements:
+
+            CareTeam.status
+
+            CareTeam.subject
+
+            CareTeam.participant
+
+            CareTeam.participant.role
+
+            CareTeam.participant.member
+
           )
           versions :r4
         end
@@ -208,6 +233,7 @@ module Inferno
           id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

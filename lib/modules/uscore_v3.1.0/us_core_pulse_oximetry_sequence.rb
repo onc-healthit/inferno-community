@@ -52,6 +52,7 @@ module Inferno
           name 'Server rejects Observation search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -76,6 +77,9 @@ module Inferno
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by patient+code on the Observation resource
+
           )
           versions :r4
         end
@@ -107,6 +111,10 @@ module Inferno
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by patient+category+date on the Observation resource
+
+              including support for these date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -139,6 +147,9 @@ module Inferno
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL be able to support searching by patient+category on the Observation resource
+
           )
           versions :r4
         end
@@ -163,6 +174,10 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD be able to support searching by patient+code+date on the Observation resource
+
+              including support for these date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -196,6 +211,9 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD be able to support searching by patient+category+status on the Observation resource
+
           )
           versions :r4
         end
@@ -221,6 +239,7 @@ module Inferno
           name 'Observation read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHALL make available read interactions on Observation
           )
           versions :r4
         end
@@ -237,6 +256,7 @@ module Inferno
           name 'Observation vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available vread interactions on Observation
           )
           versions :r4
         end
@@ -253,6 +273,7 @@ module Inferno
           name 'Observation history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
+            All servers SHOULD make available history interactions on Observation
           )
           versions :r4
         end
@@ -268,6 +289,7 @@ module Inferno
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -291,6 +313,9 @@ module Inferno
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
           )
           versions :r4
         end
@@ -302,8 +327,314 @@ module Inferno
       test 'At least one of every must support element is provided in any Observation for this patient.' do
         metadata do
           id '12'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Observation resources returned from prior searches too see if any of them provide the following must support elements:
+
+            Observation.status
+
+            Observation.category
+
+            Observation.category
+
+            Observation.category.coding
+
+            Observation.category.coding.system
+
+            Observation.category.coding.code
+
+            Observation.code
+
+            Observation.code.coding
+
+            Observation.code.coding
+
+            Observation.code.coding.system
+
+            Observation.code.coding.code
+
+            Observation.subject
+
+            Observation.effectiveDateTime
+
+            Observation.effectivePeriod
+
+            Observation.valueQuantity
+
+            Observation.valueQuantity
+
+            Observation.valueQuantity.value
+
+            Observation.valueQuantity.unit
+
+            Observation.valueQuantity.system
+
+            Observation.valueQuantity.code
+
+            Observation.dataAbsentReason
+
+            Observation.component
+
+            Observation.component.code
+
+            Observation.component.valueQuantity
+
+            Observation.component.valueCodeableConcept
+
+            Observation.component.valueString
+
+            Observation.component.valueBoolean
+
+            Observation.component.valueInteger
+
+            Observation.component.valueRange
+
+            Observation.component.valueRatio
+
+            Observation.component.valueSampledData
+
+            Observation.component.valueTime
+
+            Observation.component.valueDateTime
+
+            Observation.component.valuePeriod
+
+            Observation.component.dataAbsentReason
+
+            Observation.component
+
+            Observation.component.code
+
+            Observation.component.valueQuantity
+
+            Observation.component.valueCodeableConcept
+
+            Observation.component.valueString
+
+            Observation.component.valueBoolean
+
+            Observation.component.valueInteger
+
+            Observation.component.valueRange
+
+            Observation.component.valueRatio
+
+            Observation.component.valueSampledData
+
+            Observation.component.valueTime
+
+            Observation.component.valueDateTime
+
+            Observation.component.valuePeriod
+
+            Observation.component.valueQuantity.value
+
+            Observation.component.valueCodeableConcept.value
+
+            Observation.component.valueString.value
+
+            Observation.component.valueBoolean.value
+
+            Observation.component.valueInteger.value
+
+            Observation.component.valueRange.value
+
+            Observation.component.valueRatio.value
+
+            Observation.component.valueSampledData.value
+
+            Observation.component.valueTime.value
+
+            Observation.component.valueDateTime.value
+
+            Observation.component.valuePeriod.value
+
+            Observation.component.valueQuantity.unit
+
+            Observation.component.valueCodeableConcept.unit
+
+            Observation.component.valueString.unit
+
+            Observation.component.valueBoolean.unit
+
+            Observation.component.valueInteger.unit
+
+            Observation.component.valueRange.unit
+
+            Observation.component.valueRatio.unit
+
+            Observation.component.valueSampledData.unit
+
+            Observation.component.valueTime.unit
+
+            Observation.component.valueDateTime.unit
+
+            Observation.component.valuePeriod.unit
+
+            Observation.component.valueQuantity.system
+
+            Observation.component.valueCodeableConcept.system
+
+            Observation.component.valueString.system
+
+            Observation.component.valueBoolean.system
+
+            Observation.component.valueInteger.system
+
+            Observation.component.valueRange.system
+
+            Observation.component.valueRatio.system
+
+            Observation.component.valueSampledData.system
+
+            Observation.component.valueTime.system
+
+            Observation.component.valueDateTime.system
+
+            Observation.component.valuePeriod.system
+
+            Observation.component.valueQuantity.code
+
+            Observation.component.valueCodeableConcept.code
+
+            Observation.component.valueString.code
+
+            Observation.component.valueBoolean.code
+
+            Observation.component.valueInteger.code
+
+            Observation.component.valueRange.code
+
+            Observation.component.valueRatio.code
+
+            Observation.component.valueSampledData.code
+
+            Observation.component.valueTime.code
+
+            Observation.component.valueDateTime.code
+
+            Observation.component.valuePeriod.code
+
+            Observation.component.dataAbsentReason
+
+            Observation.component
+
+            Observation.component.code
+
+            Observation.component.valueQuantity
+
+            Observation.component.valueCodeableConcept
+
+            Observation.component.valueString
+
+            Observation.component.valueBoolean
+
+            Observation.component.valueInteger
+
+            Observation.component.valueRange
+
+            Observation.component.valueRatio
+
+            Observation.component.valueSampledData
+
+            Observation.component.valueTime
+
+            Observation.component.valueDateTime
+
+            Observation.component.valuePeriod
+
+            Observation.component.valueQuantity.value
+
+            Observation.component.valueCodeableConcept.value
+
+            Observation.component.valueString.value
+
+            Observation.component.valueBoolean.value
+
+            Observation.component.valueInteger.value
+
+            Observation.component.valueRange.value
+
+            Observation.component.valueRatio.value
+
+            Observation.component.valueSampledData.value
+
+            Observation.component.valueTime.value
+
+            Observation.component.valueDateTime.value
+
+            Observation.component.valuePeriod.value
+
+            Observation.component.valueQuantity.unit
+
+            Observation.component.valueCodeableConcept.unit
+
+            Observation.component.valueString.unit
+
+            Observation.component.valueBoolean.unit
+
+            Observation.component.valueInteger.unit
+
+            Observation.component.valueRange.unit
+
+            Observation.component.valueRatio.unit
+
+            Observation.component.valueSampledData.unit
+
+            Observation.component.valueTime.unit
+
+            Observation.component.valueDateTime.unit
+
+            Observation.component.valuePeriod.unit
+
+            Observation.component.valueQuantity.system
+
+            Observation.component.valueCodeableConcept.system
+
+            Observation.component.valueString.system
+
+            Observation.component.valueBoolean.system
+
+            Observation.component.valueInteger.system
+
+            Observation.component.valueRange.system
+
+            Observation.component.valueRatio.system
+
+            Observation.component.valueSampledData.system
+
+            Observation.component.valueTime.system
+
+            Observation.component.valueDateTime.system
+
+            Observation.component.valuePeriod.system
+
+            Observation.component.valueQuantity.code
+
+            Observation.component.valueCodeableConcept.code
+
+            Observation.component.valueString.code
+
+            Observation.component.valueBoolean.code
+
+            Observation.component.valueInteger.code
+
+            Observation.component.valueRange.code
+
+            Observation.component.valueRatio.code
+
+            Observation.component.valueSampledData.code
+
+            Observation.component.valueTime.code
+
+            Observation.component.valueDateTime.code
+
+            Observation.component.valuePeriod.code
+
+            Observation.component.dataAbsentReason
+
           )
           versions :r4
         end
@@ -481,6 +812,7 @@ module Inferno
           id '13'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end
