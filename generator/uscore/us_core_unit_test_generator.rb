@@ -27,23 +27,52 @@ module Inferno
         test = template.result_with_hash(
           key: key,
           resource_type: resource_type,
-          search_param_string: search_params_to_string(search_params)
+          search_param_string: search_params_to_string(search_params),
+          dynamic_search_params: dynamic_search_params(search_params)
         )
         tests[class_name] << test
       end
 
       def search_params_to_string(search_params)
         search_params.map do |param, value|
-          if value.start_with? 'get_value_for_search_param'
-            path = value.match(/'(\w+)'/)[1]
-            variable_name = value.match(/(@\w+)/)[1]
-            "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
+          if dynamic_search_param? value
+            dynamic_search_param_string(param, value)
           elsif value.start_with? '@'
             "'#{param}': #{value}"
           else
             "'#{param}': '#{value}'"
           end
         end.join(",\n")
+      end
+
+      def dynamic_search_param_string(param, value)
+        param_info = dynamic_search_param(value)
+        path = param_info[:path]
+        variable_name = param_info[:variable_name]
+        variable_name = value.match(/(@\w+)/)[1]
+        "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
+      end
+
+      # def dynamic_search_params?(search_params)
+      #   search_params.any? { |_param, value| dynamic_search_param? value }
+      # end
+
+      def dynamic_search_param?(param_value)
+        param_value.start_with? 'get_value_for_search_param'
+      end
+
+      def dynamic_search_params(search_params)
+        search_params
+          .select { |_param, value| dynamic_search_param?(value) }
+          .transform_value { |value| dynamic_search_param(value) }
+      end
+
+      def dynamic_search_param(param_value)
+        match = value.match(/(@\w+).*'([\w\.]+)'/)
+        {
+          variable_name: match[1],
+          resource_path: match[2]
+        }
       end
     end
   end

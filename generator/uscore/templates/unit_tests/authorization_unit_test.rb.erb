@@ -1,35 +1,39 @@
-  describe 'unauthorized search test' do
-    before do
-      @test = @sequence_class[:<%= key %>]
-      @sequence = @sequence_class.new(@instance, @client)
-      @query = {
-        <%= search_param_string %>
-      }
-    end
-
-    it 'fails when the token refresh response has a success status' do
-      stub_request(:get, "#{@base_url}/<%= resource_type %>")
-        .with(query: @query)
-        .to_return(status: 200)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal "Bad response code: expected 401, but found 200", exception.message
-    end
-
-    it 'succeeds when the token refresh response has an error status' do
-      stub_request(:get, "#{@base_url}/<%= resource_type %>")
-        .with(query: @query)
-        .to_return(status: 401)
-
-      @sequence.run_test(@test)
-    end
-
-    it 'is omitted when no token is set' do
-      @instance.token = ''
-
-      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
-
-      assert_equal 'Do not test if no bearer token set', exception.message
-    end
+describe 'unauthorized search test' do
+  before do
+    @test = @sequence_class[:<%= key %>]
+    @sequence = @sequence_class.new(@instance, @client)
+    @query = {
+      <%= search_param_string %>
+    }
+<% if dynamic_search_params.present? %>
+  <% dynamic_search_params.each do  %>
+    @sequence.instance_variable_set('<%=  %>')
+<% end %>
   end
+
+  it 'fails when the token refresh response has a success status' do
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query)
+      .to_return(status: 200)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal "Bad response code: expected 401, but found 200", exception.message
+  end
+
+  it 'succeeds when the token refresh response has an error status' do
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query)
+      .to_return(status: 401)
+
+    @sequence.run_test(@test)
+  end
+
+  it 'is omitted when no token is set' do
+    @instance.token = ''
+
+    exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
+
+    assert_equal 'Do not test if no bearer token set', exception.message
+  end
+end
