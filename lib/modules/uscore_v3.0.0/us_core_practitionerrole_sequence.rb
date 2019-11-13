@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310PractitionerroleSequence < SequenceBase
+    class USCore300PractitionerroleSequence < SequenceBase
       title 'PractitionerRole Tests'
 
-      description 'Verify that PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that PractitionerRole resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCPRO'
 
@@ -61,7 +61,11 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        specialty_val = get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+        search_params = { 'specialty': specialty_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -76,9 +80,8 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
-        }
+        specialty_val = get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+        search_params = { 'specialty': specialty_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
@@ -109,9 +112,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitionerrole.nil?, 'Expected valid PractitionerRole resource to be present'
 
-        search_params = {
-          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'practitioner'))
-        }
+        practitioner_val = get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'practitioner'))
+        search_params = { 'practitioner': practitioner_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
@@ -158,9 +160,8 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
-        }
+        specialty_val = get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+        search_params = { 'specialty': specialty_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_include'] = 'PractitionerRole:endpoint'
@@ -178,31 +179,9 @@ module Inferno
         assert practitioner_results, 'No Practitioner resources were returned from this search'
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '08'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
           )
@@ -215,7 +194,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any PractitionerRole for this patient.' do
         metadata do
-          id '10'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -250,7 +229,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

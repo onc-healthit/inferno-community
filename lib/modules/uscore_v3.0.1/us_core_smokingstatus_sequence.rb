@@ -2,36 +2,40 @@
 
 module Inferno
   module Sequence
-    class USCore310CareplanSequence < SequenceBase
-      title 'CarePlan Tests'
+    class USCore301SmokingstatusSequence < SequenceBase
+      title 'Smoking Status Observation Tests'
 
-      description 'Verify that CarePlan resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'USCCP'
+      test_id_prefix 'USCSSO'
 
       requires :token, :patient_id
-      conformance_supports :CarePlan
+      conformance_supports :Observation
 
       def validate_resource_item(resource, property, value)
         case property
+
+        when 'status'
+          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'status on resource does not match status requested'
 
         when 'category'
           value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
           assert value_found, 'category on resource does not match category requested'
 
+        when 'code'
+          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
+          assert value_found, 'code on resource does not match code requested'
+
         when 'date'
-          value_found = can_resolve_path(resource, 'period') do |period|
-            validate_period_search(value, period)
+          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+            validate_date_search(value, date)
           end
           assert value_found, 'date on resource does not match date requested'
 
         when 'patient'
           value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
-
-        when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
 
         end
       end
@@ -45,7 +49,7 @@ module Inferno
       test :unauthorized_search do
         metadata do
           id '01'
-          name 'Server rejects CarePlan search without authorization'
+          name 'Server rejects Observation search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -54,13 +58,18 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': '72166-2'
+        }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from CarePlan search by patient+category' do
+      test 'Server returns expected results from Observation search by patient+code' do
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -71,10 +80,10 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': 'assess-plan'
+          'code': '72166-2'
         }
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
@@ -83,81 +92,61 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @careplan = reply&.resource&.entry&.first&.resource
-        @careplan_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-        save_delayed_sequence_references(@careplan_ary)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        @observation = reply&.resource&.entry&.first&.resource
+        @observation_ary = fetch_all_bundled_resources(reply&.resource)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
+        save_delayed_sequence_references(@observation_ary)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
-      test 'Server returns expected results from CarePlan search by patient+category+date' do
+      test 'Server returns expected results from Observation search by patient+category+date' do
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
           description %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
-      test 'Server returns expected results from CarePlan search by patient+category+status+date' do
+      test 'Server returns expected results from Observation search by patient+category' do
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
           description %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status')),
-          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
-      test 'Server returns expected results from CarePlan search by patient+category+status' do
+      test 'Server returns expected results from Observation search by patient+category+status' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -168,36 +157,46 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
       end
 
-      test 'CarePlan read resource supported' do
+      test 'Server returns expected results from Observation search by patient+code+date' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
           description %(
           )
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
-        validate_read_reply(@careplan, versioned_resource_class('CarePlan'))
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
       end
 
-      test 'CarePlan vread resource supported' do
+      test 'Observation read resource supported' do
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -206,13 +205,13 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:vread])
+        skip_if_not_supported(:Observation, [:read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@careplan, versioned_resource_class('CarePlan'))
+        validate_read_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'CarePlan history resource supported' do
+      test 'Observation vread resource supported' do
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -221,15 +220,30 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:history])
+        skip_if_not_supported(:Observation, [:vread])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@careplan, versioned_resource_class('CarePlan'))
+        validate_vread_reply(@observation, versioned_resource_class('Observation'))
+      end
+
+      test 'Observation history resource supported' do
+        metadata do
+          id '09'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          description %(
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Observation, [:history])
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
       test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
         metadata do
-          id '09'
+          id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
           )
@@ -238,76 +252,74 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': 'assess-plan'
+          'code': '72166-2'
         }
 
         search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
         provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'CarePlan resources associated with Patient conform to US Core R4 profiles' do
+      test 'Observation resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '10'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
+          id '11'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus'
           description %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('CarePlan')
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
       end
 
-      test 'At least one of every must support element is provided in any CarePlan for this patient.' do
+      test 'At least one of every must support element is provided in any Observation for this patient.' do
         metadata do
-          id '11'
+          id '12'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @careplan_ary&.any?
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @observation_ary&.any?
         must_support_confirmed = {}
         must_support_elements = [
-          'CarePlan.text',
-          'CarePlan.text.status',
-          'CarePlan.status',
-          'CarePlan.intent',
-          'CarePlan.category',
-          'CarePlan.category',
-          'CarePlan.subject'
+          'Observation.status',
+          'Observation.code',
+          'Observation.subject',
+          'Observation.issued',
+          'Observation.valueCodeableConcept'
         ]
         must_support_elements.each do |path|
-          @careplan_ary&.each do |resource|
-            truncated_path = path.gsub('CarePlan.', '')
+          @observation_ary&.each do |resource|
+            truncated_path = path.gsub('Observation.', '')
             must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
             break if must_support_confirmed[path]
           end
-          resource_count = @careplan_ary.length
+          resource_count = @observation_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided CarePlan resource(s)" unless must_support_confirmed[path]
+          skip "Could not find #{path} in any of the #{resource_count} provided Observation resource(s)" unless must_support_confirmed[path]
         end
         @instance.save!
       end
 
       test 'All references can be resolved' do
         metadata do
-          id '12'
+          id '13'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:search, :read])
+        skip_if_not_supported(:Observation, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@careplan)
+        validate_reference_resolutions(@observation)
       end
     end
   end

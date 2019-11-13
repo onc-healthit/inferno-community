@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310DocumentreferenceSequence < SequenceBase
+    class USCore300DocumentreferenceSequence < SequenceBase
       title 'DocumentReference Tests'
 
-      description 'Verify that DocumentReference resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that DocumentReference resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCDR'
 
@@ -66,7 +66,11 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -81,9 +85,9 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
@@ -113,9 +117,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        search_params = {
-          '_id': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'id'))
-        }
+        id_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'id'))
+        search_params = { '_id': id_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -123,7 +126,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+type' do
+      test 'Server returns expected results from DocumentReference search by patient+category' do
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -135,10 +138,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
-        }
+        patient_val = @instance.patient_id
+        category_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
+        search_params = { 'patient': patient_val, 'category': category_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -158,11 +160,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'date'))
-        }
+        patient_val = @instance.patient_id
+        category_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
+        date_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'date'))
+        search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -170,7 +171,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+category' do
+      test 'Server returns expected results from DocumentReference search by patient+type' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -182,10 +183,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
-        }
+        patient_val = @instance.patient_id
+        type_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
+        search_params = { 'patient': patient_val, 'type': type_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -193,7 +193,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+type+period' do
+      test 'Server returns expected results from DocumentReference search by patient+status' do
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -206,11 +206,33 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type')),
-          'period': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'context.period'))
-        }
+        patient_val = @instance.patient_id
+        status_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'status'))
+        search_params = { 'patient': patient_val, 'status': status_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from DocumentReference search by patient+type+period' do
+        metadata do
+          id '08'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
+
+        patient_val = @instance.patient_id
+        type_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
+        period_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'context.period'))
+        search_params = { 'patient': patient_val, 'type': type_val, 'period': period_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -224,30 +246,6 @@ module Inferno
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
           assert_response_ok(reply)
         end
-      end
-
-      test 'Server returns expected results from DocumentReference search by patient+status' do
-        metadata do
-          id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test 'DocumentReference create resource supported' do
@@ -310,30 +308,9 @@ module Inferno
         validate_history_reply(@documentreference, versioned_resource_class('DocumentReference'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '13'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'patient': @instance.patient_id
-        }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'DocumentReference resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '14'
+          id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
           )
@@ -346,7 +323,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any DocumentReference for this patient.' do
         metadata do
-          id '15'
+          id '14'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -389,7 +366,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '16'
+          id '15'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

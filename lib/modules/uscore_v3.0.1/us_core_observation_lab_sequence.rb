@@ -2,12 +2,12 @@
 
 module Inferno
   module Sequence
-    class USCore310PulseOximetrySequence < SequenceBase
-      title 'Pulse Oximetry Tests'
+    class USCore301ObservationLabSequence < SequenceBase
+      title 'Laboratory Result Observation Tests'
 
-      description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Observation resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
-      test_id_prefix 'USCPO'
+      test_id_prefix 'USCLRO'
 
       requires :token, :patient_id
       conformance_supports :Observation
@@ -58,13 +58,18 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': 'laboratory'
+        }
+
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Observation search by patient+code' do
+      test 'Server returns expected results from Observation search by patient+category' do
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -75,7 +80,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': '59408-5'
+          'category': 'laboratory'
         }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -89,14 +94,37 @@ module Inferno
 
         @observation = reply&.resource&.entry&.first&.resource
         @observation_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
         save_delayed_sequence_references(@observation_ary)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
-      test 'Server returns expected results from Observation search by patient+category+date' do
+      test 'Server returns expected results from Observation search by patient+code' do
         metadata do
           id '03'
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          description %(
+          )
+          versions :r4
+        end
+
+        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        assert !@observation.nil?, 'Expected valid Observation resource to be present'
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'Server returns expected results from Observation search by patient+category+date' do
+        metadata do
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -116,40 +144,9 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
-      test 'Server returns expected results from Observation search by patient+category' do
-        metadata do
-          id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          description %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@observation.nil?, 'Expected valid Observation resource to be present'
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
-      test 'Server returns expected results from Observation search by patient+code+date' do
+      test 'Server returns expected results from Observation search by patient+category+status' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -164,25 +161,17 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         assert_response_ok(reply)
-
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
-          assert_response_ok(reply)
-        end
       end
 
-      test 'Server returns expected results from Observation search by patient+category+status' do
+      test 'Server returns expected results from Observation search by patient+code+date' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -197,8 +186,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
+          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -263,7 +252,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': '59408-5'
+          'category': 'laboratory'
         }
 
         search_params['_revinclude'] = 'Provenance:target'
@@ -277,14 +266,14 @@ module Inferno
       test 'Observation resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '11'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
           )
           versions :r4
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
       end
 
       test 'At least one of every must support element is provided in any Observation for this patient.' do
@@ -302,154 +291,22 @@ module Inferno
           'Observation.status',
           'Observation.category',
           'Observation.category',
-          'Observation.category.coding',
-          'Observation.category.coding.system',
-          'Observation.category.coding.code',
           'Observation.code',
-          'Observation.code.coding',
-          'Observation.code.coding',
-          'Observation.code.coding.system',
-          'Observation.code.coding.code',
           'Observation.subject',
           'Observation.effectiveDateTime',
           'Observation.effectivePeriod',
           'Observation.valueQuantity',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity.value',
-          'Observation.valueQuantity.unit',
-          'Observation.valueQuantity.system',
-          'Observation.valueQuantity.code',
-          'Observation.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.valueQuantity.value',
-          'Observation.component.valueCodeableConcept.value',
-          'Observation.component.valueString.value',
-          'Observation.component.valueBoolean.value',
-          'Observation.component.valueInteger.value',
-          'Observation.component.valueRange.value',
-          'Observation.component.valueRatio.value',
-          'Observation.component.valueSampledData.value',
-          'Observation.component.valueTime.value',
-          'Observation.component.valueDateTime.value',
-          'Observation.component.valuePeriod.value',
-          'Observation.component.valueQuantity.unit',
-          'Observation.component.valueCodeableConcept.unit',
-          'Observation.component.valueString.unit',
-          'Observation.component.valueBoolean.unit',
-          'Observation.component.valueInteger.unit',
-          'Observation.component.valueRange.unit',
-          'Observation.component.valueRatio.unit',
-          'Observation.component.valueSampledData.unit',
-          'Observation.component.valueTime.unit',
-          'Observation.component.valueDateTime.unit',
-          'Observation.component.valuePeriod.unit',
-          'Observation.component.valueQuantity.system',
-          'Observation.component.valueCodeableConcept.system',
-          'Observation.component.valueString.system',
-          'Observation.component.valueBoolean.system',
-          'Observation.component.valueInteger.system',
-          'Observation.component.valueRange.system',
-          'Observation.component.valueRatio.system',
-          'Observation.component.valueSampledData.system',
-          'Observation.component.valueTime.system',
-          'Observation.component.valueDateTime.system',
-          'Observation.component.valuePeriod.system',
-          'Observation.component.valueQuantity.code',
-          'Observation.component.valueCodeableConcept.code',
-          'Observation.component.valueString.code',
-          'Observation.component.valueBoolean.code',
-          'Observation.component.valueInteger.code',
-          'Observation.component.valueRange.code',
-          'Observation.component.valueRatio.code',
-          'Observation.component.valueSampledData.code',
-          'Observation.component.valueTime.code',
-          'Observation.component.valueDateTime.code',
-          'Observation.component.valuePeriod.code',
-          'Observation.component.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.valueQuantity.value',
-          'Observation.component.valueCodeableConcept.value',
-          'Observation.component.valueString.value',
-          'Observation.component.valueBoolean.value',
-          'Observation.component.valueInteger.value',
-          'Observation.component.valueRange.value',
-          'Observation.component.valueRatio.value',
-          'Observation.component.valueSampledData.value',
-          'Observation.component.valueTime.value',
-          'Observation.component.valueDateTime.value',
-          'Observation.component.valuePeriod.value',
-          'Observation.component.valueQuantity.unit',
-          'Observation.component.valueCodeableConcept.unit',
-          'Observation.component.valueString.unit',
-          'Observation.component.valueBoolean.unit',
-          'Observation.component.valueInteger.unit',
-          'Observation.component.valueRange.unit',
-          'Observation.component.valueRatio.unit',
-          'Observation.component.valueSampledData.unit',
-          'Observation.component.valueTime.unit',
-          'Observation.component.valueDateTime.unit',
-          'Observation.component.valuePeriod.unit',
-          'Observation.component.valueQuantity.system',
-          'Observation.component.valueCodeableConcept.system',
-          'Observation.component.valueString.system',
-          'Observation.component.valueBoolean.system',
-          'Observation.component.valueInteger.system',
-          'Observation.component.valueRange.system',
-          'Observation.component.valueRatio.system',
-          'Observation.component.valueSampledData.system',
-          'Observation.component.valueTime.system',
-          'Observation.component.valueDateTime.system',
-          'Observation.component.valuePeriod.system',
-          'Observation.component.valueQuantity.code',
-          'Observation.component.valueCodeableConcept.code',
-          'Observation.component.valueString.code',
-          'Observation.component.valueBoolean.code',
-          'Observation.component.valueInteger.code',
-          'Observation.component.valueRange.code',
-          'Observation.component.valueRatio.code',
-          'Observation.component.valueSampledData.code',
-          'Observation.component.valueTime.code',
-          'Observation.component.valueDateTime.code',
-          'Observation.component.valuePeriod.code',
-          'Observation.component.dataAbsentReason'
+          'Observation.valueCodeableConcept',
+          'Observation.valueString',
+          'Observation.valueBoolean',
+          'Observation.valueInteger',
+          'Observation.valueRange',
+          'Observation.valueRatio',
+          'Observation.valueSampledData',
+          'Observation.valueTime',
+          'Observation.valueDateTime',
+          'Observation.valuePeriod',
+          'Observation.dataAbsentReason'
         ]
         must_support_elements.each do |path|
           @observation_ary&.each do |resource|

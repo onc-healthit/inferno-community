@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310PatientSequence < SequenceBase
+    class USCore300PatientSequence < SequenceBase
       title 'Patient Tests'
 
-      description 'Verify that Patient resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Patient resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCP'
 
@@ -73,7 +73,9 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        search_params = { '_id': @instance.patient_id }
+
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -88,9 +90,7 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          '_id': @instance.patient_id
-        }
+        search_params = { '_id': @instance.patient_id }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
@@ -120,9 +120,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        search_params = {
-          'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
-        }
+        identifier_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
+        search_params = { 'identifier': identifier_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -142,9 +141,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        }
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -152,7 +150,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by gender+name' do
+      test 'Server returns expected results from Patient search by birthdate+name' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -164,10 +162,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        search_params = {
-          'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender')),
-          'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        }
+        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        search_params = { 'birthdate': birthdate_val, 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -175,7 +172,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+name' do
+      test 'Server returns expected results from Patient search by gender+name' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -187,10 +184,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        search_params = {
-          'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
-          'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        }
+        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
+        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        search_params = { 'gender': gender_val, 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -198,7 +194,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+family' do
+      test 'Server returns expected results from Patient search by family+gender' do
         metadata do
           id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -211,10 +207,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        search_params = {
-          'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
-          'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
-        }
+        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
+        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
+        search_params = { 'family': family_val, 'gender': gender_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -222,7 +217,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by family+gender' do
+      test 'Server returns expected results from Patient search by birthdate+family' do
         metadata do
           id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -235,10 +230,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        search_params = {
-          'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family')),
-          'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
-        }
+        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
+        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
+        search_params = { 'birthdate': birthdate_val, 'family': family_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -291,30 +285,9 @@ module Inferno
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '12'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          '_id': @instance.patient_id
-        }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'Patient resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '13'
+          id '12'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
           )
@@ -327,7 +300,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Patient for this patient.' do
         metadata do
-          id '14'
+          id '13'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -360,7 +333,6 @@ module Inferno
           'Patient.telecom',
           'Patient.telecom.system',
           'Patient.telecom.value',
-          'Patient.telecom.use',
           'Patient.gender',
           'Patient.birthDate',
           'Patient.address',
@@ -368,7 +340,6 @@ module Inferno
           'Patient.address.city',
           'Patient.address.state',
           'Patient.address.postalCode',
-          'Patient.address.period',
           'Patient.communication',
           'Patient.communication.language'
         ]
@@ -387,7 +358,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '15'
+          id '14'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310MedicationrequestSequence < SequenceBase
+    class USCore300MedicationrequestSequence < SequenceBase
       title 'MedicationRequest Tests'
 
-      description 'Verify that MedicationRequest resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that MedicationRequest resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCMR'
 
@@ -19,17 +19,9 @@ module Inferno
           value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
           assert value_found, 'status on resource does not match status requested'
 
-        when 'intent'
-          value_found = can_resolve_path(resource, 'intent') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'intent on resource does not match intent requested'
-
         when 'patient'
           value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
           assert value_found, 'patient on resource does not match patient requested'
-
-        when 'encounter'
-          value_found = can_resolve_path(resource, 'encounter.reference') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'encounter on resource does not match encounter requested'
 
         when 'authoredon'
           value_found = can_resolve_path(resource, 'authoredOn') { |value_in_resource| value_in_resource == value }
@@ -56,13 +48,17 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent' do
+      test 'Server returns expected results from MedicationRequest search by patient' do
         metadata do
           id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -71,29 +67,27 @@ module Inferno
           versions :r4
         end
 
-        intent_val = ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option']
-        intent_val.each do |val|
-          search_params = { 'patient': @instance.patient_id, 'intent': val }
-          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
-          next unless @resources_found
+        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
 
-          @medicationrequest = reply&.resource&.entry&.first&.resource
-          @medicationrequest_ary = fetch_all_bundled_resources(reply&.resource)
+        resource_count = reply&.resource&.entry&.length || 0
+        @resources_found = true if resource_count.positive?
 
-          save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
-          save_delayed_sequence_references(@medicationrequest_ary)
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-          break
-        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @medicationrequest = reply&.resource&.entry&.first&.resource
+        @medicationrequest_ary = fetch_all_bundled_resources(reply&.resource)
+        save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
+        save_delayed_sequence_references(@medicationrequest_ary)
+        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent+status' do
+      test 'Server returns expected results from MedicationRequest search by patient+status' do
         metadata do
           id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -105,11 +99,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
-          'status': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
-        }
+        patient_val = @instance.patient_id
+        status_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
+        search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -117,7 +109,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent+encounter' do
+      test 'Server returns expected results from MedicationRequest search by patient+authoredon' do
         metadata do
           id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
@@ -130,36 +122,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
-          'encounter': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'encounter'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
-      test 'Server returns expected results from MedicationRequest search by patient+intent+authoredon' do
-        metadata do
-          id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-          )
-          versions :r4
-        end
-
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
-          'authoredon': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
-        }
+        patient_val = @instance.patient_id
+        authoredon_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
+        search_params = { 'patient': patient_val, 'authoredon': authoredon_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -169,7 +134,7 @@ module Inferno
 
       test 'MedicationRequest read resource supported' do
         metadata do
-          id '06'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -184,7 +149,7 @@ module Inferno
 
       test 'MedicationRequest vread resource supported' do
         metadata do
-          id '07'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -199,7 +164,7 @@ module Inferno
 
       test 'MedicationRequest history resource supported' do
         metadata do
-          id '08'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -214,17 +179,15 @@ module Inferno
 
       test 'Server returns the appropriate resource from the following _includes: MedicationRequest:medication' do
         metadata do
-          id '09'
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#include'
           description %(
           )
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        }
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_include'] = 'MedicationRequest:medication'
@@ -235,32 +198,9 @@ module Inferno
         assert medication_results, 'No Medication resources were returned from this search'
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '10'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'MedicationRequest resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '11'
+          id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
           )
@@ -273,7 +213,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any MedicationRequest for this patient.' do
         metadata do
-          id '12'
+          id '10'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -284,13 +224,9 @@ module Inferno
         must_support_confirmed = {}
         must_support_elements = [
           'MedicationRequest.status',
-          'MedicationRequest.intent',
-          'MedicationRequest.reportedBoolean',
-          'MedicationRequest.reportedReference',
           'MedicationRequest.medicationCodeableConcept',
           'MedicationRequest.medicationReference',
           'MedicationRequest.subject',
-          'MedicationRequest.encounter',
           'MedicationRequest.authoredOn',
           'MedicationRequest.requester',
           'MedicationRequest.dosageInstruction',
@@ -311,7 +247,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '13'
+          id '11'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

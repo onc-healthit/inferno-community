@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310ImmunizationSequence < SequenceBase
+    class USCore300ImmunizationSequence < SequenceBase
       title 'Immunization Tests'
 
-      description 'Verify that Immunization resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Immunization resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCI'
 
@@ -50,7 +50,11 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -65,9 +69,9 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         assert_response_ok(reply)
@@ -98,10 +102,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'date': get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'occurrenceDateTime'))
-        }
+        patient_val = @instance.patient_id
+        date_val = get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'occurrenceDateTime'))
+        search_params = { 'patient': patient_val, 'date': date_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
@@ -130,10 +133,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@immunization.nil?, 'Expected valid Immunization resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'status'))
-        }
+        patient_val = @instance.patient_id
+        status_val = get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'status'))
+        search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
@@ -186,30 +188,9 @@ module Inferno
         validate_history_reply(@immunization, versioned_resource_class('Immunization'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '08'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'patient': @instance.patient_id
-        }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'Immunization resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
           )
@@ -222,7 +203,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Immunization for this patient.' do
         metadata do
-          id '10'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -255,7 +236,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '11'
+          id '10'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

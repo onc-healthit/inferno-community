@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310PractitionerSequence < SequenceBase
+    class USCore300PractitionerSequence < SequenceBase
       title 'Practitioner Tests'
 
-      description 'Verify that Practitioner resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Practitioner resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCPR'
 
@@ -68,7 +68,11 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -83,9 +87,8 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
-        }
+        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+        search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -116,9 +119,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
 
-        search_params = {
-          'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
-        }
+        identifier_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
+        search_params = { 'identifier': identifier_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -156,31 +158,9 @@ module Inferno
         validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '07'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'Practitioner resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '08'
+          id '07'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
           )
@@ -193,7 +173,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Practitioner for this patient.' do
         metadata do
-          id '09'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -207,6 +187,7 @@ module Inferno
           'Practitioner.identifier.system',
           'Practitioner.identifier.value',
           'Practitioner.identifier',
+          'Practitioner.identifier.system',
           'Practitioner.name',
           'Practitioner.name.family'
         ]
@@ -225,7 +206,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '10'
+          id '09'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

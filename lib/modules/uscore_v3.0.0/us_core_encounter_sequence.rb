@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310EncounterSequence < SequenceBase
+    class USCore300EncounterSequence < SequenceBase
       title 'Encounter Tests'
 
-      description 'Verify that Encounter resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Encounter resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCE'
 
@@ -66,7 +66,11 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -81,9 +85,9 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        patient_val = @instance.patient_id
+        search_params = { 'patient': patient_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         assert_response_ok(reply)
@@ -113,9 +117,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = {
-          '_id': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'id'))
-        }
+        id_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'id'))
+        search_params = { '_id': id_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -135,10 +138,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = {
-          'date': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'period')),
-          'patient': @instance.patient_id
-        }
+        date_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'period'))
+        patient_val = @instance.patient_id
+        search_params = { 'date': date_val, 'patient': patient_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -167,9 +169,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = {
-          'identifier': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier'))
-        }
+        identifier_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier'))
+        search_params = { 'identifier': identifier_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -190,10 +191,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'status'))
-        }
+        patient_val = @instance.patient_id
+        status_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'status'))
+        search_params = { 'patient': patient_val, 'status': status_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -214,10 +214,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = {
-          'class': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class')),
-          'patient': @instance.patient_id
-        }
+        class_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class'))
+        patient_val = @instance.patient_id
+        search_params = { 'class': class_val, 'patient': patient_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -238,10 +237,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@encounter.nil?, 'Expected valid Encounter resource to be present'
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'))
-        }
+        patient_val = @instance.patient_id
+        type_val = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'))
+        search_params = { 'patient': patient_val, 'type': type_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
@@ -294,30 +292,9 @@ module Inferno
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '12'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'patient': @instance.patient_id
-        }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'Encounter resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '13'
+          id '12'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
           )
@@ -330,7 +307,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Encounter for this patient.' do
         metadata do
-          id '14'
+          id '13'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -373,7 +350,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '15'
+          id '14'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )

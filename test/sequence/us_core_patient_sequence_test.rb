@@ -2,9 +2,9 @@
 
 require_relative '../test_helper'
 
-describe Inferno::Sequence::USCore301PatientSequence do
+describe Inferno::Sequence::USCore310PatientSequence do
   before do
-    @sequence_class = Inferno::Sequence::USCore301PatientSequence
+    @sequence_class = Inferno::Sequence::USCore310PatientSequence
     @base_url = 'http://www.example.com/fhir'
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'

@@ -2,10 +2,10 @@
 
 module Inferno
   module Sequence
-    class USCore310LocationSequence < SequenceBase
+    class USCore300LocationSequence < SequenceBase
       title 'Location Tests'
 
-      description 'Verify that Location resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify that Location resources on the FHIR server follow the Argonaut Data Query Implementation Guide'
 
       test_id_prefix 'USCL'
 
@@ -79,7 +79,11 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { patient: @instance.patient_id }
+
+        name_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        search_params = { 'name': name_val }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -94,9 +98,8 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
-        }
+        name_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        search_params = { 'name': name_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
@@ -127,9 +130,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        search_params = {
-          'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
-        }
+        address_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
+        search_params = { 'address': address_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
@@ -150,9 +152,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        search_params = {
-          'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
-        }
+        address_city_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
+        search_params = { 'address-city': address_city_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
@@ -173,9 +174,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        search_params = {
-          'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
-        }
+        address_state_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
+        search_params = { 'address-state': address_state_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
@@ -196,9 +196,8 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@location.nil?, 'Expected valid Location resource to be present'
 
-        search_params = {
-          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
-        }
+        address_postalcode_val = get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
+        search_params = { 'address-postalcode': address_postalcode_val }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
@@ -236,31 +235,9 @@ module Inferno
         validate_history_reply(@location, versioned_resource_class('Location'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
-        metadata do
-          id '10'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
       test 'Location resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '11'
+          id '10'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
           )
@@ -273,7 +250,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any Location for this patient.' do
         metadata do
-          id '12'
+          id '11'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -308,7 +285,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '13'
+          id '12'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )
