@@ -34,9 +34,7 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
@@ -57,9 +55,10 @@ module Inferno
         @resources_found = !@organization.nil?
       end
 
-      test 'Server rejects Organization search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '02'
+          name 'Server rejects Organization search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -69,8 +68,9 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
@@ -87,8 +87,9 @@ module Inferno
           versions :r4
         end
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
@@ -119,8 +120,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
-        address_val = get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
-        search_params = { 'address': address_val }
+        search_params = {
+          'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
@@ -167,8 +169,9 @@ module Inferno
           versions :r4
         end
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'

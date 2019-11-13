@@ -28,9 +28,7 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
@@ -51,9 +49,10 @@ module Inferno
         @resources_found = !@practitionerrole.nil?
       end
 
-      test 'Server rejects PractitionerRole search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '02'
+          name 'Server rejects PractitionerRole search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )

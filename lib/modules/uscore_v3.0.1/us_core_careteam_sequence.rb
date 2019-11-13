@@ -27,16 +27,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects CareTeam search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects CareTeam search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -46,7 +45,10 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id, status: 'active' }
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': 'active'
+        }
 
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -62,7 +64,10 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, status: 'active' }
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': 'active'
+        }
 
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         assert_response_ok(reply)
@@ -134,7 +139,10 @@ module Inferno
           versions :r4
         end
 
-        search_params = { patient: @instance.patient_id, status: 'active' }
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': 'active'
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)

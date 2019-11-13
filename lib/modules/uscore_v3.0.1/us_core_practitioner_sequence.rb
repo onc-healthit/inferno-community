@@ -35,9 +35,7 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
@@ -58,9 +56,10 @@ module Inferno
         @resources_found = !@practitioner.nil?
       end
 
-      test 'Server rejects Practitioner search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '02'
+          name 'Server rejects Practitioner search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -70,8 +69,9 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -88,8 +88,9 @@ module Inferno
           versions :r4
         end
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -120,8 +121,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@practitioner.nil?, 'Expected valid Practitioner resource to be present'
 
-        identifier_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
-        search_params = { 'identifier': identifier_val }
+        search_params = {
+          'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
@@ -168,8 +170,9 @@ module Inferno
           versions :r4
         end
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
