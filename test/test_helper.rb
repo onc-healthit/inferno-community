@@ -26,23 +26,36 @@ end
 
 require_relative '../lib/app'
 
+def find_fixture_directory(test_directory = nil)
+  test_directory ||=
+    caller_locations
+      .find { |trace| !trace.path.include? 'test_helper.rb' }
+      .path
+      .match(/(\/.*\/)\w+\.rb/)
+      .captures
+      .first
+
+  fixture_directory = File.join(test_directory, 'fixtures')
+  return fixture_directory if Dir.exist? fixture_directory
+
+  test_directory = File.expand_path(File.join(test_directory, '..'))
+  raise 'Unable to find fixture directory' if test_directory == '/'
+
+  find_fixture_directory(test_directory)
+end
+
 def load_json_fixture(file)
   JSON.parse(load_fixture(file))
 end
 
 def load_fixture(file)
-  root = File.dirname(File.absolute_path(__FILE__))
-  File.read(File.join(root, 'fixtures', "#{file}.json"))
+  fixture_path = find_fixture_directory
+  File.read(File.join(fixture_path, "#{file}.json"))
 end
 
 def load_fixture_with_extension(file_name)
-  root = File.dirname(File.absolute_path(__FILE__))
-  File.read(File.join(root, 'fixtures', file_name))
-end
-
-def save_fixture(_file_name, content)
-  root = File.dirname(File.absolute_path(__FILE__))
-  File.write(File.join(root, 'fixtures', file.to_s), content)
+  fixture_path = find_fixture_directory
+  File.read(File.join(fixture_path, file_name))
 end
 
 def valid_uri?(uri)
