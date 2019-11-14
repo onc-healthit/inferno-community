@@ -206,11 +206,13 @@ module Inferno
           profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
           param_metadata = {
             path: path,
-            comparators: {}
+            comparators: {},
+            values: Set.new
           }
           if !profile_element.nil?
             param_metadata[:type] = profile_element['type'].first['code']
             param_metadata[:contains_multiple] = (profile_element['max'] == '*')
+            add_valid_codes(profile_definition, profile_element, FHIR.const_get(sequence[:resource])::METADATA[param.to_s], param_metadata, path)
           else
             # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
             param_metadata[:type] = search_param_definition['type']
@@ -224,6 +226,47 @@ module Inferno
           end
           sequence[:search_param_descriptions][param] = param_metadata
         end
+      end
+
+      def add_valid_codes(profile_definition, profile_element, fhir_metadata, param_metadata, path)
+        if param_metadata[:contains_multiple]
+          add_values_from_slices(param_metadata, profile_definition, path)
+        elsif param_metadata[:type] == 'CodeableConcept'
+          add_values_from_fixed_codes(param_metadata, profile_definition, profile_element)
+          add_values_from_patterncodeableconcept(param_metadata, profile_element)
+        end
+        add_values_from_valueset_binding(param_metadata, profile_element)
+        add_values_from_resource_metadata(param_metadata, fhir_metadata)
+      end
+
+      def add_values_from_slices(param_metadata, profile_definition, path)
+        slices = profile_definition['snapshot']['element'].select { |el| el['path'] == path && el['sliceName'] }
+        slices.each do |slice|
+          param_metadata[:values] << slice['patternCodeableConcept']['coding'].first['code'] if slice['patternCodeableConcept']
+        end
+      end
+
+      def add_values_from_fixed_codes(param_metadata, profile_definition, profile_element)
+        fixed_code_els = profile_definition['snapshot']['element'].select { |el| el['path'] == "#{profile_element['path']}.coding.code" && el['fixedCode'].present? }
+        param_metadata[:values] += fixed_code_els.map { |el| el['fixedCode'] }
+      end
+
+      def add_values_from_valueset_binding(param_metadata, profile_element)
+        valueset_binding = profile_element['binding']
+        return unless valueset_binding
+
+        value_set = resources_by_type['ValueSet'].find { |res| res['url'] == valueset_binding['valueSet'] }
+        codes = value_set['compose']['include'].reject { |code| code['concept'].nil? } if value_set.present?
+        param_metadata[:values] += codes.map { |code| code['concept'].first['code'] } if codes.present?
+      end
+
+      def add_values_from_patterncodeableconcept(param_metadata, profile_element)
+        param_metadata[:values] << profile_element['patternCodeableConcept']['coding'].first['code'] if profile_element['patternCodeableConcept']
+      end
+
+      def add_values_from_resource_metadata(param_metadata, fhir_metadata)
+        use_valid_codes = param_metadata[:values].blank? && fhir_metadata.present? && fhir_metadata['valid_codes'].present?
+        param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten if use_valid_codes
       end
 
       def add_element_definitions(profile_definition, sequence)
@@ -243,29 +286,32 @@ module Inferno
 
       def add_special_cases(metadata)
         category_first_profiles = [
-          PROFILE_URIS[:diagnostic_report_lab],
-          PROFILE_URIS[:lab_results],
-          PROFILE_URIS[:diagnostic_report_note]
+          PROFILE_URIS[:lab_results]
         ]
 
         # search by patient first
         metadata[:sequences].each do |sequence|
-          patient_search = sequence[:searches].select { |param| param[:names] == ['patient'] } &.first
-          unless patient_search.nil?
-            sequence[:searches].delete(patient_search)
-            sequence[:searches].unshift(patient_search)
-          end
+          set_first_search(sequence, ['patient'])
         end
 
         # search by patient + category first for these specific profiles
         metadata[:sequences].select { |sequence| category_first_profiles.include?(sequence[:profile]) }.each do |sequence|
-          category_search = sequence[:searches].select { |param| param[:names] == ['patient', 'category'] } &.first
-          unless category_search.nil?
-            sequence[:searches].delete(category_search)
-            sequence[:searches].unshift(category_search)
-          end
+          set_first_search(sequence, ['patient', 'category'])
         end
+
+        # search by patient + intent first for medication request sequence
+        medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
+        set_first_search(medication_request_sequence, ['patient', 'intent'])
+
         metadata
+      end
+
+      def set_first_search(sequence, params)
+        search = sequence[:searches].find { |param| param[:names] == params }
+        return if search.nil?
+
+        sequence[:searches].delete(search)
+        sequence[:searches].unshift(search)
       end
     end
   end
