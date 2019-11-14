@@ -351,60 +351,66 @@ module Inferno
       end
 
       def get_first_search(search_parameters, sequence)
-        search_code = ''
-
         save_resource_ids_in_bundle_arguments = [
           "versioned_resource_class('#{sequence[:resource]}')",
           'reply',
           validation_profile_uri(sequence)
         ].compact.join(', ')
 
-        if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
-          search_code = %(
-            #{get_search_params(search_parameters, sequence)}
+        search_code = if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
+                        get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+                      else
+                        get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+                      end
+        search_code
+      end
+
+      def get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        %(
+          #{get_search_params(search_parameters, sequence)}
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+
+          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+          @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
+          @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
+          save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
+          save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
+          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+        )
+      end
+
+      def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        # assume only patient + one other parameter
+        non_patient_search_param = search_parameters.find { |param| param != 'patient' }
+        non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
+        values_variable_name = param_value_name(non_patient_search_param)
+        %(
+          #{values_variable_name} = [#{non_patient_values.map { |val| "'#{val}'" }.join(', ')}]
+          #{values_variable_name}.each do |val|
+            search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': val }
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
             assert_response_ok(reply)
             assert_bundle_response(reply)
 
             resource_count = reply&.resource&.entry&.length || 0
             @resources_found = true if resource_count.positive?
-
-            skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+            next unless @resources_found
 
             @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
             @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
+
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-          )
-        else
-          # assume only patient + one other parameter
-          non_patient_search_param = search_parameters.find { |param| param != 'patient' }
-          non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
-          values_variable_name = param_value_name(non_patient_search_param)
-          search_code = %(
-            #{values_variable_name} = [#{non_patient_values.map { |val| "'#{val}'" }.join(', ')}]
-            #{values_variable_name}.each do |val|
-              search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': val }
-              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-              assert_response_ok(reply)
-              assert_bundle_response(reply)
-
-              resource_count = reply&.resource&.entry&.length || 0
-              @resources_found = true if resource_count.positive?
-              next unless @resources_found
-
-              @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
-              @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
-
-              save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-              save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              break
-            end
-            skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
-        end
-        search_code
+            break
+          end
+          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
       end
 
       def get_search_params(search_parameters, sequence)

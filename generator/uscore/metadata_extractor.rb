@@ -207,7 +207,7 @@ module Inferno
           param_metadata = {
             path: path,
             comparators: {},
-            values: []
+            values: Set.new
           }
           if !profile_element.nil?
             param_metadata[:type] = profile_element['type'].first['code']
