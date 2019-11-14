@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../test_helper'
+require_relative '../../../../test/test_helper'
 
 describe Inferno::Sequence::OncStandaloneLaunchSequence do
   before do
