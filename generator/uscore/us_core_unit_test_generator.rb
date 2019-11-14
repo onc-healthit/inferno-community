@@ -10,6 +10,8 @@ module Inferno
       def generate(sequence, path)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'unit_test.rb.erb')))
         class_name = sequence[:class_name]
+        return if tests[class_name].blank?
+
         unit_tests = template.result_with_hash(
           class_name: class_name,
           tests: tests[class_name]
@@ -63,6 +65,9 @@ module Inferno
           .transform_values { |value| dynamic_search_param(value) }
       end
 
+      # From a string like:
+      #   get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
+      # this method extracts the variable name '@careplan_ary' and the path 'category'
       def dynamic_search_param(param_value)
         match = param_value.match(/(@\w+).*'([\w\.]+)'/)
         {

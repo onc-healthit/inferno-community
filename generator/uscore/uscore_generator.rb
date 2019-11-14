@@ -446,8 +446,7 @@ module Inferno
       end
 
       def search_param_to_string(param, value)
-        value_string = "'#{value}'" unless value.start_with?('@') ||
-                                           value.start_with?('get_value_for_search_param')
+        value_string = "'#{value}'" unless value.start_with?('@', 'get_value_for_search_param')
         "'#{param}': #{value_string || value}"
       end
 
