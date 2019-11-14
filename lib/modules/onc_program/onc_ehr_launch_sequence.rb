@@ -17,63 +17,76 @@ module Inferno
 
       defines :token, :id_token, :refresh_token, :patient_id
 
-      @@resource_types = [
-        'Patient',
-        'AllergyIntolerance',
-        'CarePlan',
-        'Condition',
-        'Device',
-        'DiagnosticReport',
-        'DocumentReference',
-        'Encounter',
-        'ExplanationOfBenefit',
-        'Goal',
-        'Immunization',
-        'Medication',
-        'MedicationDispense',
-        'MedicationStatement',
-        'MedicationOrder',
-        'Observation',
-        'Procedure',
-        'DocumentReference',
-        'Provenance'
-      ]
+      def valid_resource_types
+        [
+          '*',
+          'Patient',
+          'AllergyIntolerance',
+          'CarePlan',
+          'CareTeam',
+          'Condition',
+          'Device',
+          'DiagnosticReport',
+          'DocumentReference',
+          'Encounter',
+          'Goal',
+          'Immunization',
+          'Location',
+          'Medication',
+          'MedicationOrder',
+          'MedicationRequest',
+          'MedicationStatement',
+          'Observation',
+          'Organization',
+          'Practitioner',
+          'PractitionerRole',
+          'Procedure',
+          'Provenance'
+        ]
+      end
 
-      test 'Scopes enabling user-level access with OpenID Connect and Refresh Token present' do
+      def required_scopes
+        ['openid', 'fhirUser', 'launch', 'offline_access']
+      end
+
+      test :onc_scopes do
         metadata do
           id '11'
+          name 'Scopes enabling user-level access with OpenID Connect and Refresh Token present'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           description %(
             The scopes being input must follow the guidelines specified in the smart-app-launch guide
           )
         end
+
         scopes = @instance.scopes.split(' ')
 
-        assert scopes.include?('openid'), 'Scope did not include "openid"'
-        scopes.delete('openid')
-        assert scopes.include?('fhirUser'), 'Scope did not include "fhirUser"'
-        scopes.delete('fhirUser')
-        assert scopes.include?('launch'), 'Scope did not include "launch"'
-        scopes.delete('launch')
-        assert scopes.include?('offline_access'), 'Scope did not include "offline_access"'
-        scopes.delete('offline_access')
+        missing_scopes = required_scopes - scopes
+        assert missing_scopes.empty?, "Required scopes missing: #{missing_scopes.join(', ')}"
 
+        scopes -= required_scopes
         # Other 'okay' scopes
         scopes.delete('online_access')
 
         user_scope_found = false
 
         scopes.each do |scope|
+          bad_format_message = "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]"
           scope_pieces = scope.split('/')
-          assert scope_pieces.count == 2, "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]"
-          assert scope_pieces[0] == 'user', "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]"
+
+          assert scope_pieces.count == 2, bad_format_message
+          assert scope_pieces[0] == 'user', bad_format_message
+
           resource_access = scope_pieces[1].split('.')
-          assert resource_access.count == 2, "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]"
-          assert resource_access[0] == '*' || @@resource_types.include?(resource_access[0]), "'#{resource_access[0]}' must be either a valid resource type or '*'"
-          assert resource_access[1] =~ /^(\*|read)/, "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]"
+          bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
+
+          assert resource_access.count == 2, bad_format_message
+          assert valid_resource_types.include?(resource_access[0]), bad_resource_message
+          assert resource_access[1] =~ /^(\*|read)/, bad_format_message
 
           user_scope_found = true
         end
+
         assert user_scope_found, 'Must contain a user-level scope in the format: user/[ resource | * ].[ read | *].'
       end
     end
