@@ -56,9 +56,16 @@ module Inferno
         }
       }.freeze
 
+
+      # "succeeded"
+      # "failed"
+      # "waiting"
+      # "not-implemented"
+      # "not-supported"
+
       def settings
         {
-          'baseUrl' => @instance.bulk_url,
+          'baseURL' => @instance.bulk_url,
           'tokenEndpoint' => @instance.bulk_token_endpoint,
           'clientId' => @instance.bulk_client_id,
           'systemExportEndpoint' => @instance.bulk_system_export_endpoint,
@@ -67,11 +74,12 @@ module Inferno
           'fastestResource' => @instance.bulk_fastest_resource,
           'requiresAuth' => !@instance.bulk_requires_auth.nil?,
           'sinceParam' => '_since',
-          'jwksUrlAuth' => true,
+          'jwksUrlAuth' => !@instance.bulk_jwks_url_auth.nil?,
           'jwksAuth' => true,
+          'jwksUrl' => @instance.bulk_jwks_url_auth,
           'strictSSL' => false,
-          'publicKey' => @instance.bulk_public_key,
-          'privateKey' => @instance.bulk_private_key
+          'publicKey' => JSON.parse(@instance.bulk_public_key),
+          'privateKey' => JSON.parse(@instance.bulk_private_key)
         }
       end
 
@@ -135,9 +143,9 @@ module Inferno
           end
 
           omit 'Not supported' if data['status'] == 'not-supported'
-          binding.pry if data['status'] == 'not-supported'
+          todo 'Not Implemented' if data['status'] == 'not-supported'
 
-          assert message['status'] != 'error', data['error']
+          assert data['status'] != 'failed', data['error'] && data['error']['message']
         end
       rescue RestClient::Exception => e
         assert false, "Error connecting to BDT Service: #{e.message}"
