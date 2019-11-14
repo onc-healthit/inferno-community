@@ -10,6 +10,8 @@ module Inferno
       def generate(sequence, path)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'unit_test.rb.erb')))
         class_name = sequence[:class_name]
+        return if tests[class_name].blank?
+
         unit_tests = template.result_with_hash(
           class_name: class_name,
           tests: tests[class_name]
