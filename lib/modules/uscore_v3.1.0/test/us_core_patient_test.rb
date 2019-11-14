@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# NOTE: This is a generated file. Any changes made to this file will be
+#       overwritten when it is regenerated
+
 require_relative '../../../../test/test_helper'
 
 describe Inferno::Sequence::USCore310PatientSequence do
