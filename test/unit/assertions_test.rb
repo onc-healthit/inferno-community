@@ -91,18 +91,16 @@ describe Inferno::Assertions do
   end
 
   describe '#assert_response_unauthorized' do
-    it 'raises an AssertionException for status codes other than 401 and 406' do
+    it 'raises an AssertionException for status codes other than 401' do
       bad_response = OpenStruct.new(code: 200)
       assert_raises(Inferno::AssertionException) do
         @inferno_asserter.assert_response_unauthorized(bad_response)
       end
     end
 
-    it 'does not raise an exception for status codes 401 and 406' do
-      [401, 406].each do |status|
-        response = OpenStruct.new(code: status)
-        @inferno_asserter.assert_response_unauthorized(response)
-      end
+    it 'does not raise an exception for status code 401' do
+      response = OpenStruct.new(code: 401)
+      @inferno_asserter.assert_response_unauthorized(response)
     end
   end
 

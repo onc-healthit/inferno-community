@@ -147,8 +147,8 @@ module Inferno
 
       def patient_id
         resource_references
-          .select { |ref| ref.resource_type == 'Patient' }
-          .first&.resource_id
+          .first(resource_type: 'Patient', order: [:created_at.asc])
+          &.resource_id
       end
 
       def patient_id=(patient_id)
@@ -156,11 +156,10 @@ module Inferno
 
         resource_references.destroy
 
-        save!
-
-        resource_references << ResourceReference.new(
+        ResourceReference.create(
           resource_type: 'Patient',
-          resource_id: patient_id
+          resource_id: patient_id,
+          testing_instance: self
         )
 
         save!

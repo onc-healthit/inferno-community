@@ -117,7 +117,7 @@ module Inferno
         authorization_test = {
           tests_that: "Server rejects #{sequence[:resource]} search without authorization",
           index: sequence[:tests].length + 1,
-          link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
         }
 
         first_search = find_first_search(sequence)

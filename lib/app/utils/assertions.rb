@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'assertions.rb'
 require 'uri'
 
 module Inferno
@@ -35,8 +34,8 @@ module Inferno
     end
 
     def assert_response_unauthorized(response)
-      message = "Bad response code: expected 401 or 406, but found #{response.code}"
-      assert [401, 406].include?(response.code), message
+      message = "Bad response code: expected 401, but found #{response.code}"
+      assert response.code == 401, message
     end
 
     def assert_response_bad_or_unauthorized(response)
