@@ -358,11 +358,8 @@ module Inferno
       end
 
       def param_value_name(param)
-        if param == '_id'
-          'id_val'
-        else
-          param.tr('-', '_') + '_val'
-        end
+        param_key = param.include?('-') ? "'#{param}'" : param
+        "search_params[:#{param_key}]"
       end
 
       def get_first_search(search_parameters, sequence)
@@ -404,7 +401,7 @@ module Inferno
         # assume only patient + one other parameter
         non_patient_search_param = search_parameters.find { |param| param != 'patient' }
         non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
-        values_variable_name = param_value_name(non_patient_search_param)
+        values_variable_name = "#{non_patient_search_param.tr('-', '_')}_val"
         %(
           #{values_variable_name} = [#{non_patient_values.map { |val| "'#{val}'" }.join(', ')}]
           #{values_variable_name}.each do |val|
