@@ -14,6 +14,15 @@ describe 'unauthorized search test' do
     }
   end
 
+  it 'skips if the <%= resource_type %> search interaction is not supported' do
+    @instance.server_capabilities.destroy
+    @instance.reload
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    skip_message = 'This server does not support <%= resource_type %> search operation(s) according to conformance statement.'
+    assert_equal skip_message, exception.message
+  end
+
   it 'fails when the token refresh response has a success status' do
     stub_request(:get, "#{@base_url}/<%= resource_type %>")
       .with(query: @query)

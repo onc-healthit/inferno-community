@@ -113,8 +113,11 @@ module Inferno
         }
 
         read_test[:test_code] = %(
+              skip_if_not_supported(:#{sequence[:resource]}, [:read])
+
               #{sequence[:resource].downcase}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
               skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].downcase}_id.nil?
+
               @#{sequence[:resource].downcase} = validate_read_reply(
                 FHIR::#{sequence[:resource]}.new(id: #{sequence[:resource].downcase}_id),
                 FHIR::#{sequence[:resource]}
@@ -143,8 +146,11 @@ module Inferno
         return if first_search.nil?
 
         authorization_test[:test_code] = %(
+              skip_if_not_supported(:#{sequence[:resource]}, [:search])
+
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
+
               search_params = { patient: @instance.patient_id }
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)

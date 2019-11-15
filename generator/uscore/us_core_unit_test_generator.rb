@@ -14,7 +14,8 @@ module Inferno
 
         unit_tests = template.result_with_hash(
           class_name: class_name,
-          tests: tests[class_name]
+          tests: tests[class_name],
+          resource_type: sequence[:resource]
         )
 
         test_path = File.join(path, 'test')

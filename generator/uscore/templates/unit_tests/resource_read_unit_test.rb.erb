@@ -5,6 +5,15 @@ describe 'resource read test' do
     @sequence = @sequence_class.new(@instance, @client)
   end
 
+  it 'skips if the <%= resource_type %> read interaction is not supported' do
+    @instance.server_capabilities.destroy
+    @instance.reload
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    skip_message = 'This server does not support <%= resource_type %> read operation(s) according to conformance statement.'
+    assert_equal skip_message, exception.message
+  end
+
   it 'skips if no <%= resource_type %> has been found' do
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

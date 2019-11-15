@@ -14,6 +14,9 @@ describe Inferno::Sequence::<%= class_name %> do
     @instance = Inferno::Models::TestingInstance.create(token: @token)
     @patient_id = '123'
     @instance.patient_id = @patient_id
+    @module = OpenStruct.new(resources_to_test: Set.new(['<%= resource_type %>']))
+    @instance.instance_variable_set(:'@module', @module)
+    set_resource_support(@instance, '<%= resource_type %>')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
