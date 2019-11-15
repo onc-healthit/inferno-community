@@ -119,7 +119,7 @@ class SequenceBaseTest < MiniTest::Test
             test :a do
               metadata do
                 id "0#{index}"
-                name 'a'
+                name 'InvalidKeySequence'
                 description 'a'
                 link 'http://example.com'
               end
