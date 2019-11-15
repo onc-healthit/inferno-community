@@ -119,6 +119,12 @@ module Inferno
               @#{sequence[:resource].downcase}_ary = Array.wrap(@#{sequence[:resource].downcase})
               @resources_found = !@#{sequence[:resource].downcase}.nil?)
         sequence[:tests] << read_test
+
+        unit_test_generator.generate_resource_read_test(
+          key: key,
+          resource_type: sequence[:resource],
+          class_name: sequence[:class_name]
+        )
       end
 
       def create_authorization_test(sequence)
@@ -142,9 +148,9 @@ module Inferno
               assert_response_unauthorized reply)
 
         sequence[:tests] << authorization_test
+
         unit_test_generator.generate_authorization_test(
           key: key,
-          name: sequence[:name],
           resource_type: sequence[:resource],
           search_params: { patient: '@instance.patient_id' },
           class_name: sequence[:class_name]

@@ -1,0 +1,61 @@
+describe 'resource read test' do
+  before do
+    @<%= resource_var_name %>_id = '456'
+    @test = @sequence_class[:<%= key %>]
+    @sequence = @sequence_class.new(@instance, @client)
+  end
+
+  it 'skips if no <%= resource_type %> has been found' do
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_equal 'No <%= resource_type %> references found from the prior searches', exception.message
+  end
+
+  it 'fails if a non-success response code is received' do
+    Inferno::Models::ResourceReference.create(
+      resource_type: '<%= resource_type %>',
+      resource_id: @<%= resource_var_name %>_id,
+      testing_instance: @instance
+    )
+    stub_request(:get, "#{@base_url}/<%= resource_type %>/#{@<%= resource_var_name %>_id}")
+      .with(query: @query, headers: @auth_header)
+      .to_return(status: 401)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal "Bad response code: expected 200, 201, but found 401. ", exception.message
+  end
+
+  it 'fails if the resource returned is not a <%= resource_type %>' do
+    Inferno::Models::ResourceReference.create(
+      resource_type: '<%= resource_type %>',
+      resource_id: @<%= resource_var_name %>_id,
+      testing_instance: @instance
+    )
+
+    stub_request(:get, "#{@base_url}/<%= resource_type %>/#{@<%= resource_var_name %>_id}")
+      .with(query: @query, headers: @auth_header)
+      .to_return(status: 200, body: FHIR::Patient.new.to_json)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal "Expected resource to be of type <%= resource_type %>", exception.message
+  end
+
+  it 'succeeds when a <%= resource_type %> resource is read successfully' do
+    <%= resource_var_name %> = FHIR::<%= resource_type %>.new(
+      id: @<%= resource_var_name %>_id
+    )
+    Inferno::Models::ResourceReference.create(
+      resource_type: '<%= resource_type %>',
+      resource_id: @<%= resource_var_name %>_id,
+      testing_instance: @instance
+    )
+
+    stub_request(:get, "#{@base_url}/<%= resource_type %>/#{@<%= resource_var_name %>_id}")
+      .with(query: @query, headers: @auth_header)
+      .to_return(status: 200, body: <%= resource_var_name %>.to_json)
+
+    @sequence.run_test(@test)
+  end
+end

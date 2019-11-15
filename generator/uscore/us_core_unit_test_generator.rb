@@ -24,14 +24,25 @@ module Inferno
         File.write(file_name, unit_tests)
       end
 
-      def generate_authorization_test(key:, name:, resource_type:, search_params:, class_name:)
+      def generate_authorization_test(key:, resource_type:, search_params:, class_name:)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'authorization_unit_test.rb.erb')))
         test = template.result_with_hash(
           key: key,
-          name: name,
           resource_type: resource_type,
           search_param_string: search_params_to_string(search_params),
           dynamic_search_params: dynamic_search_params(search_params)
+        )
+        tests[class_name] << test
+      end
+
+      def generate_resource_read_test(key:, resource_type:, class_name:)
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'resource_read_unit_test.rb.erb')))
+        resource_var_name = resource_type.underscore
+
+        test = template.result_with_hash(
+          key: key,
+          resource_type: resource_type,
+          resource_var_name: resource_var_name
         )
         tests[class_name] << test
       end
