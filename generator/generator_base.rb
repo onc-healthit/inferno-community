@@ -72,7 +72,7 @@ module Inferno
       end
 
       def module_yml_out_path
-        File.expand_path('./lib/app/modules/')
+        File.expand_path('./lib/modules/')
       end
 
       def sequence_out_path

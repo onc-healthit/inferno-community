@@ -34,7 +34,7 @@ class SequenceProcessor
   end
 
   def stripped_file_name
-    @stripped_file_name ||= file_name.split('lib/app/').last
+    @stripped_file_name ||= file_name.split('lib/').last
   end
 end
 
@@ -75,8 +75,8 @@ class AssertionTracker
 end
 
 class AssertionCallLocationFormatter
-  SEQUENCE_LINE_REGEX = %r{inferno/lib/app/(modules/\w+/\w+\.rb:\d+)}.freeze
-  LINE_REGEX = %r{inferno/lib/app/((?:\w+/?)+\.rb:\d+)}.freeze
+  SEQUENCE_LINE_REGEX = %r{inferno/lib/(modules/\w+/\w+\.rb:\d+)}.freeze
+  LINE_REGEX = %r{inferno/lib/((?:\w+/?)+\.rb:\d+)}.freeze
   ASSERTION_CALL_REGEX = %r{inferno/lib/app/utils/assertions.rb:\d+}.freeze
   CALL_SEPARATOR = ' => '
 
@@ -205,7 +205,7 @@ class AssertionReporter
   end
 end
 
-sequence_paths = File.join(__dir__, '..', '..', 'lib', 'app', 'modules', '*', '*.rb')
+sequence_paths = File.join(__dir__, '..', '..', 'lib', 'modules', '*', '*.rb')
 
 Dir.glob(sequence_paths).sort.each do |sequence_file_name|
   file_contents = File.read(sequence_file_name)

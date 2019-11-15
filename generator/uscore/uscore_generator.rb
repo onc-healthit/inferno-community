@@ -117,7 +117,7 @@ module Inferno
         authorization_test = {
           tests_that: "Server rejects #{sequence[:resource]} search without authorization",
           index: sequence[:tests].length + 1,
-          link: 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
+          link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
         }
 
         first_search = find_first_search(sequence)
@@ -126,7 +126,7 @@ module Inferno
         authorization_test[:test_code] = %(
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
-      #{get_search_params(first_search[:names], sequence)}
+              search_params = { patient: @instance.patient_id }
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)
               assert_response_unauthorized reply)
@@ -191,29 +191,10 @@ module Inferno
         }
 
         is_first_search = search_param == find_first_search(sequence)
-        save_resource_ids_in_bundle_arguments = [
-          "versioned_resource_class('#{sequence[:resource]}')",
-          'reply',
-          validation_profile_uri(sequence)
-        ].compact.join(', ')
 
         search_test[:test_code] =
           if is_first_search
-            %(#{get_search_params(search_param[:names], sequence)}
-              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-              assert_response_ok(reply)
-              assert_bundle_response(reply)
-
-              resource_count = reply&.resource&.entry&.length || 0
-              @resources_found = true if resource_count.positive?
-
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-              @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
-              @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
-              save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-              save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params))
+            get_first_search(search_param[:names], sequence)
           else
             %(
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
@@ -369,6 +350,69 @@ module Inferno
         end
       end
 
+      def get_first_search(search_parameters, sequence)
+        save_resource_ids_in_bundle_arguments = [
+          "versioned_resource_class('#{sequence[:resource]}')",
+          'reply',
+          validation_profile_uri(sequence)
+        ].compact.join(', ')
+
+        search_code = if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
+                        get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+                      else
+                        get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+                      end
+        search_code
+      end
+
+      def get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        %(
+          #{get_search_params(search_parameters, sequence)}
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+
+          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+          @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
+          @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
+          save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
+          save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
+          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+        )
+      end
+
+      def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        # assume only patient + one other parameter
+        non_patient_search_param = search_parameters.find { |param| param != 'patient' }
+        non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
+        values_variable_name = param_value_name(non_patient_search_param)
+        %(
+          #{values_variable_name} = [#{non_patient_values.map { |val| "'#{val}'" }.join(', ')}]
+          #{values_variable_name}.each do |val|
+            search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': val }
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+
+            resource_count = reply&.resource&.entry&.length || 0
+            @resources_found = true if resource_count.positive?
+            next unless @resources_found
+
+            @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
+            @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
+
+            save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
+            save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
+            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            break
+          end
+          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
+      end
+
       def get_search_params(search_parameters, sequence)
         unless search_param_constants(search_parameters, sequence).nil?
           return %(
@@ -429,16 +473,7 @@ module Inferno
       end
 
       def search_param_constants(search_parameters, sequence)
-        return "patient: @instance.patient_id, category: 'assess-plan'" if search_parameters == ['patient', 'category'] && sequence[:resource] == 'CarePlan'
-        return "patient: @instance.patient_id, status: 'active'" if search_parameters == ['patient', 'status'] && sequence[:resource] == 'CareTeam'
         return "'_id': @instance.patient_id" if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
-        return "patient: @instance.patient_id, code: '72166-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:smoking_status]
-        return "patient: @instance.patient_id, category: 'laboratory'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:lab_results]
-        return "patient: @instance.patient_id, code: '77606-2'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_weight_height]
-        return "patient: @instance.patient_id, code: '59576-9'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pediatric_bmi_age]
-        return "patient: @instance.patient_id, category: 'LAB'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_lab]
-        return "patient: @instance.patient_id, code: 'LP29684-5'" if search_parameters == ['patient', 'category'] && sequence[:profile] == PROFILE_URIS[:diagnostic_report_note]
-        return "patient: @instance.patient_id, code: '59408-5'" if search_parameters == ['patient', 'code'] && sequence[:profile] == PROFILE_URIS[:pulse_oximetry]
       end
 
       def create_search_validation(sequence)
