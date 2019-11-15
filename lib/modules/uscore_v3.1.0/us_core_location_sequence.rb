@@ -51,9 +51,10 @@ module Inferno
 
       @resources_found = false
 
-      test 'Can read Location from the server' do
+      test :resource_read do
         metadata do
           id '01'
+          name 'Can read Location from the server'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
