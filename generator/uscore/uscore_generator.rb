@@ -144,7 +144,7 @@ module Inferno
           key: key,
           name: sequence[:name],
           resource_type: sequence[:resource],
-          search_params: get_search_param_hash(first_search[:names], sequence),
+          search_params: { patient: '@instance.patient_id' },
           class_name: sequence[:class_name]
         )
       end

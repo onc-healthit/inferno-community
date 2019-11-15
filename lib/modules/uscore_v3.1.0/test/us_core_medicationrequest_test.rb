@@ -22,18 +22,8 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @medicationrequest_ary = load_json_fixture(:us_core_medicationrequest_medicationrequest_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
-      @sequence.instance_variable_set(:'@medicationrequest_ary', @medicationrequest_ary)
-
-      @medicationrequest_ary = load_json_fixture(:us_core_medicationrequest_medicationrequest_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
-      @sequence.instance_variable_set(:'@medicationrequest_ary', @medicationrequest_ary)
-
       @query = {
-        'patient': @instance.patient_id,
-        'intent': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medicationrequest_ary, 'intent')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medicationrequest_ary, 'status'))
+        'patient': @instance.patient_id
       }
     end
 

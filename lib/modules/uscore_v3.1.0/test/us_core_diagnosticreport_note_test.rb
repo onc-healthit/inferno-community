@@ -23,8 +23,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
-        'code': 'LP29684-5'
+        'patient': @instance.patient_id
       }
     end
 

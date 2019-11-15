@@ -23,8 +23,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
-        'category': 'assess-plan'
+        'patient': @instance.patient_id
       }
     end
 

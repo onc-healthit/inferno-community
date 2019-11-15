@@ -23,8 +23,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
-        'status': 'active'
+        'patient': @instance.patient_id
       }
     end
 

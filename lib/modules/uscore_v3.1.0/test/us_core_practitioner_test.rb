@@ -22,12 +22,8 @@ describe Inferno::Sequence::USCore310PractitionerSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @practitioner_ary = load_json_fixture(:us_core_practitioner_practitioner_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
-      @sequence.instance_variable_set(:'@practitioner_ary', @practitioner_ary)
-
       @query = {
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_ary, 'name'))
+        'patient': @instance.patient_id
       }
     end
 

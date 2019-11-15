@@ -23,8 +23,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
-        'category': 'laboratory'
+        'patient': @instance.patient_id
       }
     end
 

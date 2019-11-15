@@ -23,8 +23,7 @@ describe Inferno::Sequence::USCore310PediatricWeightForHeightSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
-        'code': '77606-2'
+        'patient': @instance.patient_id
       }
     end
 

@@ -23,8 +23,7 @@ describe Inferno::Sequence::USCore310PediatricBmiForAgeSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
-        'code': '59576-9'
+        'patient': @instance.patient_id
       }
     end
 
