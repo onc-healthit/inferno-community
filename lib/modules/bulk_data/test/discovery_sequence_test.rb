@@ -161,7 +161,7 @@ describe Inferno::Sequence::BulkDataDiscoverySequence do
       stub_request(:get, @conformance_endpoint)
         .to_return(
           status: 200,
-          body: @conformance.to_json
+          body: invalid_conformance.to_json
         )
 
       assert_raises(Inferno::AssertionException) do
