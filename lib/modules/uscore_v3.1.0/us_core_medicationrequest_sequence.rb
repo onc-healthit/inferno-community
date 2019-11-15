@@ -39,16 +39,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects MedicationRequest search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects MedicationRequest search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -106,10 +105,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
-        patient_val = @instance.patient_id
-        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        status_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
-        search_params = { 'patient': patient_val, 'intent': intent_val, 'status': status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
+          'status': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -130,10 +130,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
-        patient_val = @instance.patient_id
-        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        encounter_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'encounter'))
-        search_params = { 'patient': patient_val, 'intent': intent_val, 'encounter': encounter_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
+          'encounter': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'encounter'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -154,10 +155,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@medicationrequest.nil?, 'Expected valid MedicationRequest resource to be present'
 
-        patient_val = @instance.patient_id
-        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        authoredon_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
-        search_params = { 'patient': patient_val, 'intent': intent_val, 'authoredon': authoredon_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
+          'authoredon': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -219,9 +221,10 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        search_params = { 'patient': patient_val, 'intent': intent_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_include'] = 'MedicationRequest:medication'
@@ -241,9 +244,10 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        intent_val = get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
-        search_params = { 'patient': patient_val, 'intent': intent_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'

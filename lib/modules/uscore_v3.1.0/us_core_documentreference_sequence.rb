@@ -49,16 +49,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects DocumentReference search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects DocumentReference search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -82,9 +81,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         assert_response_ok(reply)
@@ -114,8 +113,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        id_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'id'))
-        search_params = { '_id': id_val }
+        search_params = {
+          '_id': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'id'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -135,9 +135,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        patient_val = @instance.patient_id
-        type_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
-        search_params = { 'patient': patient_val, 'type': type_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'type': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -157,10 +158,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
-        date_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'date'))
-        search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'date'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -180,9 +182,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
-        search_params = { 'patient': patient_val, 'category': category_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -203,10 +206,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        patient_val = @instance.patient_id
-        type_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
-        period_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'context.period'))
-        search_params = { 'patient': patient_val, 'type': type_val, 'period': period_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'type': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type')),
+          'period': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'context.period'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -214,8 +218,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, period_val)
-          comparator_search_params = { 'patient': patient_val, 'type': type_val, 'period': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:period])
+          comparator_search_params = { 'patient': search_params[:patient], 'type': search_params[:type], 'period': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -235,9 +239,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@documentreference.nil?, 'Expected valid DocumentReference resource to be present'
 
-        patient_val = @instance.patient_id
-        status_val = get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'status'))
-        search_params = { 'patient': patient_val, 'status': status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'status'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
@@ -314,9 +319,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)

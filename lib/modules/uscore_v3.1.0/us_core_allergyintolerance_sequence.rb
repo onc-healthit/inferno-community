@@ -27,16 +27,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects AllergyIntolerance search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects AllergyIntolerance search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -60,9 +59,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
@@ -93,9 +92,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@allergyintolerance.nil?, 'Expected valid AllergyIntolerance resource to be present'
 
-        patient_val = @instance.patient_id
-        clinical_status_val = get_value_for_search_param(resolve_element_from_path(@allergyintolerance_ary, 'clinicalStatus'))
-        search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergyintolerance_ary, 'clinicalStatus'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
@@ -157,9 +157,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)

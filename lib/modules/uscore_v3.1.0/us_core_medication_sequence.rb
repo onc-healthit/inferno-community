@@ -14,9 +14,7 @@ module Inferno
       delayed_sequence
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false

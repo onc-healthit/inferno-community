@@ -1,0 +1,14 @@
+[
+  {
+    "resourceType": "PractitionerRole",
+    "specialty": [
+      {
+        "coding": [
+          {
+            "code": "207Q00000X"
+          }
+        ]
+      }
+    ]
+  }
+]

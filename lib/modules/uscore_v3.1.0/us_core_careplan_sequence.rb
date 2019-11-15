@@ -37,16 +37,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects CarePlan search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects CarePlan search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -70,26 +69,25 @@ module Inferno
           versions :r4
         end
 
-        category_val = ['assess-plan']
-        category_val.each do |val|
-          search_params = { 'patient': @instance.patient_id, 'category': val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': 'assess-plan'
+        }
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
-          next unless @resources_found
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
 
-          @careplan = reply&.resource&.entry&.first&.resource
-          @careplan_ary = fetch_all_bundled_resources(reply&.resource)
+        resource_count = reply&.resource&.entry&.length || 0
+        @resources_found = true if resource_count.positive?
 
-          save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-          save_delayed_sequence_references(@careplan_ary)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-          break
-        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @careplan = reply&.resource&.entry&.first&.resource
+        @careplan_ary = fetch_all_bundled_resources(reply&.resource)
+        save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
+        save_delayed_sequence_references(@careplan_ary)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
       end
 
       test 'Server returns expected results from CarePlan search by patient+category+date' do
@@ -105,10 +103,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
-        date_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
-        search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
@@ -116,8 +115,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
           validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -137,11 +136,12 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
-        status_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
-        date_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
-        search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status')),
+          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
@@ -149,8 +149,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'status': search_params[:status], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
           validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -170,10 +170,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
-        status_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
-        search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
@@ -235,10 +236,10 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
-        search_params = { 'patient': patient_val, 'category': category_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': 'assess-plan'
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)

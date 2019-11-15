@@ -56,16 +56,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects Patient search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects Patient search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -89,7 +88,9 @@ module Inferno
           versions :r4
         end
 
-        search_params = { '_id': @instance.patient_id }
+        search_params = {
+          '_id': @instance.patient_id
+        }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
@@ -119,8 +120,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        identifier_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
-        search_params = { 'identifier': identifier_val }
+        search_params = {
+          'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -140,8 +142,9 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        search_params = { 'name': name_val }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -161,9 +164,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
-        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        search_params = { 'gender': gender_val, 'name': name_val }
+        search_params = {
+          'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender')),
+          'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -183,9 +187,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
-        name_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
-        search_params = { 'birthdate': birthdate_val, 'name': name_val }
+        search_params = {
+          'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
+          'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -206,9 +211,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        birthdate_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate'))
-        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
-        search_params = { 'birthdate': birthdate_val, 'family': family_val }
+        search_params = {
+          'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
+          'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -229,9 +235,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
-        family_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
-        gender_val = get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
-        search_params = { 'family': family_val, 'gender': gender_val }
+        search_params = {
+          'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family')),
+          'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -293,7 +300,9 @@ module Inferno
           versions :r4
         end
 
-        search_params = { '_id': @instance.patient_id }
+        search_params = {
+          '_id': @instance.patient_id
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)

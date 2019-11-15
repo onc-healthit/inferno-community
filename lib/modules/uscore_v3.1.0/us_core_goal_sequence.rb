@@ -33,16 +33,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects Goal search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects Goal search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -66,9 +65,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         assert_response_ok(reply)
@@ -99,9 +98,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
-        patient_val = @instance.patient_id
-        target_date_val = get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
-        search_params = { 'patient': patient_val, 'target-date': target_date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
@@ -109,8 +109,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, target_date_val)
-          comparator_search_params = { 'patient': patient_val, 'target-date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
+          comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -130,9 +130,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
-        patient_val = @instance.patient_id
-        lifecycle_status_val = get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
-        search_params = { 'patient': patient_val, 'lifecycle-status': lifecycle_status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
@@ -194,9 +195,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)

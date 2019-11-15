@@ -41,16 +41,15 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects Condition search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects Condition search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
@@ -74,9 +73,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         assert_response_ok(reply)
@@ -107,9 +106,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
-        search_params = { 'patient': patient_val, 'category': category_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -130,9 +130,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
-        patient_val = @instance.patient_id
-        onset_date_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'onsetDateTime'))
-        search_params = { 'patient': patient_val, 'onset-date': onset_date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'onset-date': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'onsetDateTime'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -140,8 +141,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, onset_date_val)
-          comparator_search_params = { 'patient': patient_val, 'onset-date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:'onset-date'])
+          comparator_search_params = { 'patient': search_params[:patient], 'onset-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -161,9 +162,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
-        patient_val = @instance.patient_id
-        clinical_status_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
-        search_params = { 'patient': patient_val, 'clinical-status': clinical_status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'clinical-status': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -184,9 +186,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@condition.nil?, 'Expected valid Condition resource to be present'
 
-        patient_val = @instance.patient_id
-        code_val = get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
-        search_params = { 'patient': patient_val, 'code': code_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -248,9 +251,9 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        search_params = { 'patient': patient_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
