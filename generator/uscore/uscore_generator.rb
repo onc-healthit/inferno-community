@@ -104,8 +104,10 @@ module Inferno
       end
 
       def create_read_test(sequence)
+        key = :resource_read
         read_test = {
           tests_that: "Can read #{sequence[:resource]} from the server",
+          key: key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
         }
