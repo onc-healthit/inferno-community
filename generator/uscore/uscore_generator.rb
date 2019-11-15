@@ -145,13 +145,20 @@ module Inferno
         first_search = find_first_search(sequence)
         return if first_search.nil?
 
+        search_parameters = first_search[:names]
+        search_params = if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
+                          get_search_params(search_parameters, sequence)
+                        else
+                          non_patient_search_param = search_parameters.find { |param| param != 'patient' }
+                          non_patient_value = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values].first
+                          "search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': #{non_patient_value} }"
+                        end
         authorization_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:search])
 
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-              search_params = { patient: @instance.patient_id }
+              #{search_params}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)
               assert_response_unauthorized reply)
