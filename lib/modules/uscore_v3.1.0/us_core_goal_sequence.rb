@@ -109,8 +109,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, target_date_val)
-          comparator_search_params = { 'patient': patient_val, 'target-date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
+          comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
           assert_response_ok(reply)

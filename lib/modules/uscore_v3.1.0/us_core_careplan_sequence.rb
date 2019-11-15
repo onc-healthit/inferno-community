@@ -115,8 +115,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
           validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -149,8 +149,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val, 'date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'status': search_params[:status], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
           validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
           assert_response_ok(reply)
