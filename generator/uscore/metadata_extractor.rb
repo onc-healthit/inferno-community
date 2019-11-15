@@ -212,7 +212,7 @@ module Inferno
           if !profile_element.nil?
             param_metadata[:type] = profile_element['type'].first['code']
             param_metadata[:contains_multiple] = (profile_element['max'] == '*')
-            add_valid_codes(profile_definition, profile_element, FHIR.const_get(sequence[:resource])::METADATA[param.to_s], param_metadata, path)
+            add_valid_codes(profile_definition, profile_element, FHIR.const_get(sequence[:resource])::METADATA[param.to_s], param_metadata)
           else
             # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
             param_metadata[:type] = search_param_definition['type']
@@ -228,9 +228,9 @@ module Inferno
         end
       end
 
-      def add_valid_codes(profile_definition, profile_element, fhir_metadata, param_metadata, path)
+      def add_valid_codes(profile_definition, profile_element, fhir_metadata, param_metadata)
         if param_metadata[:contains_multiple]
-          add_values_from_slices(param_metadata, profile_definition, path)
+          add_values_from_slices(param_metadata, profile_definition, param_metadata[:path])
         elsif param_metadata[:type] == 'CodeableConcept'
           add_values_from_fixed_codes(param_metadata, profile_definition, profile_element)
           add_values_from_patterncodeableconcept(param_metadata, profile_element)
@@ -256,8 +256,9 @@ module Inferno
         return unless valueset_binding
 
         value_set = resources_by_type['ValueSet'].find { |res| res['url'] == valueset_binding['valueSet'] }
-        codes = value_set['compose']['include'].reject { |code| code['concept'].nil? } if value_set.present?
-        param_metadata[:values] += codes.map { |code| code['concept'].first['code'] } if codes.present?
+        systems = value_set['compose']['include'].reject { |code| code['concept'].nil? } if value_set.present?
+
+        param_metadata[:values] += systems.flat_map { |system| system['concept'].map { |code| code['code'] } } if systems.present?
       end
 
       def add_values_from_patterncodeableconcept(param_metadata, profile_element)
@@ -302,6 +303,11 @@ module Inferno
         # search by patient + intent first for medication request sequence
         medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
         set_first_search(medication_request_sequence, ['patient', 'intent'])
+
+        diagnostic_report_sequences = metadata[:sequences].select { |sequence| sequence[:resource] == 'DiagnosticReport' }
+        diagnostic_report_sequences.each do |sequence|
+          set_first_search(sequence, ['patient', 'category'])
+        end
 
         metadata
       end
