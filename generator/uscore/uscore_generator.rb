@@ -119,8 +119,8 @@ module Inferno
                 FHIR::#{sequence[:resource]}.new(id: #{sequence[:resource].downcase}_id),
                 FHIR::#{sequence[:resource]}
               )
-              @#{sequence[:resource].downcase}_ary = Array.wrap(@#{sequence[:resource].downcase})
-              @resources_found = !@#{sequence[:resource].downcase}.nil?)
+              @#{sequence[:resource].downcase}_ary = Array.wrap(@#{sequence[:resource].downcase}).compact
+              @resources_found = @#{sequence[:resource].downcase}.present?)
         sequence[:tests] << read_test
 
         unit_test_generator.generate_resource_read_test(
