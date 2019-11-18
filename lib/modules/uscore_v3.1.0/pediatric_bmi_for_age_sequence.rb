@@ -76,25 +76,26 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'code': '59576-9'
-        }
+        code_val = ['59576-9']
+        code_val.each do |val|
+          search_params = { 'patient': @instance.patient_id, 'code': val }
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+          next unless @resources_found
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+          @observation = reply&.resource&.entry&.first&.resource
+          @observation_ary = fetch_all_bundled_resources(reply&.resource)
 
+          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_bmi_age])
+          save_delayed_sequence_references(@observation_ary)
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          break
+        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @observation = reply&.resource&.entry&.first&.resource
-        @observation_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_bmi_age])
-        save_delayed_sequence_references(@observation_ary)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
       test 'Server returns expected results from Observation search by patient+category+date' do
@@ -269,8 +270,9 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': '59576-9'
+          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
         }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)

@@ -76,25 +76,26 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'code': 'LP29684-5'
-        }
+        category_val = ['LP29684-5', 'LP29708-2', 'LP7839-6']
+        category_val.each do |val|
+          search_params = { 'patient': @instance.patient_id, 'category': val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+          next unless @resources_found
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+          @diagnostic_report = reply&.resource&.entry&.first&.resource
+          @diagnostic_report_ary = fetch_all_bundled_resources(reply&.resource)
 
+          save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
+          save_delayed_sequence_references(@diagnostic_report_ary)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+          break
+        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @diagnostic_report = reply&.resource&.entry&.first&.resource
-        @diagnostic_report_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
-        save_delayed_sequence_references(@diagnostic_report_ary)
-        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
       end
 
       test 'Server returns expected results from DiagnosticReport search by patient' do
@@ -289,8 +290,9 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': 'LP29684-5'
+          'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category'))
         }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
