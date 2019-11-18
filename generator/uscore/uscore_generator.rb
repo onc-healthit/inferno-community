@@ -151,7 +151,7 @@ module Inferno
                         else
                           non_patient_search_param = search_parameters.find { |param| param != 'patient' }
                           non_patient_value = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values].first
-                          "search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': #{non_patient_value} }"
+                          "search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': '#{non_patient_value}' }"
                         end
         authorization_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:search])
