@@ -46,9 +46,9 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects CarePlan search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
+            A server SHALL reject any unauthorized requests by returning an HTTP 401/4xx unauthorized response code.
           )
           versions :r4
         end
@@ -71,10 +71,10 @@ module Inferno
       test 'Server returns expected results from CarePlan search by patient+category' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL be able to support searching by patient+category on the CarePlan resource
+            A server SHALL support searching by patient+category on the CarePlan resource
 
           )
           versions :r4
@@ -105,11 +105,11 @@ module Inferno
       test 'Server returns expected results from CarePlan search by patient+category+date' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by patient+category+date on the CarePlan resource
+            A server SHOULD support searching by patient+category+date on the CarePlan resource
 
               including support for these date comparators: gt, lt, le
           )
@@ -142,11 +142,11 @@ module Inferno
       test 'Server returns expected results from CarePlan search by patient+category+status+date' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by patient+category+status+date on the CarePlan resource
+            A server SHOULD support searching by patient+category+status+date on the CarePlan resource
 
               including support for these date comparators: gt, lt, le
           )
@@ -180,11 +180,11 @@ module Inferno
       test 'Server returns expected results from CarePlan search by patient+category+status' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by patient+category+status on the CarePlan resource
+            A server SHOULD support searching by patient+category+status on the CarePlan resource
 
           )
           versions :r4
@@ -209,9 +209,9 @@ module Inferno
         metadata do
           id '06'
           name 'CarePlan read interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            All servers SHALL make available read interactions on CarePlan
+            A server SHALL support the CarePlan read interaction.
           )
           versions :r4
         end
@@ -226,9 +226,9 @@ module Inferno
         metadata do
           id '07'
           name 'CarePlan vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            All servers SHOULD make available vread interactions on CarePlan
+            A server SHOULD support the CarePlan vread interaction.
           )
           versions :r4
         end
@@ -243,9 +243,9 @@ module Inferno
         metadata do
           id '08'
           name 'CarePlan history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            All servers SHOULD make available history interactions on CarePlan
+            A server SHOULD support the CarePlan history interaction.
           )
           versions :r4
         end
@@ -288,6 +288,7 @@ module Inferno
 
             This test checks if the resources returned from prior searches conform to the US Core profiles.
             This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -303,7 +304,7 @@ module Inferno
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all CarePlan resources returned from prior searches too see if any of them provide the following must support elements:
+            This will look through all CarePlan resources returned from prior searches to see if any of them provide the following must support elements:
 
             CarePlan.text
 
@@ -350,7 +351,7 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '12'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
           )

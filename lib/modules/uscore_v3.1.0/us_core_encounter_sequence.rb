@@ -58,9 +58,9 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects Encounter search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
+            A server SHALL reject any unauthorized requests by returning an HTTP 401/4xx unauthorized response code.
           )
           versions :r4
         end
@@ -82,10 +82,10 @@ module Inferno
       test 'Server returns expected results from Encounter search by patient' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL be able to support searching by patient on the Encounter resource
+            A server SHALL support searching by patient on the Encounter resource
 
           )
           versions :r4
@@ -114,10 +114,10 @@ module Inferno
       test 'Server returns expected results from Encounter search by _id' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL be able to support searching by _id on the Encounter resource
+            A server SHALL support searching by _id on the Encounter resource
 
           )
           versions :r4
@@ -139,10 +139,10 @@ module Inferno
       test 'Server returns expected results from Encounter search by date+patient' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL be able to support searching by date+patient on the Encounter resource
+            A server SHALL support searching by date+patient on the Encounter resource
 
               including support for these date comparators: gt, lt, le
           )
@@ -174,11 +174,11 @@ module Inferno
       test 'Server returns expected results from Encounter search by identifier' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by identifier on the Encounter resource
+            A server SHOULD support searching by identifier on the Encounter resource
 
           )
           versions :r4
@@ -200,11 +200,11 @@ module Inferno
       test 'Server returns expected results from Encounter search by patient+status' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by patient+status on the Encounter resource
+            A server SHOULD support searching by patient+status on the Encounter resource
 
           )
           versions :r4
@@ -227,11 +227,11 @@ module Inferno
       test 'Server returns expected results from Encounter search by class+patient' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by class+patient on the Encounter resource
+            A server SHOULD support searching by class+patient on the Encounter resource
 
           )
           versions :r4
@@ -254,11 +254,11 @@ module Inferno
       test 'Server returns expected results from Encounter search by patient+type' do
         metadata do
           id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD be able to support searching by patient+type on the Encounter resource
+            A server SHOULD support searching by patient+type on the Encounter resource
 
           )
           versions :r4
@@ -282,9 +282,9 @@ module Inferno
         metadata do
           id '09'
           name 'Encounter read interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            All servers SHALL make available read interactions on Encounter
+            A server SHALL support the Encounter read interaction.
           )
           versions :r4
         end
@@ -299,9 +299,9 @@ module Inferno
         metadata do
           id '10'
           name 'Encounter vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            All servers SHOULD make available vread interactions on Encounter
+            A server SHOULD support the Encounter vread interaction.
           )
           versions :r4
         end
@@ -316,9 +316,9 @@ module Inferno
         metadata do
           id '11'
           name 'Encounter history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            All servers SHOULD make available history interactions on Encounter
+            A server SHOULD support the Encounter history interaction.
           )
           versions :r4
         end
@@ -359,6 +359,7 @@ module Inferno
 
             This test checks if the resources returned from prior searches conform to the US Core profiles.
             This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -374,7 +375,7 @@ module Inferno
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Encounter resources returned from prior searches too see if any of them provide the following must support elements:
+            This will look through all Encounter resources returned from prior searches to see if any of them provide the following must support elements:
 
             Encounter.identifier
 
@@ -451,7 +452,7 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '15'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
           )
