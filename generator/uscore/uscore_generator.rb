@@ -147,10 +147,13 @@ module Inferno
 
         search_parameters = first_search[:names]
         search_params = if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
+                          unit_test_params = get_search_param_hash(search_parameters, sequence)
                           get_search_params(search_parameters, sequence)
                         else
                           non_patient_search_param = search_parameters.find { |param| param != 'patient' }
                           non_patient_value = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values].first
+                          unit_test_params = { patient: '@instance.patient_id' }
+                          unit_test_params[non_patient_search_param] = non_patient_value
                           "search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': '#{non_patient_value}' }"
                         end
         authorization_test[:test_code] = %(
@@ -168,7 +171,7 @@ module Inferno
         unit_test_generator.generate_authorization_test(
           test_key: test_key,
           resource_type: sequence[:resource],
-          search_params: { patient: '@instance.patient_id' },
+          search_params: unit_test_params,
           class_name: sequence[:class_name]
         )
       end
