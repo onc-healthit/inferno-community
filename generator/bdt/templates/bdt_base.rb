@@ -56,7 +56,6 @@ module Inferno
         }
       }.freeze
 
-
       # "succeeded"
       # "failed"
       # "waiting"
@@ -84,7 +83,6 @@ module Inferno
       end
 
       def run_bdt(path)
-
         payload = {
           'path' => path,
           'settings' => settings

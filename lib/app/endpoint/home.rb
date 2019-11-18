@@ -42,10 +42,7 @@ module Inferno
           unless params['preset'].blank?
 
             JSON.parse(params['preset']).each do |key, value|
-
-              if ['bulk_private_key', 'bulk_public_key'].include? key
-                value = value.tr('\'','"' )
-              end
+              value = value.tr('\'', '"') if ['bulk_private_key', 'bulk_public_key'].include? key
 
               @instance.send("#{key}=", value) if @instance.respond_to?("#{key}=")
             end

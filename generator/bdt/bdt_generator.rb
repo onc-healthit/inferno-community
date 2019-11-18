@@ -5,7 +5,6 @@ require_relative '../generator_base'
 module Inferno
   module Generator
     class BDTGenerator < Generator::Base
-
       BDT_DESCRIPTIONS = {
         'Authorization' => 'Verify that the bulk data export conforms to the SMART Backend Services specification.',
         'Download Endpoint' => 'Verify the Download Endpoint conforms to the SMART Bulk Data IG for Export.',
@@ -13,7 +12,7 @@ module Inferno
         'System-level export' => 'Verify the system is capable of performing a System-Level Export that conforms to the SMART Bulk Data IG.',
         'Group-level export' => 'Verify the system is capable of performing a Group-Level Export that conforms to the SMART Bulk Data IG.',
         'Status Endpoint' => 'Verify the status endpoint conforms to the SMART Bulk Data IG for Export.'
-      }
+      }.freeze
 
       def generate
         structure = JSON.parse(File.read(File.join(__dir__, 'bdt-structure.json')))
@@ -29,7 +28,7 @@ module Inferno
 
       def generate_sequence(sequence)
         puts "Generating #{sequence[:name]}\n"
-        file_name = sequence_out_path + '/' + sequence[:name].downcase.gsub(' ', '_') + '_sequence.rb'
+        file_name = sequence_out_path + '/' + sequence[:name].downcase.gsub(' ', '_').gsub('-', '_') + '_sequence.rb'
 
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
         output =   template.result_with_hash(sequence)
@@ -66,16 +65,14 @@ module Inferno
             }
 
             sequence['children'].each do |test|
-
               new_test = {
                 name: clean_test_name(test['name']),
                 path: test['path'],
                 id: test['id'],
                 description: test['description']
-              } 
+              }
 
               new_sequence[:tests] << new_test
-
             end
 
             new_sequence[:id] = new_sequence[:tests].first&.dig(:id)&.split('-')&.first
@@ -97,9 +94,9 @@ module Inferno
       end
 
       # This organizes into a single bulk data group
-      # With a sequence per 
+      # With a sequence per
       def revise_structure_sequence(structure)
-        bulk = { 'name' => 'Bulk Data Test', 'type' => 'group', 'children' => []}
+        bulk = { 'name' => 'Bulk Data Test', 'type' => 'group', 'children' => [] }
 
         structure['children'].each do |seq_level|
           tests = []
