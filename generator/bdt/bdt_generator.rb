@@ -28,7 +28,7 @@ module Inferno
 
       def generate_sequence(sequence)
         puts "Generating #{sequence[:name]}\n"
-        file_name = sequence_out_path + '/' + sequence[:name].downcase.gsub(' ', '_').gsub('-', '_') + '_sequence.rb'
+        file_name = sequence_out_path + '/' + sequence[:name].downcase.gsub(/[ -]/, '_') + '_sequence.rb'
 
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
         output =   template.result_with_hash(sequence)
@@ -128,7 +128,7 @@ module Inferno
       end
 
       def clean_test_name(test_name)
-        test_name.gsub("'", '"')
+        test_name.tr("'", '"')
       end
     end
   end

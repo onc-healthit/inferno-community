@@ -23,7 +23,7 @@ module Inferno
       test 'Kick-off request at the system-level export endpoint requires authorization header' do
         metadata do
           id '01.0.0'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should require authorization header at the system-level export endpoint
           )
@@ -35,7 +35,7 @@ module Inferno
       test 'Kick-off request at the system-level export endpoint rejects expired token' do
         metadata do
           id '01.0.1'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject expired tokens at the system-level export endpoint
           )
@@ -47,7 +47,7 @@ module Inferno
       test 'Kick-off request at the system-level export endpoint rejects invalid token' do
         metadata do
           id '01.0.2'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject invalid tokens at the system-level export endpoint
           )
@@ -59,7 +59,7 @@ module Inferno
       test 'Kick-off request at the patient-level export endpoint requires authorization header' do
         metadata do
           id '01.1.0'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should require authorization header at the patient-level export endpoint
           )
@@ -71,7 +71,7 @@ module Inferno
       test 'Kick-off request at the patient-level export endpoint rejects expired token' do
         metadata do
           id '01.1.1'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject expired tokens at the patient-level export endpoint
           )
@@ -83,7 +83,7 @@ module Inferno
       test 'Kick-off request at the patient-level export endpoint rejects invalid token' do
         metadata do
           id '01.1.2'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject invalid tokens at the patient-level export endpoint
           )
@@ -95,7 +95,7 @@ module Inferno
       test 'Kick-off request at the group-level export endpoint requires authorization header' do
         metadata do
           id '01.2.0'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should require authorization header at the group-level export endpoint
           )
@@ -107,7 +107,7 @@ module Inferno
       test 'Kick-off request at the group-level export endpoint rejects expired token' do
         metadata do
           id '01.2.1'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject expired tokens at the group-level export endpoint
           )
@@ -119,7 +119,7 @@ module Inferno
       test 'Kick-off request at the group-level export endpoint rejects invalid token' do
         metadata do
           id '01.2.2'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject invalid tokens at the group-level export endpoint
           )
@@ -131,7 +131,7 @@ module Inferno
       test 'Token endpoint requires "application/x-www-form-urlencoded" POSTs' do
         metadata do
           id '02'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server's token endpoint URL, using content-type <code>application/x-www-form-urlencoded</code>.
           )
@@ -143,7 +143,7 @@ module Inferno
       test 'Token endpoint the "grant_type" parameter must be present' do
         metadata do
           id '03'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reply with 400 Bad Request if the grant_type parameter is not sent by the client.
           )
@@ -155,7 +155,7 @@ module Inferno
       test 'Token endpoint the "grant_type" must equal "client_credentials"' do
         metadata do
           id '04'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reply with 400 Bad Request if the grant_type parameter is not <code>client_credentials</code>.
           )
@@ -167,7 +167,7 @@ module Inferno
       test 'Token endpoint the "client_assertion_type" must be present' do
         metadata do
           id '05'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reply with 400 Bad Request if the client_assertion_type parameter is not sent by the client.
           )
@@ -179,7 +179,7 @@ module Inferno
       test 'Token endpoint the "client_assertion_type" must be jwt-bearer' do
         metadata do
           id '06'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reply with 400 Bad Request if the client_assertion_type parameter is not equal to <code>urn:ietf:params:oauth:client-assertion-type:jwt-bearer</code>
           )
@@ -191,7 +191,7 @@ module Inferno
       test 'Token endpoint the client_assertion parameter must be a token' do
         metadata do
           id '07'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             This test verifies that if the client sends something other then a JWT, the server will detect it and reject the request.
           )
@@ -203,7 +203,7 @@ module Inferno
       test 'Token endpoint validates authenticationToken.aud' do
         metadata do
           id '08'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The <code>aud</code> claim of the authentication JWT must be the authorization server's "token URL" (the same URL to which this authentication JWT will be posted)
           )
@@ -215,7 +215,7 @@ module Inferno
       test 'Token endpoint validates authenticationToken.iss' do
         metadata do
           id '09'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The <code>iss</code> claim of the authentication JWT must equal the registered <code>client_id</code>
           )
@@ -227,7 +227,7 @@ module Inferno
       test 'Token endpoint only accept registered client IDs' do
         metadata do
           id '10'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verify that clients can't use random client id
           )
@@ -239,7 +239,7 @@ module Inferno
       test 'Token endpoint requires scope' do
         metadata do
           id '11'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject requests to the token endpoint that do not specify a scope
           )
@@ -251,7 +251,7 @@ module Inferno
       test 'Token endpoint rejects empty scope' do
         metadata do
           id '12'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             The server should reject requests to the token endpoint that are requesting an empty scope
           )
@@ -263,7 +263,7 @@ module Inferno
       test 'Token endpoint validates scopes' do
         metadata do
           id '13'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             This test verifies that only valid system scopes are accepted by the server
           )
@@ -275,7 +275,7 @@ module Inferno
       test 'Token endpoint supports wildcard action scopes' do
         metadata do
           id '14'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verifies that scopes like <code>system/Patient.*</code> are supported
           )
@@ -287,7 +287,7 @@ module Inferno
       test 'Token endpoint rejects unknown action scopes' do
         metadata do
           id '15'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verifies that scopes like <code>system/Patient.unknownAction</code> are rejected
           )
@@ -299,7 +299,7 @@ module Inferno
       test 'Token endpoint supports wildcard resource scopes' do
         metadata do
           id '16'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verifies that scopes like <code>system/*.read</code> are supported
           )
@@ -311,7 +311,7 @@ module Inferno
       test 'Token endpoint rejects unknown resource scopes' do
         metadata do
           id '17'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verifies that scopes like <code>system/UnknownResource.read</code> are rejected
           )
@@ -323,7 +323,7 @@ module Inferno
       test 'Token endpoint validates the jku token header' do
         metadata do
           id '18'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             When present, the <code>jky</code> authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using <code>test-bad-jku</code> as <code>jky</code> header value and expects that to produce an error.
           )
@@ -335,7 +335,7 @@ module Inferno
       test 'Token endpoint validates the token signature' do
         metadata do
           id '19'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             This test attempts to obtain an access token with a request that is completely valid, except that the authentication token is signed with unknown private key.
           )
@@ -347,7 +347,7 @@ module Inferno
       test 'Token endpoint authorization using JWKS URL and ES384 keys' do
         metadata do
           id '20'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verify that the server supports JWKS URL authorization using ES384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.
           )
@@ -359,7 +359,7 @@ module Inferno
       test 'Token endpoint authorization using JWKS URL and RS384 keys' do
         metadata do
           id '21'
-          link 'http://bulkdatainfo'
+          link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
             Verify that the server supports JWKS URL authorization using RS384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.
           )
