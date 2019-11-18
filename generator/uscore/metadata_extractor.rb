@@ -304,10 +304,11 @@ module Inferno
         medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
         set_first_search(medication_request_sequence, ['patient', 'intent'])
 
-        diagnostic_report_sequences = metadata[:sequences].select { |sequence| sequence[:resource] == 'DiagnosticReport' }
-        diagnostic_report_sequences.each do |sequence|
-          set_first_search(sequence, ['patient', 'category'])
-        end
+        metadata[:sequences]
+          .select { |sequence| sequence[:resource] == 'DiagnosticReport' }
+          .each do |sequence|
+            set_first_search(sequence, ['patient', 'category'])
+          end
 
         metadata
       end
