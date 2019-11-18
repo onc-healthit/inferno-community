@@ -32,7 +32,7 @@ describe 'resource read test' do
 
     exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-    assert_equal "Bad response code: expected 200, 201, but found 401. ", exception.message
+    assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
   end
 
   it 'fails if no resource is received' do
@@ -63,7 +63,7 @@ describe 'resource read test' do
 
     exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-    assert_equal "Expected resource to be of type <%= resource_type %>.", exception.message
+    assert_equal 'Expected resource to be of type <%= resource_type %>.', exception.message
   end
 
   it 'succeeds when a <%= resource_type %> resource is read successfully' do

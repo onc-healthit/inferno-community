@@ -27,7 +27,7 @@ module Inferno
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
           generate_sequence(sequence)
-          unit_test_generator.generate(sequence, sequence_out_path)
+          unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
         end
         generate_module(metadata)
       end
