@@ -3,6 +3,9 @@ describe 'resource read test' do
     @<%= resource_var_name %>_id = '456'
     @test = @sequence_class[:<%= key %>]
     @sequence = @sequence_class.new(@instance, @client)
+    <% if interaction_test %>@sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@<%= resource_var_name %>', FHIR::<%= resource_type %>.new(id: @<%= resource_var_name %>_id))
+    <% end %>
   end
 
   it 'skips if the <%= resource_type %> read interaction is not supported' do
@@ -15,9 +18,10 @@ describe 'resource read test' do
   end
 
   it 'skips if no <%= resource_type %> has been found' do
+    <% if interaction_test %>@sequence.instance_variable_set(:'@resources_found', false)<% end %>
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert_equal 'No <%= resource_type %> references found from the prior searches', exception.message
+    assert_equal '<%= no_resources_found_message %>', exception.message
   end
 
   it 'fails if a non-success response code is received' do
@@ -26,6 +30,7 @@ describe 'resource read test' do
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance
     )
+
     stub_request(:get, "#{@base_url}/<%= resource_type %>/#{@<%= resource_var_name %>_id}")
       .with(query: @query, headers: @auth_header)
       .to_return(status: 401)
@@ -41,6 +46,7 @@ describe 'resource read test' do
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance
     )
+
     stub_request(:get, "#{@base_url}/<%= resource_type %>/#{@<%= resource_var_name %>_id}")
       .with(query: @query, headers: @auth_header)
       .to_return(status: 200)
@@ -59,7 +65,7 @@ describe 'resource read test' do
 
     stub_request(:get, "#{@base_url}/<%= resource_type %>/#{@<%= resource_var_name %>_id}")
       .with(query: @query, headers: @auth_header)
-      .to_return(status: 200, body: FHIR::Patient.new.to_json)
+      .to_return(status: 200, body: FHIR::<%= wrong_resource_type %>.new.to_json)
 
     exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 

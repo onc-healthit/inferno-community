@@ -37,16 +37,27 @@ module Inferno
         tests[class_name] << test
       end
 
-      def generate_resource_read_test(key:, resource_type:, class_name:)
+      def generate_resource_read_test(key:, resource_type:, class_name:, interaction_test: false)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'resource_read_unit_test.rb.erb')))
         resource_var_name = resource_type.underscore
 
         test = template.result_with_hash(
           key: key,
           resource_type: resource_type,
-          resource_var_name: resource_var_name
+          resource_var_name: resource_var_name,
+          interaction_test: interaction_test,
+          no_resources_found_message: no_resources_found_message(interaction_test, resource_type),
+          wrong_resource_type: resource_type == 'Patient' ? 'Observation' : 'Patient'
         )
         tests[class_name] << test
+      end
+
+      def no_resources_found_message(interaction_test, resource_type)
+        if interaction_test
+          "No #{resource_type} resources could be found for this patient. Please use patients with more information."
+        else
+          "No #{resource_type} references found from the prior searches"
+        end
       end
 
       def search_params_to_string(search_params)
