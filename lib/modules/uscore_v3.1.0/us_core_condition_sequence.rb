@@ -56,8 +56,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Condition, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -197,9 +200,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Condition read resource supported' do
+      test :read_interaction do
         metadata do
           id '07'
+          name 'Condition read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -207,14 +211,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Condition vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '08'
+          name 'Condition vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -222,14 +227,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Condition history resource supported' do
+      test :history_interaction do
         metadata do
           id '09'
+          name 'Condition history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -237,7 +243,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@condition, versioned_resource_class('Condition'))
       end

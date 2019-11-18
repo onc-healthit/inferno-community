@@ -61,11 +61,17 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Location, [:read])
+
         location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
         skip 'No Location references found from the prior searches' if location_id.nil?
-        @location = fetch_resource('Location', location_id)
-        @location_ary = Array.wrap(@location)
-        @resources_found = !@location.nil?
+
+        @location = validate_read_reply(
+          FHIR::Location.new(id: location_id),
+          FHIR::Location
+        )
+        @location_ary = Array.wrap(@location).compact
+        @resources_found = @location.present?
       end
 
       test :unauthorized_search do
@@ -78,8 +84,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Location, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -207,9 +216,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Location vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '08'
+          name 'Location vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -217,14 +227,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@location, versioned_resource_class('Location'))
       end
 
-      test 'Location history resource supported' do
+      test :history_interaction do
         metadata do
           id '09'
+          name 'Location history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -232,7 +243,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@location, versioned_resource_class('Location'))
       end

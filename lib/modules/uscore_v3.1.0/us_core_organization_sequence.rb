@@ -49,11 +49,17 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Organization, [:read])
+
         organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
         skip 'No Organization references found from the prior searches' if organization_id.nil?
-        @organization = fetch_resource('Organization', organization_id)
-        @organization_ary = Array.wrap(@organization)
-        @resources_found = !@organization.nil?
+
+        @organization = validate_read_reply(
+          FHIR::Organization.new(id: organization_id),
+          FHIR::Organization
+        )
+        @organization_ary = Array.wrap(@organization).compact
+        @resources_found = @organization.present?
       end
 
       test :unauthorized_search do
@@ -66,8 +72,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Organization, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -126,9 +135,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Organization vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '05'
+          name 'Organization vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -136,14 +146,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@organization, versioned_resource_class('Organization'))
       end
 
-      test 'Organization history resource supported' do
+      test :history_interaction do
         metadata do
           id '06'
+          name 'Organization history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -151,7 +162,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end

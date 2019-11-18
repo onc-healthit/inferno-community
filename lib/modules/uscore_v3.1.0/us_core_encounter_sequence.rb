@@ -64,8 +64,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Encounter, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -249,9 +252,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Encounter read resource supported' do
+      test :read_interaction do
         metadata do
           id '09'
+          name 'Encounter read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -259,14 +263,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Encounter, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
-      test 'Encounter vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '10'
+          name 'Encounter vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -274,14 +279,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Encounter, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
-      test 'Encounter history resource supported' do
+      test :history_interaction do
         metadata do
           id '11'
+          name 'Encounter history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -289,7 +295,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Encounter, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end

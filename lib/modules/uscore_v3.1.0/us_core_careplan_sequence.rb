@@ -52,8 +52,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:CarePlan, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -83,10 +86,10 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @careplan = reply&.resource&.entry&.first&.resource
-        @careplan_ary = fetch_all_bundled_resources(reply&.resource)
+        @care_plan = reply&.resource&.entry&.first&.resource
+        @care_plan_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-        save_delayed_sequence_references(@careplan_ary)
+        save_delayed_sequence_references(@care_plan_ary)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
       end
 
@@ -101,7 +104,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
+        assert !@care_plan.nil?, 'Expected valid CarePlan resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -134,7 +137,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
+        assert !@care_plan.nil?, 'Expected valid CarePlan resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -168,7 +171,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@careplan.nil?, 'Expected valid CarePlan resource to be present'
+        assert !@care_plan.nil?, 'Expected valid CarePlan resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -182,9 +185,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'CarePlan read resource supported' do
+      test :read_interaction do
         metadata do
           id '06'
+          name 'CarePlan read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -192,14 +196,15 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@careplan, versioned_resource_class('CarePlan'))
+        validate_read_reply(@care_plan, versioned_resource_class('CarePlan'))
       end
 
-      test 'CarePlan vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '07'
+          name 'CarePlan vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -207,14 +212,15 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@careplan, versioned_resource_class('CarePlan'))
+        validate_vread_reply(@care_plan, versioned_resource_class('CarePlan'))
       end
 
-      test 'CarePlan history resource supported' do
+      test :history_interaction do
         metadata do
           id '08'
+          name 'CarePlan history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -222,9 +228,9 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@careplan, versioned_resource_class('CarePlan'))
+        validate_history_reply(@care_plan, versioned_resource_class('CarePlan'))
       end
 
       test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
@@ -271,7 +277,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @careplan_ary&.any?
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @care_plan_ary&.any?
         must_support_confirmed = {}
         must_support_elements = [
           'CarePlan.text',
@@ -283,12 +289,12 @@ module Inferno
           'CarePlan.subject'
         ]
         must_support_elements.each do |path|
-          @careplan_ary&.each do |resource|
+          @care_plan_ary&.each do |resource|
             truncated_path = path.gsub('CarePlan.', '')
             must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
             break if must_support_confirmed[path]
           end
-          resource_count = @careplan_ary.length
+          resource_count = @care_plan_ary.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided CarePlan resource(s)" unless must_support_confirmed[path]
         end
@@ -307,7 +313,7 @@ module Inferno
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@careplan)
+        validate_reference_resolutions(@care_plan)
       end
     end
   end

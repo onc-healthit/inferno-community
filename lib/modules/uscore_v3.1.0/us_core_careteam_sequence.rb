@@ -42,8 +42,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:CareTeam, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -73,16 +76,17 @@ module Inferno
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @careteam = reply&.resource&.entry&.first&.resource
-        @careteam_ary = fetch_all_bundled_resources(reply&.resource)
+        @care_team = reply&.resource&.entry&.first&.resource
+        @care_team_ary = fetch_all_bundled_resources(reply&.resource)
         save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
-        save_delayed_sequence_references(@careteam_ary)
+        save_delayed_sequence_references(@care_team_ary)
         validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
       end
 
-      test 'CareTeam read resource supported' do
+      test :read_interaction do
         metadata do
           id '03'
+          name 'CareTeam read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -90,14 +94,15 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@careteam, versioned_resource_class('CareTeam'))
+        validate_read_reply(@care_team, versioned_resource_class('CareTeam'))
       end
 
-      test 'CareTeam vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '04'
+          name 'CareTeam vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -105,14 +110,15 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_vread_reply(@careteam, versioned_resource_class('CareTeam'))
+        validate_vread_reply(@care_team, versioned_resource_class('CareTeam'))
       end
 
-      test 'CareTeam history resource supported' do
+      test :history_interaction do
         metadata do
           id '05'
+          name 'CareTeam history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -120,9 +126,9 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_history_reply(@careteam, versioned_resource_class('CareTeam'))
+        validate_history_reply(@care_team, versioned_resource_class('CareTeam'))
       end
 
       test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
@@ -169,7 +175,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @careteam_ary&.any?
+        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @care_team_ary&.any?
         must_support_confirmed = {}
         must_support_elements = [
           'CareTeam.status',
@@ -179,12 +185,12 @@ module Inferno
           'CareTeam.participant.member'
         ]
         must_support_elements.each do |path|
-          @careteam_ary&.each do |resource|
+          @care_team_ary&.each do |resource|
             truncated_path = path.gsub('CareTeam.', '')
             must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
             break if must_support_confirmed[path]
           end
-          resource_count = @careteam_ary.length
+          resource_count = @care_team_ary.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided CareTeam resource(s)" unless must_support_confirmed[path]
         end
@@ -203,7 +209,7 @@ module Inferno
         skip_if_not_supported(:CareTeam, [:search, :read])
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@careteam)
+        validate_reference_resolutions(@care_team)
       end
     end
   end
