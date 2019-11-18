@@ -4,12 +4,12 @@ require_relative 'bdt_base'
 
 module Inferno
   module Sequence
-    class BDTAuthTokenEndpointSequence < BDTBase
-      title 'Auth Token Endpoint'
+    class BDTAuthSequence < BDTBase
+      title 'Authorization'
 
-      description 'Token endpoint'
+      description 'Verify that the bulk data export conforms to the SMART Backend Services specification.'
 
-      test_id_prefix 'Auth_Token_endpoint'
+      test_id_prefix 'Auth'
 
       requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
                :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
@@ -17,10 +17,118 @@ module Inferno
                :bulk_public_key, :bulk_private_key
 
       details %(
-        Auth Token Endpoint
+        Authorization
       )
 
-      test 'Requires "application/x-www-form-urlencoded" POSTs' do
+      test 'Kick-off request at the system-level export endpoint requires authorization header' do
+        metadata do
+          id '01.0.0'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should require authorization header at the system-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.0.0')
+      end
+      test 'Kick-off request at the system-level export endpoint rejects expired token' do
+        metadata do
+          id '01.0.1'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should reject expired tokens at the system-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.0.1')
+      end
+      test 'Kick-off request at the system-level export endpoint rejects invalid token' do
+        metadata do
+          id '01.0.2'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should reject invalid tokens at the system-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.0.2')
+      end
+      test 'Kick-off request at the patient-level export endpoint requires authorization header' do
+        metadata do
+          id '01.1.0'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should require authorization header at the patient-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.1.0')
+      end
+      test 'Kick-off request at the patient-level export endpoint rejects expired token' do
+        metadata do
+          id '01.1.1'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should reject expired tokens at the patient-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.1.1')
+      end
+      test 'Kick-off request at the patient-level export endpoint rejects invalid token' do
+        metadata do
+          id '01.1.2'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should reject invalid tokens at the patient-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.1.2')
+      end
+      test 'Kick-off request at the group-level export endpoint requires authorization header' do
+        metadata do
+          id '01.2.0'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should require authorization header at the group-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.2.0')
+      end
+      test 'Kick-off request at the group-level export endpoint rejects expired token' do
+        metadata do
+          id '01.2.1'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should reject expired tokens at the group-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.2.1')
+      end
+      test 'Kick-off request at the group-level export endpoint rejects invalid token' do
+        metadata do
+          id '01.2.2'
+          link 'http://bulkdatainfo'
+          description %(
+            The server should reject invalid tokens at the group-level export endpoint
+          )
+          versions :r4
+        end
+
+        run_bdt('0.2.2')
+      end
+      test 'Token endpoint requires "application/x-www-form-urlencoded" POSTs' do
         metadata do
           id '02'
           link 'http://bulkdatainfo'
@@ -32,7 +140,7 @@ module Inferno
 
         run_bdt('0.3.0')
       end
-      test 'The "grant_type" parameter must be present' do
+      test 'Token endpoint the "grant_type" parameter must be present' do
         metadata do
           id '03'
           link 'http://bulkdatainfo'
@@ -44,7 +152,7 @@ module Inferno
 
         run_bdt('0.3.1')
       end
-      test 'The "grant_type" must equal "client_credentials"' do
+      test 'Token endpoint the "grant_type" must equal "client_credentials"' do
         metadata do
           id '04'
           link 'http://bulkdatainfo'
@@ -56,7 +164,7 @@ module Inferno
 
         run_bdt('0.3.2')
       end
-      test 'The "client_assertion_type" must be present' do
+      test 'Token endpoint the "client_assertion_type" must be present' do
         metadata do
           id '05'
           link 'http://bulkdatainfo'
@@ -68,7 +176,7 @@ module Inferno
 
         run_bdt('0.3.3')
       end
-      test 'The "client_assertion_type" must be jwt-bearer' do
+      test 'Token endpoint the "client_assertion_type" must be jwt-bearer' do
         metadata do
           id '06'
           link 'http://bulkdatainfo'
@@ -80,7 +188,7 @@ module Inferno
 
         run_bdt('0.3.4')
       end
-      test 'The client_assertion parameter must be a token' do
+      test 'Token endpoint the client_assertion parameter must be a token' do
         metadata do
           id '07'
           link 'http://bulkdatainfo'
@@ -92,7 +200,7 @@ module Inferno
 
         run_bdt('0.3.5')
       end
-      test 'Validates authenticationToken.aud' do
+      test 'Token endpoint validates authenticationToken.aud' do
         metadata do
           id '08'
           link 'http://bulkdatainfo'
@@ -104,7 +212,7 @@ module Inferno
 
         run_bdt('0.3.6')
       end
-      test 'Validates authenticationToken.iss' do
+      test 'Token endpoint validates authenticationToken.iss' do
         metadata do
           id '09'
           link 'http://bulkdatainfo'
@@ -116,7 +224,7 @@ module Inferno
 
         run_bdt('0.3.7')
       end
-      test 'Only accept registered client IDs' do
+      test 'Token endpoint only accept registered client IDs' do
         metadata do
           id '10'
           link 'http://bulkdatainfo'
@@ -128,7 +236,7 @@ module Inferno
 
         run_bdt('0.3.8')
       end
-      test 'Requires scope' do
+      test 'Token endpoint requires scope' do
         metadata do
           id '11'
           link 'http://bulkdatainfo'
@@ -140,7 +248,7 @@ module Inferno
 
         run_bdt('0.3.9')
       end
-      test 'Rejects empty scope' do
+      test 'Token endpoint rejects empty scope' do
         metadata do
           id '12'
           link 'http://bulkdatainfo'
@@ -152,7 +260,7 @@ module Inferno
 
         run_bdt('0.3.10')
       end
-      test 'Validates scopes' do
+      test 'Token endpoint validates scopes' do
         metadata do
           id '13'
           link 'http://bulkdatainfo'
@@ -164,7 +272,7 @@ module Inferno
 
         run_bdt('0.3.11')
       end
-      test 'Supports wildcard action scopes' do
+      test 'Token endpoint supports wildcard action scopes' do
         metadata do
           id '14'
           link 'http://bulkdatainfo'
@@ -176,7 +284,7 @@ module Inferno
 
         run_bdt('0.3.12')
       end
-      test 'Rejects unknown action scopes' do
+      test 'Token endpoint rejects unknown action scopes' do
         metadata do
           id '15'
           link 'http://bulkdatainfo'
@@ -188,7 +296,7 @@ module Inferno
 
         run_bdt('0.3.13')
       end
-      test 'Supports wildcard resource scopes' do
+      test 'Token endpoint supports wildcard resource scopes' do
         metadata do
           id '16'
           link 'http://bulkdatainfo'
@@ -200,7 +308,7 @@ module Inferno
 
         run_bdt('0.3.14')
       end
-      test 'Rejects unknown resource scopes' do
+      test 'Token endpoint rejects unknown resource scopes' do
         metadata do
           id '17'
           link 'http://bulkdatainfo'
@@ -212,7 +320,7 @@ module Inferno
 
         run_bdt('0.3.15')
       end
-      test 'validates the jku token header' do
+      test 'Token endpoint validates the jku token header' do
         metadata do
           id '18'
           link 'http://bulkdatainfo'
@@ -224,7 +332,7 @@ module Inferno
 
         run_bdt('0.3.16')
       end
-      test 'Validates the token signature' do
+      test 'Token endpoint validates the token signature' do
         metadata do
           id '19'
           link 'http://bulkdatainfo'
@@ -236,7 +344,7 @@ module Inferno
 
         run_bdt('0.3.17')
       end
-      test 'Authorization using JWKS URL and ES384 keys' do
+      test 'Token endpoint authorization using JWKS URL and ES384 keys' do
         metadata do
           id '20'
           link 'http://bulkdatainfo'
@@ -248,7 +356,7 @@ module Inferno
 
         run_bdt('0.3.18')
       end
-      test 'Authorization using JWKS URL and RS384 keys' do
+      test 'Token endpoint authorization using JWKS URL and RS384 keys' do
         metadata do
           id '21'
           link 'http://bulkdatainfo'

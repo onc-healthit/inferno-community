@@ -5,38 +5,26 @@ require_relative '../generator_base'
 module Inferno
   module Generator
     class BDTGenerator < Generator::Base
-      GEN_PATH = './generator/bdt'
-      OUT_PATH = './lib/app/modules'
+
+      BDT_DESCRIPTIONS = {
+        'Authorization' => 'Verify that the bulk data export conforms to the SMART Backend Services specification.',
+        'Download Endpoint' => 'Verify the Download Endpoint conforms to the SMART Bulk Data IG for Export.',
+        'Patient-level export' => 'Verify the system is capable of performing a Patient-Level Export that conforms to the SMART Bulk Data IG.',
+        'System-level export' => 'Verify the system is capable of performing a System-Level Export that conforms to the SMART Bulk Data IG.',
+        'Group-level export' => 'Verify the system is capable of performing a Group-Level Export that conforms to the SMART Bulk Data IG.',
+        'Status Endpoint' => 'Verify the status endpoint conforms to the SMART Bulk Data IG for Export.'
+      }
 
       def generate
-        structure = JSON.parse(File.read(GEN_PATH + '/bdt-structure.json'))
+        structure = JSON.parse(File.read(File.join(__dir__, 'bdt-structure.json')))
 
-        revised_structure = revise_structure(structure)
+        revised_structure = revise_structure_sequence(structure)
 
         metadata = extract_metadata(revised_structure)
 
         metadata[:groups].map { |g| g[:sequences] }.flatten.each { |s| generate_sequence(s) }
         generate_module(metadata)
         copy_base
-      end
-
-      def extract_test_from_group(group, list)
-        group['children'].each do |child|
-          if child['type'] == group
-            extract_test_from_group(child, list)
-          else
-
-            new_test = {
-              name: clean_test_name(child['name']),
-              path: child['path'],
-              id: child['id'],
-              description: child['description']
-            }
-
-            list << new_test
-
-          end
-        end
       end
 
       def generate_sequence(sequence)
@@ -72,14 +60,25 @@ module Inferno
 
           group['children'].each do |sequence|
             new_sequence = {
+              name: sequence['name'],
+              description: BDT_DESCRIPTIONS[sequence['name']],
               tests: []
             }
 
-            extract_test_from_group(sequence, new_sequence[:tests])
+            sequence['children'].each do |test|
+
+              new_test = {
+                name: clean_test_name(test['name']),
+                path: test['path'],
+                id: test['id'],
+                description: test['description']
+              } 
+
+              new_sequence[:tests] << new_test
+
+            end
 
             new_sequence[:id] = new_sequence[:tests].first&.dig(:id)&.split('-')&.first
-            new_sequence[:name] = new_sequence[:id].split('_').map(&:capitalize).join(' ')
-            new_sequence[:description] = sequence['name']
             new_sequence[:sequence_class_name] = 'BDT' + new_sequence[:id].split('_').map(&:capitalize).join + 'Sequence'
 
             new_group[:sequences] << new_sequence
@@ -97,44 +96,39 @@ module Inferno
         FileUtils.cp(source_file, out_file_name)
       end
 
-      def revise_structure(structure)
-        auth_group = structure['children'][0]
+      # This organizes into a single bulk data group
+      # With a sequence per 
+      def revise_structure_sequence(structure)
+        bulk = { 'name' => 'Bulk Data Test', 'type' => 'group', 'children' => []}
 
-        auth_group['children'].each do |seq_level|
-          new_name = 'Auth_' + seq_level['name'].gsub(' ', '_')
-
-          match = seq_level['name'].match(/([^\s]+\-level)+/)
-          new_name = 'Auth_' + match[1].gsub('-', '_') unless match.nil?
-
-          seq_level['children'].each do |test|
-            test['id'].gsub!('Auth', new_name)
+        structure['children'].each do |seq_level|
+          tests = []
+          seq_level['children'].each do |test_level|
+            tests.concat(collapse_sequence(test_level))
           end
+          seq_level['children'] = tests
+          bulk['children'] << seq_level
         end
 
-        data_group = {
-          'name' => 'Bulk Transfer',
-          'type' => 'group',
-          'children' => structure['children'].drop(1)
-        }
-
-        structure['children'] = [auth_group, data_group]
+        structure['children'] = [bulk]
         structure
       end
 
-      # def generate_sequence(sequence)
+      def collapse_sequence(sequence)
+        out = []
 
-      #   file_name = OUT_PATH + '/bdt/bdt_' + sequence[:id].downcase + '_sequence.rb'
+        if sequence['children'].nil?
+          out = [sequence]
+        else
+          sequence['children'].each do |child|
+            child['name'][0] = child['name'][0].downcase
+            child['name'] = "#{sequence['name']} #{child['name']}"
+            out.concat(collapse_sequence(child))
+          end
+        end
 
-      #   template = ERB.new(File.read(GEN_PATH + '/templates/sequence.rb.erb'))
-      #   output =   template.result_with_hash(sequence)
-
-      #   File.write(file_name, output)
-
-      # end
-
-      # def generate_module(module_info)
-
-      # end
+        out.flatten
+      end
 
       def clean_test_name(test_name)
         test_name.gsub("'", '"')

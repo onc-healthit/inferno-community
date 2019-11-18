@@ -7,7 +7,7 @@ services:
       - ./config.yml:/var/www/inferno/config.yml
     ports:
      - "4567:4567"
-  bdt-service:
-    image: arscan/inferno-bdt-service
+  bdt_service:
+    image: infernocommunity/inferno-bdt-service
     ports:
      - "4500:4500"

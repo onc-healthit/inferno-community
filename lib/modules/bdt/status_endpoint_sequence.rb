@@ -5,9 +5,9 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTStatusSequence < BDTBase
-      title 'Status'
+      title 'Status Endpoint'
 
-      description 'Status Endpoint'
+      description 'Verify the status endpoint conforms to the SMART Bulk Data IG for Export.'
 
       test_id_prefix 'Status'
 
@@ -17,7 +17,7 @@ module Inferno
                :bulk_public_key, :bulk_private_key
 
       details %(
-        Status
+        Status Endpoint
       )
 
       test 'Responds with 202 for active transaction IDs' do

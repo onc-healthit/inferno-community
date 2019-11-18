@@ -5,9 +5,9 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTDownloadSequence < BDTBase
-      title 'Download'
+      title 'Download Endpoint'
 
-      description 'Download Endpoint'
+      description 'Verify the Download Endpoint conforms to the SMART Bulk Data IG for Export.'
 
       test_id_prefix 'Download'
 
@@ -17,7 +17,7 @@ module Inferno
                :bulk_public_key, :bulk_private_key
 
       details %(
-        Download
+        Download Endpoint
       )
 
       test 'Requires valid access token if the requiresAccessToken field in the status body is true' do

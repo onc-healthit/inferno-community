@@ -5,9 +5,9 @@ require_relative 'bdt_base'
 module Inferno
   module Sequence
     class BDTSystemSequence < BDTBase
-      title 'System'
+      title 'System-level export'
 
-      description 'System-level export'
+      description 'Verify the system is capable of performing a System-Level Export that conforms to the SMART Bulk Data IG.'
 
       test_id_prefix 'System'
 
@@ -17,7 +17,7 @@ module Inferno
                :bulk_public_key, :bulk_private_key
 
       details %(
-        System
+        System-level export
       )
 
       test 'Requires Accept header' do

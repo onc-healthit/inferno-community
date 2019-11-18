@@ -7,16 +7,10 @@ test_sets:
   developer:
     view: default
     tests: 
-      - name: Authorization
+      - name: Bulk Data Test
         run_all: true
         sequences:
-          - BDTAuthSystemLevelSequence
-          - BDTAuthPatientLevelSequence
-          - BDTAuthGroupLevelSequence
-          - BDTAuthTokenEndpointSequence
-      - name: Bulk Transfer
-        run_all: true
-        sequences:
+          - BDTAuthSequence
           - BDTDownloadSequence
           - BDTPatientSequence
           - BDTSystemSequence

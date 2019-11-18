@@ -4,12 +4,12 @@ require_relative 'bdt_base'
 
 module Inferno
   module Sequence
-    class BDTGroupSequence < BDTBase
-      title 'Group'
+    class BDTPatientSequence < BDTBase
+      title 'Patient-level export'
 
-      description 'Group-level export'
+      description 'Verify the system is capable of performing a Patient-Level Export that conforms to the SMART Bulk Data IG.'
 
-      test_id_prefix 'Group'
+      test_id_prefix 'Patient'
 
       requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
                :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
@@ -17,7 +17,7 @@ module Inferno
                :bulk_public_key, :bulk_private_key
 
       details %(
-        Group
+        Patient-level export
       )
 
       test 'Requires Accept header' do
@@ -30,7 +30,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.0')
+        run_bdt('2.0')
       end
       test 'Requires Prefer header to equal respond-async' do
         metadata do
@@ -42,7 +42,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.1')
+        run_bdt('2.1')
       end
       test 'Accepts _outputFormat=application/fhir+ndjson' do
         metadata do
@@ -54,7 +54,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.2')
+        run_bdt('2.2')
       end
       test 'Accepts _outputFormat=application/ndjson' do
         metadata do
@@ -66,7 +66,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.3')
+        run_bdt('2.3')
       end
       test 'Accepts _outputFormat=ndjson' do
         metadata do
@@ -78,7 +78,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.4')
+        run_bdt('2.4')
       end
       test 'Rejects unsupported format "_outputFormat=application/xml"' do
         metadata do
@@ -90,7 +90,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.5')
+        run_bdt('2.5')
       end
       test 'Rejects unsupported format "_outputFormat=text/html"' do
         metadata do
@@ -102,7 +102,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.6')
+        run_bdt('2.6')
       end
       test 'Rejects unsupported format "_outputFormat=x-custom"' do
         metadata do
@@ -114,7 +114,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.7')
+        run_bdt('2.7')
       end
       test 'Rejects _since={invalid date} parameter' do
         metadata do
@@ -126,7 +126,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.8')
+        run_bdt('2.8')
       end
       test 'Rejects _since={future date} parameter' do
         metadata do
@@ -138,7 +138,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.9')
+        run_bdt('2.9')
       end
       test 'Validates the _type parameter' do
         metadata do
@@ -150,7 +150,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.10')
+        run_bdt('2.10')
       end
       test 'Accepts the _typeFilter parameter' do
         metadata do
@@ -162,7 +162,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.11')
+        run_bdt('2.11')
       end
       test 'Response - Success' do
         metadata do
@@ -174,7 +174,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('4.12')
+        run_bdt('2.12')
       end
     end
   end

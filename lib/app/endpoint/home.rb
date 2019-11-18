@@ -40,13 +40,22 @@ module Inferno
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
           unless params['preset'].blank?
-            preset = JSON.parse(params['preset']) unless params['preset'].nil?
-            @instance.client_id = preset['client_id'] unless preset['client_id'].nil?
-            @instance.scopes = preset['scopes'] unless preset['scopes'].nil?
-            unless preset['client_secret'].nil?
-              @instance.confidential_client = true
-              @instance.client_secret = preset['client_secret']
+
+            JSON.parse(params['preset']).each do |key, value|
+
+              if ['bulk_private_key', 'bulk_public_key'].include? key
+                value = value.tr('\'','"' )
+              end
+
+              @instance.send("#{key}=", value) if @instance.respond_to?("#{key}=")
             end
+            # preset = JSON.parse(params['preset']) unless params['preset'].nil?
+            # @instance.client_id = preset['client_id'] unless preset['client_id'].nil?
+            # @instance.scopes = preset['scopes'] unless preset['scopes'].nil?
+            # unless preset['client_secret'].nil?
+            #   @instance.confidential_client = true
+            #   @instance.client_secret = preset['client_secret']
+            # end
           end
 
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
