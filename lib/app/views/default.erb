@@ -226,7 +226,30 @@
               label: 'Group ID',
               instance: instance,
               value: instance.group_id,
-              })%>                 
+              })%>   
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_public_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_public_key">
+
+              <label for="bulk_public_key">Bulk Public Key
+                  <small>
+                          If you have provided your JWKS at registration time, please enter the public key here. Leave it blank if the keys have not
+                          been exchanged ahead of time.
+                        </small>
+
+              </label>
+              <textarea type="text" class="form-control" name="bulk_public_key" id="bulk_public_key" placeholder="" rows="5"><%=instance.bulk_public_key %></textarea>
+        </div>
+
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
+
+              <label for="bulk_private_key">Bulk Private Key
+                  <small>
+                          If you have provided your JWKS at registration time, please enter the private key here. Leave it blank if the keys have not
+                          been exchanged ahead of time.
+                        </small>
+
+              </label>
+              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
+          </div>                                         
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

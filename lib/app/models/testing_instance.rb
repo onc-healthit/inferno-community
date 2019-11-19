@@ -57,6 +57,9 @@ module Inferno
 
       property :group_id, String
 
+      property :bulk_public_key, String
+      property :bulk_private_key, String
+
       has n, :sequence_results
       has n, :resource_references
       has 1, :server_capabilities

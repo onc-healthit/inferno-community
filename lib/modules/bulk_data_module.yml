@@ -11,6 +11,10 @@ test_sets:
         sequences:
           - BulkDataCapabilityStatementSequence
           - BulkDataDiscoverySequence
+        run_all: true
+      - name: Authorization
+        sequences:
+          - BulkDataAuthorizationSequence
       - name: Group Export
         sequences:
           - BulkDataGroupExportSequence
