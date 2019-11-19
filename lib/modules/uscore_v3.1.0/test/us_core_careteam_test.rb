@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'CareTeam read test' do
     before do
       @care_team_id = '456'
       @test = @sequence_class[:read_interaction]

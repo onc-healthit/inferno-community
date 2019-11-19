@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'Device read test' do
     before do
       @device_id = '456'
       @test = @sequence_class[:read_interaction]

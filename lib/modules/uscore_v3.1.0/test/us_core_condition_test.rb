@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'Condition read test' do
     before do
       @condition_id = '456'
       @test = @sequence_class[:read_interaction]

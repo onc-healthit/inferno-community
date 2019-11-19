@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'AllergyIntolerance read test' do
     before do
       @allergy_intolerance_id = '456'
       @test = @sequence_class[:read_interaction]

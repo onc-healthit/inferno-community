@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'Goal read test' do
     before do
       @goal_id = '456'
       @test = @sequence_class[:read_interaction]

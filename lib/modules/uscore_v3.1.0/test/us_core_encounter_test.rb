@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'Encounter read test' do
     before do
       @encounter_id = '456'
       @test = @sequence_class[:read_interaction]

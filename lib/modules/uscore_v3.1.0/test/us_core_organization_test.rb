@@ -18,7 +18,7 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'resource read test' do
+  describe 'Organization read test' do
     before do
       @organization_id = '456'
       @test = @sequence_class[:resource_read]

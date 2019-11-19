@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310ProcedureSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'Procedure read test' do
     before do
       @procedure_id = '456'
       @test = @sequence_class[:read_interaction]

@@ -18,7 +18,7 @@ describe Inferno::Sequence::USCore310MedicationSequence do
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'resource read test' do
+  describe 'Medication read test' do
     before do
       @medication_id = '456'
       @test = @sequence_class[:resource_read]

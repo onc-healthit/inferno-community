@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'DiagnosticReport read test' do
     before do
       @diagnostic_report_id = '456'
       @test = @sequence_class[:read_interaction]

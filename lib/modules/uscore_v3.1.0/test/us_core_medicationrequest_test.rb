@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'MedicationRequest read test' do
     before do
       @medication_request_id = '456'
       @test = @sequence_class[:read_interaction]

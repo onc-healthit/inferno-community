@@ -18,7 +18,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'resource read test' do
+  describe 'PractitionerRole read test' do
     before do
       @practitioner_role_id = '456'
       @test = @sequence_class[:resource_read]

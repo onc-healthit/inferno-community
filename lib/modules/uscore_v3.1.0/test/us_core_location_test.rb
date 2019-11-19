@@ -18,7 +18,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'resource read test' do
+  describe 'Location read test' do
     before do
       @location_id = '456'
       @test = @sequence_class[:resource_read]

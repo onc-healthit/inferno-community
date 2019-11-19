@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'DocumentReference read test' do
     before do
       @document_reference_id = '456'
       @test = @sequence_class[:read_interaction]

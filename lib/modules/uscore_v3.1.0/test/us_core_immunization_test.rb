@@ -64,7 +64,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
   end
 
-  describe 'resource read test' do
+  describe 'Immunization read test' do
     before do
       @immunization_id = '456'
       @test = @sequence_class[:read_interaction]
