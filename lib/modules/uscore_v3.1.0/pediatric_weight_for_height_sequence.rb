@@ -52,7 +52,7 @@ module Inferno
           name 'Server rejects Observation search without authorization'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401/4xx unauthorized response code.
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end

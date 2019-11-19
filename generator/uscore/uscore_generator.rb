@@ -141,7 +141,7 @@ module Inferno
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior',
-          description: 'A server SHALL reject any unauthorized requests by returning an HTTP 401/4xx unauthorized response code.'
+          description: 'A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.'
         }
 
         first_search = find_first_search(sequence)
