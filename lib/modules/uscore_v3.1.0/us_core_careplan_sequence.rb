@@ -56,7 +56,12 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        search_params = { 'patient': @instance.patient_id, 'category': 'assess-plan' }
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': 'assess-plan'
+        }
+
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
