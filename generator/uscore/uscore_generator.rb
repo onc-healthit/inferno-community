@@ -104,10 +104,10 @@ module Inferno
       end
 
       def create_read_test(sequence)
-        key = :resource_read
+        test_key = :resource_read
         read_test = {
           tests_that: "Can read #{sequence[:resource]} from the server",
-          key: key,
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
         }
@@ -127,17 +127,17 @@ module Inferno
         sequence[:tests] << read_test
 
         unit_test_generator.generate_resource_read_test(
-          key: key,
+          test_key: test_key,
           resource_type: sequence[:resource],
           class_name: sequence[:class_name]
         )
       end
 
       def create_authorization_test(sequence)
-        key = :unauthorized_search
+        test_key = :unauthorized_search
         authorization_test = {
           tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-          key: key,
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
         }
@@ -159,7 +159,7 @@ module Inferno
         sequence[:tests] << authorization_test
 
         unit_test_generator.generate_authorization_test(
-          key: key,
+          test_key: test_key,
           resource_type: sequence[:resource],
           search_params: { patient: '@instance.patient_id' },
           class_name: sequence[:class_name]
@@ -241,10 +241,10 @@ module Inferno
       end
 
       def create_interaction_test(sequence, interaction)
-        key = :"#{interaction[:code]}_interaction"
+        test_key = :"#{interaction[:code]}_interaction"
         interaction_test = {
           tests_that: "#{sequence[:resource]} #{interaction[:code]} interaction supported",
-          key: key,
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
         }
@@ -259,7 +259,7 @@ module Inferno
 
         if interaction[:code] == 'read' # rubocop:disable Style/GuardClause
           unit_test_generator.generate_resource_read_test(
-            key: key,
+            test_key: test_key,
             resource_type: sequence[:resource],
             class_name: sequence[:class_name],
             interaction_test: true

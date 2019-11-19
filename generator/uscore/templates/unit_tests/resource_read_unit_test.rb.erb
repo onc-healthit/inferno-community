@@ -1,7 +1,7 @@
 describe '<%= resource_type %> read test' do
   before do
     @<%= resource_var_name %>_id = '456'
-    @test = @sequence_class[:<%= key %>]
+    @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
     <% if interaction_test %>@sequence.instance_variable_set(:'@resources_found', true)
       @sequence.instance_variable_set(:'@<%= resource_var_name %>', FHIR::<%= resource_type %>.new(id: @<%= resource_var_name %>_id))
