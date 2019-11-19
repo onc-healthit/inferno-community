@@ -109,20 +109,6 @@ module Inferno
         assert conformance_token_url.present?, 'No token URI provided in Conformance/CapabilityStatement resource'
         assert_valid_http_uri conformance_token_url, "Invalid token url: '#{conformance_token_url}'"
 
-        warning do
-          services = []
-          @conformance.try(:rest)&.each do |endpoint|
-            endpoint.try(:security).try(:service)&.each do |sec_service|
-              sec_service.try(:coding)&.each do |coding|
-                services << coding.code
-              end
-            end
-          end
-
-          assert !services.empty?, 'No security services listed. Conformance/CapabilityStatement.rest.security.service should be SMART-on-FHIR.'
-          assert services.any? { |service| service == 'SMART-on-FHIR' }, "Conformance/CapabilityStatement.rest.security.service set to #{services.map { |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
-        end
-
         @instance.update(
           oauth_token_endpoint: conformance_token_url
         )
