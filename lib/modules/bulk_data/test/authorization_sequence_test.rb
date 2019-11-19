@@ -40,5 +40,31 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
 
       @sequence.run_test(@test)
     end
+
+    it 'fail when server returns status other than 200' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .to_return(
+          status: 400
+        )
+
+      assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+    end
+   
+    it 'fail when server returns empty access_token' do
+      invalid_access_token = @access_token.clone
+      invalid_access_token['access_token'] = nil
+      
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .to_return(
+          status: 400,
+          body: invalid_access_token.to_json
+        )
+
+      assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+    end
   end
 end
