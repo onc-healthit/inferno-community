@@ -15,7 +15,7 @@ module Inferno
     def self.record_response(request, response)
       # You can call this directly with a hash
       # If intercepted from RestClient it will use a class
-      reply = if response.class == Hash
+      reply = if response.instance_of? Hash
                 {
                   code: response[:code],
                   headers: response[:headers],
