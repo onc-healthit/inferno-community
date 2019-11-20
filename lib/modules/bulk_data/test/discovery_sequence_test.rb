@@ -133,12 +133,14 @@ describe Inferno::Sequence::BulkDataDiscoverySequence do
       stub_request(:get, @conformance_endpoint)
         .to_return(
           status: 200,
-          body: @conformance.to_json
+          body: invalid_conformance.to_json
         )
 
-      assert_raises(Inferno::AssertionException) do
+      error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
       end
+
+      assert_match(/^No OAuth Metadata/, error.message)
     end
 
     it 'fails when conformance does not have token endpoint' do
@@ -147,26 +149,30 @@ describe Inferno::Sequence::BulkDataDiscoverySequence do
       stub_request(:get, @conformance_endpoint)
         .to_return(
           status: 200,
-          body: @conformance.to_json
+          body: invalid_conformance.to_json
         )
 
-      assert_raises(Inferno::AssertionException) do
+      error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
       end
+
+      assert_match(/^No OAuth Metadata/, error.message)
     end
 
     it 'fails when conformance token endpoint does not have url' do
       invalid_conformance = @conformance.clone
-      invalid_conformance['rest'][0]['security']['extension'][0]['extension'][0]['url'] = 'This is not a url'
+      invalid_conformance['rest'][0]['security']['extension'][0]['extension'][0]['valueUri'] = 'This is not a url'
       stub_request(:get, @conformance_endpoint)
         .to_return(
           status: 200,
           body: invalid_conformance.to_json
         )
 
-      assert_raises(Inferno::AssertionException) do
+      error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
       end
+
+      assert_match(/^Invalid token url/, error.message)
     end
   end
 end

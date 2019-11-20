@@ -106,7 +106,6 @@ module Inferno
 
         conformance_token_url = oauth_metadata[:token_url]
 
-        assert conformance_token_url.present?, 'No token URI provided in Conformance/CapabilityStatement resource'
         assert_valid_http_uri conformance_token_url, "Invalid token url: '#{conformance_token_url}'"
 
         @instance.update(
