@@ -30,7 +30,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @sequence = @sequence_class.new(@instance, @client)
     end
 
-    it 'pass with incorrect content-type' do
+    it 'pass with status code 400' do
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(headers: { content_type: 'application/json' })
         .to_return(
@@ -40,7 +40,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @sequence.run_test(@test)
     end
 
-    it 'fail with correct content-type' do
+    it 'fail with status code 200' do
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(headers: { content_type: 'application/json' })
         .to_return(
@@ -54,6 +54,64 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       assert_match(/^Bad response code/, error.message)
     end
   end
+
+  describe 'require system scope' do
+    before do
+      @test = @sequence_class[:require_system_scope]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'pass with status code 400' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .to_return(
+          status: 400
+        )
+
+      @sequence.run_test(@test)
+    end
+
+    it 'fail with status code 200' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .to_return(
+          status: 200
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Bad response code/, error.message)
+    end
+  end
+
+  describe 'require grant type' do
+    before do
+      @test = @sequence_class[:require_grant_type]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'pass with stastus code 400' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .to_return(
+          status: 400
+        )
+
+      @sequence.run_test(@test)
+    end
+
+    it 'fail with status code 200' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .to_return(
+          status: 200
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Bad response code/, error.message)
+    end
+  end  
 
   describe 'return access token tests' do
     before do

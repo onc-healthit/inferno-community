@@ -11,7 +11,9 @@ module Inferno
 
       description 'Test Bulk Data Authorization Token Endpoint'
 
-      def authorize(content_type: 'application/x-www-form-urlencoded')
+      def authorize(content_type: 'application/x-www-form-urlencoded',
+        scope: 'system/*.read',
+        grant_type: 'client_credentials')
         id_token = JSON::JWT.new(
           iss: @instance.client_id,
           sub: @instance.client_id,
@@ -28,8 +30,8 @@ module Inferno
 
         payload =
           {
-            'scope' => 'system/*.read',
-            'grant_type' => 'client_credentials',
+            'scope' => scope,
+            'grant_type' => grant_type,
             'client_assertion_type' => 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
             'client_assertion' => client_assertion.to_s
           }
@@ -50,7 +52,7 @@ module Inferno
       test :require_content_type do
         metadata do
           id '01'
-          name 'Bulk Data authorization request shall use content type application/x-www-form-urlencoded'
+          name 'Bulk Data authorization request shall use content_type "application/x-www-form-urlencoded"'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
             After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server’s token endpoint URL, using content-type application/x-www-form-urlencoded
@@ -61,9 +63,38 @@ module Inferno
         assert_response_bad_or_unauthorized(response)
       end
 
-      test :return_access_token do
+      test :require_system_scope do
         metadata do
           id '02'
+          name 'Bulk Data authorization request shall use "system" scope'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#scopes'
+          description %(
+            clients SHALL use “system” scopes. 
+            System scopes have the format system/(:resourceType|*).(read|write|*)
+          )
+        end
+
+        response = authorize(scope: 'user/*.read')
+        assert_response_bad_or_unauthorized(response)
+      end      
+
+      test :require_grant_type do
+        metadata do
+          id '03'
+          name 'Bulk Data authorization request shall use grand_type "client_credentials"'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          description %(
+            grant_type	required	Fixed value: client_credentials
+          )
+        end
+
+        response = authorize(grant_type: 'invalid_grant_type')
+        assert_response_bad_or_unauthorized(response)
+      end        
+
+      test :return_access_token do
+        metadata do
+          id '04'
           name 'Bulk Data Token Endpoint shall return access token'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#issuing-access-tokens'
           description %(
