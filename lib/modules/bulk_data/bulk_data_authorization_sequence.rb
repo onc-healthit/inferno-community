@@ -60,7 +60,8 @@ module Inferno
         response = authorize
 
         assert_response_ok(response)
-        @access_token = response.body['access_token']
+        response_body = JSON.parse(response.body)
+        @access_token = response_body['access_token']
         assert !@access_token.nil?, 'access_token is empty'
       end
     end
