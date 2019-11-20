@@ -21,7 +21,9 @@ module Inferno
 
         metadata = extract_metadata(revised_structure)
 
-        metadata[:groups].map { |g| g[:sequences] }.flatten.each { |s| generate_sequence(s) }
+        metadata[:groups]
+          .flat_map { |group| group[:sequences] }
+          .each { |sequence| generate_sequence(sequence) }
         generate_module(metadata)
         copy_base
       end
