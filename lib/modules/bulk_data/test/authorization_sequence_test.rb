@@ -111,7 +111,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
 
       assert_match(/^Bad response code/, error.message)
     end
-  end  
+  end
 
   describe 'return access token tests' do
     before do

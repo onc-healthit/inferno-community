@@ -12,8 +12,8 @@ module Inferno
       description 'Test Bulk Data Authorization Token Endpoint'
 
       def authorize(content_type: 'application/x-www-form-urlencoded',
-        scope: 'system/*.read',
-        grant_type: 'client_credentials')
+                    scope: 'system/*.read',
+                    grant_type: 'client_credentials')
         id_token = JSON::JWT.new(
           iss: @instance.client_id,
           sub: @instance.client_id,
@@ -69,14 +69,14 @@ module Inferno
           name 'Bulk Data authorization request shall use "system" scope'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#scopes'
           description %(
-            clients SHALL use “system” scopes. 
+            clients SHALL use “system” scopes.
             System scopes have the format system/(:resourceType|*).(read|write|*)
           )
         end
 
         response = authorize(scope: 'user/*.read')
         assert_response_bad_or_unauthorized(response)
-      end      
+      end
 
       test :require_grant_type do
         metadata do
@@ -90,7 +90,7 @@ module Inferno
 
         response = authorize(grant_type: 'invalid_grant_type')
         assert_response_bad_or_unauthorized(response)
-      end        
+      end
 
       test :return_access_token do
         metadata do
