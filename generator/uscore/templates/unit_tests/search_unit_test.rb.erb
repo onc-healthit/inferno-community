@@ -1,0 +1,23 @@
+describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> test' do
+  before do
+    @test = @sequence_class[:<%= test_key %>]
+    @sequence = @sequence_class.new(@instance, @client)
+    @<%= resource_var_name %> = FHIR::<%= resource_type %>.new(id: @<%= resource_var_name %>_id)
+    @sequence.instance_variable_set(:'@<%= resource_var_name %>', @<%= resource_var_name %>)
+    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', [@<%= resource_var_name %>])
+    @query = {
+      <%= search_param_string %>
+    }
+  end
+
+  it 'fails if a non-success response code is received' do
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query, headers: @auth_header)
+      .to_return(status: 401)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+  end
+
+end

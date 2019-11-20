@@ -224,8 +224,10 @@ module Inferno
       end
 
       def create_search_test(sequence, search_param)
+        test_key = :"search_by_#{search_param[:names].map(&:underscore).join('_')}"
         search_test = {
           tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
           optional: search_param[:expectation] != 'SHALL',
@@ -247,7 +249,7 @@ module Inferno
           else
             %(
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-              assert !@#{sequence[:resource].underscore}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
+              assert !@#{sequence[:resource].underscore}.nil?, 'Expected #{sequence[:resource]} resource to be present'
       #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
@@ -255,6 +257,14 @@ module Inferno
           end
         search_test[:test_code] += get_comparator_searches(search_param[:names], sequence)
         sequence[:tests] << search_test
+
+        unit_test_generator.generate_search_test(
+          test_key: test_key,
+          resource_type: sequence[:resource],
+          search_params: get_search_param_hash(search_param[:names], sequence),
+          is_first_search: is_first_search,
+          class_name: sequence[:class_name]
+        )
       end
 
       def create_interaction_test(sequence, interaction)
@@ -447,7 +457,7 @@ module Inferno
           assert_bundle_response(reply)
 
           resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
+          @resources_found = resource_count.positive?
 
           skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
@@ -473,7 +483,7 @@ module Inferno
             assert_bundle_response(reply)
 
             resource_count = reply&.resource&.entry&.length || 0
-            @resources_found = true if resource_count.positive?
+            @resources_found = resource_count.positive?
             next unless @resources_found
 
             @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
@@ -544,7 +554,6 @@ module Inferno
                 comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
-                assert_response_ok(reply)
               end)
           end
         end
