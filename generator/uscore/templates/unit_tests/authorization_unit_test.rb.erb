@@ -1,6 +1,6 @@
 describe 'unauthorized search test' do
   before do
-    @test = @sequence_class[:<%= key %>]
+    @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
 <% if dynamic_search_params.present? %>
   <% dynamic_search_params.each do |_param, search_param|  %>
@@ -12,6 +12,15 @@ describe 'unauthorized search test' do
     @query = {
       <%= search_param_string %>
     }
+  end
+
+  it 'skips if the <%= resource_type %> search interaction is not supported' do
+    @instance.server_capabilities.destroy
+    @instance.reload
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    skip_message = 'This server does not support <%= resource_type %> search operation(s) according to conformance statement.'
+    assert_equal skip_message, exception.message
   end
 
   it 'fails when the token refresh response has a success status' do

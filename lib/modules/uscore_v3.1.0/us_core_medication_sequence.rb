@@ -19,25 +19,33 @@ module Inferno
 
       @resources_found = false
 
-      test 'Can read Medication from the server' do
+      test :resource_read do
         metadata do
           id '01'
+          name 'Can read Medication from the server'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
           versions :r4
         end
 
+        skip_if_not_supported(:Medication, [:read])
+
         medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
         skip 'No Medication references found from the prior searches' if medication_id.nil?
-        @medication = fetch_resource('Medication', medication_id)
-        @medication_ary = Array.wrap(@medication)
-        @resources_found = !@medication.nil?
+
+        @medication = validate_read_reply(
+          FHIR::Medication.new(id: medication_id),
+          FHIR::Medication
+        )
+        @medication_ary = Array.wrap(@medication).compact
+        @resources_found = @medication.present?
       end
 
-      test 'Medication vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '02'
+          name 'Medication vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -45,14 +53,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Medication history resource supported' do
+      test :history_interaction do
         metadata do
           id '03'
+          name 'Medication history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -60,7 +69,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end

@@ -48,8 +48,11 @@ module Inferno
           versions :r4
         end
 
+        skip_if_not_supported(:Goal, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -141,9 +144,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Goal read resource supported' do
+      test :read_interaction do
         metadata do
           id '05'
+          name 'Goal read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -151,14 +155,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Goal, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@goal, versioned_resource_class('Goal'))
       end
 
-      test 'Goal vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '06'
+          name 'Goal vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -166,14 +171,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Goal, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@goal, versioned_resource_class('Goal'))
       end
 
-      test 'Goal history resource supported' do
+      test :history_interaction do
         metadata do
           id '07'
+          name 'Goal history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -181,7 +187,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Goal, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@goal, versioned_resource_class('Goal'))
       end

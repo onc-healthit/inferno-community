@@ -27,7 +27,7 @@ module Inferno
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
           generate_sequence(sequence)
-          unit_test_generator.generate(sequence, sequence_out_path)
+          unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
         end
         generate_module(metadata)
       end
@@ -104,26 +104,40 @@ module Inferno
       end
 
       def create_read_test(sequence)
+        test_key = :resource_read
         read_test = {
           tests_that: "Can read #{sequence[:resource]} from the server",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
         }
 
         read_test[:test_code] = %(
-              #{sequence[:resource].downcase}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
-              skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].downcase}_id.nil?
-              @#{sequence[:resource].downcase} = fetch_resource('#{sequence[:resource]}', #{sequence[:resource].downcase}_id)
-              @#{sequence[:resource].downcase}_ary = Array.wrap(@#{sequence[:resource].downcase})
-              @resources_found = !@#{sequence[:resource].downcase}.nil?)
+              skip_if_not_supported(:#{sequence[:resource]}, [:read])
+
+              #{sequence[:resource].underscore}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
+              skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_id.nil?
+
+              @#{sequence[:resource].underscore} = validate_read_reply(
+                FHIR::#{sequence[:resource]}.new(id: #{sequence[:resource].underscore}_id),
+                FHIR::#{sequence[:resource]}
+              )
+              @#{sequence[:resource].underscore}_ary = Array.wrap(@#{sequence[:resource].underscore}).compact
+              @resources_found = @#{sequence[:resource].underscore}.present?)
         sequence[:tests] << read_test
+
+        unit_test_generator.generate_resource_read_test(
+          test_key: test_key,
+          resource_type: sequence[:resource],
+          class_name: sequence[:class_name]
+        )
       end
 
       def create_authorization_test(sequence)
-        key = :unauthorized_search
+        test_key = :unauthorized_search
         authorization_test = {
           tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-          key: key,
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
         }
@@ -132,17 +146,20 @@ module Inferno
         return if first_search.nil?
 
         authorization_test[:test_code] = %(
+              skip_if_not_supported(:#{sequence[:resource]}, [:search])
+
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
+
               search_params = { patient: @instance.patient_id }
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)
               assert_response_unauthorized reply)
 
         sequence[:tests] << authorization_test
+
         unit_test_generator.generate_authorization_test(
-          key: key,
-          name: sequence[:name],
+          test_key: test_key,
           resource_type: sequence[:resource],
           search_params: { patient: '@instance.patient_id' },
           class_name: sequence[:class_name]
@@ -213,7 +230,7 @@ module Inferno
           else
             %(
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-              assert !@#{sequence[:resource].downcase}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
+              assert !@#{sequence[:resource].underscore}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
       #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
@@ -224,19 +241,30 @@ module Inferno
       end
 
       def create_interaction_test(sequence, interaction)
+        test_key = :"#{interaction[:code]}_interaction"
         interaction_test = {
-          tests_that: "#{sequence[:resource]} #{interaction[:code]} resource supported",
+          tests_that: "#{sequence[:resource]} #{interaction[:code]} interaction supported",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
         }
 
         interaction_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+              skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-              validate_#{interaction[:code]}_reply(@#{sequence[:resource].downcase}, versioned_resource_class('#{sequence[:resource]}')))
+              validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
 
         sequence[:tests] << interaction_test
+
+        if interaction[:code] == 'read' # rubocop:disable Style/GuardClause
+          unit_test_generator.generate_resource_read_test(
+            test_key: test_key,
+            resource_type: sequence[:resource],
+            class_name: sequence[:class_name],
+            interaction_test: true
+          )
+        end
       end
 
       def create_must_support_test(sequence)
@@ -248,7 +276,7 @@ module Inferno
         }
 
         test[:test_code] += %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].downcase}_ary&.any?)
+              skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].underscore}_ary&.any?)
 
         test[:test_code] += %(
               must_support_confirmed = {})
@@ -263,11 +291,11 @@ module Inferno
                 #{extensions_list.join(",\n          ")}
               }
               extensions_list.each do |id, url|
-                @#{sequence[:resource].downcase}_ary&.each do |resource|
+                @#{sequence[:resource].underscore}_ary&.each do |resource|
                   must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
                   break if must_support_confirmed[id]
                 end
-                skip_notification = "Could not find \#{id} in any of the \#{@#{sequence[:resource].downcase}_ary.length} provided #{sequence[:resource]} resource(s)"
+                skip_notification = "Could not find \#{id} in any of the \#{@#{sequence[:resource].underscore}_ary.length} provided #{sequence[:resource]} resource(s)"
                 skip skip_notification unless must_support_confirmed[id]
               end
       )
@@ -284,12 +312,12 @@ module Inferno
                 #{elements_list.join(",\n          ")}
               ]
               must_support_elements.each do |path|
-                @#{sequence[:resource].downcase}_ary&.each do |resource|
+                @#{sequence[:resource].underscore}_ary&.each do |resource|
                   truncated_path = path.gsub('#{sequence[:resource]}.', '')
                   must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
                   break if must_support_confirmed[path]
                 end
-                resource_count = @#{sequence[:resource].downcase}_ary.length
+                resource_count = @#{sequence[:resource].underscore}_ary.length
 
                 skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
               end)
@@ -325,7 +353,7 @@ module Inferno
               skip_if_not_supported(:#{sequence[:resource]}, [:search, :read])
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-              validate_reference_resolutions(@#{sequence[:resource].downcase}))
+              validate_reference_resolutions(@#{sequence[:resource].underscore}))
         sequence[:tests] << test
       end
 
@@ -389,10 +417,10 @@ module Inferno
 
           skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-          @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
-          @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
+          @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
+          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply&.resource)
           save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-          save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
+          save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
           validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         )
       end
@@ -414,11 +442,11 @@ module Inferno
             @resources_found = true if resource_count.positive?
             next unless @resources_found
 
-            @#{sequence[:resource].downcase} = reply&.resource&.entry&.first&.resource
-            @#{sequence[:resource].downcase}_ary = fetch_all_bundled_resources(reply&.resource)
+            @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
+            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply&.resource)
 
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-            save_delayed_sequence_references(@#{sequence[:resource].downcase}_ary)
+            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
             break
           end

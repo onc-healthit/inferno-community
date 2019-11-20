@@ -11,9 +11,10 @@ describe Inferno::Sequence::<%= class_name %> do
     @base_url = 'http://www.example.com/fhir'
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token)
+    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: '<%= module_name %>')
     @patient_id = '123'
     @instance.patient_id = @patient_id
+    set_resource_support(@instance, '<%= resource_type %>')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 

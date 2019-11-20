@@ -7,14 +7,16 @@ module Inferno
         @tests ||= Hash.new { |hash, key| hash[key] = [] }
       end
 
-      def generate(sequence, path)
+      def generate(sequence, path, module_name)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'unit_test.rb.erb')))
         class_name = sequence[:class_name]
         return if tests[class_name].blank?
 
         unit_tests = template.result_with_hash(
           class_name: class_name,
-          tests: tests[class_name]
+          tests: tests[class_name],
+          resource_type: sequence[:resource],
+          module_name: module_name
         )
 
         test_path = File.join(path, 'test')
@@ -24,16 +26,38 @@ module Inferno
         File.write(file_name, unit_tests)
       end
 
-      def generate_authorization_test(key:, name:, resource_type:, search_params:, class_name:)
+      def generate_authorization_test(test_key:, resource_type:, search_params:, class_name:)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'authorization_unit_test.rb.erb')))
         test = template.result_with_hash(
-          key: key,
-          name: name,
+          test_key: test_key,
           resource_type: resource_type,
           search_param_string: search_params_to_string(search_params),
           dynamic_search_params: dynamic_search_params(search_params)
         )
         tests[class_name] << test
+      end
+
+      def generate_resource_read_test(test_key:, resource_type:, class_name:, interaction_test: false)
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'resource_read_unit_test.rb.erb')))
+        resource_var_name = resource_type.underscore
+
+        test = template.result_with_hash(
+          test_key: test_key,
+          resource_type: resource_type,
+          resource_var_name: resource_var_name,
+          interaction_test: interaction_test,
+          no_resources_found_message: no_resources_found_message(interaction_test, resource_type),
+          wrong_resource_type: resource_type == 'Patient' ? 'Observation' : 'Patient'
+        )
+        tests[class_name] << test
+      end
+
+      def no_resources_found_message(interaction_test, resource_type)
+        if interaction_test
+          "No #{resource_type} resources could be found for this patient. Please use patients with more information."
+        else
+          "No #{resource_type} references found from the prior searches"
+        end
       end
 
       def search_params_to_string(search_params)
