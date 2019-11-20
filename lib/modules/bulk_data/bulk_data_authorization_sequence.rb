@@ -11,7 +11,7 @@ module Inferno
 
       description 'Test Bulk Data Authorization Token Endpoint'
 
-      def authorize
+      def authorize(content_type: 'application/x-www-form-urlencoded')
         id_token = JSON::JWT.new(
           iss: @instance.client_id,
           sub: @instance.client_id,
@@ -36,7 +36,7 @@ module Inferno
 
         header =
           {
-            content_type: 'application/x-www-form-urlencoded',
+            content_type: content_type,
             accept: 'application/json'
           }
 
@@ -47,9 +47,23 @@ module Inferno
         response
       end
 
-      test :return_access_token do
+      test :require_content_type do
         metadata do
           id '01'
+          name 'Bulk Data authorization request shall use content type application/x-www-form-urlencoded'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          description %(
+            After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server’s token endpoint URL, using content-type application/x-www-form-urlencoded
+          )
+        end
+
+        response = authorize(content_type: 'application/json')
+        assert_response_bad_or_unauthorized(response)
+      end
+
+      test :return_access_token do
+        metadata do
+          id '02'
           name 'Bulk Data Token Endpoint shall return access token'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#issuing-access-tokens'
           description %(

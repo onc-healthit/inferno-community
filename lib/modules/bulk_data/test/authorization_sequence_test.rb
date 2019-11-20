@@ -24,13 +24,44 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     }
   end
 
+  describe 'require correct content-type' do
+    before do
+      @test = @sequence_class[:require_content_type]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'pass with incorrect content-type' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .with(headers: { content_type: 'application/json' })
+        .to_return(
+          status: 400
+        )
+
+      @sequence.run_test(@test)
+    end
+
+    it 'fail with correct content-type' do
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .with(headers: { content_type: 'application/json' })
+        .to_return(
+          status: 200
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Bad response code/, error.message)
+    end
+  end
+
   describe 'return access token tests' do
     before do
       @test = @sequence_class[:return_access_token]
       @sequence = @sequence_class.new(@instance, @client)
     end
 
-    it 'success when server returns access token' do
+    it 'pass when server returns access token' do
       stub_request(:post, @instance.oauth_token_endpoint)
         .to_return(
           status: 200,
