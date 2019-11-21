@@ -26,7 +26,17 @@ module Inferno
         File.write(file_name, unit_tests)
       end
 
-      def generate_search_test(test_key:, resource_type:, search_params:, class_name:, is_first_search:, sequence_name:)
+      def generate_search_test(
+        test_key:,
+        resource_type:,
+        search_params:,
+        is_first_search:,
+        is_fixed_value_search:,
+        has_comparator_tests:,
+        fixed_value_search_param:,
+        class_name:,
+        sequence_name:
+      )
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
 
         resource_var_name = resource_type.underscore
@@ -38,7 +48,12 @@ module Inferno
             resource_var_name: resource_var_name,
             search_params: search_params,
             search_param_string: search_params_to_string(search_params),
-            sequence_name: sequence_name
+            sequence_name: sequence_name,
+            is_first_search: is_first_search,
+            is_fixed_value_search: is_fixed_value_search,
+            has_comparator_tests: has_comparator_tests,
+            fixed_value_search_param: fixed_value_search_param&.dig(:name),
+            fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', ')
           )
           tests[class_name] << test
         end
