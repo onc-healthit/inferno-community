@@ -56,12 +56,6 @@ module Inferno
         }
       }.freeze
 
-      # "succeeded"
-      # "failed"
-      # "waiting"
-      # "not-implemented"
-      # "not-supported"
-
       def settings
         {
           'baseURL' => @instance.bulk_url,
@@ -99,18 +93,6 @@ module Inferno
               assert false, warning
             end
           end
-          # request = {
-          #   method: :post,
-          #   url: url,
-          #   headers: headers,
-          #   payload: payload
-          # }
-          # response = {
-          #   code: response.code,
-          #   headers: response.headers,
-          #   body: response.body
-          # }
-          # LoggedRestClient.record_response()
 
           requests = {}
 
@@ -122,7 +104,6 @@ module Inferno
                 headers: value['headers'],
                 payload: value['body']
               }
-              # binding.pry if value['method'] == 'POST'
               requests['request_' + key.chomp('Request').strip] = last_request
             end
 

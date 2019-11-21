@@ -46,13 +46,6 @@ module Inferno
 
               @instance.send("#{key}=", value) if @instance.respond_to?("#{key}=")
             end
-            # preset = JSON.parse(params['preset']) unless params['preset'].nil?
-            # @instance.client_id = preset['client_id'] unless preset['client_id'].nil?
-            # @instance.scopes = preset['scopes'] unless preset['scopes'].nil?
-            # unless preset['client_secret'].nil?
-            #   @instance.confidential_client = true
-            #   @instance.client_secret = preset['client_secret']
-            # end
           end
 
           @instance.initiate_login_uri = "#{request.base_url}#{base_path}/oauth2/#{@instance.client_endpoint_key}/launch"
