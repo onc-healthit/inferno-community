@@ -227,6 +227,16 @@
               instance: instance,
               value: instance.group_id,
               })%>   
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
+              label: 'Bulk Token Endpoint',
+              instance: instance,
+              value: instance.bulk_token_endpoint,
+              })%>                
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
+              label: 'Bulk Client ID',
+              instance: instance,
+              value: instance.bulk_client_id,
+              })%>                             
         <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_public_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_public_key">
 
               <label for="bulk_public_key">Bulk Public Key
@@ -238,7 +248,6 @@
               </label>
               <textarea type="text" class="form-control" name="bulk_public_key" id="bulk_public_key" placeholder="" rows="5"><%=instance.bulk_public_key %></textarea>
         </div>
-
         <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
 
               <label for="bulk_private_key">Bulk Private Key

@@ -41,7 +41,7 @@ describe Inferno::Sequence::BulkDataDiscoverySequence do
         )
 
       @sequence.run_test(@test)
-      assert @instance.oauth_token_endpoint == @smart_configuration['token_endpoint']
+      assert @instance.bulk_token_endpoint == @smart_configuration['token_endpoint']
       assert @instance.oauth_register_endpoint == @smart_configuration['registration_endpoint']
     end
 
@@ -124,7 +124,7 @@ describe Inferno::Sequence::BulkDataDiscoverySequence do
         )
 
       @sequence.run_test(@test)
-      assert @instance.oauth_token_endpoint == 'https://bulk-data.smarthealthit.org/auth/token'
+      assert @instance.bulk_token_endpoint == 'https://bulk-data.smarthealthit.org/auth/token'
     end
 
     it 'fails when conformance does not have oauth extension' do

@@ -8,7 +8,7 @@ module Inferno
       test_id_prefix 'BDD'
 
       requires :url
-      defines :oauth_token_endpoint, :oauth_register_endpoint
+      defines :bulk_token_endpoint, :oauth_register_endpoint
 
       description "Retrieve server's SMART on FHIR configuration"
 
@@ -64,7 +64,7 @@ module Inferno
 
         @well_known_configuration = JSON.parse(well_known_configuration_response.body)
         @instance.update(
-          oauth_token_endpoint: @well_known_configuration['token_endpoint'],
+          bulk_token_endpoint: @well_known_configuration['token_endpoint'],
           oauth_register_endpoint: @well_known_configuration['registration_endpoint']
         )
       end
@@ -124,7 +124,7 @@ module Inferno
         end
 
         @instance.update(
-          oauth_token_endpoint: conformance_token_url
+          bulk_token_endpoint: conformance_token_url
         )
       end
     end

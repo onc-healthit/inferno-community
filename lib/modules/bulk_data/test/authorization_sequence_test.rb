@@ -9,10 +9,10 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
 
     @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
-      client_id: config['client_id'],
+      bulk_client_id: config['client_id'],
       bulk_public_key: config['public_key'].to_json,
       bulk_private_key: config['private_key'].to_json,
-      oauth_token_endpoint: config['token_url']
+      bulk_token_endpoint: config['token_url']
     )
 
     @client = FHIR::Client.new(@instance.url)
@@ -33,7 +33,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
 
     it 'pass with stastus code 400' do
-      a_request = stub_request(:post, @instance.oauth_token_endpoint)
+      a_request = stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 400
         )
@@ -44,7 +44,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
 
     it 'fail with status code 200' do
-      a_request = stub_request(:post, @instance.oauth_token_endpoint)
+      a_request = stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 200
         )
@@ -91,6 +91,10 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     it_test_rquired_parameter(:require_jwt_exp)
   end
 
+  describe 'require JWT exp less than 5 minutes' do
+    it_test_rquired_parameter(:require_jwt_exp_value)
+  end
+
   describe 'require JWT jti' do
     it_test_rquired_parameter(:require_jwt_jti)
   end
@@ -106,7 +110,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
 
     it 'pass when server returns access token' do
-      stub_request(:post, @instance.oauth_token_endpoint)
+      stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 200,
           headers: { content_type: 'application/json' },
@@ -114,10 +118,11 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
         )
 
       @sequence.run_test(@test)
+      assert @instance.bulk_access_token == @access_token['access_token']
     end
 
     it 'fail when server returns status other than 200' do
-      stub_request(:post, @instance.oauth_token_endpoint)
+      stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 400
         )
@@ -133,7 +138,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       invalid_access_token = @access_token.clone
       invalid_access_token.delete('access_token')
 
-      stub_request(:post, @instance.oauth_token_endpoint)
+      stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 200,
           body: invalid_access_token.to_json
@@ -150,7 +155,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       invalid_access_token = @access_token.clone
       invalid_access_token.delete('token_type')
 
-      stub_request(:post, @instance.oauth_token_endpoint)
+      stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 200,
           body: invalid_access_token.to_json

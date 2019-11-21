@@ -57,8 +57,11 @@ module Inferno
 
       property :group_id, String
 
+      property :bulk_token_endpoint, String
+      property :bulk_client_id, String
       property :bulk_public_key, String
       property :bulk_private_key, String
+      property :bulk_access_token, String
 
       has n, :sequence_results
       has n, :resource_references

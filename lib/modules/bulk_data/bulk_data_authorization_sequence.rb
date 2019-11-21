@@ -7,7 +7,7 @@ module Inferno
 
       test_id_prefix 'BDA'
 
-      requires :client_id, :bulk_private_key, :oauth_token_endpoint
+      requires :bulk_client_id, :bulk_private_key, :bulk_token_endpoint
 
       description 'Test Bulk Data Authorization Token Endpoint'
 
@@ -16,9 +16,9 @@ module Inferno
                     scope: 'system/*.read',
                     grant_type: 'client_credentials',
                     client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-                    iss: @instance.client_id,
-                    sub: @instance.client_id,
-                    aud: @instance.oauth_token_endpoint,
+                    iss: @instance.bulk_client_id,
+                    sub: @instance.bulk_client_id,
+                    aud: @instance.bulk_token_endpoint,
                     exp: 5.minutes.from_now,
                     jti: SecureRandom.hex(32))
         id_token = JSON::JWT.new(
@@ -52,7 +52,7 @@ module Inferno
         uri = Addressable::URI.new
         uri.query_values = payload
 
-        response = LoggedRestClient.post(@instance.oauth_token_endpoint, uri.query, header)
+        response = LoggedRestClient.post(@instance.bulk_token_endpoint, uri.query, header)
         response
       end
 
@@ -200,7 +200,7 @@ module Inferno
 
       test :correct_signature do
         metadata do
-          id '10'
+          id '11'
           name 'Bulk Data authorization request shall be signed by client private key'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
@@ -234,7 +234,7 @@ module Inferno
 
       test :return_access_token do
         metadata do
-          id '11'
+          id '12'
           name 'Bulk Data Token Endpoint shall return access token'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#issuing-access-tokens'
           description %(
@@ -253,8 +253,13 @@ module Inferno
 
         assert_response_ok(response)
         response_body = JSON.parse(response.body)
-        @access_token = response_body['access_token']
-        assert @access_token.present?, 'access_token is empty'
+        access_token = response_body['access_token']
+        assert access_token.present?, 'access_token is empty'
+
+        @instance.update(
+          bulk_access_token: access_token
+        )
+
         assert response_body['token_type'] == 'bearer', 'token_type expected to be "bearer"'
         assert response_body['expires_in'].present?, 'expires_in is empty'
         assert response_body['scope'].present?, 'scope is empty'
