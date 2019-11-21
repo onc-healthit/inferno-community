@@ -18,7 +18,7 @@ module Inferno
           iss: @instance.client_id,
           sub: @instance.client_id,
           aud: @instance.oauth_token_endpoint,
-          exp: 1.hour.from_now,
+          exp: 5.minute.from_now,
           jti: SecureRandom.hex(32)
         )
 
