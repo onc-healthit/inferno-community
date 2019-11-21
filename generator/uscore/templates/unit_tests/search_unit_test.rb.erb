@@ -2,7 +2,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   before do
     @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
-    @<%= resource_var_name %> = FHIR::<%= resource_type %>.new(id: @<%= resource_var_name %>_id)
+    @<%= resource_var_name %> = FHIR::from_contents(load_fixture(:<%= sequence_name %>))
     @sequence.instance_variable_set(:'@<%= resource_var_name %>', @<%= resource_var_name %>)
     @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', [@<%= resource_var_name %>])
     @query = {

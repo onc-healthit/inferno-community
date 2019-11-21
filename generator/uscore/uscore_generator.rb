@@ -263,7 +263,8 @@ module Inferno
           resource_type: sequence[:resource],
           search_params: get_search_param_hash(search_param[:names], sequence),
           is_first_search: is_first_search,
-          class_name: sequence[:class_name]
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name]
         )
       end
 

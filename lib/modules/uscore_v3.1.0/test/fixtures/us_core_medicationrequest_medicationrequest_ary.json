@@ -1,7 +1,0 @@
-[
-  {
-    "resourceType": "MedicationRequest",
-    "intent": "order",
-    "status": "active"
-  }
-]
