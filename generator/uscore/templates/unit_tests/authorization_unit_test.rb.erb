@@ -1,0 +1,51 @@
+describe 'unauthorized search test' do
+  before do
+    @test = @sequence_class[:<%= test_key %>]
+    @sequence = @sequence_class.new(@instance, @client)
+<% if dynamic_search_params.present? %>
+  <% dynamic_search_params.each do |_param, search_param|  %>
+    <%= search_param[:variable_name] %> = load_json_fixture(:<%= "#{name}_#{search_param[:variable_name][1..-1]}" %>)
+      .map { |resource| FHIR.from_contents(resource.to_json) }
+    @sequence.instance_variable_set(:'<%= search_param[:variable_name] %>', <%= search_param[:variable_name] %>)
+  <% end %>
+<% end %>
+    @query = {
+      <%= search_param_string %>
+    }
+  end
+
+  it 'skips if the <%= resource_type %> search interaction is not supported' do
+    @instance.server_capabilities.destroy
+    @instance.reload
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    skip_message = 'This server does not support <%= resource_type %> search operation(s) according to conformance statement.'
+    assert_equal skip_message, exception.message
+  end
+
+  it 'fails when the token refresh response has a success status' do
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query)
+      .to_return(status: 200)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Bad response code: expected 401, but found 200', exception.message
+  end
+
+  it 'succeeds when the token refresh response has an error status' do
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query)
+      .to_return(status: 401)
+
+    @sequence.run_test(@test)
+  end
+
+  it 'is omitted when no token is set' do
+    @instance.token = ''
+
+    exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
+
+    assert_equal 'Do not test if no bearer token set', exception.message
+  end
+end

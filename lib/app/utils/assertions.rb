@@ -49,18 +49,9 @@ module Inferno
     end
 
     def assert_bundle_response(response)
-      message = "Expected FHIR Bundle but found: #{resource_class(response)}"
-      assert response.resource.class.name.demodulize == 'Bundle', message
-    end
-
-    def resource_class(response)
-      resource =
-        begin
-          resource_from_contents(response.body)
-        rescue StandardError
-          nil
-        end
-      resource.class.name.demodulize
+      class_name = response.resource.class.name.demodulize
+      message = "Expected FHIR Bundle but found: #{class_name}"
+      assert class_name == 'Bundle', message
     end
 
     def base_header(header)

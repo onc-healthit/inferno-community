@@ -41,24 +41,26 @@ module Inferno
       end
 
       details %(
-
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-
       )
 
       @resources_found = false
 
-      test 'Server rejects Observation search without authorization' do
+      test :unauthorized_search do
         metadata do
           id '01'
+          name 'Server rejects Observation search without authorization'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
           description %(
           )
           versions :r4
         end
 
+        skip_if_not_supported(:Observation, [:search])
+
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         search_params = { patient: @instance.patient_id }
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
@@ -74,26 +76,25 @@ module Inferno
           versions :r4
         end
 
-        code_val = ['59576-9']
-        code_val.each do |val|
-          search_params = { 'patient': @instance.patient_id, 'code': val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': '59576-9'
+        }
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
-          next unless @resources_found
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
 
-          @observation = reply&.resource&.entry&.first&.resource
-          @observation_ary = fetch_all_bundled_resources(reply&.resource)
+        resource_count = reply&.resource&.entry&.length || 0
+        @resources_found = true if resource_count.positive?
 
-          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_bmi_age])
-          save_delayed_sequence_references(@observation_ary)
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-          break
-        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+
+        @observation = reply&.resource&.entry&.first&.resource
+        @observation_ary = fetch_all_bundled_resources(reply&.resource)
+        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_bmi_age])
+        save_delayed_sequence_references(@observation_ary)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
       test 'Server returns expected results from Observation search by patient+category+date' do
@@ -108,10 +109,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
-        date_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
-        search_params = { 'patient': patient_val, 'category': category_val, 'date': date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -119,8 +121,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'category': category_val, 'date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -139,9 +141,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
-        search_params = { 'patient': patient_val, 'category': category_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -162,10 +165,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
-        patient_val = @instance.patient_id
-        code_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
-        date_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
-        search_params = { 'patient': patient_val, 'code': code_val, 'date': date_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -173,8 +177,8 @@ module Inferno
         assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, date_val)
-          comparator_search_params = { 'patient': patient_val, 'code': code_val, 'date': comparator_val }
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
           assert_response_ok(reply)
@@ -194,10 +198,11 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
         assert !@observation.nil?, 'Expected valid Observation resource to be present'
 
-        patient_val = @instance.patient_id
-        category_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
-        status_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
-        search_params = { 'patient': patient_val, 'category': category_val, 'status': status_val }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
+        }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -205,9 +210,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Observation read resource supported' do
+      test :read_interaction do
         metadata do
           id '07'
+          name 'Observation read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -215,14 +221,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Observation vread resource supported' do
+      test :vread_interaction do
         metadata do
           id '08'
+          name 'Observation vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -230,14 +237,15 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:vread])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Observation history resource supported' do
+      test :history_interaction do
         metadata do
           id '09'
+          name 'Observation history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
           )
@@ -245,7 +253,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:history])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
@@ -259,10 +267,10 @@ module Inferno
           versions :r4
         end
 
-        patient_val = @instance.patient_id
-        code_val = get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
-        search_params = { 'patient': patient_val, 'code': code_val }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': '59576-9'
+        }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)

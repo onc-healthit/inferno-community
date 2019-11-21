@@ -453,8 +453,7 @@ module Inferno
         @test_warnings << e.message
       end
 
-      def get_resource_by_params(klass, params = {})
-        assert !params.empty?, 'No params for search'
+      def get_resource_by_params(klass, params)
         options = {
           search: {
             flag: false,
@@ -516,18 +515,20 @@ module Inferno
       end
 
       def validate_read_reply(resource, klass)
-        assert !resource.nil?, "No #{klass.name.demodulize} resources available from search."
+        class_name = klass.name.demodulize
+        assert !resource.nil?, "No #{class_name} resources available from search."
         if resource.is_a? FHIR::DSTU2::Reference
           read_response = resource.read
         else
           id = resource.try(:id)
-          assert !id.nil?, "#{klass} id not returned"
+          assert !id.nil?, "#{class_name} id not returned"
           read_response = @client.read(klass, id)
           assert_response_ok read_response
           read_response = read_response.resource
         end
-        assert !read_response.nil?, "Expected valid #{klass} resource to be present"
-        assert read_response.is_a?(klass), "Expected resource to be valid #{klass}"
+        assert !read_response.nil?, "Expected #{class_name} resource to be present."
+        assert read_response.is_a?(klass), "Expected resource to be of type #{class_name}."
+        read_response
       end
 
       def validate_history_reply(resource, klass)
