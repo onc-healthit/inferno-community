@@ -9,9 +9,9 @@ module Inferno
 
       description 'Verify that system level export on the Bulk Data server follow the Bulk Data Access Implementation Guide'
 
-      test_id_prefix 'BD'
+      test_id_prefix 'BDE'
 
-      requires :token
+      requires :tokens
 
       attr_accessor :run_all_kick_off_tests
 
@@ -277,7 +277,7 @@ module Inferno
       test 'Server shall return FHIR resources required by _type parameter' do
         metadata do
           id '10'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
           description %(
             Only resources of the specified resource types(s) SHALL be included in the response.
             If this parameter is omitted, the server SHALL return all supported resources within the scope of the client authorization.
