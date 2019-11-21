@@ -107,6 +107,7 @@ module Inferno
           description %(
 
             These OperationDefinitions have been defined for this implementation guide.
+
               * Export: export any data from a FHIR server
               * Patient Export: export patient data from a FHIR server
               * Group Export: export data for groups of patients from a FHIR server
