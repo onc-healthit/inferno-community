@@ -108,8 +108,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -141,9 +141,9 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status')),
-          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status')),
+          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -175,8 +175,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
+          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

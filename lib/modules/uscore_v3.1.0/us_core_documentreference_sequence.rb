@@ -117,7 +117,7 @@ module Inferno
         assert !@document_reference.nil?, 'Expected valid DocumentReference resource to be present'
 
         search_params = {
-          '_id': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'id'))
+          '_id': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'id'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -140,7 +140,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type'))
+          'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'type'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -163,8 +163,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'date'))
+          'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'date'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -187,7 +187,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -211,8 +211,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'type')),
-          'period': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'context.period'))
+          'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'type')),
+          'period': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'context.period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -244,7 +244,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@documentreference_ary, 'status'))
+          'status': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

@@ -110,7 +110,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'code'))
+          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -133,8 +133,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'effectiveDateTime'))
+          'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effectiveDateTime'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -188,7 +188,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'status'))
+          'status': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -212,8 +212,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'effectiveDateTime'))
+          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effectiveDateTime'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
