@@ -48,45 +48,37 @@ module Inferno
       end
 
       def extract_metadata(source)
-        metadata = {
+        {
           name: 'test',
-          groups: []
+          groups: source['children'].map { |group| new_group(group) }
         }
+      end
 
-        source['children'].each do |group|
-          new_group = {
-            name: group['name'],
-            sequences: []
-          }
+      def new_group(group_metadata)
+        {
+          name: group_metadata['name'],
+          sequences: group_metadata['children'].map { |sequence| new_sequence(sequence) }
+        }
+      end
 
-          group['children'].each do |sequence|
-            new_sequence = {
-              name: sequence['name'],
-              description: BDT_DESCRIPTIONS[sequence['name']],
-              tests: []
-            }
-
-            sequence['children'].each do |test|
-              new_test = {
-                name: clean_test_name(test['name']),
-                path: test['path'],
-                id: test['id'],
-                description: test['description']
-              }
-
-              new_sequence[:tests] << new_test
-            end
-
-            new_sequence[:id] = new_sequence[:tests].first&.dig(:id)&.split('-')&.first
-            new_sequence[:sequence_class_name] = 'BDT' + new_sequence[:id].split('_').map(&:capitalize).join + 'Sequence'
-
-            new_group[:sequences] << new_sequence
-          end
-
-          metadata[:groups] << new_group
+      def new_sequence(sequence_metadata)
+        {
+          name: sequence_metadata['name'],
+          description: BDT_DESCRIPTIONS[sequence_metadata['name']],
+          tests: sequence_metadata['children'].map { |test| new_test(test) }
+        }.tap do |sequence|
+          sequence[:id] = sequence[:tests].first&.dig(:id)&.split('-')&.first
+          sequence[:sequence_class_name] = 'BDT' + sequence[:id].camelize + 'Sequence'
         end
+      end
 
-        metadata
+      def new_test(test_metadata)
+        {
+          name: clean_test_name(test_metadata['name']),
+          path: test_metadata['path'],
+          id: test_metadata['id'],
+          description: test_metadata['description']
+        }
       end
 
       def copy_base
@@ -98,18 +90,21 @@ module Inferno
       # This organizes into a single bulk data group
       # With a sequence per
       def revise_structure_sequence(structure)
-        bulk = { 'name' => 'Bulk Data Test', 'type' => 'group', 'children' => [] }
-
-        structure['children'].each do |seq_level|
-          tests = []
-          seq_level['children'].each do |test_level|
-            tests.concat(collapse_sequence(test_level))
+        sequences = structure['children'].map do |sequence|
+          sequence['children'] = sequence['children'].flat_map do |tests|
+            collapse_sequence(tests)
           end
-          seq_level['children'] = tests
-          bulk['children'] << seq_level
+          sequence
         end
 
-        structure['children'] = [bulk]
+        structure['children'] = [
+          {
+            'name' => 'Bulk Data Test',
+            'type' => 'group',
+            'children' => sequences
+          }
+        ]
+
         structure
       end
 
