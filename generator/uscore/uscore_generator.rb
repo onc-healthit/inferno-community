@@ -177,7 +177,7 @@ module Inferno
         include_test[:test_code] = search_params
         sequence[:include_params].each do |include|
           resource_name = include.split(':').last.capitalize
-          resource_variable = "#{resource_name.downcase}_results" # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
+          resource_variable = "#{resource_name.underscore}_results" # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
           include_test[:test_code] += %(
                 search_params['_include'] = '#{include}'
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
@@ -201,7 +201,7 @@ module Inferno
         revinclude_test[:test_code] = search_params
         sequence[:revincludes].each do |revinclude|
           resource_name = revinclude.split(':').first
-          resource_variable = "#{resource_name.downcase}_results"
+          resource_variable = "#{resource_name.underscore}_results"
           revinclude_test[:test_code] += %(
                 search_params['_revinclude'] = '#{revinclude}'
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
@@ -360,7 +360,7 @@ module Inferno
       def resolve_element_path(search_param_description)
         element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
         path_parts = element_path.split('.')
-        resource_val = "@#{path_parts.shift.downcase}_ary"
+        resource_val = "@#{path_parts.shift.underscore}_ary"
         "get_value_for_search_param(resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}'))"
       end
 
