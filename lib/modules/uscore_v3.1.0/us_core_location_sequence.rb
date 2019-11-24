@@ -17,30 +17,30 @@ module Inferno
         case property
 
         when 'name'
-          value_found = can_resolve_path(resource, 'name') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'name on resource does not match name requested'
+          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address') do |address|
+          value_found = resolve_element_from_path(resource, 'address') do |address|
             address&.text&.start_with?(value) ||
               address&.city&.start_with?(value) ||
               address&.state&.start_with?(value) ||
               address&.postalCode&.start_with?(value) ||
               address&.country&.start_with?(value)
           end
-          assert value_found, 'address on resource does not match address requested'
+          assert value_found.present?, 'address on resource does not match address requested'
 
         when 'address-city'
-          value_found = can_resolve_path(resource, 'address.city') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'address-city on resource does not match address-city requested'
+          value_found = resolve_element_from_path(resource, 'address.city') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'address-city on resource does not match address-city requested'
 
         when 'address-state'
-          value_found = can_resolve_path(resource, 'address.state') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'address-state on resource does not match address-state requested'
+          value_found = resolve_element_from_path(resource, 'address.state') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'address-state on resource does not match address-state requested'
 
         when 'address-postalcode'
-          value_found = can_resolve_path(resource, 'address.postalCode') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'address-postalcode on resource does not match address-postalcode requested'
+          value_found = resolve_element_from_path(resource, 'address.postalCode') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'address-postalcode on resource does not match address-postalcode requested'
 
         end
       end
@@ -158,6 +158,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_address_city do
@@ -183,6 +184,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_address_state do
@@ -208,6 +210,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_address_postalcode do
@@ -233,6 +236,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :vread_interaction do
@@ -358,7 +362,7 @@ module Inferno
         must_support_elements.each do |path|
           @location_ary&.each do |resource|
             truncated_path = path.gsub('Location.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @location_ary.length

@@ -16,12 +16,12 @@ module Inferno
         case property
 
         when 'clinical-status'
-          value_found = can_resolve_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'clinical-status on resource does not match clinical-status requested'
+          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         end
       end
@@ -109,12 +109,13 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary, 'clinicalStatus'))
+          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergyintolerance_ary, 'clinicalStatus'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -241,7 +242,7 @@ module Inferno
         must_support_elements.each do |path|
           @allergy_intolerance_ary&.each do |resource|
             truncated_path = path.gsub('AllergyIntolerance.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @allergy_intolerance_ary.length

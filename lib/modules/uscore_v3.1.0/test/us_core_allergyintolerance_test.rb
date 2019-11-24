@@ -140,7 +140,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@allergy_intolerance_ary, 'clinicalStatus'))
+        'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@allergyintolerance_ary, 'clinicalStatus'))
       }
     end
 

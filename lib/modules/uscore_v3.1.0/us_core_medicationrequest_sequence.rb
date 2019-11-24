@@ -16,24 +16,24 @@ module Inferno
         case property
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         when 'intent'
-          value_found = can_resolve_path(resource, 'intent') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'intent on resource does not match intent requested'
+          value_found = resolve_element_from_path(resource, 'intent') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'intent on resource does not match intent requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'encounter'
-          value_found = can_resolve_path(resource, 'encounter.reference') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'encounter on resource does not match encounter requested'
+          value_found = resolve_element_from_path(resource, 'encounter.reference') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'encounter on resource does not match encounter requested'
 
         when 'authoredon'
-          value_found = can_resolve_path(resource, 'authoredOn') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'authoredon on resource does not match authoredon requested'
+          value_found = resolve_element_from_path(resource, 'authoredOn') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'authoredon on resource does not match authoredon requested'
 
         end
       end
@@ -123,13 +123,22 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
-          'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'status'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
+          'status': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+        assert_response_ok(reply)
+
+        second_value = resolve_element_from_path(@medicationrequest_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
+
+        search_params[:status] += ',' + get_value_for_search_param(second_value)
+        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_intent_encounter do
@@ -150,13 +159,14 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
-          'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'encounter'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
+          'encounter': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'encounter'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_intent_authoredon do
@@ -178,13 +188,14 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
-          'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'authoredOn'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
+          'authoredon': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -253,7 +264,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -277,7 +288,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -362,7 +373,7 @@ module Inferno
         must_support_elements.each do |path|
           @medication_request_ary&.each do |resource|
             truncated_path = path.gsub('MedicationRequest.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @medication_request_ary.length

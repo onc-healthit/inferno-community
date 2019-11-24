@@ -18,18 +18,18 @@ module Inferno
 
         when 'name'
           value = value.downcase
-          value_found = can_resolve_path(resource, 'name') do |name|
+          value_found = resolve_element_from_path(resource, 'name') do |name|
             name&.text&.start_with?(value) ||
               name&.family&.downcase&.include?(value) ||
               name&.given&.any? { |given| given.downcase.start_with?(value) } ||
               name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
               name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
-          assert value_found, 'name on resource does not match name requested'
+          assert value_found.present?, 'name on resource does not match name requested'
 
         when 'identifier'
-          value_found = can_resolve_path(resource, 'identifier.value') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'identifier on resource does not match identifier requested'
+          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'identifier on resource does not match identifier requested'
 
         end
       end
@@ -147,6 +147,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :vread_interaction do
@@ -263,7 +264,7 @@ module Inferno
         must_support_elements.each do |path|
           @practitioner_ary&.each do |resource|
             truncated_path = path.gsub('Practitioner.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @practitioner_ary.length

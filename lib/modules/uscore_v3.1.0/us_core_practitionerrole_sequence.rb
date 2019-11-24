@@ -17,12 +17,12 @@ module Inferno
         case property
 
         when 'specialty'
-          value_found = can_resolve_path(resource, 'specialty.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'specialty on resource does not match specialty requested'
+          value_found = resolve_element_from_path(resource, 'specialty.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'specialty on resource does not match specialty requested'
 
         when 'practitioner'
-          value_found = can_resolve_path(resource, 'practitioner.reference') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'practitioner on resource does not match practitioner requested'
+          value_found = resolve_element_from_path(resource, 'practitioner.reference') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'practitioner on resource does not match practitioner requested'
 
         end
       end
@@ -74,7 +74,7 @@ module Inferno
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -97,7 +97,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -134,12 +134,13 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         search_params = {
-          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
+          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'practitioner'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :vread_interaction do
@@ -190,7 +191,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -220,7 +221,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -296,7 +297,7 @@ module Inferno
         must_support_elements.each do |path|
           @practitioner_role_ary&.each do |resource|
             truncated_path = path.gsub('PractitionerRole.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @practitioner_role_ary.length

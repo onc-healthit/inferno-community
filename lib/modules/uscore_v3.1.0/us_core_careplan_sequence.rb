@@ -16,22 +16,22 @@ module Inferno
         case property
 
         when 'category'
-          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'category on resource does not match category requested'
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'category on resource does not match category requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'period') do |date|
+          value_found = resolve_element_from_path(resource, 'period') do |date|
             validate_date_search(value, date)
           end
-          assert value_found, 'date on resource does not match date requested'
+          assert value_found.present?, 'date on resource does not match date requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         end
       end
@@ -123,13 +123,14 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -158,14 +159,15 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status')),
+          'date': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -173,6 +175,13 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
           validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
         end
+        second_value = resolve_element_from_path(@careplan_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
+
+        search_params[:status] += ',' + get_value_for_search_param(second_value)
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_category_status do
@@ -193,13 +202,22 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status'))
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
+
+        second_value = resolve_element_from_path(@careplan_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
+
+        search_params[:status] += ',' + get_value_for_search_param(second_value)
+        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -267,7 +285,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -337,7 +355,7 @@ module Inferno
         must_support_elements.each do |path|
           @care_plan_ary&.each do |resource|
             truncated_path = path.gsub('CarePlan.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @care_plan_ary.length

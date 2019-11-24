@@ -76,7 +76,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'category'))
       }
     end
 
@@ -241,7 +241,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'code'))
       }
     end
 
@@ -313,8 +313,8 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'effective'))
       }
     end
 
@@ -378,7 +378,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'status'))
       }
     end
 
@@ -450,8 +450,8 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnosticreport_ary, 'effective'))
       }
     end
 

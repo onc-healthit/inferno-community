@@ -76,7 +76,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'category'))
       }
     end
 
@@ -178,8 +178,8 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'period'))
       }
     end
 
@@ -243,9 +243,9 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'status')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'period'))
       }
     end
 
@@ -309,8 +309,8 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careplan_ary, 'status'))
       }
     end
 

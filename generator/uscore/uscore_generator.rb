@@ -252,11 +252,12 @@ module Inferno
               #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              assert_response_ok(reply)
             )
           end
-
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
         search_test[:test_code] += comparator_search_code
+        search_test[:test_code] += get_multiple_or_search(search_param[:names], sequence)
         sequence[:tests] << search_test
 
         is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
@@ -362,7 +363,7 @@ module Inferno
               must_support_elements.each do |path|
                 @#{sequence[:resource].underscore}_ary&.each do |resource|
                   truncated_path = path.gsub('#{sequence[:resource]}.', '')
-                  must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+                  must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
                   break if must_support_confirmed[path]
                 end
                 resource_count = @#{sequence[:resource].underscore}_ary.length
@@ -410,11 +411,11 @@ module Inferno
         sequence[:tests] << test
       end
 
-      def resolve_element_path(search_param_description)
+      def resolve_element_path(search_param_description, resolve_block = '')
         element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
         path_parts = element_path.split('.')
-        resource_val = "@#{path_parts.shift.underscore}_ary"
-        "get_value_for_search_param(resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}'))"
+        resource_val = "@#{path_parts.shift.downcase}_ary"
+        "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}') #{resolve_block}"
       end
 
       def get_value_path_by_type(type)
@@ -564,7 +565,7 @@ module Inferno
             elsif grab_first_value && !sequence[:delayed_sequence]
               sequence[:search_param_descriptions][param.to_sym][:values].first
             else
-              resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
+              "get_value_for_search_param(#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym])})"
             end
         end
       end
@@ -602,6 +603,23 @@ module Inferno
         end
       end
 
+      def get_multiple_or_search(search_params, sequence)
+        multiple_or_param = search_params.find { |param| sequence[:search_param_descriptions][param.to_sym][:multiple_or] == 'SHALL' }
+        return '' if multiple_or_param.blank?
+
+        param_metadata = sequence[:search_param_descriptions][multiple_or_param.to_sym]
+
+        %(
+          second_value = #{resolve_element_path(param_metadata)} { |el| get_value_for_search_param(el) != #{param_value_name(multiple_or_param)} }
+          skip 'Cannot find second value for #{multiple_or_param} to perform a multipleOr search' if second_value.nil?
+
+          #{param_value_name(multiple_or_param)} += ',' + get_value_for_search_param(second_value)
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+          assert_response_ok(reply)
+        )
+      end
+
       def search_param_constants(search_parameters, sequence)
         return { '_id': '@instance.patient_id' } if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
       end
@@ -618,10 +636,10 @@ module Inferno
           case type
           when 'Period', 'date'
             search_validators += %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |date|
                   validate_date_search(value, date)
                 end
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
           when 'HumanName'
             # When a string search parameter refers to the types HumanName and Address,
@@ -629,39 +647,40 @@ module Inferno
             # https://www.hl7.org/fhir/search.html#string
             search_validators += %(
                 value = value.downcase
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |name|
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |name|
                   name&.text&.start_with?(value) ||
                     name&.family&.downcase&.include?(value) ||
                     name&.given&.any? { |given| given.downcase.start_with?(value) } ||
                     name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
                     name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
                 end
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
           when 'Address'
             search_validators += %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |address|
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |address|
                   address&.text&.start_with?(value) ||
                     address&.city&.start_with?(value) ||
                     address&.state&.start_with?(value) ||
                     address&.postalCode&.start_with?(value) ||
                     address&.country&.start_with?(value)
                 end
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
             )
           else
             # searching by patient requires special case because we are searching by a resource identifier
             # references can also be URL's, so we made need to resolve those url's
+            path = path_parts.join('.') + get_value_path_by_type(type)
             search_validators +=
               if ['subject', 'patient'].include? element.to_s
                 %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |reference| [value, 'Patient/' + value].include? reference }
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                value_found = resolve_element_from_path(resource, '#{path}') { |reference| [value, 'Patient/' + value].include? reference }
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
               else
                 %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |value_in_resource| value_in_resource == value }
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                value_found = resolve_element_from_path(resource, '#{path}') { |value_in_resource| value.split(',').include? value_in_resource }
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
               end
           end
