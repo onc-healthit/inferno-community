@@ -123,7 +123,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)

@@ -27,6 +27,7 @@ module Inferno
         capability_statement_json = capability_statement('server')
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
+        fix_metadata_errors(metadata)
         add_special_cases(metadata)
       end
 
@@ -281,6 +282,20 @@ module Inferno
             end
           else
             sequence[:element_descriptions][path.downcase.to_sym] = { type: element['type'].first['code'], contains_multiple: element['max'] == '*' }
+          end
+        end
+      end
+
+      def fix_metadata_errors(metadata)
+        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
+        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
+        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performedDateTime'
+
+        # add the ge comparator - the metadata is missing it for some reason
+        metadata[:sequences].each do |sequence|
+          sequence[:search_param_descriptions].each do |_param, description|
+            param_comparators = description[:comparators]
+            param_comparators[:ge] = param_comparators[:le] if param_comparators.keys.include? :le
           end
         end
       end
