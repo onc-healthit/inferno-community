@@ -21,7 +21,7 @@ module Inferno
                     aud: @instance.bulk_token_endpoint,
                     exp: 5.minutes.from_now,
                     jti: SecureRandom.hex(32))
-        id_token = JSON::JWT.new(
+        jwt_token = JSON::JWT.new(
           iss: iss,
           sub: sub,
           aud: aud,
@@ -31,9 +31,9 @@ module Inferno
 
         jwk = JSON::JWK.new(JSON.parse(bulk_private_key))
 
-        id_token.header[:kid] = jwk['kid']
+        jwt_token.header[:kid] = jwk['kid']
         jwk_private_key = jwk.to_key
-        client_assertion = id_token.sign(jwk_private_key, 'RS384')
+        client_assertion = jwt_token.sign(jwk_private_key, 'RS384')
 
         payload =
           {
@@ -52,8 +52,7 @@ module Inferno
         uri = Addressable::URI.new
         uri.query_values = payload
 
-        response = LoggedRestClient.post(@instance.bulk_token_endpoint, uri.query, header)
-        response
+        LoggedRestClient.post(@instance.bulk_token_endpoint, uri.query, header)
       end
 
       test :require_content_type do
@@ -67,7 +66,7 @@ module Inferno
         end
 
         response = authorize(content_type: 'application/json')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_system_scope do
@@ -78,12 +77,12 @@ module Inferno
           description %(
             clients SHALL use “system” scopes.
 
-            System scopes have the format system/(:resourceType|*).(read|write|*)
+            System scopes have the format system/(:resourceType&#124;&#42;).(read&#124;write&#124;&#42;)
           )
         end
 
         response = authorize(scope: 'user/*.read')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_grant_type do
@@ -92,12 +91,13 @@ module Inferno
           name 'Bulk Data authorization request shall use grand_type "client_credentials"'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * grant_type	required	Fixed value: client_credentials
+            | --- | --- | --- |
+            | grant_type | required | Fixed value: client_credentials |
           )
         end
 
         response = authorize(grant_type: 'not_a_grant_type')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_client_assertion_type do
@@ -106,12 +106,13 @@ module Inferno
           name 'Bulk Data authorization request shall use client_assertion_type "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * client_assertion_type	required	Fixed value: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+            | --- | --- | --- |
+            | client_assertion_type | required | Fixed value: urn:ietf:params:oauth:client-assertion-type:jwt-bearer |
           )
         end
 
         response = authorize(client_assertion_type: 'not_a_assertion_type')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_jwt_iss do
@@ -120,12 +121,13 @@ module Inferno
           name 'Bulk Data authorization request shall use client_id as JWT issuer '
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * iss	required	Issuer of the JWT -- the client's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the sub claim)
+            | --- | --- | --- |
+            | iss | required | Issuer of the JWT -- the client's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the sub claim) |
           )
         end
 
         response = authorize(iss: 'not_a_iss')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_jwt_sub do
@@ -134,12 +136,13 @@ module Inferno
           name 'Bulk Data authorization request shall use client_id as JWT subject '
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * sub	required	The service's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the iss claim)
+            | --- | --- | --- |
+            | sub | required | The service's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the iss claim) |
           )
         end
 
         response = authorize(sub: 'not_a_sub')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_jwt_aud do
@@ -148,12 +151,13 @@ module Inferno
           name 'Bulk Data authorization request shall use token url as JWT audience '
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * aud	required	The FHIR authorization server's "token URL" (the same URL to which this authentication JWT will be posted )
+            | --- | --- | --- |
+            | aud | required | The FHIR authorization server's "token URL" (the same URL to which this authentication JWT will be posted) |
           )
         end
 
         response = authorize(aud: 'not_a_token_url')
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_jwt_exp do
@@ -162,12 +166,13 @@ module Inferno
           name 'Bulk Data authorization request shall have JWT expiration time'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * exp	required	Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future.
+            | --- | --- | --- |
+            | exp | required | Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future. |
           )
         end
 
         response = authorize(exp: nil)
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_jwt_exp_value do
@@ -176,12 +181,13 @@ module Inferno
           name 'Bulk Data authorization request shall have JWT expiration time no more than 5 minutes in the future'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * exp	required	Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future.
+            | --- | --- | --- |
+            | exp | required | Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future. |
           )
         end
 
         response = authorize(exp: 10.minutes.from_now)
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :require_jwt_jti do
@@ -190,12 +196,13 @@ module Inferno
           name 'Bulk Data authorization request shall have JWT ID'
           link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
           description %(
-            * jti	required	A nonce string value that uniquely identifies this authentication JWT.
+            | --- | --- | --- |
+            | jti | required | A nonce string value that uniquely identifies this authentication JWT. |
           )
         end
 
         response = authorize(jti: nil)
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :correct_signature do
@@ -229,7 +236,7 @@ module Inferno
         }
 
         response = authorize(bulk_private_key: invalid_private_key.to_json)
-        assert_response_bad_or_unauthorized(response)
+        assert_response_bad(response)
       end
 
       test :return_access_token do
@@ -242,10 +249,11 @@ module Inferno
 
             The access token response SHALL be a JSON object with the following properties:
 
-            * access_token	required	The access token issued by the authorization server.
-            * token_type	required	Fixed value: bearer.
-            * expires_in	required	The lifetime in seconds of the access token. The recommended value is 300, for a five-minute token lifetime.
-            * scope	required	Scope of access authorized. Note that this can be different from the scopes requested by the app.
+            | --- | --- | --- |
+            | access_token | required | The access token issued by the authorization server. |
+            | token_type | required | Fixed value: bearer. |
+            | expires_in | required | The lifetime in seconds of the access token. The recommended value is 300, for a five-minute token lifetime. |
+            | scope | required | Scope of access authorized. Note that this can be different from the scopes requested by the app. |
           )
         end
 
