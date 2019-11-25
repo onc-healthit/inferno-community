@@ -76,7 +76,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@careteam_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary, 'status'))
       }
     end
 

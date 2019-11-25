@@ -74,7 +74,7 @@ module Inferno
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -97,7 +97,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -134,7 +134,7 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
         search_params = {
-          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'practitioner'))
+          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -191,7 +191,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -221,7 +221,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

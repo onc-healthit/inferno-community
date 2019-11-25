@@ -92,7 +92,7 @@ module Inferno
           break
         end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        second_value = resolve_element_from_path(@careteam_ary, 'status')  { |el| get_value_for_search_param(el) != search_params[:status] }
+        second_value = resolve_element_from_path(@care_team_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
         skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
 
         search_params[:status] += ',' + get_value_for_search_param(second_value)
@@ -166,7 +166,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@careteam_ary, 'status'))
+          'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

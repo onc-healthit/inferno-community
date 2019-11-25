@@ -109,7 +109,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergyintolerance_ary, 'clinicalStatus'))
+          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary, 'clinicalStatus'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

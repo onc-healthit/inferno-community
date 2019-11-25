@@ -414,7 +414,7 @@ module Inferno
       def resolve_element_path(search_param_description, resolve_block = '')
         element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
         path_parts = element_path.split('.')
-        resource_val = "@#{path_parts.shift.downcase}_ary"
+        resource_val = "@#{path_parts.shift.underscore}_ary"
         "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}') #{resolve_block}"
       end
 

@@ -149,7 +149,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'code'))
+          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -176,8 +176,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'effective'))
+          'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -211,7 +211,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'status'))
+          'status': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -219,7 +219,7 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
 
-        second_value = resolve_element_from_path(@diagnosticreport_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        second_value = resolve_element_from_path(@diagnostic_report_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
         skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
 
         search_params[:status] += ',' + get_value_for_search_param(second_value)
@@ -247,8 +247,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'effective'))
+          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -329,7 +329,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@diagnosticreport_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

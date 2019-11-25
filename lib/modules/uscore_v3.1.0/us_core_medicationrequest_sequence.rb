@@ -123,8 +123,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
-          'status': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'status'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
+          'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -132,7 +132,7 @@ module Inferno
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         assert_response_ok(reply)
 
-        second_value = resolve_element_from_path(@medicationrequest_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        second_value = resolve_element_from_path(@medication_request_ary, 'status')  { |el| get_value_for_search_param(el) != search_params[:status] }
         skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
 
         search_params[:status] += ',' + get_value_for_search_param(second_value)
@@ -159,8 +159,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
-          'encounter': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'encounter'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
+          'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'encounter'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -188,8 +188,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent')),
-          'authoredon': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'authoredOn'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
+          'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'authoredOn'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -264,7 +264,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -288,7 +288,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medicationrequest_ary, 'intent'))
+          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
