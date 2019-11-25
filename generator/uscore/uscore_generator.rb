@@ -241,6 +241,8 @@ module Inferno
       end
 
       def create_interaction_test(sequence, interaction)
+        return if interaction[:code] == 'create'
+
         test_key = :"#{interaction[:code]}_interaction"
         interaction_test = {
           tests_that: "#{sequence[:resource]} #{interaction[:code]} interaction supported",
