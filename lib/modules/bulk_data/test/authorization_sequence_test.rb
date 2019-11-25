@@ -26,7 +26,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     }
   end
 
-  def self.it_test_rquired_parameter(test_id, request_headers: nil)
+  def self.it_tests_required_parameter(test_id, request_headers: nil)
     before do
       @test = @sequence_class[test_id]
       @sequence = @sequence_class.new(@instance, @client)
