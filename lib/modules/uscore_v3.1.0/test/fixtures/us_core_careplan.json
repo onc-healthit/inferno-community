@@ -25,5 +25,8 @@
   "subject": {
     "reference": "Patient/example",
     "display": "Amy Shaw"
+  },
+  "period": {
+    "start": "2002-05-01"
   }
 }

@@ -26,6 +26,9 @@
     "reference": "Patient/example",
     "display": "Amy Shaw"
   },
+  "encounter": {
+    "reference": "Encounter/example-1"
+  },
   "authoredOn": "2008-04-05",
   "requester": {
     "reference": "Practitioner/practitioner-1",

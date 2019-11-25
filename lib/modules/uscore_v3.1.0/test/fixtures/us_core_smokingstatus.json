@@ -37,6 +37,7 @@
     "reference": "Patient/example",
     "display": "Amy Shaw"
   },
+  "effectiveDateTime": "2016-03-18T05:27:04Z",
   "issued": "2016-03-18T05:27:04Z",
   "valueCodeableConcept": {
     "coding": [
