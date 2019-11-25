@@ -87,8 +87,6 @@ module Inferno
         FileUtils.cp(source_file, out_file_name)
       end
 
-      # This organizes into a single bulk data group
-      # With a sequence per
       def revise_structure_sequence(structure)
         sequences = structure['children'].map do |sequence|
           sequence['children'] = sequence['children'].flat_map do |tests|
