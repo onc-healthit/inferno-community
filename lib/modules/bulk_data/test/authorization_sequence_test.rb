@@ -32,7 +32,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @sequence = @sequence_class.new(@instance, @client)
     end
 
-    it 'pass with stastus code 400' do
+    it 'passes with status code 400' do
       a_request = stub_request(:post, @instance.bulk_token_endpoint)
         .to_return(
           status: 400
