@@ -42,9 +42,9 @@ modules:
   - onc
   - onc_r4
   - smart
+  - bdt
   - argonaut
   - uscore_v3.1.0
-  - bdt
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:
@@ -75,11 +75,11 @@ presets:
     confidential_client: true
     client_secret: UDVrTXlna0NvcGRQZ1VhMkZaZzQ0R1FxVGdtTWxFMXVoT3pPd1VRMUN4MFVkV25Gejk=
     instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
-  bulk_server_local:
-    inferno_uri: http://localhost:4567
-    name: SMART Bulk Server
+  standalone_bulk_server_local:
+    name: SMART Bulk Server Tests
     module: bdt
     uri: https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwLCJkdXIiOjEwLCJ0bHQiOjE1LCJtIjoxLCJzdHUiOjR9/fhir
+    inferno_uri: http://localhost:4567
     bulk_url: https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwLCJkdXIiOjEwLCJ0bHQiOjE1LCJtIjoxLCJzdHUiOjR9/fhir
     bulk_token_endpoint: https://bulk-data.smarthealthit.org/auth/token
     bulk_requires_auth: true

@@ -89,6 +89,9 @@
                 <% end %>
                 <h1>
                   <%= group.name %>
+                  <% group.tags.each do |tag| %>
+                    <span class='badge module-tag badge-dark' data-toggle="tooltip" title="<%= tag.description %>"><%= tag.name %></span>
+                  <% end %>
                   <% if group.run_all %>
                     <button class='sequence-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
                       <span class="oi oi-media-play"></span> Run All

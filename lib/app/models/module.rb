@@ -4,18 +4,20 @@ require 'yaml'
 
 require_relative 'module/test_group'
 require_relative 'module/test_set'
+require_relative 'module/tag'
 
 module Inferno
   class Module
     @modules = {}
 
-    attr_accessor :default_test_set
+    attr_accessor :name
     attr_accessor :description
+    attr_accessor :default_test_set
     attr_accessor :fhir_version
     attr_accessor :hide_optional
-    attr_accessor :name
-    attr_accessor :test_sets
     attr_accessor :title
+    attr_accessor :tags
+    attr_accessor :test_sets
 
     def initialize(params)
       @name = params[:name]
@@ -24,6 +26,9 @@ module Inferno
       @fhir_version = params[:fhir_version]
       @title = params[:title] || params[:name]
       @hide_optional = params[:hide_optional]
+      @tags = params[:tags]&.map do |tag|
+        Tag.new(tag[:name], tag[:description], tag[:url])
+      end || []
       @test_sets = {}.tap do |test_sets|
         params[:test_sets].each do |test_set_key, test_set|
           self.default_test_set ||= test_set_key.to_s
