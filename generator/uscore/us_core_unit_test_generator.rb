@@ -41,22 +41,20 @@ module Inferno
 
         resource_var_name = resource_type.underscore
 
-        if is_first_search
-          test = template.result_with_hash(
-            test_key: test_key,
-            resource_type: resource_type,
-            resource_var_name: resource_var_name,
-            search_params: search_params,
-            search_param_string: search_params_to_string(search_params),
-            sequence_name: sequence_name,
-            is_first_search: is_first_search,
-            is_fixed_value_search: is_fixed_value_search,
-            has_comparator_tests: has_comparator_tests,
-            fixed_value_search_param: fixed_value_search_param&.dig(:name),
-            fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', ')
-          )
-          tests[class_name] << test
-        end
+        test = template.result_with_hash(
+          test_key: test_key,
+          resource_type: resource_type,
+          resource_var_name: resource_var_name,
+          search_params: search_params,
+          search_param_string: search_params_to_string(search_params),
+          sequence_name: sequence_name,
+          is_first_search: is_first_search,
+          is_fixed_value_search: is_fixed_value_search,
+          has_comparator_tests: has_comparator_tests,
+          fixed_value_search_param: fixed_value_search_param&.dig(:name),
+          fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', ')
+        )
+        tests[class_name] << test
       end
 
       def generate_authorization_test(test_key:, resource_type:, search_params:, class_name:, sequence_name:)
