@@ -253,25 +253,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test :create_interaction do
-        metadata do
-          id '09'
-          name 'DocumentReference create interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          description %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:DocumentReference, [:create])
-        skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_create_reply(@document_reference, versioned_resource_class('DocumentReference'))
-      end
-
       test :read_interaction do
         metadata do
-          id '10'
+          id '09'
           name 'DocumentReference read interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
@@ -287,7 +271,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '11'
+          id '10'
           name 'DocumentReference vread interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
@@ -303,7 +287,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '12'
+          id '11'
           name 'DocumentReference history interaction supported'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           description %(
@@ -319,7 +303,7 @@ module Inferno
 
       test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
         metadata do
-          id '13'
+          id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
           )
@@ -340,7 +324,7 @@ module Inferno
 
       test 'DocumentReference resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '14'
+          id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
           )
@@ -353,7 +337,7 @@ module Inferno
 
       test 'At least one of every must support element is provided in any DocumentReference for this patient.' do
         metadata do
-          id '15'
+          id '14'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
           description %(
           )
@@ -396,7 +380,7 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '16'
+          id '15'
           link 'https://www.hl7.org/fhir/DSTU2/references.html'
           description %(
           )
