@@ -37,6 +37,9 @@ module Inferno
         class_name:,
         sequence_name:
       )
+        return if resource_type == 'Procedure' && search_params.key?('date')
+        return if class_name == 'USCore310DiagnosticreportNoteSequence' && test_key == :search_by_patient_category
+
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
 
         resource_var_name = resource_type.underscore
@@ -51,6 +54,7 @@ module Inferno
           is_first_search: is_first_search,
           is_fixed_value_search: is_fixed_value_search,
           has_comparator_tests: has_comparator_tests,
+          has_dynamic_search_params: dynamic_search_params(search_params).present?,
           fixed_value_search_param: fixed_value_search_param&.dig(:name),
           fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', ')
         )

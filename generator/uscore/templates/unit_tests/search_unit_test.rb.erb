@@ -2,7 +2,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   before do
     @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
-    @<%= resource_var_name %> = FHIR::from_contents(load_fixture(:<%= sequence_name %>))
+    @<%= resource_var_name %> = FHIR.from_contents(load_fixture(:<%= sequence_name %>))
     @<%= resource_var_name %>_ary = [@<%= resource_var_name %>]
     @sequence.instance_variable_set(:'@<%= resource_var_name %>', @<%= resource_var_name %>)
     @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', @<%= resource_var_name %>_ary)
@@ -22,6 +22,16 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
     assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
   end
+
+  <% if has_dynamic_search_params %>
+  it 'skips if a value for one of the search parameters cannot be found' do
+    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', [FHIR::<%= resource_type %>.new])
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+  end
+  <% end %>
 <% end %>
 
   it 'fails if a non-success response code is received' do
@@ -111,7 +121,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
     exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-    assert exception.message.start_with? 'Invalid <%= resource_type %>:'
+    assert_match(/Invalid \w+:/, exception.message)
   end
 
 <% unless has_comparator_tests %>
