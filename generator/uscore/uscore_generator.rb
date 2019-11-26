@@ -165,7 +165,8 @@ module Inferno
           test_key: test_key,
           resource_type: sequence[:resource],
           search_params: unit_test_params,
-          class_name: sequence[:class_name]
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name]
         )
       end
 

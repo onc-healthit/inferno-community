@@ -4,8 +4,7 @@ describe 'unauthorized search test' do
     @sequence = @sequence_class.new(@instance, @client)
 <% if dynamic_search_params.present? %>
   <% dynamic_search_params.each do |_param, search_param|  %>
-    <%= search_param[:variable_name] %> = load_json_fixture(:<%= "#{name}_#{search_param[:variable_name][1..-1]}" %>)
-      .map { |resource| FHIR.from_contents(resource.to_json) }
+    <%= search_param[:variable_name] %> = FHIR.from_contents(load_fixture(:<%= sequence_name %>))
     @sequence.instance_variable_set(:'<%= search_param[:variable_name] %>', <%= search_param[:variable_name] %>)
   <% end %>
 <% end %>

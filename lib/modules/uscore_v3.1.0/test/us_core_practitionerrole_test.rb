@@ -111,12 +111,11 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @practitionerrole_ary = load_json_fixture(:us_core_practitionerrole_practitionerrole_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
-      @sequence.instance_variable_set(:'@practitionerrole_ary', @practitionerrole_ary)
+      @practitioner_role_ary = FHIR.from_contents(load_fixture(:us_core_practitionerrole))
+      @sequence.instance_variable_set(:'@practitioner_role_ary', @practitioner_role_ary)
 
       @query = {
-        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitionerrole_ary, 'specialty'))
+        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_role_ary, 'specialty'))
       }
     end
 

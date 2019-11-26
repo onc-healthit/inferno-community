@@ -111,8 +111,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @location_ary = load_json_fixture(:us_core_location_location_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
+      @location_ary = FHIR.from_contents(load_fixture(:us_core_location))
       @sequence.instance_variable_set(:'@location_ary', @location_ary)
 
       @query = {

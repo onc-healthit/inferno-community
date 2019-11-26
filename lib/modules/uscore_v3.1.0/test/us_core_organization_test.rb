@@ -111,8 +111,7 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @organization_ary = load_json_fixture(:us_core_organization_organization_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
+      @organization_ary = FHIR.from_contents(load_fixture(:us_core_organization))
       @sequence.instance_variable_set(:'@organization_ary', @organization_ary)
 
       @query = {

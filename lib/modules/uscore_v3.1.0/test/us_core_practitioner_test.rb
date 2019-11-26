@@ -111,8 +111,7 @@ describe Inferno::Sequence::USCore310PractitionerSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @practitioner_ary = load_json_fixture(:us_core_practitioner_practitioner_ary)
-        .map { |resource| FHIR.from_contents(resource.to_json) }
+      @practitioner_ary = FHIR.from_contents(load_fixture(:us_core_practitioner))
       @sequence.instance_variable_set(:'@practitioner_ary', @practitioner_ary)
 
       @query = {
