@@ -3,8 +3,8 @@
 module Inferno
   class Module
     class Tag
-      attr_accessor :name
       attr_accessor :description
+      attr_accessor :name
       attr_accessor :url
 
       def initialize(name, description, url)

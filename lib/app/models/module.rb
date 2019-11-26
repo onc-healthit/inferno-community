@@ -10,14 +10,14 @@ module Inferno
   class Module
     @modules = {}
 
-    attr_accessor :name
-    attr_accessor :description
     attr_accessor :default_test_set
+    attr_accessor :description
     attr_accessor :fhir_version
     attr_accessor :hide_optional
-    attr_accessor :title
+    attr_accessor :name
     attr_accessor :tags
     attr_accessor :test_sets
+    attr_accessor :title
 
     def initialize(params)
       @name = params[:name]
