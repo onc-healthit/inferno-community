@@ -89,6 +89,9 @@
                 <% end %>
                 <h1>
                   <%= group.name %>
+                  <% group.tags.each do |tag| %>
+                    <span class='badge module-tag badge-dark' data-toggle="tooltip" title="<%= tag.description %>"><%= tag.name %></span>
+                  <% end %>
                   <% if group.run_all %>
                     <button class='sequence-button btn btn-light' style='margin-left:1rem;color:#17a2b8;cursor:pointer;'>
                       <span class="oi oi-media-play"></span> Run All
@@ -114,7 +117,6 @@
   </div>
 </div>
 
-
 <!-- Modals -->
 <div class="modal fade" id="PrerequisitesModal" tabindex="-1" role="dialog" aria-labelledby="PrerequisitesModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
@@ -126,7 +128,6 @@
         </button>
       </div>
       <div class="prerequisites-forms" style="display:none">
-
 
         <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
               instance: instance,
@@ -217,16 +218,127 @@
               instance: instance,
               value: instance.id_token,
               })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :refresh_token,
               label: 'Refresh Token',
               instance: instance,
               value: instance.refresh_token,
               })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',
               instance: instance,
               value: instance.group_id,
               })%>                 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_url,
+              label: 'Bulk Data Base URL',
+              description: 'The full URL of the server to which we can append "/$export".',
+              instance: instance,
+              value: instance.bulk_url,
+              })%>  
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_system_export_endpoint,
+              label: 'System Level Export',
+              instance: instance,
+              description: %(
+                Enter the path to the system-level export endpoint relative to the server root (e.g.: "/$export").
+                Keep this empty if the server does not support system-level export.
+                ),
+              value: instance.bulk_system_export_endpoint,
+              })%>  
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_patient_export_endpoint,
+              label: 'Patient Level Export',
+              instance: instance,
+              description: %(
+                Enter the path to the patient-level export endpoint relative to the server root (e.g.: "/Patient/$export").
+                Keep this empty if the server does not support patient-level export.
+                ),
+              value: instance.bulk_patient_export_endpoint,
+              })%>   
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_group_export_endpoint,
+              label: 'Group Level Export',
+              instance: instance,
+              description: %(
+                Enter the path to the system-level export endpoint relative to the server root (e.g.: "/Group/5/$export").
+                Please use the id of the group having the least amount of resources.
+                Keep this empty if the server does not support group-level export.
+              ),
+              value: instance.bulk_group_export_endpoint,
+              })%>  
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_fastest_resource,
+              label: 'Fastest Resource ID',
+              instance: instance,
+              description: %(
+                While testing we need to attempt downloading at least one resource type.
+                Please enter the resource type that would be fast to export (because there are not many records of that type).
+                We use "Patient" by default, just because we presume that it is present on every server.
+              ),
+              value: instance.bulk_fastest_resource,
+              })%>
+
+        <%# SPECIAL CASE SINCE PARAM %>        
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_since_param).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_since_param">
+
+            <input type="checkbox" class="form-control form-check-input" name="bulk_since_param" id="bulk_since_param" value="true" <% if !instance.bulk_since_param.nil? %>checked=checked <% end %>/> 
+            <label class="form-check-label" for="bulk_since_param">Uses old-style "start" as since parameter</label>
+        </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
+              label: 'Bulk Token Endpoint',
+              instance: instance,
+              value: instance.bulk_token_endpoint,
+              })%>   
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
+              instance: instance,
+              label: 'Bulk Client ID',
+              value: instance.bulk_client_id}); %>
+
+        <%# SPECIAL CASE: Bulk Requires Authorization%>
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_requires_auth).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_requires_auth">
+
+            <input type="checkbox" class="form-control form-check-input" name="bulk_requires_auth" id="bulk_requires_auth" value="true"  <% if !instance.bulk_requires_auth.nil? %>checked=checked <% end %>/> 
+            <label class="form-check-label" for="bulk_requires_auth">Requires Authorization</label>
+        </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
+              label: 'JWKS Url Auth',
+              instance: instance,
+              description: %(
+                This URL is our dedicated endpoint, created to host JWK sets. You can use it while registering a client
+                and then your server is supposed query it and obtain the JWK from it.  Leave blank if you do not support JWK url authentication.
+              ),
+              value: instance.bulk_jwks_url_auth,
+              })%>
+
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_public_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_public_key">
+
+              <label for="bulk_public_key">Bulk Public Key
+                  <small>
+                          If you have provided your JWKS at registration time, please enter the public key here. Leave it blank if the keys have not
+                          been exchanged ahead of time.
+                        </small>
+                
+              </label>
+              <textarea type="text" class="form-control" name="bulk_public_key" id="bulk_public_key" placeholder="" rows="5"><%=instance.bulk_public_key %></textarea>
+          </div>
+
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
+
+              <label for="bulk_private_key">Bulk Private Key
+                  <small>
+                          If you have provided your JWKS at registration time, please enter the private key here. Leave it blank if the keys have not
+                          been exchanged ahead of time.
+                        </small>
+                
+              </label>
+              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
+          </div>
+
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

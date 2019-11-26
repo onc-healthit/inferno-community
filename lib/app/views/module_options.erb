@@ -10,6 +10,9 @@
       <% unless mod.fhir_version.nil? %>
         <span class='badge badge-dark'>FHIR <%=mod.fhir_version.upcase%></span>
       <% end %>
+      <% mod.tags.each do |tag| %>
+        <span class='badge module-tag badge-dark' data-toggle="tooltip" title="<%= tag.description %>"><%= tag.name %></span>
+      <% end %>
       </label>
     </div>
   <% end %>
