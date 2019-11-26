@@ -15,7 +15,9 @@ describe Inferno::Sequence::SMARTDiscoverySequence do
     end
 
     it 'skips when no well-known configuration has been found' do
-      assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No well-known SMART configuration found.', exception.message
     end
   end
 
@@ -26,7 +28,9 @@ describe Inferno::Sequence::SMARTDiscoverySequence do
     end
 
     it 'skips when no well-known configuration has been found' do
-      assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No well-known SMART configuration found.', exception.message
     end
   end
 end

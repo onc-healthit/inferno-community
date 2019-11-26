@@ -117,6 +117,8 @@ module Inferno
           )
         end
 
+        skip_if @well_known_configuration.blank?, 'No well-known SMART configuration found.'
+
         missing_fields = REQUIRED_WELL_KNOWN_FIELDS - @well_known_configuration.keys
         assert missing_fields.empty?, "The following required fields are missing: #{missing_fields.join(', ')}"
       end
@@ -134,6 +136,8 @@ module Inferno
             This test is optional because these fields are recommended, not required.
           )
         end
+
+        skip_if @well_known_configuration.blank?, 'No well-known SMART configuration found.'
 
         missing_fields = RECOMMENDED_WELL_KNOWN_FIELDS - @well_known_configuration.keys
         assert missing_fields.empty?, "The following recommended fields are missing: #{missing_fields.join(', ')}"
