@@ -40,8 +40,8 @@ module Inferno
           assert value_found, 'date on resource does not match date requested'
 
         when 'period'
-          value_found = can_resolve_path(resource, 'context.period') do |period|
-            validate_period_search(value, period)
+          value_found = can_resolve_path(resource, 'context.period') do |date|
+            validate_date_search(value, date)
           end
           assert value_found, 'period on resource does not match period requested'
 

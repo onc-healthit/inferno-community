@@ -24,7 +24,7 @@ module Inferno
           assert value_found, 'status on resource does not match status requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
+          value_found = can_resolve_path(resource, 'occurrence') do |date|
             validate_date_search(value, date)
           end
           assert value_found, 'date on resource does not match date requested'
@@ -116,7 +116,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'date': get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'occurrenceDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'occurrence'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

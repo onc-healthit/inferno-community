@@ -28,7 +28,7 @@ module Inferno
           assert value_found, 'code on resource does not match code requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+          value_found = can_resolve_path(resource, 'effective') do |date|
             validate_date_search(value, date)
           end
           assert value_found, 'date on resource does not match date requested'
@@ -127,7 +127,7 @@ module Inferno
         search_params = {
           'patient': @instance.patient_id,
           'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -187,7 +187,7 @@ module Inferno
         search_params = {
           'patient': @instance.patient_id,
           'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 

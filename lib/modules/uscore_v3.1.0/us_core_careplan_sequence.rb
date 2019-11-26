@@ -20,8 +20,8 @@ module Inferno
           assert value_found, 'category on resource does not match category requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'period') do |period|
-            validate_period_search(value, period)
+          value_found = can_resolve_path(resource, 'period') do |date|
+            validate_date_search(value, date)
           end
           assert value_found, 'date on resource does not match date requested'
 

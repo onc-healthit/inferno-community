@@ -616,14 +616,7 @@ module Inferno
           path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
           path_parts.shift
           case type
-          when 'Period'
-            search_validators += %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
-                  validate_period_search(value, period)
-                end
-                assert value_found, '#{element} on resource does not match #{element} requested'
-      )
-          when 'date'
+          when 'Period', 'date'
             search_validators += %(
                 value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
                   validate_date_search(value, date)
