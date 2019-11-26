@@ -106,9 +106,10 @@ module Inferno
         assert @well_known_configuration.present?, 'No .well-known/smart-configuration body'
       end
 
-      test 'Configuration from well-known endpoint contains required fields' do
+      test :required_well_known_fields do
         metadata do
           id '02'
+          name 'Configuration from well-known endpoint contains required fields'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
           description %(
             The JSON from .well-known/smart-configuration contains the following
@@ -120,9 +121,10 @@ module Inferno
         assert missing_fields.empty?, "The following required fields are missing: #{missing_fields.join(', ')}"
       end
 
-      test 'Configuration from well-known endpoint contains recommended fields' do
+      test :recommended_well_known_fields do
         metadata do
           id '03'
+          name 'Configuration from well-known endpoint contains recommended fields'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
           optional
           description %(
