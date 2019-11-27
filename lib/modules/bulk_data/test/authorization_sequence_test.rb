@@ -1,4 +1,4 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 require_relative '../../../../test/test_helper'
 
@@ -42,6 +42,15 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
   end
 
+  def it_tests_invalid_private_key(client_assertion, jwk)
+    begin
+      JSON::JWT.decode(client_assertion, jwk.to_key) 
+      false
+    rescue JSON::JWT::VerificationFailed
+      true
+    end
+  end
+
   def it_tests_client_assertion(request_payload, parameter)
     uri = Addressable::URI.new
     uri.query = request_payload
@@ -49,17 +58,15 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
 
     jwk = JSON::JWK.new(JSON.parse(@instance.bulk_public_key))
 
+    return it_tests_invalid_private_key(client_assertion, jwk) if parameter[:name] == 'bulk_private_key'
+
     jwt_token = JSON::JWT.decode(client_assertion, jwk.to_key)
 
-    if parameter[:value].present?
-      if parameter[:name] == 'exp'
-        jwt_token[parameter[:name]] >= parameter[:value].to_i
-      else
-        jwt_token[parameter[:name]] == parameter[:value]
-      end
-    else
-      jwt_token.key?(parameter[:name]) == false
-    end
+    return jwt_token.key?(parameter[:name]) == false if parameter[:value].nil?
+          
+    return jwt_token[parameter[:name]] >= parameter[:value].to_i if parameter[:name] == 'exp'
+
+    jwt_token[parameter[:name]] == parameter[:value]
   end
 
   def self.it_tests_required_parameter(request_headers: nil, request_parameter: nil, jwt_token_parameter: nil)
@@ -180,7 +187,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @payload = @sequence.create_post_palyload(bulk_private_key: @sequence.invalid_private_key.to_json)
     end
 
-    it_tests_required_parameter
+    it_tests_required_parameter(jwt_token_parameter: { name: 'bulk_private_key', value: nil })
   end
 
   describe 'return access token tests' do
