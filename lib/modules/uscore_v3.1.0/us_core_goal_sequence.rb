@@ -42,8 +42,9 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects Goal search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -53,7 +54,10 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id }
+        search_params = {
+          'patient': @instance.patient_id
+        }
+
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -62,8 +66,11 @@ module Inferno
       test 'Server returns expected results from Goal search by patient' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient on the Goal resource
+
           )
           versions :r4
         end
@@ -91,9 +98,13 @@ module Inferno
       test 'Server returns expected results from Goal search by patient+target-date' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+target-date on the Goal resource
+
+              including support for these target-date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -123,9 +134,12 @@ module Inferno
       test 'Server returns expected results from Goal search by patient+lifecycle-status' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+lifecycle-status on the Goal resource
+
           )
           versions :r4
         end
@@ -148,8 +162,9 @@ module Inferno
         metadata do
           id '05'
           name 'Goal read interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHALL support the Goal read interaction.
           )
           versions :r4
         end
@@ -164,8 +179,9 @@ module Inferno
         metadata do
           id '06'
           name 'Goal vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Goal vread interaction.
           )
           versions :r4
         end
@@ -180,8 +196,9 @@ module Inferno
         metadata do
           id '07'
           name 'Goal history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Goal history interaction.
           )
           versions :r4
         end
@@ -197,6 +214,7 @@ module Inferno
           id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -218,6 +236,10 @@ module Inferno
           id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -229,8 +251,22 @@ module Inferno
       test 'At least one of every must support element is provided in any Goal for this patient.' do
         metadata do
           id '10'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Goal resources returned from prior searches to see if any of them provide the following must support elements:
+
+            Goal.lifecycleStatus
+
+            Goal.description
+
+            Goal.subject
+
+            Goal.target
+
+            Goal.target.dueDate
+
           )
           versions :r4
         end
@@ -260,8 +296,9 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '11'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

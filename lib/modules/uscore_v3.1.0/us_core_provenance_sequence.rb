@@ -23,8 +23,9 @@ module Inferno
         metadata do
           id '01'
           name 'Can read Provenance from the server'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            Reference to Provenance can be resolved and read.
           )
           versions :r4
         end
@@ -46,8 +47,9 @@ module Inferno
         metadata do
           id '02'
           name 'Provenance vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Provenance vread interaction.
           )
           versions :r4
         end
@@ -62,8 +64,9 @@ module Inferno
         metadata do
           id '03'
           name 'Provenance history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Provenance history interaction.
           )
           versions :r4
         end
@@ -79,6 +82,10 @@ module Inferno
           id '04'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -90,8 +97,32 @@ module Inferno
       test 'At least one of every must support element is provided in any Provenance for this patient.' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Provenance resources returned from prior searches to see if any of them provide the following must support elements:
+
+            Provenance.target
+
+            Provenance.recorded
+
+            Provenance.agent
+
+            Provenance.agent.type
+
+            Provenance.agent.who
+
+            Provenance.agent.onBehalfOf
+
+            Provenance.agent
+
+            Provenance.agent.type
+
+            Provenance.agent
+
+            Provenance.agent.type
+
           )
           versions :r4
         end
@@ -126,8 +157,9 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '06'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

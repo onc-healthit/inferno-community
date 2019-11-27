@@ -173,6 +173,11 @@ body {
   background-color: #999;
 }
 
+.form-check .badge.module-tag {
+  background-color: #114988;
+  
+}
+
 .index-page legend {
   font-family: 'Roboto Condensed', sans-serif;
   font-size: 2rem;
@@ -273,8 +278,12 @@ body {
 
 #PrerequisitesModal label {
   margin-bottom: .1rem;
-  text-transform: uppercase;
   font-size: .9rem;
+  color: #000;
+}
+
+#PrerequisitesModal label small{
+  display: block;
   color: #666;
 }
 
@@ -305,6 +314,12 @@ body {
   font-size: 1.8em;
   padding-bottom: 5px;
   margin: 15px 0 10px;
+}
+
+.sequence-header .badge-dark {
+  font-size: .8rem;
+  background-color: #114988;
+
 }
 
 .sequence-header-details {

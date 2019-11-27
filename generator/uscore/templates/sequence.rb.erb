@@ -30,6 +30,7 @@ module Inferno
           link '<%=test[:link]%>'<%if test[:optional]%>
           optional<%end%>
           description %(
+            <%=test[:description]%>
           )
           versions :r4
         end

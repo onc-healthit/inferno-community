@@ -13,15 +13,26 @@ module Inferno
     end
 
     def self.record_response(request, response)
-      reply = {
-        code: response.code,
-        headers: response.headers,
-        body: response.body
-      }
+      # You can call this directly with a hash
+      # If intercepted from RestClient it will use a class
+      reply = if response.instance_of? Hash
+                {
+                  code: response[:code],
+                  headers: response[:headers],
+                  body: response[:body]
+                }
+              else
+                {
+                  code: response.code,
+                  headers: response.headers,
+                  body: response.body
+                }
+              end
+
       request[:payload] = begin
                             JSON.parse(request[:payload])
                           rescue StandardError
-                            nil
+                            request[:payload]
                           end
       @@requests << { direction: :outbound, request: request, response: reply }
     end

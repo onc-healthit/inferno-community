@@ -24,7 +24,8 @@ describe Inferno::Sequence::USCore310SmokingstatusSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': @instance.patient_id,
+        'code': '72166-2'
       }
     end
 

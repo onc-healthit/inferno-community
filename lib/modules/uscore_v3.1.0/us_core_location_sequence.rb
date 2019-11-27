@@ -55,8 +55,9 @@ module Inferno
         metadata do
           id '01'
           name 'Can read Location from the server'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            Reference to Location can be resolved and read.
           )
           versions :r4
         end
@@ -78,8 +79,9 @@ module Inferno
         metadata do
           id '02'
           name 'Server rejects Location search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -89,7 +91,11 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -98,8 +104,11 @@ module Inferno
       test 'Server returns expected results from Location search by name' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by name on the Location resource
+
           )
           versions :r4
         end
@@ -128,8 +137,11 @@ module Inferno
       test 'Server returns expected results from Location search by address' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by address on the Location resource
+
           )
           versions :r4
         end
@@ -150,9 +162,12 @@ module Inferno
       test 'Server returns expected results from Location search by address-city' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by address-city on the Location resource
+
           )
           versions :r4
         end
@@ -173,9 +188,12 @@ module Inferno
       test 'Server returns expected results from Location search by address-state' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by address-state on the Location resource
+
           )
           versions :r4
         end
@@ -196,9 +214,12 @@ module Inferno
       test 'Server returns expected results from Location search by address-postalcode' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by address-postalcode on the Location resource
+
           )
           versions :r4
         end
@@ -220,8 +241,9 @@ module Inferno
         metadata do
           id '08'
           name 'Location vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Location vread interaction.
           )
           versions :r4
         end
@@ -236,8 +258,9 @@ module Inferno
         metadata do
           id '09'
           name 'Location history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Location history interaction.
           )
           versions :r4
         end
@@ -253,6 +276,7 @@ module Inferno
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -275,6 +299,10 @@ module Inferno
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -286,8 +314,30 @@ module Inferno
       test 'At least one of every must support element is provided in any Location for this patient.' do
         metadata do
           id '12'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Location resources returned from prior searches to see if any of them provide the following must support elements:
+
+            Location.status
+
+            Location.name
+
+            Location.telecom
+
+            Location.address
+
+            Location.address.line
+
+            Location.address.city
+
+            Location.address.state
+
+            Location.address.postalCode
+
+            Location.managingOrganization
+
           )
           versions :r4
         end
@@ -321,8 +371,9 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '13'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

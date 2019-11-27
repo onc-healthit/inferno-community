@@ -50,8 +50,9 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects Observation search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -61,7 +62,11 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id }
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': 'laboratory'
+        }
+
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -70,38 +75,45 @@ module Inferno
       test 'Server returns expected results from Observation search by patient+category' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient+category on the Observation resource
+
           )
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': 'laboratory'
-        }
+        category_val = ['laboratory']
+        category_val.each do |val|
+          search_params = { 'patient': @instance.patient_id, 'category': val }
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          resource_count = reply&.resource&.entry&.length || 0
+          @resources_found = true if resource_count.positive?
+          next unless @resources_found
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+          @observation = reply&.resource&.entry&.first&.resource
+          @observation_ary = fetch_all_bundled_resources(reply&.resource)
 
+          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
+          save_delayed_sequence_references(@observation_ary)
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          break
+        end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-
-        @observation = reply&.resource&.entry&.first&.resource
-        @observation_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
-        save_delayed_sequence_references(@observation_ary)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
       end
 
       test 'Server returns expected results from Observation search by patient+code' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient+code on the Observation resource
+
           )
           versions :r4
         end
@@ -123,8 +135,12 @@ module Inferno
       test 'Server returns expected results from Observation search by patient+category+date' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient+category+date on the Observation resource
+
+              including support for these date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -155,9 +171,13 @@ module Inferno
       test 'Server returns expected results from Observation search by patient+code+date' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+code+date on the Observation resource
+
+              including support for these date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -188,9 +208,12 @@ module Inferno
       test 'Server returns expected results from Observation search by patient+category+status' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+category+status on the Observation resource
+
           )
           versions :r4
         end
@@ -214,8 +237,9 @@ module Inferno
         metadata do
           id '07'
           name 'Observation read interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHALL support the Observation read interaction.
           )
           versions :r4
         end
@@ -230,8 +254,9 @@ module Inferno
         metadata do
           id '08'
           name 'Observation vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Observation vread interaction.
           )
           versions :r4
         end
@@ -246,8 +271,9 @@ module Inferno
         metadata do
           id '09'
           name 'Observation history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Observation history interaction.
           )
           versions :r4
         end
@@ -263,14 +289,16 @@ module Inferno
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': 'laboratory'
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
         }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -285,6 +313,10 @@ module Inferno
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -296,8 +328,50 @@ module Inferno
       test 'At least one of every must support element is provided in any Observation for this patient.' do
         metadata do
           id '12'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Observation resources returned from prior searches to see if any of them provide the following must support elements:
+
+            Observation.status
+
+            Observation.category
+
+            Observation.category
+
+            Observation.code
+
+            Observation.subject
+
+            Observation.effectiveDateTime
+
+            Observation.effectivePeriod
+
+            Observation.valueQuantity
+
+            Observation.valueCodeableConcept
+
+            Observation.valueString
+
+            Observation.valueBoolean
+
+            Observation.valueInteger
+
+            Observation.valueRange
+
+            Observation.valueRatio
+
+            Observation.valueSampledData
+
+            Observation.valueTime
+
+            Observation.valueDateTime
+
+            Observation.valuePeriod
+
+            Observation.dataAbsentReason
+
           )
           versions :r4
         end
@@ -341,8 +415,9 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '13'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

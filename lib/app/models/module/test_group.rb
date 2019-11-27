@@ -5,16 +5,17 @@ require_relative 'test_case'
 module Inferno
   class Module
     class TestGroup
-      attr_accessor :test_set
-      attr_accessor :name
-      attr_accessor :overview
+      attr_accessor :id
       attr_accessor :input_instructions
       attr_accessor :lock_variables
-      attr_accessor :id
+      attr_accessor :name
+      attr_accessor :overview
       attr_accessor :test_cases
+      attr_accessor :test_set
       attr_accessor :run_all
       attr_accessor :run_skipped
       attr_accessor :test_case_names
+      attr_accessor :tags
 
       def initialize(test_set, group)
         @test_set = test_set
@@ -27,6 +28,9 @@ module Inferno
         @input_instructions = group[:input_instructions]
         @lock_variables = group[:lock_variables] || []
         @run_skipped = group[:run_skipped] || false
+        @tags = group[:tags]&.map do |tag|
+          Tag.new(tag[:name], tag[:description], tag[:url])
+        end || []
 
         group[:sequences].each do |sequence|
           if sequence.instance_of?(String)

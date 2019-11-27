@@ -58,8 +58,9 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects DocumentReference search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -69,7 +70,10 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = { patient: @instance.patient_id }
+        search_params = {
+          'patient': @instance.patient_id
+        }
+
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
@@ -78,8 +82,11 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by patient' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient on the DocumentReference resource
+
           )
           versions :r4
         end
@@ -107,8 +114,11 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by _id' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by _id on the DocumentReference resource
+
           )
           versions :r4
         end
@@ -129,8 +139,11 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by patient+type' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient+type on the DocumentReference resource
+
           )
           versions :r4
         end
@@ -152,8 +165,12 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by patient+category+date' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient+category+date on the DocumentReference resource
+
+              including support for these date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -176,8 +193,11 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by patient+category' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient+category on the DocumentReference resource
+
           )
           versions :r4
         end
@@ -199,9 +219,13 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by patient+type+period' do
         metadata do
           id '07'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+type+period on the DocumentReference resource
+
+              including support for these period comparators: gt, lt, le
           )
           versions :r4
         end
@@ -232,9 +256,12 @@ module Inferno
       test 'Server returns expected results from DocumentReference search by patient+status' do
         metadata do
           id '08'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+status on the DocumentReference resource
+
           )
           versions :r4
         end
@@ -253,28 +280,13 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test :create_interaction do
-        metadata do
-          id '09'
-          name 'DocumentReference create interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
-          description %(
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:DocumentReference, [:create])
-        skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_create_reply(@document_reference, versioned_resource_class('DocumentReference'))
-      end
-
       test :read_interaction do
         metadata do
-          id '10'
+          id '09'
           name 'DocumentReference read interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHALL support the DocumentReference read interaction.
           )
           versions :r4
         end
@@ -287,10 +299,11 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '11'
+          id '10'
           name 'DocumentReference vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the DocumentReference vread interaction.
           )
           versions :r4
         end
@@ -303,10 +316,11 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '12'
+          id '11'
           name 'DocumentReference history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the DocumentReference history interaction.
           )
           versions :r4
         end
@@ -319,9 +333,10 @@ module Inferno
 
       test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
         metadata do
-          id '13'
+          id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -340,9 +355,13 @@ module Inferno
 
       test 'DocumentReference resources associated with Patient conform to US Core R4 profiles' do
         metadata do
-          id '14'
+          id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -353,9 +372,47 @@ module Inferno
 
       test 'At least one of every must support element is provided in any DocumentReference for this patient.' do
         metadata do
-          id '15'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          id '14'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all DocumentReference resources returned from prior searches to see if any of them provide the following must support elements:
+
+            DocumentReference.identifier
+
+            DocumentReference.status
+
+            DocumentReference.type
+
+            DocumentReference.category
+
+            DocumentReference.subject
+
+            DocumentReference.date
+
+            DocumentReference.author
+
+            DocumentReference.custodian
+
+            DocumentReference.content
+
+            DocumentReference.content.attachment
+
+            DocumentReference.content.attachment.contentType
+
+            DocumentReference.content.attachment.data
+
+            DocumentReference.content.attachment.url
+
+            DocumentReference.content.format
+
+            DocumentReference.context
+
+            DocumentReference.context.encounter
+
+            DocumentReference.context.period
+
           )
           versions :r4
         end
@@ -396,9 +453,10 @@ module Inferno
 
       test 'All references can be resolved' do
         metadata do
-          id '16'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          id '15'
+          link 'http://hl7.org/fhir/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end

@@ -1,0 +1,13 @@
+name: bdt
+title: Bulk Data Tests (via BDT)
+description: BDT Integration
+fhir_version: r4
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: <% groups.each do |group| %>
+      - name: <%= group[:name] %>
+        run_all: true
+        sequences:<% group[:sequences].each do |sequence| %>
+          - <%=sequence[:sequence_class_name]%><% end %><% end %>

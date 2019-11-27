@@ -111,8 +111,11 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
+      @organization_ary = FHIR.from_contents(load_fixture(:us_core_organization))
+      @sequence.instance_variable_set(:'@organization_ary', @organization_ary)
+
       @query = {
-        'patient': @instance.patient_id
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@organization_ary, 'name'))
       }
     end
 
