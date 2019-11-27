@@ -16,17 +16,18 @@ module Inferno
           "<script>console.log('Time running: ' + #{time})</script>"
         end
 
-        def js_update_result(sequence, _test_set, _result, set_count, set_total, count, total)
+        def js_update_result(instance:, sequence:, test_set:, set_count:, count:, total:)
           cancel_button =
             if sequence.sequence_result
-              "<a href=\"sequence_result/#{sequence.sequence_result.id}/cancel\" class=\"btn btn-secondary\">Cancel Sequence</a>"
+              cancel_link = "#{instance.base_url}#{base_path}/#{instance.id}/test_sets/#{test_set.id}/sequence_result/#{sequence.sequence_result.id}/cancel"
+              "<a href=\"#{cancel_link}\" class=\"btn btn-secondary\">Cancel Sequence</a>"
             else
               ''
             end
 
           %(
             <script>
-              $('#testsRunningModal').find('.number-complete:last').html('(#{set_count} of #{set_total} #{sequence.class.title} tests complete)');
+              $('#testsRunningModal').find('.number-complete:last').html('(#{set_count} of #{sequence.test_count} #{sequence.class.title} tests complete)');
               $('#testsRunningModal .modal-footer').html('#{cancel_button}');
               var progress = Math.round((#{count}/#{total}) * 100);
               console.log('js_update_result (' + progress + ')');
