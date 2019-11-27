@@ -64,7 +64,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     return jwt_token.key?(parameter[:name]) == false if parameter[:value].nil?
 
     return jwt_token[parameter[:name]] >= parameter[:value].to_i if parameter[:name] == 'exp'
-    
+
     jwt_token[parameter[:name]] == parameter[:value]
   end
 
