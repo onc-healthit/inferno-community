@@ -12,16 +12,17 @@ class EHRLaunchSequenceTest < MiniTest::Test
   RESPONSE_HEADERS = { 'content-type' => 'application/json' }.freeze
 
   def setup
-    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                                     client_name: 'Inferno',
-                                                     base_url: 'http://localhost:4567',
-                                                     client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-                                                     client_id: SecureRandom.uuid,
-                                                     selected_module: 'argonaut',
-                                                     oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
-                                                     oauth_token_endpoint: 'http://oauth_reg.example.com/token',
-                                                     scopes: 'launch openid patient/*.* profile')
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
+    @instance = Inferno::Models::TestingInstance.create(
+      url: 'http://www.example.com',
+      client_name: 'Inferno',
+      base_url: 'http://localhost:4567',
+      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
+      client_id: SecureRandom.uuid,
+      selected_module: 'argonaut',
+      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
+      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
+      scopes: 'launch openid patient/*.* profile'
+    )
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
