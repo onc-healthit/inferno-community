@@ -42,6 +42,17 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
   end
 
+  def it_tests_client_assertion(request_payload, parameter)
+    uri = Addressable::URI.new
+    uri.query = request_payload
+    client_assertion = uri.query_values['client_assertion']
+    jwk = JSON::JWK.new(JSON.parse(@instance.bulk_public_key))
+
+    return it_tests_invalid_private_key(client_assertion, jwk) if parameter[:name] == 'bulk_private_key'
+
+    it_tests_jwt_token_values(client_assertion, jwk, parameter)
+  end
+
   def it_tests_invalid_private_key(client_assertion, jwk)
     JSON::JWT.decode(client_assertion, jwk.to_key)
     false
@@ -49,21 +60,13 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     true
   end
 
-  def it_tests_client_assertion(request_payload, parameter)
-    uri = Addressable::URI.new
-    uri.query = request_payload
-    client_assertion = uri.query_values['client_assertion']
-
-    jwk = JSON::JWK.new(JSON.parse(@instance.bulk_public_key))
-
-    return it_tests_invalid_private_key(client_assertion, jwk) if parameter[:name] == 'bulk_private_key'
-
+  def it_tests_jwt_token_values(client_assertion, jwk, parameter)
     jwt_token = JSON::JWT.decode(client_assertion, jwk.to_key)
 
     return jwt_token.key?(parameter[:name]) == false if parameter[:value].nil?
 
     return jwt_token[parameter[:name]] >= parameter[:value].to_i if parameter[:name] == 'exp'
-
+    
     jwt_token[parameter[:name]] == parameter[:value]
   end
 
