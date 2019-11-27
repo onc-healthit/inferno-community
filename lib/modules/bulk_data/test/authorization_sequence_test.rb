@@ -43,12 +43,10 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
   end
 
   def it_tests_invalid_private_key(client_assertion, jwk)
-    begin
-      JSON::JWT.decode(client_assertion, jwk.to_key) 
-      false
-    rescue JSON::JWT::VerificationFailed
-      true
-    end
+    JSON::JWT.decode(client_assertion, jwk.to_key)
+    false
+  rescue JSON::JWT::VerificationFailed
+    true
   end
 
   def it_tests_client_assertion(request_payload, parameter)
@@ -63,7 +61,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     jwt_token = JSON::JWT.decode(client_assertion, jwk.to_key)
 
     return jwt_token.key?(parameter[:name]) == false if parameter[:value].nil?
-          
+
     return jwt_token[parameter[:name]] >= parameter[:value].to_i if parameter[:name] == 'exp'
 
     jwt_token[parameter[:name]] == parameter[:value]
