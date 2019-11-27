@@ -58,9 +58,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from CareTeam search by patient+status' do
+      test :search_by_patient_status do
         metadata do
           id '02'
+          name 'Server returns expected results from CareTeam search by patient+status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -77,12 +78,13 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
+          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
           next unless @resources_found
 
-          @care_team = reply&.resource&.entry&.first&.resource
-          @care_team_ary = fetch_all_bundled_resources(reply&.resource)
+          @care_team = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
+            .resource
+          @care_team_ary = fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
           save_delayed_sequence_references(@care_team_ary)

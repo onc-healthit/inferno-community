@@ -89,7 +89,6 @@ module Inferno
           assert_bundle_response(reply)
 
           @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CarePlan' }
-          binding.pry
           next unless @resources_found
 
           @care_plan = reply.resource.entry

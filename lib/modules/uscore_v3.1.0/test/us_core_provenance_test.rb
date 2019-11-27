@@ -12,7 +12,7 @@ describe Inferno::Sequence::USCore310ProvenanceSequence do
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
     @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = '123'
+    @patient_id = 'example'
     @instance.patient_id = @patient_id
     set_resource_support(@instance, 'Provenance')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }

@@ -83,9 +83,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from PractitionerRole search by specialty' do
+      test :search_by_specialty do
         metadata do
           id '03'
+          name 'Server returns expected results from PractitionerRole search by specialty'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -104,21 +105,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @practitioner_role = reply&.resource&.entry&.first&.resource
-        @practitioner_role_ary = fetch_all_bundled_resources(reply&.resource)
+        @practitioner_role = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
+          .resource
+        @practitioner_role_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
         save_delayed_sequence_references(@practitioner_role_ary)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
-      test 'Server returns expected results from PractitionerRole search by practitioner' do
+      test :search_by_practitioner do
         metadata do
           id '04'
+          name 'Server returns expected results from PractitionerRole search by practitioner'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -129,7 +132,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@practitioner_role.nil?, 'Expected valid PractitionerRole resource to be present'
 
         search_params = {
           'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
@@ -138,7 +140,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :vread_interaction do

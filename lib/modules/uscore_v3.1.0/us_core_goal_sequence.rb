@@ -63,9 +63,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Goal search by patient' do
+      test :search_by_patient do
         metadata do
           id '02'
+          name 'Server returns expected results from Goal search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -83,21 +84,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Goal' }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @goal = reply&.resource&.entry&.first&.resource
-        @goal_ary = fetch_all_bundled_resources(reply&.resource)
+        @goal = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Goal' }
+          .resource
+        @goal_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
         save_delayed_sequence_references(@goal_ary)
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
       end
 
-      test 'Server returns expected results from Goal search by patient+target-date' do
+      test :search_by_patient_target_date do
         metadata do
           id '03'
+          name 'Server returns expected results from Goal search by patient+target-date'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -110,7 +113,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -120,20 +122,19 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-        assert_response_ok(reply)
 
         ['gt', 'lt', 'le'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
           comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
-          assert_response_ok(reply)
         end
       end
 
-      test 'Server returns expected results from Goal search by patient+lifecycle-status' do
+      test :search_by_patient_lifecycle_status do
         metadata do
           id '04'
+          name 'Server returns expected results from Goal search by patient+lifecycle-status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -145,7 +146,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@goal.nil?, 'Expected valid Goal resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -155,7 +155,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do
