@@ -14,7 +14,11 @@ module Inferno
         @sequence = sequence
         @test_group = test_group
         @parameters = parameters
-        @prefix = "#{test_group.prefix}#{index}-" unless test_group.prefix.nil?
+
+        number_to_string = {}
+        ('A'..'ZZZ').each_with_index { |string, string_index| number_to_string[string_index + 1] = string }
+        index_as_string = number_to_string[index]
+        @prefix = "#{test_group.prefix}#{index_as_string}-" unless test_group.prefix.nil?
       end
 
       def title
