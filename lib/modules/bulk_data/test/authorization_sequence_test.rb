@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+#frozen_string_literal: true
 
 require_relative '../../../../test/test_helper'
 
@@ -22,34 +22,55 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       'expires_in' => 900,
       'access_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYmVhcmVyIiwiZXhwaXJlc19pbiI6OTAwLCJpYXQiOjE1NzM5NDU1MDQsImV4cCI6MTU3Mzk0NjQwNH0.Ds-9HxQPJshkPYYBowJXltTaX2T6MSv_qYnZLjteTH8',
       'scope' => 'system/*.read'
-
     }
   end
 
-  def self.it_tests_required_parameter(test_id, request_headers: nil)
-    before do
-      @test = @sequence_class[test_id]
-      @sequence = @sequence_class.new(@instance, @client)
+  def build_request(status_code, request_headers, request_parameter, jwt_token_parameter)
+    a_request = stub_request(:post, @instance.bulk_token_endpoint)
+      .to_return(
+        status: status_code
+      )
+
+    a_request.with(headers: request_headers) if request_headers.present?
+
+    if request_parameter.present?
+      a_request.with(body: hash_including(request_parameter))
+    elsif jwt_token_parameter.present?
+      a_request.with { |request| it_tests_client_assertion(request.body, jwt_token_parameter) }
+    elsif @payload.present?
+      a_request.with(body: @payload)
     end
+  end
 
+  def it_tests_client_assertion(request_payload, parameter)
+    uri = Addressable::URI.new
+    uri.query = request_payload
+    client_assertion = uri.query_values['client_assertion']
+
+    jwk = JSON::JWK.new(JSON.parse(@instance.bulk_public_key))
+
+    jwt_token = JSON::JWT.decode(client_assertion, jwk.to_key)
+
+    if parameter[:value].present?
+      if parameter[:name] == 'exp'
+        jwt_token[parameter[:name]] >= parameter[:value].to_i
+      else
+        jwt_token[parameter[:name]] == parameter[:value]
+      end
+    else
+      jwt_token.key?(parameter[:name]) == false
+    end
+  end
+
+  def self.it_tests_required_parameter(request_headers: nil, request_parameter: nil, jwt_token_parameter: nil)
     it 'passes with status code 400' do
-      a_request = stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 400
-        )
-
-      a_request.with(headers: request_headers) if request_headers.present?
+      build_request(400, request_headers, request_parameter, jwt_token_parameter)
 
       @sequence.run_test(@test)
     end
 
     it 'fail with status code 200' do
-      a_request = stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 200
-        )
-
-      a_request.with(headers: request_headers) if request_headers.present?
+      build_request(200, request_headers, request_parameter, jwt_token_parameter)
 
       error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
@@ -60,47 +81,106 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
   end
 
   describe 'require correct content-type' do
-    it_tests_required_parameter(:require_content_type, request_headers: { content_type: 'application/json' })
+    before do
+      @test = @sequence_class[:require_content_type]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(request_headers: { content_type: 'application/json' })
   end
 
   describe 'require system scope' do
-    it_tests_required_parameter(:require_system_scope)
+    before do
+      @test = @sequence_class[:require_system_scope]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(request_parameter: { scope: 'user/*.read' })
   end
 
   describe 'require grant type' do
-    it_tests_required_parameter(:require_grant_type)
+    before do
+      @test = @sequence_class[:require_grant_type]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(request_parameter: { grant_type: 'not_a_grant_type' })
   end
 
   describe 'require client assertion type' do
-    it_tests_required_parameter(:require_client_assertion_type)
+    before do
+      @test = @sequence_class[:require_client_assertion_type]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(request_parameter: { client_assertion_type: 'not_a_assertion_type' })
   end
 
   describe 'require JWT iss' do
-    it_tests_required_parameter(:require_jwt_iss)
+    before do
+      @test = @sequence_class[:require_jwt_iss]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(jwt_token_parameter: { name: 'iss', value: 'not_a_iss' })
   end
 
   describe 'require JWT sub' do
-    it_tests_required_parameter(:require_jwt_sub)
+    before do
+      @test = @sequence_class[:require_jwt_sub]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(jwt_token_parameter: { name: 'sub', value: 'not_a_sub' })
   end
 
   describe 'require JWT aud' do
-    it_tests_required_parameter(:require_jwt_aud)
+    before do
+      @test = @sequence_class[:require_jwt_aud]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(jwt_token_parameter: { name: 'aud', value: 'not_a_aud' })
   end
 
   describe 'require JWT exp' do
-    it_tests_required_parameter(:require_jwt_exp)
+    before do
+      @test = @sequence_class[:require_jwt_exp]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(jwt_token_parameter: { name: 'exp', value: nil })
   end
 
   describe 'require JWT exp less than 5 minutes' do
-    it_tests_required_parameter(:require_jwt_exp_value)
+    before do
+      @test = @sequence_class[:require_jwt_exp_value]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(jwt_token_parameter: { name: 'exp', value: 10.minutes.from_now })
   end
 
   describe 'require JWT jti' do
-    it_tests_required_parameter(:require_jwt_jti)
+    before do
+      @test = @sequence_class[:require_jwt_jti]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it_tests_required_parameter(jwt_token_parameter: { name: 'jti', value: nil })
   end
 
   describe 'sign with private key' do
-    it_tests_required_parameter(:correct_signature)
+    before do
+      @test = @sequence_class[:correct_signature]
+      @sequence = @sequence_class.new(@instance, @client)
+      @sequence.jti = SecureRandom.hex(32)
+      @sequence.expires_in = 5.minutes.from_now
+      @sequence.is_unit_test = true
+      @payload = @sequence.create_post_palyload(bulk_private_key: @sequence.invalid_private_key.to_json)
+    end
+
+    it_tests_required_parameter
   end
 
   describe 'return access token tests' do
