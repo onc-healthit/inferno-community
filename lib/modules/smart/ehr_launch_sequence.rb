@@ -33,6 +33,8 @@ module Inferno
         * [SMART EHR Launch Sequence](http://hl7.org/fhir/smart-app-launch/index.html#ehr-launch-sequence)
               )
 
+      NO_TOKEN = 'No valid token'
+
       test 'EHR server redirects client browser to app launch URI' do
         metadata do
           id '01'
@@ -203,25 +205,31 @@ module Inferno
           id '09'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           description %(
-            The EHR authorization server shall return a JSON structure that includes an access token or a message indicating that the authorization request has been denied.
+            The EHR authorization server shall return a JSON structure that
+            includes an access token or a message indicating that the
+            authorization request has been denied.
             access_token, token_type, and scope are required. access_token must be Bearer.
           )
         end
 
-        @token_response_headers = @token_response.headers
+        assert @token_response.present?, NO_TOKEN
+
         assert_valid_json(@token_response.body)
         @token_response_body = JSON.parse(@token_response.body)
 
-        assert @token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
+        if @token_response_body.key?('id_token')
+          @instance.update(id_token: @token_response_body['id_token'])
+        end
 
-        token_retrieved_at = DateTime.now
+        if @token_response_body.key?('refresh_token')
+          @instance.update(refresh_token: @token_response_body['refresh_token'])
+        end
 
-        @instance.resource_references.each(&:destroy)
-        @instance.resource_references << Inferno::Models::ResourceReference.new(resource_type: 'Patient', resource_id: @token_response_body['patient']) if @token_response_body.key?('patient')
+        assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
 
-        @instance.save!
+        @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
 
-        @instance.update(token: @token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
+        @instance.update(token: @token_response_body['access_token'], token_retrieved_at: DateTime.now)
 
         ['token_type', 'scope'].each do |key|
           assert @token_response_body.key?(key), "Token response did not contain #{key} as required"
@@ -237,23 +245,13 @@ module Inferno
           missing_scopes = (expected_scopes - actual_scopes)
           assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
 
-          assert @token_response_body.key?('patient'), 'No patient id provided in token exchange.'
+          assert @token_response_body['patient'].present?, 'No patient id provided in token exchange.'
+          assert @token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
         end
 
         scopes = @token_response_body['scope'] || @instance.scopes
 
-        @instance.save!
         @instance.update(scopes: scopes)
-
-        if @token_response_body.key?('id_token')
-          @instance.save!
-          @instance.update(id_token: @token_response_body['id_token'])
-        end
-
-        if @token_response_body.key?('refresh_token')
-          @instance.save!
-          @instance.update(refresh_token: @token_response_body['refresh_token'])
-        end
       end
 
       test 'Response includes correct HTTP Cache-Control and Pragma headers' do
@@ -265,12 +263,16 @@ module Inferno
           )
         end
 
+        skip_if @token_response.blank?, NO_TOKEN
+
+        token_response_headers = @token_response.headers
+
         [:cache_control, :pragma].each do |key|
-          assert @token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
+          assert token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
         end
 
-        assert @token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
-        assert @token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
+        assert token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
+        assert token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
       end
     end
   end

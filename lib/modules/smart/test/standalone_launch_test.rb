@@ -4,7 +4,7 @@ require_relative '../../../../test/test_helper'
 
 class StandaloneLaunchSequenceTest < MiniTest::Test
   def setup
-    @instance = Inferno::Models::TestingInstance.new(
+    @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -18,7 +18,6 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
       scopes: 'launch openid patient/*.* profile'
     )
 
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
