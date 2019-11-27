@@ -37,8 +37,6 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       a_request.with(body: hash_including(request_parameter))
     elsif jwt_token_parameter.present?
       a_request.with { |request| it_tests_client_assertion(request.body, jwt_token_parameter) }
-    elsif @payload.present?
-      a_request.with(body: @payload)
     end
   end
 
@@ -182,10 +180,6 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     before do
       @test = @sequence_class[:correct_signature]
       @sequence = @sequence_class.new(@instance, @client)
-      @sequence.jti = SecureRandom.hex(32)
-      @sequence.expires_in = 5.minutes.from_now
-      @sequence.is_unit_test = true
-      @payload = @sequence.create_post_palyload(bulk_private_key: @sequence.invalid_private_key.to_json)
     end
 
     it_tests_required_parameter(jwt_token_parameter: { name: 'bulk_private_key', value: nil })
