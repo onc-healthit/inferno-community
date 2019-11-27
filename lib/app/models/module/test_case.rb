@@ -4,15 +4,17 @@ module Inferno
   class Module
     class TestCase
       attr_accessor :id
+      attr_accessor :prefix
       attr_accessor :test_group
       attr_accessor :sequence
       attr_accessor :parameters
 
-      def initialize(id, test_group, sequence, parameters)
+      def initialize(id, test_group, sequence, index, parameters)
         @id = id
         @sequence = sequence
         @test_group = test_group
         @parameters = parameters
+        @prefix = "#{test_group.prefix}#{index}-" unless test_group.prefix.nil?
       end
 
       def title

@@ -155,7 +155,7 @@
       </ul>
       <div class="tab-content" id="<%=test_case.id%>_tabs">
         <div class="tab-pane fade show active" id="<%=test_case.id%>_test_list" role="tabpanel" aria-labelledby="<%=test_case.id%>_test_list-tab">
-          <%= erb(:test_list,{},{instance: instance, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
+          <%= erb(:test_list,{},{instance: instance, test_case_prefix: test_case.prefix, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
         </div>
         <% if show_inputs %>
           <div class="tab-pane fade" id="<%=test_case.id%>_inputs" role="tabpanel" aria-labelledby="<%=test_case.id%>_inputs-tab">
@@ -179,7 +179,7 @@
         <% end %>
       </div>
     <% else %>
-      <%= erb(:test_list,{},{instance: instance, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
+      <%= erb(:test_list,{},{instance: instance, test_case_prefix: test_case.prefix, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
     <% end %>
   </div>
 </div>
