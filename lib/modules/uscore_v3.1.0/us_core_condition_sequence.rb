@@ -50,8 +50,9 @@ module Inferno
         metadata do
           id '01'
           name 'Server rejects Condition search without authorization'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
           )
           versions :r4
         end
@@ -73,8 +74,11 @@ module Inferno
       test 'Server returns expected results from Condition search by patient' do
         metadata do
           id '02'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+
+            A server SHALL support searching by patient on the Condition resource
+
           )
           versions :r4
         end
@@ -102,9 +106,12 @@ module Inferno
       test 'Server returns expected results from Condition search by patient+category' do
         metadata do
           id '03'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+category on the Condition resource
+
           )
           versions :r4
         end
@@ -126,9 +133,13 @@ module Inferno
       test 'Server returns expected results from Condition search by patient+onset-date' do
         metadata do
           id '04'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+onset-date on the Condition resource
+
+              including support for these onset-date comparators: gt, lt, le
           )
           versions :r4
         end
@@ -158,9 +169,12 @@ module Inferno
       test 'Server returns expected results from Condition search by patient+clinical-status' do
         metadata do
           id '05'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+clinical-status on the Condition resource
+
           )
           versions :r4
         end
@@ -182,9 +196,12 @@ module Inferno
       test 'Server returns expected results from Condition search by patient+code' do
         metadata do
           id '06'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
+
+            A server SHOULD support searching by patient+code on the Condition resource
+
           )
           versions :r4
         end
@@ -207,8 +224,9 @@ module Inferno
         metadata do
           id '07'
           name 'Condition read interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHALL support the Condition read interaction.
           )
           versions :r4
         end
@@ -223,8 +241,9 @@ module Inferno
         metadata do
           id '08'
           name 'Condition vread interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Condition vread interaction.
           )
           versions :r4
         end
@@ -239,8 +258,9 @@ module Inferno
         metadata do
           id '09'
           name 'Condition history interaction supported'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
+            A server SHOULD support the Condition history interaction.
           )
           versions :r4
         end
@@ -256,6 +276,7 @@ module Inferno
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
           )
           versions :r4
         end
@@ -277,6 +298,10 @@ module Inferno
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
+
+            This test checks if the resources returned from prior searches conform to the US Core profiles.
+            This includes checking for missing data elements and valueset verification.
+
           )
           versions :r4
         end
@@ -288,8 +313,22 @@ module Inferno
       test 'At least one of every must support element is provided in any Condition for this patient.' do
         metadata do
           id '12'
-          link 'https://build.fhir.org/ig/HL7/US-Core-R4/general-guidance.html/#must-support'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Condition resources returned from prior searches to see if any of them provide the following must support elements:
+
+            Condition.clinicalStatus
+
+            Condition.verificationStatus
+
+            Condition.category
+
+            Condition.code
+
+            Condition.subject
+
           )
           versions :r4
         end
@@ -319,8 +358,9 @@ module Inferno
       test 'All references can be resolved' do
         metadata do
           id '13'
-          link 'https://www.hl7.org/fhir/DSTU2/references.html'
+          link 'http://hl7.org/fhir/references.html'
           description %(
+            This test checks if references found in resources from prior searches can be resolved.
           )
           versions :r4
         end
