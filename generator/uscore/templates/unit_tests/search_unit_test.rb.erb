@@ -132,7 +132,12 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
         'patient': @instance.patient_id,
         '<%= fixed_value_search_param %>': value
       }
-    body = @<%= resource_var_name %>.<%= fixed_value_search_param %> == value ? wrap_resources_in_bundle(@<%= resource_var_name %>_ary).to_json : FHIR::Bundle.new.to_json
+      body =
+        if @sequence.resolve_element_from_path(@<%= resource_var_name %>, '<%= fixed_value_search_path %>') == value
+          wrap_resources_in_bundle(@<%= resource_var_name %>_ary).to_json
+        else
+          FHIR::Bundle.new.to_json
+        end
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
         .with(query: query_params, headers: @auth_header)
         .to_return(status: 200, body: body)

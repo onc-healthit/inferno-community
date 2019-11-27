@@ -485,10 +485,19 @@ module Inferno
 
       def fixed_value_search_param(search_parameters, sequence)
         name = search_parameters.find { |param| param != 'patient' }
-        values = sequence[:search_param_descriptions][name.to_sym][:values]
+        search_description = sequence[:search_param_descriptions][name.to_sym]
+        values = search_description[:values]
+        path =
+          search_description[:path]
+            .split('.')
+            .drop(1)
+            .map { |path_part| path_part == 'class' ? 'local_class' : path_part }
+            .join('.')
+        path += get_value_path_by_type(search_description[:type])
 
         {
           name: name,
+          path: path,
           values: values
         }
       end
