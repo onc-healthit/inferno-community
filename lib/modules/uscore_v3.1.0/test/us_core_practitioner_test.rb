@@ -111,8 +111,11 @@ describe Inferno::Sequence::USCore310PractitionerSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
+      @practitioner_ary = FHIR.from_contents(load_fixture(:us_core_practitioner))
+      @sequence.instance_variable_set(:'@practitioner_ary', @practitioner_ary)
+
       @query = {
-        'patient': @instance.patient_id
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_ary, 'name'))
       }
     end
 

@@ -145,13 +145,16 @@ module Inferno
         first_search = find_first_search(sequence)
         return if first_search.nil?
 
+        search_parameters = first_search[:names]
+        search_params = get_search_params(search_parameters, sequence, true)
+        unit_test_params = get_search_param_hash(search_parameters, sequence, true)
+
         authorization_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:search])
 
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-              search_params = { patient: @instance.patient_id }
+              #{search_params}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               @client.set_bearer_token(@instance.token)
               assert_response_unauthorized reply)
@@ -161,8 +164,9 @@ module Inferno
         unit_test_generator.generate_authorization_test(
           test_key: test_key,
           resource_type: sequence[:resource],
-          search_params: { patient: '@instance.patient_id' },
-          class_name: sequence[:class_name]
+          search_params: unit_test_params,
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name]
         )
       end
 
@@ -455,8 +459,8 @@ module Inferno
           skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
       end
 
-      def get_search_params(search_parameters, sequence)
-        search_params = get_search_param_hash(search_parameters, sequence)
+      def get_search_params(search_parameters, sequence, grab_first_value = false)
+        search_params = get_search_param_hash(search_parameters, sequence, grab_first_value)
         search_param_string = %(
           search_params = {
             #{search_params.map { |param, value| search_param_to_string(param, value) }.join(",\n")}
@@ -477,7 +481,7 @@ module Inferno
         "'#{param}': #{value_string || value}"
       end
 
-      def get_search_param_hash(search_parameters, sequence)
+      def get_search_param_hash(search_parameters, sequence, grab_first_value = false)
         search_params = search_param_constants(search_parameters, sequence)
         return search_params if search_params.present?
 
@@ -485,6 +489,8 @@ module Inferno
           params[param] =
             if param == 'patient'
               '@instance.patient_id'
+            elsif grab_first_value && !sequence[:delayed_sequence]
+              sequence[:search_param_descriptions][param.to_sym][:values].first
             else
               resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
             end

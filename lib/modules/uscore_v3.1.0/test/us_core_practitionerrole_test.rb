@@ -111,8 +111,11 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
+      @practitioner_role_ary = FHIR.from_contents(load_fixture(:us_core_practitionerrole))
+      @sequence.instance_variable_set(:'@practitioner_role_ary', @practitioner_role_ary)
+
       @query = {
-        'patient': @instance.patient_id
+        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_role_ary, 'specialty'))
       }
     end
 

@@ -111,8 +111,11 @@ describe Inferno::Sequence::USCore310LocationSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
+      @location_ary = FHIR.from_contents(load_fixture(:us_core_location))
+      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+
       @query = {
-        'patient': @instance.patient_id
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'name'))
       }
     end
 

@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        '_id': @instance.patient_id
       }
     end
 
