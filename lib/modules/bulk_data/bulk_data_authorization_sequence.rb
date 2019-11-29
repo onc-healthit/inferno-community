@@ -9,8 +9,6 @@ module Inferno
 
       requires :bulk_client_id, :bulk_private_key, :bulk_token_endpoint
 
-      attr_accessor :jti, :expires_in, :is_unit_test
-
       def invalid_private_key
         {
           "kty": 'RSA',
@@ -48,33 +46,28 @@ module Inferno
             accept: 'application/json'
           }.compact
 
-        payload = create_post_palyload(bulk_private_key: bulk_private_key,
-                                       scope: scope,
-                                       grant_type: grant_type,
-                                       client_assertion_type: client_assertion_type,
-                                       iss: iss,
-                                       sub: sub,
-                                       aud: aud,
-                                       exp: exp,
-                                       jti: jti)
+        payload = create_post_palyload(bulk_private_key,
+                                       scope,
+                                       grant_type,
+                                       client_assertion_type,
+                                       iss,
+                                       sub,
+                                       aud,
+                                       exp,
+                                       jti)
 
         LoggedRestClient.post(@instance.bulk_token_endpoint, payload, header)
       end
 
-      def create_post_palyload(bulk_private_key: @instance.bulk_private_key,
-                               scope: 'system/*.read',
-                               grant_type: 'client_credentials',
-                               client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-                               iss: @instance.bulk_client_id,
-                               sub: @instance.bulk_client_id,
-                               aud: @instance.bulk_token_endpoint,
-                               exp: 5.minutes.from_now,
-                               jti: SecureRandom.hex(32))
-
-        if @is_unit_test
-          jti = @jti
-          exp = @expires_in
-        end
+      def create_post_palyload(bulk_private_key,
+                               scope,
+                               grant_type,
+                               client_assertion_type,
+                               iss,
+                               sub,
+                               aud,
+                               exp,
+                               jti)
 
         jwt_token = JSON::JWT.new(
           iss: iss,
@@ -90,7 +83,7 @@ module Inferno
         jwk_private_key = jwk.to_key
         client_assertion = jwt_token.sign(jwk_private_key, 'RS384')
 
-        payload =
+        query_values =
           {
             'scope' => scope,
             'grant_type' => grant_type,
@@ -99,7 +92,7 @@ module Inferno
           }.compact
 
         uri = Addressable::URI.new
-        uri.query_values = payload
+        uri.query_values = query_values
 
         uri.query
       end
