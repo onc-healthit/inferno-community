@@ -75,7 +75,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(body: /INVALID_/,
             headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
-      .to_return(status: 401)
+      .to_return(status: 400)
 
     sequence_result = @sequence.start
 

@@ -46,12 +46,12 @@ module Inferno
       end
 
       def required_scopes
-        ['openid', 'fhirUser', 'launch/patient', 'offline_access']
+        ['openid', 'fhirUser', 'launch/encounter', 'launch/patient', 'offline_access']
       end
 
       test :onc_scopes do
         metadata do
-          id '09'
+          id '10'
           name 'Patient-level access with OpenID Connect and Refresh Token scopes used.'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           description %(
