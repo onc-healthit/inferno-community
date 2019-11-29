@@ -11,7 +11,7 @@ module Inferno
 
       test_id_prefix 'BDE'
 
-      requires :tokens
+      requires :bulk_access_token
 
       attr_accessor :run_all_kick_off_tests
 
@@ -25,6 +25,11 @@ module Inferno
 
       def type_parameter
         'Patient'
+      end
+
+      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
+        super(instance, client, disable_tls_tests, sequence_result)
+        @client.set_bearer_token(@instance.bulk_access_token) unless @client.nil? || @instance.nil? || @instance.bulk_access_token.nil?
       end
 
       def check_export_kick_off(search_params: nil)
@@ -154,10 +159,10 @@ module Inferno
         end
 
         @client.set_no_auth
-        skip 'Could not verify this functionality when bearer token is not set' if @instance.token.blank?
+        skip 'Could not verify this functionality when bearer token is not set' if @instance.bulk_access_token.blank?
 
         reply = export_kick_off(endpoint, resource_id)
-        @client.set_bearer_token(@instance.token)
+        @client.set_bearer_token(@instance.bulk_access_token)
         assert_response_unauthorized reply
       end
 
@@ -167,6 +172,7 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           description %(
             Response - Success
+
             * HTTP Status Code of 202 Accepted
             * Content-Location header with the absolute URL of an endpoint for subsequent status requests (polling location)
           )
@@ -181,6 +187,7 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
             Accept (string, required)
+
             * Specifies the format of the optional OperationOutcome resource response to the kick-off request. Currently, only application/fhir+json is supported.
           )
         end
@@ -194,6 +201,7 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
           description %(
             Prefer (string, required)
+
             * Specifies whether the response is immediate or asynchronous. The header SHALL be set to respond-async https://tools.ietf.org/html/rfc7240.
           )
         end
@@ -207,10 +215,13 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
           description %(
             Clients SHOULD follow an exponential backoff approach when polling for status. Servers SHOULD respond with
+
             * In-Progress Status: HTTP Status Code of 202 Accepted
             * Complete Status: HTTP status of 200 OK and Content-Type header of application/json
+
             The JSON object of Complete Status SHALL contain these required field:
-            transactionTime, request, requiresAccessToken, output, and error
+
+            * transactionTime, request, requiresAccessToken, output, and error
           )
         end
 
@@ -224,10 +235,14 @@ module Inferno
           description %(
             The value of output field is an array of file items with one entry for each generated file.
             If no resources are returned from the kick-off request, the server SHOULD return an empty array.
+
             Each file item SHALL contain the following fields:
-            - type - the FHIR resource type that is contained in the file.
+
+            * type - the FHIR resource type that is contained in the file.
+
             Each file SHALL contain resources of only one type, but a server MAY create more than one file for each resource type returned.
-            - url - the path to the file. The format of the file SHOULD reflect that requested in the _outputFormat parameter of the initial kick-off request.
+
+            * url - the path to the file. The format of the file SHOULD reflect that requested in the _outputFormat parameter of the initial kick-off request.
          )
         end
 
@@ -253,6 +268,7 @@ module Inferno
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
           description %(
             Response - Success
+
             * HTTP Status Code of 202 Accepted
           )
           optional

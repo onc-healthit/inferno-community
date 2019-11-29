@@ -15,7 +15,7 @@ module Inferno
 
       test_id_prefix 'Group'
 
-      requires :group_id, :token
+      requires :group_id, :bulk_access_token
 
       def endpoint
         'Group'

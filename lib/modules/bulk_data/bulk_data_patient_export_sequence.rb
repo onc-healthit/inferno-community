@@ -15,7 +15,7 @@ module Inferno
 
       test_id_prefix 'Patient'
 
-      requires :token
+      requires :bulk_access_token
       conformance_supports :Patient
 
       def endpoint

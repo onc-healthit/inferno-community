@@ -25,22 +25,22 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       scopes: 'launch openid patient/*.* profile',
-      token: 99_897_979
+      bulk_access_token: 99_897_979
     )
 
     @instance.save!
 
     @export_request_headers = { accept: 'application/fhir+json',
                                 prefer: 'respond-async',
-                                authorization: "Bearer #{@instance.token}" }
+                                authorization: "Bearer #{@instance.bulk_access_token}" }
 
     @export_request_headers_no_token = { accept: 'application/fhir+json', prefer: 'respond-async' }
 
     @status_request_headers = { accept: 'application/json',
-                                authorization: "Bearer #{@instance.token}" }
+                                authorization: "Bearer #{@instance.bulk_access_token}" }
 
     @file_request_headers = { accept: 'application/fhir+ndjson',
-                              authorization: "Bearer #{@instance.token}" }
+                              authorization: "Bearer #{@instance.bulk_access_token}" }
 
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
 
