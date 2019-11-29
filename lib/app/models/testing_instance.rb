@@ -71,6 +71,7 @@ module Inferno
       property :bulk_jwks_auth, String
       property :bulk_public_key, String
       property :bulk_private_key, String
+      property :bulk_access_token, String
 
       has n, :sequence_results
       has n, :resource_references
