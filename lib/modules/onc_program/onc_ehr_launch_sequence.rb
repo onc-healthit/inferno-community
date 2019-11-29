@@ -51,7 +51,7 @@ module Inferno
 
       test :onc_scopes do
         metadata do
-          id '11'
+          id '12'
           name 'Scopes enabling user-level access with OpenID Connect and Refresh Token present'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           description %(
