@@ -19,7 +19,7 @@ Style/SymbolArray:
 
 Metrics/LineLength:
   Exclude:
-    - 'lib/app/modules/**/*'
+    - 'lib/modules/**/*'
     - 'lib/app/helpers/browser_logic.rb'
 
 # Use code climate's metrics measurement rather than rubocop's

@@ -1,0 +1,27 @@
+name: bdt
+title: FHIR Bulk Data Access Implementation Guide v1.0.0
+tags:
+  - name: SMART Bulk Data Tester
+    description: |
+       Tests provided by the SMART Bulk Data Tester from Boston Children's Hospital.
+    url: http://bulk-data-tester.smarthealthit.org/
+description: BDT Integration
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: Bulk Data Export Tests
+        tags:
+          - name: SMART Bulk Data Tester
+            description: |
+              Tests provided by the SMART Bulk Data Tester from Boston Children's Hospital.
+            url: http://bulk-data-tester.smarthealthit.org/
+        run_all: true
+        sequences:
+          - BDTAuthSequence
+          - BDTDownloadSequence
+          - BDTPatientSequence
+          - BDTSystemSequence
+          - BDTGroupSequence
+          - BDTStatusSequence

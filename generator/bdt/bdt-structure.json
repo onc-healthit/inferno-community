@@ -1,0 +1,609 @@
+{
+  "name": "__ROOT__",
+  "type": "group",
+  "path": "",
+  "children": [
+    {
+      "name": "Authorization",
+      "type": "group",
+      "children": [
+        {
+          "name": "Kick-off request at the system-level export endpoint",
+          "type": "group",
+          "children": [
+            {
+              "id": "Auth-01.0.0",
+              "name": "Requires authorization header",
+              "description": "The server should require authorization header at the system-level export endpoint",
+              "type": "test",
+              "path": "0.0.0"
+            },
+            {
+              "id": "Auth-01.0.1",
+              "name": "Rejects expired token",
+              "description": "The server should reject expired tokens at the system-level export endpoint",
+              "type": "test",
+              "path": "0.0.1"
+            },
+            {
+              "id": "Auth-01.0.2",
+              "name": "Rejects invalid token",
+              "description": "The server should reject invalid tokens at the system-level export endpoint",
+              "type": "test",
+              "path": "0.0.2"
+            }
+          ],
+          "path": "0.0"
+        },
+        {
+          "name": "Kick-off request at the patient-level export endpoint",
+          "type": "group",
+          "children": [
+            {
+              "id": "Auth-01.1.0",
+              "name": "Requires authorization header",
+              "description": "The server should require authorization header at the patient-level export endpoint",
+              "type": "test",
+              "path": "0.1.0"
+            },
+            {
+              "id": "Auth-01.1.1",
+              "name": "Rejects expired token",
+              "description": "The server should reject expired tokens at the patient-level export endpoint",
+              "type": "test",
+              "path": "0.1.1"
+            },
+            {
+              "id": "Auth-01.1.2",
+              "name": "Rejects invalid token",
+              "description": "The server should reject invalid tokens at the patient-level export endpoint",
+              "type": "test",
+              "path": "0.1.2"
+            }
+          ],
+          "path": "0.1"
+        },
+        {
+          "name": "Kick-off request at the group-level export endpoint",
+          "type": "group",
+          "children": [
+            {
+              "id": "Auth-01.2.0",
+              "name": "Requires authorization header",
+              "description": "The server should require authorization header at the group-level export endpoint",
+              "type": "test",
+              "path": "0.2.0"
+            },
+            {
+              "id": "Auth-01.2.1",
+              "name": "Rejects expired token",
+              "description": "The server should reject expired tokens at the group-level export endpoint",
+              "type": "test",
+              "path": "0.2.1"
+            },
+            {
+              "id": "Auth-01.2.2",
+              "name": "Rejects invalid token",
+              "description": "The server should reject invalid tokens at the group-level export endpoint",
+              "type": "test",
+              "path": "0.2.2"
+            }
+          ],
+          "path": "0.2"
+        },
+        {
+          "name": "Token endpoint",
+          "type": "group",
+          "children": [
+            {
+              "id": "Auth-02",
+              "name": "Requires \"application/x-www-form-urlencoded\" POSTs",
+              "description": "After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server's token endpoint URL, using content-type <code>application/x-www-form-urlencoded</code>.",
+              "type": "test",
+              "path": "0.3.0"
+            },
+            {
+              "id": "Auth-03",
+              "name": "The 'grant_type' parameter must be present",
+              "description": "The server should reply with 400 Bad Request if the grant_type parameter is not sent by the client.",
+              "type": "test",
+              "path": "0.3.1"
+            },
+            {
+              "id": "Auth-04",
+              "name": "The \"grant_type\" must equal \"client_credentials\"",
+              "description": "The server should reply with 400 Bad Request if the grant_type parameter is not <code>client_credentials</code>.",
+              "type": "test",
+              "path": "0.3.2"
+            },
+            {
+              "id": "Auth-05",
+              "name": "The \"client_assertion_type\" must be present",
+              "description": "The server should reply with 400 Bad Request if the client_assertion_type parameter is not sent by the client.",
+              "type": "test",
+              "path": "0.3.3"
+            },
+            {
+              "id": "Auth-06",
+              "name": "The \"client_assertion_type\" must be jwt-bearer",
+              "description": "The server should reply with 400 Bad Request if the client_assertion_type parameter is not equal to <code>urn:ietf:params:oauth:client-assertion-type:jwt-bearer</code>",
+              "type": "test",
+              "path": "0.3.4"
+            },
+            {
+              "id": "Auth-07",
+              "name": "The client_assertion parameter must be a token",
+              "description": "This test verifies that if the client sends something other then a JWT, the server will detect it and reject the request.",
+              "type": "test",
+              "path": "0.3.5"
+            },
+            {
+              "id": "Auth-08",
+              "name": "Validates authenticationToken.aud",
+              "description": "The <code>aud</code> claim of the authentication JWT must be the authorization server's \"token URL\" (the same URL to which this authentication JWT will be posted)",
+              "type": "test",
+              "path": "0.3.6"
+            },
+            {
+              "id": "Auth-09",
+              "name": "Validates authenticationToken.iss",
+              "description": "The <code>iss</code> claim of the authentication JWT must equal the registered <code>client_id</code>",
+              "type": "test",
+              "path": "0.3.7"
+            },
+            {
+              "id": "Auth-10",
+              "name": "Only accept registered client IDs",
+              "description": "Verify that clients can't use random client id",
+              "type": "test",
+              "path": "0.3.8"
+            },
+            {
+              "id": "Auth-11",
+              "name": "Requires scope",
+              "description": "The server should reject requests to the token endpoint that do not specify a scope",
+              "type": "test",
+              "path": "0.3.9"
+            },
+            {
+              "id": "Auth-12",
+              "name": "Rejects empty scope",
+              "description": "The server should reject requests to the token endpoint that are requesting an empty scope",
+              "type": "test",
+              "path": "0.3.10"
+            },
+            {
+              "id": "Auth-13",
+              "name": "Validates scopes",
+              "description": "This test verifies that only valid system scopes are accepted by the server",
+              "type": "test",
+              "path": "0.3.11"
+            },
+            {
+              "id": "Auth-14",
+              "name": "Supports wildcard action scopes",
+              "description": "Verifies that scopes like <code>system/Patient.*</code> are supported",
+              "type": "test",
+              "path": "0.3.12"
+            },
+            {
+              "id": "Auth-15",
+              "name": "Rejects unknown action scopes",
+              "description": "Verifies that scopes like <code>system/Patient.unknownAction</code> are rejected",
+              "type": "test",
+              "path": "0.3.13"
+            },
+            {
+              "id": "Auth-16",
+              "name": "Supports wildcard resource scopes",
+              "description": "Verifies that scopes like <code>system/*.read</code> are supported",
+              "type": "test",
+              "path": "0.3.14"
+            },
+            {
+              "id": "Auth-17",
+              "name": "Rejects unknown resource scopes",
+              "description": "Verifies that scopes like <code>system/UnknownResource.read</code> are rejected",
+              "type": "test",
+              "path": "0.3.15"
+            },
+            {
+              "id": "Auth-18",
+              "name": "validates the jku token header",
+              "description": "When present, the <code>jky</code> authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using <code>test-bad-jku</code> as <code>jky</code> header value and expects that to produce an error.",
+              "type": "test",
+              "path": "0.3.16"
+            },
+            {
+              "id": "Auth-19",
+              "name": "Validates the token signature",
+              "description": "This test attempts to obtain an access token with a request that is completely valid, except that the authentication token is signed with unknown private key.",
+              "type": "test",
+              "path": "0.3.17"
+            },
+            {
+              "id": "Auth-20",
+              "name": "Authorization using JWKS URL and ES384 keys",
+              "description": "Verify that the server supports JWKS URL authorization using ES384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.",
+              "type": "test",
+              "path": "0.3.18"
+            },
+            {
+              "id": "Auth-21",
+              "name": "Authorization using JWKS URL and RS384 keys",
+              "description": "Verify that the server supports JWKS URL authorization using RS384 keys. This would also prove that JWK keys rotation works because this test will create new key, every time it is executed.",
+              "type": "test",
+              "path": "0.3.19"
+            }
+          ],
+          "path": "0.3"
+        }
+      ],
+      "path": "0"
+    },
+    {
+      "name": "Download Endpoint",
+      "type": "group",
+      "children": [
+        {
+          "id": "Download-01",
+          "name": "Requires valid access token if the requiresAccessToken field in the status body is true",
+          "description": "If the <code>requiresAccessToken</code> field in the Complete Status body is set to true, the request MUST include a valid access token.",
+          "type": "test",
+          "path": "1.0"
+        },
+        {
+          "id": "Download-02",
+          "name": "Does not require access token if the requiresAccessToken field in the status body is not true",
+          "description": "Verifies that files can be downloaded without authorization if the <code>requiresAccessToken</code> field in the complete status body is not set to true",
+          "type": "test",
+          "path": "1.1"
+        },
+        {
+          "id": "Download-03",
+          "name": "Replies properly in case of error",
+          "description": "The server should return HTTP Status Code of 4XX or 5XX",
+          "type": "test",
+          "path": "1.2"
+        },
+        {
+          "id": "Download-04",
+          "name": "Generates valid file response",
+          "description": "Runs a set of assertions to verify that:<ul><li>The server returns HTTP status of <b>200 OK</b></li><li>The server returns a <code>Content-Type</code> header that matches the file format being delivered. For files in ndjson format, MUST be <code>application/fhir+ndjson</code></li><li>The response body is valid FHIR <b>ndjson</b> (unless other format is requested)</li><li>An <code>Accept</code> header might be sent (optional, defaults to <code>application/fhir+ndjson</code>)</li></ul>",
+          "type": "test",
+          "path": "1.3"
+        },
+        {
+          "id": "Download-05",
+          "name": "Rejects a download if the client scopes do not cover that resource type",
+          "description": "If the download endpoint requires authorization, it should also verify that the client has been granted access to the resource type that it attempts to download. This test makes an export and then it re-authorizes before downloading the first file, so that the download request is made with a token that does not provide access to the downloaded resource.",
+          "type": "test",
+          "path": "1.4"
+        }
+      ],
+      "path": "1"
+    },
+    {
+      "name": "Patient-level export",
+      "type": "group",
+      "children": [
+        {
+          "id": "Patient-level-01",
+          "name": "Requires Accept header",
+          "description": "The Accept header specifies the format of the optional OperationOutcome response to the kick-off request. Currently, only <code>application/fhir+json</code> is supported.",
+          "type": "test",
+          "path": "2.0"
+        },
+        {
+          "id": "Patient-level-02",
+          "name": "Requires Prefer header to equal respond-async",
+          "description": "The <b>Prefer</b> request header is required and specifies whether the response is immediate or asynchronous. The header MUST be set to <b>respond-async</b>. <a href=\"https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#headers\" target=\"_blank\">Red More</a>",
+          "type": "test",
+          "path": "2.1"
+        },
+        {
+          "id": "Patient-level-03.0",
+          "name": "Accepts _outputFormat=application/fhir+ndjson",
+          "description": "Verifies that the server accepts <code>application/fhir+ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "2.2"
+        },
+        {
+          "id": "Patient-level-03.1",
+          "name": "Accepts _outputFormat=application/ndjson",
+          "description": "Verifies that the server accepts <code>application/ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "2.3"
+        },
+        {
+          "id": "Patient-level-03.2",
+          "name": "Accepts _outputFormat=ndjson",
+          "description": "Verifies that the server accepts <code>ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "2.4"
+        },
+        {
+          "id": "Patient-level-04.0",
+          "name": "Rejects unsupported format \"_outputFormat=application/xml\"",
+          "description": "This tests if the server rejects <code>_outputFormat=application/xml</code> parameter, even though <code>application/xml</code> is valid mime type.",
+          "type": "test",
+          "path": "2.5"
+        },
+        {
+          "id": "Patient-level-04.1",
+          "name": "Rejects unsupported format \"_outputFormat=text/html\"",
+          "description": "This tests if the server rejects <code>_outputFormat=text/html</code> parameter, even though <code>text/html</code> is valid mime type.",
+          "type": "test",
+          "path": "2.6"
+        },
+        {
+          "id": "Patient-level-04.2",
+          "name": "Rejects unsupported format \"_outputFormat=x-custom\"",
+          "description": "This tests if the server rejects <code>_outputFormat=x-custom</code> parameter, even though <code>x-custom</code> is valid mime type.",
+          "type": "test",
+          "path": "2.7"
+        },
+        {
+          "id": "Patient-level-05",
+          "name": "Rejects _since={invalid date} parameter",
+          "description": "The server should reject exports if the <code>_since</code> parameter is not a valid date",
+          "type": "test",
+          "path": "2.8"
+        },
+        {
+          "id": "Patient-level-06",
+          "name": "Rejects _since={future date} parameter",
+          "description": "The server should reject exports if the <code>_since</code> parameter is a date in the future",
+          "type": "test",
+          "path": "2.9"
+        },
+        {
+          "id": "Patient-level-07",
+          "name": "Validates the _type parameter",
+          "description": "Verifies that the request is rejected if the <code>_type</code> contains invalid resource type",
+          "type": "test",
+          "path": "2.10"
+        },
+        {
+          "id": "Patient-level-08",
+          "name": "Accepts the _typeFilter parameter",
+          "description": "The <code>_typeFilter</code> parameter is optional so the servers should not reject it, even if they don't support it",
+          "type": "test",
+          "path": "2.11"
+        },
+        {
+          "id": "Patient-level-09",
+          "name": "Response - Success",
+          "description": "Verifies that the server starts an export if called with valid parameters. The status code must be <code>202 Accepted</code> and a <code>Content-Location</code> header must be returned. The response body should be either empty, or a JSON OperationOutcome.",
+          "type": "test",
+          "path": "2.12"
+        }
+      ],
+      "path": "2"
+    },
+    {
+      "name": "System-level export",
+      "type": "group",
+      "children": [
+        {
+          "id": "System-level-01",
+          "name": "Requires Accept header",
+          "description": "The Accept header specifies the format of the optional OperationOutcome response to the kick-off request. Currently, only <code>application/fhir+json</code> is supported.",
+          "type": "test",
+          "path": "3.0"
+        },
+        {
+          "id": "System-level-02",
+          "name": "Requires Prefer header to equal respond-async",
+          "description": "The <b>Prefer</b> request header is required and specifies whether the response is immediate or asynchronous. The header MUST be set to <b>respond-async</b>. <a href=\"https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#headers\" target=\"_blank\">Red More</a>",
+          "type": "test",
+          "path": "3.1"
+        },
+        {
+          "id": "System-level-03.0",
+          "name": "Accepts _outputFormat=application/fhir+ndjson",
+          "description": "Verifies that the server accepts <code>application/fhir+ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "3.2"
+        },
+        {
+          "id": "System-level-03.1",
+          "name": "Accepts _outputFormat=application/ndjson",
+          "description": "Verifies that the server accepts <code>application/ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "3.3"
+        },
+        {
+          "id": "System-level-03.2",
+          "name": "Accepts _outputFormat=ndjson",
+          "description": "Verifies that the server accepts <code>ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "3.4"
+        },
+        {
+          "id": "System-level-04.0",
+          "name": "Rejects unsupported format \"_outputFormat=application/xml\"",
+          "description": "This tests if the server rejects <code>_outputFormat=application/xml</code> parameter, even though <code>application/xml</code> is valid mime type.",
+          "type": "test",
+          "path": "3.5"
+        },
+        {
+          "id": "System-level-04.1",
+          "name": "Rejects unsupported format \"_outputFormat=text/html\"",
+          "description": "This tests if the server rejects <code>_outputFormat=text/html</code> parameter, even though <code>text/html</code> is valid mime type.",
+          "type": "test",
+          "path": "3.6"
+        },
+        {
+          "id": "System-level-04.2",
+          "name": "Rejects unsupported format \"_outputFormat=x-custom\"",
+          "description": "This tests if the server rejects <code>_outputFormat=x-custom</code> parameter, even though <code>x-custom</code> is valid mime type.",
+          "type": "test",
+          "path": "3.7"
+        },
+        {
+          "id": "System-level-05",
+          "name": "Rejects _since={invalid date} parameter",
+          "description": "The server should reject exports if the <code>_since</code> parameter is not a valid date",
+          "type": "test",
+          "path": "3.8"
+        },
+        {
+          "id": "System-level-06",
+          "name": "Rejects _since={future date} parameter",
+          "description": "The server should reject exports if the <code>_since</code> parameter is a date in the future",
+          "type": "test",
+          "path": "3.9"
+        },
+        {
+          "id": "System-level-07",
+          "name": "Validates the _type parameter",
+          "description": "Verifies that the request is rejected if the <code>_type</code> contains invalid resource type",
+          "type": "test",
+          "path": "3.10"
+        },
+        {
+          "id": "System-level-08",
+          "name": "Accepts the _typeFilter parameter",
+          "description": "The <code>_typeFilter</code> parameter is optional so the servers should not reject it, even if they don't support it",
+          "type": "test",
+          "path": "3.11"
+        },
+        {
+          "id": "System-level-09",
+          "name": "Response - Success",
+          "description": "Verifies that the server starts an export if called with valid parameters. The status code must be <code>202 Accepted</code> and a <code>Content-Location</code> header must be returned. The response body should be either empty, or a JSON OperationOutcome.",
+          "type": "test",
+          "path": "3.12"
+        }
+      ],
+      "path": "3"
+    },
+    {
+      "name": "Group-level export",
+      "type": "group",
+      "children": [
+        {
+          "id": "Group-level-01",
+          "name": "Requires Accept header",
+          "description": "The Accept header specifies the format of the optional OperationOutcome response to the kick-off request. Currently, only <code>application/fhir+json</code> is supported.",
+          "type": "test",
+          "path": "4.0"
+        },
+        {
+          "id": "Group-level-02",
+          "name": "Requires Prefer header to equal respond-async",
+          "description": "The <b>Prefer</b> request header is required and specifies whether the response is immediate or asynchronous. The header MUST be set to <b>respond-async</b>. <a href=\"https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#headers\" target=\"_blank\">Red More</a>",
+          "type": "test",
+          "path": "4.1"
+        },
+        {
+          "id": "Group-level-03.0",
+          "name": "Accepts _outputFormat=application/fhir+ndjson",
+          "description": "Verifies that the server accepts <code>application/fhir+ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "4.2"
+        },
+        {
+          "id": "Group-level-03.1",
+          "name": "Accepts _outputFormat=application/ndjson",
+          "description": "Verifies that the server accepts <code>application/ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "4.3"
+        },
+        {
+          "id": "Group-level-03.2",
+          "name": "Accepts _outputFormat=ndjson",
+          "description": "Verifies that the server accepts <code>ndjson</code> as <b>_outputFormat</b> parameter",
+          "type": "test",
+          "path": "4.4"
+        },
+        {
+          "id": "Group-level-04.0",
+          "name": "Rejects unsupported format \"_outputFormat=application/xml\"",
+          "description": "This tests if the server rejects <code>_outputFormat=application/xml</code> parameter, even though <code>application/xml</code> is valid mime type.",
+          "type": "test",
+          "path": "4.5"
+        },
+        {
+          "id": "Group-level-04.1",
+          "name": "Rejects unsupported format \"_outputFormat=text/html\"",
+          "description": "This tests if the server rejects <code>_outputFormat=text/html</code> parameter, even though <code>text/html</code> is valid mime type.",
+          "type": "test",
+          "path": "4.6"
+        },
+        {
+          "id": "Group-level-04.2",
+          "name": "Rejects unsupported format \"_outputFormat=x-custom\"",
+          "description": "This tests if the server rejects <code>_outputFormat=x-custom</code> parameter, even though <code>x-custom</code> is valid mime type.",
+          "type": "test",
+          "path": "4.7"
+        },
+        {
+          "id": "Group-level-05",
+          "name": "Rejects _since={invalid date} parameter",
+          "description": "The server should reject exports if the <code>_since</code> parameter is not a valid date",
+          "type": "test",
+          "path": "4.8"
+        },
+        {
+          "id": "Group-level-06",
+          "name": "Rejects _since={future date} parameter",
+          "description": "The server should reject exports if the <code>_since</code> parameter is a date in the future",
+          "type": "test",
+          "path": "4.9"
+        },
+        {
+          "id": "Group-level-07",
+          "name": "Validates the _type parameter",
+          "description": "Verifies that the request is rejected if the <code>_type</code> contains invalid resource type",
+          "type": "test",
+          "path": "4.10"
+        },
+        {
+          "id": "Group-level-08",
+          "name": "Accepts the _typeFilter parameter",
+          "description": "The <code>_typeFilter</code> parameter is optional so the servers should not reject it, even if they don't support it",
+          "type": "test",
+          "path": "4.11"
+        },
+        {
+          "id": "Group-level-09",
+          "name": "Response - Success",
+          "description": "Verifies that the server starts an export if called with valid parameters. The status code must be <code>202 Accepted</code> and a <code>Content-Location</code> header must be returned. The response body should be either empty, or a JSON OperationOutcome.",
+          "type": "test",
+          "path": "4.12"
+        }
+      ],
+      "path": "4"
+    },
+    {
+      "name": "Status Endpoint",
+      "type": "group",
+      "children": [
+        {
+          "id": "Status-01",
+          "name": "Responds with 202 for active transaction IDs",
+          "description": "<p>The status endpoint should return <b>202</b> status code until the export is completed.</p>See <a target=\"_blank\" href=\"https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status\">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status</a>",
+          "type": "test",
+          "path": "5.0"
+        },
+        {
+          "id": "Status-02",
+          "name": "Replies properly in case of error",
+          "description": "Runs a set of assertions to verify that:<ul><li>The returned HTTP status code is 5XX</li><li>The server returns a FHIR OperationOutcome resource in JSON format</li></ul><p>Note that even if some of the requested resources cannot successfully be exported, the overall export operation MAY still succeed. In this case, the Response.error array of the completion response MUST be populated (see below) with one or more files in ndjson format containing FHIR OperationOutcome resources to indicate what went wrong.</p>See <a target=\"_blank\" href=\"https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1\">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1</a>",
+          "type": "test",
+          "path": "5.1"
+        },
+        {
+          "id": "Status-03",
+          "name": "Generates valid status response",
+          "description": "Runs a set of assertions to verify that:<ul><li>The status endpoint should return <b>200</b> status code when the export is completed</li><li>The status endpoint should respond with <b>JSON</b></li><li>The <code>expires</code> header (if set) must be valid date in the future</li><li>The JSON response contains <code>transactionTime</code> which is a valid <a target=\"_blank\" href=\"http://hl7.org/fhir/datatypes.html#instant\">FHIR instant</a></li><li>The JSON response contains the kick-off URL in <code>request</code> property</li><li>The JSON response contains <code>requiresAccessToken</code> boolean property</li><li>The JSON response contains an <code>output</code> array in which:<ul><li>Every item has valid <code>type</code> property</li><li>Every item has valid <code>url</code> property</li><li>Every item may a <code>count</code> number property</li></ul></li><li>The JSON response contains an <code>error</code> array in which:<ul><li>Every item has valid <code>type</code> property</li><li>Every item has valid <code>url</code> property</li><li>Every item may a <code>count</code> number property</li></ul></li></ul>",
+          "type": "test",
+          "path": "5.2"
+        }
+      ],
+      "path": "5"
+    }
+  ]
+}

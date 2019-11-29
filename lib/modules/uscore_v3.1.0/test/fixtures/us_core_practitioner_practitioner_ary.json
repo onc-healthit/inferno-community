@@ -1,0 +1,12 @@
+[
+  {
+    "resourceType": "Practitioner",
+    "name": [
+      {
+        "text": "PRACTITIONER NAME",
+        "family": "NAME",
+        "given": ["PRACTITIONER"]
+      }
+    ]
+  }
+]

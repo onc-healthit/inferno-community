@@ -57,6 +57,22 @@ module Inferno
 
       property :group_id, String
 
+      # Bulk Data Parameters
+      property :bulk_url, String
+      property :bulk_token_endpoint, String
+      property :bulk_client_id, String
+      property :bulk_system_export_endpoint, String
+      property :bulk_patient_export_endpoint, String
+      property :bulk_group_export_endpoint, String
+      property :bulk_fastest_resource, String
+      property :bulk_requires_auth, String
+      property :bulk_since_param, String
+      property :bulk_jwks_url_auth, String
+      property :bulk_jwks_auth, String
+      property :bulk_public_key, String
+      property :bulk_private_key, String
+      property :bulk_access_token, String
+
       has n, :sequence_results
       has n, :resource_references
       has 1, :server_capabilities
@@ -147,8 +163,8 @@ module Inferno
 
       def patient_id
         resource_references
-          .select { |ref| ref.resource_type == 'Patient' }
-          .first&.resource_id
+          .first(resource_type: 'Patient', order: [:created_at.asc])
+          &.resource_id
       end
 
       def patient_id=(patient_id)
@@ -156,11 +172,10 @@ module Inferno
 
         resource_references.destroy
 
-        save!
-
-        resource_references << ResourceReference.new(
+        ResourceReference.create(
           resource_type: 'Patient',
-          resource_id: patient_id
+          resource_id: patient_id,
+          testing_instance: self
         )
 
         save!

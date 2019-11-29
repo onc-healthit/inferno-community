@@ -14,6 +14,9 @@
               data-html='true'
               title='You can enter this manually or populate it by running: <%=prerequisite_sequences%>'></span>
       <% end %>
+      <% if defined?(description) %>
+        <small><%= description %></small>
+      <% end %>
     </label>
     <input type="text"
           class="form-control"

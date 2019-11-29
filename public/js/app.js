@@ -184,7 +184,9 @@ $(function(){
           formInput.find(':radio').each(function(){
             $(this).attr('id', $(this)[0].id + '_active');
           });
-        formInput.find('input')[0].removeAttribute('readonly');
+        if(formInput.find('input').length >0){
+          formInput.find('input')[0].removeAttribute('readonly');
+        }
         formInput.find(':radio:not(:checked)').attr('disabled', false);
         $('.enabled-prerequisites').append(formInput);
         $('.enabled-prerequisite-group-title').show();

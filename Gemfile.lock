@@ -117,11 +117,11 @@ GEM
     http-accept (1.7.0)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    i18n (1.6.0)
+    i18n (1.7.0)
       concurrent-ruby (~> 1.0)
     jaro_winkler (1.5.3)
     json (1.8.6)
-    json-jwt (1.10.2)
+    json-jwt (1.11.0)
       activesupport (>= 4.2)
       aes_key_wrap
       bindata
@@ -228,6 +228,7 @@ PLATFORMS
 
 DEPENDENCIES
   addressable
+  ast
   base62-rb
   bloomer
   colorize
@@ -237,6 +238,7 @@ DEPENDENCIES
   json-jwt
   kramdown
   minitest
+  parser
   pry
   pry-byebug
   rack-test

@@ -1,0 +1,21 @@
+name: bulk_data
+title: FHIR Bulk Data
+description: Bulk Data Access Testing
+default_test_set: developer
+fhir_version: stu3
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: Discovery
+        sequences:
+          - BulkDataCapabilityStatementSequence
+          - BulkDataDiscoverySequence
+        run_all: true
+      - name: Authorization
+        sequences:
+          - BulkDataAuthorizationSequence
+      - name: Group Export
+        sequences:
+          - BulkDataGroupExportSequence
+
