@@ -171,7 +171,7 @@ module Inferno
 
             A server SHALL support searching by patient+category+date on the DocumentReference resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -224,7 +224,7 @@ module Inferno
 
             A server SHOULD support searching by patient+type+period on the DocumentReference resource
 
-              including support for these period comparators: gt, lt, le
+              including support for these period comparators: gt, lt, le, ge
           )
           versions :r4
         end

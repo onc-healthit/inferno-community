@@ -110,7 +110,7 @@ module Inferno
 
             A server SHALL support searching by patient+date on the Procedure resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -144,7 +144,7 @@ module Inferno
 
             A server SHOULD support searching by patient+code+date on the Procedure resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end

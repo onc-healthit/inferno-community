@@ -169,7 +169,7 @@ module Inferno
 
             A server SHOULD support searching by patient+intent+authoredon on the MedicationRequest resource
 
-              including support for these authoredon comparators: gt, lt, le
+              including support for these authoredon comparators: gt, lt, le, ge
           )
           versions :r4
         end

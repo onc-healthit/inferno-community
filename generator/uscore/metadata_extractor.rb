@@ -296,7 +296,7 @@ module Inferno
         metadata[:sequences].each do |sequence|
           sequence[:search_param_descriptions].each do |_param, description|
             param_comparators = description[:comparators]
-            param_comparators[:ge] = param_comparators[:le] if param_comparators.keys.include? :le
+            param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
           end
         end
       end

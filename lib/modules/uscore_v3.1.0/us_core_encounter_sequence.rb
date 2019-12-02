@@ -146,7 +146,7 @@ module Inferno
 
             A server SHALL support searching by date+patient on the Encounter resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end

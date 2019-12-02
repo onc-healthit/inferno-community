@@ -107,7 +107,7 @@ module Inferno
 
             A server SHOULD support searching by patient+target-date on the Goal resource
 
-              including support for these target-date comparators: gt, lt, le
+              including support for these target-date comparators: gt, lt, le, ge
           )
           versions :r4
         end

@@ -107,7 +107,7 @@ module Inferno
 
             A server SHOULD support searching by patient+date on the Immunization resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end

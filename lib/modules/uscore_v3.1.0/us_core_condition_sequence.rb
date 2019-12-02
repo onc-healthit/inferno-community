@@ -141,7 +141,7 @@ module Inferno
 
             A server SHOULD support searching by patient+onset-date on the Condition resource
 
-              including support for these onset-date comparators: gt, lt, le
+              including support for these onset-date comparators: gt, lt, le, ge
           )
           versions :r4
         end
