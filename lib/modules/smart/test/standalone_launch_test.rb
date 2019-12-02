@@ -48,6 +48,14 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
           }
         )
 
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .with(
+          headers: {
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => "Basic #{Base64.strict_encode64('INVALID_CLIENT_ID:' + @instance.client_secret)}"
+          }
+        )
+        .to_return(status: 400)
       # Responses must NOT contain client_id in the body or the client secret in any situation
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(
@@ -57,7 +65,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
             'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
           }
         )
-        .to_return(status: 401)
+        .to_return(status: 400)
     else
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })

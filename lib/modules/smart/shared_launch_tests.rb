@@ -23,11 +23,16 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
+      def skip_if_auth_failed
+        skip_if @params.blank? || @params['error'].present?, oauth_redirect_failed_message
+      end
+
       module ClassMethods
         def auth_endpoint_tls_test(index:)
-          test 'OAuth 2.0 authorize endpoint secured by transport layer security' do
+          test :auth_endpoint_tls do
             metadata do
               id index
+              name 'OAuth 2.0 authorize endpoint secured by transport layer security'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 Apps MUST assure that sensitive information (authentication secrets,
@@ -45,9 +50,10 @@ module Inferno
         end
 
         def token_endpoint_tls_test(index:)
-          test 'OAuth token exchange endpoint secured by transport layer security' do
+          test :token_endpoint_tls do
             metadata do
               id index
+              name 'OAuth token exchange endpoint secured by transport layer security'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 Apps MUST assure that sensitive information (authentication secrets,
@@ -65,9 +71,10 @@ module Inferno
         end
 
         def code_and_state_received_test(index:)
-          test 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI' do
+          test :code_and_state_received do
             metadata do
               id index
+              name 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 Code and state are required querystring parameters. State must be
@@ -84,9 +91,10 @@ module Inferno
         end
 
         def invalid_code_test(index:)
-          test 'OAuth token exchange fails when supplied invalid code' do
+          test :invalid_code do
             metadata do
               id index
+              name 'OAuth token exchange fails when supplied invalid code'
               link 'https://tools.ietf.org/html/rfc6749'
               description %(
                 If the request failed verification or is invalid, the authorization
@@ -94,70 +102,13 @@ module Inferno
               )
             end
 
-            skip_if @params.blank?, oauth_redirect_failed_message
-
-            headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
-
-            oauth2_params = {
-              'grant_type' => 'authorization_code',
-              'code' => 'INVALID_CODE',
-              'redirect_uri' => @instance.redirect_uris,
-              'client_id' => @instance.client_id
-            }
-
-            token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
-            assert_response_bad token_response
-          end
-        end
-
-        def invalid_client_id_test(index:)
-          test 'OAuth token exchange fails when supplied invalid client ID' do
-            metadata do
-              id index
-              link 'https://tools.ietf.org/html/rfc6749'
-              description %(
-                If the request failed verification or is invalid, the authorization
-                server returns an error response.
-              )
-            end
-
-            skip_if @params.blank?, oauth_redirect_failed_message
-
-            headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
-
-            oauth2_params = {
-              'grant_type' => 'authorization_code',
-              'code' => @params['code'],
-              'redirect_uri' => @instance.redirect_uris,
-              'client_id' => 'INVALID_CLIENT_ID'
-            }
-
-            token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params.to_json, headers)
-            assert_response_bad token_response
-          end
-        end
-
-        def successful_token_exchange_test(index:)
-          test 'OAuth token exchange request succeeds when supplied correct information' do
-            metadata do
-              id index
-              link 'http://www.hl7.org/fhir/smart-app-launch/'
-              description %(
-                After obtaining an authorization code, the app trades the code for
-                an access token via HTTP POST to the EHR authorization server's
-                token endpoint URL, using content-type
-                application/x-www-form-urlencoded, as described in section [4.1.3 of
-                RFC6749](https://tools.ietf.org/html/rfc6749#section-4.1.3).
-              )
-            end
-
-            skip_if @params.blank?, oauth_redirect_failed_message
+            skip_if_auth_failed
 
             oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
             oauth2_params = {
               'grant_type' => 'authorization_code',
-              'code' => @params['code'],
+              'code' => 'INVALID_CODE',
               'redirect_uri' => @instance.redirect_uris
             }
 
@@ -168,15 +119,89 @@ module Inferno
               oauth2_params['client_id'] = @instance.client_id
             end
 
+            token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
+            assert_response_bad token_response
+          end
+        end
+
+        def invalid_client_id_test(index:)
+          test :invalid_client_id do
+            metadata do
+              id index
+              name 'OAuth token exchange fails when supplied invalid client ID'
+              link 'https://tools.ietf.org/html/rfc6749'
+              description %(
+                If the request failed verification or is invalid, the authorization
+                server returns an error response.
+              )
+            end
+
+            skip_if_auth_failed
+
+            oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
+
+            oauth2_params = {
+              'grant_type' => 'authorization_code',
+              'code' => @params['code'],
+              'redirect_uri' => @instance.redirect_uris
+            }
+
+            client_id = 'INVALID_CLIENT_ID'
+
+            if @instance.confidential_client
+              client_credentials = "#{client_id}:#{@instance.client_secret}"
+              oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
+            else
+              oauth2_params['client_id'] = client_id
+            end
+
+            token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
+            assert_response_bad token_response
+          end
+        end
+
+        def successful_token_exchange_test(index:)
+          test :successful_token_exchange do
+            metadata do
+              id index
+              name 'OAuth token exchange request succeeds when supplied correct information'
+              link 'http://www.hl7.org/fhir/smart-app-launch/'
+              description %(
+                After obtaining an authorization code, the app trades the code for
+                an access token via HTTP POST to the EHR authorization server's
+                token endpoint URL, using content-type
+                application/x-www-form-urlencoded, as described in section [4.1.3 of
+                RFC6749](https://tools.ietf.org/html/rfc6749#section-4.1.3).
+              )
+            end
+
+            skip_if_auth_failed
+
+            oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
+
+            oauth2_params = {
+              grant_type: 'authorization_code',
+              code: @params['code'],
+              redirect_uri: @instance.redirect_uris
+            }
+
+            if @instance.confidential_client
+              client_credentials = "#{@instance.client_id}:#{@instance.client_secret}"
+              oauth2_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
+            else
+              oauth2_params[:client_id] = @instance.client_id
+            end
+
             @token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
             assert_response_ok(@token_response)
           end
         end
 
-        def token_exchange_response_contents_test(index:)
-          test 'Token exchange response contains required information encoded in JSON' do
+        def token_response_contents_test(index:)
+          test :token_response_contents do
             metadata do
               id index
+              name 'Token exchange response contains required information encoded in JSON'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The EHR authorization server shall return a JSON structure that
@@ -206,6 +231,7 @@ module Inferno
             @instance.update(token: @token_response_body['access_token'], token_retrieved_at: DateTime.now)
 
             @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
+            @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
 
             ['token_type', 'scope'].each do |key|
               assert @token_response_body[key].present?, "Token response did not contain #{key} as required"
@@ -236,10 +262,11 @@ module Inferno
           end
         end
 
-        def token_exchange_response_headers_test(index:)
-          test 'Response includes correct HTTP Cache-Control and Pragma headers' do
+        def token_response_headers_test(index:)
+          test :token_response_headers do
             metadata do
               id index
+              name 'Response includes correct HTTP Cache-Control and Pragma headers'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The authorization servers response must include the HTTP
