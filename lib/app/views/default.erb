@@ -293,6 +293,12 @@
               value: instance.bulk_token_endpoint,
               })%>   
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_access_token,
+              label: 'Bulk Bearer Token',
+              instance: instance,
+              value: instance.bulk_access_token,
+              })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
               instance: instance,
               label: 'Bulk Client ID',
