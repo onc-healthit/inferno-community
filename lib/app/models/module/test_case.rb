@@ -15,11 +15,11 @@ module Inferno
         @test_group = test_group
         @parameters = parameters
 
-        if test_group.prefix.present?
-          index_as_string = 'A'.dup
-          index.times { index_as_string.next! }
-          @prefix = "#{test_group.prefix}#{index_as_string}-"
-        end
+        return unless test_group.prefix.present?
+
+        index_as_string = 'A'.dup
+        index.times { index_as_string.next! }
+        @prefix = "#{test_group.prefix}#{index_as_string}-"
       end
 
       def title
