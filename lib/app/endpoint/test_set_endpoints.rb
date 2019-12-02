@@ -178,10 +178,17 @@ module Inferno
                 instance.reload # ensure that we have all the latest data
                 sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
                 count = 0
-                sequence_result = sequence.start(test_set.id, test_case.id) do |result|
+                sequence_result = sequence.start(test_set.id, test_case.id) do
                   count += 1
                   test_count += 1
-                  out << js_update_result(sequence, test_set, result, count, sequence.test_count, test_count, total_tests)
+                  out << js_update_result(
+                    instance: instance,
+                    sequence: sequence,
+                    test_set: test_set,
+                    set_count: count,
+                    count: test_count,
+                    total: total_tests
+                  )
                 end
 
                 sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')
