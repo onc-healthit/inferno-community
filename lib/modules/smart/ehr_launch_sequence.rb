@@ -122,9 +122,9 @@ module Inferno
 
       successful_token_exchange_test(index: '09')
 
-      token_exchange_response_contents_test(index: '10')
+      token_response_contents_test(index: '10')
 
-      token_exchange_response_headers_test(index: '11')
+      token_response_headers_test(index: '11')
     end
   end
 end

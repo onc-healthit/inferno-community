@@ -101,9 +101,9 @@ module Inferno
 
       successful_token_exchange_test(index: '07')
 
-      token_exchange_response_contents_test(index: '08')
+      token_response_contents_test(index: '08')
 
-      token_exchange_response_headers_test(index: '09')
+      token_response_headers_test(index: '09')
     end
   end
 end

@@ -56,20 +56,20 @@ test_sets:
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
-              scopes: launch/patient patient/*.read openid fhirUser offline_access
-          - sequence: ArgonautPatientReadOnlySequence
+              scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
+          - sequence: ArgonautLaunchContextSequence
             prefix: SAB
-            title: Read Patient Resource
-            description: Demonstrate successful authorization by reading Patient resource.
+            title: Validate Launch Context
+            description: Validate the access token, patient id, and encounter id received in the launch context.
           - sequence: OpenIDConnectSequence
             prefix: SAC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - sequence: TokenRefreshSequence
             prefix: SAD
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: ArgonautLaunchContextSequence
             prefix: SAE
-            title: Read Patient Resource
-            description: Ensure new token is functional by performing a simple read of the Patient resource.
+            title: Validate Launch Context
+            description: Ensure new token is functional by reading the Patient and Encounter resources.
       - name: EHR Practitioner App
         prefix: EHR
         overview: |
@@ -84,19 +84,20 @@ test_sets:
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch user/*.read openid fhirUser offline_access
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: ArgonautLaunchContextSequence
             prefix: EHB
-            title: Read Patient Resource
-            description: Demonstrate successful authorization by reading Patient resource.
+            title: Validate Launch Context
+            description: Validate the access token, patient id, and encounter id received in the launch context.
           - sequence: OpenIDConnectSequence
             prefix: EHC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
+          - TokenRefreshSequence
           - sequence: TokenRefreshSequence
             prefix: EHD
-          - sequence: ArgonautPatientReadOnlySequence
+          - sequence: ArgonautLaunchContextSequence
             prefix: EHE
-            title: Read Patient Resource
-            description: Ensure new token is functional by performing a simple read of the Patient resource.
+            title: Validate Launch Context
+            description: Ensure new token is functional by reading the Patient and Encounter resources.
         input_instructions: |
           Enter in the appropriate scope to enable user-level access to all relevant resources.  In addition, support for the 
           OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and EHR context (`launch`) are required.  This test

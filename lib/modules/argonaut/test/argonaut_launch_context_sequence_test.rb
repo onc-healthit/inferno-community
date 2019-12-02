@@ -2,12 +2,13 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::ArgonautPatientReadOnlySequence do
+describe Inferno::Sequence::ArgonautLaunchContextSequence do
   before do
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
     @patient_id = '123'
-    @sequence_class = Inferno::Sequence::ArgonautPatientReadOnlySequence
+    @encounter_id = '456'
+    @sequence_class = Inferno::Sequence::ArgonautLaunchContextSequence
     @client = FHIR::Client.new(@base_url)
     @client.set_bearer_token(@token)
     @instance = Inferno::Models::TestingInstance.create
@@ -43,9 +44,9 @@ describe Inferno::Sequence::ArgonautPatientReadOnlySequence do
     end
   end
 
-  describe 'authenticated read test' do
+  describe 'patient read test' do
     before do
-      @test = @sequence_class[:authenticated_read]
+      @test = @sequence_class[:patient_read]
       @sequence = @sequence_class.new(@instance, @client)
       @instance.token = @token
     end
@@ -88,15 +89,69 @@ describe Inferno::Sequence::ArgonautPatientReadOnlySequence do
       @sequence.run_test(@test)
     end
   end
+
+  describe 'encounter read test' do
+    before do
+      @test = @sequence_class[:encounter_read]
+      @sequence = @sequence_class.new(@instance, @client)
+      @instance.token = @token
+      @instance.encounter_id = @encounter_id
+    end
+
+    it 'skips if no encounter id is known' do
+      @instance.encounter_id = nil
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'No Encounter ID found in launch context'
+    end
+
+    it 'fails when the server does not return a 200' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 202)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'Bad response code: expected 200, 201, but found 202. '
+    end
+
+    it 'fails when the server does not return a FHIR resource' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 200)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'Expected response to be a Encounter resource'
+    end
+
+    it 'fails when the server does not return a Encounter Resource' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 200, body: FHIR::DSTU2::Condition.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'Expected response to be a Encounter resource'
+    end
+
+    it 'succeeds when the server returns a Encounter Resource' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 200, body: FHIR::DSTU2::Encounter.new.to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
 end
 
-class ArgonautPatientReadOnlySequenceTest < MiniTest::Test
+class ArgonautLaunchContextSequenceTest < MiniTest::Test
   def setup
     @instance = get_test_instance
     client = get_client(@instance)
 
     @fixture = 'patient' # put fixture file name here
-    @sequence = Inferno::Sequence::ArgonautPatientReadOnlySequence.new(@instance, client) # put sequence here
+    @sequence = Inferno::Sequence::ArgonautLaunchContextSequence.new(@instance, client) # put sequence here
     @resource_type = 'Patient'
 
     @resource = FHIR::DSTU2.from_contents(load_fixture(@fixture.to_sym))
@@ -113,6 +168,9 @@ class ArgonautPatientReadOnlySequenceTest < MiniTest::Test
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
     @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
+
+    @encounter = FHIR::DSTU2.from_contents(load_fixture(:encounter))
+    @instance.encounter_id = @encounter.id
 
     # Assume we already have a patient
     @instance.resource_references << Inferno::Models::ResourceReference.new(
@@ -159,6 +217,14 @@ class ArgonautPatientReadOnlySequenceTest < MiniTest::Test
             })
       .to_return(status: 200,
                  body: @resource.to_json,
+                 headers: { content_type: 'application/json+fhir; charset=UTF-8' })
+
+    stub_request(:get, %r{example.com/Encounter/})
+      .with(headers: {
+              'Authorization' => "Bearer #{@instance.token}"
+            })
+      .to_return(status: 200,
+                 body: @encounter.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 

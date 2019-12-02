@@ -37,6 +37,7 @@ module Inferno
       property :id_token, String
       property :refresh_token, String
       property :created_at, DateTime, default: proc { DateTime.now }
+      property :encounter_id, String
 
       property :oauth_introspection_endpoint, String
       property :resource_id, String
@@ -177,8 +178,6 @@ module Inferno
           resource_id: patient_id,
           testing_instance: self
         )
-
-        save!
 
         reload
       end

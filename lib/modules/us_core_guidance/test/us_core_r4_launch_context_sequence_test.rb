@@ -2,12 +2,13 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::USCoreR4PatientReadOnlySequence do
+describe Inferno::Sequence::USCoreR4LaunchContextSequence do
   before do
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
     @patient_id = '123'
-    @sequence_class = Inferno::Sequence::USCoreR4PatientReadOnlySequence
+    @encounter_id = '456'
+    @sequence_class = Inferno::Sequence::USCoreR4LaunchContextSequence
     @client = FHIR::Client.new(@base_url)
     @client.set_bearer_token(@token)
     @instance = Inferno::Models::TestingInstance.create
@@ -43,9 +44,9 @@ describe Inferno::Sequence::USCoreR4PatientReadOnlySequence do
     end
   end
 
-  describe 'authenticated read test' do
+  describe 'patient read test' do
     before do
-      @test = @sequence_class[:authenticated_read]
+      @test = @sequence_class[:patient_read]
       @sequence = @sequence_class.new(@instance, @client)
       @instance.token = @token
     end
@@ -84,6 +85,62 @@ describe Inferno::Sequence::USCoreR4PatientReadOnlySequence do
       stub_request(:get, "#{@base_url}/Patient/#{@patient_id}")
         .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
         .to_return(status: 200, body: FHIR::Patient.new.to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'encounter read test' do
+    before do
+      @test = @sequence_class[:encounter_read]
+      @sequence = @sequence_class.new(@instance, @client)
+      @instance.update(
+        token: @token,
+        encounter_id: @encounter_id
+      )
+    end
+
+    it 'skips if no encounter id is known' do
+      @instance.update(encounter_id: nil)
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'No Encounter ID found in launch context'
+    end
+
+    it 'fails when the server does not return a 200' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 202)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'Bad response code: expected 200, 201, but found 202. '
+    end
+
+    it 'fails when the server does not return a FHIR resource' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 200)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'Expected response to be a Encounter resource'
+    end
+
+    it 'fails when the server does not return a Encounter Resource' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 200, body: FHIR::Condition.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal exception.message, 'Expected response to be a Encounter resource'
+    end
+
+    it 'succeeds when the server returns a Encounter Resource' do
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
+        .with(headers: { 'Authorization' => "Bearer #{@instance.token}" })
+        .to_return(status: 200, body: FHIR::Encounter.new.to_json)
 
       @sequence.run_test(@test)
     end
