@@ -47,13 +47,22 @@ class EHRLaunchSequenceTest < MiniTest::Test
                               cache_control: 'no-store',
                               pragma: 'no-cache' })
 
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .with(
+          headers: {
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => "Basic #{Base64.strict_encode64('INVALID_CLIENT_ID:' + @instance.client_secret)}"
+          }
+        )
+        .to_return(status: 400)
+
       # Responses must NOT contain client_id in the body or the client secret in any situation
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(body: /client_id|client_secret/,
               headers: { 'Content-Type' => 'application/x-www-form-urlencoded',
                          'Authorization' =>
                               "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}" })
-        .to_return(status: 401)
+        .to_return(status: 400)
     else
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
