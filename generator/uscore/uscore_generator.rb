@@ -76,6 +76,7 @@ module Inferno
           create_revinclude_test(sequence) if sequence[:revincludes].any?
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
+          create_multiple_or_test(sequence)
           create_references_resolved_test(sequence)
         end
       end
@@ -257,7 +258,6 @@ module Inferno
           end
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
         search_test[:test_code] += comparator_search_code
-        search_test[:test_code] += get_multiple_or_search(search_param[:names], sequence)
         sequence[:tests] << search_test
 
         is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
@@ -393,6 +393,38 @@ module Inferno
               test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
 
         sequence[:tests] << test
+      end
+
+      def create_multiple_or_test(sequence)
+        test = {
+          tests_that: 'The server returns expected results when parameters use composite-or',
+          index: sequence[:tests].length + 1,
+          link: sequence[:profile],
+          test_code: ''
+        }
+
+        multiple_or_params = sequence[:search_param_descriptions]
+          .select { |_param, description| description[:multiple_or] == 'SHALL' }
+          .map { |param, _description| param.to_s }
+        return if multiple_or_params.blank?
+
+        multiple_or_params.each do |param|
+          multiple_or_search = sequence[:searches].find { |search| (search[:names].include? param) && search[:expectation] == 'SHALL' }
+          next if multiple_or_search.blank?
+
+          second_val_var = "second_#{param}_val"
+          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }"
+          test[:test_code] += %(
+            #{get_search_params(multiple_or_search[:names], sequence)}
+            #{second_val_var} = #{resolve_el_str}
+            skip 'Cannot find second value for #{param} to perform a multipleOr search' if #{second_val_var}.nil?
+            #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            assert_response_ok(reply)
+          )
+        end
+        sequence[:tests] << test if test[:test_code].present?
       end
 
       def create_references_resolved_test(sequence)
@@ -601,23 +633,6 @@ module Inferno
           comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
           param_comparators[param] = comparators if comparators.present?
         end
-      end
-
-      def get_multiple_or_search(search_params, sequence)
-        multiple_or_param = search_params.find { |param| sequence[:search_param_descriptions][param.to_sym][:multiple_or] == 'SHALL' }
-        return '' if multiple_or_param.blank?
-
-        param_metadata = sequence[:search_param_descriptions][multiple_or_param.to_sym]
-
-        %(
-          second_value = #{resolve_element_path(param_metadata)} { |el| get_value_for_search_param(el) != #{param_value_name(multiple_or_param)} }
-          skip 'Cannot find second value for #{multiple_or_param} to perform a multipleOr search' if second_value.nil?
-
-          #{param_value_name(multiple_or_param)} += ',' + get_value_for_search_param(second_value)
-          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-          assert_response_ok(reply)
-        )
       end
 
       def search_param_constants(search_parameters, sequence)

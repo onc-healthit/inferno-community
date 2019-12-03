@@ -279,14 +279,6 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-
-        second_value = resolve_element_from_path(@document_reference_ary, 'status')  { |el| get_value_for_search_param(el) != search_params[:status] }
-        skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
-
-        search_params[:status] += ',' + get_value_for_search_param(second_value)
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do

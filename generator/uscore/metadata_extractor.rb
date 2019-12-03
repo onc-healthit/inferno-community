@@ -223,9 +223,7 @@ module Inferno
             param_metadata[:comparators][comparator.to_sym] = expectation
           end
           multiple_or_expectation = search_param_definition['_multipleOr']['extension'].first['valueCode']
-          multiple_and_expectation = search_param_definition['_multipleAnd']['extension'].first['valueCode']
           param_metadata[:multiple_or] = multiple_or_expectation
-          param_metadata[:multiple_and] = multiple_and_expectation
           sequence[:search_param_descriptions][param] = param_metadata
         end
       end

@@ -92,13 +92,6 @@ module Inferno
           break
         end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        second_value = resolve_element_from_path(@care_team_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
-        skip 'Cannot find second value for status to perform a multipleOr search' if second_value.nil?
-
-        search_params[:status] += ',' + get_value_for_search_param(second_value)
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -240,9 +233,33 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'The server returns expected results when parameters use composite-or' do
         metadata do
           id '09'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
+          description %(
+
+          )
+          versions :r4
+        end
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary, 'status'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        second_status_val = resolve_element_from_path(@care_team_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        skip 'Cannot find second value for status to perform a multipleOr search' if second_status_val.nil?
+        search_params[:status] += ',' + get_value_for_search_param(second_status_val)
+        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
