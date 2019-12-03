@@ -35,6 +35,14 @@ def suppress_output
   retval
 end
 
+# Removes indents from markdown for better printing
+def unindent_markdown(markdown)
+  return nil if markdown.nil?
+
+  natural_indent = markdown.lines.collect { |l| l.index(/[^ ]/) }.select { |l| !l.nil? && l.positive? }.min || 0
+  markdown.lines.map { |l| l[natural_indent..-1] || "\n" }.join.lstrip
+end
+
 def print_requests(result)
   result.request_responses.map do |req_res|
     req_res.response_code.to_s + ' ' + req_res.request_method.upcase + ' ' + req_res.request_url
@@ -164,6 +172,12 @@ namespace :inferno do |_argv|
   # Exports a CSV containing the test metadata
   desc 'Generate List of All Tests'
   task :tests_to_csv, [:module, :group, :filename] do |_task, args|
+    # Leaving for now, but we may want to consolodate under the XLS export
+    # because that supports multi-line fields (e.g. descriptions) and our
+    # intended audience for this feature will be opening the CSVs in Excel anyhow.
+    # We could consider refactoring to allow either, but that doesn't have a high
+    # priority at this point.
+    Inferno.logger.warn 'Please use :tests_to_xls, which will replace this task'
     args.with_defaults(module: 'argonaut', group: 'active')
     args.with_defaults(filename: "#{args.module}_testlist.csv")
     sequences = Inferno::Module.get(args.module)&.sequences
@@ -201,6 +215,76 @@ namespace :inferno do |_argv|
 
     File.write(filename, csv_out)
     Inferno.logger.info "Writing to #{filename}"
+  end
+
+  desc 'Generate a rich excel file'
+  task :tests_to_xls, [:module, :test_set, :filename] do |_task, args|
+    require 'rubyXL'
+    require 'rubyXL/convenience_methods'
+    args.with_defaults(module: 'onc_r4', test_set: 'test_procedure')
+    args.with_defaults(filename: "#{args.module}_testlist.xlsx")
+
+    workbook = RubyXL::Workbook.new
+    worksheet = workbook.worksheets[0]
+
+    ['Version', VERSION, '', 'Generated', Time.now.to_s].each_with_index do |value, index|
+      worksheet.add_cell(0, index, value)
+    end
+    worksheet.change_row_italics(0, true)
+    worksheet.add_cell(1, 0, '')
+
+    ['Group',
+     'Group Overview',
+     '',
+     'Test Case Name',
+     'Test Case Description',
+     'Test Case Details',
+     '',
+     'Test ID',
+     'Test Name',
+     'Test Link',
+     'Required?',
+     'Test Detail',
+     '',
+     'Test Procedure Reference'].each_with_index do |row_name, index|
+      worksheet.add_cell(2, index, row_name)
+    end
+
+    worksheet.change_row_bold(2, true)
+    test_module = Inferno::Module.get(args.module)
+    test_set = test_module.test_sets[args.test_set.to_sym]
+    row = 3
+
+    test_set.groups.each do |group|
+      group.test_cases.each do |test_case|
+        test_case.sequence.tests.each do |test|
+          [group.name,
+           group.overview,
+           '',
+           test_case.title,
+           test_case.description,
+           unindent_markdown(test_case.sequence.details),
+           '',
+           "#{test_case.prefix}#{test.id}",
+           test.name,
+           test.link,
+           (!test_case.sequence.optional? && !test.optional?).to_s,
+           unindent_markdown(test.description),
+           '',
+           test.ref || ' '].each_with_index do |value, index|
+            worksheet.add_cell(row, index, value)
+          end
+          row += 1
+        end
+      end
+    end
+
+    [30, 30, 3, 30, 90, 30, 3, 14, 100, 85, 9, 60, 3, 30].each_with_index do |width, index|
+      worksheet.change_column_width(index, width)
+    end
+
+    Inferno.logger.info "Writing to #{args.filename}"
+    workbook.write(args.filename)
   end
 
   desc 'Generate automated run script'
