@@ -296,6 +296,7 @@ module Inferno
           id '10'
           name 'Patient vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Patient vread interaction.
           )
@@ -313,6 +314,7 @@ module Inferno
           id '11'
           name 'Patient history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Patient history interaction.
           )

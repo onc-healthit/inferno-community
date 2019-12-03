@@ -266,7 +266,8 @@ module Inferno
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
-          description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction."
+          description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction.",
+          optional: interaction[:expectation] != 'SHALL'
         }
 
         interaction_test[:test_code] = %(

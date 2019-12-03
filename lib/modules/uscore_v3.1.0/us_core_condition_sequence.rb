@@ -242,6 +242,7 @@ module Inferno
           id '08'
           name 'Condition vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Condition vread interaction.
           )
@@ -259,6 +260,7 @@ module Inferno
           id '09'
           name 'Condition history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Condition history interaction.
           )

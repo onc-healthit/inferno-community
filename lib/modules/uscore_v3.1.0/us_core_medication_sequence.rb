@@ -48,6 +48,7 @@ module Inferno
           id '02'
           name 'Medication vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Medication vread interaction.
           )
@@ -65,6 +66,7 @@ module Inferno
           id '03'
           name 'Medication history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Medication history interaction.
           )

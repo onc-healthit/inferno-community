@@ -180,6 +180,7 @@ module Inferno
           id '06'
           name 'Immunization vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Immunization vread interaction.
           )
@@ -197,6 +198,7 @@ module Inferno
           id '07'
           name 'Immunization history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Immunization history interaction.
           )

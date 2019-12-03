@@ -242,6 +242,7 @@ module Inferno
           id '08'
           name 'Location vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Location vread interaction.
           )
@@ -259,6 +260,7 @@ module Inferno
           id '09'
           name 'Location history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Location history interaction.
           )

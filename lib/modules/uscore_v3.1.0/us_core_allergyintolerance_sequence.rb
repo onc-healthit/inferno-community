@@ -138,6 +138,7 @@ module Inferno
           id '05'
           name 'AllergyIntolerance vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the AllergyIntolerance vread interaction.
           )
@@ -155,6 +156,7 @@ module Inferno
           id '06'
           name 'AllergyIntolerance history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the AllergyIntolerance history interaction.
           )

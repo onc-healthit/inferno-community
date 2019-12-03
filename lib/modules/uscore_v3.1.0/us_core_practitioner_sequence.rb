@@ -153,6 +153,7 @@ module Inferno
           id '05'
           name 'Practitioner vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Practitioner vread interaction.
           )
@@ -170,6 +171,7 @@ module Inferno
           id '06'
           name 'Practitioner history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Practitioner history interaction.
           )
