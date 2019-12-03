@@ -20,7 +20,8 @@ module Inferno
       end
 
       def prefix
-        return unless parameters.has_key?(:prefix)
+        return unless parameters.key?(:prefix)
+
         "#{parameters[:prefix]}-"
       end
 
