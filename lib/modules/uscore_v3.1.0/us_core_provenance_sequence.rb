@@ -48,6 +48,7 @@ module Inferno
           id '02'
           name 'Provenance vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Provenance vread interaction.
           )
@@ -65,6 +66,7 @@ module Inferno
           id '03'
           name 'Provenance history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Provenance history interaction.
           )

@@ -114,6 +114,7 @@ module Inferno
           id '04'
           name 'CareTeam vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the CareTeam vread interaction.
           )
@@ -131,6 +132,7 @@ module Inferno
           id '05'
           name 'CareTeam history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the CareTeam history interaction.
           )

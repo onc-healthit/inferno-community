@@ -300,6 +300,7 @@ module Inferno
           id '10'
           name 'Encounter vread interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Encounter vread interaction.
           )
@@ -317,6 +318,7 @@ module Inferno
           id '11'
           name 'Encounter history interaction supported'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Encounter history interaction.
           )
