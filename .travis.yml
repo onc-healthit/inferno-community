@@ -19,5 +19,5 @@ script:
 notifications:
   email:
     recipients:
-      - inferno@groups.mitre.org
+      - tacoma-fhir-prototyping@groups.mitre.org
     on_failure: change
