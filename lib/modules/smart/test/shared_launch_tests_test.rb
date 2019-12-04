@@ -233,7 +233,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-        assert_equal 'Bad response code: expected 400, but found 200', exception.message
+        assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
       end
 
       it 'succeeds if a 400 response is received' do
@@ -260,7 +260,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-        assert_equal 'Bad response code: expected 400, but found 200', exception.message
+        assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
       end
 
       it 'succeeds if a 400 response is received' do
@@ -384,6 +384,20 @@ describe Inferno::Sequence::TokenRefreshSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Token response did not contain scope as required', exception.message
+    end
+
+    it 'fails if the token response contains unrequestesd scopes' do
+      @instance.scopes = 'DEF'
+      response = {
+        access_token: 'ABC',
+        token_type: 'Bearer',
+        scope: @instance.scopes + ' GHI'
+      }
+
+      @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Token response contained unrequested scopes: GHI', exception.message
     end
 
     it 'fails if the token_type is not "bearer"' do

@@ -23,7 +23,7 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
-      def validate_token_response_contents(token_response)
+      def validate_token_response_contents(token_response, require_expires_in:)
         assert token_response.present?, no_token_response_message
 
         assert_valid_json(token_response.body)
@@ -44,7 +44,10 @@ module Inferno
 
         @instance.patient_id = token_response_body['patient'] if token_response_body['patient'].present?
 
-        ['token_type', 'scope'].each do |key|
+        required_keys = ['token_type', 'scope']
+        required_keys << 'expires_in' if require_expires_in
+
+        required_keys.each do |key|
           assert token_response_body[key].present?, "Token response did not contain #{key} as required"
         end
 
@@ -55,9 +58,12 @@ module Inferno
         actual_scopes = token_response_body['scope'].split(' ')
 
         warning do
-          missing_scopes = (expected_scopes - actual_scopes)
+          missing_scopes = expected_scopes - actual_scopes
           assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
         end
+
+        extra_scopes = actual_scopes - expected_scopes
+        assert extra_scopes.empty?, "Token response contained unrequested scopes: #{extra_scopes.join(', ')}"
 
         warning do
           assert token_response_body['patient'].present?, 'No patient id provided in token exchange.'
@@ -257,7 +263,7 @@ module Inferno
           end
         end
 
-        def token_response_contents_test(index:)
+        def token_response_contents_test(index:, require_expires_in: false)
           test :token_response_contents do
             metadata do
               id index
@@ -272,7 +278,7 @@ module Inferno
               )
             end
 
-            validate_token_response_contents(@token_response)
+            validate_token_response_contents(@token_response, require_expires_in: require_expires_in)
           end
         end
 

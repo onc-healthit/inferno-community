@@ -84,6 +84,8 @@ module Inferno
         specify_scopes = false
 
         token_response = perform_refresh_request(@instance.client_id, @instance.refresh_token, specify_scopes)
+        assert_response_ok(token_response)
+
         validate_and_save_refresh_response(token_response)
       end
 
@@ -114,7 +116,7 @@ module Inferno
       end
 
       def validate_and_save_refresh_response(token_response)
-        validate_token_response_contents(token_response)
+        validate_token_response_contents(token_response, require_expires_in: true)
         warning { validate_token_response_headers(token_response) }
       end
 

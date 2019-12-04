@@ -15,7 +15,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       initiate_login_uri: 'http://localhost:4567/launch',
       redirect_uris: 'http://localhost:4567/redirect',
-      scopes: 'launch openid patient/*.* profile'
+      scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*'
     )
 
     client = FHIR::Client.new(@instance.url)

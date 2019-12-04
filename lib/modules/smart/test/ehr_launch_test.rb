@@ -21,7 +21,7 @@ class EHRLaunchSequenceTest < MiniTest::Test
       selected_module: 'argonaut',
       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
-      scopes: 'launch openid patient/*.* profile'
+      scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*'
     )
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
