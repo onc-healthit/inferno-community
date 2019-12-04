@@ -705,7 +705,7 @@ module Inferno
           errors = resource_validation_errors[:fatals]
           errors.concat resource_validation_errors[:errors]
         end
-        assert(errors.empty?, markdownize_error_messages(errors.join))
+        assert(errors.empty?, errors.join("<br/>\n"))
       end
 
       def can_resolve_path(element, path)
