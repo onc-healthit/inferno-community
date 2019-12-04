@@ -693,7 +693,7 @@ module Inferno
         end
         if p
           @profiles_encountered << p.url
-          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class, p.url)
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
           errors = resource_validation_errors[:fatals]
           errors.concat resource_validation_errors[:errors]
           unless errors.empty?

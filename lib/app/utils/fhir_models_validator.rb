@@ -17,8 +17,8 @@ module Inferno
 
       {
         fatals: [],
-        errors: errors,
-        warnings: warnings,
+        errors: errors.reject(&:empty?),
+        warnings: warnings.reject(&:empty?),
         informations: []
       }
     end
