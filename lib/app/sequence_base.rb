@@ -210,15 +210,6 @@ module Inferno
         end
       end
 
-      def markdownize_error_messages(msg)
-        msg_string = if msg.is_a? Array
-                       msg.join("\n* ")
-                     else
-                       msg
-                     end
-        '* ' + msg_string.gsub('|', '\|')
-      end
-
       def self.test_count
         tests.length
       end
@@ -512,8 +503,8 @@ module Inferno
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
-          assert resource_validation_errors[:fatals].empty?, "Invalid #{entry.resource.resourceType}: \n\n#{markdownize_error_messages(resource_validation_errors[:fatals])}"
-          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: \n\n#{markdownize_error_messages(resource_validation_errors[:errors])}"
+          assert resource_validation_errors[:fatals].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:fatals].join("<br/>\n")}"
+          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
 
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
@@ -604,7 +595,7 @@ module Inferno
         end
         # TODO
         # bundle = client.next_bundle
-        assert(errors.empty?, markdownize_error_messages(errors))
+        assert(errors.empty?, errors.join("<br/>\n"))
       end
 
       def test_resources_against_profile(resource_type, specified_profile = nil)
@@ -644,7 +635,7 @@ module Inferno
         end
         # TODO
         # bundle = client.next_bundle
-        assert(errors.empty?, markdownize_error_messages(errors.join))
+        assert(errors.empty?, errors.join("<br/>\n"))
       end
 
       def validate_reference_resolutions(resource)
@@ -671,7 +662,7 @@ module Inferno
           end
         end
 
-        assert(problems.empty?, markdownize_error_messages(problems.join))
+        assert(problems.empty?, problems.join("<br/>\n"))
       end
 
       def save_delayed_sequence_references(resources)
