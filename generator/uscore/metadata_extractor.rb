@@ -59,6 +59,7 @@ module Inferno
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
         reformatted_version = ig_resource['version'].delete('.')
+        binding.pry if profile_json.blank?
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
         test_id_prefix = generate_unique_test_id_prefix(profile_title)
         class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{reformatted_version}") + 'Sequence'

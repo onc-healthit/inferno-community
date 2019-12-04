@@ -38,6 +38,16 @@ test_sets:
         - USCore310ObservationLabSequence
         - USCore310PediatricBmiForAgeSequence
         - USCore310PulseOximetrySequence
+        - USCore310VitalspanelSequence
+        - USCore310BmiSequence
+        - USCore310BodyheightSequence
+        - USCore310BodytempSequence
+        - USCore310BpSequence
+        - USCore310BodyweightSequence
+        - USCore310HeadcircumSequence
+        - USCore310HeartrateSequence
+        - USCore310OxygensatSequence
+        - USCore310ResprateSequence
         - USCore310PatientSequence
         - USCore310ProcedureSequence
         - R4ProvenanceSequence
