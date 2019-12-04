@@ -806,13 +806,7 @@ body {
 
 .result-details-message {
   margin-left: 19px;
-}
 
-.result-details-message li {
-  list-style: inside;
-  font-size: 1em;
-  padding: none;
-  border-bottom: 1px solid #efefef;
 }
 
 .result-details h1{
