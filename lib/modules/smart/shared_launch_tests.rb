@@ -23,6 +23,66 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
+      def validate_token_response_contents(token_response)
+        assert token_response.present?, no_token_response_message
+
+        assert_valid_json(token_response.body)
+        token_response_body = JSON.parse(token_response.body)
+
+        @instance.save
+        if token_response_body.key?('id_token') # rubocop:disable Style/IfUnlessModifier
+          @instance.update(id_token: token_response_body['id_token'])
+        end
+
+        if token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
+          @instance.update(refresh_token: token_response_body['refresh_token'])
+        end
+
+        assert token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
+
+        @instance.update(token: token_response_body['access_token'], token_retrieved_at: DateTime.now)
+
+        @instance.patient_id = token_response_body['patient'] if token_response_body['patient'].present?
+
+        ['token_type', 'scope'].each do |key|
+          assert token_response_body[key].present?, "Token response did not contain #{key} as required"
+        end
+
+        # case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
+        assert token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
+
+        expected_scopes = @instance.scopes.split(' ')
+        actual_scopes = token_response_body['scope'].split(' ')
+
+        warning do
+          missing_scopes = (expected_scopes - actual_scopes)
+          assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
+        end
+
+        warning do
+          assert token_response_body['patient'].present?, 'No patient id provided in token exchange.'
+        end
+
+        warning do
+          assert token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
+        end
+
+        received_scopes = token_response_body['scope'] || @instance.scopes
+
+        @instance.update(received_scopes: received_scopes)
+      end
+
+      def validate_token_response_headers(token_response)
+        token_response_headers = token_response.headers
+
+        [:cache_control, :pragma].each do |key|
+          assert token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
+        end
+
+        assert token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
+        assert token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
+      end
+
       module ClassMethods
         def auth_endpoint_tls_test(index:)
           test 'OAuth 2.0 authorize endpoint secured by transport layer security' do
@@ -187,52 +247,7 @@ module Inferno
               )
             end
 
-            assert @token_response.present?, no_token_response_message
-
-            assert_valid_json(@token_response.body)
-            @token_response_body = JSON.parse(@token_response.body)
-
-            @instance.save
-            if @token_response_body.key?('id_token') # rubocop:disable Style/IfUnlessModifier
-              @instance.update(id_token: @token_response_body['id_token'])
-            end
-
-            if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
-              @instance.update(refresh_token: @token_response_body['refresh_token'])
-            end
-
-            assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
-
-            @instance.update(token: @token_response_body['access_token'], token_retrieved_at: DateTime.now)
-
-            @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
-
-            ['token_type', 'scope'].each do |key|
-              assert @token_response_body[key].present?, "Token response did not contain #{key} as required"
-            end
-
-            # case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
-            assert @token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
-
-            expected_scopes = @instance.scopes.split(' ')
-            actual_scopes = @token_response_body['scope'].split(' ')
-
-            warning do
-              missing_scopes = (expected_scopes - actual_scopes)
-              assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
-            end
-
-            warning do
-              assert @token_response_body['patient'].present?, 'No patient id provided in token exchange.'
-            end
-
-            warning do
-              assert @token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
-            end
-
-            received_scopes = @token_response_body['scope'] || @instance.scopes
-
-            @instance.update(received_scopes: received_scopes)
+            validate_token_response_contents(@token_response)
           end
         end
 
@@ -250,14 +265,7 @@ module Inferno
 
             skip_if @token_response.blank?, no_token_response_message
 
-            token_response_headers = @token_response.headers
-
-            [:cache_control, :pragma].each do |key|
-              assert token_response_headers.key?(key), "Token response headers did not contain #{key} as is required in the SMART App Launch Guide."
-            end
-
-            assert token_response_headers[:cache_control].downcase.include?('no-store'), 'Token response header must have cache_control containing no-store.'
-            assert token_response_headers[:pragma].downcase.include?('no-cache'), 'Token response header must have pragma containing no-cache.'
+            validate_token_response_headers(@token_response)
           end
         end
       end
