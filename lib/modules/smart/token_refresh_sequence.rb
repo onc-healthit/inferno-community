@@ -122,8 +122,7 @@ module Inferno
 
         token_retrieved_at = DateTime.now
 
-        @instance.resource_references.each(&:destroy)
-        @instance.resource_references << Inferno::Models::ResourceReference.new(resource_type: 'Patient', resource_id: token_response_body['patient']) if token_response_body.key?('patient')
+        @instance.patient_id = token_response_body['patient'] if token_response_body.key?('patient')
 
         @instance.save!
 
@@ -146,10 +145,10 @@ module Inferno
           assert token_response_body.key?('patient'), 'No patient id provided in token exchange.'
         end
 
-        scopes = token_response_body['scope'] || @instance.scopes
+        received_scopes = token_response_body['scope'] || @instance.scopes
 
         @instance.save!
-        @instance.update(scopes: scopes)
+        @instance.update(received_scopes: received_scopes)
 
         if token_response_body.key?('id_token')
           @instance.save!

@@ -230,9 +230,9 @@ module Inferno
               assert @token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
             end
 
-            scopes = @token_response_body['scope'] || @instance.scopes
+            received_scopes = @token_response_body['scope'] || @instance.scopes
 
-            @instance.update(scopes: scopes)
+            @instance.update(received_scopes: received_scopes)
           end
         end
 

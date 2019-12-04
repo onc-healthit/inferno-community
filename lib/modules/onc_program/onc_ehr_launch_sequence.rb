@@ -59,7 +59,7 @@ module Inferno
           )
         end
 
-        scopes = @instance.scopes.split(' ')
+        scopes = @instance.received_scopes.split(' ')
 
         missing_scopes = required_scopes - scopes
         assert missing_scopes.empty?, "Required scopes missing: #{missing_scopes.join(', ')}"
