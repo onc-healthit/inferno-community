@@ -210,6 +210,15 @@ module Inferno
         end
       end
 
+      def markdownize_error_messages(msg)
+        msg_string = if msg.is_a? Array
+                       msg.join("\n* ")
+                     else
+                       msg
+                     end
+        '* ' + msg_string.gsub('|', '\|')
+      end
+
       def self.test_count
         tests.length
       end
@@ -502,10 +511,9 @@ module Inferno
         entries.each do |entry|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          validator = Inferno::GrahameValidator.new
-          base_resource_validation_errors = validator.validate(entry.resource, versioned_resource_class)
-          assert base_resource_validation_errors[:fatals].empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors[:fatals]}"
-          assert base_resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors[:errors]}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          assert resource_validation_errors[:fatals].empty?, "Invalid #{entry.resource.resourceType}: \n\n#{markdownize_error_messages(resource_validation_errors[:fatals])}"
+          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: \n\n#{markdownize_error_messages(resource_validation_errors[:errors])}"
 
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
@@ -557,8 +565,11 @@ module Inferno
       end
 
       def validate_resource(resource_type, resource, profile)
-        errors = profile.validate_resource(resource)
-        @test_warnings.concat(profile.warnings.reject(&:empty?))
+        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, resource_type, profile.url)
+        errors = resource_validation_errors[:fatals]
+        errors.concat resource_validation_errors[:errors]
+        @test_warnings.concat resource_validation_errors[:warnings]
+
         errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
         @profiles_failed[profile.url].concat(errors) unless errors.empty?
         errors
@@ -587,12 +598,13 @@ module Inferno
             validate_resource(resource_type, resource, p)
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource.validate
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:fatals].concat issues[:errors]
           end
         end
         # TODO
         # bundle = client.next_bundle
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, markdownize_error_messages(errors))
       end
 
       def test_resources_against_profile(resource_type, specified_profile = nil)
@@ -632,7 +644,7 @@ module Inferno
         end
         # TODO
         # bundle = client.next_bundle
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, markdownize_error_messages(errors.join))
       end
 
       def validate_reference_resolutions(resource)
@@ -659,7 +671,7 @@ module Inferno
           end
         end
 
-        assert(problems.empty?, problems.join("<br/>\n"))
+        assert(problems.empty?, markdownize_error_messages(problems.join))
       end
 
       def save_delayed_sequence_references(resources)
@@ -690,15 +702,19 @@ module Inferno
         end
         if p
           @profiles_encountered << p.url
-          errors = p.validate_resource(resource)
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class, p.url)
+          errors = resource_validation_errors[:fatals]
+          errors.concat resource_validation_errors[:errors]
           unless errors.empty?
             errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
             @profiles_failed[p.url].concat(errors)
           end
         else
-          errors = entry.resource.validate
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          errors = resource_validation_errors[:fatals]
+          errors.concat resource_validation_errors[:errors]
         end
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, markdownize_error_messages(errors.join))
       end
 
       def can_resolve_path(element, path)

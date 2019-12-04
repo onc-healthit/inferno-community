@@ -53,7 +53,7 @@
 
     <% unless @test_result.message.nil? %>
       <div class="test-result-details-message">
-        <span class="test-result-details-message-label">Error Message:</span> <%= CGI.escapeHTML @test_result.message %>
+        <span class="test-result-details-message-label">Error Message:</span> <%= markdown_to_html @test_result.message %>
       </div>
     <% end %>
 

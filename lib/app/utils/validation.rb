@@ -15,6 +15,10 @@ module Inferno
     # Cache the Argonaut IG definitions
     validation_packs = File.join('resources', '*', '*.json')
 
+    def self.definitions
+      DEFINITIONS
+    end
+
     DEFINITIONS = {}
     RESOURCES = { dstu2: {}, stu3: {}, r4: {} }
     VALUESETS = {}

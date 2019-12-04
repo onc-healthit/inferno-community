@@ -1,42 +1,28 @@
 # frozen_string_literal: true
 
+require 'byebug'
+
 module Inferno
   # FHIRModelsValidator extends BaseValidator to use the validation in fhir_models.
   # It passes the validation off to the correct model version.
   class FHIRModelsValidator < BaseValidator
-    def validate(resource, profile_url)
-      run_validation(resource, profile_url, get_model_klass)
-    end
+    def initialize; end
 
-    private
+    def validate(resource, fhir_version, profile_url = nil)
+      validator_klass = if profile_url
+                          Inferno::ValidationUtil.definitions[profile_url]
+                        else
+                          fhir_version::Definitions.resource_definition(resource.resourceType)
+                        end
+      errors = validator_klass.validate_resource(resource)
+      warnings = validator_klass.warnings
 
-    def run_validation(resource, profile_url, model_klass)
-      begin
-        parsed_resource = model_klass.from_contents(resource)
-      rescue StandardError => e
-        raise ArgumentError, e.message
-      end
-      raise ArgumentError, 'No resource provided' unless parsed_resource
-
-      if profile_url
-        validator_klass = FHIRValidator::ValidationUtil.definitions[profile_url]
-      else
-        validator_klass = model_klass::Definitions.resource_definition(parsed_resource.resourceType)
-      end
-      @errors = validator_klass.validate_resource(parsed_resource)
-      @warnings = validator_klass.warnings
-    end
-
-    def get_model_klass
-      # case @version
-      #   when 'dstu2'
-      #     FHIR::DSTU2
-      #   when 'stu3'
-      #     FHIR::STU3
-      #   when 'r4'
-      #     FHIR
-      #   end
-      FHIR
+      {
+        fatals: [],
+        errors: errors,
+        warnings: warnings,
+        informations: []
+      }
     end
   end
 end
