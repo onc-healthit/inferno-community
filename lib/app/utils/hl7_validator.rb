@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Inferno
-  # A validator that calls out to Grahame's validator API
-  class GrahameValidator < BaseValidator
+  # A validator that calls out to the HL7 validator API
+  class HL7Validator < BaseValidator
     @profile_urls = nil
     @profile_names = nil
     @validator_url = nil

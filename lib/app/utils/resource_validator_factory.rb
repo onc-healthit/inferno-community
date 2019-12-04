@@ -2,7 +2,7 @@
 
 require_relative 'base_validator'
 require_relative 'fhir_models_validator'
-require_relative 'grahame_validator'
+require_relative 'hl7_validator'
 
 module Inferno
   class App
@@ -12,7 +12,7 @@ module Inferno
         when 'internal'
           Inferno::FHIRModelsValidator.new
         when 'external'
-          Inferno::GrahameValidator.new(external_validator_url)
+          Inferno::HL7Validator.new(external_validator_url)
         end
       end
     end
