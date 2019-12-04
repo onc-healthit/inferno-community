@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'byebug'
-
 module Inferno
   # FHIRModelsValidator extends BaseValidator to use the validation in fhir_models.
   # It passes the validation off to the correct model version.
