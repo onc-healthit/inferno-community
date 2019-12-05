@@ -57,9 +57,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Device search by patient' do
+      test :search_by_patient do
         metadata do
           id '02'
+          name 'Server returns expected results from Device search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -77,21 +78,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Device' }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @device = reply&.resource&.entry&.first&.resource
-        @device_ary = fetch_all_bundled_resources(reply&.resource)
+        @device = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Device' }
+          .resource
+        @device_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
         save_delayed_sequence_references(@device_ary)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
 
-      test 'Server returns expected results from Device search by patient+type' do
+      test :search_by_patient_type do
         metadata do
           id '03'
+          name 'Server returns expected results from Device search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -103,7 +106,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@device.nil?, 'Expected valid Device resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -113,7 +115,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do

@@ -89,9 +89,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Organization search by name' do
+      test :search_by_name do
         metadata do
           id '03'
+          name 'Server returns expected results from Organization search by name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -110,21 +111,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @organization = reply&.resource&.entry&.first&.resource
-        @organization_ary = fetch_all_bundled_resources(reply&.resource)
+        @organization = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Organization' }
+          .resource
+        @organization_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
         save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
-      test 'Server returns expected results from Organization search by address' do
+      test :search_by_address do
         metadata do
           id '04'
+          name 'Server returns expected results from Organization search by address'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -135,7 +138,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@organization.nil?, 'Expected valid Organization resource to be present'
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
@@ -144,7 +146,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :vread_interaction do

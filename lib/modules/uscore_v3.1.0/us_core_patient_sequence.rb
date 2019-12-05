@@ -86,9 +86,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Patient search by _id' do
+      test :search_by__id do
         metadata do
           id '02'
+          name 'Server returns expected results from Patient search by _id'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -106,21 +107,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Patient' }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @patient = reply&.resource&.entry&.first&.resource
-        @patient_ary = fetch_all_bundled_resources(reply&.resource)
+        @patient = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Patient' }
+          .resource
+        @patient_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
         save_delayed_sequence_references(@patient_ary)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
 
-      test 'Server returns expected results from Patient search by identifier' do
+      test :search_by_identifier do
         metadata do
           id '03'
+          name 'Server returns expected results from Patient search by identifier'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -131,7 +134,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
@@ -140,12 +142,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by name' do
+      test :search_by_name do
         metadata do
           id '04'
+          name 'Server returns expected results from Patient search by name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -156,7 +158,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
@@ -165,12 +166,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by gender+name' do
+      test :search_by_gender_name do
         metadata do
           id '05'
+          name 'Server returns expected results from Patient search by gender+name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -181,7 +182,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         search_params = {
           'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender')),
@@ -191,12 +191,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+name' do
+      test :search_by_birthdate_name do
         metadata do
           id '06'
+          name 'Server returns expected results from Patient search by birthdate+name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -207,7 +207,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
@@ -217,12 +216,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+family' do
+      test :search_by_birthdate_family do
         metadata do
           id '07'
+          name 'Server returns expected results from Patient search by birthdate+family'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -234,7 +233,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
@@ -244,12 +242,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by family+gender' do
+      test :search_by_family_gender do
         metadata do
           id '08'
+          name 'Server returns expected results from Patient search by family+gender'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -261,7 +259,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
 
         search_params = {
           'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family')),
@@ -271,7 +268,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do

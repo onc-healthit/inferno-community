@@ -224,8 +224,10 @@ module Inferno
       end
 
       def create_search_test(sequence, search_param)
+        test_key = :"search_by_#{search_param[:names].map(&:underscore).join('_')}"
         search_test = {
           tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
           optional: search_param[:expectation] != 'SHALL',
@@ -247,14 +249,30 @@ module Inferno
           else
             %(
               skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-              assert !@#{sequence[:resource].underscore}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
-      #{get_search_params(search_param[:names], sequence)}
+              #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              assert_response_ok(reply))
+            )
           end
-        search_test[:test_code] += get_comparator_searches(search_param[:names], sequence)
+
+        comparator_search_code = get_comparator_searches(search_param[:names], sequence)
+        search_test[:test_code] += comparator_search_code
         sequence[:tests] << search_test
+
+        is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
+        fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
+
+        unit_test_generator.generate_search_test(
+          test_key: test_key,
+          resource_type: sequence[:resource],
+          search_params: get_search_param_hash(search_param[:names], sequence),
+          is_first_search: is_first_search,
+          is_fixed_value_search: is_fixed_value_search,
+          has_comparator_tests: comparator_search_code.present?,
+          fixed_value_search_param: fixed_value_search_param,
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name]
+        )
       end
 
       def create_interaction_test(sequence, interaction)
@@ -432,12 +450,17 @@ module Inferno
           validation_profile_uri(sequence)
         ].compact.join(', ')
 
-        search_code = if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
-                        get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
-                      else
-                        get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
-                      end
-        search_code
+        if fixed_value_search?(search_parameters, sequence)
+          get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        else
+          get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        end
+      end
+
+      def fixed_value_search?(search_parameters, sequence)
+        search_parameters != ['patient'] &&
+          !sequence[:delayed_sequence] &&
+          !search_param_constants(search_parameters, sequence)
       end
 
       def get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
@@ -447,38 +470,58 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
+          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
           skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-          @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
-          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply&.resource)
+          @#{sequence[:resource].underscore} = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+            .resource
+          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
           save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
           save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
           validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         )
       end
 
+      def fixed_value_search_param(search_parameters, sequence)
+        name = search_parameters.find { |param| param != 'patient' }
+        search_description = sequence[:search_param_descriptions][name.to_sym]
+        values = search_description[:values]
+        path =
+          search_description[:path]
+            .split('.')
+            .drop(1)
+            .map { |path_part| path_part == 'class' ? 'local_class' : path_part }
+            .join('.')
+        path += get_value_path_by_type(search_description[:type])
+
+        {
+          name: name,
+          path: path,
+          values: values
+        }
+      end
+
       def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
         # assume only patient + one other parameter
-        non_patient_search_param = search_parameters.find { |param| param != 'patient' }
-        non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
-        values_variable_name = "#{non_patient_search_param.tr('-', '_')}_val"
+        search_param = fixed_value_search_param(search_parameters, sequence)
+        values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
-          #{values_variable_name} = [#{non_patient_values.map { |val| "'#{val}'" }.join(', ')}]
+          #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           #{values_variable_name}.each do |val|
-            search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': val }
+            search_params = { 'patient': @instance.patient_id, '#{search_param[:name]}': val }
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
             assert_response_ok(reply)
             assert_bundle_response(reply)
 
-            resource_count = reply&.resource&.entry&.length || 0
-            @resources_found = true if resource_count.positive?
+            @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
             next unless @resources_found
 
-            @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
-            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply&.resource)
+            @#{sequence[:resource].underscore} = reply.resource.entry
+              .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+              .resource
+            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
 
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
@@ -545,7 +588,6 @@ module Inferno
                 comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
-                assert_response_ok(reply)
               end)
           end
         end

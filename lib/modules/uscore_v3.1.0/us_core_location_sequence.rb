@@ -101,9 +101,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Location search by name' do
+      test :search_by_name do
         metadata do
           id '03'
+          name 'Server returns expected results from Location search by name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -122,21 +123,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
 
-        @location = reply&.resource&.entry&.first&.resource
-        @location_ary = fetch_all_bundled_resources(reply&.resource)
+        @location = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Location' }
+          .resource
+        @location_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
         save_delayed_sequence_references(@location_ary)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
-      test 'Server returns expected results from Location search by address' do
+      test :search_by_address do
         metadata do
           id '04'
+          name 'Server returns expected results from Location search by address'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -147,7 +150,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@location.nil?, 'Expected valid Location resource to be present'
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
@@ -156,12 +158,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Location search by address-city' do
+      test :search_by_address_city do
         metadata do
           id '05'
+          name 'Server returns expected results from Location search by address-city'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -173,7 +175,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@location.nil?, 'Expected valid Location resource to be present'
 
         search_params = {
           'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
@@ -182,12 +183,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Location search by address-state' do
+      test :search_by_address_state do
         metadata do
           id '06'
+          name 'Server returns expected results from Location search by address-state'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -199,7 +200,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@location.nil?, 'Expected valid Location resource to be present'
 
         search_params = {
           'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
@@ -208,12 +208,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Location search by address-postalcode' do
+      test :search_by_address_postalcode do
         metadata do
           id '07'
+          name 'Server returns expected results from Location search by address-postalcode'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -225,7 +225,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@location.nil?, 'Expected valid Location resource to be present'
 
         search_params = {
           'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
@@ -234,7 +233,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :vread_interaction do

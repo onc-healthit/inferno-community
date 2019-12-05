@@ -497,11 +497,6 @@ module Inferno
         entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
         assert entries.present?, 'No resources of this type were returned'
 
-        if klass == versioned_resource_class('Patient')
-          assert reply.resource.get_by_id(@instance.patient_id).present?, 'Server returned nil patient'
-          assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', 'text', 'meta', 'lastUpdated']), 'Server returned wrong patient'
-        end
-
         entries.each do |entry|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.

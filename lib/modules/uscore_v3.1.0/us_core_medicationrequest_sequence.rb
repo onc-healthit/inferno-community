@@ -70,9 +70,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent' do
+      test :search_by_patient_intent do
         metadata do
           id '02'
+          name 'Server returns expected results from MedicationRequest search by patient+intent'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -89,12 +90,13 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
+          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'MedicationRequest' }
           next unless @resources_found
 
-          @medication_request = reply&.resource&.entry&.first&.resource
-          @medication_request_ary = fetch_all_bundled_resources(reply&.resource)
+          @medication_request = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == 'MedicationRequest' }
+            .resource
+          @medication_request_ary = fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
           save_delayed_sequence_references(@medication_request_ary)
@@ -104,9 +106,10 @@ module Inferno
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent+status' do
+      test :search_by_patient_intent_status do
         metadata do
           id '03'
+          name 'Server returns expected results from MedicationRequest search by patient+intent+status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -117,7 +120,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@medication_request.nil?, 'Expected valid MedicationRequest resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -128,12 +130,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent+encounter' do
+      test :search_by_patient_intent_encounter do
         metadata do
           id '04'
+          name 'Server returns expected results from MedicationRequest search by patient+intent+encounter'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -145,7 +147,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@medication_request.nil?, 'Expected valid MedicationRequest resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -156,12 +157,12 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from MedicationRequest search by patient+intent+authoredon' do
+      test :search_by_patient_intent_authoredon do
         metadata do
           id '05'
+          name 'Server returns expected results from MedicationRequest search by patient+intent+authoredon'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -174,7 +175,6 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@medication_request.nil?, 'Expected valid MedicationRequest resource to be present'
 
         search_params = {
           'patient': @instance.patient_id,
@@ -185,7 +185,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do
