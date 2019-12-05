@@ -61,6 +61,7 @@ module Inferno
           )
         end
 
+        @instance.save
         @instance.update(state: SecureRandom.uuid)
 
         oauth2_params = {
