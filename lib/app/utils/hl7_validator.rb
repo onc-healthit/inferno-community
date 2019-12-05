@@ -2,19 +2,17 @@
 
 module Inferno
   # A validator that calls out to the HL7 validator API
-  class HL7Validator < BaseValidator
-    @profile_urls = nil
-    @profile_names = nil
+  class HL7Validator
     @validator_url = nil
 
     def initialize(validator_url)
       @validator_url = validator_url
     end
 
-    def validate(resource, fhir_version, profile = nil)
-      profile ||= fhir_version::Definitions.resource_definition(resource.resourceType).url
+    def validate(resource, fhir_models_klass, profile = nil)
+      profile ||= fhir_models_klass::Definitions.resource_definition(resource.resourceType).url
       result = RestClient.post "#{@validator_url}/validate", resource.to_json, params: { profile: profile }
-      outcome = FHIR.from_contents(result.body)
+      outcome = fhir_models_klass.from_contents(result.body)
       fatals = issues_by_severity(outcome.issue, 'fatal')
       errors = issues_by_severity(outcome.issue, 'error')
       warnings = issues_by_severity(outcome.issue, 'warning')
@@ -27,17 +25,11 @@ module Inferno
       }
     end
 
+    private
+
     def issues_by_severity(issues, severity)
       issues.select { |i| i.severity == severity }
         .map { |iss| "#{iss&.expression&.join(', ')}: #{iss&.details&.text}" }
-    end
-
-    def self.profile_urls
-      @profile_urls ||= JSON.parse(RestClient.get("#{@validator_url}/profiles"))
-    end
-
-    def self.profile_names
-      @profile_names ||= profile_urls.map { |url| url.split('/').last }
     end
   end
 end

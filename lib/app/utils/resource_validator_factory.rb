@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'base_validator'
 require_relative 'fhir_models_validator'
 require_relative 'hl7_validator'
 

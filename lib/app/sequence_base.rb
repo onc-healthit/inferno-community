@@ -13,7 +13,6 @@ require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
-require_relative 'utils/base_validator'
 require_relative 'utils/hl7_validator'
 
 require 'bloomer'
