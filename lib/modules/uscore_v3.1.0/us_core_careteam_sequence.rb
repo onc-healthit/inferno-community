@@ -71,6 +71,8 @@ module Inferno
           versions :r4
         end
 
+        @care_team_ary = []
+        values_found = 0
         status_val = ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error']
         status_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'status': val }
@@ -84,12 +86,13 @@ module Inferno
           @care_team = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
             .resource
-          @care_team_ary = fetch_all_bundled_resources(reply.resource)
+          @care_team_ary += fetch_all_bundled_resources(reply.resource)
+          values_found += 1
 
           save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
           save_delayed_sequence_references(@care_team_ary)
           validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-          break
+          break if values_found == 2
         end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
       end

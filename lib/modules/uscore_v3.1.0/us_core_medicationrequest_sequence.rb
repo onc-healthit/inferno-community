@@ -83,6 +83,8 @@ module Inferno
           versions :r4
         end
 
+        @medication_request_ary = []
+
         intent_val = ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option']
         intent_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'intent': val }
@@ -96,7 +98,7 @@ module Inferno
           @medication_request = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'MedicationRequest' }
             .resource
-          @medication_request_ary = fetch_all_bundled_resources(reply.resource)
+          @medication_request_ary += fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
           save_delayed_sequence_references(@medication_request_ary)

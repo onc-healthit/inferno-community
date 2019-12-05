@@ -406,7 +406,6 @@ module Inferno
         multiple_or_params = sequence[:search_param_descriptions]
           .select { |_param, description| description[:multiple_or] == 'SHALL' }
           .map { |param, _description| param.to_s }
-        return if multiple_or_params.blank?
 
         multiple_or_params.each do |param|
           multiple_or_search = sequence[:searches].find { |search| (search[:names].include? param) && search[:expectation] == 'SHALL' }
@@ -425,6 +424,12 @@ module Inferno
           )
         end
         sequence[:tests] << test if test[:test_code].present?
+      end
+
+      def get_multiple_or_params(sequence)
+        sequence[:search_param_descriptions]
+          .select { |_param, description| description[:multiple_or] == 'SHALL' }
+          .map { |param, _description| param.to_s }
       end
 
       def create_references_resolved_test(sequence)
@@ -539,8 +544,11 @@ module Inferno
       def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
         # assume only patient + one other parameter
         search_param = fixed_value_search_param(search_parameters, sequence)
+        find_two_values = get_multiple_or_params(sequence).include? search_param[:name]
         values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
+          @#{sequence[:resource].underscore}_ary = []
+          #{'values_found = 0' if find_two_values}
           #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           #{values_variable_name}.each do |val|
             search_params = { 'patient': @instance.patient_id, '#{search_param[:name]}': val }
@@ -554,12 +562,13 @@ module Inferno
             @#{sequence[:resource].underscore} = reply.resource.entry
               .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
               .resource
-            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
+            @#{sequence[:resource].underscore}_ary += fetch_all_bundled_resources(reply.resource)
+            #{'values_found += 1' if find_two_values}
 
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-            break
+            break#{' if values_found == 2' if find_two_values}
           end
           skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
       end

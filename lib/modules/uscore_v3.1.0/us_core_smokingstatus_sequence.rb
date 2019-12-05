@@ -85,6 +85,8 @@ module Inferno
           versions :r4
         end
 
+        @observation_ary = []
+
         code_val = ['72166-2']
         code_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'code': val }
@@ -98,7 +100,7 @@ module Inferno
           @observation = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'Observation' }
             .resource
-          @observation_ary = fetch_all_bundled_resources(reply.resource)
+          @observation_ary += fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
           save_delayed_sequence_references(@observation_ary)

@@ -81,6 +81,8 @@ module Inferno
           versions :r4
         end
 
+        @care_plan_ary = []
+
         category_val = ['assess-plan']
         category_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'category': val }
@@ -94,7 +96,7 @@ module Inferno
           @care_plan = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'CarePlan' }
             .resource
-          @care_plan_ary = fetch_all_bundled_resources(reply.resource)
+          @care_plan_ary += fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
           save_delayed_sequence_references(@care_plan_ary)
