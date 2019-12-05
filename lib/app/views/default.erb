@@ -343,17 +343,7 @@
                 
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
-          </div>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
-              instance: instance,
-              label: 'Lines to validate',
-              description: %(
-                While testing we need to validate resources in downloaded NDJSON file.
-                Please enter the number of lines/resources that would be validated for each NDJSON file. 
-                The the value provided is less than 1 then ALL lines are tested.
-              ),              
-              value: instance.bulk_lines_to_validate}); %>        
+          </div>     
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
