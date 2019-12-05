@@ -140,9 +140,7 @@ module Inferno
 
       def check_ndjson(ndjson, file_type, lines_to_validate)
         lines_to_validate = 1 if lines_to_validate.nil? || lines_to_validate < 1
-
         line_count = 0
-        errors = []
 
         ndjson.each_line do |line|
           break if line_count == lines_to_validate
@@ -155,8 +153,6 @@ module Inferno
           validation_errors = resource.validate
           assert validation_errors.empty?, validation_errors.to_s
         end
-
-        errors
       end
 
       def check_cancel_request
