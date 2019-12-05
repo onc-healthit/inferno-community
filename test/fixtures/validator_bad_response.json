@@ -1,0 +1,105 @@
+{
+  "resourceType": "OperationOutcome",
+  "text": {
+    "status": "extensions",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>ERROR</td><td/><td>Invalid Code</td><td>The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)</td><td/><td>TerminologyEngine</td></tr></table></div>"
+  },
+  "issue": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger": 4
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger": 2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueCode": "TerminologyEngine"
+        }
+      ],
+      "severity": "fatal",
+      "code": "code-invalid",
+      "details": {
+        "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
+      },
+      "expression": [
+        "Patient.gender"
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger": 4
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger": 2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueCode": "TerminologyEngine"
+        }
+      ],
+      "severity": "error",
+      "code": "code-invalid",
+      "details": {
+        "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
+      },
+      "expression": [
+        "Patient.gender"
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger": 4
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger": 2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueCode": "TerminologyEngine"
+        }
+      ],
+      "severity": "warning",
+      "code": "code-invalid",
+      "details": {
+        "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
+      },
+      "expression": [
+        "Patient.gender"
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger": 4
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger": 2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueCode": "TerminologyEngine"
+        }
+      ],
+      "severity": "information",
+      "code": "code-invalid",
+      "details": {
+        "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
+      },
+      "expression": [
+        "Patient.gender"
+      ]
+    }
+  ]
+}
