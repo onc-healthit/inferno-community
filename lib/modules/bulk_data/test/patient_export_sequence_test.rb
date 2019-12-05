@@ -34,7 +34,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
     }
   end
 
-  describe 'read output NDJSON tests' do
+  describe 'read output tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
     end
@@ -68,10 +68,10 @@ describe Inferno::Sequence::BulkDataExportSequence do
           body: @patient_export
         )
 
-        assert_raises(WebMock::NetConnectNotAllowedError) do
-      @sequence.check_all_files(@complete_status['output'], 1)
-        end
-    end    
+      assert_raises(WebMock::NetConnectNotAllowedError) do
+        @sequence.check_all_files(@complete_status['output'], 1)
+      end
+    end
 
     it 'fails when content-type is invalid' do
       stub_request(:get, @patient_file_location)
