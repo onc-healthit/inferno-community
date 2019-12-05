@@ -6,14 +6,15 @@ module Inferno
   class FHIRModelsValidator
     def initialize; end
 
-    def validate(resource, fhir_version, profile_url = nil)
-      validator_klass = if profile_url
-                          Inferno::ValidationUtil.definitions[profile_url]
-                        else
-                          fhir_version::Definitions.resource_definition(resource.resourceType)
-                        end
-      errors = validator_klass.validate_resource(resource)
-      warnings = validator_klass.warnings
+    def validate(resource, _fhir_version, profile_url = nil)
+      if profile_url
+        validator_klass = Inferno::ValidationUtil.definitions[profile_url]
+        errors = validator_klass.validate_resource(resource)
+        warnings = validator_klass.warnings
+      else
+        errors = resource.validate.collect { |k, v| "#{k}: #{v}" }
+        warnings = []
+      end
 
       {
         fatals: [],
