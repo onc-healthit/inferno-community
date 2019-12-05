@@ -2,6 +2,144 @@
 
 require_relative '../../../../test/test_helper'
 
+describe Inferno::Sequence::BulkDataExportSequence do
+  before do
+    @sequence_class = Inferno::Sequence::BulkDataExportSequence
+
+    @instance = Inferno::Models::TestingInstance.create(
+      url: 'http://www.example.com',
+      bulk_access_token: 99_897_979
+    )
+
+    @client = FHIR::Client.new(@instance.url)
+
+    @file_request_headers = { accept: 'application/fhir+ndjson',
+                              authorization: "Bearer #{@instance.bulk_access_token}" }
+
+    @patient_file_location = 'http://www.example.com/patient_export.ndjson'
+    @condition_file_location = 'http://www.example.com/condition_export.ndjson'
+
+    @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
+    @condition_export = load_fixture_with_extension('bulk_data_condition.ndjson')
+
+    @complete_status = {
+      'transactionTime' => '2019-08-01',
+      'request' => '[base]/Patient/$export?_type=Patient,Condition',
+      'requiresAccessToken' => 'true',
+      'output' => [
+        { 'type' => 'Patient', 'url' => @patient_file_location },
+        { 'type' => 'Condition', 'url' => @condition_file_location }
+      ],
+      'error' => 'error'
+    }
+  end
+
+  describe 'read output NDJSON tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'succeeds when output is valid' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_export
+        )
+
+      stub_request(:get, @condition_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @condition_export
+        )
+
+      @sequence.check_all_files(@complete_status['output'], 1)
+    end
+
+    it 'checks all output items' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_export
+        )
+
+        assert_raises(WebMock::NetConnectNotAllowedError) do
+      @sequence.check_all_files(@complete_status['output'], 1)
+        end
+    end    
+
+    it 'fails when content-type is invalid' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+text' },
+          body: @patient_export
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_file_request(@complete_status['output'], 0, 1)
+      end
+
+      assert_match(/Expected content-type/, error.message)
+    end
+  end
+
+  describe 'read NDJSON file tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'succeeds when NDJSON is valid' do
+      @sequence.check_ndjson(@patient_export, 'Patient', 3)
+    end
+
+    it 'succeeds when lines_to_validate is nil' do
+      @sequence.check_ndjson(@patient_export, 'Patient', nil)
+    end
+
+    it 'succeeds when lines_to_validate is less than 1' do
+      @sequence.check_ndjson(@patient_export, 'Patient', -1)
+    end
+
+    it 'succeeds when lines_to_validate is decimal' do
+      @sequence.check_ndjson(@patient_export, 'Patient', 0.5)
+    end
+
+    it 'succeeds when lines_to_validate is greater than lines of output file' do
+      @sequence.check_ndjson(@patient_export, 'Patient', 100)
+    end
+
+    it 'fails when output file type is different from resource type' do
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_ndjson(@patient_export, 'Condition', 3)
+      end
+
+      assert_match(/^Resource type/, error.message)
+    end
+
+    it 'fails when output file has invalid resource' do
+      invalid_patient_export = @patient_export.sub('"male"', '"001"')
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_ndjson(invalid_patient_export, 'Patient', 3)
+      end
+
+      assert_match(/invalid codes \[\\"001\\"\]/, error.message)
+    end
+
+    it 'succeeds when validate first line in output file having invalid resource' do
+      invalid_patient_export = @patient_export.sub('"male"', '"001"')
+      @sequence.check_ndjson(invalid_patient_export, 'Patient', 1)
+    end
+  end
+end
+
 class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
     @content_location = 'http://www.example.com/status'
@@ -331,25 +469,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     search_params = { '_type' => 'Condition' }
     assert_raises Inferno::AssertionException do
       @sequence.assert_output_has_correct_type(@complete_status['output'], search_params)
-    end
-  end
-
-  def test_file_request_fail_unmatched_type
-    unmatched_type_output = @complete_status['output'].clone
-    unmatched_type_output.first['type'] = 'Condition'
-
-    include_file_request_stub
-
-    assert_raises Inferno::AssertionException do
-      @sequence.check_file_request(unmatched_type_output)
-    end
-  end
-
-  def test_file_request_fail_invalid_resource
-    invalid_patient_export = @patient_export.sub('male', '001')
-
-    assert_raises Inferno::AssertionException do
-      @sequence.check_ndjson(invalid_patient_export, 'Patient')
     end
   end
 end

@@ -11,7 +11,7 @@ module Inferno
 
       test_id_prefix 'BDE'
 
-      requires :bulk_access_token
+      requires :bulk_access_token, :bulk_lines_to_validate
 
       attr_accessor :run_all_kick_off_tests
 
@@ -113,7 +113,21 @@ module Inferno
         @client.get(url, @client.fhir_headers(headers))
       end
 
-      def check_file_request(output = @output, index: 0)
+      def check_all_files(output = @output, lines_to_validate = @instance.bulk_lines_to_validate)
+        skip 'Server response did not have output data' unless output.present?
+
+        errors = []
+
+        (0..output.length - 1).each do |i|
+          check_file_request(output, i, lines_to_validate)
+        rescue Inferno::AssertionException => e
+          errors.push(e.message)
+        end
+
+        assert errors.empty?, errors.to_s
+      end
+
+      def check_file_request(output, index, lines_to_validate)
         skip 'Server response did not have output data' unless output.present?
 
         file = output[index]
@@ -121,16 +135,28 @@ module Inferno
         reply = get_file(file)
         assert_response_content_type(reply, 'application/fhir+ndjson')
 
-        check_ndjson(reply.body, type)
+        check_ndjson(reply.body, type, lines_to_validate)
       end
 
-      def check_ndjson(ndjson, type)
+      def check_ndjson(ndjson, file_type, lines_to_validate)
+        lines_to_validate = 1 if lines_to_validate.nil? || lines_to_validate < 1
+
+        line_count = 0
+        errors = []
+
         ndjson.each_line do |line|
+          break if line_count == lines_to_validate
+
+          line_count += 1
+
           resource = FHIR.from_contents(line)
-          assert resource.class.name.demodulize == type, "Resource in output file did not have type of \"#{type}\""
-          errors = resource.validate
-          assert errors.empty?, errors.to_s
+          resource_type = resource.class.name.demodulize
+          assert resource_type == file_type, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{file_type}\")"
+          validation_errors = resource.validate
+          assert validation_errors.empty?, validation_errors.to_s
         end
+
+        errors
       end
 
       def check_cancel_request
@@ -249,9 +275,10 @@ module Inferno
         assert_output_has_type_url
       end
 
-      test 'Server shall return FHIR resources in ndjson file' do
+      test :validate_ndjson do
         metadata do
           id '07'
+          name 'Server shall return FHIR resources in ndjson file'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
           description %(
             Servers SHALL support [Newline Delimited JSON](http://ndjson.org),
@@ -259,7 +286,7 @@ module Inferno
           )
         end
 
-        check_file_request
+        check_all_files
       end
 
       test 'Server shall return "202 Accepted" for cancel export request' do

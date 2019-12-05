@@ -73,6 +73,7 @@ module Inferno
       property :bulk_public_key, String
       property :bulk_private_key, String
       property :bulk_access_token, String
+      property :bulk_lines_to_validate, Integer
 
       has n, :sequence_results
       has n, :resource_references
