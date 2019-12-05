@@ -17,7 +17,7 @@ module Inferno
                   'If any are missing, they can be downloaded from the '\
                   '<a href="https://cts.nlm.nih.gov/fhir/">NIH VSAC FHIR server</a>.<br/>'\
                   '2) POST '\
-                  '<a href="/inferno/resources/quality_reporting/Bundle/measure-col-bundle.json">this Bundle</a> '\
+                  '<a href="/inferno/resources/quality_reporting/CMS130/Bundle/cms130-bundle.json">this Bundle</a> '\
                   'to your FHIR server, and observe the status codes in the response to ensure all resources '\
                   'saved sucessfully.'
 

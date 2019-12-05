@@ -22,7 +22,7 @@ module Inferno
         end
 
         root = "#{__dir__}/../../../.."
-        path = File.expand_path('resources/quality_reporting/Bundle/measure-col-bundle.json', root)
+        path = File.expand_path('resources/quality_reporting/CMS130/Bundle/cms130-bundle.json', root)
         bundle = FHIR::STU3::Bundle.new JSON.parse(File.read(path))
         measure_id = 'MitreTestScript-measure-col'
         measure = get_resource_by_id(bundle, measure_id)
