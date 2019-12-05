@@ -738,7 +738,7 @@ module Inferno
       def get_value_for_search_param(element)
         case element
         when FHIR::Period
-          element.start || element.end
+          'gt' + element.start || 'lt' + element.end
         when FHIR::Reference
           element.reference
         when FHIR::CodeableConcept
