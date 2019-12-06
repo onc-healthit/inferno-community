@@ -403,9 +403,7 @@ module Inferno
           test_code: ''
         }
 
-        multiple_or_params = sequence[:search_param_descriptions]
-          .select { |_param, description| description[:multiple_or] == 'SHALL' }
-          .map { |param, _description| param.to_s }
+        multiple_or_params = get_multiple_or_params(sequence)
 
         multiple_or_params.each do |param|
           multiple_or_search = sequence[:searches].find { |search| (search[:names].include? param) && search[:expectation] == 'SHALL' }
