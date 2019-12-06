@@ -554,9 +554,9 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
 
-            @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-            next unless @resources_found
+            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
+            @resources_found = true
             @#{sequence[:resource].underscore} = reply.resource.entry
               .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
               .resource

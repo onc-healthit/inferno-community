@@ -80,9 +80,9 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
-          next unless @resources_found
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
 
+          @resources_found = true
           @care_team = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
             .resource
