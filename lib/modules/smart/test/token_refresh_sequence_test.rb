@@ -124,12 +124,6 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence = @sequence_class.new(@instance, @client)
     end
 
-    it 'fails when the token response has an error status' do
-      response = OpenStruct.new(code: 400)
-      exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
-      assert_equal('Bad response code: expected 200, 201, but found 400. ', exception.message)
-    end
-
     it 'fails when the token response body is invalid json' do
       response = OpenStruct.new(code: 200, body: '{')
       exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
@@ -143,7 +137,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     it 'fails when the token response does not contain a required field' do
-      required_fields = ['expires_in', 'token_type', 'scope']
+      required_fields = ['token_type', 'scope', 'expires_in']
       required_fields.each do |field|
         body = full_body.reject { |key, _| key == field }.to_json
         response = OpenStruct.new(code: 200, body: body)
@@ -178,7 +172,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response headers did not contain cache_control as is recommended for token exchanges.')
+      assert_includes(warnings, 'Token response headers did not contain cache_control as is required in the SMART App Launch Guide.')
     end
 
     it 'creates a warning when the pragma header is missing' do
@@ -186,7 +180,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response headers did not contain pragma as is recommended for token exchanges.')
+      assert_includes(warnings, 'Token response headers did not contain pragma as is required in the SMART App Launch Guide.')
     end
 
     it 'creates a warning when the cache_control header is not set to "no-store"' do
@@ -194,7 +188,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response header should have cache_control containing no-store.')
+      assert_includes(warnings, 'Token response header must have cache_control containing no-store.')
     end
 
     it 'creates a warning when the pragma header is not set to "no-cache"' do
@@ -202,7 +196,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response header should have pragma containing no-cache.')
+      assert_includes(warnings, 'Token response header must have pragma containing no-cache.')
     end
   end
 end

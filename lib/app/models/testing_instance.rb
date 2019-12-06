@@ -19,6 +19,7 @@ module Inferno
 
       property :client_name, String, default: 'Inferno'
       property :scopes, String
+      property :received_scopes, String
       property :launch_type, String
       property :state, String
       property :selected_module, String
