@@ -220,7 +220,7 @@ module Inferno
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
                 #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
-                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
+                skip 'No #{resource_name} resources were returned from this search' unless #{resource_variable}
           )
         end
         sequence[:tests] << revinclude_test
