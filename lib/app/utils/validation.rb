@@ -174,7 +174,7 @@ module Inferno
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if resource_contains_code(resource, '8310-5')
       elsif resource.resourceType == 'DiagnosticReport'
-        return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource_contains_code(resource, 'LAB')
+        return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_note]]
       end
