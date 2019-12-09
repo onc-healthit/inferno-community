@@ -8,6 +8,7 @@ require_relative 'helpers/browser_logic'
 module Inferno
   class App
     class Endpoint < Sinatra::Base
+
       register Sinatra::ConfigFile
 
       config_file File.join('..', '..', ENV['INFERNO_CONFIG_FILE'] || 'config.yml')
@@ -58,6 +59,16 @@ module Inferno
       set :views, File.expand_path('views', __dir__)
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
 
+      @@inferno_modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
+
+      def self.inferno_modules
+        @@inferno_modules
+      end
+
+      def self.inferno_modules=(new_modules)
+        @@inferno_modules = new_modules
+      end
+
       def render_index
         unless defined?(settings.presets).nil? || settings.presets.nil?
           base_url = request.base_url
@@ -68,8 +79,7 @@ module Inferno
             inferno_uri.nil? || inferno_uri == base_url || inferno_uri == base_url + base_path
           end
         end
-        modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
-        erb :index, {}, modules: modules, presets: presets
+        erb :index, {}, modules: inferno_modules, presets: presets
       end
     end
   end
