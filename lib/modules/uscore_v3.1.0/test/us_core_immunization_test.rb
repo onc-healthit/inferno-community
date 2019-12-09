@@ -140,7 +140,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary, 'occurrenceDateTime'))
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary, 'occurrence'))
       }
     end
 
