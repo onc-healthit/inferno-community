@@ -27,6 +27,7 @@ module Inferno
         capability_statement_json = capability_statement('server')
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
+        fix_metadata_errors(metadata)
         add_special_cases(metadata)
       end
 
@@ -180,7 +181,7 @@ module Inferno
               sequence[:must_supports] <<
                 {
                   type: 'element',
-                  path: path.gsub('[x]', type['code'].slice(0).capitalize + type['code'].slice(1..-1))
+                  path: path.gsub('[x]', capitalize_first_letter(type['code']))
                 }
             end
           else
@@ -196,13 +197,10 @@ module Inferno
       def add_search_param_descriptions(profile_definition, sequence)
         sequence[:search_param_descriptions].each_key do |param|
           search_param_definition = @resource_by_path[search_param_path(sequence[:resource], param.to_s)]
-          path_parts = search_param_definition['xpath'].split('/f:')
-          if param.to_s != '_id'
-            path_parts[0] = sequence[:resource]
-            path = path_parts.join('.')
-          else
-            path = path_parts[0]
-          end
+          path = search_param_definition['expression']
+          path = path.gsub(/.where\((.*)/, '')
+          as_type = path.scan(/.as\((.*?)\)/).flatten.first
+          path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
           profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
           param_metadata = {
             path: path,
@@ -285,6 +283,24 @@ module Inferno
         end
       end
 
+      def fix_metadata_errors(metadata)
+        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
+        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
+        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
+
+        goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
+        goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
+        goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
+
+        # add the ge comparator - the metadata is missing it for some reason
+        metadata[:sequences].each do |sequence|
+          sequence[:search_param_descriptions].each do |_param, description|
+            param_comparators = description[:comparators]
+            param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
+          end
+        end
+      end
+
       def add_special_cases(metadata)
         category_first_profiles = [
           PROFILE_URIS[:lab_results]
@@ -319,6 +335,10 @@ module Inferno
 
         sequence[:searches].delete(search)
         sequence[:searches].unshift(search)
+      end
+
+      def capitalize_first_letter(str)
+        str.slice(0).capitalize + str.slice(1..-1)
       end
     end
   end

@@ -107,7 +107,7 @@ module Inferno
 
             A server SHOULD support searching by patient+target-date on the Goal resource
 
-              including support for these target-date comparators: gt, lt, le
+              including support for these target-date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -123,7 +123,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
           comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)

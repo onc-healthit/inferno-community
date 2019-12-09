@@ -28,7 +28,7 @@ module Inferno
           assert value_found, 'code on resource does not match code requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
+          value_found = can_resolve_path(resource, 'effective') do |date|
             validate_date_search(value, date)
           end
           assert value_found, 'date on resource does not match date requested'
@@ -142,7 +142,7 @@ module Inferno
 
             A server SHALL support searching by patient+category+date on the Observation resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -152,14 +152,14 @@ module Inferno
         search_params = {
           'patient': @instance.patient_id,
           'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
@@ -177,7 +177,7 @@ module Inferno
 
             A server SHOULD support searching by patient+code+date on the Observation resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -187,14 +187,14 @@ module Inferno
         search_params = {
           'patient': @instance.patient_id,
           'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)

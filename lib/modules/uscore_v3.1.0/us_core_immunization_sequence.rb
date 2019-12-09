@@ -24,7 +24,7 @@ module Inferno
           assert value_found, 'status on resource does not match status requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'occurrenceDateTime') do |date|
+          value_found = can_resolve_path(resource, 'occurrence') do |date|
             validate_date_search(value, date)
           end
           assert value_found, 'date on resource does not match date requested'
@@ -107,7 +107,7 @@ module Inferno
 
             A server SHOULD support searching by patient+date on the Immunization resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -116,14 +116,14 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'date': get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'occurrenceDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@immunization_ary, 'occurrence'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)

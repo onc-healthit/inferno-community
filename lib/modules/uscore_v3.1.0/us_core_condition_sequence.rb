@@ -141,7 +141,7 @@ module Inferno
 
             A server SHOULD support searching by patient+onset-date on the Condition resource
 
-              including support for these onset-date comparators: gt, lt, le
+              including support for these onset-date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -157,7 +157,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:'onset-date'])
           comparator_search_params = { 'patient': search_params[:patient], 'onset-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)

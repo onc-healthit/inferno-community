@@ -709,7 +709,7 @@ module Inferno
         path_ary = path.split('.')
         el_as_array = Array.wrap(element)
         cur_path_part = path_ary.shift.to_sym
-        return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
+        return false if el_as_array.none? { |el| el.send(cur_path_part).present? }
 
         if block_given?
           el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) } }
@@ -725,7 +725,7 @@ module Inferno
         path_ary = path.split('.')
         cur_path_part = path_ary.shift.to_sym
 
-        found_subset = el_as_array.select { |el| el.try(cur_path_part).present? }
+        found_subset = el_as_array.select { |el| el.send(cur_path_part).present? }
         return nil if found_subset.empty?
 
         found_subset.each do |el|
@@ -738,7 +738,11 @@ module Inferno
       def get_value_for_search_param(element)
         case element
         when FHIR::Period
-          element.start || element.end
+          if element.start.present?
+            'gt' + element.start
+          else
+            'lt' + element.end
+          end
         when FHIR::Reference
           element.reference
         when FHIR::CodeableConcept
