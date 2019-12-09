@@ -98,7 +98,7 @@ module Inferno
           @observation = reply&.resource&.entry&.first&.resource
           @observation_ary = fetch_all_bundled_resources(reply&.resource)
 
-          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply)
+          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:resp_rate])
           save_delayed_sequence_references(@observation_ary)
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
           break
@@ -313,7 +313,7 @@ module Inferno
       test 'Observation resources associated with Patient conform to US Core R4 profiles' do
         metadata do
           id '11'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/resprate'
+          link 'http://hl7.org/fhir/StructureDefinition/resprate'
           description %(
 
             This test checks if the resources returned from prior searches conform to the US Core profiles.
@@ -324,7 +324,7 @@ module Inferno
         end
 
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Observation')
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:resp_rate])
       end
 
       test 'At least one of every must support element is provided in any Observation for this patient.' do
