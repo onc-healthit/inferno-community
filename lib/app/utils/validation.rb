@@ -158,7 +158,7 @@ module Inferno
       if resource.resourceType == 'Observation'
         return DEFINITIONS[US_CORE_R4_URIS[:smoking_status]] if resource_contains_code(resource, '72166-2')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:lab_results]] if resource_contains_code(resource, 'laboratory')
+        return DEFINITIONS[US_CORE_R4_URIS[:lab_results]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'laboratory' }
 
         return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if resource_contains_code(resource, '59576-9')
 
