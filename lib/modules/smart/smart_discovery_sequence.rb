@@ -73,7 +73,7 @@ module Inferno
         { url: 'revoke', description: 'token revocation' }
       ].freeze
 
-      test 'FHIR server makes SMART configuration avalibale from well-known endpoint' do
+      test 'FHIR server makes SMART configuration available from well-known endpoint' do
         metadata do
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
@@ -109,7 +109,7 @@ module Inferno
       test :required_well_known_fields do
         metadata do
           id '02'
-          name 'Well-known Configuration contains required fields'
+          name 'Well-known configuration contains required fields'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
           description %(
             The JSON from .well-known/smart-configuration contains the following
@@ -156,7 +156,7 @@ module Inferno
         @conformance = @client.conformance_statement
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
 
-        assert oauth_metadata.present?, 'No OAuth 2.0 Metadata in Conformance/CapabiliytStatemeent resource'
+        assert oauth_metadata.present?, 'No OAuth 2.0 metadata in server CapabilityStatement'
 
         REQUIRED_OAUTH_ENDPOINTS.each do |endpoint|
           url = oauth_metadata[:"#{endpoint[:url]}_url"]
