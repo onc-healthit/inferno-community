@@ -68,6 +68,10 @@ module Inferno
         @@inferno_modules
       end
 
+      def self.inferno_modules=(new_modules)
+        @@inferno_modules = new_modules
+      end
+
       def render_index
         unless @@inferno_modules
           base_url = request.base_url

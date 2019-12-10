@@ -7,7 +7,8 @@ require 'inferno/version'
 Gem::Specification.new do |spec|
   spec.name          = 'inferno'
   spec.version       = Inferno::VERSION
-  spec.authors       = ['Rob Scanlon', 'Reece Adamson', 'Steve MacVicar', 'Chase Zhou', 'Yunwei Wang']
+  spec.authors       = ['Rob Scanlon', 'Steve MacVicar', 'Reece Adamson', 'Chase Zhou', 'Yunwei Wang', 'Hershil Patel',
+                        "Michael O'Keefe", 'Jason Walonoski']
   spec.email         = ['inferno@mitre.org']
 
   spec.summary       = 'Tests for FHIR Servers '
