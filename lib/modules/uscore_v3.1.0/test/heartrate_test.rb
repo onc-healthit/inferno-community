@@ -12,7 +12,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
     @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = '123'
+    @patient_id = 'example'
     @instance.patient_id = @patient_id
     set_resource_support(@instance, 'Observation')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
@@ -62,6 +62,381 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
 
       assert_equal 'Do not test if no bearer token set', exception.message
+    end
+  end
+
+  describe 'Observation search by patient+code test' do
+    before do
+      @test = @sequence_class[:search_by_patient_code]
+      @sequence = @sequence_class.new(@instance, @client)
+      @observation = FHIR.from_contents(load_fixture(:heartrate))
+      @observation_ary = [@observation]
+      @sequence.instance_variable_set(:'@observation', @observation)
+      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code'))
+      }
+    end
+
+    it 'fails if a non-success response code is received' do
+      ['8867-4'].each do |value|
+        query_params = {
+          'patient': @instance.patient_id,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 401)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      ['8867-4'].each do |value|
+        query_params = {
+          'patient': @instance.patient_id,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: FHIR::Observation.new.to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
+    end
+
+    it 'skips if an empty Bundle is received' do
+      ['8867-4'].each do |value|
+        query_params = {
+          'patient': @instance.patient_id,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: FHIR::Bundle.new.to_json)
+      end
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      ['8867-4'].each do |value|
+        query_params = {
+          'patient': @instance.patient_id,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      ['8867-4'].each do |value|
+        query_params = {
+          'patient': @instance.patient_id,
+          'code': value
+        }
+        body =
+          if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+            wrap_resources_in_bundle(@observation_ary).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Observation search by patient+category+date test' do
+    before do
+      @test = @sequence_class[:search_by_patient_category_date]
+      @sequence = @sequence_class.new(@instance, @client)
+      @observation = FHIR.from_contents(load_fixture(:heartrate))
+      @observation_ary = [@observation]
+      @sequence.instance_variable_set(:'@observation', @observation)
+      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
+      }
+    end
+
+    it 'skips if no Observation resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Observation.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+  end
+
+  describe 'Observation search by patient+category test' do
+    before do
+      @test = @sequence_class[:search_by_patient_category]
+      @sequence = @sequence_class.new(@instance, @client)
+      @observation = FHIR.from_contents(load_fixture(:heartrate))
+      @observation_ary = [@observation]
+      @sequence.instance_variable_set(:'@observation', @observation)
+      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category'))
+      }
+    end
+
+    it 'skips if no Observation resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Observation.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Observation search by patient+code+date test' do
+    before do
+      @test = @sequence_class[:search_by_patient_code_date]
+      @sequence = @sequence_class.new(@instance, @client)
+      @observation = FHIR.from_contents(load_fixture(:heartrate))
+      @observation_ary = [@observation]
+      @sequence.instance_variable_set(:'@observation', @observation)
+      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
+      }
+    end
+
+    it 'skips if no Observation resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Observation.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+  end
+
+  describe 'Observation search by patient+category+status test' do
+    before do
+      @test = @sequence_class[:search_by_patient_category_status]
+      @sequence = @sequence_class.new(@instance, @client)
+      @observation = FHIR.from_contents(load_fixture(:heartrate))
+      @observation_ary = [@observation]
+      @sequence.instance_variable_set(:'@observation', @observation)
+      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'status'))
+      }
+    end
+
+    it 'skips if no Observation resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Observation.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary).to_json)
+
+      @sequence.run_test(@test)
     end
   end
 
