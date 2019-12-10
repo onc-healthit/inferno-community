@@ -139,20 +139,31 @@ module Inferno
       end
 
       def check_ndjson(ndjson, file_type, lines_to_validate)
-        lines_to_validate = 1 if lines_to_validate.nil? || lines_to_validate < 1
+        lines_to_validate = 1 if lines_to_validate.nil?
+        validate_all = lines_to_validate < 1
         line_count = 0
 
         ndjson.each_line do |line|
-          break if line_count == lines_to_validate
+          break if !validate_all && line_count == lines_to_validate 
 
           line_count += 1
 
-          resource = FHIR.from_contents(line)
+          resource = versioned_resource_class.from_contents(line)          
           resource_type = resource.class.name.demodulize
           assert resource_type == file_type, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{file_type}\")"
-          validation_errors = resource.validate
-          assert validation_errors.empty?, validation_errors.to_s
+
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          if p && @instance.fhir_version == 'r4'
+            errors = p.validate_resource(resource)
+          else
+            warn { assert false, 'No profiles found for this Resource' }
+            errors = resource.validate
+          end
+
+          puts "line count: #{line_count}" if !errors.empty?
+          assert errors.empty?, errors.to_s
         end
+        puts "line count: #{line_count}"
       end
 
       def check_cancel_request
