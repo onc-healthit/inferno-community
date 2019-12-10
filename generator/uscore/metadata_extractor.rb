@@ -5,10 +5,6 @@ module Inferno
     module USCoreMetadataExtractor
       PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
-      def profile_uri(profile)
-        "http://hl7.org/fhir/us/core/StructureDefinition/#{profile}"
-      end
-
       def search_param_path(resource, param)
         param = 'id' if param == '_id'
         "SearchParameter/us-core-#{resource.downcase}-#{param}"
@@ -54,8 +50,16 @@ module Inferno
         test_id_prefix
       end
 
+      def get_base_path(profile)
+        if profile.include? 'us/core/'
+          profile.split('us/core/').last
+        else
+          profile.split('fhir/').last
+        end
+      end
+
       def build_new_sequence(resource, profile)
-        base_path = profile.split('us/core/').last
+        base_path = get_base_path(profile)
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
         reformatted_version = ig_resource['version'].delete('.')
@@ -65,13 +69,12 @@ module Inferno
 
         # In case the profile doesn't start with US Core
         class_name = "USCore#{reformatted_version}#{class_name}" unless class_name.start_with? 'USCore'
-
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
-          profile: profile_uri(base_name), # link in capability statement is incorrect,
+          profile: profile,
           title: profile_title,
           interactions: [],
           searches: [],
@@ -98,7 +101,7 @@ module Inferno
             add_include_search(resource, new_sequence)
             add_revinclude_targets(resource, new_sequence)
 
-            base_path = new_sequence[:profile].split('us/core/').last
+            base_path = get_base_path(supported_profile)
             profile_definition = @resource_by_path[base_path]
             add_must_support_elements(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
