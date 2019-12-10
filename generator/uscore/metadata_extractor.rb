@@ -222,6 +222,8 @@ module Inferno
             expectation = expectation_extension[index]['extension'].first['valueCode'] unless expectation_extension.nil?
             param_metadata[:comparators][comparator.to_sym] = expectation
           end
+          multiple_or_expectation = search_param_definition['_multipleOr']['extension'].first['valueCode']
+          param_metadata[:multiple_or] = multiple_or_expectation
           sequence[:search_param_descriptions][param] = param_metadata
         end
       end

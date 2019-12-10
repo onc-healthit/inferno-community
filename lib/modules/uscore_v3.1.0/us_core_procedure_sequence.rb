@@ -16,22 +16,20 @@ module Inferno
         case property
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'performed') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'date on resource does not match date requested'
+          value_found = resolve_element_from_path(resource, 'performed') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'date on resource does not match date requested'
 
         when 'code'
-          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'code on resource does not match code requested'
+          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'code on resource does not match code requested'
 
         end
       end
@@ -125,6 +123,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -160,6 +159,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -193,6 +193,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
         validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -322,7 +323,7 @@ module Inferno
         must_support_elements.each do |path|
           @procedure_ary&.each do |resource|
             truncated_path = path.gsub('Procedure.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @procedure_ary.length

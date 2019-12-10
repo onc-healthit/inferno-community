@@ -16,22 +16,20 @@ module Inferno
         case property
 
         when 'category'
-          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'category on resource does not match category requested'
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'category on resource does not match category requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'period') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'date on resource does not match date requested'
+          value_found = resolve_element_from_path(resource, 'period') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'date on resource does not match date requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         end
       end
@@ -81,6 +79,8 @@ module Inferno
           versions :r4
         end
 
+        @care_plan_ary = []
+
         category_val = ['assess-plan']
         category_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'category': val }
@@ -88,13 +88,13 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CarePlan' }
-          next unless @resources_found
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CarePlan' }
 
+          @resources_found = true
           @care_plan = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'CarePlan' }
             .resource
-          @care_plan_ary = fetch_all_bundled_resources(reply.resource)
+          @care_plan_ary += fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
           save_delayed_sequence_references(@care_plan_ary)
@@ -130,6 +130,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -166,6 +167,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -200,6 +202,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -337,7 +340,7 @@ module Inferno
         must_support_elements.each do |path|
           @care_plan_ary&.each do |resource|
             truncated_path = path.gsub('CarePlan.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @care_plan_ary.length
