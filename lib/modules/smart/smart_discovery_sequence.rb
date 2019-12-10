@@ -73,7 +73,7 @@ module Inferno
         { url: 'revoke', description: 'token revocation' }
       ].freeze
 
-      test 'Retrieve Configuration from well-known endpoint' do
+      test 'FHIR server makes SMART configuration avalibale from well-known endpoint' do
         metadata do
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
@@ -109,7 +109,7 @@ module Inferno
       test :required_well_known_fields do
         metadata do
           id '02'
-          name 'Configuration from well-known endpoint contains required fields'
+          name 'Well-known Configuration contains required fields'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
           description %(
             The JSON from .well-known/smart-configuration contains the following
@@ -126,7 +126,7 @@ module Inferno
       test :recommended_well_known_fields do
         metadata do
           id '03'
-          name 'Configuration from well-known endpoint contains recommended fields'
+          name 'Well-known configuration contains recommended fields'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#metadata'
           optional
           description %(
@@ -156,7 +156,7 @@ module Inferno
         @conformance = @client.conformance_statement
         oauth_metadata = @client.get_oauth2_metadata_from_conformance(false) # strict mode off, don't require server to state smart conformance
 
-        assert oauth_metadata.present?, 'No OAuth Metadata in Conformance/CapabiliytStatemeent resource'
+        assert oauth_metadata.present?, 'No OAuth 2.0 Metadata in Conformance/CapabiliytStatemeent resource'
 
         REQUIRED_OAUTH_ENDPOINTS.each do |endpoint|
           url = oauth_metadata[:"#{endpoint[:url]}_url"]
@@ -205,7 +205,7 @@ module Inferno
         )
       end
 
-      test 'OAuth Endpoints must be the same in the conformance statement and well known endpoint' do
+      test 'OAuth 2.0 Endpoints in the conformance statement match those from the well-known configuration' do
         metadata do
           id '05'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
