@@ -156,23 +156,23 @@ module Inferno
       return if candidates.blank?
 
       if resource.resourceType == 'Observation'
-        return DEFINITIONS[US_CORE_R4_URIS[:smoking_status]] if resource_contains_code(resource, '72166-2')
+        return DEFINITIONS[US_CORE_R4_URIS[:smoking_status]] if observation_contains_code(resource, '72166-2')
 
         return DEFINITIONS[US_CORE_R4_URIS[:lab_results]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'laboratory' }
 
-        return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if resource_contains_code(resource, '59576-9')
+        return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if observation_contains_code(resource, '59576-9')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:pediatric_weight_height]] if resource_contains_code(resource, '77606-2')
+        return DEFINITIONS[US_CORE_R4_URIS[:pediatric_weight_height]] if observation_contains_code(resource, '77606-2')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if resource_contains_code(resource, '59408-5')
+        return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if observation_contains_code(resource, '59408-5')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:vitals_panel]] if resource_contains_code(resource, '85353-1')
+        return DEFINITIONS[US_CORE_R4_URIS[:vitals_panel]] if observation_contains_code(resource, '85353-1')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:resp_rate]] if resource_contains_code(resource, '9279-1')
+        return DEFINITIONS[US_CORE_R4_URIS[:resp_rate]] if observation_contains_code(resource, '9279-1')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if resource_contains_code(resource, '8867-4')
+        return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if observation_contains_code(resource, '8867-4')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if resource_contains_code(resource, '8310-5')
+        return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
       elsif resource.resourceType == 'DiagnosticReport'
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 
@@ -182,8 +182,8 @@ module Inferno
       candidates.first
     end
 
-    def self.resource_contains_code(resource, code)
-      resource&.code&.coding&.any? { |coding| coding&.code == code }
+    def self.observation_contains_code(observation_resource, code)
+      observation_resource&.code&.coding&.any? { |coding| coding&.code == code }
     end
   end
 end
