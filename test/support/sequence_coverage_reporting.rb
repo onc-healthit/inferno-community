@@ -2,7 +2,7 @@
 
 require 'ast'
 require 'parser/current'
-require_relative '../../lib/app/utils/assertions'
+require_relative '../../lib/inferno/app/utils/assertions'
 
 # To generate a sequence coverage report, run the unit tests with the
 # ASSERTION_REPORT environment variable set to true:
@@ -75,9 +75,9 @@ class AssertionTracker
 end
 
 class AssertionCallLocationFormatter
-  SEQUENCE_LINE_REGEX = %r{inferno/lib/(modules/[\w\.]+/\w+\.rb:\d+)}.freeze
-  LINE_REGEX = %r{inferno/lib/((?:[\w\.]+/?)+\.rb:\d+)}.freeze
-  ASSERTION_CALL_REGEX = %r{inferno/lib/app/utils/assertions.rb:\d+}.freeze
+  SEQUENCE_LINE_REGEX = %r{inferno/lib/inferno/(modules/[\w\.]+/\w+\.rb:\d+)}.freeze
+  LINE_REGEX = %r{inferno/lib/inferno/((?:[\w\.]+/?)+\.rb:\d+)}.freeze
+  ASSERTION_CALL_REGEX = %r{inferno/lib/inferno/app/utils/assertions.rb:\d+}.freeze
   CALL_SEPARATOR = ' => '
 
   attr_accessor :sequence_call_index, :assertion_call_index

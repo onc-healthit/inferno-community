@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require_relative '../../lib/app/models/test_result'
+require_relative '../../lib/inferno/app/models/test_result'
 require_relative '../shared/result_status_tests'
 
 class TestResultTest < MiniTest::Test

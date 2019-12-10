@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require_relative '../../lib/app/models/server_capabilities'
-require_relative '../../lib/app/models/testing_instance'
+require_relative '../../lib/inferno/app/models/server_capabilities'
+require_relative '../../lib/inferno/app/models/testing_instance'
 
 class ServerCapabilitiesTest < MiniTest::Test
   def setup

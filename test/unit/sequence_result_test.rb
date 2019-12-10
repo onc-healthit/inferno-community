@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require_relative '../../lib/app/models/sequence_result'
+require_relative '../../lib/inferno/app/models/sequence_result'
 require_relative '../shared/result_status_tests'
-require_relative '../../lib/app/utils/result_statuses'
+require_relative '../../lib/inferno/app/utils/result_statuses'
 
 class SequenceResultTest < MiniTest::Test
   include Inferno::ResultStatusTests

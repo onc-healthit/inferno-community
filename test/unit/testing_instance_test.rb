@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require_relative '../../lib/app/models/testing_instance'
+require_relative '../../lib/inferno/app/models/testing_instance'
 
 describe Inferno::Models::TestingInstance do
   before do

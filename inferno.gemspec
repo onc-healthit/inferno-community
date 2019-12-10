@@ -2,7 +2,7 @@
 
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'version'
+require 'inferno/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'inferno'
@@ -38,11 +38,16 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'sinatra-contrib', '~> 2.0.7'
   spec.add_runtime_dependency 'fhir_client', '~> 4.0.3'
   spec.add_runtime_dependency 'time_difference', '~> 0.7.0'
-  spec.add_runtime_dependency 'pry', '0.12.2'
-  spec.add_runtime_dependency 'pry-byebug',
+  spec.add_runtime_dependency 'data_mapper', '~> 1.2.0'
+  spec.add_runtime_dependency 'json-jwt', '~> 1.11.0'
+  spec.add_runtime_dependency 'kramdown', '~> 2.1.0'
+  spec.add_runtime_dependency 'selenium-webdriver', '~> 3.142.6'
+  spec.add_runtime_dependency 'sqlite3', '~> 1.4.1'
+  spec.add_runtime_dependency 'bloomer', '~> 1.0.0'
+  spec.add_runtime_dependency 'base62-rb', '~> 0.3.1'
+  spec.add_runtime_dependency 'dm-sqlite-adapter', '~> 1.2.0'
+  spec.add_runtime_dependency 'thin', '~> 1.7.2'
 
-
-  spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rubocop', '~> 0.77'
 end

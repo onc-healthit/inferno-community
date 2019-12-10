@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'erb'
-require 'pry'
 require 'fileutils'
 require 'net/http'
 require 'fhir_models'

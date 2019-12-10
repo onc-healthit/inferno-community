@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require File.expand_path '../test_helper.rb', __dir__
-require File.expand_path 'lib/app/utils/search_validation.rb'
+require_relative '../test_helper'
+require File.expand_path 'lib/inferno/app/utils/search_validation.rb'
 class AssertionsTest < MiniTest::Test
   include Inferno::SearchValidationUtil
 

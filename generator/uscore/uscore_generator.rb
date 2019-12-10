@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative './metadata_extractor'
-require_relative '../../lib/app/utils/validation'
+require_relative '../../lib/inferno/app/utils/validation'
 require_relative '../generator_base'
 require_relative './us_core_unit_test_generator'
 

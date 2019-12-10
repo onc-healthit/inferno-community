@@ -24,7 +24,7 @@ if create_assertion_report?
   MiniTest.after_run { AssertionReporter.report }
 end
 
-require_relative '../lib/app'
+require_relative '../lib/inferno/app'
 
 def find_fixture_directory(test_directory = nil)
   test_directory ||=
