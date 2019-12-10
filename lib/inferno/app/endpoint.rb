@@ -68,16 +68,12 @@ module Inferno
         @@inferno_modules
       end
 
-      def self.inferno_modules=(new_modules)
-        @@inferno_modules = new_modules
-      end
-
       def render_index
-        unless defined?(settings.presets).nil? || settings.presets.nil?
+        unless @@inferno_modules
           base_url = request.base_url
           base_path = Inferno::BASE_PATH&.chomp('/')
 
-          presets = settings.presets.select do |_, v|
+          presets = @@inferno_modules.select do |_, v|
             inferno_uri = v['inferno_uri']&.chomp('/')
             inferno_uri.nil? || inferno_uri == base_url || inferno_uri == base_url + base_path
           end
