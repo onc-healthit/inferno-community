@@ -658,9 +658,7 @@ module Inferno
           case type
           when 'Period', 'date'
             search_validators += %(
-                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |date|
-                  validate_date_search(value, date)
-                end
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') { |date| validate_date_search(value, date) }
                 assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
           when 'HumanName'

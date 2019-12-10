@@ -28,9 +28,7 @@ module Inferno
           assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'onset-date'
-          value_found = resolve_element_from_path(resource, 'onsetDateTime') do |date|
-            validate_date_search(value, date)
-          end
+          value_found = resolve_element_from_path(resource, 'onsetDateTime') { |date| validate_date_search(value, date) }
           assert value_found.present?, 'onset-date on resource does not match onset-date requested'
 
         when 'code'

@@ -20,9 +20,7 @@ module Inferno
           assert value_found.present?, '_id on resource does not match _id requested'
 
         when 'birthdate'
-          value_found = resolve_element_from_path(resource, 'birthDate') do |date|
-            validate_date_search(value, date)
-          end
+          value_found = resolve_element_from_path(resource, 'birthDate') { |date| validate_date_search(value, date) }
           assert value_found.present?, 'birthdate on resource does not match birthdate requested'
 
         when 'family'

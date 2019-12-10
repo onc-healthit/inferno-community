@@ -24,9 +24,7 @@ module Inferno
           assert value_found.present?, 'status on resource does not match status requested'
 
         when 'date'
-          value_found = resolve_element_from_path(resource, 'occurrence') do |date|
-            validate_date_search(value, date)
-          end
+          value_found = resolve_element_from_path(resource, 'occurrence') { |date| validate_date_search(value, date) }
           assert value_found.present?, 'date on resource does not match date requested'
 
         end

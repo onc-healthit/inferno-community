@@ -24,9 +24,7 @@ module Inferno
           assert value_found.present?, 'class on resource does not match class requested'
 
         when 'date'
-          value_found = resolve_element_from_path(resource, 'period') do |date|
-            validate_date_search(value, date)
-          end
+          value_found = resolve_element_from_path(resource, 'period') { |date| validate_date_search(value, date) }
           assert value_found.present?, 'date on resource does not match date requested'
 
         when 'identifier'
