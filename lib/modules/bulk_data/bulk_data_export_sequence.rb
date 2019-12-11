@@ -160,10 +160,10 @@ module Inferno
             errors = resource.validate
           end
 
-          #puts "line count: #{line_count}" unless errors.empty?
+          # puts "line count: #{line_count}" unless errors.empty?
           assert errors.empty?, errors.to_s
         end
-        #puts "line count: #{line_count}"
+        # puts "line count: #{line_count}"
       end
 
       def check_cancel_request
