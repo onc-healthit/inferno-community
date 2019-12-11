@@ -20,12 +20,7 @@ module Inferno
           desc 'Expand each Value Set in a measure to ensure they are available'
         end
 
-        #root = "#{__dir__}/../../../.."
-        #path = File.expand_path('resources/quality_reporting/CMS130/Bundle/cms130-bundle.json', root)
-        #bundle = FHIR::STU3::Bundle.new JSON.parse(File.read(path))
-        #measure_id = 'MitreTestScript-measure-col'
         measure_id = @instance.measure_to_test
-        #measure = get_resource_by_id(bundle, measure_id)
         valueset_urls = get_all_dependent_valuesets(measure_id)
         missing_valuesets = []
 
