@@ -19,14 +19,18 @@ module Inferno
       details %(
         # Background
 
-        Apps need to be registered with the authorization service in order to be launched.  The registration process provides
-        the client app with a `client_id` which identifies the client.  A `client_secret` may also be issued if the app is
-        designated a confidential app that can satisfactorily protect the secret.  The app provides the authorization service:
+        Apps need to be registered with the authorization service in order to be
+        launched. The registration process provides the client app with a
+        `client_id` which identifies the client. A `client_secret` may also be
+        issued if the app is designated a confidential app that can
+        satisfactorily protect the secret. The app provides the authorization
+        service:
 
          * zero or more launch URLs
          * one or more redirect URLs
 
-        A launch URLs are used for executing an EHR launch, but are unnecessary for a Standalone launch.
+        A launch URLs are used for executing an EHR launch, but are unnecessary
+        for a Standalone launch.
 
         # Test Methodology
 
@@ -38,12 +42,12 @@ module Inferno
         * [Support for "public" and "confidential" apps](http://hl7.org/fhir/smart-app-launch/#support-for-public-and-confidential-apps)
               )
 
-      test 'User entered client id, and client secret if confidential client' do
+      test 'User entered client ID, and client secret if confidential client' do
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/security.html'
           description %(
-            Received client id (and client secret if necessary)
+            Received client ID (and client secret if necessary)
           )
         end
 

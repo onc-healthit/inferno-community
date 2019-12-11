@@ -5,10 +5,6 @@ module Inferno
     module USCoreMetadataExtractor
       PROFILE_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
-      def profile_uri(profile)
-        "http://hl7.org/fhir/us/core/StructureDefinition/#{profile}"
-      end
-
       def search_param_path(resource, param)
         param = 'id' if param == '_id'
         "SearchParameter/us-core-#{resource.downcase}-#{param}"
@@ -27,6 +23,7 @@ module Inferno
         capability_statement_json = capability_statement('server')
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
+        fix_metadata_errors(metadata)
         add_special_cases(metadata)
       end
 
@@ -53,8 +50,16 @@ module Inferno
         test_id_prefix
       end
 
+      def get_base_path(profile)
+        if profile.include? 'us/core/'
+          profile.split('us/core/').last
+        else
+          profile.split('fhir/').last
+        end
+      end
+
       def build_new_sequence(resource, profile)
-        base_path = profile.split('us/core/').last
+        base_path = get_base_path(profile)
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
         reformatted_version = ig_resource['version'].delete('.')
@@ -64,13 +69,12 @@ module Inferno
 
         # In case the profile doesn't start with US Core
         class_name = "USCore#{reformatted_version}#{class_name}" unless class_name.start_with? 'USCore'
-
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
-          profile: profile_uri(base_name), # link in capability statement is incorrect,
+          profile: profile,
           title: profile_title,
           interactions: [],
           searches: [],
@@ -97,7 +101,7 @@ module Inferno
             add_include_search(resource, new_sequence)
             add_revinclude_targets(resource, new_sequence)
 
-            base_path = new_sequence[:profile].split('us/core/').last
+            base_path = get_base_path(supported_profile)
             profile_definition = @resource_by_path[base_path]
             add_must_support_elements(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
@@ -180,7 +184,7 @@ module Inferno
               sequence[:must_supports] <<
                 {
                   type: 'element',
-                  path: path.gsub('[x]', type['code'].slice(0).capitalize + type['code'].slice(1..-1))
+                  path: path.gsub('[x]', capitalize_first_letter(type['code']))
                 }
             end
           else
@@ -196,13 +200,10 @@ module Inferno
       def add_search_param_descriptions(profile_definition, sequence)
         sequence[:search_param_descriptions].each_key do |param|
           search_param_definition = @resource_by_path[search_param_path(sequence[:resource], param.to_s)]
-          path_parts = search_param_definition['xpath'].split('/f:')
-          if param.to_s != '_id'
-            path_parts[0] = sequence[:resource]
-            path = path_parts.join('.')
-          else
-            path = path_parts[0]
-          end
+          path = search_param_definition['expression']
+          path = path.gsub(/.where\((.*)/, '')
+          as_type = path.scan(/.as\((.*?)\)/).flatten.first
+          path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
           profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
           param_metadata = {
             path: path,
@@ -224,6 +225,8 @@ module Inferno
             expectation = expectation_extension[index]['extension'].first['valueCode'] unless expectation_extension.nil?
             param_metadata[:comparators][comparator.to_sym] = expectation
           end
+          multiple_or_expectation = search_param_definition['_multipleOr']['extension'].first['valueCode']
+          param_metadata[:multiple_or] = multiple_or_expectation
           sequence[:search_param_descriptions][param] = param_metadata
         end
       end
@@ -285,6 +288,24 @@ module Inferno
         end
       end
 
+      def fix_metadata_errors(metadata)
+        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
+        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
+        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
+
+        goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
+        goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
+        goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
+
+        # add the ge comparator - the metadata is missing it for some reason
+        metadata[:sequences].each do |sequence|
+          sequence[:search_param_descriptions].each do |_param, description|
+            param_comparators = description[:comparators]
+            param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
+          end
+        end
+      end
+
       def add_special_cases(metadata)
         category_first_profiles = [
           PROFILE_URIS[:lab_results]
@@ -319,6 +340,10 @@ module Inferno
 
         sequence[:searches].delete(search)
         sequence[:searches].unshift(search)
+      end
+
+      def capitalize_first_letter(str)
+        str.slice(0).capitalize + str.slice(1..-1)
       end
     end
   end

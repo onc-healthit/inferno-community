@@ -16,34 +16,32 @@ module Inferno
         case property
 
         when '_id'
-          value_found = can_resolve_path(resource, 'id') { |value_in_resource| value_in_resource == value }
-          assert value_found, '_id on resource does not match _id requested'
+          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, '_id on resource does not match _id requested'
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'category'
-          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'category on resource does not match category requested'
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'category on resource does not match category requested'
 
         when 'type'
-          value_found = can_resolve_path(resource, 'type.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'type on resource does not match type requested'
+          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'type on resource does not match type requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'date') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'date on resource does not match date requested'
+          value_found = resolve_element_from_path(resource, 'date') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'date on resource does not match date requested'
 
         when 'period'
-          value_found = can_resolve_path(resource, 'context.period') do |period|
-            validate_period_search(value, period)
-          end
-          assert value_found, 'period on resource does not match period requested'
+          value_found = resolve_element_from_path(resource, 'context.period') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'period on resource does not match period requested'
 
         end
       end
@@ -135,6 +133,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_type do
@@ -160,6 +159,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_category_date do
@@ -171,7 +171,7 @@ module Inferno
 
             A server SHALL support searching by patient+category+date on the DocumentReference resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -187,6 +187,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_category do
@@ -212,6 +213,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_type_period do
@@ -224,7 +226,7 @@ module Inferno
 
             A server SHOULD support searching by patient+type+period on the DocumentReference resource
 
-              including support for these period comparators: gt, lt, le
+              including support for these period comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -240,8 +242,9 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:period])
           comparator_search_params = { 'patient': search_params[:patient], 'type': search_params[:type], 'period': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
@@ -273,6 +276,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -438,7 +442,7 @@ module Inferno
         must_support_elements.each do |path|
           @document_reference_ary&.each do |resource|
             truncated_path = path.gsub('DocumentReference.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @document_reference_ary.length

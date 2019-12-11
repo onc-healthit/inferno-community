@@ -16,12 +16,12 @@ module Inferno
         case property
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         end
       end
@@ -71,6 +71,8 @@ module Inferno
           versions :r4
         end
 
+        @care_team_ary = []
+        values_found = 0
         status_val = ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error']
         status_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'status': val }
@@ -78,18 +80,19 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
-          next unless @resources_found
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
 
+          @resources_found = true
           @care_team = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
             .resource
-          @care_team_ary = fetch_all_bundled_resources(reply.resource)
+          @care_team_ary += fetch_all_bundled_resources(reply.resource)
+          values_found += 1
 
           save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
           save_delayed_sequence_references(@care_team_ary)
           validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-          break
+          break if values_found == 2
         end
         skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
       end
@@ -223,7 +226,7 @@ module Inferno
         must_support_elements.each do |path|
           @care_team_ary&.each do |resource|
             truncated_path = path.gsub('CareTeam.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @care_team_ary.length
@@ -233,9 +236,33 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'The server returns expected results when parameters use composite-or' do
         metadata do
           id '09'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
+          description %(
+
+          )
+          versions :r4
+        end
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary, 'status'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        second_status_val = resolve_element_from_path(@care_team_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+        skip 'Cannot find second value for status to perform a multipleOr search' if second_status_val.nil?
+        search_params[:status] += ',' + get_value_for_search_param(second_status_val)
+        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test 'All references can be resolved' do
+        metadata do
+          id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

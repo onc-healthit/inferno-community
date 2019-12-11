@@ -92,7 +92,7 @@ module Inferno
         metadata do
           id '04'
           name 'FHIR server capability states JSON support'
-          link 'http://hl7.org/fhir/us/core/2019Jan/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
 
             FHIR provides multiple [representation formats](https://www.hl7.org/fhir/formats.html) for resources, including JSON and XML.

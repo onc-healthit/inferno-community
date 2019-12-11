@@ -146,7 +146,7 @@ module Inferno
         must_support_elements.each do |path|
           @provenance_ary&.each do |resource|
             truncated_path = path.gsub('Provenance.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @provenance_ary.length

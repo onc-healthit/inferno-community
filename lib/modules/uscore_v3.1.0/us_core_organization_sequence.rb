@@ -17,18 +17,18 @@ module Inferno
         case property
 
         when 'name'
-          value_found = can_resolve_path(resource, 'name') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'name on resource does not match name requested'
+          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address') do |address|
+          value_found = resolve_element_from_path(resource, 'address') do |address|
             address&.text&.start_with?(value) ||
               address&.city&.start_with?(value) ||
               address&.state&.start_with?(value) ||
               address&.postalCode&.start_with?(value) ||
               address&.country&.start_with?(value)
           end
-          assert value_found, 'address on resource does not match address requested'
+          assert value_found.present?, 'address on resource does not match address requested'
 
         end
       end
@@ -146,6 +146,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :vread_interaction do
@@ -286,7 +287,7 @@ module Inferno
         must_support_elements.each do |path|
           @organization_ary&.each do |resource|
             truncated_path = path.gsub('Organization.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @organization_ary.length

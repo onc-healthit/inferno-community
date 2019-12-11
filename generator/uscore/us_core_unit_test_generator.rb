@@ -37,7 +37,6 @@ module Inferno
         class_name:,
         sequence_name:
       )
-        return if resource_type == 'Procedure' && search_params.key?('date')
 
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
 

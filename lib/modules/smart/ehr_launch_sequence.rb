@@ -48,20 +48,20 @@ module Inferno
         * [SMART EHR Launch Sequence](http://hl7.org/fhir/smart-app-launch/index.html#ehr-launch-sequence)
       )
 
-      test 'EHR server redirects client browser to app launch URI' do
+      test 'EHR server redirects client browser to Inferno app launch URI' do
         metadata do
           id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           description %(
-            Client browser sent from EHR server to launch URI of client app as
-            described in SMART EHR Launch Sequence.
+            Client browser sent from EHR server to app launch URI of client app
+            as described in SMART EHR Launch Sequence.
           )
         end
 
         wait_at_endpoint 'launch'
       end
 
-      test 'EHR provides iss and launch parameter to the launch URI via the client browser querystring' do
+      test 'EHR provides iss and launch parameter to the Inferno app launch URI via the client browser querystring' do
         metadata do
           id '02'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
@@ -82,13 +82,13 @@ module Inferno
 
       auth_endpoint_tls_test(index: '03')
 
-      test 'OAuth server redirects client browser to app redirect URI' do
+      test 'OAuth 2.0 server redirects client browser to Inferno app redirect URI' do
         metadata do
           id '04'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           description %(
-           Client browser redirected from OAuth server to redirect URI of client
-           app as described in SMART authorization sequence.
+           Client browser redirected from OAuth 2.0 server to redirect URI of
+           client app as described in SMART authorization sequence.
           )
         end
 

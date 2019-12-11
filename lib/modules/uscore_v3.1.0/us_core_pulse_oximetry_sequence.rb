@@ -16,26 +16,24 @@ module Inferno
         case property
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         when 'category'
-          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'category on resource does not match category requested'
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'category on resource does not match category requested'
 
         when 'code'
-          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'code on resource does not match code requested'
+          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'code on resource does not match code requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'date on resource does not match date requested'
+          value_found = resolve_element_from_path(resource, 'effective') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'date on resource does not match date requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         end
       end
@@ -85,6 +83,8 @@ module Inferno
           versions :r4
         end
 
+        @observation_ary = []
+
         code_val = ['2708-6', '59408-5']
         code_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'code': val }
@@ -92,13 +92,13 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
-          next unless @resources_found
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
 
+          @resources_found = true
           @observation = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'Observation' }
             .resource
-          @observation_ary = fetch_all_bundled_resources(reply.resource)
+          @observation_ary += fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
           save_delayed_sequence_references(@observation_ary)
@@ -117,7 +117,7 @@ module Inferno
 
             A server SHALL support searching by patient+category+date on the Observation resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -127,14 +127,15 @@ module Inferno
         search_params = {
           'patient': @instance.patient_id,
           'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
@@ -165,6 +166,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :search_by_patient_code_date do
@@ -177,7 +179,7 @@ module Inferno
 
             A server SHOULD support searching by patient+code+date on the Observation resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
@@ -187,14 +189,15 @@ module Inferno
         search_params = {
           'patient': @instance.patient_id,
           'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
@@ -227,6 +230,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
       end
 
       test :read_interaction do
@@ -796,7 +800,7 @@ module Inferno
         must_support_elements.each do |path|
           @observation_ary&.each do |resource|
             truncated_path = path.gsub('Observation.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
+            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
           resource_count = @observation_ary.length

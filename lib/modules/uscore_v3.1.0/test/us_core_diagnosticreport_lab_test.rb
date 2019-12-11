@@ -314,7 +314,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @query = {
         'patient': @instance.patient_id,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effectiveDateTime'))
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
       }
     end
 
@@ -451,7 +451,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @query = {
         'patient': @instance.patient_id,
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effectiveDateTime'))
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
       }
     end
 

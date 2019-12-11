@@ -179,7 +179,7 @@ describe Inferno::Sequence::USCore310PediatricWeightForHeightSequence do
       @query = {
         'patient': @instance.patient_id,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
       }
     end
 
@@ -316,7 +316,7 @@ describe Inferno::Sequence::USCore310PediatricWeightForHeightSequence do
       @query = {
         'patient': @instance.patient_id,
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effectiveDateTime'))
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
       }
     end
 
