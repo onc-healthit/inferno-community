@@ -2,7 +2,7 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::TokenRefreshSequence do
+describe Inferno::Sequence::SharedLaunchTests do
   class SharedLaunchTestSequence < Inferno::Sequence::SequenceBase
     include Inferno::Sequence::SharedLaunchTests
 
@@ -76,6 +76,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     before do
       @test = @sequence_class[:code_and_state_received]
       @sequence = @sequence_class.new(@instance, @client)
+      @sequence.instance_variable_set(:@params, 'abc' => 'def')
       @instance.state = 'STATE'
     end
 
@@ -354,10 +355,19 @@ describe Inferno::Sequence::TokenRefreshSequence do
     before do
       @test = @sequence_class[:token_response_contents]
       @sequence = @sequence_class.new(@instance, @client)
+      @sequence.instance_variable_set(:@params, 'abc' => 'def')
     end
 
-    it 'fails if the token response is blank' do
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+    it 'skips if the launch failed' do
+      @sequence.instance_variable_set(:@params, {})
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal @sequence.oauth_redirect_failed_message, exception.message
+    end
+
+    it 'skips if the token response is blank' do
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
       assert_equal @sequence.no_token_response_message, exception.message
     end
@@ -429,10 +439,18 @@ describe Inferno::Sequence::TokenRefreshSequence do
     before do
       @test = @sequence_class[:token_response_headers]
       @sequence = @sequence_class.new(@instance, @client)
+      @sequence.instance_variable_set(:@params, 'abc' => 'def')
+    end
+
+    it 'skips if the launch failed' do
+      @sequence.instance_variable_set(:@params, {})
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal @sequence.oauth_redirect_failed_message, exception.message
     end
 
     it 'skips if the token response is blank' do
-      # TODO: should this really be a skip?
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
       assert_equal @sequence.no_token_response_message, exception.message

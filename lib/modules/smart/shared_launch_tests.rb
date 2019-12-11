@@ -24,7 +24,7 @@ module Inferno
       end
 
       def validate_token_response_contents(token_response, require_expires_in:)
-        assert token_response.present?, no_token_response_message
+        skip_if token_response.blank?, no_token_response_message
 
         assert_valid_json(token_response.body)
         token_response_body = JSON.parse(token_response.body)
@@ -43,6 +43,7 @@ module Inferno
         @instance.update(token: token_response_body['access_token'], token_retrieved_at: DateTime.now)
 
         @instance.patient_id = token_response_body['patient'] if token_response_body['patient'].present?
+        @instance.update(encounter_id: token_response_body['encounter']) if token_response_body['encounter'].present?
 
         required_keys = ['token_type', 'scope']
         required_keys << 'expires_in' if require_expires_in
@@ -140,7 +141,7 @@ module Inferno
           test :code_and_state_received do
             metadata do
               id index
-              name 'Client app receives code parameter and correct state parameter from OAuth server at redirect URI'
+              name 'Inferno client app receives code parameter and correct state parameter from OAuth server at redirect URI'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 Code and state are required querystring parameters. State must be
@@ -267,16 +268,19 @@ module Inferno
           test :token_response_contents do
             metadata do
               id index
-              name 'Token exchange response contains required information encoded in JSON'
+              name 'Token exchange response body contains required information encoded in JSON'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The EHR authorization server shall return a JSON structure that
                 includes an access token or a message indicating that the
                 authorization request has been denied.
-                access_token, token_type, and scope are required. access_token must
-                be Bearer.
+                `access_token`, `token_type`, and `scope` are required. `token_type` must
+                be Bearer. `expires_in` is required for token refreshes. `scope`
+                must be a strict subset of the requested scopes, or empty.
               )
             end
+
+            skip_if_auth_failed
 
             validate_token_response_contents(@token_response, require_expires_in: require_expires_in)
           end
@@ -294,6 +298,8 @@ module Inferno
                 well as the Pragma response header field with a value of no-cache.
               )
             end
+
+            skip_if_auth_failed
 
             skip_if @token_response.blank?, no_token_response_message
 
