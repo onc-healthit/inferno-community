@@ -13,9 +13,9 @@ class ValueSetSequenceTest < MiniTest::Test
   }.freeze
 
   CQF_REQUEST_HEADERS = {
-    'Accept'=>'*/*',
-    'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-    'Host'=>'localhost:8080'
+    'Accept' => '*/*',
+    'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+    'Host' => 'localhost:8080'
   }.freeze
 
   # load up the CMS130 'measure-col' bundle to use for testing
