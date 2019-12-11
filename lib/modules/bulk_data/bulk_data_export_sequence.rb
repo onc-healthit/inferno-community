@@ -144,11 +144,11 @@ module Inferno
         line_count = 0
 
         ndjson.each_line do |line|
-          break if !validate_all && line_count == lines_to_validate 
+          break if !validate_all && line_count == lines_to_validate
 
           line_count += 1
 
-          resource = versioned_resource_class.from_contents(line)          
+          resource = versioned_resource_class.from_contents(line)
           resource_type = resource.class.name.demodulize
           assert resource_type == file_type, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{file_type}\")"
 
@@ -160,10 +160,10 @@ module Inferno
             errors = resource.validate
           end
 
-          puts "line count: #{line_count}" if !errors.empty?
+          #puts "line count: #{line_count}" unless errors.empty?
           assert errors.empty?, errors.to_s
         end
-        puts "line count: #{line_count}"
+        #puts "line count: #{line_count}"
       end
 
       def check_cancel_request

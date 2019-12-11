@@ -11,6 +11,8 @@ describe Inferno::Sequence::BulkDataExportSequence do
       bulk_access_token: 99_897_979
     )
 
+    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'stu3'))
+
     @client = FHIR::Client.new(@instance.url)
 
     @file_request_headers = { accept: 'application/fhir+ndjson',
