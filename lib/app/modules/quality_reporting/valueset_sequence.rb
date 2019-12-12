@@ -21,6 +21,7 @@ module Inferno
         end
 
         measure_id = @instance.measure_to_test
+        assert measure_id != nil, 'Expected Measure To Test to be defined.'
         valueset_urls = get_all_dependent_valuesets(measure_id)
         missing_valuesets = []
 

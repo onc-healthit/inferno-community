@@ -85,4 +85,12 @@ class ValueSetSequenceTest < MiniTest::Test
       assert sequence_result.fail?, 'The sequence should be marked as fail.'
     end
   end
+
+  def test_measure_to_test_not_defined
+    WebMock.reset!
+
+    @instance.measure_to_test = nil
+    sequence_result = @sequence.start
+    assert sequence_result.fail?, 'The sequence should be marked as fail.'
+  end
 end

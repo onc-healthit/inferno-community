@@ -42,24 +42,23 @@ module Inferno
       LoggedRestClient.post(@instance.url + '/$import', params_resource.to_json, headers)
     end
 
-    def get_required_library_ids(library)
-      refs = library.relatedArtifact.select { |ref| ref.type == 'depends-on' }
-      refs.map { |ref| ref.resource.reference.sub 'Library/', '' }
-    end
-
-    def get_valueset_urls(library)
-      library.dataRequirement.lazy
-        .select { |dr| !dr.codeFilter.nil? && !dr.codeFilter[0].nil? && !dr.codeFilter[0].valueSetString.nil? }
-        .map { |dr| dr.codeFilter[0].valueSetString[/([0-9]+\.)+[0-9]+/] }
-        .uniq
-        .to_a
-    end
-
     def cqf_ruler_client
       return @_cqf_ruler_client unless @_cqf_ruler_client.nil?
 
       @_cqf_ruler_client = FHIR::Client.new(Inferno::CQF_RULER)
       @_cqf_ruler_client
+    end
+
+    def get_all_library_dependent_valuesets(library, visited_ids = [])
+      all_dependent_value_sets = []
+      visited_ids << library.id
+      # iterate over dependent libraries
+      required_library_ids = get_required_library_ids(library)
+      required_library_ids.each do |library_id|
+        all_dependent_value_sets.concat(get_all_library_dependent_valuesets(get_library_resource(library_id), visited_ids)) unless visited_ids.include?(library_id)
+      end
+
+      all_dependent_value_sets.concat(get_valueset_urls(library)).uniq
     end
 
     def get_measure_resource(measure_id)
@@ -78,18 +77,6 @@ module Inferno
       FHIR::STU3::Library.new JSON.parse(library_request.body)
     end
 
-    def get_all_library_dependent_valuesets(library, visited_ids = [])
-      all_dependent_value_sets = []
-      visited_ids << library.id
-      # iterate over dependent libraries
-      required_library_ids = get_required_library_ids(library)
-      required_library_ids.each do |library_id|
-        all_dependent_value_sets.concat(get_all_library_dependent_valuesets(get_library_resource(library_id), visited_ids)) unless visited_ids.include?(library_id)
-      end
-
-      all_dependent_value_sets.concat(get_valueset_urls(library)).uniq
-    end
-
     def get_all_dependent_valuesets(measure_id)
       measure = get_measure_resource(measure_id)
 
@@ -99,6 +86,19 @@ module Inferno
       main_library = get_library_resource(main_library_id)
 
       get_all_library_dependent_valuesets(main_library)
+    end
+
+    def get_required_library_ids(library)
+      refs = library.relatedArtifact.select { |ref| ref.type == 'depends-on' }
+      refs.map { |ref| ref.resource.reference.sub 'Library/', '' }
+    end
+
+    def get_valueset_urls(library)
+      library.dataRequirement.lazy
+        .select { |dr| !dr.codeFilter.nil? && !dr.codeFilter[0].nil? && !dr.codeFilter[0].valueSetString.nil? }
+        .map { |dr| dr.codeFilter[0].valueSetString[/([0-9]+\.)+[0-9]+/] }
+        .uniq
+        .to_a
     end
   end
 end
