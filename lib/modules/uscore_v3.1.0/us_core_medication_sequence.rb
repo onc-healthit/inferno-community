@@ -22,7 +22,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Medication from the server'
+          name 'Server returns correct Medication resource from the Medication read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Medication can be resolved and read.
@@ -46,7 +46,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '02'
-          name 'Medication vread interaction supported'
+          name 'Server returns correct Medication resource from Medication vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -64,7 +64,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '03'
-          name 'Medication history interaction supported'
+          name 'Server returns correct Medication resource from Medication history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -79,28 +79,9 @@ module Inferno
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Medication resources returned conform to US Core R4 profiles' do
         metadata do
           id '04'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
-          )
-          versions :r4
-        end
-
-        search_params = {}
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Medication'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
-      test 'Medication resources associated with Patient conform to US Core R4 profiles' do
-        metadata do
-          id '05'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
 
@@ -111,13 +92,13 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Medication resources appear to be available. ' unless @resources_found
         test_resources_against_profile('Medication')
       end
 
-      test 'At least one of every must support element is provided in any Medication for this patient.' do
+      test 'All must support elements are provided in the Medication resources returned.' do
         metadata do
-          id '06'
+          id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -148,9 +129,9 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Medication resource is valid and can be read.' do
         metadata do
-          id '07'
+          id '06'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
@@ -159,7 +140,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Medication resources appear to be available. ' unless @resources_found
 
         validate_reference_resolutions(@medication)
       end

@@ -42,7 +42,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Organization from the server'
+          name 'Server returns correct Organization resource from the Organization read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Organization can be resolved and read.
@@ -113,7 +113,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources appear to be available. ' unless @resources_found
 
         @organization = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Organization' }
@@ -137,7 +137,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources appear to be available. ' unless @resources_found
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
@@ -152,7 +152,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '05'
-          name 'Organization vread interaction supported'
+          name 'Server returns correct Organization resource from Organization vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -170,7 +170,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '06'
-          name 'Organization history interaction supported'
+          name 'Server returns correct Organization resource from Organization history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -185,7 +185,7 @@ module Inferno
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns valid Provenance resources from Organization search by name + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -208,7 +208,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'Organization resources associated with Patient conform to US Core R4 profiles' do
+      test 'Organization resources returned conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
@@ -221,11 +221,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources appear to be available. ' unless @resources_found
         test_resources_against_profile('Organization')
       end
 
-      test 'At least one of every must support element is provided in any Organization for this patient.' do
+      test 'All must support elements are provided in the Organization resources returned.' do
         metadata do
           id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -297,7 +297,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Organization resource is valid and can be read.' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/references.html'
@@ -308,7 +308,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources appear to be available. ' unless @resources_found
 
         validate_reference_resolutions(@organization)
       end

@@ -92,7 +92,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Condition' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
 
         @condition = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Condition' }
@@ -117,7 +117,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -145,7 +145,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -179,7 +179,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -206,7 +206,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -222,7 +222,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '07'
-          name 'Condition read interaction supported'
+          name 'Server returns correct Condition resource from Condition read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Condition read interaction.
@@ -239,7 +239,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '08'
-          name 'Condition vread interaction supported'
+          name 'Server returns correct Condition resource from Condition vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -257,7 +257,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '09'
-          name 'Condition history interaction supported'
+          name 'Server returns correct Condition resource from Condition history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -272,7 +272,7 @@ module Inferno
         validate_history_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns valid Provenance resources from Condition search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -294,7 +294,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'Condition resources associated with Patient conform to US Core R4 profiles' do
+      test 'Condition resources returned conform to US Core R4 profiles' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
@@ -307,11 +307,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Condition')
       end
 
-      test 'At least one of every must support element is provided in any Condition for this patient.' do
+      test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
           id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -356,7 +356,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Condition resource is valid and can be read.' do
         metadata do
           id '13'
           link 'http://hl7.org/fhir/references.html'
@@ -367,7 +367,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available.  Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@condition)
       end
