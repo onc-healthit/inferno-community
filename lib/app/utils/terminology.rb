@@ -19,6 +19,7 @@ module Inferno
     }.freeze
 
     @known_valuesets = {}
+    @valueset_ids = nil
 
     @loaded_validators = {}
     class << self; attr_reader :loaded_validators; end
@@ -135,7 +136,17 @@ module Inferno
     end
 
     def self.get_valueset(url)
-      @known_valuesets[url].valueset || raise(UnknownValueSetException, url)
+      @known_valuesets[url]&.valueset || raise(UnknownValueSetException, url)
+    end
+
+    def self.get_valueset_by_id(id)
+      unless @valueset_ids
+        @valueset_ids = {}
+        @known_valuesets.each_pair do |k, v|
+          @valueset_ids[v&.valueset_model&.id] = k
+        end
+      end
+      @known_valuesets[@valueset_ids[id]] || raise(UnknownValueSetException, id)
     end
 
     class UnknownValueSetException < StandardError
