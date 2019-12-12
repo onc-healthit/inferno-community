@@ -16,8 +16,3 @@ script:
   - ./cc-test-reporter after-build -t simplecov --exit-code $TRAVIS_TEST_RESULT
   - docker-compose run ruby_server bundle exec rake
   - bundle exec rubocop
-notifications:
-  email:
-    recipients:
-      - tacoma-fhir-prototyping@groups.mitre.org
-    on_failure: change
