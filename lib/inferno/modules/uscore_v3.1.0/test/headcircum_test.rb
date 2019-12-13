@@ -3,11 +3,11 @@
 # NOTE: This is a generated file. Any changes made to this file will be
 #       overwritten when it is regenerated
 
-require_relative '../../../../test/test_helper'
+require_relative '../../../../../test/test_helper'
 
-describe Inferno::Sequence::USCore310ResprateSequence do
+describe Inferno::Sequence::USCore310HeadcircumSequence do
   before do
-    @sequence_class = Inferno::Sequence::USCore310ResprateSequence
+    @sequence_class = Inferno::Sequence::USCore310HeadcircumSequence
     @base_url = 'http://www.example.com/fhir'
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
@@ -25,7 +25,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
 
       @query = {
         'patient': @instance.patient_id,
-        'code': '9279-1'
+        'code': '9843-4'
       }
     end
 
@@ -69,7 +69,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     before do
       @test = @sequence_class[:search_by_patient_code]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:resprate))
+      @observation = FHIR.from_contents(load_fixture(:headcircum))
       @observation_ary = [@observation]
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
@@ -81,7 +81,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     end
 
     it 'fails if a non-success response code is received' do
-      ['9279-1'].each do |value|
+      ['9843-4'].each do |value|
         query_params = {
           'patient': @instance.patient_id,
           'code': value
@@ -97,7 +97,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     end
 
     it 'fails if a Bundle is not received' do
-      ['9279-1'].each do |value|
+      ['9843-4'].each do |value|
         query_params = {
           'patient': @instance.patient_id,
           'code': value
@@ -113,7 +113,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     end
 
     it 'skips if an empty Bundle is received' do
-      ['9279-1'].each do |value|
+      ['9843-4'].each do |value|
         query_params = {
           'patient': @instance.patient_id,
           'code': value
@@ -129,7 +129,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     end
 
     it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
-      ['9279-1'].each do |value|
+      ['9843-4'].each do |value|
         query_params = {
           'patient': @instance.patient_id,
           'code': value
@@ -145,7 +145,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
-      ['9279-1'].each do |value|
+      ['9843-4'].each do |value|
         query_params = {
           'patient': @instance.patient_id,
           'code': value
@@ -169,7 +169,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:resprate))
+      @observation = FHIR.from_contents(load_fixture(:headcircum))
       @observation_ary = [@observation]
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
@@ -234,7 +234,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     before do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:resprate))
+      @observation = FHIR.from_contents(load_fixture(:headcircum))
       @observation_ary = [@observation]
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
@@ -306,7 +306,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     before do
       @test = @sequence_class[:search_by_patient_code_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:resprate))
+      @observation = FHIR.from_contents(load_fixture(:headcircum))
       @observation_ary = [@observation]
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
@@ -371,7 +371,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:resprate))
+      @observation = FHIR.from_contents(load_fixture(:headcircum))
       @observation_ary = [@observation]
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
