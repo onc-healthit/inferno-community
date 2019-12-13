@@ -32,14 +32,17 @@ module Inferno
 
         skip_if_not_supported(:Provenance, [:read])
 
-        provenance_id = @instance.resource_references.find { |reference| reference.resource_type == 'Provenance' }&.resource_id
-        skip 'No Provenance references found from the prior searches' if provenance_id.nil?
+        provenance_references = @instance.resource_references.select { |reference| reference.resource_type == 'Provenance' }
+        skip 'No Provenance references found from the prior searches' if provenance_references.blank?
 
-        @provenance = validate_read_reply(
-          FHIR::Provenance.new(id: provenance_id),
-          FHIR::Provenance
-        )
-        @provenance_ary = Array.wrap(@provenance).compact
+        @provenance_ary = []
+        provenance_references.each do |reference|
+          @provenance_ary << validate_read_reply(
+            FHIR::Provenance.new(id: reference.resource_id),
+            FHIR::Provenance
+          )
+        end
+        @provenance = @provenance_ary.first
         @resources_found = @provenance.present?
       end
 

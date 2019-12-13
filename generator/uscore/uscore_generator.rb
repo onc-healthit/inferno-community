@@ -117,14 +117,17 @@ module Inferno
         read_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:read])
 
-              #{sequence[:resource].underscore}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
-              skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_id.nil?
+              #{sequence[:resource].underscore}_references = @instance.resource_references.select { |reference| reference.resource_type == '#{sequence[:resource]}' }
+              skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_references.blank?
 
-              @#{sequence[:resource].underscore} = validate_read_reply(
-                FHIR::#{sequence[:resource]}.new(id: #{sequence[:resource].underscore}_id),
-                FHIR::#{sequence[:resource]}
-              )
-              @#{sequence[:resource].underscore}_ary = Array.wrap(@#{sequence[:resource].underscore}).compact
+              @#{sequence[:resource].underscore}_ary = []
+              #{sequence[:resource].underscore}_references.each do |reference|
+                @#{sequence[:resource].underscore}_ary << validate_read_reply(
+                  FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
+                  FHIR::#{sequence[:resource]}
+                )
+              end
+              @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary.first
               @resources_found = @#{sequence[:resource].underscore}.present?)
         sequence[:tests] << read_test
 
@@ -219,8 +222,9 @@ module Inferno
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
-                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
-                skip 'No #{resource_name} resources were returned from this search' unless #{resource_variable}
+                #{resource_variable} = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == '#{resource_name}'}
+                skip 'No #{resource_name} resources were returned from this search' unless #{resource_variable}.present?
+                #{resource_variable}.each { |reference| @instance.save_resource_reference('#{resource_name}', reference.id) }
           )
         end
         sequence[:tests] << revinclude_test

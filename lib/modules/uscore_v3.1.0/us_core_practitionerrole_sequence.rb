@@ -46,14 +46,17 @@ module Inferno
 
         skip_if_not_supported(:PractitionerRole, [:read])
 
-        practitioner_role_id = @instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole' }&.resource_id
-        skip 'No PractitionerRole references found from the prior searches' if practitioner_role_id.nil?
+        practitioner_role_references = @instance.resource_references.select { |reference| reference.resource_type == 'PractitionerRole' }
+        skip 'No PractitionerRole references found from the prior searches' if practitioner_role_references.blank?
 
-        @practitioner_role = validate_read_reply(
-          FHIR::PractitionerRole.new(id: practitioner_role_id),
-          FHIR::PractitionerRole
-        )
-        @practitioner_role_ary = Array.wrap(@practitioner_role).compact
+        @practitioner_role_ary = []
+        practitioner_role_references.each do |reference|
+          @practitioner_role_ary << validate_read_reply(
+            FHIR::PractitionerRole.new(id: reference.resource_id),
+            FHIR::PractitionerRole
+          )
+        end
+        @practitioner_role = @practitioner_role_ary.first
         @resources_found = @practitioner_role.present?
       end
 
@@ -229,8 +232,9 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
       test 'PractitionerRole resources returned conform to US Core R4 profiles' do

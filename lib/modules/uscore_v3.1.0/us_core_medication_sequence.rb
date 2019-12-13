@@ -32,14 +32,17 @@ module Inferno
 
         skip_if_not_supported(:Medication, [:read])
 
-        medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
-        skip 'No Medication references found from the prior searches' if medication_id.nil?
+        medication_references = @instance.resource_references.select { |reference| reference.resource_type == 'Medication' }
+        skip 'No Medication references found from the prior searches' if medication_references.blank?
 
-        @medication = validate_read_reply(
-          FHIR::Medication.new(id: medication_id),
-          FHIR::Medication
-        )
-        @medication_ary = Array.wrap(@medication).compact
+        @medication_ary = []
+        medication_references.each do |reference|
+          @medication_ary << validate_read_reply(
+            FHIR::Medication.new(id: reference.resource_id),
+            FHIR::Medication
+          )
+        end
+        @medication = @medication_ary.first
         @resources_found = @medication.present?
       end
 

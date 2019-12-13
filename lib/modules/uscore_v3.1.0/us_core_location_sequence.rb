@@ -64,14 +64,17 @@ module Inferno
 
         skip_if_not_supported(:Location, [:read])
 
-        location_id = @instance.resource_references.find { |reference| reference.resource_type == 'Location' }&.resource_id
-        skip 'No Location references found from the prior searches' if location_id.nil?
+        location_references = @instance.resource_references.select { |reference| reference.resource_type == 'Location' }
+        skip 'No Location references found from the prior searches' if location_references.blank?
 
-        @location = validate_read_reply(
-          FHIR::Location.new(id: location_id),
-          FHIR::Location
-        )
-        @location_ary = Array.wrap(@location).compact
+        @location_ary = []
+        location_references.each do |reference|
+          @location_ary << validate_read_reply(
+            FHIR::Location.new(id: reference.resource_id),
+            FHIR::Location
+          )
+        end
+        @location = @location_ary.first
         @resources_found = @location.present?
       end
 
@@ -294,8 +297,9 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
       test 'Location resources returned conform to US Core R4 profiles' do

@@ -53,14 +53,17 @@ module Inferno
 
         skip_if_not_supported(:Practitioner, [:read])
 
-        practitioner_id = @instance.resource_references.find { |reference| reference.resource_type == 'Practitioner' }&.resource_id
-        skip 'No Practitioner references found from the prior searches' if practitioner_id.nil?
+        practitioner_references = @instance.resource_references.select { |reference| reference.resource_type == 'Practitioner' }
+        skip 'No Practitioner references found from the prior searches' if practitioner_references.blank?
 
-        @practitioner = validate_read_reply(
-          FHIR::Practitioner.new(id: practitioner_id),
-          FHIR::Practitioner
-        )
-        @practitioner_ary = Array.wrap(@practitioner).compact
+        @practitioner_ary = []
+        practitioner_references.each do |reference|
+          @practitioner_ary << validate_read_reply(
+            FHIR::Practitioner.new(id: reference.resource_id),
+            FHIR::Practitioner
+          )
+        end
+        @practitioner = @practitioner_ary.first
         @resources_found = @practitioner.present?
       end
 
@@ -205,8 +208,9 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
       test 'Practitioner resources returned conform to US Core R4 profiles' do
