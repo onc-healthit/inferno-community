@@ -2,12 +2,9 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   before do
     @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
-    @<%= resource_var_name %> = FHIR.from_contents(load_fixture(:<%= sequence_name %>))
-    @<%= resource_var_name %>_ary = [@<%= resource_var_name %>]
-    @sequence.instance_variable_set(:'@<%= resource_var_name %>', @<%= resource_var_name %>)
-    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', @<%= resource_var_name %>_ary)
-<% unless is_first_search %>
-    @sequence.instance_variable_set(:'@resources_found', true)
+    @resources_found = [FHIR.from_contents(load_fixture(:<%= sequence_name %>))]
+<% unless is_first_search && !delayed_sequence %>
+    @sequence.instance_variable_set(:'@resources_found', @resources_found)
 <% end %>
     @query = {
       <%= search_param_string %>
@@ -16,7 +13,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
 <% unless is_first_search %>
   it 'skips if no <%= resource_type %> resources have been found' do
-    @sequence.instance_variable_set(:'@resources_found', false)
+    @sequence.instance_variable_set(:'@resources_found', [])
 
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -25,7 +22,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
   <% if has_dynamic_search_params %>
   it 'skips if a value for one of the search parameters cannot be found' do
-    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', [FHIR::<%= resource_type %>.new])
+    @sequence.instance_variable_set(:'@resources_found', [FHIR::<%= resource_type %>.new])
 
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -133,8 +130,8 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
         '<%= fixed_value_search_param %>': value
       }
       body =
-        if @sequence.resolve_element_from_path(@<%= resource_var_name %>, '<%= fixed_value_search_path %>') == value
-          wrap_resources_in_bundle(@<%= resource_var_name %>_ary).to_json
+        if @sequence.resolve_element_from_path(@resources_found, '<%= fixed_value_search_path %>') == value
+          wrap_resources_in_bundle(@resources_found).to_json
         else
           FHIR::Bundle.new.to_json
         end
@@ -145,7 +142,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% else %>
     stub_request(:get, "#{@base_url}/<%= resource_type %>")
       .with(query: @query, headers: @auth_header)
-      .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary).to_json)
+      .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
   <% end %>
 
     @sequence.run_test(@test)

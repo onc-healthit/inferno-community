@@ -69,14 +69,11 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     before do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
-      @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = [@diagnostic_report]
-      @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))]
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category'))
       }
     end
 
@@ -151,8 +148,8 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
           'category': value
         }
         body =
-          if @sequence.resolve_element_from_path(@diagnostic_report, 'category.coding.code') == value
-            wrap_resources_in_bundle(@diagnostic_report_ary).to_json
+          if @sequence.resolve_element_from_path(@resources_found, 'category.coding.code') == value
+            wrap_resources_in_bundle(@resources_found).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -169,12 +166,9 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     before do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = [@diagnostic_report]
-      @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id
@@ -182,7 +176,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if no DiagnosticReport resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -222,7 +216,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DiagnosticReport")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@diagnostic_report_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -232,21 +226,18 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     before do
       @test = @sequence_class[:search_by_patient_code]
       @sequence = @sequence_class.new(@instance, @client)
-      @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = [@diagnostic_report]
-      @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'code'))
       }
     end
 
     it 'skips if no DiagnosticReport resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -254,7 +245,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', [FHIR::DiagnosticReport.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DiagnosticReport.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -294,7 +285,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DiagnosticReport")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@diagnostic_report_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -304,22 +295,19 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = [@diagnostic_report]
-      @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'effective'))
       }
     end
 
     it 'skips if no DiagnosticReport resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -327,7 +315,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', [FHIR::DiagnosticReport.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DiagnosticReport.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -369,21 +357,18 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     before do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = [@diagnostic_report]
-      @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
     it 'skips if no DiagnosticReport resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -391,7 +376,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', [FHIR::DiagnosticReport.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DiagnosticReport.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -431,7 +416,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DiagnosticReport")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@diagnostic_report_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -441,22 +426,19 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     before do
       @test = @sequence_class[:search_by_patient_code_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = [@diagnostic_report]
-      @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'effective'))
       }
     end
 
     it 'skips if no DiagnosticReport resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -464,7 +446,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', [FHIR::DiagnosticReport.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DiagnosticReport.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -508,7 +490,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@diagnostic_report', FHIR::DiagnosticReport.new(id: @diagnostic_report_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::DiagnosticReport.new(id: @diagnostic_report_id)))
     end
 
     it 'skips if the DiagnosticReport read interaction is not supported' do

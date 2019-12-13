@@ -68,10 +68,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
       @query = {
         'patient': @instance.patient_id
@@ -121,7 +118,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Encounter")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@encounter_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -131,20 +128,17 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by__id]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'id'))
+        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'id'))
       }
     end
 
     it 'skips if no Encounter resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -152,7 +146,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', [FHIR::Encounter.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Encounter.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -192,7 +186,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Encounter")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@encounter_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -202,21 +196,18 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by_date_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'period')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'period')),
         'patient': @instance.patient_id
       }
     end
 
     it 'skips if no Encounter resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -224,7 +215,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', [FHIR::Encounter.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Encounter.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -266,20 +257,17 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by_identifier]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'identifier'))
+        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'identifier'))
       }
     end
 
     it 'skips if no Encounter resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -287,7 +275,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', [FHIR::Encounter.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Encounter.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -327,7 +315,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Encounter")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@encounter_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -337,21 +325,18 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
     it 'skips if no Encounter resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -359,7 +344,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', [FHIR::Encounter.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Encounter.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -399,7 +384,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Encounter")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@encounter_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -409,21 +394,18 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by_class_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'class': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'local_class')),
+        'class': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'local_class')),
         'patient': @instance.patient_id
       }
     end
 
     it 'skips if no Encounter resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -431,7 +413,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', [FHIR::Encounter.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Encounter.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -471,7 +453,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Encounter")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@encounter_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -481,21 +463,18 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     before do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
-      @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = [@encounter]
-      @sequence.instance_variable_set(:'@encounter', @encounter)
-      @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_encounter))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'type'))
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'type'))
       }
     end
 
     it 'skips if no Encounter resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -503,7 +482,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', [FHIR::Encounter.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Encounter.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -543,7 +522,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Encounter")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@encounter_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -555,7 +534,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@encounter', FHIR::Encounter.new(id: @encounter_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::Encounter.new(id: @encounter_id)))
     end
 
     it 'skips if the Encounter read interaction is not supported' do

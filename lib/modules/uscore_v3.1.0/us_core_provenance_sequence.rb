@@ -17,7 +17,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :resource_read do
         metadata do
@@ -58,9 +58,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:vread])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('Provenance'))
       end
 
       test :history_interaction do
@@ -76,9 +76,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:history])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@provenance, versioned_resource_class('Provenance'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('Provenance'))
       end
 
       test 'Provenance resources returned conform to US Core R4 profiles' do
@@ -147,12 +147,12 @@ module Inferno
           'Provenance.agent.type'
         ]
         must_support_elements.each do |path|
-          @provenance_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('Provenance.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @provenance_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided Provenance resource(s)" unless must_support_confirmed[path]
         end
@@ -172,7 +172,7 @@ module Inferno
         skip_if_not_supported(:Provenance, [:search, :read])
         skip 'No Provenance resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@provenance)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

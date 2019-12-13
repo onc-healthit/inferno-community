@@ -248,7 +248,6 @@ module Inferno
         end
 
         is_first_search = search_param == find_first_search(sequence)
-
         search_test[:test_code] =
           if is_first_search
             get_first_search(search_param[:names], sequence)
@@ -297,9 +296,9 @@ module Inferno
 
         interaction_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
-              skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
+              skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-              validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
+              validate_#{interaction[:code]}_reply(@resources_found.first, versioned_resource_class('#{sequence[:resource]}')))
 
         sequence[:tests] << interaction_test
 
@@ -345,11 +344,11 @@ module Inferno
                 #{extensions_list.join(",\n          ")}
               }
               extensions_list.each do |id, url|
-                @#{sequence[:resource].underscore}_ary&.each do |resource|
+                @resources_found&.each do |resource|
                   must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
                   break if must_support_confirmed[id]
                 end
-                skip_notification = "Could not find \#{id} in any of the \#{@#{sequence[:resource].underscore}_ary.length} provided #{sequence[:resource]} resource(s)"
+                skip_notification = "Could not find \#{id} in any of the \#{@resources_found.length} provided #{sequence[:resource]} resource(s)"
                 skip skip_notification unless must_support_confirmed[id]
               end
       )
@@ -366,12 +365,12 @@ module Inferno
                 #{elements_list.join(",\n          ")}
               ]
               must_support_elements.each do |path|
-                @#{sequence[:resource].underscore}_ary&.each do |resource|
+                @resources_found&.each do |resource|
                   truncated_path = path.gsub('#{sequence[:resource]}.', '')
                   must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
                   break if must_support_confirmed[path]
                 end
-                resource_count = @#{sequence[:resource].underscore}_ary.length
+                resource_count = @resources_found.length
 
                 skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
               end)
@@ -447,15 +446,14 @@ module Inferno
               skip_if_not_supported(:#{sequence[:resource]}, [:search, :read])
               #{skip_if_not_found(sequence)}
 
-              validate_reference_resolutions(@#{sequence[:resource].underscore}))
+              validate_reference_resolutions(@resources_found.first))
         sequence[:tests] << test
       end
 
       def resolve_element_path(search_param_description, resolve_block = '')
         element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
-        path_parts = element_path.split('.')
-        resource_val = "@#{path_parts.shift.underscore}_ary"
-        "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}') #{resolve_block}"
+        path_parts = element_path.split('.').drop(1)
+        "resolve_element_from_path(@resources_found, '#{path_parts.join('.')}') #{resolve_block}"
       end
 
       def get_value_path_by_type(type)
@@ -511,16 +509,11 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-
+          @resources_found = fetch_all_bundled_resources(reply.resource, '#{sequence[:resource]}')
           #{skip_if_not_found(sequence)}
 
-          @#{sequence[:resource].underscore} = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-            .resource
-          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
           save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-          save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
+          save_delayed_sequence_references(@resources_found)
           validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         )
       end
@@ -550,7 +543,6 @@ module Inferno
         find_two_values = get_multiple_or_params(sequence).include? search_param[:name]
         values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
-          @#{sequence[:resource].underscore}_ary = []
           #{'values_found = 0' if find_two_values}
           #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           #{values_variable_name}.each do |val|
@@ -561,15 +553,11 @@ module Inferno
 
             next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
-            @resources_found = true
-            @#{sequence[:resource].underscore} = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-              .resource
-            @#{sequence[:resource].underscore}_ary += fetch_all_bundled_resources(reply.resource)
+            @resources_found = fetch_all_bundled_resources(reply.resource, '#{sequence[:resource]}')
             #{'values_found += 1' if find_two_values}
 
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
+            save_delayed_sequence_references(@resources_found)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
             break#{' if values_found == 2' if find_two_values}
           end

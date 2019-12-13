@@ -31,7 +31,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :resource_read do
         metadata do
@@ -76,7 +76,7 @@ module Inferno
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@resources_found, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -99,7 +99,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@resources_found, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -107,16 +107,11 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
-
+        @resources_found = fetch_all_bundled_resources(reply.resource, 'PractitionerRole')
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
-        @practitioner_role = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
-          .resource
-        @practitioner_role_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
-        save_delayed_sequence_references(@practitioner_role_ary)
+        save_delayed_sequence_references(@resources_found)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
@@ -136,7 +131,7 @@ module Inferno
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
         search_params = {
-          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
+          'practitioner': get_value_for_search_param(resolve_element_from_path(@resources_found, 'practitioner'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -158,9 +153,9 @@ module Inferno
         end
 
         skip_if_not_supported(:PractitionerRole, [:vread])
-        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('PractitionerRole'))
       end
 
       test :history_interaction do
@@ -176,9 +171,9 @@ module Inferno
         end
 
         skip_if_not_supported(:PractitionerRole, [:history])
-        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('PractitionerRole'))
       end
 
       test 'Server returns the appropriate resource from the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
@@ -193,7 +188,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@resources_found, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -223,7 +218,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@resources_found, 'specialty'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -299,12 +294,12 @@ module Inferno
           'PractitionerRole.endpoint'
         ]
         must_support_elements.each do |path|
-          @practitioner_role_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('PractitionerRole.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @practitioner_role_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided PractitionerRole resource(s)" unless must_support_confirmed[path]
         end
@@ -324,7 +319,7 @@ module Inferno
         skip_if_not_supported(:PractitionerRole, [:search, :read])
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@practitioner_role)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

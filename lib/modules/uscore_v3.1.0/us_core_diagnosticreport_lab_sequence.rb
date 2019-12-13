@@ -42,7 +42,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :unauthorized_search do
         metadata do
@@ -83,8 +83,6 @@ module Inferno
           versions :r4
         end
 
-        @diagnostic_report_ary = []
-
         category_val = ['LAB']
         category_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'category': val }
@@ -94,14 +92,10 @@ module Inferno
 
           next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DiagnosticReport' }
 
-          @resources_found = true
-          @diagnostic_report = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'DiagnosticReport' }
-            .resource
-          @diagnostic_report_ary += fetch_all_bundled_resources(reply.resource)
+          @resources_found = fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
 
           save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
-          save_delayed_sequence_references(@diagnostic_report_ary)
+          save_delayed_sequence_references(@resources_found)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
           break
         end
@@ -149,7 +143,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code'))
+          'code': get_value_for_search_param(resolve_element_from_path(@resources_found, 'code'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -176,8 +170,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -211,7 +205,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'status'))
+          'status': get_value_for_search_param(resolve_element_from_path(@resources_found, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -239,8 +233,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+          'code': get_value_for_search_param(resolve_element_from_path(@resources_found, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -268,9 +262,9 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:read])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_read_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
+        validate_read_reply(@resources_found.first, versioned_resource_class('DiagnosticReport'))
       end
 
       test :vread_interaction do
@@ -286,9 +280,9 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:vread])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('DiagnosticReport'))
       end
 
       test :history_interaction do
@@ -304,9 +298,9 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:history])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('DiagnosticReport'))
       end
 
       test 'Server returns Provenance resources from DiagnosticReport search by patient + category + _revIncludes: Provenance:target' do
@@ -321,7 +315,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -400,12 +394,12 @@ module Inferno
           'DiagnosticReport.result'
         ]
         must_support_elements.each do |path|
-          @diagnostic_report_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('DiagnosticReport.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @diagnostic_report_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided DiagnosticReport resource(s)" unless must_support_confirmed[path]
         end
@@ -425,7 +419,7 @@ module Inferno
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@diagnostic_report)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

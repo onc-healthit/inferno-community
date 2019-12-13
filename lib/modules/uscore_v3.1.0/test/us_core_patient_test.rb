@@ -68,10 +68,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by__id]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
       @query = {
         '_id': @instance.patient_id
@@ -121,7 +118,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -131,20 +128,17 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by_identifier]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'identifier'))
+        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'identifier'))
       }
     end
 
     it 'skips if no Patient resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -152,7 +146,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', [FHIR::Patient.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Patient.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -192,7 +186,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -202,20 +196,17 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by_name]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'name'))
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
     it 'skips if no Patient resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -223,7 +214,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', [FHIR::Patient.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Patient.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -263,7 +254,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -273,21 +264,18 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by_gender_name]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'gender': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'gender')),
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'name'))
+        'gender': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'gender')),
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
     it 'skips if no Patient resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -295,7 +283,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', [FHIR::Patient.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Patient.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -335,7 +323,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -345,21 +333,18 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by_birthdate_name]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'birthdate': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'birthDate')),
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'name'))
+        'birthdate': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'birthDate')),
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
     it 'skips if no Patient resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -367,7 +352,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', [FHIR::Patient.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Patient.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -407,7 +392,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -417,21 +402,18 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by_birthdate_family]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'birthdate': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'birthDate')),
-        'family': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'name.family'))
+        'birthdate': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'birthDate')),
+        'family': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name.family'))
       }
     end
 
     it 'skips if no Patient resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -439,7 +421,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', [FHIR::Patient.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Patient.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -479,7 +461,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -489,21 +471,18 @@ describe Inferno::Sequence::USCore310PatientSequence do
     before do
       @test = @sequence_class[:search_by_family_gender]
       @sequence = @sequence_class.new(@instance, @client)
-      @patient = FHIR.from_contents(load_fixture(:us_core_patient))
-      @patient_ary = [@patient]
-      @sequence.instance_variable_set(:'@patient', @patient)
-      @sequence.instance_variable_set(:'@patient_ary', @patient_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_patient))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'family': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'name.family')),
-        'gender': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary, 'gender'))
+        'family': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name.family')),
+        'gender': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'gender'))
       }
     end
 
     it 'skips if no Patient resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -511,7 +490,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', [FHIR::Patient.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Patient.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -551,7 +530,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -563,7 +542,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@patient', FHIR::Patient.new(id: @patient_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::Patient.new(id: @patient_id)))
     end
 
     it 'skips if the Patient read interaction is not supported' do

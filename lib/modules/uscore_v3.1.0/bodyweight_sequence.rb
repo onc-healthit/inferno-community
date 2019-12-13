@@ -42,7 +42,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :unauthorized_search do
         metadata do
@@ -83,8 +83,6 @@ module Inferno
           versions :r4
         end
 
-        @observation_ary = []
-
         code_val = ['29463-7']
         code_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'code': val }
@@ -94,14 +92,10 @@ module Inferno
 
           next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
 
-          @resources_found = true
-          @observation = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Observation' }
-            .resource
-          @observation_ary += fetch_all_bundled_resources(reply.resource)
+          @resources_found = fetch_all_bundled_resources(reply.resource, 'Observation')
 
           save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:body_weight])
-          save_delayed_sequence_references(@observation_ary)
+          save_delayed_sequence_references(@resources_found)
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
           break
         end
@@ -126,8 +120,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -160,7 +154,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -188,8 +182,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
+          'code': get_value_for_search_param(resolve_element_from_path(@resources_found, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -223,8 +217,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@resources_found, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -245,9 +239,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:read])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_read_reply(@observation, versioned_resource_class('Observation'))
+        validate_read_reply(@resources_found.first, versioned_resource_class('Observation'))
       end
 
       test :vread_interaction do
@@ -263,9 +257,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:vread])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@observation, versioned_resource_class('Observation'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('Observation'))
       end
 
       test :history_interaction do
@@ -281,9 +275,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:history])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@observation, versioned_resource_class('Observation'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('Observation'))
       end
 
       test 'Server returns Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
@@ -298,7 +292,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
+          'code': get_value_for_search_param(resolve_element_from_path(@resources_found, 'code'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -440,12 +434,12 @@ module Inferno
           'Observation.component.dataAbsentReason'
         ]
         must_support_elements.each do |path|
-          @observation_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('Observation.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @observation_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided Observation resource(s)" unless must_support_confirmed[path]
         end
@@ -465,7 +459,7 @@ module Inferno
         skip_if_not_supported(:Observation, [:search, :read])
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@observation)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

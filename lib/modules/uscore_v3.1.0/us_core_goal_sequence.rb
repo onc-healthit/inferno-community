@@ -34,7 +34,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :unauthorized_search do
         metadata do
@@ -82,16 +82,11 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Goal' }
-
+        @resources_found = fetch_all_bundled_resources(reply.resource, 'Goal')
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        @goal = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Goal' }
-          .resource
-        @goal_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
-        save_delayed_sequence_references(@goal_ary)
+        save_delayed_sequence_references(@resources_found)
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
       end
 
@@ -114,7 +109,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
+          'target-date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'target.dueDate'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -148,7 +143,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
+          'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@resources_found, 'lifecycleStatus'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -169,9 +164,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Goal, [:read])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_read_reply(@goal, versioned_resource_class('Goal'))
+        validate_read_reply(@resources_found.first, versioned_resource_class('Goal'))
       end
 
       test :vread_interaction do
@@ -187,9 +182,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Goal, [:vread])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@goal, versioned_resource_class('Goal'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('Goal'))
       end
 
       test :history_interaction do
@@ -205,9 +200,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Goal, [:history])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@goal, versioned_resource_class('Goal'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('Goal'))
       end
 
       test 'Server returns Provenance resources from Goal search by patient + _revIncludes: Provenance:target' do
@@ -284,12 +279,12 @@ module Inferno
           'Goal.target.dueDate'
         ]
         must_support_elements.each do |path|
-          @goal_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('Goal.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @goal_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided Goal resource(s)" unless must_support_confirmed[path]
         end
@@ -309,7 +304,7 @@ module Inferno
         skip_if_not_supported(:Goal, [:search, :read])
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@goal)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

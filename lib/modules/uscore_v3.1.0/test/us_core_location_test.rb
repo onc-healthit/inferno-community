@@ -111,11 +111,11 @@ describe Inferno::Sequence::USCore310LocationSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @location_ary = FHIR.from_contents(load_fixture(:us_core_location))
-      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+      @resources_found = FHIR.from_contents(load_fixture(:us_core_location))
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'name'))
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
@@ -159,13 +159,12 @@ describe Inferno::Sequence::USCore310LocationSequence do
     before do
       @test = @sequence_class[:search_by_name]
       @sequence = @sequence_class.new(@instance, @client)
-      @location = FHIR.from_contents(load_fixture(:us_core_location))
-      @location_ary = [@location]
-      @sequence.instance_variable_set(:'@location', @location)
-      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_location))]
+
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'name'))
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
@@ -212,7 +211,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Location")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -222,20 +221,17 @@ describe Inferno::Sequence::USCore310LocationSequence do
     before do
       @test = @sequence_class[:search_by_address]
       @sequence = @sequence_class.new(@instance, @client)
-      @location = FHIR.from_contents(load_fixture(:us_core_location))
-      @location_ary = [@location]
-      @sequence.instance_variable_set(:'@location', @location)
-      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_location))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'address': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address'))
+        'address': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'address'))
       }
     end
 
     it 'skips if no Location resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -243,7 +239,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Location.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -283,7 +279,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Location")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -293,20 +289,17 @@ describe Inferno::Sequence::USCore310LocationSequence do
     before do
       @test = @sequence_class[:search_by_address_city]
       @sequence = @sequence_class.new(@instance, @client)
-      @location = FHIR.from_contents(load_fixture(:us_core_location))
-      @location_ary = [@location]
-      @sequence.instance_variable_set(:'@location', @location)
-      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_location))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'address-city': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.city'))
+        'address-city': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'address.city'))
       }
     end
 
     it 'skips if no Location resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -314,7 +307,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Location.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -354,7 +347,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Location")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -364,20 +357,17 @@ describe Inferno::Sequence::USCore310LocationSequence do
     before do
       @test = @sequence_class[:search_by_address_state]
       @sequence = @sequence_class.new(@instance, @client)
-      @location = FHIR.from_contents(load_fixture(:us_core_location))
-      @location_ary = [@location]
-      @sequence.instance_variable_set(:'@location', @location)
-      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_location))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'address-state': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.state'))
+        'address-state': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'address.state'))
       }
     end
 
     it 'skips if no Location resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -385,7 +375,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Location.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -425,7 +415,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Location")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -435,20 +425,17 @@ describe Inferno::Sequence::USCore310LocationSequence do
     before do
       @test = @sequence_class[:search_by_address_postalcode]
       @sequence = @sequence_class.new(@instance, @client)
-      @location = FHIR.from_contents(load_fixture(:us_core_location))
-      @location_ary = [@location]
-      @sequence.instance_variable_set(:'@location', @location)
-      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_location))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'address-postalcode': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.postalCode'))
+        'address-postalcode': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'address.postalCode'))
       }
     end
 
     it 'skips if no Location resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -456,7 +443,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Location.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -496,7 +483,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Location")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end

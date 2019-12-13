@@ -69,14 +69,11 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     before do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
-      @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
-      @sequence.instance_variable_set(:'@care_plan', @care_plan)
-      @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_careplan))]
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category'))
       }
     end
 
@@ -151,8 +148,8 @@ describe Inferno::Sequence::USCore310CareplanSequence do
           'category': value
         }
         body =
-          if @sequence.resolve_element_from_path(@care_plan, 'category.coding.code') == value
-            wrap_resources_in_bundle(@care_plan_ary).to_json
+          if @sequence.resolve_element_from_path(@resources_found, 'category.coding.code') == value
+            wrap_resources_in_bundle(@resources_found).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -169,22 +166,19 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
-      @sequence.instance_variable_set(:'@care_plan', @care_plan)
-      @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_careplan))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'period'))
       }
     end
 
     it 'skips if no CarePlan resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -192,7 +186,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', [FHIR::CarePlan.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::CarePlan.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -234,23 +228,20 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_status_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
-      @sequence.instance_variable_set(:'@care_plan', @care_plan)
-      @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_careplan))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'period'))
       }
     end
 
     it 'skips if no CarePlan resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -258,7 +249,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', [FHIR::CarePlan.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::CarePlan.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -300,22 +291,19 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
-      @sequence.instance_variable_set(:'@care_plan', @care_plan)
-      @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_careplan))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
     it 'skips if no CarePlan resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -323,7 +311,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', [FHIR::CarePlan.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::CarePlan.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -363,7 +351,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/CarePlan")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@care_plan_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -375,7 +363,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@care_plan', FHIR::CarePlan.new(id: @care_plan_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::CarePlan.new(id: @care_plan_id)))
     end
 
     it 'skips if the CarePlan read interaction is not supported' do

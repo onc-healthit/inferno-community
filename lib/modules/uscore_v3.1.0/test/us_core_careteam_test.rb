@@ -69,14 +69,11 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     before do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @care_team = FHIR.from_contents(load_fixture(:us_core_careteam))
-      @care_team_ary = [@care_team]
-      @sequence.instance_variable_set(:'@care_team', @care_team)
-      @sequence.instance_variable_set(:'@care_team_ary', @care_team_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_careteam))]
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
@@ -151,8 +148,8 @@ describe Inferno::Sequence::USCore310CareteamSequence do
           'status': value
         }
         body =
-          if @sequence.resolve_element_from_path(@care_team, 'status') == value
-            wrap_resources_in_bundle(@care_team_ary).to_json
+          if @sequence.resolve_element_from_path(@resources_found, 'status') == value
+            wrap_resources_in_bundle(@resources_found).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -171,7 +168,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@care_team', FHIR::CareTeam.new(id: @care_team_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::CareTeam.new(id: @care_team_id)))
     end
 
     it 'skips if the CareTeam read interaction is not supported' do

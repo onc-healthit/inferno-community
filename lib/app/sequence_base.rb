@@ -749,6 +749,7 @@ module Inferno
       end
 
       def date_comparator_value(comparator, date)
+        date = date.slice(2..-1) if ['gt', 'ge', 'lt', 'le'].include? date[0,2]
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema
@@ -759,11 +760,13 @@ module Inferno
         end
       end
 
-      def fetch_all_bundled_resources(bundle)
+      def fetch_all_bundled_resources(bundle, resource_type = '')
         page_count = 1
         resources = []
         until bundle.nil? || page_count == 20
-          resources += bundle&.entry&.map { |entry| entry&.resource }
+          resources += bundle&.entry
+            &.map { |entry| entry&.resource }
+            &.select { |resource| resource_type.blank? || resource.resourceType == resource_type }
           next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
           bundle = bundle.next_bundle
           assert next_bundle_link.nil? || !bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"

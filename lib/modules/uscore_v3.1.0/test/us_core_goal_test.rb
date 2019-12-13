@@ -68,10 +68,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     before do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @goal = FHIR.from_contents(load_fixture(:us_core_goal))
-      @goal_ary = [@goal]
-      @sequence.instance_variable_set(:'@goal', @goal)
-      @sequence.instance_variable_set(:'@goal_ary', @goal_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_goal))]
 
       @query = {
         'patient': @instance.patient_id
@@ -121,7 +118,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Goal")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -131,21 +128,18 @@ describe Inferno::Sequence::USCore310GoalSequence do
     before do
       @test = @sequence_class[:search_by_patient_target_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @goal = FHIR.from_contents(load_fixture(:us_core_goal))
-      @goal_ary = [@goal]
-      @sequence.instance_variable_set(:'@goal', @goal)
-      @sequence.instance_variable_set(:'@goal_ary', @goal_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_goal))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'target-date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@goal_ary, 'target.dueDate'))
+        'target-date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'target.dueDate'))
       }
     end
 
     it 'skips if no Goal resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -153,7 +147,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@goal_ary', [FHIR::Goal.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Goal.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -195,21 +189,18 @@ describe Inferno::Sequence::USCore310GoalSequence do
     before do
       @test = @sequence_class[:search_by_patient_lifecycle_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @goal = FHIR.from_contents(load_fixture(:us_core_goal))
-      @goal_ary = [@goal]
-      @sequence.instance_variable_set(:'@goal', @goal)
-      @sequence.instance_variable_set(:'@goal_ary', @goal_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_goal))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'lifecycle-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
+        'lifecycle-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'lifecycleStatus'))
       }
     end
 
     it 'skips if no Goal resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -217,7 +208,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@goal_ary', [FHIR::Goal.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Goal.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -257,7 +248,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Goal")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -269,7 +260,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@goal', FHIR::Goal.new(id: @goal_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::Goal.new(id: @goal_id)))
     end
 
     it 'skips if the Goal read interaction is not supported' do

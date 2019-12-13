@@ -68,10 +68,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     before do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @immunization = FHIR.from_contents(load_fixture(:us_core_immunization))
-      @immunization_ary = [@immunization]
-      @sequence.instance_variable_set(:'@immunization', @immunization)
-      @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_immunization))]
 
       @query = {
         'patient': @instance.patient_id
@@ -121,7 +118,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Immunization")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@immunization_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -131,21 +128,18 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     before do
       @test = @sequence_class[:search_by_patient_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @immunization = FHIR.from_contents(load_fixture(:us_core_immunization))
-      @immunization_ary = [@immunization]
-      @sequence.instance_variable_set(:'@immunization', @immunization)
-      @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_immunization))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary, 'occurrence'))
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'occurrence'))
       }
     end
 
     it 'skips if no Immunization resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -153,7 +147,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@immunization_ary', [FHIR::Immunization.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Immunization.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -195,21 +189,18 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     before do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @immunization = FHIR.from_contents(load_fixture(:us_core_immunization))
-      @immunization_ary = [@immunization]
-      @sequence.instance_variable_set(:'@immunization', @immunization)
-      @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_immunization))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
     it 'skips if no Immunization resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -217,7 +208,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@immunization_ary', [FHIR::Immunization.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Immunization.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -257,7 +248,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Immunization")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@immunization_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -269,7 +260,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@immunization', FHIR::Immunization.new(id: @immunization_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::Immunization.new(id: @immunization_id)))
     end
 
     it 'skips if the Immunization read interaction is not supported' do

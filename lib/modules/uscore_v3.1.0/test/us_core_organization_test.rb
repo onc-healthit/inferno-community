@@ -111,11 +111,11 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @organization_ary = FHIR.from_contents(load_fixture(:us_core_organization))
-      @sequence.instance_variable_set(:'@organization_ary', @organization_ary)
+      @resources_found = FHIR.from_contents(load_fixture(:us_core_organization))
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@organization_ary, 'name'))
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
@@ -159,13 +159,12 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
     before do
       @test = @sequence_class[:search_by_name]
       @sequence = @sequence_class.new(@instance, @client)
-      @organization = FHIR.from_contents(load_fixture(:us_core_organization))
-      @organization_ary = [@organization]
-      @sequence.instance_variable_set(:'@organization', @organization)
-      @sequence.instance_variable_set(:'@organization_ary', @organization_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_organization))]
+
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@organization_ary, 'name'))
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'name'))
       }
     end
 
@@ -212,7 +211,7 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Organization")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@organization_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -222,20 +221,17 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
     before do
       @test = @sequence_class[:search_by_address]
       @sequence = @sequence_class.new(@instance, @client)
-      @organization = FHIR.from_contents(load_fixture(:us_core_organization))
-      @organization_ary = [@organization]
-      @sequence.instance_variable_set(:'@organization', @organization)
-      @sequence.instance_variable_set(:'@organization_ary', @organization_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_organization))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'address': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@organization_ary, 'address'))
+        'address': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'address'))
       }
     end
 
     it 'skips if no Organization resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -243,7 +239,7 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@organization_ary', [FHIR::Organization.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Organization.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -283,7 +279,7 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Organization")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@organization_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end

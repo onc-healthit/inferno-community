@@ -69,14 +69,11 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     before do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:us_core_observation_lab))
-      @observation_ary = [@observation]
-      @sequence.instance_variable_set(:'@observation', @observation)
-      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_observation_lab))]
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category'))
       }
     end
 
@@ -151,8 +148,8 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
           'category': value
         }
         body =
-          if @sequence.resolve_element_from_path(@observation, 'category.coding.code') == value
-            wrap_resources_in_bundle(@observation_ary).to_json
+          if @sequence.resolve_element_from_path(@resources_found, 'category.coding.code') == value
+            wrap_resources_in_bundle(@resources_found).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -169,21 +166,18 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     before do
       @test = @sequence_class[:search_by_patient_code]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:us_core_observation_lab))
-      @observation_ary = [@observation]
-      @sequence.instance_variable_set(:'@observation', @observation)
-      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_observation_lab))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'code'))
       }
     end
 
     it 'skips if no Observation resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -191,7 +185,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Observation.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -231,7 +225,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -241,22 +235,19 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:us_core_observation_lab))
-      @observation_ary = [@observation]
-      @sequence.instance_variable_set(:'@observation', @observation)
-      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_observation_lab))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'effective'))
       }
     end
 
     it 'skips if no Observation resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -264,7 +255,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Observation.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -306,22 +297,19 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     before do
       @test = @sequence_class[:search_by_patient_code_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:us_core_observation_lab))
-      @observation_ary = [@observation]
-      @sequence.instance_variable_set(:'@observation', @observation)
-      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_observation_lab))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'effective'))
       }
     end
 
     it 'skips if no Observation resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -329,7 +317,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Observation.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -371,22 +359,19 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @observation = FHIR.from_contents(load_fixture(:us_core_observation_lab))
-      @observation_ary = [@observation]
-      @sequence.instance_variable_set(:'@observation', @observation)
-      @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_observation_lab))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'status'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
     it 'skips if no Observation resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -394,7 +379,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', [FHIR::Observation.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Observation.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -434,7 +419,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -446,7 +431,7 @@ describe Inferno::Sequence::USCore310ObservationLabSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@observation', FHIR::Observation.new(id: @observation_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::Observation.new(id: @observation_id)))
     end
 
     it 'skips if the Observation read interaction is not supported' do

@@ -68,10 +68,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     before do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @device = FHIR.from_contents(load_fixture(:us_core_implantable_device))
-      @device_ary = [@device]
-      @sequence.instance_variable_set(:'@device', @device)
-      @sequence.instance_variable_set(:'@device_ary', @device_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_implantable_device))]
 
       @query = {
         'patient': @instance.patient_id
@@ -121,7 +118,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Device")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -131,21 +128,18 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     before do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
-      @device = FHIR.from_contents(load_fixture(:us_core_implantable_device))
-      @device_ary = [@device]
-      @sequence.instance_variable_set(:'@device', @device)
-      @sequence.instance_variable_set(:'@device_ary', @device_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_implantable_device))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary, 'type'))
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'type'))
       }
     end
 
     it 'skips if no Device resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -153,7 +147,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@device_ary', [FHIR::Device.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::Device.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -193,7 +187,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Device")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -205,7 +199,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@device', FHIR::Device.new(id: @device_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::Device.new(id: @device_id)))
     end
 
     it 'skips if the Device read interaction is not supported' do

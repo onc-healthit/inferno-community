@@ -38,7 +38,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :unauthorized_search do
         metadata do
@@ -79,8 +79,6 @@ module Inferno
           versions :r4
         end
 
-        @care_plan_ary = []
-
         category_val = ['assess-plan']
         category_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'category': val }
@@ -90,14 +88,10 @@ module Inferno
 
           next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CarePlan' }
 
-          @resources_found = true
-          @care_plan = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'CarePlan' }
-            .resource
-          @care_plan_ary += fetch_all_bundled_resources(reply.resource)
+          @resources_found = fetch_all_bundled_resources(reply.resource, 'CarePlan')
 
           save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-          save_delayed_sequence_references(@care_plan_ary)
+          save_delayed_sequence_references(@resources_found)
           validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
           break
         end
@@ -123,8 +117,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category')),
+          'date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -159,9 +153,9 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@resources_found, 'status')),
+          'date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'period'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -195,8 +189,8 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@resources_found, 'status'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -217,9 +211,9 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:read])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_read_reply(@care_plan, versioned_resource_class('CarePlan'))
+        validate_read_reply(@resources_found.first, versioned_resource_class('CarePlan'))
       end
 
       test :vread_interaction do
@@ -235,9 +229,9 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:vread])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@care_plan, versioned_resource_class('CarePlan'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('CarePlan'))
       end
 
       test :history_interaction do
@@ -253,9 +247,9 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:history])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@care_plan, versioned_resource_class('CarePlan'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('CarePlan'))
       end
 
       test 'Server returns Provenance resources from CarePlan search by patient + category + _revIncludes: Provenance:target' do
@@ -270,7 +264,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -340,12 +334,12 @@ module Inferno
           'CarePlan.subject'
         ]
         must_support_elements.each do |path|
-          @care_plan_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('CarePlan.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @care_plan_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided CarePlan resource(s)" unless must_support_confirmed[path]
         end
@@ -365,7 +359,7 @@ module Inferno
         skip_if_not_supported(:CarePlan, [:search, :read])
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@care_plan)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

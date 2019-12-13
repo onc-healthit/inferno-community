@@ -42,7 +42,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :unauthorized_search do
         metadata do
@@ -90,16 +90,11 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Condition' }
-
+        @resources_found = fetch_all_bundled_resources(reply.resource, 'Condition')
         skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        @condition = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Condition' }
-          .resource
-        @condition_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
-        save_delayed_sequence_references(@condition_ary)
+        save_delayed_sequence_references(@resources_found)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
       end
 
@@ -121,7 +116,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
+          'category': get_value_for_search_param(resolve_element_from_path(@resources_found, 'category'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -149,7 +144,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'onset-date': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'onsetDateTime'))
+          'onset-date': get_value_for_search_param(resolve_element_from_path(@resources_found, 'onsetDateTime'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -183,7 +178,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'clinical-status': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
+          'clinical-status': get_value_for_search_param(resolve_element_from_path(@resources_found, 'clinicalStatus'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -210,7 +205,7 @@ module Inferno
 
         search_params = {
           'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
+          'code': get_value_for_search_param(resolve_element_from_path(@resources_found, 'code'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -231,9 +226,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:read])
-        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_read_reply(@condition, versioned_resource_class('Condition'))
+        validate_read_reply(@resources_found.first, versioned_resource_class('Condition'))
       end
 
       test :vread_interaction do
@@ -249,9 +244,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:vread])
-        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@condition, versioned_resource_class('Condition'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('Condition'))
       end
 
       test :history_interaction do
@@ -267,9 +262,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Condition, [:history])
-        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@condition, versioned_resource_class('Condition'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('Condition'))
       end
 
       test 'Server returns Provenance resources from Condition search by patient + _revIncludes: Provenance:target' do
@@ -346,12 +341,12 @@ module Inferno
           'Condition.subject'
         ]
         must_support_elements.each do |path|
-          @condition_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('Condition.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @condition_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided Condition resource(s)" unless must_support_confirmed[path]
         end
@@ -371,7 +366,7 @@ module Inferno
         skip_if_not_supported(:Condition, [:search, :read])
         skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@condition)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

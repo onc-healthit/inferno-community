@@ -17,7 +17,8 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false<% tests.each do |test|%>
+      @resources_found = []
+      <% tests.each do |test|%>
 
 <% if test[:key].present? %>
       test :<%= test[:key] %> do

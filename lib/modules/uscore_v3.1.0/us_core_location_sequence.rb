@@ -49,7 +49,7 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
+      @resources_found = []
 
       test :resource_read do
         metadata do
@@ -94,7 +94,7 @@ module Inferno
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@resources_found, 'name'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -117,7 +117,7 @@ module Inferno
         end
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@resources_found, 'name'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -125,16 +125,11 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
-
+        @resources_found = fetch_all_bundled_resources(reply.resource, 'Location')
         skip 'No Location resources appear to be available.' unless @resources_found
 
-        @location = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Location' }
-          .resource
-        @location_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
-        save_delayed_sequence_references(@location_ary)
+        save_delayed_sequence_references(@resources_found)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
@@ -154,7 +149,7 @@ module Inferno
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
-          'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
+          'address': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -180,7 +175,7 @@ module Inferno
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
-          'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
+          'address-city': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address.city'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -206,7 +201,7 @@ module Inferno
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
-          'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
+          'address-state': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address.state'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -232,7 +227,7 @@ module Inferno
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
-          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
+          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address.postalCode'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -254,9 +249,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:vread])
-        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_vread_reply(@location, versioned_resource_class('Location'))
+        validate_vread_reply(@resources_found.first, versioned_resource_class('Location'))
       end
 
       test :history_interaction do
@@ -272,9 +267,9 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:history])
-        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
 
-        validate_history_reply(@location, versioned_resource_class('Location'))
+        validate_history_reply(@resources_found.first, versioned_resource_class('Location'))
       end
 
       test 'Server returns Provenance resources from Location search by name + _revIncludes: Provenance:target' do
@@ -288,7 +283,7 @@ module Inferno
         end
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@resources_found, 'name'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -364,12 +359,12 @@ module Inferno
           'Location.managingOrganization'
         ]
         must_support_elements.each do |path|
-          @location_ary&.each do |resource|
+          @resources_found&.each do |resource|
             truncated_path = path.gsub('Location.', '')
             must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
             break if must_support_confirmed[path]
           end
-          resource_count = @location_ary.length
+          resource_count = @resources_found.length
 
           skip "Could not find #{path} in any of the #{resource_count} provided Location resource(s)" unless must_support_confirmed[path]
         end
@@ -389,7 +384,7 @@ module Inferno
         skip_if_not_supported(:Location, [:search, :read])
         skip 'No Location resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@location)
+        validate_reference_resolutions(@resources_found.first)
       end
     end
   end

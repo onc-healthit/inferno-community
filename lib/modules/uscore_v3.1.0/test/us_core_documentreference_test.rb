@@ -68,10 +68,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
       @query = {
         'patient': @instance.patient_id
@@ -121,7 +118,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DocumentReference")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -131,20 +128,17 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by__id]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'id'))
+        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'id'))
       }
     end
 
     it 'skips if no DocumentReference resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -152,7 +146,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DocumentReference.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -192,7 +186,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DocumentReference")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -202,21 +196,18 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'type'))
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'type'))
       }
     end
 
     it 'skips if no DocumentReference resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -224,7 +215,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DocumentReference.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -264,7 +255,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DocumentReference")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -274,22 +265,19 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'date'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'date'))
       }
     end
 
     it 'skips if no DocumentReference resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -297,7 +285,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DocumentReference.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -337,7 +325,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DocumentReference")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -347,21 +335,18 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'category'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'category'))
       }
     end
 
     it 'skips if no DocumentReference resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -369,7 +354,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DocumentReference.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -409,7 +394,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DocumentReference")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -419,22 +404,19 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by_patient_type_period]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'type')),
-        'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'context.period'))
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'type')),
+        'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'context.period'))
       }
     end
 
     it 'skips if no DocumentReference resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -442,7 +424,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DocumentReference.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -484,21 +466,18 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     before do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
-      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = [@document_reference]
-      @sequence.instance_variable_set(:'@document_reference', @document_reference)
-      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_documentreference))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
         'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'status'))
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'status'))
       }
     end
 
     it 'skips if no DocumentReference resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -506,7 +485,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::DocumentReference.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -546,7 +525,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/DocumentReference")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -558,7 +537,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:read_interaction]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
-      @sequence.instance_variable_set(:'@document_reference', FHIR::DocumentReference.new(id: @document_reference_id))
+      @sequence.instance_variable_set(:'@resources_found', Array.wrap(FHIR::DocumentReference.new(id: @document_reference_id)))
     end
 
     it 'skips if the DocumentReference read interaction is not supported' do

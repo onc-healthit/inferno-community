@@ -111,11 +111,11 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
       @test = @sequence_class[:unauthorized_search]
       @sequence = @sequence_class.new(@instance, @client)
 
-      @practitioner_role_ary = FHIR.from_contents(load_fixture(:us_core_practitionerrole))
-      @sequence.instance_variable_set(:'@practitioner_role_ary', @practitioner_role_ary)
+      @resources_found = FHIR.from_contents(load_fixture(:us_core_practitionerrole))
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'specialty'))
       }
     end
 
@@ -159,13 +159,12 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     before do
       @test = @sequence_class[:search_by_specialty]
       @sequence = @sequence_class.new(@instance, @client)
-      @practitioner_role = FHIR.from_contents(load_fixture(:us_core_practitionerrole))
-      @practitioner_role_ary = [@practitioner_role]
-      @sequence.instance_variable_set(:'@practitioner_role', @practitioner_role)
-      @sequence.instance_variable_set(:'@practitioner_role_ary', @practitioner_role_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_practitionerrole))]
+
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+        'specialty': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'specialty'))
       }
     end
 
@@ -212,7 +211,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@practitioner_role_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
@@ -222,20 +221,17 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     before do
       @test = @sequence_class[:search_by_practitioner]
       @sequence = @sequence_class.new(@instance, @client)
-      @practitioner_role = FHIR.from_contents(load_fixture(:us_core_practitionerrole))
-      @practitioner_role_ary = [@practitioner_role]
-      @sequence.instance_variable_set(:'@practitioner_role', @practitioner_role)
-      @sequence.instance_variable_set(:'@practitioner_role_ary', @practitioner_role_ary)
+      @resources_found = [FHIR.from_contents(load_fixture(:us_core_practitionerrole))]
 
-      @sequence.instance_variable_set(:'@resources_found', true)
+      @sequence.instance_variable_set(:'@resources_found', @resources_found)
 
       @query = {
-        'practitioner': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
+        'practitioner': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@resources_found, 'practitioner'))
       }
     end
 
     it 'skips if no PractitionerRole resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
+      @sequence.instance_variable_set(:'@resources_found', [])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -243,7 +239,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@practitioner_role_ary', [FHIR::PractitionerRole.new])
+      @sequence.instance_variable_set(:'@resources_found', [FHIR::PractitionerRole.new])
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -283,7 +279,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@practitioner_role_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@resources_found).to_json)
 
       @sequence.run_test(@test)
     end
