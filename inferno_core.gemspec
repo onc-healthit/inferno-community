@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'inferno/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'inferno'
+  spec.name          = 'inferno_core'
   spec.version       = Inferno::VERSION
   spec.authors       = ['Rob Scanlon', 'Steve MacVicar', 'Reece Adamson', 'Chase Zhou', 'Yunwei Wang', 'Hershil Patel',
                         "Michael O'Keefe", 'Jason Walonoski']

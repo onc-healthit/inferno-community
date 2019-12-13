@@ -12,7 +12,7 @@
 # Include: **/*.gemspec
 Gemspec/OrderedDependencies:
   Exclude:
-    - 'inferno.gemspec'
+    - 'inferno_core.gemspec'
 
 # Offense count: 1
 # Cop supports --auto-correct.
@@ -41,7 +41,7 @@ Layout/LeadingCommentSpace:
 # SupportedStyles: aligned, indented, indented_relative_to_receiver
 Layout/MultilineMethodCallIndentation:
   Exclude:
-    - 'inferno.gemspec'
+    - 'inferno_core.gemspec'
 
 # Offense count: 1
 # Cop supports --auto-correct.
