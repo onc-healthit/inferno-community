@@ -183,6 +183,9 @@ module Inferno
           link: 'https://www.hl7.org/fhir/search.html#include',
           description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}"
         }
+
+        return if !@optional_tests_on
+
         first_search = find_first_search(sequence)
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
         include_test[:test_code] = search_params
@@ -242,6 +245,8 @@ module Inferno
           )
         }
 
+        return if search_test[:optional] && !@optional_tests_on
+
         find_comparators(search_param[:names], sequence).each do |param, comparators|
           search_test[:description] += %(
               including support for these #{param} comparators: #{comparators.keys.join(', ')})
@@ -294,6 +299,8 @@ module Inferno
           description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction.",
           optional: interaction[:expectation] != 'SHALL'
         }
+
+        return if interaction_test[:optional] && !@optional_tests_on
 
         interaction_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])

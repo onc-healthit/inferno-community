@@ -135,66 +135,9 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test :search_by_patient_intent_encounter do
-        metadata do
-          id '04'
-          name 'Server returns expected results from MedicationRequest search by patient+intent+encounter'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+intent+encounter on the MedicationRequest resource
-
-          )
-          versions :r4
-        end
-
-        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
-          'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'encounter'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
-      test :search_by_patient_intent_authoredon do
-        metadata do
-          id '05'
-          name 'Server returns expected results from MedicationRequest search by patient+intent+authoredon'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+intent+authoredon on the MedicationRequest resource
-
-              including support for these authoredon comparators: gt, lt, le, ge
-          )
-          versions :r4
-        end
-
-        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent')),
-          'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'authoredOn'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-        validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test :read_interaction do
         metadata do
-          id '06'
+          id '04'
           name 'Server returns correct MedicationRequest resource from MedicationRequest read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -209,70 +152,9 @@ module Inferno
         validate_read_reply(@medication_request, versioned_resource_class('MedicationRequest'))
       end
 
-      test :vread_interaction do
-        metadata do
-          id '07'
-          name 'Server returns correct MedicationRequest resource from MedicationRequest vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the MedicationRequest vread interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:MedicationRequest, [:vread])
-        skip 'No MedicationRequest resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_vread_reply(@medication_request, versioned_resource_class('MedicationRequest'))
-      end
-
-      test :history_interaction do
-        metadata do
-          id '08'
-          name 'Server returns correct MedicationRequest resource from MedicationRequest history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the MedicationRequest history interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:MedicationRequest, [:history])
-        skip 'No MedicationRequest resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_history_reply(@medication_request, versioned_resource_class('MedicationRequest'))
-      end
-
-      test 'Server returns the appropriate resource from the following _includes: MedicationRequest:medication' do
-        metadata do
-          id '09'
-          link 'https://www.hl7.org/fhir/search.html#include'
-          optional
-          description %(
-            A Server SHOULD be capable of supporting the following _includes: MedicationRequest:medication
-          )
-          versions :r4
-        end
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary, 'intent'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        search_params['_include'] = 'MedicationRequest:medication'
-        reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        medication_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Medication' }
-        assert medication_results, 'No Medication resources were returned from this search'
-      end
-
       test 'Server returns Provenance resources from MedicationRequest search by patient + intent + _revIncludes: Provenance:target' do
         metadata do
-          id '10'
+          id '05'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -297,7 +179,7 @@ module Inferno
 
       test 'MedicationRequest resources returned conform to US Core R4 profiles' do
         metadata do
-          id '11'
+          id '06'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
@@ -314,7 +196,7 @@ module Inferno
 
       test 'All must support elements are provided in the MedicationRequest resources returned.' do
         metadata do
-          id '12'
+          id '07'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -381,7 +263,7 @@ module Inferno
 
       test 'The server returns expected results when parameters use composite-or' do
         metadata do
-          id '13'
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
@@ -406,7 +288,7 @@ module Inferno
 
       test 'Every reference within MedicationRequest resource is valid and can be read.' do
         metadata do
-          id '14'
+          id '09'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

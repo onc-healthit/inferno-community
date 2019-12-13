@@ -133,72 +133,9 @@ module Inferno
         end
       end
 
-      test :search_by_patient_code_date do
-        metadata do
-          id '04'
-          name 'Server returns expected results from Procedure search by patient+code+date'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+code+date on the Procedure resource
-
-              including support for these date comparators: gt, lt, le, ge
-          )
-          versions :r4
-        end
-
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'performed'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
-        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
-        assert_response_ok(reply)
-
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
-        end
-      end
-
-      test :search_by_patient_status do
-        metadata do
-          id '05'
-          name 'Server returns expected results from Procedure search by patient+status'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+status on the Procedure resource
-
-          )
-          versions :r4
-        end
-
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@procedure_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
-        validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test :read_interaction do
         metadata do
-          id '06'
+          id '04'
           name 'Server returns correct Procedure resource from Procedure read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -213,45 +150,9 @@ module Inferno
         validate_read_reply(@procedure, versioned_resource_class('Procedure'))
       end
 
-      test :vread_interaction do
-        metadata do
-          id '07'
-          name 'Server returns correct Procedure resource from Procedure vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Procedure vread interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Procedure, [:vread])
-        skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_vread_reply(@procedure, versioned_resource_class('Procedure'))
-      end
-
-      test :history_interaction do
-        metadata do
-          id '08'
-          name 'Server returns correct Procedure resource from Procedure history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Procedure history interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Procedure, [:history])
-        skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_history_reply(@procedure, versioned_resource_class('Procedure'))
-      end
-
       test 'Server returns Provenance resources from Procedure search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '09'
+          id '05'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -274,7 +175,7 @@ module Inferno
 
       test 'Procedure resources returned conform to US Core R4 profiles' do
         metadata do
-          id '10'
+          id '06'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           description %(
 
@@ -291,7 +192,7 @@ module Inferno
 
       test 'All must support elements are provided in the Procedure resources returned.' do
         metadata do
-          id '11'
+          id '07'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -337,7 +238,7 @@ module Inferno
 
       test 'Every reference within Procedure resource is valid and can be read.' do
         metadata do
-          id '12'
+          id '08'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -95,71 +95,9 @@ module Inferno
         validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
       end
 
-      test :search_by_patient_target_date do
-        metadata do
-          id '03'
-          name 'Server returns expected results from Goal search by patient+target-date'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+target-date on the Goal resource
-
-              including support for these target-date comparators: gt, lt, le, ge
-          )
-          versions :r4
-        end
-
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-        assert_response_ok(reply)
-
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
-          comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
-        end
-      end
-
-      test :search_by_patient_lifecycle_status do
-        metadata do
-          id '04'
-          name 'Server returns expected results from Goal search by patient+lifecycle-status'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+lifecycle-status on the Goal resource
-
-          )
-          versions :r4
-        end
-
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test :read_interaction do
         metadata do
-          id '05'
+          id '03'
           name 'Server returns correct Goal resource from Goal read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -174,45 +112,9 @@ module Inferno
         validate_read_reply(@goal, versioned_resource_class('Goal'))
       end
 
-      test :vread_interaction do
-        metadata do
-          id '06'
-          name 'Server returns correct Goal resource from Goal vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Goal vread interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Goal, [:vread])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_vread_reply(@goal, versioned_resource_class('Goal'))
-      end
-
-      test :history_interaction do
-        metadata do
-          id '07'
-          name 'Server returns correct Goal resource from Goal history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Goal history interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Goal, [:history])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_history_reply(@goal, versioned_resource_class('Goal'))
-      end
-
       test 'Server returns Provenance resources from Goal search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '08'
+          id '04'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -235,7 +137,7 @@ module Inferno
 
       test 'Goal resources returned conform to US Core R4 profiles' do
         metadata do
-          id '09'
+          id '05'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
 
@@ -252,7 +154,7 @@ module Inferno
 
       test 'All must support elements are provided in the Goal resources returned.' do
         metadata do
-          id '10'
+          id '06'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -298,7 +200,7 @@ module Inferno
 
       test 'Every reference within Goal resource is valid and can be read.' do
         metadata do
-          id '11'
+          id '07'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

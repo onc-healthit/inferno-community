@@ -91,36 +91,9 @@ module Inferno
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
 
-      test :search_by_patient_type do
-        metadata do
-          id '03'
-          name 'Server returns expected results from Device search by patient+type'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+type on the Device resource
-
-          )
-          versions :r4
-        end
-
-        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@device_ary, 'type'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
-        validate_search_reply(versioned_resource_class('Device'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test :read_interaction do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns correct Device resource from Device read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -135,45 +108,9 @@ module Inferno
         validate_read_reply(@device, versioned_resource_class('Device'))
       end
 
-      test :vread_interaction do
-        metadata do
-          id '05'
-          name 'Server returns correct Device resource from Device vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Device vread interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Device, [:vread])
-        skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_vread_reply(@device, versioned_resource_class('Device'))
-      end
-
-      test :history_interaction do
-        metadata do
-          id '06'
-          name 'Server returns correct Device resource from Device history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Device history interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Device, [:history])
-        skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_history_reply(@device, versioned_resource_class('Device'))
-      end
-
       test 'Server returns Provenance resources from Device search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '07'
+          id '04'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -196,7 +133,7 @@ module Inferno
 
       test 'Device resources returned conform to US Core R4 profiles' do
         metadata do
-          id '08'
+          id '05'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
 
@@ -213,7 +150,7 @@ module Inferno
 
       test 'All must support elements are provided in the Device resources returned.' do
         metadata do
-          id '09'
+          id '06'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -277,7 +214,7 @@ module Inferno
 
       test 'Every reference within Device resource is valid and can be read.' do
         metadata do
-          id '10'
+          id '07'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

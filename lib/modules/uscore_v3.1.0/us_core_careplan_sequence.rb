@@ -104,110 +104,9 @@ module Inferno
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
-      test :search_by_patient_category_date do
-        metadata do
-          id '03'
-          name 'Server returns expected results from CarePlan search by patient+category+date'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+category+date on the CarePlan resource
-
-              including support for these date comparators: gt, lt, le, ge
-          )
-          versions :r4
-        end
-
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-        assert_response_ok(reply)
-
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
-        end
-      end
-
-      test :search_by_patient_category_status_date do
-        metadata do
-          id '04'
-          name 'Server returns expected results from CarePlan search by patient+category+status+date'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+category+status+date on the CarePlan resource
-
-              including support for these date comparators: gt, lt, le, ge
-          )
-          versions :r4
-        end
-
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-        assert_response_ok(reply)
-
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'status': search_params[:status], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
-        end
-      end
-
-      test :search_by_patient_category_status do
-        metadata do
-          id '05'
-          name 'Server returns expected results from CarePlan search by patient+category+status'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+category+status on the CarePlan resource
-
-          )
-          versions :r4
-        end
-
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
-        assert_response_ok(reply)
-      end
-
       test :read_interaction do
         metadata do
-          id '06'
+          id '03'
           name 'Server returns correct CarePlan resource from CarePlan read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -222,45 +121,9 @@ module Inferno
         validate_read_reply(@care_plan, versioned_resource_class('CarePlan'))
       end
 
-      test :vread_interaction do
-        metadata do
-          id '07'
-          name 'Server returns correct CarePlan resource from CarePlan vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the CarePlan vread interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:CarePlan, [:vread])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_vread_reply(@care_plan, versioned_resource_class('CarePlan'))
-      end
-
-      test :history_interaction do
-        metadata do
-          id '08'
-          name 'Server returns correct CarePlan resource from CarePlan history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the CarePlan history interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:CarePlan, [:history])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
-
-        validate_history_reply(@care_plan, versioned_resource_class('CarePlan'))
-      end
-
       test 'Server returns Provenance resources from CarePlan search by patient + category + _revIncludes: Provenance:target' do
         metadata do
-          id '09'
+          id '04'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -285,7 +148,7 @@ module Inferno
 
       test 'CarePlan resources returned conform to US Core R4 profiles' do
         metadata do
-          id '10'
+          id '05'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
           description %(
 
@@ -302,7 +165,7 @@ module Inferno
 
       test 'All must support elements are provided in the CarePlan resources returned.' do
         metadata do
-          id '11'
+          id '06'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -354,7 +217,7 @@ module Inferno
 
       test 'Every reference within CarePlan resource is valid and can be read.' do
         metadata do
-          id '12'
+          id '07'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

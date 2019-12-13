@@ -10,12 +10,14 @@ module Inferno
   module Generator
     class Base
       attr_accessor :path, :extras, :resource_by_path, :resources_by_type,
-                    :claimed_test_id_prefixes
+                    :claimed_test_id_prefixes,
+                    :optional_tests_on
 
-      def initialize(path, extras)
+      def initialize(path, optional_tests_on, extras)
         @path = path
         @extras = extras
         @claimed_test_id_prefixes = Set.new
+        @optional_tests_on = optional_tests_on
         load_resources
       end
 
