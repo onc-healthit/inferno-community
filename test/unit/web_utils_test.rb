@@ -6,8 +6,7 @@ class WebUtilsTest < MiniTest::Test
   REQUEST_HEADERS = {
     'Accept' => '*/*',
     'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-    'Host' => 'www.example.com',
-    'User-Agent' => 'rest-client/2.1.0 (darwin18.7.0 x86_64) ruby/2.5.6p201'
+    'Host' => 'www.example.com'
   }.freeze
 
   def test_retry_till_timeout_retry_specified

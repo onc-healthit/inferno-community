@@ -24,8 +24,7 @@ def set_global_mocks
         'Accept' => '*/*',
         'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
         'Content-Type' => 'application/json+fhir',
-        'Host' => 'localhost:8080',
-        'User-Agent' => 'rest-client/2.1.0 (darwin18.7.0 x86_64) ruby/2.5.6p201'
+        'Host' => 'localhost:8080'
       }
     )
     .to_return(status: 200, body: '', headers: {})
