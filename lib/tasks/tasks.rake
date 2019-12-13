@@ -470,7 +470,7 @@ namespace :inferno do |_argv|
       c.name.demodulize.downcase.start_with?(args.generator)
     end
 
-    generator = generator_class.new(args.path, !!args.optional_tests_on, args.extras)
+    generator = generator_class.new(args.path, args.optional_tests_on || false, args.extras)
     generator.run
   end
 end

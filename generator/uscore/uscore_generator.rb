@@ -184,7 +184,7 @@ module Inferno
           description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}"
         }
 
-        return if !@optional_tests_on
+        return unless @optional_tests_on
 
         first_search = find_first_search(sequence)
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
