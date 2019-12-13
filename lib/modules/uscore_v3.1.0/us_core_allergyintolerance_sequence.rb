@@ -80,7 +80,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
 
-        skip 'No AllergyIntolerance resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         @allergy_intolerance = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
@@ -105,7 +105,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -206,7 +206,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('AllergyIntolerance')
       end
 
@@ -263,7 +263,7 @@ module Inferno
         end
 
         skip_if_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No AllergyIntolerance resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@allergy_intolerance)
       end

@@ -114,7 +114,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Practitioner' }
 
-        skip 'No Practitioner resources appear to be available. ' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         @practitioner = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Practitioner' }
@@ -138,7 +138,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available. ' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
@@ -222,7 +222,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available. ' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
         test_resources_against_profile('Practitioner')
       end
 
@@ -285,7 +285,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Practitioner, [:search, :read])
-        skip 'No Practitioner resources appear to be available. ' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@practitioner)
       end

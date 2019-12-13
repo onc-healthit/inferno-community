@@ -92,7 +92,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available. ' unless @resources_found
+        skip 'No Medication resources appear to be available.' unless @resources_found
         test_resources_against_profile('Medication')
       end
 
@@ -140,7 +140,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:search, :read])
-        skip 'No Medication resources appear to be available. ' unless @resources_found
+        skip 'No Medication resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@medication)
       end

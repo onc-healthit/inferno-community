@@ -646,7 +646,7 @@ module Inferno
 
       def skip_if_not_found(sequence)
         use_other_patient = ' Please use patients with more information.'
-        "skip 'No #{sequence[:resource]} resources appear to be available. #{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
+        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
       end
 
       def search_param_constants(search_parameters, sequence)

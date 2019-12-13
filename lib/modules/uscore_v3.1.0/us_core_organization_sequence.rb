@@ -113,7 +113,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
 
-        skip 'No Organization resources appear to be available. ' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found
 
         @organization = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Organization' }
@@ -137,7 +137,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available. ' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
@@ -221,7 +221,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available. ' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found
         test_resources_against_profile('Organization')
       end
 
@@ -308,7 +308,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:search, :read])
-        skip 'No Organization resources appear to be available. ' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@organization)
       end

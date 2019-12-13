@@ -105,7 +105,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
           break
         end
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
       test :search_by_patient_category_date do
@@ -122,7 +122,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -156,7 +156,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -184,7 +184,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -219,7 +219,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -323,7 +323,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:blood_pressure])
       end
 
@@ -797,7 +797,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:search, :read])
-        skip 'No Observation resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@observation)
       end

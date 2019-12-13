@@ -92,7 +92,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Provenance resources appear to be available. ' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found
         test_resources_against_profile('Provenance')
       end
 
@@ -167,7 +167,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:search, :read])
-        skip 'No Provenance resources appear to be available. ' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@provenance)
       end

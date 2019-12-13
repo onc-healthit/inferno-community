@@ -125,7 +125,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
 
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         @location = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Location' }
@@ -149,7 +149,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
@@ -175,7 +175,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
@@ -201,7 +201,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
@@ -227,7 +227,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
@@ -311,7 +311,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
         test_resources_against_profile('Location')
       end
 
@@ -383,7 +383,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:search, :read])
-        skip 'No Location resources appear to be available. ' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@location)
       end

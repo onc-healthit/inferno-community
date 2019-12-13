@@ -80,7 +80,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Device' }
 
-        skip 'No Device resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         @device = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Device' }
@@ -105,7 +105,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Device resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -206,7 +206,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Device resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Device')
       end
 
@@ -284,7 +284,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Device, [:search, :read])
-        skip 'No Device resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@device)
       end

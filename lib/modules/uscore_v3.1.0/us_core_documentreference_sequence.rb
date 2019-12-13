@@ -100,7 +100,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DocumentReference' }
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         @document_reference = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'DocumentReference' }
@@ -124,7 +124,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           '_id': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'id'))
@@ -149,7 +149,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -176,7 +176,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -203,7 +203,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -231,7 +231,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -266,7 +266,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -367,7 +367,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('DocumentReference')
       end
 
@@ -463,7 +463,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DocumentReference, [:search, :read])
-        skip 'No DocumentReference resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@document_reference)
       end

@@ -100,7 +100,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Encounter' }
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         @encounter = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Encounter' }
@@ -124,7 +124,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           '_id': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'id'))
@@ -150,7 +150,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'date': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'period')),
@@ -184,7 +184,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier'))
@@ -210,7 +210,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -237,7 +237,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'class': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class')),
@@ -264,7 +264,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -365,7 +365,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Encounter')
       end
 
@@ -461,7 +461,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Encounter, [:search, :read])
-        skip 'No Encounter resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@encounter)
       end

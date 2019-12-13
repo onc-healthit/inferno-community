@@ -107,7 +107,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Patient' }
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         @patient = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Patient' }
@@ -131,7 +131,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
@@ -156,7 +156,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
@@ -181,7 +181,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender')),
@@ -207,7 +207,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
@@ -234,7 +234,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
@@ -261,7 +261,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family')),
@@ -362,7 +362,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Patient')
       end
 
@@ -481,7 +481,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Patient, [:search, :read])
-        skip 'No Patient resources appear to be available.  Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@patient)
       end
