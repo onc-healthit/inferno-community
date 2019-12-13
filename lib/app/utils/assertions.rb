@@ -55,7 +55,7 @@ module Inferno
     end
 
     def base_header(header)
-      return header unless header.include? ';'
+      return header unless header&.include? ';'
 
       header[0, header.index(';')]
     end
