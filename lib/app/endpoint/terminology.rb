@@ -8,6 +8,15 @@ module Inferno
       set :prefix, '/fhir'
       Inferno::Terminology.load_valuesets_from_directory('resources', true)
 
+      get '/metadata', provides: ['application/fhir+json', 'application/fhir+xml'] do
+        capability = FHIR::TerminologyCapabilities.new
+        capability.id = 'infernoFHIRServer'
+        capability.url = '/fhir/metadata?mode=terminology'
+        capability.description = 'TerminologyCapability resource for the Inferno terminology endpoint'
+        capability.date = Time.now.utc.iso8601
+        loaded_code_systems = Inferno::Terminology.loaded_code_systems
+      end
+
       get '/ValueSet/?:id_param?/$validate-code', provides: ['application/fhir+json', 'application/fhir+xml'] do
         # Get a valueset, in one of the many ways a valueset can be specified
         valueset_response = get_valueset(params)
@@ -32,7 +41,7 @@ module Inferno
         return_params = if code_valid
                           FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
                         else
-                          message = "The code '#{coding[:code]}' is not valid in the valueset '#{valueset_response.valueset_model.id}'"
+                          message = "The code '#{coding[:code]}' from the code system '#{coding[:system]}' is not valid in the valueset '#{valueset_response.valueset_model.id}'"
                           params = [
                             FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
                             FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),

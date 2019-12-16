@@ -26,7 +26,8 @@ module Inferno
         'http://unitsofmeasure.org' => 'NCI_UCUM',
         'http://hl7.org/fhir/ndfrt' => 'NDFRT',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
-        'http://www.ama-assn.org/go/cpt' => 'CPT'
+        'http://www.ama-assn.org/go/cpt' => 'CPT',
+        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS'
       }.freeze
 
       CODE_SYS = {
@@ -37,6 +38,8 @@ module Inferno
         'urn:oid:2.16.840.1.113883.6.238' => 'resources/us_core_r4/CodeSystem-cdcrec.json',
         'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => 'resources/us_core_r4/CodeSystem-condition-category.json',
         'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => 'resources/us_core_r4/CodeSystem-us-core-documentreference-category.json',
+        'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => 'resources/us_core_r4/CodeSystem-us-core-provenance-participant-type.json',
+        'http://terminology.hl7.org/CodeSystem/provenance-participant-type' => 'resources/misc_valuesets/CodeSystem-provenance-participant-type.json',
         'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json'
       }.freeze
 
@@ -208,7 +211,7 @@ module Inferno
           puts "loading #{system} codes..."
           return load_code_system(system)
         end
-        raise "Can't handle #{filter&.op}" unless ['=', 'in', 'is-a', nil].include? filter&.op
+        raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
         raise UnknownCodeSystemException, system if SAB[system].nil?
 
         if filter.nil?

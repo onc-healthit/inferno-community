@@ -20,9 +20,10 @@ module Inferno
 
     @known_valuesets = {}
     @valueset_ids = nil
+    @loaded_code_systems = nil
 
     @loaded_validators = {}
-    class << self; attr_reader :loaded_validators; end
+    class << self; attr_reader :loaded_validators, :known_valuesets; end
 
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
       directory += '/**/' if include_subdirectories
@@ -147,6 +148,12 @@ module Inferno
         end
       end
       @known_valuesets[@valueset_ids[id]] || raise(UnknownValueSetException, id)
+    end
+
+    def self.loaded_code_systems
+      @loaded_code_systems ||= @known_valuesets.flat_map do |_, vs|
+        vs.valueset.collect {|s| s[:system] }.uniq
+      end.uniq
     end
 
     class UnknownValueSetException < StandardError
