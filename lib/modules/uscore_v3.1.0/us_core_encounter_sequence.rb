@@ -330,7 +330,7 @@ module Inferno
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
-      test 'Server returns valid Provenance resources from Encounter search by patient + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Encounter search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -416,8 +416,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @encounter_ary&.any?
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Encounter.identifier',
           'Encounter.identifier.system',

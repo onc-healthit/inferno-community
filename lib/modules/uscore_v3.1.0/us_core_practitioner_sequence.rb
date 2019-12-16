@@ -186,7 +186,7 @@ module Inferno
         validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
 
-      test 'Server returns valid Provenance resources from Practitioner search by name + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Practitioner search by name + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -251,8 +251,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @practitioner_ary&.any?
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Practitioner.identifier',
           'Practitioner.identifier.system',

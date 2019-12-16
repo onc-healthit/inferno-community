@@ -210,7 +210,7 @@ module Inferno
         assert practitioner_results, 'No Practitioner resources were returned from this search'
       end
 
-      test 'Server returns valid Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -281,8 +281,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @practitioner_role_ary&.any?
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'PractitionerRole.practitioner',
           'PractitionerRole.organization',

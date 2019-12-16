@@ -309,7 +309,7 @@ module Inferno
         validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
       end
 
-      test 'Server returns valid Provenance resources from DiagnosticReport search by patient + category + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from DiagnosticReport search by patient + category + _revIncludes: Provenance:target' do
         metadata do
           id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -383,8 +383,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @diagnostic_report_ary&.any?
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'DiagnosticReport.status',
           'DiagnosticReport.category',

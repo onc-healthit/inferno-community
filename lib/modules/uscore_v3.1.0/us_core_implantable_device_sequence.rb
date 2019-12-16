@@ -171,7 +171,7 @@ module Inferno
         validate_history_reply(@device, versioned_resource_class('Device'))
       end
 
-      test 'Server returns valid Provenance resources from Device search by patient + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Device search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -245,8 +245,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @device_ary&.any?
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Device.udiCarrier',
           'Device.udiCarrier.deviceIdentifier',

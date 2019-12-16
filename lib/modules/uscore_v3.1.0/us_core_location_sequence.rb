@@ -275,7 +275,7 @@ module Inferno
         validate_history_reply(@location, versioned_resource_class('Location'))
       end
 
-      test 'Server returns valid Provenance resources from Location search by name + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Location search by name + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -346,8 +346,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @location_ary&.any?
+        skip 'No Location resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Location.status',
           'Location.name',

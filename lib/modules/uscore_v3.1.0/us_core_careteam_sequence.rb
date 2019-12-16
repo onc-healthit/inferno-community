@@ -150,7 +150,7 @@ module Inferno
         validate_history_reply(@care_team, versioned_resource_class('CareTeam'))
       end
 
-      test 'Server returns valid Provenance resources from CareTeam search by patient + status + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from CareTeam search by patient + status + _revIncludes: Provenance:target' do
         metadata do
           id '06'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -214,8 +214,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @care_team_ary&.any?
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'CareTeam.status',
           'CareTeam.subject',

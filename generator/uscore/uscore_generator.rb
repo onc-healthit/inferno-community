@@ -204,7 +204,7 @@ module Inferno
         return if first_search.blank?
 
         revinclude_test = {
-          tests_that: "Server returns valid Provenance resources from #{sequence[:resource]} search by #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target",
+          tests_that: "Server returns Provenance resources from #{sequence[:resource]} search by #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
           description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}"
@@ -274,7 +274,8 @@ module Inferno
           has_comparator_tests: comparator_search_code.present?,
           fixed_value_search_param: fixed_value_search_param,
           class_name: sequence[:class_name],
-          sequence_name: sequence[:name]
+          sequence_name: sequence[:name],
+          delayed_sequence: sequence[:delayed_sequence]
         )
       end
 
@@ -327,10 +328,9 @@ module Inferno
           )
         end
         test[:test_code] += %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].underscore}_ary&.any?)
-
-        test[:test_code] += %(
-              must_support_confirmed = {})
+          #{skip_if_not_found(sequence)}
+          must_support_confirmed = {}
+        )
 
         extensions_list = []
         sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|

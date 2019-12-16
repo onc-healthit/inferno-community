@@ -327,7 +327,7 @@ module Inferno
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
 
-      test 'Server returns valid Provenance resources from Patient search by _id + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Patient search by _id + _revIncludes: Provenance:target' do
         metadata do
           id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -419,8 +419,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @patient_ary&.any?
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         extensions_list = {
           'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
           'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',

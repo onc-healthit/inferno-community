@@ -332,7 +332,7 @@ module Inferno
         validate_history_reply(@document_reference, versioned_resource_class('DocumentReference'))
       end
 
-      test 'Server returns valid Provenance resources from DocumentReference search by patient + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from DocumentReference search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -418,8 +418,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @document_reference_ary&.any?
+        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'DocumentReference.identifier',
           'DocumentReference.status',

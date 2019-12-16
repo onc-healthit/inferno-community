@@ -258,7 +258,7 @@ module Inferno
         validate_history_reply(@care_plan, versioned_resource_class('CarePlan'))
       end
 
-      test 'Server returns valid Provenance resources from CarePlan search by patient + category + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from CarePlan search by patient + category + _revIncludes: Provenance:target' do
         metadata do
           id '09'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -326,8 +326,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @care_plan_ary&.any?
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'CarePlan.text',
           'CarePlan.text.status',

@@ -185,7 +185,7 @@ module Inferno
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end
 
-      test 'Server returns valid Provenance resources from Organization search by name + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Organization search by name + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -266,8 +266,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @organization_ary&.any?
+        skip 'No Organization resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Organization.identifier',
           'Organization.identifier.system',

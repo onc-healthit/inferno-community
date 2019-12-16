@@ -20,7 +20,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    assert_equal 'No <%= resource_type %> resources appear to be available.<%=' Please use patients with more information.' unless delayed_sequence%>', exception.message
   end
 
   <% if has_dynamic_search_params %>
@@ -98,7 +98,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+    assert_equal 'No <%= resource_type %> resources appear to be available.<%=' Please use patients with more information.' unless delayed_sequence%>', exception.message
   end
 <% end %>
 

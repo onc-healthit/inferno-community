@@ -270,7 +270,7 @@ module Inferno
         assert medication_results, 'No Medication resources were returned from this search'
       end
 
-      test 'Server returns valid Provenance resources from MedicationRequest search by patient + intent + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from MedicationRequest search by patient + intent + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -348,8 +348,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medication_request_ary&.any?
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'MedicationRequest.status',
           'MedicationRequest.intent',

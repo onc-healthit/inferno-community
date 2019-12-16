@@ -286,7 +286,7 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Server returns valid Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -350,8 +350,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @observation_ary&.any?
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Observation.status',
           'Observation.code',
