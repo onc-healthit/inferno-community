@@ -35,9 +35,8 @@ module Inferno
         medication_references = @instance.resource_references.select { |reference| reference.resource_type == 'Medication' }
         skip 'No Medication references found from the prior searches' if medication_references.blank?
 
-        @medication_ary = []
-        medication_references.each do |reference|
-          @medication_ary << validate_read_reply(
+        @medication_ary = medication_references.map do |reference|
+          validate_read_reply(
             FHIR::Medication.new(id: reference.resource_id),
             FHIR::Medication
           )

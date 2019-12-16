@@ -55,9 +55,8 @@ module Inferno
         organization_references = @instance.resource_references.select { |reference| reference.resource_type == 'Organization' }
         skip 'No Organization references found from the prior searches' if organization_references.blank?
 
-        @organization_ary = []
-        organization_references.each do |reference|
-          @organization_ary << validate_read_reply(
+        @organization_ary = organization_references.map do |reference|
+          validate_read_reply(
             FHIR::Organization.new(id: reference.resource_id),
             FHIR::Organization
           )

@@ -49,9 +49,8 @@ module Inferno
         practitioner_role_references = @instance.resource_references.select { |reference| reference.resource_type == 'PractitionerRole' }
         skip 'No PractitionerRole references found from the prior searches' if practitioner_role_references.blank?
 
-        @practitioner_role_ary = []
-        practitioner_role_references.each do |reference|
-          @practitioner_role_ary << validate_read_reply(
+        @practitioner_role_ary = practitioner_role_references.map do |reference|
+          validate_read_reply(
             FHIR::PractitionerRole.new(id: reference.resource_id),
             FHIR::PractitionerRole
           )

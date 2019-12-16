@@ -67,9 +67,8 @@ module Inferno
         location_references = @instance.resource_references.select { |reference| reference.resource_type == 'Location' }
         skip 'No Location references found from the prior searches' if location_references.blank?
 
-        @location_ary = []
-        location_references.each do |reference|
-          @location_ary << validate_read_reply(
+        @location_ary = location_references.map do |reference|
+          validate_read_reply(
             FHIR::Location.new(id: reference.resource_id),
             FHIR::Location
           )

@@ -35,9 +35,8 @@ module Inferno
         provenance_references = @instance.resource_references.select { |reference| reference.resource_type == 'Provenance' }
         skip 'No Provenance references found from the prior searches' if provenance_references.blank?
 
-        @provenance_ary = []
-        provenance_references.each do |reference|
-          @provenance_ary << validate_read_reply(
+        @provenance_ary = provenance_references.map do |reference|
+          validate_read_reply(
             FHIR::Provenance.new(id: reference.resource_id),
             FHIR::Provenance
           )

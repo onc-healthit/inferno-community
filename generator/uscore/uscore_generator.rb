@@ -120,9 +120,8 @@ module Inferno
               #{sequence[:resource].underscore}_references = @instance.resource_references.select { |reference| reference.resource_type == '#{sequence[:resource]}' }
               skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_references.blank?
 
-              @#{sequence[:resource].underscore}_ary = []
-              #{sequence[:resource].underscore}_references.each do |reference|
-                @#{sequence[:resource].underscore}_ary << validate_read_reply(
+              @#{sequence[:resource].underscore}_ary = #{sequence[:resource].underscore}_references.map do |reference|
+                validate_read_reply(
                   FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
                   FHIR::#{sequence[:resource]}
                 )
