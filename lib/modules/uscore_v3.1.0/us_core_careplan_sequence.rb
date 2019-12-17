@@ -279,7 +279,7 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
         provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        skip 'No Provenance resources were returned from this search' unless provenance_results
       end
 
       test 'CarePlan resources returned conform to US Core R4 profiles' do
