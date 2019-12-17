@@ -415,6 +415,143 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
   end
 
+  describe 'DocumentReference search by patient+type+period test' do
+    before do
+      @test = @sequence_class[:search_by_patient_type_period]
+      @sequence = @sequence_class.new(@instance, @client)
+      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
+      @document_reference_ary = [@document_reference]
+      @sequence.instance_variable_set(:'@document_reference', @document_reference)
+      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'type')),
+        'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'context.period'))
+      }
+    end
+
+    it 'skips if no DocumentReference resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No DocumentReference resources appear to be available. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::DocumentReference.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: DocumentReference', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::DocumentReference.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+  end
+
+  describe 'DocumentReference search by patient+status test' do
+    before do
+      @test = @sequence_class[:search_by_patient_status]
+      @sequence = @sequence_class.new(@instance, @client)
+      @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
+      @document_reference_ary = [@document_reference]
+      @sequence.instance_variable_set(:'@document_reference', @document_reference)
+      @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @instance.patient_id,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'status'))
+      }
+    end
+
+    it 'skips if no DocumentReference resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No DocumentReference resources appear to be available. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@document_reference_ary', [FHIR::DocumentReference.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::DocumentReference.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: DocumentReference', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::DocumentReference.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
   describe 'DocumentReference read test' do
     before do
       @document_reference_id = '456'

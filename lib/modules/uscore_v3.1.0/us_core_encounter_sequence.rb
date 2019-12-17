@@ -170,9 +170,116 @@ module Inferno
         end
       end
 
-      test :read_interaction do
+      test :search_by_identifier do
         metadata do
           id '05'
+          name 'Server returns expected results from Encounter search by identifier'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by identifier on the Encounter resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'identifier': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_patient_status do
+        metadata do
+          id '06'
+          name 'Server returns expected results from Encounter search by patient+status'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+status on the Encounter resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'status'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_class_patient do
+        metadata do
+          id '07'
+          name 'Server returns expected results from Encounter search by class+patient'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by class+patient on the Encounter resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'class': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class')),
+          'patient': @instance.patient_id
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_patient_type do
+        metadata do
+          id '08'
+          name 'Server returns expected results from Encounter search by patient+type'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+type on the Encounter resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'type': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :read_interaction do
+        metadata do
+          id '09'
           name 'Server returns correct Encounter resource from Encounter read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -187,9 +294,45 @@ module Inferno
         validate_read_reply(@encounter, versioned_resource_class('Encounter'))
       end
 
+      test :vread_interaction do
+        metadata do
+          id '10'
+          name 'Server returns correct Encounter resource from Encounter vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Encounter vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Encounter, [:vread])
+        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '11'
+          name 'Server returns correct Encounter resource from Encounter history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Encounter history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Encounter, [:history])
+        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@encounter, versioned_resource_class('Encounter'))
+      end
+
       test 'Server returns Provenance resources from Encounter search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '06'
+          id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -212,7 +355,7 @@ module Inferno
 
       test 'Encounter resources returned conform to US Core R4 profiles' do
         metadata do
-          id '07'
+          id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
 
@@ -229,7 +372,7 @@ module Inferno
 
       test 'All must support elements are provided in the Encounter resources returned.' do
         metadata do
-          id '08'
+          id '14'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -311,7 +454,7 @@ module Inferno
 
       test 'Every reference within Encounter resource is valid and can be read.' do
         metadata do
-          id '09'
+          id '15'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

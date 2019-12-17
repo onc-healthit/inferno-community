@@ -69,6 +69,7 @@ module Inferno
 
         # In case the profile doesn't start with US Core
         class_name = "USCore#{reformatted_version}#{class_name}" unless class_name.start_with? 'USCore'
+        class_name = "#{@prefix.capitalize}#{class_name}" if @prefix.present?
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,

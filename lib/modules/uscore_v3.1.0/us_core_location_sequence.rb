@@ -163,9 +163,123 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns Provenance resources from Location search by name + _revIncludes: Provenance:target' do
+      test :search_by_address_city do
         metadata do
           id '05'
+          name 'Server returns expected results from Location search by address-city'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by address-city on the Location resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Location resources appear to be available.' unless @resources_found
+
+        search_params = {
+          'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_address_state do
+        metadata do
+          id '06'
+          name 'Server returns expected results from Location search by address-state'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by address-state on the Location resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Location resources appear to be available.' unless @resources_found
+
+        search_params = {
+          'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_address_postalcode do
+        metadata do
+          id '07'
+          name 'Server returns expected results from Location search by address-postalcode'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by address-postalcode on the Location resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Location resources appear to be available.' unless @resources_found
+
+        search_params = {
+          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :vread_interaction do
+        metadata do
+          id '08'
+          name 'Server returns correct Location resource from Location vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Location vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Location, [:vread])
+        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@location, versioned_resource_class('Location'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '09'
+          name 'Server returns correct Location resource from Location history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Location history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Location, [:history])
+        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@location, versioned_resource_class('Location'))
+      end
+
+      test 'Server returns Provenance resources from Location search by name + _revIncludes: Provenance:target' do
+        metadata do
+          id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -189,7 +303,7 @@ module Inferno
 
       test 'Location resources returned conform to US Core R4 profiles' do
         metadata do
-          id '06'
+          id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
 
@@ -206,7 +320,7 @@ module Inferno
 
       test 'All must support elements are provided in the Location resources returned.' do
         metadata do
-          id '07'
+          id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -264,7 +378,7 @@ module Inferno
 
       test 'Every reference within Location resource is valid and can be read.' do
         metadata do
-          id '08'
+          id '13'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

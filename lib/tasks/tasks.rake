@@ -464,13 +464,13 @@ namespace :inferno do |_argv|
   end
 
   desc 'Generate Tests'
-  task :generate, [:generator, :path, :optional_tests_on] do |_t, args|
+  task :generate, [:generator, :path, :prefix, :optional_tests_on] do |_t, args|
     require_relative("../../generator/#{args.generator}/#{args.generator}_generator")
     generator_class = Inferno::Generator::Base.subclasses.first do |c|
       c.name.demodulize.downcase.start_with?(args.generator)
     end
 
-    generator = generator_class.new(args.path, args.optional_tests_on || false, args.extras)
+    generator = generator_class.new(args.path, args.prefix || '', args.optional_tests_on || false, args.extras)
     generator.run
   end
 end

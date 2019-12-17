@@ -45,9 +45,45 @@ module Inferno
         @resources_found = @provenance.present?
       end
 
-      test 'Provenance resources returned conform to US Core R4 profiles' do
+      test :vread_interaction do
         metadata do
           id '02'
+          name 'Server returns correct Provenance resource from Provenance vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Provenance vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Provenance, [:vread])
+        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '03'
+          name 'Server returns correct Provenance resource from Provenance history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Provenance history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Provenance, [:history])
+        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@provenance, versioned_resource_class('Provenance'))
+      end
+
+      test 'Provenance resources returned conform to US Core R4 profiles' do
+        metadata do
+          id '04'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
 
@@ -64,7 +100,7 @@ module Inferno
 
       test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
-          id '03'
+          id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -125,7 +161,7 @@ module Inferno
 
       test 'Every reference within Provenance resource is valid and can be read.' do
         metadata do
-          id '04'
+          id '06'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

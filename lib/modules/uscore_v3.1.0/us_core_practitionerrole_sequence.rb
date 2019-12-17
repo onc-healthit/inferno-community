@@ -145,9 +145,76 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
+      test :vread_interaction do
         metadata do
           id '05'
+          name 'Server returns correct PractitionerRole resource from PractitionerRole vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the PractitionerRole vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:PractitionerRole, [:vread])
+        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '06'
+          name 'Server returns correct PractitionerRole resource from PractitionerRole history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the PractitionerRole history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:PractitionerRole, [:history])
+        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
+      end
+
+      test 'Server returns the appropriate resource from the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
+        metadata do
+          id '07'
+          link 'https://www.hl7.org/fhir/search.html#include'
+          optional
+          description %(
+            A Server SHOULD be capable of supporting the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner
+          )
+          versions :r4
+        end
+
+        search_params = {
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params['_include'] = 'PractitionerRole:endpoint'
+        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        endpoint_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Endpoint' }
+        assert endpoint_results, 'No Endpoint resources were returned from this search'
+
+        search_params['_include'] = 'PractitionerRole:practitioner'
+        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        practitioner_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Practitioner' }
+        assert practitioner_results, 'No Practitioner resources were returned from this search'
+      end
+
+      test 'Server returns Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
+        metadata do
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -171,7 +238,7 @@ module Inferno
 
       test 'PractitionerRole resources returned conform to US Core R4 profiles' do
         metadata do
-          id '06'
+          id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
 
@@ -188,7 +255,7 @@ module Inferno
 
       test 'All must support elements are provided in the PractitionerRole resources returned.' do
         metadata do
-          id '07'
+          id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -246,7 +313,7 @@ module Inferno
 
       test 'Every reference within PractitionerRole resource is valid and can be read.' do
         metadata do
-          id '08'
+          id '11'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -169,9 +169,73 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test :read_interaction do
+      test :search_by_patient_code_date do
         metadata do
           id '05'
+          name 'Server returns expected results from Observation search by patient+code+date'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+code+date on the Observation resource
+
+              including support for these date comparators: gt, lt, le, ge
+          )
+          versions :r4
+        end
+
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
+
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+        end
+      end
+
+      test :search_by_patient_category_status do
+        metadata do
+          id '06'
+          name 'Server returns expected results from Observation search by patient+category+status'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+category+status on the Observation resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
+          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :read_interaction do
+        metadata do
+          id '07'
           name 'Server returns correct Observation resource from Observation read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -186,9 +250,45 @@ module Inferno
         validate_read_reply(@observation, versioned_resource_class('Observation'))
       end
 
+      test :vread_interaction do
+        metadata do
+          id '08'
+          name 'Server returns correct Observation resource from Observation vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Observation vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Observation, [:vread])
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@observation, versioned_resource_class('Observation'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '09'
+          name 'Server returns correct Observation resource from Observation history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Observation history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Observation, [:history])
+        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@observation, versioned_resource_class('Observation'))
+      end
+
       test 'Server returns Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
         metadata do
-          id '06'
+          id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -213,7 +313,7 @@ module Inferno
 
       test 'Observation resources returned conform to US Core R4 profiles' do
         metadata do
-          id '07'
+          id '11'
           link 'http://hl7.org/fhir/StructureDefinition/headcircum'
           description %(
 
@@ -230,7 +330,7 @@ module Inferno
 
       test 'All must support elements are provided in the Observation resources returned.' do
         metadata do
-          id '08'
+          id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -354,7 +454,7 @@ module Inferno
 
       test 'Every reference within Observation resource is valid and can be read.' do
         metadata do
-          id '09'
+          id '13'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

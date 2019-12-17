@@ -103,9 +103,125 @@ module Inferno
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
       end
 
-      test :read_interaction do
+      test :search_by_patient_category do
         metadata do
           id '03'
+          name 'Server returns expected results from Condition search by patient+category'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+category on the Condition resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'category': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'category'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_patient_onset_date do
+        metadata do
+          id '04'
+          name 'Server returns expected results from Condition search by patient+onset-date'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+onset-date on the Condition resource
+
+              including support for these onset-date comparators: gt, lt, le, ge
+          )
+          versions :r4
+        end
+
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'onset-date': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'onsetDateTime'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+        assert_response_ok(reply)
+
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, search_params[:'onset-date'])
+          comparator_search_params = { 'patient': search_params[:patient], 'onset-date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
+        end
+      end
+
+      test :search_by_patient_clinical_status do
+        metadata do
+          id '05'
+          name 'Server returns expected results from Condition search by patient+clinical-status'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+clinical-status on the Condition resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'clinical-status': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'clinicalStatus'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_patient_code do
+        metadata do
+          id '06'
+          name 'Server returns expected results from Condition search by patient+code'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+code on the Condition resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@condition_ary, 'code'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+        validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :read_interaction do
+        metadata do
+          id '07'
           name 'Server returns correct Condition resource from Condition read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -120,9 +236,45 @@ module Inferno
         validate_read_reply(@condition, versioned_resource_class('Condition'))
       end
 
+      test :vread_interaction do
+        metadata do
+          id '08'
+          name 'Server returns correct Condition resource from Condition vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Condition vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Condition, [:vread])
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@condition, versioned_resource_class('Condition'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '09'
+          name 'Server returns correct Condition resource from Condition history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Condition history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Condition, [:history])
+        skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@condition, versioned_resource_class('Condition'))
+      end
+
       test 'Server returns Provenance resources from Condition search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '04'
+          id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -145,7 +297,7 @@ module Inferno
 
       test 'Condition resources returned conform to US Core R4 profiles' do
         metadata do
-          id '05'
+          id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
 
@@ -162,7 +314,7 @@ module Inferno
 
       test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
-          id '06'
+          id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -208,7 +360,7 @@ module Inferno
 
       test 'Every reference within Condition resource is valid and can be read.' do
         metadata do
-          id '07'
+          id '13'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

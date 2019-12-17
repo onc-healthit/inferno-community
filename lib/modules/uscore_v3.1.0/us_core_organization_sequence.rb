@@ -151,9 +151,45 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns Provenance resources from Organization search by name + _revIncludes: Provenance:target' do
+      test :vread_interaction do
         metadata do
           id '05'
+          name 'Server returns correct Organization resource from Organization vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Organization vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Organization, [:vread])
+        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@organization, versioned_resource_class('Organization'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '06'
+          name 'Server returns correct Organization resource from Organization history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Organization history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Organization, [:history])
+        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@organization, versioned_resource_class('Organization'))
+      end
+
+      test 'Server returns Provenance resources from Organization search by name + _revIncludes: Provenance:target' do
+        metadata do
+          id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -177,7 +213,7 @@ module Inferno
 
       test 'Organization resources returned conform to US Core R4 profiles' do
         metadata do
-          id '06'
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
 
@@ -194,7 +230,7 @@ module Inferno
 
       test 'All must support elements are provided in the Organization resources returned.' do
         metadata do
-          id '07'
+          id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -267,7 +303,7 @@ module Inferno
 
       test 'Every reference within Organization resource is valid and can be read.' do
         metadata do
-          id '08'
+          id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

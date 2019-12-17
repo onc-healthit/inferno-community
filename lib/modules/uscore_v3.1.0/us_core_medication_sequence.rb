@@ -45,9 +45,45 @@ module Inferno
         @resources_found = @medication.present?
       end
 
-      test 'Medication resources returned conform to US Core R4 profiles' do
+      test :vread_interaction do
         metadata do
           id '02'
+          name 'Server returns correct Medication resource from Medication vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Medication vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Medication, [:vread])
+        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@medication, versioned_resource_class('Medication'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '03'
+          name 'Server returns correct Medication resource from Medication history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Medication history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Medication, [:history])
+        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@medication, versioned_resource_class('Medication'))
+      end
+
+      test 'Medication resources returned conform to US Core R4 profiles' do
+        metadata do
+          id '04'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
 
@@ -64,7 +100,7 @@ module Inferno
 
       test 'All must support elements are provided in the Medication resources returned.' do
         metadata do
-          id '03'
+          id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -98,7 +134,7 @@ module Inferno
 
       test 'Every reference within Medication resource is valid and can be read.' do
         metadata do
-          id '04'
+          id '06'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -11,13 +11,15 @@ module Inferno
     class Base
       attr_accessor :path, :extras, :resource_by_path, :resources_by_type,
                     :claimed_test_id_prefixes,
+                    :prefix,
                     :optional_tests_on
 
-      def initialize(path, optional_tests_on, extras)
+      def initialize(path, prefix, optional_tests_on, extras)
         @path = path
+        @prefix = prefix
+        @optional_tests_on = optional_tests_on
         @extras = extras
         @claimed_test_id_prefixes = Set.new
-        @optional_tests_on = optional_tests_on
         load_resources
       end
 
@@ -78,7 +80,7 @@ module Inferno
       end
 
       def sequence_out_path
-        File.expand_path("#{module_yml_out_path}/#{path}")
+        File.expand_path("#{module_yml_out_path}/#{prefix + '_' if prefix.present?}#{path}")
       end
 
       def resource_file_path

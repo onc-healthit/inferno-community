@@ -193,9 +193,72 @@ module Inferno
         end
       end
 
-      test :read_interaction do
+      test :search_by_patient_status do
         metadata do
           id '06'
+          name 'Server returns expected results from DiagnosticReport search by patient+status'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+status on the DiagnosticReport resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'status': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'status'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_patient_code_date do
+        metadata do
+          id '07'
+          name 'Server returns expected results from DiagnosticReport search by patient+code+date'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by patient+code+date on the DiagnosticReport resource
+
+              including support for these date comparators: gt, lt, le, ge
+          )
+          versions :r4
+        end
+
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'patient': @instance.patient_id,
+          'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code')),
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
+        validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+        assert_response_ok(reply)
+
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
+          comparator_val = date_comparator_value(comparator, search_params[:date])
+          comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
+          reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
+          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
+        end
+      end
+
+      test :read_interaction do
+        metadata do
+          id '08'
           name 'Server returns correct DiagnosticReport resource from DiagnosticReport read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -210,9 +273,45 @@ module Inferno
         validate_read_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
       end
 
+      test :vread_interaction do
+        metadata do
+          id '09'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the DiagnosticReport vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:DiagnosticReport, [:vread])
+        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '10'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the DiagnosticReport history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:DiagnosticReport, [:history])
+        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
+      end
+
       test 'Server returns Provenance resources from DiagnosticReport search by patient + category + _revIncludes: Provenance:target' do
         metadata do
-          id '07'
+          id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -237,7 +336,7 @@ module Inferno
 
       test 'DiagnosticReport resources returned conform to US Core R4 profiles' do
         metadata do
-          id '08'
+          id '12'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
 
@@ -254,7 +353,7 @@ module Inferno
 
       test 'All must support elements are provided in the DiagnosticReport resources returned.' do
         metadata do
-          id '09'
+          id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -315,7 +414,7 @@ module Inferno
 
       test 'Every reference within DiagnosticReport resource is valid and can be read.' do
         metadata do
-          id '10'
+          id '14'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

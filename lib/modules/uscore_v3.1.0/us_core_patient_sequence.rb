@@ -220,9 +220,63 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test :read_interaction do
+      test :search_by_birthdate_family do
         metadata do
           id '07'
+          name 'Server returns expected results from Patient search by birthdate+family'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by birthdate+family on the Patient resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
+          'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :search_by_family_gender do
+        metadata do
+          id '08'
+          name 'Server returns expected results from Patient search by family+gender'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+
+            A server SHOULD support searching by family+gender on the Patient resource
+
+          )
+          versions :r4
+        end
+
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        search_params = {
+          'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family')),
+          'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender'))
+        }
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+        validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+        assert_response_ok(reply)
+      end
+
+      test :read_interaction do
+        metadata do
+          id '09'
           name 'Server returns correct Patient resource from Patient read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -237,9 +291,45 @@ module Inferno
         validate_read_reply(@patient, versioned_resource_class('Patient'))
       end
 
+      test :vread_interaction do
+        metadata do
+          id '10'
+          name 'Server returns correct Patient resource from Patient vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Patient vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Patient, [:vread])
+        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@patient, versioned_resource_class('Patient'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '11'
+          name 'Server returns correct Patient resource from Patient history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the Patient history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:Patient, [:history])
+        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@patient, versioned_resource_class('Patient'))
+      end
+
       test 'Server returns Provenance resources from Patient search by _id + _revIncludes: Provenance:target' do
         metadata do
-          id '08'
+          id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -262,7 +352,7 @@ module Inferno
 
       test 'Patient resources returned conform to US Core R4 profiles' do
         metadata do
-          id '09'
+          id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
 
@@ -279,7 +369,7 @@ module Inferno
 
       test 'All must support elements are provided in the Patient resources returned.' do
         metadata do
-          id '10'
+          id '14'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -384,7 +474,7 @@ module Inferno
 
       test 'Every reference within Patient resource is valid and can be read.' do
         metadata do
-          id '11'
+          id '15'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -114,9 +114,45 @@ module Inferno
         validate_read_reply(@care_team, versioned_resource_class('CareTeam'))
       end
 
-      test 'Server returns Provenance resources from CareTeam search by patient + status + _revIncludes: Provenance:target' do
+      test :vread_interaction do
         metadata do
           id '04'
+          name 'Server returns correct CareTeam resource from CareTeam vread interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the CareTeam vread interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:CareTeam, [:vread])
+        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_vread_reply(@care_team, versioned_resource_class('CareTeam'))
+      end
+
+      test :history_interaction do
+        metadata do
+          id '05'
+          name 'Server returns correct CareTeam resource from CareTeam history interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
+          description %(
+            A server SHOULD support the CareTeam history interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_not_supported(:CareTeam, [:history])
+        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+
+        validate_history_reply(@care_team, versioned_resource_class('CareTeam'))
+      end
+
+      test 'Server returns Provenance resources from CareTeam search by patient + status + _revIncludes: Provenance:target' do
+        metadata do
+          id '06'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -141,7 +177,7 @@ module Inferno
 
       test 'CareTeam resources returned conform to US Core R4 profiles' do
         metadata do
-          id '05'
+          id '07'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
@@ -158,7 +194,7 @@ module Inferno
 
       test 'All must support elements are provided in the CareTeam resources returned.' do
         metadata do
-          id '06'
+          id '08'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -204,7 +240,7 @@ module Inferno
 
       test 'The server returns expected results when parameters use composite-or' do
         metadata do
-          id '07'
+          id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
@@ -228,7 +264,7 @@ module Inferno
 
       test 'Every reference within CareTeam resource is valid and can be read.' do
         metadata do
-          id '08'
+          id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
