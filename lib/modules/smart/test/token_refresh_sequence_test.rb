@@ -221,7 +221,7 @@ end
 
 class TokenRefreshSequenceTest < MiniTest::Test
   def setup
-    refresh_token = JSON::JWT.new(iss: 'foo_refresh')
+    refresh_token = 'REFRESH_TOKEN'
     @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',

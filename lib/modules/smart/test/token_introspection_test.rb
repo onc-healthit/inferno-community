@@ -6,8 +6,8 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
   REQUEST_HEADERS = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }.freeze
 
   def setup
-    introspect_token = JSON::JWT.new(iss: 'foo')
-    introspect_refresh_token = JSON::JWT.new(iss: 'foo_refresh')
+    introspect_token = 'INTROSPECT_TOKEN'
+    introspect_refresh_token = 'INTROSPECT_REFRESH_TOKEN'
     resource_id = SecureRandom.uuid
     resource_secret = SecureRandom.hex(32)
 

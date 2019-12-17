@@ -2,203 +2,610 @@
 
 require_relative '../../../../test/test_helper'
 
-# Tests for the OpenIDConnectSequence
-# Note: This test currently only considers dstu2
-class OpenIDConnectSequenceTest < MiniTest::Test
-  RESPONSE_HEADERS = { 'content-type' => 'application/json' }.freeze
+describe Inferno::Sequence::OpenIDConnectSequence do
+  def create_signed_token(payload: @payload, key_pair: @key_pair, kid: @jwk.kid)
+    JWT.encode(payload, key_pair, 'RS256', kid: kid)
+  end
 
-  def setup
+  before do
     @key_pair = OpenSSL::PKey::RSA.new(2048)
-    bad_key_pair = OpenSSL::PKey::RSA.new(2048)
-    @public_key = @key_pair.public_key
-    @openid_configuration = load_json_fixture(:openid_configuration)
+    @oidc_configuration = load_json_fixture(:openid_configuration)
+    @issuer = @oidc_configuration['issuer']
+    @client_id = 'CLIENT_ID'
 
-    client_id = SecureRandom.uuid
-
-    @id_token = JSON::JWT.new(
-      iss: @openid_configuration['issuer'],
-      exp: 1.hour.from_now,
-      nbf: Time.now,
-      iat: Time.now,
-      aud: client_id,
+    @payload = {
+      iss: @issuer,
+      exp: 1.hour.from_now.to_i,
+      nbf: Time.now.to_i,
+      iat: Time.now.to_i,
+      aud: @client_id,
       sub: SecureRandom.uuid,
-      fhirUser: 'https://www.example.com/profile_url/'
+      fhirUser: 'https://www.example.com/fhir/Patient/123'
+    }
+
+    @jwk = JWT::JWK.new(@key_pair)
+    @jwk_hash = @jwk.export
+    @signed_id_token = create_signed_token
+
+    @sequence_class = Inferno::Sequence::OpenIDConnectSequence
+    @client = FHIR::Client.new('http://www.example.com/fhir')
+
+    @instance = Inferno::Models::TestingInstance.create(
+      scopes: 'launch patient/*.read openid fhirUser',
+      client_id: 'CLIENT_ID',
+      id_token: @signed_id_token
     )
 
-    jwk = @key_pair.to_jwk(kid: 'internal_testing', alg: 'RS256')
-    @id_token.header[:kid] = jwk[:kid]
+    @decoded_payload, @decoded_header = JWT.decode(@signed_id_token, @key_pair.public_key, false)
 
-    @invalid_id_token = SecureRandom.hex(32)
-    @unsigned_id_token = @id_token.clone
-    @bad_signature_id_token = @id_token.sign(bad_key_pair, jwk['alg'])
-    @expired_id_token = @id_token.clone
-    @expired_id_token['exp'] = 1.year.ago.to_i
-    @id_token = @id_token.sign(@key_pair, jwk['alg'])
-    @expired_id_token = @expired_id_token.sign(@key_pair, jwk['alg'])
-
-    @instance = Inferno::Models::TestingInstance.new(url: 'https://www.example.com/testing',
-                                                     client_name: 'Inferno',
-                                                     base_url: 'http://localhost:4567',
-                                                     client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-                                                     client_id: client_id,
-                                                     selected_module: 'argonaut',
-                                                     oauth_authorize_endpoint: @openid_configuration['authorization_endpoint'],
-                                                     oauth_token_endpoint: @openid_configuration['token_endpoint'],
-                                                     scopes: @openid_configuration['scopes_supported'].join(' '))
-
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
-    client = FHIR::Client.new(@instance.url)
-    client.use_dstu2
-    client.default_json
-    @sequence = Inferno::Sequence::OpenIDConnectSequence.new(@instance, client, true)
+    @sequence = @sequence_class.new(@instance, @client)
+    @sequence.instance_variable_set(:@decoded_payload, @decoded_payload)
+    @sequence.instance_variable_set(:@decoded_header, @decoded_header)
+    @sequence.instance_variable_set(:@oidc_configuration, @oidc_configuration)
   end
 
-  def test_all_pass
-    WebMock.reset!
+  describe 'token can be decoded test' do
+    before do
+      @test = @sequence_class[:decode_token]
+    end
 
-    @instance.save!
-    @instance.update(id_token: @id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_openid_register = stub_request(:get, openid_configuration_url)
-      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
 
-    sequence_result = @sequence.start
+    it 'fails if no id token is present' do
+      @instance.update(id_token: nil)
 
-    assert_requested(stub_openid_register)
-    assert_requested(stub_jwks_register)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-    failures = sequence_result.test_results.reject(&:pass?)
+      assert_equal 'Launch context did not contain an id token', exception.message
+    end
 
-    assert failures.empty?, "All tests should pass.  First error: #{!failures.empty? && failures.first.message}"
-    assert sequence_result.pass?, 'Sequence should pass'
-    assert sequence_result.test_results.all? { |r| r.test_warnings.empty? }, 'There should not be any warnings.'
+    it 'fails if the id token is not a properly constructed jwt' do
+      @instance.update(id_token: 'abc')
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/ID token is not a properly constructed JWT:/, exception.message)
+    end
+
+    it 'succeeds if the id token is a properly constructed jwt' do
+      @sequence.run_test(@test)
+    end
   end
 
-  def test_invalid_token
-    WebMock.reset!
+  describe 'well-known configuration retrieval test' do
+    before do
+      @test = @sequence_class[:retrieve_configuration]
+    end
 
-    @instance.save!
-    @instance.update(id_token: @invalid_id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_request(:get, openid_configuration_url)
-      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    stub_request(:get, @openid_configuration['jwks_uri'])
-      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
 
-    sequence_result = @sequence.start
+    it 'skips if id token could not be decoded' do
+      @sequence.instance_variable_set(:@decoded_payload, nil)
 
-    assert sequence_result.fail?
-    # all tests depend on valid token
-    assert(sequence_result.test_results.all?(&:fail?))
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'ID token could not be decoded', exception.message
+    end
+
+    it 'fails if the configuration returns a non-200 response' do
+      stub_request(:get, @issuer.chomp('/') + '/.well-known/openid-configuration')
+        .to_return(status: 404)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 404. ', exception.message
+    end
+
+    it 'fails if the configuration does not have a content type of application/json' do
+      stub_request(:get, @issuer.chomp('/') + '/.well-known/openid-configuration')
+        .to_return(status: 200)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected content-type application/json but found ', exception.message
+    end
+
+    it 'fails if the configuration is not valid json' do
+      stub_request(:get, @issuer.chomp('/') + '/.well-known/openid-configuration')
+        .to_return(status: 200, headers: { 'content-type' => 'application/json' }, body: '{')
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Invalid JSON', exception.message
+    end
+
+    it 'succeeds if the configuration is valid json' do
+      stub_request(:get, @issuer.chomp('/') + '/.well-known/openid-configuration')
+        .to_return(status: 200, headers: { 'content-type' => 'application/json' }, body: '{}')
+
+      @sequence.run_test(@test)
+    end
   end
 
-  def test_bad_signature_token
-    WebMock.reset!
+  describe 'required well-known configuration fields test' do
+    before do
+      @test = @sequence_class[:required_configuration_fields]
+    end
 
-    @instance.save!
-    @instance.update(id_token: @bad_signature_id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_openid_register = stub_request(:get, openid_configuration_url)
-      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
 
-    sequence_result = @sequence.start
+    it 'skips if id token could not be decoded' do
+      @sequence.instance_variable_set(:@decoded_payload, nil)
 
-    assert_requested(stub_openid_register)
-    assert_requested(stub_jwks_register)
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert sequence_result.fail?
-    # 2 test depends on proper signature
-    assert sequence_result.failures.length == 2
+      assert_equal 'ID token could not be decoded', exception.message
+    end
+
+    it 'skips if the configuration could not be retrieved' do
+      @sequence.instance_variable_set(:@oidc_configuration, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'OpenID Connect well-known configuration could not be retrieved', exception.message
+    end
+
+    it 'fails if a required field is missing' do
+      @sequence.required_configuration_fields.each do |field|
+        config = @oidc_configuration.clone
+        config.delete field
+        @sequence.instance_variable_set(:@oidc_configuration, config)
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal "OpenID Connect well-known configuration missing required fields: #{field}", exception.message
+      end
+    end
+
+    it 'fails if RSA SHA-256 signing is not supported' do
+      config = @oidc_configuration.clone
+      config['id_token_signing_alg_values_supported'].delete 'RS256'
+      @sequence.instance_variable_set(:@oidc_configuration, config)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Signing tokens with RSA SHA-256 not supported', exception.message
+    end
+
+    it 'succeeds if the required configuration fields are present' do
+      @sequence.run_test(@test)
+    end
   end
 
-  def test_unsigned_token
-    WebMock.reset!
+  describe 'retrieve jwks test' do
+    before do
+      @test = @sequence_class[:retrieve_jwks]
+    end
 
-    @instance.save!
-    @instance.update(id_token: @unsigned_id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_openid_register = stub_request(:get, openid_configuration_url)
-      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
 
-    sequence_result = @sequence.start
+    it 'skips if id token could not be decoded' do
+      @sequence.instance_variable_set(:@decoded_payload, nil)
 
-    assert_requested(stub_openid_register)
-    assert_requested(stub_jwks_register)
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert sequence_result.fail?
-    # 2 test depends on present signature
-    assert sequence_result.failures.length == 2
+      assert_equal 'ID token could not be decoded', exception.message
+    end
+
+    it 'skips if the configuration could not be retrieved' do
+      @sequence.instance_variable_set(:@oidc_configuration, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'OpenID Connect well-known configuration could not be retrieved', exception.message
+    end
+
+    it 'skips if the jwks_uri is blank' do
+      config = @oidc_configuration.clone
+      config['jwks_uri'] = ''
+      @sequence.instance_variable_set(:@oidc_configuration, config)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'OpenID Connect well-known configuration did not contain a jwks_uri', exception.message
+    end
+
+    it 'fails if the jwks request returns a non-200 response' do
+      stub_request(:get, @oidc_configuration['jwks_uri'])
+        .to_return(status: 404)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 404. ', exception.message
+    end
+
+    it 'fails if the jwks request returns invalid json' do
+      stub_request(:get, @oidc_configuration['jwks_uri'])
+        .to_return(status: 200, body: '{')
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Invalid JSON', exception.message
+    end
+
+    it 'fails if the jwks keys field is not an array' do
+      stub_request(:get, @oidc_configuration['jwks_uri'])
+        .to_return(status: 200, body: { keys: { kty: 'RSA' } }.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'JWKS "keys" field must be an array', exception.message
+    end
+
+    it 'fails if the jwks contains an invalid key' do
+      stub_request(:get, @oidc_configuration['jwks_uri'])
+        .to_return(status: 200, body: { keys: [{ kty: 'RSA' }] }.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid JWK:/, exception.message)
+    end
+
+    it 'fails if the jwks contains no RSA keys' do
+      stub_request(:get, @oidc_configuration['jwks_uri'])
+        .to_return(status: 200, body: { keys: [{ kty: 'xyz' }] }.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'JWKS contains no RSA keys', exception.message
+    end
+
+    it 'succeeds if the jwks contains a valid RSA keys' do
+      stub_request(:get, @oidc_configuration['jwks_uri'])
+        .to_return(status: 200, body: { keys: [@jwk.export] }.to_json)
+
+      @sequence.run_test(@test)
+    end
   end
 
-  def test_expired_token
-    WebMock.reset!
+  describe 'id token header test' do
+    before do
+      @test = @sequence_class[:token_header]
+    end
 
-    @instance.save!
-    @instance.update(id_token: @expired_id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_openid_register = stub_request(:get, openid_configuration_url)
-      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    stub_jwks_register = stub_request(:get, @openid_configuration['jwks_uri'])
-      .to_return(status: 200, body: @public_key.to_jwk(kid: 'internal_testing', alg: 'RS256').to_json, headers: RESPONSE_HEADERS)
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
 
-    sequence_result = @sequence.start
+    it 'skips if id token could not be decoded' do
+      @sequence.instance_variable_set(:@decoded_payload, nil)
 
-    assert_requested(stub_openid_register)
-    assert_requested(stub_jwks_register)
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert sequence_result.fail?
-    # 1 test depends on claims
-    assert sequence_result.failures.length == 1
+      assert_equal 'ID token could not be decoded', exception.message
+    end
+
+    it 'skips if the configuration could not be retrieved' do
+      @sequence.instance_variable_set(:@oidc_configuration, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'OpenID Connect well-known configuration could not be retrieved', exception.message
+    end
+
+    it 'skips if fetching keys from the jwks failed' do
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'RSA keys could not be retrieved from JWKS', exception.message
+    end
+
+    it 'fails if the id token header does not specify the RS256 signing algorithm' do
+      @sequence.instance_variable_set(:@jwks, [{}])
+      @sequence.instance_variable_set(:@decoded_header, 'alg' => 'xyz')
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'ID Token signed with xyz rather than RS256', exception.message
+    end
+
+    describe 'with multiple RSA keys found' do
+      before do
+        @sequence.instance_variable_set(:@raw_jwks, keys: [1, 2])
+        @sequence.instance_variable_set(:@jwks, [JWT::JWK.new(OpenSSL::PKey::RSA.new(2048)).export, @jwk_hash])
+      end
+
+      it 'fails if the header has no "kid" field' do
+        @sequence.instance_variable_set(:@decoded_header, 'alg' => 'RS256')
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal '"kid" field must be present if JWKS contains multiple keys', exception.message
+      end
+
+      it 'fails if the jwks has no key with a matching "kid"' do
+        @sequence.instance_variable_set(:@decoded_header, 'alg' => 'RS256', 'kid' => 'xyz')
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'JWKS did not contain an RS256 key with an id of xyz', exception.message
+      end
+
+      it 'succeeds if a matching key is found' do
+        @sequence.run_test(@test)
+      end
+    end
+
+    describe 'with a single RSA key found' do
+      before do
+        @sequence.instance_variable_set(:@raw_jwks, keys: [1])
+        @sequence.instance_variable_set(:@jwks, [@jwk_hash])
+      end
+
+      it 'fails if a "kid" is present and it does not match the jwk' do
+        @sequence.instance_variable_set(:@decoded_header, 'alg' => 'RS256', 'kid' => 'xyz')
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'JWKS did not contain an RS256 key with an id of xyz', exception.message
+      end
+
+      it 'succeeds if a "kid" is present and a matching key is found' do
+        @sequence.run_test(@test)
+      end
+
+      it 'succeeds if no "kid" is present' do
+        @instance.instance_variable_set(:@decoded_header, 'alg' => 'RS256')
+
+        @sequence.run_test(@test)
+      end
+    end
   end
 
-  def test_no_openid_configuration_url
-    WebMock.reset!
+  describe 'id token payload test' do
+    before do
+      @test = @sequence_class[:token_payload]
+      @sequence.instance_variable_set(:@jwk, @jwk_hash)
+    end
 
-    @instance.save!
-    @instance.update(id_token: @id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_request(:get, openid_configuration_url)
-      .to_return(status: 404)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    sequence_result = @sequence.start
-    assert sequence_result.fail?
-    # 4 tests depend on openid-configuration information
-    assert sequence_result.failures.length == 4
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
+
+    it 'skips if id token could not be decoded' do
+      @sequence.instance_variable_set(:@decoded_payload, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'ID token could not be decoded', exception.message
+    end
+
+    it 'skips if the configuration could not be retrieved' do
+      @sequence.instance_variable_set(:@oidc_configuration, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'OpenID Connect well-known configuration could not be retrieved', exception.message
+    end
+
+    it 'skips if no jwk was found' do
+      @sequence.instance_variable_set(:@jwk, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No JWK was found', exception.message
+    end
+
+    it 'fails if any required claims are missing' do
+      @sequence.required_payload_claims.each do |claim|
+        payload = @decoded_payload.clone
+        payload.delete claim
+        @sequence.instance_variable_set(:@decoded_payload, payload)
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal "ID token missing required claims: #{claim}", exception.message
+      end
+    end
+
+    it 'fails if the iss in invalid' do
+      payload = @payload.clone
+      payload[:iss] = 'BAD_ISS'
+      token = create_signed_token(payload: payload)
+      @instance.update(id_token: token)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Token validation error:.*iss/, exception.message)
+    end
+
+    it 'fails if the aud is invalid' do
+      payload = @payload.clone
+      payload[:aud] = 'BAD_AUD'
+      token = create_signed_token(payload: payload)
+      @instance.update(id_token: token)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Token validation error:.*aud/, exception.message)
+    end
+
+    it 'fails if the expiration time has passed' do
+      payload = @payload.clone
+      payload[:exp] = @payload[:exp] - 1.day.to_i
+      token = create_signed_token(payload: payload)
+      @instance.update(id_token: token)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Token validation error:.*exp/, exception.message)
+    end
+
+    it 'fails if the signature is invalid' do
+      token = create_signed_token(payload: @payload, key_pair: OpenSSL::PKey::RSA.new(2048))
+      @instance.update(id_token: token)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Token validation error:.*Signature/, exception.message)
+    end
+
+    it 'succeeds if the required claims are present' do
+      @sequence.run_test(@test)
+    end
   end
 
-  def test_no_jwks_uri
-    WebMock.reset!
+  describe 'fhirUser claim test' do
+    before do
+      @test = @sequence_class[:fhir_user_claim]
+    end
 
-    @instance.save!
-    @instance.update(id_token: @id_token.to_s)
+    it 'skips if id token scopes were not requested' do
+      invalid_scopes = [
+        'launch patient/*.read',
+        'launch patient/*.read openid',
+        'launch patient/*.read fhirUser'
+      ]
+      invalid_scopes.each do |scopes|
+        @instance.update(scopes: scopes)
 
-    openid_configuration_url = @openid_configuration['issuer'].chomp('/') + '/.well-known/openid-configuration'
-    stub_request(:get, openid_configuration_url)
-      .to_return(status: 200, body: @openid_configuration.to_json, headers: RESPONSE_HEADERS)
+        exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    stub_request(:get, @openid_configuration['jwks_uri'])
-      .to_return(status: 404)
+        assert_equal '"openid" and "fhirUser" scopes not requested', exception.message
+      end
+    end
 
-    sequence_result = @sequence.start
-    assert sequence_result.fail?
-    # 3 tests depend on jwks information
-    assert sequence_result.failures.length == 3
+    it 'skips if id token could not be decoded' do
+      @sequence.instance_variable_set(:@decoded_payload, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'ID token could not be decoded', exception.message
+    end
+
+    it 'skips if the configuration could not be retrieved' do
+      @sequence.instance_variable_set(:@oidc_configuration, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'OpenID Connect well-known configuration could not be retrieved', exception.message
+    end
+
+    it 'fails if the fhirUser claim is not present' do
+      payload = @decoded_payload.clone
+      payload.delete 'fhirUser'
+      @sequence.instance_variable_set(:@decoded_payload, payload)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'ID token does not contain `fhirUser` claim', exception.message
+    end
+
+    it 'fails if the fhirUser claim does not refer to an allowed FHIR resource type' do
+      payload = @decoded_payload.clone
+      payload['fhirUser'] = 'http://www.example.com/fhir/Condition/123'
+      @sequence.instance_variable_set(:@decoded_payload, payload)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match 'ID token `fhirUser` claim does not refer to a valid resource type ', exception.message
+    end
+
+    it 'fails if fetching the user is unsuccessful' do
+      stub_request(:get, @decoded_payload['fhirUser'])
+        .to_return(status: 404)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match 'Bad response code: expected 200, 201, but found 404. ', exception.message
+    end
+
+    it 'fails if fetching the user returns invalid json' do
+      stub_request(:get, @decoded_payload['fhirUser'])
+        .to_return(status: 200, body: '{')
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match 'Invalid JSON', exception.message
+    end
+
+    it 'fails if fetching the user does not return an allowed FHIR resource type' do
+      stub_request(:get, @decoded_payload['fhirUser'])
+        .to_return(status: 200, body: FHIR::Condition.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match 'Resource from `fhirUser` claim was not an allowed resource type: Condition', exception.message
+    end
+
+    it 'succeeds if an allowed FHIR resource type is returned' do
+      stub_request(:get, @decoded_payload['fhirUser'])
+        .to_return(status: 200, body: FHIR::Patient.new.to_json)
+
+      @sequence.run_test(@test)
+    end
   end
 end
