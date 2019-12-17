@@ -15,14 +15,14 @@ module Inferno
       property :direction, String
       property :instance_id, String
 
-      property :response_time, DateTime
+      property :timestamp, DateTime, default: proc { DateTime.now }
 
       has n, :test_results, through: Resource
 
       def self.from_request(req, instance_id, direction = nil)
         request = req.request
         response = req.response
-        headers = response[:headers]
+
         new(
           direction: direction || req&.direction,
           request_method: request[:method],
@@ -30,10 +30,10 @@ module Inferno
           request_headers: request[:headers].to_json,
           request_payload: request[:payload],
           response_code: response[:code],
-          response_headers: headers.to_json,
+          response_headers: response[:headers].to_json,
           response_body: response[:body],
           instance_id: instance_id,
-          response_time: DateTime.parse(headers['date'] || headers[:date])
+          timestamp: response[:timestamp]
         )
       end
     end

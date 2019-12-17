@@ -81,7 +81,8 @@ module Inferno
             request_url: request.url,
             request_headers: headers.to_json,
             request_payload: request.body.read,
-            instance_id: @instance.id
+            instance_id: @instance.id,
+            timestamp: DateTime.now
           )
         end
 
