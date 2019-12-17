@@ -380,6 +380,14 @@ describe Inferno::Sequence::SharedLaunchTests do
       assert_equal 'Token response did not contain access_token as required', exception.message
     end
 
+    it 'fails if the response contains a non-numeric value for expires_in' do
+      response = { access_token: 'ABC', expires_in: 'DEF' }
+      @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal '`expires_in` field is not a number: "DEF"', exception.message
+    end
+
     it 'fails if the token response does not contain the token_type' do
       response = { access_token: 'ABC' }
       @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
@@ -427,7 +435,8 @@ describe Inferno::Sequence::SharedLaunchTests do
       response = {
         access_token: 'ABC',
         token_type: 'Bearer',
-        scope: 'GHI'
+        scope: 'GHI',
+        expires_in: 300
       }
       @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
 

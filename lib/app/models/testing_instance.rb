@@ -36,6 +36,7 @@ module Inferno
 
       property :token, String
       property :token_retrieved_at, DateTime
+      property :token_expires_in, Integer
       property :id_token, String
       property :refresh_token, String
       property :created_at, DateTime, default: proc { DateTime.now }
@@ -249,6 +250,10 @@ module Inferno
         else
           FHIR::CapabilityStatement
         end
+      end
+
+      def token_expiration_time
+        token_retrieved_at + token_expires_in.seconds
       end
 
       private
