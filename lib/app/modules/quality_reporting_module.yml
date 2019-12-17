@@ -11,6 +11,10 @@ test_sets:
         sequences:
           - MeasureAvailability
           - ValueSetSequence
+      - name: ReportingActions
+        sequences:
+          - ResourceSequence
+          - SubmitDataSequence
       - name: CMS165 Bulk Data Reporting
         sequences:
           - CMS165BulkDataReportingSequence
@@ -20,6 +24,3 @@ test_sets:
       - name: CMS165 Quality Reporting
         sequences:
           - CMS165ReportingSequence
-      - name: ReportingActions
-        sequences:
-          - ResourceSequence

@@ -11,9 +11,34 @@ module Inferno
       @client.get "Measure/#{measure_id}/$evaluate-measure#{params_string}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
 
-    def submit_data
-      # TODO
-      nil
+    def submit_data(measure_id, patient_id, period_start, period_end, patient_resources)
+      measure_report = FHIR::STU3::MeasureReport.new
+      measure_report.type = 'individual'
+      measure_report.patient = FHIR::STU3::Reference.new
+      measure_report.patient.reference = "Patient/#{patient_id}"
+      measure_report.measure = FHIR::STU3::Reference.new
+      measure_report.measure.reference = "Measure/#{measure_id}"
+      measure_report.period = FHIR::STU3::Period.new
+      measure_report.period.start = period_start
+      measure_report.period.end = period_end
+
+      parameters = FHIR::STU3::Parameters.new
+      measure_report_param = FHIR::STU3::Parameters::Parameter.new
+      measure_report_param.name = 'measure-report'
+      measure_report_param.resource = measure_report
+      parameters.parameter.push(measure_report_param)
+      patient_resources.each do |r|
+        resource_param = FHIR::STU3::Parameters::Parameter.new
+        resource_param.name = 'resource'
+        resource_param.resource = r
+        parameters.parameter.push(resource_param)
+      end
+
+      headers = {
+        content_type: 'application/json'
+      }
+
+      @client.post("Measure/#{measure_id}/$submit-data", parameters, headers)
     end
 
     def collect_data(measure_id, params = {})
