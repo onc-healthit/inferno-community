@@ -54,7 +54,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Location from the server'
+          name 'Server returns correct Location resource from the Location read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Location can be resolved and read.
@@ -125,7 +125,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         @location = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Location' }
@@ -149,7 +149,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
@@ -175,7 +175,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
@@ -201,7 +201,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
@@ -227,7 +227,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
           'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
@@ -242,7 +242,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '08'
-          name 'Location vread interaction supported'
+          name 'Server returns correct Location resource from Location vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -260,7 +260,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '09'
-          name 'Location history interaction supported'
+          name 'Server returns correct Location resource from Location history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -275,7 +275,7 @@ module Inferno
         validate_history_reply(@location, versioned_resource_class('Location'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Location search by name + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -298,7 +298,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'Location resources associated with Patient conform to US Core R4 profiles' do
+      test 'Location resources returned conform to US Core R4 profiles' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
@@ -311,11 +311,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
         test_resources_against_profile('Location')
       end
 
-      test 'At least one of every must support element is provided in any Location for this patient.' do
+      test 'All must support elements are provided in the Location resources returned.' do
         metadata do
           id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -346,8 +346,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @location_ary&.any?
+        skip 'No Location resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Location.status',
           'Location.name',
@@ -372,7 +373,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Location resource is valid and can be read.' do
         metadata do
           id '13'
           link 'http://hl7.org/fhir/references.html'
@@ -383,7 +384,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@location)
       end

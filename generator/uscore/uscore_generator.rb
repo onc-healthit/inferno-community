@@ -107,7 +107,7 @@ module Inferno
       def create_read_test(sequence)
         test_key = :resource_read
         read_test = {
-          tests_that: "Can read #{sequence[:resource]} from the server",
+          tests_that: "Server returns correct #{sequence[:resource]} resource from the #{sequence[:resource]} read interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
@@ -200,14 +200,16 @@ module Inferno
       end
 
       def create_revinclude_test(sequence)
+        first_search = find_first_search(sequence)
+        return if first_search.blank?
+
         revinclude_test = {
-          tests_that: "Server returns the appropriate resources from the following _revincludes: #{sequence[:revincludes].join(',')}",
+          tests_that: "Server returns Provenance resources from #{sequence[:resource]} search by #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
           description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}"
         }
-        first_search = find_first_search(sequence)
-        search_params = first_search.nil? ? "\nsearch_params = {}" : get_search_params(first_search[:names], sequence)
+        search_params = get_search_params(first_search[:names], sequence)
         revinclude_test[:test_code] = search_params
         sequence[:revincludes].each do |revinclude|
           resource_name = revinclude.split(':').first
@@ -249,7 +251,7 @@ module Inferno
             get_first_search(search_param[:names], sequence)
           else
             %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+              #{skip_if_not_found(sequence)}
               #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
@@ -272,7 +274,8 @@ module Inferno
           has_comparator_tests: comparator_search_code.present?,
           fixed_value_search_param: fixed_value_search_param,
           class_name: sequence[:class_name],
-          sequence_name: sequence[:name]
+          sequence_name: sequence[:name],
+          delayed_sequence: sequence[:delayed_sequence]
         )
       end
 
@@ -281,7 +284,7 @@ module Inferno
 
         test_key = :"#{interaction[:code]}_interaction"
         interaction_test = {
-          tests_that: "#{sequence[:resource]} #{interaction[:code]} interaction supported",
+          tests_that: "Server returns correct #{sequence[:resource]} resource from #{sequence[:resource]} #{interaction[:code]} interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
@@ -309,7 +312,7 @@ module Inferno
 
       def create_must_support_test(sequence)
         test = {
-          tests_that: "At least one of every must support element is provided in any #{sequence[:resource]} for this patient.",
+          tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
           link: 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support',
           test_code: '',
@@ -325,10 +328,9 @@ module Inferno
           )
         end
         test[:test_code] += %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].underscore}_ary&.any?)
-
-        test[:test_code] += %(
-              must_support_confirmed = {})
+          #{skip_if_not_found(sequence)}
+          must_support_confirmed = {}
+        )
 
         extensions_list = []
         sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
@@ -380,7 +382,7 @@ module Inferno
 
       def create_resource_profile_test(sequence)
         test = {
-          tests_that: "#{sequence[:resource]} resources associated with Patient conform to US Core R4 profiles",
+          tests_that: "#{sequence[:resource]} resources returned conform to US Core R4 profiles",
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
           description: %(
@@ -389,7 +391,7 @@ module Inferno
           )
         }
         test[:test_code] = %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+              #{skip_if_not_found(sequence)}
               test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
 
         sequence[:tests] << test
@@ -432,7 +434,7 @@ module Inferno
 
       def create_references_resolved_test(sequence)
         test = {
-          tests_that: 'All references can be resolved',
+          tests_that: "Every reference within #{sequence[:resource]} resource is valid and can be read.",
           index: sequence[:tests].length + 1,
           link: 'http://hl7.org/fhir/references.html',
           description: 'This test checks if references found in resources from prior searches can be resolved.'
@@ -440,7 +442,7 @@ module Inferno
 
         test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:search, :read])
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+              #{skip_if_not_found(sequence)}
 
               validate_reference_resolutions(@#{sequence[:resource].underscore}))
         sequence[:tests] << test
@@ -508,7 +510,7 @@ module Inferno
 
           @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
-          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+          #{skip_if_not_found(sequence)}
 
           @#{sequence[:resource].underscore} = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
@@ -568,7 +570,7 @@ module Inferno
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
             break#{' if values_found == 2' if find_two_values}
           end
-          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
+          #{skip_if_not_found(sequence)})
       end
 
       def get_search_params(search_parameters, sequence, grab_first_value = false)
@@ -640,6 +642,11 @@ module Inferno
           comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
           param_comparators[param] = comparators if comparators.present?
         end
+      end
+
+      def skip_if_not_found(sequence)
+        use_other_patient = ' Please use patients with more information.'
+        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
       end
 
       def search_param_constants(search_parameters, sequence)

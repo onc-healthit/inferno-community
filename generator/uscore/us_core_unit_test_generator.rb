@@ -35,7 +35,8 @@ module Inferno
         has_comparator_tests:,
         fixed_value_search_param:,
         class_name:,
-        sequence_name:
+        sequence_name:,
+        delayed_sequence:
       )
 
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
@@ -55,7 +56,8 @@ module Inferno
           has_dynamic_search_params: dynamic_search_params(search_params).present?,
           fixed_value_search_param: fixed_value_search_param&.dig(:name),
           fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', '),
-          fixed_value_search_path: fixed_value_search_param&.dig(:path)
+          fixed_value_search_path: fixed_value_search_param&.dig(:path),
+          delayed_sequence: delayed_sequence
         )
         tests[class_name] << test
       end

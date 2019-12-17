@@ -43,7 +43,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Practitioner from the server'
+          name 'Server returns correct Practitioner resource from the Practitioner read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Practitioner can be resolved and read.
@@ -114,7 +114,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Practitioner' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         @practitioner = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Practitioner' }
@@ -138,7 +138,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
@@ -153,7 +153,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '05'
-          name 'Practitioner vread interaction supported'
+          name 'Server returns correct Practitioner resource from Practitioner vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -171,7 +171,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '06'
-          name 'Practitioner history interaction supported'
+          name 'Server returns correct Practitioner resource from Practitioner history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -186,7 +186,7 @@ module Inferno
         validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Practitioner search by name + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -209,7 +209,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'Practitioner resources associated with Patient conform to US Core R4 profiles' do
+      test 'Practitioner resources returned conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
@@ -222,11 +222,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
         test_resources_against_profile('Practitioner')
       end
 
-      test 'At least one of every must support element is provided in any Practitioner for this patient.' do
+      test 'All must support elements are provided in the Practitioner resources returned.' do
         metadata do
           id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -251,8 +251,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @practitioner_ary&.any?
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Practitioner.identifier',
           'Practitioner.identifier.system',
@@ -274,7 +275,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Practitioner resource is valid and can be read.' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/references.html'
@@ -285,7 +286,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Practitioner, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@practitioner)
       end

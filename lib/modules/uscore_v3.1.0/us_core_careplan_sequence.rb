@@ -101,7 +101,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
           break
         end
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
       test :search_by_patient_category_date do
@@ -119,7 +119,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -155,7 +155,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -191,7 +191,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -208,7 +208,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '06'
-          name 'CarePlan read interaction supported'
+          name 'Server returns correct CarePlan resource from CarePlan read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the CarePlan read interaction.
@@ -225,7 +225,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '07'
-          name 'CarePlan vread interaction supported'
+          name 'Server returns correct CarePlan resource from CarePlan vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -243,7 +243,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '08'
-          name 'CarePlan history interaction supported'
+          name 'Server returns correct CarePlan resource from CarePlan history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -258,7 +258,7 @@ module Inferno
         validate_history_reply(@care_plan, versioned_resource_class('CarePlan'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from CarePlan search by patient + category + _revIncludes: Provenance:target' do
         metadata do
           id '09'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -282,7 +282,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'CarePlan resources associated with Patient conform to US Core R4 profiles' do
+      test 'CarePlan resources returned conform to US Core R4 profiles' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
@@ -295,11 +295,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('CarePlan')
       end
 
-      test 'At least one of every must support element is provided in any CarePlan for this patient.' do
+      test 'All must support elements are provided in the CarePlan resources returned.' do
         metadata do
           id '11'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -326,8 +326,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @care_plan_ary&.any?
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'CarePlan.text',
           'CarePlan.text.status',
@@ -350,7 +351,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within CarePlan resource is valid and can be read.' do
         metadata do
           id '12'
           link 'http://hl7.org/fhir/references.html'
@@ -361,7 +362,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@care_plan)
       end

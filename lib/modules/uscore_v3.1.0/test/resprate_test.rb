@@ -125,7 +125,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
@@ -188,7 +188,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
@@ -252,7 +252,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
@@ -325,7 +325,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
@@ -390,7 +390,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No resources appear to be available for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do

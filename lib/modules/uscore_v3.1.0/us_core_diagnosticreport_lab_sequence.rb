@@ -105,7 +105,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
           break
         end
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
       test :search_by_patient do
@@ -121,7 +121,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id
@@ -145,7 +145,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -172,7 +172,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -207,7 +207,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -235,7 +235,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -259,7 +259,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '08'
-          name 'DiagnosticReport read interaction supported'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the DiagnosticReport read interaction.
@@ -276,7 +276,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '09'
-          name 'DiagnosticReport vread interaction supported'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -294,7 +294,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '10'
-          name 'DiagnosticReport history interaction supported'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -309,7 +309,7 @@ module Inferno
         validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from DiagnosticReport search by patient + category + _revIncludes: Provenance:target' do
         metadata do
           id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -333,7 +333,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
+      test 'DiagnosticReport resources returned conform to US Core R4 profiles' do
         metadata do
           id '12'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
@@ -346,11 +346,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
       end
 
-      test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do
+      test 'All must support elements are provided in the DiagnosticReport resources returned.' do
         metadata do
           id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -383,8 +383,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @diagnostic_report_ary&.any?
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'DiagnosticReport.status',
           'DiagnosticReport.category',
@@ -410,7 +411,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within DiagnosticReport resource is valid and can be read.' do
         metadata do
           id '14'
           link 'http://hl7.org/fhir/references.html'
@@ -421,7 +422,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@diagnostic_report)
       end

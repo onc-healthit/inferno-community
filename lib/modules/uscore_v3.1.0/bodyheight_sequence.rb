@@ -105,7 +105,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
           break
         end
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
       test :search_by_patient_category_date do
@@ -122,7 +122,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -156,7 +156,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -184,7 +184,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -219,7 +219,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -236,7 +236,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '07'
-          name 'Observation read interaction supported'
+          name 'Server returns correct Observation resource from Observation read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Observation read interaction.
@@ -253,7 +253,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '08'
-          name 'Observation vread interaction supported'
+          name 'Server returns correct Observation resource from Observation vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -271,7 +271,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '09'
-          name 'Observation history interaction supported'
+          name 'Server returns correct Observation resource from Observation history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -286,7 +286,7 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -310,7 +310,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'Observation resources associated with Patient conform to US Core R4 profiles' do
+      test 'Observation resources returned conform to US Core R4 profiles' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/StructureDefinition/bodyheight'
@@ -323,11 +323,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:body_height])
       end
 
-      test 'At least one of every must support element is provided in any Observation for this patient.' do
+      test 'All must support elements are provided in the Observation resources returned.' do
         metadata do
           id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -402,8 +402,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @observation_ary&.any?
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Observation.status',
           'Observation.category',
@@ -450,7 +451,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Observation resource is valid and can be read.' do
         metadata do
           id '13'
           link 'http://hl7.org/fhir/references.html'
@@ -461,7 +462,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Observation, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@observation)
       end

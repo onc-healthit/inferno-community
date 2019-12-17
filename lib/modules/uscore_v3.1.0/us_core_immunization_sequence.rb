@@ -84,7 +84,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Immunization' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         @immunization = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Immunization' }
@@ -110,7 +110,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -144,7 +144,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -160,7 +160,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '05'
-          name 'Immunization read interaction supported'
+          name 'Server returns correct Immunization resource from Immunization read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Immunization read interaction.
@@ -177,7 +177,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '06'
-          name 'Immunization vread interaction supported'
+          name 'Server returns correct Immunization resource from Immunization vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -195,7 +195,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '07'
-          name 'Immunization history interaction supported'
+          name 'Server returns correct Immunization resource from Immunization history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -210,7 +210,7 @@ module Inferno
         validate_history_reply(@immunization, versioned_resource_class('Immunization'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Immunization search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -232,7 +232,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'Immunization resources associated with Patient conform to US Core R4 profiles' do
+      test 'Immunization resources returned conform to US Core R4 profiles' do
         metadata do
           id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
@@ -245,11 +245,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Immunization')
       end
 
-      test 'At least one of every must support element is provided in any Immunization for this patient.' do
+      test 'All must support elements are provided in the Immunization resources returned.' do
         metadata do
           id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -276,8 +276,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @immunization_ary&.any?
+        skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Immunization.status',
           'Immunization.statusReason',
@@ -300,7 +301,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Immunization resource is valid and can be read.' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/references.html'
@@ -311,7 +312,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Immunization, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@immunization)
       end

@@ -105,7 +105,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
           break
         end
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
       test :search_by_patient_intent_status do
@@ -121,7 +121,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -149,7 +149,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -178,7 +178,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -195,7 +195,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '06'
-          name 'MedicationRequest read interaction supported'
+          name 'Server returns correct MedicationRequest resource from MedicationRequest read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the MedicationRequest read interaction.
@@ -212,7 +212,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '07'
-          name 'MedicationRequest vread interaction supported'
+          name 'Server returns correct MedicationRequest resource from MedicationRequest vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -230,7 +230,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '08'
-          name 'MedicationRequest history interaction supported'
+          name 'Server returns correct MedicationRequest resource from MedicationRequest history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -270,7 +270,7 @@ module Inferno
         assert medication_results, 'No Medication resources were returned from this search'
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from MedicationRequest search by patient + intent + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -294,7 +294,7 @@ module Inferno
         assert provenance_results, 'No Provenance resources were returned from this search'
       end
 
-      test 'MedicationRequest resources associated with Patient conform to US Core R4 profiles' do
+      test 'MedicationRequest resources returned conform to US Core R4 profiles' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
@@ -307,11 +307,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('MedicationRequest')
       end
 
-      test 'At least one of every must support element is provided in any MedicationRequest for this patient.' do
+      test 'All must support elements are provided in the MedicationRequest resources returned.' do
         metadata do
           id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -348,8 +348,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medication_request_ary&.any?
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'MedicationRequest.status',
           'MedicationRequest.intent',
@@ -402,7 +403,7 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within MedicationRequest resource is valid and can be read.' do
         metadata do
           id '14'
           link 'http://hl7.org/fhir/references.html'
@@ -413,7 +414,7 @@ module Inferno
         end
 
         skip_if_not_supported(:MedicationRequest, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@medication_request)
       end

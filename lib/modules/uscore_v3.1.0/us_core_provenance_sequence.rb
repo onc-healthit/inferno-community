@@ -22,7 +22,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Provenance from the server'
+          name 'Server returns correct Provenance resource from the Provenance read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Provenance can be resolved and read.
@@ -46,7 +46,7 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '02'
-          name 'Provenance vread interaction supported'
+          name 'Server returns correct Provenance resource from Provenance vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -64,7 +64,7 @@ module Inferno
       test :history_interaction do
         metadata do
           id '03'
-          name 'Provenance history interaction supported'
+          name 'Server returns correct Provenance resource from Provenance history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -79,7 +79,7 @@ module Inferno
         validate_history_reply(@provenance, versioned_resource_class('Provenance'))
       end
 
-      test 'Provenance resources associated with Patient conform to US Core R4 profiles' do
+      test 'Provenance resources returned conform to US Core R4 profiles' do
         metadata do
           id '04'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
@@ -92,11 +92,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found
         test_resources_against_profile('Provenance')
       end
 
-      test 'At least one of every must support element is provided in any Provenance for this patient.' do
+      test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
           id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -129,8 +129,9 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @provenance_ary&.any?
+        skip 'No Provenance resources appear to be available.' unless @resources_found
         must_support_confirmed = {}
+
         must_support_elements = [
           'Provenance.target',
           'Provenance.recorded',
@@ -156,7 +157,7 @@ module Inferno
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Provenance resource is valid and can be read.' do
         metadata do
           id '06'
           link 'http://hl7.org/fhir/references.html'
@@ -167,7 +168,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@provenance)
       end
