@@ -52,14 +52,16 @@ module Inferno
 
         skip_if_not_supported(:Organization, [:read])
 
-        organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
-        skip 'No Organization references found from the prior searches' if organization_id.nil?
+        organization_references = @instance.resource_references.select { |reference| reference.resource_type == 'Organization' }
+        skip 'No Organization references found from the prior searches' if organization_references.blank?
 
-        @organization = validate_read_reply(
-          FHIR::Organization.new(id: organization_id),
-          FHIR::Organization
-        )
-        @organization_ary = Array.wrap(@organization).compact
+        @organization_ary = organization_references.map do |reference|
+          validate_read_reply(
+            FHIR::Organization.new(id: reference.resource_id),
+            FHIR::Organization
+          )
+        end
+        @organization = @organization_ary.first
         @resources_found = @organization.present?
       end
 
@@ -204,8 +206,9 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
       test 'Organization resources returned conform to US Core R4 profiles' do
