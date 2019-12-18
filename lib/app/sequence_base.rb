@@ -502,7 +502,6 @@ module Inferno
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
-          assert resource_validation_errors[:fatals].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:fatals].join("<br/>\n")}"
           assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
 
           search_params.each do |key, value|
@@ -556,8 +555,7 @@ module Inferno
 
       def validate_resource(resource_type, resource, profile)
         resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, resource_type, profile.url)
-        errors = resource_validation_errors[:fatals]
-        errors.concat resource_validation_errors[:errors]
+        errors = resource_validation_errors[:errors]
         @test_warnings.concat resource_validation_errors[:warnings]
 
         errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
@@ -589,7 +587,7 @@ module Inferno
           else
             warn { assert false, 'No profiles found for this Resource' }
             issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
-            issues[:fatals].concat issues[:errors]
+            issues[:errors]
           end
         end
         # TODO
@@ -693,16 +691,14 @@ module Inferno
         if p
           @profiles_encountered << p.url
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
-          errors = resource_validation_errors[:fatals]
-          errors.concat resource_validation_errors[:errors]
+          errors = resource_validation_errors[:errors]
           unless errors.empty?
             errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
             @profiles_failed[p.url].concat(errors)
           end
         else
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
-          errors = resource_validation_errors[:fatals]
-          errors.concat resource_validation_errors[:errors]
+          errors = resource_validation_errors[:errors]
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
