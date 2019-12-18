@@ -183,7 +183,7 @@ module Inferno
           description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}"
         }
 
-        return unless @optional_tests_on
+        return if @disable_optional_tests
 
         first_search = find_first_search(sequence)
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
@@ -244,7 +244,7 @@ module Inferno
           )
         }
 
-        return if search_test[:optional] && !@optional_tests_on
+        return if search_test[:optional] && @disable_optional_tests
 
         find_comparators(search_param[:names], sequence).each do |param, comparators|
           search_test[:description] += %(
@@ -299,7 +299,7 @@ module Inferno
           optional: interaction[:expectation] != 'SHALL'
         }
 
-        return if interaction_test[:optional] && !@optional_tests_on
+        return if interaction_test[:optional] && @disable_optional_tests
 
         interaction_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])

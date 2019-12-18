@@ -12,12 +12,12 @@ module Inferno
       attr_accessor :path, :extras, :resource_by_path, :resources_by_type,
                     :claimed_test_id_prefixes,
                     :prefix,
-                    :optional_tests_on
+                    :disable_optional_tests
 
-      def initialize(path, prefix, optional_tests_on, extras)
+      def initialize(path, prefix, disable_optional_tests, extras)
         @path = path
         @prefix = prefix
-        @optional_tests_on = optional_tests_on
+        @disable_optional_tests = disable_optional_tests.downcase == 'true'
         @extras = extras
         @claimed_test_id_prefixes = Set.new
         load_resources
