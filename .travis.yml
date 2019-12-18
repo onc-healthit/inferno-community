@@ -2,8 +2,6 @@ language: ruby
 services:
   - docker
 before_install:
-  - gem update --system
-  - gem install bundler
   - docker-compose build
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
