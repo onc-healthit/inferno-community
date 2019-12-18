@@ -554,7 +554,7 @@ module Inferno
       end
 
       def validate_resource(resource_type, resource, profile)
-        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class(resource_type), profile.url)
+        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
         errors = resource_validation_errors[:errors]
         @test_warnings.concat resource_validation_errors[:warnings]
 
