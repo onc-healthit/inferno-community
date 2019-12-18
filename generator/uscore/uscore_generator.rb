@@ -96,7 +96,7 @@ module Inferno
 
       def generate_sequence(sequence)
         puts "Generating #{sequence[:name]}\n"
-        file_name = "#{sequence_out_path}/#{@prefix + '_' if @prefix.present?}#{sequence[:name].downcase}_sequence.rb"
+        file_name = "#{sequence_out_path}/#{prefix_string}#{sequence[:name].downcase}_sequence.rb"
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
         output =   template.result_with_hash(sequence)
         FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)

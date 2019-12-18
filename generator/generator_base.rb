@@ -80,7 +80,11 @@ module Inferno
       end
 
       def sequence_out_path
-        File.expand_path("#{module_yml_out_path}/#{prefix + '_' if prefix.present?}#{path}")
+        File.expand_path("#{module_yml_out_path}/#{prefix_string}#{path}")
+      end
+
+      def prefix_string
+        prefix.present? ? prefix + '_' : ''
       end
 
       def resource_file_path
