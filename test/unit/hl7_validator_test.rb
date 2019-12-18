@@ -10,7 +10,7 @@ describe Inferno::HL7Validator do
   end
 
   describe 'Validating a good resource' do
-    it 'Shouldn\'t pass back any messages' do
+    it "Shouldn't pass back any messages" do
       patient = FHIR::Patient.new
       stub_request(:post, "#{@validator_url}/validate")
         .with(query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' })
