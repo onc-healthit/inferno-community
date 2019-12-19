@@ -17,7 +17,7 @@ module Inferno
       def initialize(path, prefix, disable_optional_tests, extras)
         @path = path
         @prefix = prefix
-        @disable_optional_tests = disable_optional_tests.downcase == 'true'
+        @disable_optional_tests = disable_optional_tests.casecmp('true').zero?
         @extras = extras
         @claimed_test_id_prefixes = Set.new
         load_resources
