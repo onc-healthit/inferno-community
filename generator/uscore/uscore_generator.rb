@@ -27,7 +27,7 @@ module Inferno
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
           generate_sequence(sequence)
-          unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
+          unit_test_generator.generate(sequence, sequence_out_path, prefix_string, metadata[:name])
         end
         generate_module(metadata)
       end
@@ -738,7 +738,7 @@ module Inferno
       end
 
       def generate_module(module_info)
-        file_name = "#{module_yml_out_path}/#{@path}_module.yml"
+        file_name = "#{module_yml_out_path}/#{prefix_string}#{@path}_module.yml"
 
         template = ERB.new(File.read(File.join(__dir__, 'templates/module.yml.erb')))
         output = template.result_with_hash(module_info)

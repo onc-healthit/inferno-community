@@ -7,7 +7,7 @@ module Inferno
         @tests ||= Hash.new { |hash, key| hash[key] = [] }
       end
 
-      def generate(sequence, path, module_name)
+      def generate(sequence, path, prefix, module_name)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'unit_test.rb.erb')))
         class_name = sequence[:class_name]
         return if tests[class_name].blank?
@@ -22,7 +22,7 @@ module Inferno
         test_path = File.join(path, 'test')
         FileUtils.mkdir_p(test_path) unless File.directory?(test_path)
 
-        file_name = File.join(test_path, "#{sequence[:name].downcase}_test.rb")
+        file_name = File.join(test_path, "#{prefix}#{sequence[:name].downcase}_test.rb")
         File.write(file_name, unit_tests)
       end
 
