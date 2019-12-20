@@ -12,7 +12,7 @@ module Inferno
     end
 
     def submit_data(measure_id, patient_id, period_start, period_end, patient_resources)
-      measure_report = FHIR::STU3::MeasureReport.new.from_hash({
+      measure_report = FHIR::STU3::MeasureReport.new.from_hash(
         type: 'individual',
         patient: {
           reference: "Patient/#{patient_id}"
@@ -24,7 +24,7 @@ module Inferno
           start: period_start,
           end: period_end
         }
-      })
+      )
 
       parameters = FHIR::STU3::Parameters.new
       measure_report_param = FHIR::STU3::Parameters::Parameter.new(name: 'measure-report')
