@@ -114,7 +114,7 @@ module Inferno
 
         output_results = save_output(sequence_name)
 
-        run_tests(self.class.tests[start_at..-1], &block)
+        run_tests(tests[start_at..-1], &block)
 
         update_output(sequence_name, output_results)
 
@@ -208,12 +208,12 @@ module Inferno
         end
       end
 
-      def self.test_count
-        tests.length
+      def self.test_count(inferno_module = nil)
+        tests(inferno_module).length
       end
 
-      def test_count
-        self.class.test_count
+      def test_count(inferno_module = @instance.module)
+        tests(inferno_module).length
       end
 
       def sequence_name
@@ -307,8 +307,18 @@ module Inferno
         @@test_id_prefixes[sequence_name]
       end
 
-      def self.tests
-        @tests ||= []
+      def self.all_tests
+        @all_tests ||= []
+      end
+
+      def self.tests(inferno_module = nil)
+        return all_tests unless inferno_module&.hide_optional
+
+        all_tests.select(&:required?)
+      end
+
+      def tests(inferno_module = @instance.module)
+        self.class.tests(inferno_module)
       end
 
       def self.[](key)
@@ -355,7 +365,7 @@ module Inferno
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
       def self.extends_sequence(klass)
-        tests.concat(klass.tests)
+        all_tests.concat(klass.all_tests)
       end
 
       # Defines a new test.
@@ -366,11 +376,11 @@ module Inferno
         @@test_index += 1
         new_test = InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
 
-        if new_test.key.present? && tests.any? { |test| test.key == new_test.key }
+        if new_test.key.present? && all_tests.any? { |test| test.key == new_test.key }
           raise InvalidKeyException, "Duplicate test key #{new_test.key.inspect} in #{self.name.demodulize}"
         end
 
-        tests << new_test
+        all_tests << new_test
       end
 
       def wrap_test(test)
