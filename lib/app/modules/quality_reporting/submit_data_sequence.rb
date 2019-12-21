@@ -21,6 +21,8 @@ module Inferno
           desc 'Submit resources relevant to a measure, and then verify they persist on the server.'
         end
 
+        assert(!@instance.measure_to_test.nil?, 'No measure selected. You must run the Prerequisite sequences prior to running Reporting Actions sequences.')
+
         # Get the patient data to submit. For now this just always uses CMS130 data.
         patient_file = File.expand_path('../../../../resources/quality_reporting/CMS130/Bundle/cms130-patient-bundle.json', __dir__)
         patient_bundle = FHIR::STU3::Json.from_json(File.read(patient_file))

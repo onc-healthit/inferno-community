@@ -6,6 +6,7 @@ class SubmitDataSequenceTest < MiniTest::Test
   def setup
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', selected_module: 'quality_reporting')
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
+    @instance.measure_to_test = 'TestMeasure'
     client = FHIR::Client.new(@instance.url)
     client.use_stu3
     client.default_json

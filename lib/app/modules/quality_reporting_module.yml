@@ -11,7 +11,7 @@ test_sets:
         sequences:
           - MeasureAvailability
           - ValueSetSequence
-      - name: ReportingActions
+      - name: Reporting Actions
         sequences:
           - ResourceSequence
           - SubmitDataSequence
