@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'securerandom'
+
 module Inferno
   module MeasureOperations
     # Run the $evaluate-measure operation for the given Measure
@@ -11,9 +13,12 @@ module Inferno
       @client.get "Measure/#{measure_id}/$evaluate-measure#{params_string}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
 
-    def submit_data(measure_id, patient_id, period_start, period_end, patient_resources)
-      measure_report = FHIR::STU3::MeasureReport.new.from_hash(
+    def create_measure_report(measure_id, patient_id, period_start, period_end)
+      FHIR::STU3::MeasureReport.new.from_hash(
         type: 'individual',
+        identifier: [{
+          value: SecureRandom.uuid
+        }],
         patient: {
           reference: "Patient/#{patient_id}"
         },
@@ -25,7 +30,9 @@ module Inferno
           end: period_end
         }
       )
+    end
 
+    def submit_data(measure_id, patient_resources, measure_report)
       parameters = FHIR::STU3::Parameters.new
       measure_report_param = FHIR::STU3::Parameters::Parameter.new(name: 'measure-report')
       measure_report_param.resource = measure_report

@@ -104,7 +104,8 @@
         "subject": {
           "reference": "Patient/bc4159a4-6ff2-4a5b-be3a-d9c4778642c2-1"
         },
-        "assertedDate": "2019-01-12T13:51:21-07:00"
+        "assertedDate": "2019-01-12T13:51:21-07:00",
+        "identifier": [{"value": "f40ec10f-f081-4f84-9c16-cecbf4d131f5"}]
       },
       "request": {
         "method": "PUT",
@@ -142,7 +143,8 @@
         "period": {
           "start": "2019-07-17T13:51:21-06:00",
           "end": "2019-07-17T16:51:21-06:00"
-        }
+        },
+        "identifier": [{"value": "4a82c670-c927-44e4-9f1d-90c61510b92e"}]
       },
       "request": {
         "method": "PUT",
@@ -221,7 +223,8 @@
               "code": "mm[Hg]"
             }
           }
-        ]
+        ],
+        "identifier": [{"value": "5e0efed8-135a-442c-a617-57942e77d1cf"}]
       },
       "request": {
         "method": "PUT",

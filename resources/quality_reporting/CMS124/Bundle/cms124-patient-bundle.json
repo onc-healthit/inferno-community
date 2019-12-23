@@ -351,7 +351,8 @@
         },
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "ede4b5df-69aa-483c-9028-1712412d1b3f"}]
       },
       "request": {
         "method": "POST",
@@ -382,7 +383,8 @@
           "reference": "Encounter/438e405f-c2ce-466e-acf5-d961352acdc4"
         },
         "onsetDateTime": "2011-10-22T15:58:11-04:00",
-        "assertedDate": "2011-10-22T15:58:11-04:00"
+        "assertedDate": "2011-10-22T15:58:11-04:00",
+        "identifier": [{"value": "f520172f-f670-4c26-87bb-e09a8014da2b"}]
       },
       "request": {
         "method": "POST",
@@ -438,7 +440,8 @@
         ],
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "51a1410b-9723-416d-a0b4-ddb59d8a380c"}]
       },
       "request": {
         "method": "POST",
@@ -494,7 +497,8 @@
         ],
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "dd3c828c-6538-4be1-a37e-80ee7c09314f"}]
       },
       "request": {
         "method": "POST",
@@ -526,7 +530,8 @@
         "performedPeriod": {
           "start": "2018-07-08T15:58:11-04:00",
           "end": "2018-07-08T16:13:11-04:00"
-        }
+        },
+        "identifier": [{"value": "1f083990-d2a8-4663-9d06-7a413ab6395d"}]
       },
       "request": {
         "method": "POST",
@@ -582,7 +587,8 @@
         ],
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "4b233ccc-06f5-4026-b6dd-c91fa1b1d618"}]
       },
       "request": {
         "method": "POST",
@@ -633,7 +639,8 @@
             }
           ],
           "text": "Treatment changed (situation)"
-        }
+        },
+        "identifier": [{"value": "724a3bca-e1f9-49da-8577-b4f179598b80"}]
       },
       "request": {
         "method": "POST",
@@ -665,7 +672,8 @@
         "performedPeriod": {
           "start": "2018-07-08T15:58:11-04:00",
           "end": "2018-07-08T16:11:11-04:00"
-        }
+        },
+        "identifier": [{"value": "a59b7c8b-6a8f-4731-b1d1-7acd64fc1fdc"}]
       },
       "request": {
         "method": "POST",
@@ -697,7 +705,8 @@
         "performedPeriod": {
           "start": "2018-07-08T15:58:11-04:00",
           "end": "2018-07-08T16:10:11-04:00"
-        }
+        },
+        "identifier": [{"value": "669e7170-91f7-433e-ba98-454e74989255"}]
       },
       "request": {
         "method": "POST",
@@ -753,7 +762,8 @@
         ],
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "1a473d9e-22d7-4de9-a04b-0016a6898599"}]
       },
       "request": {
         "method": "POST",
@@ -809,7 +819,8 @@
         ],
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "8ab52dd6-535f-4ad1-b62f-2eca163d51a5"}]
       },
       "request": {
         "method": "POST",
@@ -841,7 +852,8 @@
         "performedPeriod": {
           "start": "2019-07-03T15:58:11-04:00",
           "end": "2019-07-03T16:22:11-04:00"
-        }
+        },
+        "identifier": [{"value": "acca17e3-e584-4dda-9f0b-ecb12b14fa08"}]
       },
       "request": {
         "method": "POST",
@@ -897,7 +909,8 @@
         ],
         "serviceProvider": {
           "reference": "Organization/24cb4eab-6166-3530-bddc-a5a8a14a4fc1"
-        }
+        },
+        "identifier": [{"value": "153590d7-752f-45dd-943d-899091a24218"}]
       },
       "request": {
         "method": "POST",
@@ -948,7 +961,8 @@
             }
           ],
           "text": "Treatment changed (situation)"
-        }
+        },
+        "identifier": [{"value": "85341dbc-8eab-42a5-8838-975cf4ba59a7"}]
       },
       "request": {
         "method": "POST",
@@ -980,7 +994,8 @@
         "performedPeriod": {
           "start": "2019-07-03T15:58:11-04:00",
           "end": "2019-07-03T16:12:11-04:00"
-        }
+        },
+        "identifier": [{"value": "349f5694-9f16-4ae0-b307-ac5fa358c701"}]
       },
       "request": {
         "method": "POST",
@@ -1012,7 +1027,8 @@
         "performedPeriod": {
           "start": "2019-07-03T15:58:11-04:00",
           "end": "2019-07-03T16:15:11-04:00"
-        }
+        },
+        "identifier": [{"value": "7621f420-4bef-4e3f-906c-425639291860"}]
       },
       "request": {
         "method": "POST",
@@ -1057,7 +1073,8 @@
         },
         "serviceProvider": {
           "reference": "Organization/ba104fcf-4a52-3fdc-928e-f9e683ec5ced"
-        }
+        },
+        "identifier": [{"value": "6c22154d-8289-477a-85cc-3a174246c85e"}]
       },
       "request": {
         "method": "POST",
@@ -1088,7 +1105,8 @@
           "reference": "Encounter/dfb02da3-32a2-46e7-bf3f-d49751203c5d"
         },
         "date": "2019-11-08T14:58:11-05:00",
-        "primarySource": true
+        "primarySource": true,
+        "identifier": [{"value": "386a609a-4d54-4d67-b03e-358b84221f75"}]
       },
       "request": {
         "method": "POST",
@@ -1119,7 +1137,8 @@
           "reference": "Encounter/dfb02da3-32a2-46e7-bf3f-d49751203c5d"
         },
         "date": "2019-11-08T14:58:11-05:00",
-        "primarySource": true
+        "primarySource": true,
+        "identifier": [{"value": "36628b1f-0cc2-439c-8a25-3cf7dfba2059"}]
       },
       "request": {
         "method": "POST",
@@ -1150,7 +1169,8 @@
           "reference": "Encounter/dfb02da3-32a2-46e7-bf3f-d49751203c5d"
         },
         "date": "2019-11-08T14:58:11-05:00",
-        "primarySource": true
+        "primarySource": true,
+        "identifier": [{"value": "39f91721-0e37-4b0c-a954-c8399274705b"}]
       },
       "request": {
         "method": "POST",

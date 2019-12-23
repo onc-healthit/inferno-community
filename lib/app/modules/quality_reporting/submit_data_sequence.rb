@@ -36,16 +36,26 @@ module Inferno
         patient_bundle = FHIR::STU3::Json.from_json(File.read(patient_file))
         resources = patient_bundle.entry.map(&:resource)
         patient = resources.first { |r| r.resourceType == 'Patient' }
+        measure_report = create_measure_report(@instance.measure_to_test, patient.id, '2019', '2019')
 
         # Submit the data
-        submit_data_response = submit_data(@instance.measure_to_test, patient.id, '2019', '2019', resources)
+        submit_data_response = submit_data(@instance.measure_to_test, resources, measure_report)
         assert_response_ok(submit_data_response)
+
+        resources.push(measure_report)
 
         # GET and assert presence of all submitted resources
         resources.each do |r|
-          relative_url = "#{r.resourceType}/#{r.id}"
-          get_response = @client.get(relative_url)
-          assert_response_ok(get_response, "Submitted resource unavailable on the server: #{relative_url}")
+          identifier = r.identifier&.first&.value
+          assert !identifier.nil?
+
+          # Search for resource by identifier
+          search_response = @client.search(r.class, search: { parameters: { identifier: identifier } })
+          assert_response_ok search_response
+          search_bundle = search_response.resource
+
+          # Expect a non-exmpty searchset Bundle
+          assert(search_bundle.total.positive?, "Search for a #{r.resourceType} with identifier #{identifier} returned no results")
         end
       end
     end

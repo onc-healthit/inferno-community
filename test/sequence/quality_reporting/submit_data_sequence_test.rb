@@ -28,6 +28,11 @@ class SubmitDataSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
+    search_response_body = {
+      resourceType: 'Bundle',
+      total: 1
+    }.to_json
+
     MEASURES_TO_TEST.each do |req|
       # Set other variables needed
       @instance.measure_to_test = req[:measure_id]
@@ -35,7 +40,7 @@ class SubmitDataSequenceTest < MiniTest::Test
         .to_return(status: 200)
 
       stub_request(:get, /example/)
-        .to_return(status: 200)
+        .to_return(status: 200, body: search_response_body)
 
       sequence_result = @sequence.start
       assert sequence_result.pass?, 'The sequence should be marked as pass.'
