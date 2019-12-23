@@ -13,25 +13,56 @@ class SubmitDataSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::SubmitDataSequence.new(@instance, client, true)
   end
 
+  MEASURES_TO_TEST = [
+    {
+      measure_id: 'measure-EXM124-FHIR3-7.2.000'
+    },
+    {
+      measure_id: 'measure-EXM130-FHIR3-7.2.000'
+    },
+    {
+      measure_id: 'measure-exm165-FHIR3'
+    }
+  ].freeze
+
   def test_all_pass
     WebMock.reset!
 
-    stub_request(:post, /Measure/)
-      .to_return(status: 200)
+    MEASURES_TO_TEST.each do |req|
+      # Set other variables needed
+      @instance.measure_to_test = req[:measure_id]
+      stub_request(:post, /Measure/)
+        .to_return(status: 200)
 
-    stub_request(:get, /example/)
-      .to_return(status: 200)
+      stub_request(:get, /example/)
+        .to_return(status: 200)
 
-    sequence_result = @sequence.start
-    assert sequence_result.pass?, 'The sequence should be marked as pass.'
-    assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
+      sequence_result = @sequence.start
+      assert sequence_result.pass?, 'The sequence should be marked as pass.'
+      assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
+    end
   end
 
   def test_submit_data_fail
     WebMock.reset!
 
+    @instance.measure_to_test = 'measure-exm165-FHIR3'
     stub_request(:post, /Measure/)
       .to_return(status: 400)
+
+    sequence_result = @sequence.start
+    assert(sequence_result.fail?, 'The sequence should be marked as fail.')
+  end
+
+  def test_submit_data_unsupported_measure_fail
+    WebMock.reset!
+
+    @instance.measure_to_test = 'measure-not-supported'
+    stub_request(:post, /Measure/)
+      .to_return(status: 200)
+
+    stub_request(:get, /example/)
+      .to_return(status: 200)
 
     sequence_result = @sequence.start
     assert(sequence_result.fail?, 'The sequence should be marked as fail.')
