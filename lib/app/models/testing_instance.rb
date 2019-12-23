@@ -200,7 +200,7 @@ module Inferno
         end
       end
 
-      def conformance_supported?(resource, methods = [])
+      def conformance_supported?(resource, methods = [], operations = [])
         resource_support = supported_resource_interactions.find do |interactions|
           interactions[:resource_type] == resource.to_s
         end
@@ -211,6 +211,10 @@ module Inferno
           method = method == :history ? 'history-instance' : method.to_s
 
           resource_support[:interactions].include? method
+        end
+
+        operations.all? do |operation|
+          resource_support[:operations].include? operation.to_s
         end
       end
 
