@@ -55,14 +55,12 @@ module Inferno
         organization_references = @instance.resource_references.select { |reference| reference.resource_type == 'Organization' }
         skip 'No Organization references found from the prior searches' if organization_references.blank?
 
-        @organization_ary = organization_references.map do |reference|
+        @resources_found = organization_references.map do |reference|
           validate_read_reply(
             FHIR::Organization.new(id: reference.resource_id),
             FHIR::Organization
           )
         end
-        @organization = @organization_ary.first
-        @resources_found = @organization.present?
       end
 
       test :unauthorized_search do
@@ -114,7 +112,7 @@ module Inferno
         assert_bundle_response(reply)
 
         @resources_found = fetch_all_bundled_resources(reply.resource, 'Organization')
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
 
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
         save_delayed_sequence_references(@resources_found)
@@ -134,7 +132,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address'))
@@ -144,6 +142,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Organization')
       end
 
       test :vread_interaction do
@@ -159,8 +158,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:vread])
-        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('Organization'))
       end
 
@@ -177,8 +175,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:history])
-        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('Organization'))
       end
 
@@ -219,7 +216,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
         test_resources_against_profile('Organization')
       end
 
@@ -264,7 +261,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -307,7 +304,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Organization, [:search, :read])
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

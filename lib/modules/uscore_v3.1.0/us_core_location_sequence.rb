@@ -67,14 +67,12 @@ module Inferno
         location_references = @instance.resource_references.select { |reference| reference.resource_type == 'Location' }
         skip 'No Location references found from the prior searches' if location_references.blank?
 
-        @location_ary = location_references.map do |reference|
+        @resources_found = location_references.map do |reference|
           validate_read_reply(
             FHIR::Location.new(id: reference.resource_id),
             FHIR::Location
           )
         end
-        @location = @location_ary.first
-        @resources_found = @location.present?
       end
 
       test :unauthorized_search do
@@ -126,7 +124,7 @@ module Inferno
         assert_bundle_response(reply)
 
         @resources_found = fetch_all_bundled_resources(reply.resource, 'Location')
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
 
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
         save_delayed_sequence_references(@resources_found)
@@ -146,7 +144,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address'))
@@ -156,6 +154,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Location')
       end
 
       test :search_by_address_city do
@@ -172,7 +171,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
 
         search_params = {
           'address-city': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address.city'))
@@ -182,6 +181,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Location')
       end
 
       test :search_by_address_state do
@@ -198,7 +198,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
 
         search_params = {
           'address-state': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address.state'))
@@ -208,6 +208,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Location')
       end
 
       test :search_by_address_postalcode do
@@ -224,7 +225,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
 
         search_params = {
           'address-postalcode': get_value_for_search_param(resolve_element_from_path(@resources_found, 'address.postalCode'))
@@ -234,6 +235,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Location')
       end
 
       test :vread_interaction do
@@ -249,8 +251,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:vread])
-        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('Location'))
       end
 
@@ -267,8 +268,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:history])
-        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('Location'))
       end
 
@@ -309,7 +309,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
         test_resources_against_profile('Location')
       end
 
@@ -344,7 +344,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -382,7 +382,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Location, [:search, :read])
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip 'No Location resources appear to be available.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

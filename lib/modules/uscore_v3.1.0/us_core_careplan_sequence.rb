@@ -95,7 +95,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
           break
         end
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
       end
 
       test :search_by_patient_category_date do
@@ -113,7 +113,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -125,6 +125,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'CarePlan')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -149,7 +150,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -162,6 +163,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'CarePlan')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -185,7 +187,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -197,6 +199,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
         validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'CarePlan')
       end
 
       test :read_interaction do
@@ -211,8 +214,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:read])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_read_reply(@resources_found.first, versioned_resource_class('CarePlan'))
       end
 
@@ -229,8 +231,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:vread])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('CarePlan'))
       end
 
@@ -247,8 +248,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:history])
-        skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('CarePlan'))
       end
 
@@ -290,7 +290,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         test_resources_against_profile('CarePlan')
       end
 
@@ -321,7 +321,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -357,7 +357,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CarePlan, [:search, :read])
-        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

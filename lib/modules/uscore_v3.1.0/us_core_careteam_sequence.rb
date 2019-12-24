@@ -89,7 +89,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
           break if values_found == 2
         end
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
       end
 
       test :read_interaction do
@@ -104,8 +104,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:read])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_read_reply(@resources_found.first, versioned_resource_class('CareTeam'))
       end
 
@@ -122,8 +121,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:vread])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('CareTeam'))
       end
 
@@ -140,8 +138,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:history])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('CareTeam'))
       end
 
@@ -183,7 +180,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         test_resources_against_profile('CareTeam')
       end
 
@@ -210,7 +207,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -268,7 +265,7 @@ module Inferno
         end
 
         skip_if_not_supported(:CareTeam, [:search, :read])
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

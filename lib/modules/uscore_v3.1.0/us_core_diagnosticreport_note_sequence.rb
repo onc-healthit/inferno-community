@@ -99,7 +99,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
           break
         end
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
       end
 
       test :search_by_patient do
@@ -115,7 +115,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id
@@ -124,6 +124,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
       end
 
       test :search_by_patient_code do
@@ -139,7 +140,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -150,6 +151,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
       end
 
       test :search_by_patient_category_date do
@@ -166,7 +168,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -178,6 +180,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -201,7 +204,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -212,6 +215,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
       end
 
       test :search_by_patient_code_date do
@@ -229,7 +233,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -241,6 +245,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -262,8 +267,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:read])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_read_reply(@resources_found.first, versioned_resource_class('DiagnosticReport'))
       end
 
@@ -280,8 +284,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:vread])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('DiagnosticReport'))
       end
 
@@ -298,8 +301,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:history])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('DiagnosticReport'))
       end
 
@@ -341,7 +343,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
       end
 
@@ -378,7 +380,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -417,7 +419,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DiagnosticReport, [:search, :read])
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

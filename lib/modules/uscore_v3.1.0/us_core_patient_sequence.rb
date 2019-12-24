@@ -106,7 +106,7 @@ module Inferno
         assert_bundle_response(reply)
 
         @resources_found = fetch_all_bundled_resources(reply.resource, 'Patient')
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
         save_delayed_sequence_references(@resources_found)
@@ -126,7 +126,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@resources_found, 'identifier'))
@@ -136,6 +136,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Patient')
       end
 
       test :search_by_name do
@@ -151,7 +152,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@resources_found, 'name'))
@@ -161,6 +162,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Patient')
       end
 
       test :search_by_gender_name do
@@ -176,7 +178,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'gender': get_value_for_search_param(resolve_element_from_path(@resources_found, 'gender')),
@@ -187,6 +189,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Patient')
       end
 
       test :search_by_birthdate_name do
@@ -202,7 +205,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@resources_found, 'birthDate')),
@@ -213,6 +216,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Patient')
       end
 
       test :search_by_birthdate_family do
@@ -229,7 +233,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@resources_found, 'birthDate')),
@@ -240,6 +244,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Patient')
       end
 
       test :search_by_family_gender do
@@ -256,7 +261,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'family': get_value_for_search_param(resolve_element_from_path(@resources_found, 'name.family')),
@@ -267,6 +272,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'Patient')
       end
 
       test :read_interaction do
@@ -281,8 +287,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Patient, [:read])
-        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_read_reply(@resources_found.first, versioned_resource_class('Patient'))
       end
 
@@ -299,8 +304,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Patient, [:vread])
-        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('Patient'))
       end
 
@@ -317,8 +321,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Patient, [:history])
-        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('Patient'))
       end
 
@@ -358,7 +361,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         test_resources_against_profile('Patient')
       end
 
@@ -415,7 +418,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         must_support_confirmed = {}
 
         extensions_list = {
@@ -478,7 +481,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Patient, [:search, :read])
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

@@ -35,14 +35,12 @@ module Inferno
         provenance_references = @instance.resource_references.select { |reference| reference.resource_type == 'Provenance' }
         skip 'No Provenance references found from the prior searches' if provenance_references.blank?
 
-        @provenance_ary = provenance_references.map do |reference|
+        @resources_found = provenance_references.map do |reference|
           validate_read_reply(
             FHIR::Provenance.new(id: reference.resource_id),
             FHIR::Provenance
           )
         end
-        @provenance = @provenance_ary.first
-        @resources_found = @provenance.present?
       end
 
       test :vread_interaction do
@@ -58,8 +56,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:vread])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Provenance resources appear to be available.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('Provenance'))
       end
 
@@ -76,8 +73,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:history])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Provenance resources appear to be available.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('Provenance'))
       end
 
@@ -94,7 +90,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Provenance resources appear to be available.' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found.present?
         test_resources_against_profile('Provenance')
       end
 
@@ -131,7 +127,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Provenance resources appear to be available.' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -170,7 +166,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Provenance, [:search, :read])
-        skip 'No Provenance resources appear to be available.' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

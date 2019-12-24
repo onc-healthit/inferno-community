@@ -35,14 +35,12 @@ module Inferno
         medication_references = @instance.resource_references.select { |reference| reference.resource_type == 'Medication' }
         skip 'No Medication references found from the prior searches' if medication_references.blank?
 
-        @medication_ary = medication_references.map do |reference|
+        @resources_found = medication_references.map do |reference|
           validate_read_reply(
             FHIR::Medication.new(id: reference.resource_id),
             FHIR::Medication
           )
         end
-        @medication = @medication_ary.first
-        @resources_found = @medication.present?
       end
 
       test :vread_interaction do
@@ -58,8 +56,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:vread])
-        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Medication resources appear to be available.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('Medication'))
       end
 
@@ -76,8 +73,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:history])
-        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No Medication resources appear to be available.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('Medication'))
       end
 
@@ -94,7 +90,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip 'No Medication resources appear to be available.' unless @resources_found.present?
         test_resources_against_profile('Medication')
       end
 
@@ -113,7 +109,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip 'No Medication resources appear to be available.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -143,7 +139,7 @@ module Inferno
         end
 
         skip_if_not_supported(:Medication, [:search, :read])
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip 'No Medication resources appear to be available.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

@@ -79,7 +79,7 @@ module Inferno
         assert_bundle_response(reply)
 
         @resources_found = fetch_all_bundled_resources(reply.resource, 'AllergyIntolerance')
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
         save_delayed_sequence_references(@resources_found)
@@ -100,7 +100,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         search_params = {
           'patient': @instance.patient_id,
@@ -111,6 +111,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'AllergyIntolerance')
       end
 
       test :read_interaction do
@@ -125,8 +126,7 @@ module Inferno
         end
 
         skip_if_not_supported(:AllergyIntolerance, [:read])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_read_reply(@resources_found.first, versioned_resource_class('AllergyIntolerance'))
       end
 
@@ -143,8 +143,7 @@ module Inferno
         end
 
         skip_if_not_supported(:AllergyIntolerance, [:vread])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('AllergyIntolerance'))
       end
 
@@ -161,8 +160,7 @@ module Inferno
         end
 
         skip_if_not_supported(:AllergyIntolerance, [:history])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('AllergyIntolerance'))
       end
 
@@ -202,7 +200,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         test_resources_against_profile('AllergyIntolerance')
       end
 
@@ -227,7 +225,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -260,7 +258,7 @@ module Inferno
         end
 
         skip_if_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end

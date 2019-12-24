@@ -120,14 +120,12 @@ module Inferno
               #{sequence[:resource].underscore}_references = @instance.resource_references.select { |reference| reference.resource_type == '#{sequence[:resource]}' }
               skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_references.blank?
 
-              @#{sequence[:resource].underscore}_ary = #{sequence[:resource].underscore}_references.map do |reference|
+              @resources_found = #{sequence[:resource].underscore}_references.map do |reference|
                 validate_read_reply(
                   FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
                   FHIR::#{sequence[:resource]}
                 )
-              end
-              @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary.first
-              @resources_found = @#{sequence[:resource].underscore}.present?)
+              end)
         sequence[:tests] << read_test
 
         unit_test_generator.generate_resource_read_test(
@@ -258,6 +256,7 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               assert_response_ok(reply)
+              @resources_found += fetch_all_bundled_resources(reply.resource, '#{sequence[:resource]}')
             )
           end
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
@@ -296,8 +295,7 @@ module Inferno
 
         interaction_test[:test_code] = %(
               skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
-              skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+              #{skip_if_not_found(sequence)}
               validate_#{interaction[:code]}_reply(@resources_found.first, versioned_resource_class('#{sequence[:resource]}')))
 
         sequence[:tests] << interaction_test
@@ -637,7 +635,7 @@ module Inferno
 
       def skip_if_not_found(sequence)
         use_other_patient = ' Please use patients with more information.'
-        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
+        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found.present?"
       end
 
       def search_param_constants(search_parameters, sequence)

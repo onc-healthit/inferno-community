@@ -49,14 +49,12 @@ module Inferno
         practitioner_role_references = @instance.resource_references.select { |reference| reference.resource_type == 'PractitionerRole' }
         skip 'No PractitionerRole references found from the prior searches' if practitioner_role_references.blank?
 
-        @practitioner_role_ary = practitioner_role_references.map do |reference|
+        @resources_found = practitioner_role_references.map do |reference|
           validate_read_reply(
             FHIR::PractitionerRole.new(id: reference.resource_id),
             FHIR::PractitionerRole
           )
         end
-        @practitioner_role = @practitioner_role_ary.first
-        @resources_found = @practitioner_role.present?
       end
 
       test :unauthorized_search do
@@ -108,7 +106,7 @@ module Inferno
         assert_bundle_response(reply)
 
         @resources_found = fetch_all_bundled_resources(reply.resource, 'PractitionerRole')
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
 
         save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
         save_delayed_sequence_references(@resources_found)
@@ -128,7 +126,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
 
         search_params = {
           'practitioner': get_value_for_search_param(resolve_element_from_path(@resources_found, 'practitioner'))
@@ -138,6 +136,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
         assert_response_ok(reply)
+        @resources_found += fetch_all_bundled_resources(reply.resource, 'PractitionerRole')
       end
 
       test :vread_interaction do
@@ -153,8 +152,7 @@ module Inferno
         end
 
         skip_if_not_supported(:PractitionerRole, [:vread])
-        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
         validate_vread_reply(@resources_found.first, versioned_resource_class('PractitionerRole'))
       end
 
@@ -171,8 +169,7 @@ module Inferno
         end
 
         skip_if_not_supported(:PractitionerRole, [:history])
-        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found.present?
-
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
         validate_history_reply(@resources_found.first, versioned_resource_class('PractitionerRole'))
       end
 
@@ -244,7 +241,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
         test_resources_against_profile('PractitionerRole')
       end
 
@@ -279,7 +276,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
         must_support_confirmed = {}
 
         must_support_elements = [
@@ -317,7 +314,7 @@ module Inferno
         end
 
         skip_if_not_supported(:PractitionerRole, [:search, :read])
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found.present?
 
         validate_reference_resolutions(@resources_found.first)
       end
