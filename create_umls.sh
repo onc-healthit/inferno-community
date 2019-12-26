@@ -68,8 +68,42 @@ fi
 echo 'Populating mrrel table'
 sqlite3 umls.db ".import MRREL.pipe mrrel"
 
+echo 'Dropping existing mrsat table'
+sqlite3 umls.db "drop table if exists mrsat;"
+
+echo 'Creating mrsat table'
+sqlite3 umls.db "create table mrsat (
+        CUI 	char(8) NOT NULL,
+        LUI       char(8),
+        SUI       char(8),
+        METAUI    varchar(20),
+        STYPE	varchar(50) NOT NULL,
+        CODE      varchar(50),
+        ATUI      varchar(10) NOT NULL,
+        SATUI     varchar(10),
+        ATN       varchar(50),
+        SAB	      varchar(20) NOT NULL,
+        ATV       varchar(1000) NOT NULL,
+        SUPPRESS	char(1),
+        CVF	int
+      );"
+
+# Remove the last pipe from each line, and quote all the fields/escape double quotes
+# Because MRSAT has stray unescaped quotes in one of the fields
+if [ ! -e MRSAT.pipe ]
+then
+ echo 'Removing last pipe from RRF'
+ sed 's/|$//' ./resources/terminology/umls_subset/MRSAT.RRF | sed $'s/"/""/g;s/[^|]*/"&"/g' > MRSAT.pipe
+fi
+
+echo 'Populating mrsat table'
+sqlite3 umls.db ".import MRSAT.pipe mrsat"
+
+echo 'Indexing mrsat(ATN,ATV)'
+sqlite3 umls.db "create index idx_at on mrsat(ATN,ATV);"
+
 echo 'Indexing mrconso(tty)'
-sqlite3 umls.db "create index  idx_tty on mrconso (tty);"
+sqlite3 umls.db "create index  idx_tty on mrconso(tty);"
 
 echo 'Indexing mrrel(rel,sab)'
 sqlite3 umls.db "create index idx_isa on mrrel(REL,SAB);"

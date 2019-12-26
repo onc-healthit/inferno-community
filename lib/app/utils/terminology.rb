@@ -40,7 +40,7 @@ module Inferno
         root_dir = 'resources/terminology/validators/bloom'
         FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
         @known_valuesets.each do |k, vs|
-          next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
+          next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages') || (k == 'http://hl7.org/fhir/us/core/ValueSet/simple-language')
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
@@ -51,7 +51,7 @@ module Inferno
         Inferno::Terminology::Valueset::SAB.each do |k, _v|
           Inferno.logger.debug "Processing #{k}"
           cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(%r{[./]}, '_')}.msgpack"
+          filename = "#{root_dir}/#{bloom_file_name(k)}.msgpack"
           save_bloom_to_file(cs, filename)
           validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom' }
         end
@@ -64,7 +64,7 @@ module Inferno
           next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
 
           Inferno.logger.debug "Processing #{k}"
-          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.csv"
+          filename = "#{root_dir}/#{bloom_file_name(vs.url)}.csv"
           save_csv_to_file(vs.valueset, filename)
           validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv' }
         end
@@ -72,7 +72,7 @@ module Inferno
         Inferno::Terminology::Valueset::SAB.each do |k, _v|
           Inferno.logger.debug "Processing #{k}"
           cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{(URI(k).host + URI(k).path).gsub(%r{[./]}, '_')}.csv"
+          filename = "#{root_dir}/#{bloom_file_name(k)}.csv"
           save_csv_to_file(cs, filename)
           validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv' }
         end
@@ -150,10 +150,19 @@ module Inferno
       @known_valuesets[@valueset_ids[id]] || raise(UnknownValueSetException, id)
     end
 
+    def self.bloom_file_name(codesystem)
+      uri = URI(codesystem)
+      if uri.host && uri.port
+        return (uri.host + uri.path).gsub(%r{[./]}, '_')
+      else
+        return codesystem.gsub(%r{[.\W]}, '_')
+      end
+    end
+
     def self.loaded_code_systems
       @loaded_code_systems ||= @known_valuesets.flat_map do |_, vs|
-        vs.valueset.collect {|s| s[:system] }.uniq
-      end.uniq
+        vs.included_code_systems.uniq
+      end.uniq.compact
     end
 
     class UnknownValueSetException < StandardError

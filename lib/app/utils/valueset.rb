@@ -23,6 +23,8 @@ module Inferno
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
         'http://www.icd10data.com/icd10pcs' => 'ICD10CM',
+        'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
+        'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
         'http://hl7.org/fhir/ndfrt' => 'NDFRT',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
@@ -45,6 +47,8 @@ module Inferno
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
       FILTER_PROP = {
+        'CLASSTYPE' => 'LCN',
+        'DOC' => 'Doc',
         'SCALE_TYP' => 'LOINC_SCALE_TYP'
       }.freeze
 
@@ -76,6 +80,10 @@ module Inferno
       # Return the number of codes in the valueset
       def count
         @valueset.length
+      end
+
+      def included_code_systems
+        @valueset_model.compose.include.map(&:system).compact.uniq
       end
 
       # Creates the whole valueset
@@ -219,8 +227,14 @@ module Inferno
             filtered_set.add(system: system, code: row[0])
           end
         elsif ['=', 'in', nil].include? filter&.op
-          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
-            filtered_set.add(system: system, code: row[0])
+          if FILTER_PROP[filter.property]
+            @db.execute("SELECT code FROM mrsat WHERE ATN = '#{filter_prop_or_self(filter.property)}' AND ATV = '#{filter_prop_or_self(filter.value)}'") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
+          else
+            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
           end
         elsif filter&.op == 'is-a'
           filtered_set = filter_is_a(system, filter)
@@ -287,6 +301,10 @@ module Inferno
         end
         subsume.call(filter.value)
         desired_children
+      end
+
+      def filter_prop_or_self(prop)
+        FILTER_PROP[prop] || prop
       end
 
       class FilterOperationException < StandardError
