@@ -191,7 +191,7 @@ module Inferno
 
         docref_test[:test_code] = %(
           skip_if_not_supported(:#{sequence[:resource]}, [], [:docref])
-          search_string = "/DocumentRefernce/$docref?patient=\#{@instance.patient_id}"
+          search_string = "/DocumentReference/$docref?patient=\#{@instance.patient_id}"
           reply = @client.get(search_string, @client.fhir_headers)
           assert_response_ok(reply)
         )

@@ -343,7 +343,7 @@ module Inferno
         end
 
         skip_if_not_supported(:DocumentReference, [], [:docref])
-        search_string = "/DocumentRefernce/$docref?patient=#{@instance.patient_id}"
+        search_string = "/DocumentReference/$docref?patient=#{@instance.patient_id}"
         reply = @client.get(search_string, @client.fhir_headers)
         assert_response_ok(reply)
       end
