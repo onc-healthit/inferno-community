@@ -29,7 +29,15 @@ module Inferno
 
     def issues_by_severity(issues, severity)
       issues.select { |i| i.severity == severity }
-        .map { |iss| "#{iss&.expression&.join(', ')}: #{iss&.details&.text}" }
+        .map { |iss| "#{issue_location(iss)}: #{iss&.details&.text}" }
+    end
+
+    def issue_location(issue)
+      if issue.respond_to?(:expression)
+        issue&.expression&.join(', ')
+      else
+        issue&.location&.join(', ')
+      end
     end
   end
 end

@@ -16,7 +16,7 @@ module Inferno
 
       {
         errors: errors.reject(&:empty?),
-        warnings: warnings.reject(&:empty?),
+        warnings: warnings.reject(&:empty?)
       }
     end
   end
