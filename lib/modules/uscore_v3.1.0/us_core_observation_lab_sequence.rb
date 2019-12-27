@@ -410,7 +410,7 @@ module Inferno
 
             Observation.category
 
-            Observation.category
+            Observation.category.coding.code
 
             Observation.code
 
@@ -451,31 +451,32 @@ module Inferno
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Observation.status',
-          'Observation.category',
-          'Observation.category',
-          'Observation.code',
-          'Observation.subject',
-          'Observation.effectiveDateTime',
-          'Observation.effectivePeriod',
-          'Observation.valueQuantity',
-          'Observation.valueCodeableConcept',
-          'Observation.valueString',
-          'Observation.valueBoolean',
-          'Observation.valueInteger',
-          'Observation.valueRange',
-          'Observation.valueRatio',
-          'Observation.valueSampledData',
-          'Observation.valueTime',
-          'Observation.valueDateTime',
-          'Observation.valuePeriod',
-          'Observation.dataAbsentReason'
+          { path: 'Observation.status', fixed_value: '' },
+          { path: 'Observation.category', fixed_value: '' },
+          { path: 'Observation.category.coding.code', fixed_value: 'laboratory' },
+          { path: 'Observation.code', fixed_value: '' },
+          { path: 'Observation.subject', fixed_value: '' },
+          { path: 'Observation.effectiveDateTime', fixed_value: '' },
+          { path: 'Observation.effectivePeriod', fixed_value: '' },
+          { path: 'Observation.valueQuantity', fixed_value: '' },
+          { path: 'Observation.valueCodeableConcept', fixed_value: '' },
+          { path: 'Observation.valueString', fixed_value: '' },
+          { path: 'Observation.valueBoolean', fixed_value: '' },
+          { path: 'Observation.valueInteger', fixed_value: '' },
+          { path: 'Observation.valueRange', fixed_value: '' },
+          { path: 'Observation.valueRatio', fixed_value: '' },
+          { path: 'Observation.valueSampledData', fixed_value: '' },
+          { path: 'Observation.valueTime', fixed_value: '' },
+          { path: 'Observation.valueDateTime', fixed_value: '' },
+          { path: 'Observation.valuePeriod', fixed_value: '' },
+          { path: 'Observation.dataAbsentReason', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Observation.', '')
-          @observation_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @observation_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

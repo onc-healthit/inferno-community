@@ -496,8 +496,7 @@ module Inferno
           )
         }
 
-        must_support_elements = sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }
-        must_support_elements.each do |element|
+        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
           test[:description] += %(
             #{element[:path]}
           )
@@ -531,21 +530,25 @@ module Inferno
                 resource.extension.any? { |extension| extension.url == url }
               end
             end
-          )
+      )
+        end
+        elements_list = []
+        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+          element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
+          elements_list << "{ path: '#{element[:path]}', fixed_value: '#{element[:fixed_value]}' }"
         end
 
-        if must_support_elements.present?
-          elements_list = must_support_elements.map { |element| "'#{element[:path]}'" }
-
+        if elements_list.present?
           test[:test_code] += %(
             must_support_elements = [
-              #{elements_list.join(",\n          ")}
+              #{elements_list.join(",\n")}
             ]
 
             missing_must_support_elements = must_support_elements.reject do |path|
               truncated_path = path.gsub('#{sequence[:resource]}.', '')
-              #{resource_array}&.any? do |resource|
-                resolve_element_from_path(resource, truncated_path).present?
+              @#{sequence[:resource].underscore}_ary&.any? do |resource|
+                value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+                value_found.present?
               end
             end
           )

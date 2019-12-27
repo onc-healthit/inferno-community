@@ -471,41 +471,42 @@ module Inferno
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Observation.status',
-          'Observation.category',
-          'Observation.category',
-          'Observation.category.coding',
-          'Observation.category.coding.system',
-          'Observation.category.coding.code',
-          'Observation.subject',
-          'Observation.effectiveDateTime',
-          'Observation.effectivePeriod',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity.value',
-          'Observation.valueQuantity.unit',
-          'Observation.valueQuantity.system',
-          'Observation.valueQuantity.code',
-          'Observation.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.dataAbsentReason'
+          { path: 'Observation.status', fixed_value: '' },
+          { path: 'Observation.category', fixed_value: '' },
+          { path: 'Observation.category', fixed_value: '' },
+          { path: 'Observation.category.coding', fixed_value: '' },
+          { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
+          { path: 'Observation.category.coding.code', fixed_value: '' },
+          { path: 'Observation.subject', fixed_value: '' },
+          { path: 'Observation.effectiveDateTime', fixed_value: '' },
+          { path: 'Observation.effectivePeriod', fixed_value: '' },
+          { path: 'Observation.valueQuantity', fixed_value: '' },
+          { path: 'Observation.valueQuantity.value', fixed_value: '' },
+          { path: 'Observation.valueQuantity.unit', fixed_value: '' },
+          { path: 'Observation.valueQuantity.system', fixed_value: '' },
+          { path: 'Observation.valueQuantity.code', fixed_value: '' },
+          { path: 'Observation.dataAbsentReason', fixed_value: '' },
+          { path: 'Observation.component', fixed_value: '' },
+          { path: 'Observation.component.code', fixed_value: '' },
+          { path: 'Observation.component.valueQuantity', fixed_value: '' },
+          { path: 'Observation.component.valueCodeableConcept', fixed_value: '' },
+          { path: 'Observation.component.valueString', fixed_value: '' },
+          { path: 'Observation.component.valueBoolean', fixed_value: '' },
+          { path: 'Observation.component.valueInteger', fixed_value: '' },
+          { path: 'Observation.component.valueRange', fixed_value: '' },
+          { path: 'Observation.component.valueRatio', fixed_value: '' },
+          { path: 'Observation.component.valueSampledData', fixed_value: '' },
+          { path: 'Observation.component.valueTime', fixed_value: '' },
+          { path: 'Observation.component.valueDateTime', fixed_value: '' },
+          { path: 'Observation.component.valuePeriod', fixed_value: '' },
+          { path: 'Observation.component.dataAbsentReason', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Observation.', '')
-          @observation_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @observation_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

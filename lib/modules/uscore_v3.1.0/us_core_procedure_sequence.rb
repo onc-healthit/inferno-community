@@ -367,17 +367,18 @@ module Inferno
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Procedure.status',
-          'Procedure.code',
-          'Procedure.subject',
-          'Procedure.performedDateTime',
-          'Procedure.performedPeriod'
+          { path: 'Procedure.status', fixed_value: '' },
+          { path: 'Procedure.code', fixed_value: '' },
+          { path: 'Procedure.subject', fixed_value: '' },
+          { path: 'Procedure.performedDateTime', fixed_value: '' },
+          { path: 'Procedure.performedPeriod', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Procedure.', '')
-          @procedure_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @procedure_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

@@ -218,11 +218,14 @@ module Inferno
                 }
             end
           else
-            sequence[:must_supports] <<
-              {
-                type: 'element',
-                path: path
-              }
+            must_support_element = { type: 'element', path: path }
+            if element['fixedUri'].present?
+              must_support_element[:fixed_value] = element['fixedUri']
+            elsif element['patternCodeableConcept'].present?
+              must_support_element[:fixed_value] = element['patternCodeableConcept']['coding'].first['code']
+              must_support_element[:path] += '.coding.code'
+            end
+            sequence[:must_supports] << must_support_element
           end
         end
       end

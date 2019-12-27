@@ -281,26 +281,27 @@ module Inferno
         skip 'No Organization resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          'Organization.identifier',
-          'Organization.identifier.system',
-          'Organization.identifier.value',
-          'Organization.identifier',
-          'Organization.identifier',
-          'Organization.active',
-          'Organization.name',
-          'Organization.telecom',
-          'Organization.address',
-          'Organization.address.line',
-          'Organization.address.city',
-          'Organization.address.state',
-          'Organization.address.postalCode',
-          'Organization.address.country'
+          { path: 'Organization.identifier', fixed_value: '' },
+          { path: 'Organization.identifier.system', fixed_value: '' },
+          { path: 'Organization.identifier.value', fixed_value: '' },
+          { path: 'Organization.identifier', fixed_value: '' },
+          { path: 'Organization.identifier', fixed_value: '' },
+          { path: 'Organization.active', fixed_value: '' },
+          { path: 'Organization.name', fixed_value: '' },
+          { path: 'Organization.telecom', fixed_value: '' },
+          { path: 'Organization.address', fixed_value: '' },
+          { path: 'Organization.address.line', fixed_value: '' },
+          { path: 'Organization.address.city', fixed_value: '' },
+          { path: 'Organization.address.state', fixed_value: '' },
+          { path: 'Organization.address.postalCode', fixed_value: '' },
+          { path: 'Organization.address.country', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Organization.', '')
           @organization_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

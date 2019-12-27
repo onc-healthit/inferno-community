@@ -377,7 +377,7 @@ module Inferno
 
             CarePlan.category
 
-            CarePlan.category
+            CarePlan.category.coding.code
 
             CarePlan.subject
 
@@ -388,19 +388,20 @@ module Inferno
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'CarePlan.text',
-          'CarePlan.text.status',
-          'CarePlan.status',
-          'CarePlan.intent',
-          'CarePlan.category',
-          'CarePlan.category',
-          'CarePlan.subject'
+          { path: 'CarePlan.text', fixed_value: '' },
+          { path: 'CarePlan.text.status', fixed_value: '' },
+          { path: 'CarePlan.status', fixed_value: '' },
+          { path: 'CarePlan.intent', fixed_value: '' },
+          { path: 'CarePlan.category', fixed_value: '' },
+          { path: 'CarePlan.category.coding.code', fixed_value: 'assess-plan' },
+          { path: 'CarePlan.subject', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('CarePlan.', '')
-          @care_plan_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @care_plan_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

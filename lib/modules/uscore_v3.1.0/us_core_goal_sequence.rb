@@ -317,17 +317,18 @@ module Inferno
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Goal.lifecycleStatus',
-          'Goal.description',
-          'Goal.subject',
-          'Goal.target',
-          'Goal.target.dueDate'
+          { path: 'Goal.lifecycleStatus', fixed_value: '' },
+          { path: 'Goal.description', fixed_value: '' },
+          { path: 'Goal.subject', fixed_value: '' },
+          { path: 'Goal.target', fixed_value: '' },
+          { path: 'Goal.target.dueDate', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Goal.', '')
-          @goal_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @goal_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

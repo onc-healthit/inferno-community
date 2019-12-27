@@ -321,19 +321,20 @@ module Inferno
         skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Immunization.status',
-          'Immunization.statusReason',
-          'Immunization.vaccineCode',
-          'Immunization.patient',
-          'Immunization.occurrenceDateTime',
-          'Immunization.occurrenceString',
-          'Immunization.primarySource'
+          { path: 'Immunization.status', fixed_value: '' },
+          { path: 'Immunization.statusReason', fixed_value: '' },
+          { path: 'Immunization.vaccineCode', fixed_value: '' },
+          { path: 'Immunization.patient', fixed_value: '' },
+          { path: 'Immunization.occurrenceDateTime', fixed_value: '' },
+          { path: 'Immunization.occurrenceString', fixed_value: '' },
+          { path: 'Immunization.primarySource', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Immunization.', '')
-          @immunization_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @immunization_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

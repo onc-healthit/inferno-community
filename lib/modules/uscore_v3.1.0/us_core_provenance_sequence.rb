@@ -126,11 +126,11 @@ module Inferno
 
             Provenance.agent
 
-            Provenance.agent.type
+            Provenance.agent.type.coding.code
 
             Provenance.agent
 
-            Provenance.agent.type
+            Provenance.agent.type.coding.code
 
           )
           versions :r4
@@ -139,22 +139,23 @@ module Inferno
         skip 'No Provenance resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          'Provenance.target',
-          'Provenance.recorded',
-          'Provenance.agent',
-          'Provenance.agent.type',
-          'Provenance.agent.who',
-          'Provenance.agent.onBehalfOf',
-          'Provenance.agent',
-          'Provenance.agent.type',
-          'Provenance.agent',
-          'Provenance.agent.type'
+          { path: 'Provenance.target', fixed_value: '' },
+          { path: 'Provenance.recorded', fixed_value: '' },
+          { path: 'Provenance.agent', fixed_value: '' },
+          { path: 'Provenance.agent.type', fixed_value: '' },
+          { path: 'Provenance.agent.who', fixed_value: '' },
+          { path: 'Provenance.agent.onBehalfOf', fixed_value: '' },
+          { path: 'Provenance.agent', fixed_value: '' },
+          { path: 'Provenance.agent.type.coding.code', fixed_value: 'author' },
+          { path: 'Provenance.agent', fixed_value: '' },
+          { path: 'Provenance.agent.type.coding.code', fixed_value: 'transmitter' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Provenance.', '')
           @provenance_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

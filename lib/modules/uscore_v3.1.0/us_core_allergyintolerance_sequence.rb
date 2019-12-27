@@ -280,16 +280,17 @@ module Inferno
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'AllergyIntolerance.clinicalStatus',
-          'AllergyIntolerance.verificationStatus',
-          'AllergyIntolerance.code',
-          'AllergyIntolerance.patient'
+          { path: 'AllergyIntolerance.clinicalStatus', fixed_value: '' },
+          { path: 'AllergyIntolerance.verificationStatus', fixed_value: '' },
+          { path: 'AllergyIntolerance.code', fixed_value: '' },
+          { path: 'AllergyIntolerance.patient', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('AllergyIntolerance.', '')
-          @allergy_intolerance_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @allergy_intolerance_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

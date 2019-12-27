@@ -458,24 +458,25 @@ module Inferno
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'MedicationRequest.status',
-          'MedicationRequest.intent',
-          'MedicationRequest.reportedBoolean',
-          'MedicationRequest.reportedReference',
-          'MedicationRequest.medicationCodeableConcept',
-          'MedicationRequest.medicationReference',
-          'MedicationRequest.subject',
-          'MedicationRequest.encounter',
-          'MedicationRequest.authoredOn',
-          'MedicationRequest.requester',
-          'MedicationRequest.dosageInstruction',
-          'MedicationRequest.dosageInstruction.text'
+          { path: 'MedicationRequest.status', fixed_value: '' },
+          { path: 'MedicationRequest.intent', fixed_value: '' },
+          { path: 'MedicationRequest.reportedBoolean', fixed_value: '' },
+          { path: 'MedicationRequest.reportedReference', fixed_value: '' },
+          { path: 'MedicationRequest.medicationCodeableConcept', fixed_value: '' },
+          { path: 'MedicationRequest.medicationReference', fixed_value: '' },
+          { path: 'MedicationRequest.subject', fixed_value: '' },
+          { path: 'MedicationRequest.encounter', fixed_value: '' },
+          { path: 'MedicationRequest.authoredOn', fixed_value: '' },
+          { path: 'MedicationRequest.requester', fixed_value: '' },
+          { path: 'MedicationRequest.dosageInstruction', fixed_value: '' },
+          { path: 'MedicationRequest.dosageInstruction.text', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('MedicationRequest.', '')
-          @medication_request_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @medication_request_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

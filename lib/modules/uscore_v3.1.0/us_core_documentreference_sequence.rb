@@ -538,29 +538,30 @@ module Inferno
         skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'DocumentReference.identifier',
-          'DocumentReference.status',
-          'DocumentReference.type',
-          'DocumentReference.category',
-          'DocumentReference.subject',
-          'DocumentReference.date',
-          'DocumentReference.author',
-          'DocumentReference.custodian',
-          'DocumentReference.content',
-          'DocumentReference.content.attachment',
-          'DocumentReference.content.attachment.contentType',
-          'DocumentReference.content.attachment.data',
-          'DocumentReference.content.attachment.url',
-          'DocumentReference.content.format',
-          'DocumentReference.context',
-          'DocumentReference.context.encounter',
-          'DocumentReference.context.period'
+          { path: 'DocumentReference.identifier', fixed_value: '' },
+          { path: 'DocumentReference.status', fixed_value: '' },
+          { path: 'DocumentReference.type', fixed_value: '' },
+          { path: 'DocumentReference.category', fixed_value: '' },
+          { path: 'DocumentReference.subject', fixed_value: '' },
+          { path: 'DocumentReference.date', fixed_value: '' },
+          { path: 'DocumentReference.author', fixed_value: '' },
+          { path: 'DocumentReference.custodian', fixed_value: '' },
+          { path: 'DocumentReference.content', fixed_value: '' },
+          { path: 'DocumentReference.content.attachment', fixed_value: '' },
+          { path: 'DocumentReference.content.attachment.contentType', fixed_value: '' },
+          { path: 'DocumentReference.content.attachment.data', fixed_value: '' },
+          { path: 'DocumentReference.content.attachment.url', fixed_value: '' },
+          { path: 'DocumentReference.content.format', fixed_value: '' },
+          { path: 'DocumentReference.context', fixed_value: '' },
+          { path: 'DocumentReference.context.encounter', fixed_value: '' },
+          { path: 'DocumentReference.context.period', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('DocumentReference.', '')
-          @document_reference_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @document_reference_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

@@ -423,17 +423,18 @@ module Inferno
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Observation.status',
-          'Observation.code',
-          'Observation.subject',
-          'Observation.issued',
-          'Observation.valueCodeableConcept'
+          { path: 'Observation.status', fixed_value: '' },
+          { path: 'Observation.code', fixed_value: '' },
+          { path: 'Observation.subject', fixed_value: '' },
+          { path: 'Observation.issued', fixed_value: '' },
+          { path: 'Observation.valueCodeableConcept', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Observation.', '')
-          @observation_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @observation_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

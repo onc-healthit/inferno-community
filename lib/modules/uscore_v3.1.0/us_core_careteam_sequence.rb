@@ -243,17 +243,18 @@ module Inferno
         skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'CareTeam.status',
-          'CareTeam.subject',
-          'CareTeam.participant',
-          'CareTeam.participant.role',
-          'CareTeam.participant.member'
+          { path: 'CareTeam.status', fixed_value: '' },
+          { path: 'CareTeam.subject', fixed_value: '' },
+          { path: 'CareTeam.participant', fixed_value: '' },
+          { path: 'CareTeam.participant.role', fixed_value: '' },
+          { path: 'CareTeam.participant.member', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('CareTeam.', '')
-          @care_team_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @care_team_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

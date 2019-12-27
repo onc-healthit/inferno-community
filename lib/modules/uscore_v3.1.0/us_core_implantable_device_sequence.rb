@@ -279,23 +279,24 @@ module Inferno
         skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Device.udiCarrier',
-          'Device.udiCarrier.deviceIdentifier',
-          'Device.udiCarrier.carrierAIDC',
-          'Device.udiCarrier.carrierHRF',
-          'Device.distinctIdentifier',
-          'Device.manufactureDate',
-          'Device.expirationDate',
-          'Device.lotNumber',
-          'Device.serialNumber',
-          'Device.type',
-          'Device.patient'
+          { path: 'Device.udiCarrier', fixed_value: '' },
+          { path: 'Device.udiCarrier.deviceIdentifier', fixed_value: '' },
+          { path: 'Device.udiCarrier.carrierAIDC', fixed_value: '' },
+          { path: 'Device.udiCarrier.carrierHRF', fixed_value: '' },
+          { path: 'Device.distinctIdentifier', fixed_value: '' },
+          { path: 'Device.manufactureDate', fixed_value: '' },
+          { path: 'Device.expirationDate', fixed_value: '' },
+          { path: 'Device.lotNumber', fixed_value: '' },
+          { path: 'Device.serialNumber', fixed_value: '' },
+          { path: 'Device.type', fixed_value: '' },
+          { path: 'Device.patient', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Device.', '')
-          @device_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @device_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

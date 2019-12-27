@@ -121,13 +121,14 @@ module Inferno
         skip 'No Medication resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          'Medication.code'
+          { path: 'Medication.code', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Medication.', '')
           @medication_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

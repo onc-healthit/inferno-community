@@ -457,22 +457,23 @@ module Inferno
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'DiagnosticReport.status',
-          'DiagnosticReport.category',
-          'DiagnosticReport.code',
-          'DiagnosticReport.subject',
-          'DiagnosticReport.encounter',
-          'DiagnosticReport.effectiveDateTime',
-          'DiagnosticReport.effectivePeriod',
-          'DiagnosticReport.issued',
-          'DiagnosticReport.performer',
-          'DiagnosticReport.presentedForm'
+          { path: 'DiagnosticReport.status', fixed_value: '' },
+          { path: 'DiagnosticReport.category', fixed_value: '' },
+          { path: 'DiagnosticReport.code', fixed_value: '' },
+          { path: 'DiagnosticReport.subject', fixed_value: '' },
+          { path: 'DiagnosticReport.encounter', fixed_value: '' },
+          { path: 'DiagnosticReport.effectiveDateTime', fixed_value: '' },
+          { path: 'DiagnosticReport.effectivePeriod', fixed_value: '' },
+          { path: 'DiagnosticReport.issued', fixed_value: '' },
+          { path: 'DiagnosticReport.performer', fixed_value: '' },
+          { path: 'DiagnosticReport.presentedForm', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('DiagnosticReport.', '')
-          @diagnostic_report_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @diagnostic_report_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

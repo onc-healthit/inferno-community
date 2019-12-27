@@ -266,18 +266,19 @@ module Inferno
         skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          'Practitioner.identifier',
-          'Practitioner.identifier.system',
-          'Practitioner.identifier.value',
-          'Practitioner.identifier',
-          'Practitioner.name',
-          'Practitioner.name.family'
+          { path: 'Practitioner.identifier', fixed_value: '' },
+          { path: 'Practitioner.identifier.system', fixed_value: '' },
+          { path: 'Practitioner.identifier.value', fixed_value: '' },
+          { path: 'Practitioner.identifier', fixed_value: '' },
+          { path: 'Practitioner.name', fixed_value: '' },
+          { path: 'Practitioner.name.family', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Practitioner.', '')
           @practitioner_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

@@ -353,21 +353,22 @@ module Inferno
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          'PractitionerRole.practitioner',
-          'PractitionerRole.organization',
-          'PractitionerRole.code',
-          'PractitionerRole.specialty',
-          'PractitionerRole.location',
-          'PractitionerRole.telecom',
-          'PractitionerRole.telecom.system',
-          'PractitionerRole.telecom.value',
-          'PractitionerRole.endpoint'
+          { path: 'PractitionerRole.practitioner', fixed_value: '' },
+          { path: 'PractitionerRole.organization', fixed_value: '' },
+          { path: 'PractitionerRole.code', fixed_value: '' },
+          { path: 'PractitionerRole.specialty', fixed_value: '' },
+          { path: 'PractitionerRole.location', fixed_value: '' },
+          { path: 'PractitionerRole.telecom', fixed_value: '' },
+          { path: 'PractitionerRole.telecom.system', fixed_value: '' },
+          { path: 'PractitionerRole.telecom.value', fixed_value: '' },
+          { path: 'PractitionerRole.endpoint', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('PractitionerRole.', '')
           @practitioner_role_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 

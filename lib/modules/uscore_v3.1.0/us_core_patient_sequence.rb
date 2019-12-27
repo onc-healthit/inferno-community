@@ -525,32 +525,33 @@ module Inferno
         end
 
         must_support_elements = [
-          'Patient.identifier',
-          'Patient.identifier.system',
-          'Patient.identifier.value',
-          'Patient.name',
-          'Patient.name.family',
-          'Patient.name.given',
-          'Patient.telecom',
-          'Patient.telecom.system',
-          'Patient.telecom.value',
-          'Patient.telecom.use',
-          'Patient.gender',
-          'Patient.birthDate',
-          'Patient.address',
-          'Patient.address.line',
-          'Patient.address.city',
-          'Patient.address.state',
-          'Patient.address.postalCode',
-          'Patient.address.period',
-          'Patient.communication',
-          'Patient.communication.language'
+          { path: 'Patient.identifier', fixed_value: '' },
+          { path: 'Patient.identifier.system', fixed_value: '' },
+          { path: 'Patient.identifier.value', fixed_value: '' },
+          { path: 'Patient.name', fixed_value: '' },
+          { path: 'Patient.name.family', fixed_value: '' },
+          { path: 'Patient.name.given', fixed_value: '' },
+          { path: 'Patient.telecom', fixed_value: '' },
+          { path: 'Patient.telecom.system', fixed_value: '' },
+          { path: 'Patient.telecom.value', fixed_value: '' },
+          { path: 'Patient.telecom.use', fixed_value: '' },
+          { path: 'Patient.gender', fixed_value: '' },
+          { path: 'Patient.birthDate', fixed_value: '' },
+          { path: 'Patient.address', fixed_value: '' },
+          { path: 'Patient.address.line', fixed_value: '' },
+          { path: 'Patient.address.city', fixed_value: '' },
+          { path: 'Patient.address.state', fixed_value: '' },
+          { path: 'Patient.address.postalCode', fixed_value: '' },
+          { path: 'Patient.address.period', fixed_value: '' },
+          { path: 'Patient.communication', fixed_value: '' },
+          { path: 'Patient.communication.language', fixed_value: '' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Patient.', '')
-          @patient_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+          @patient_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
 
