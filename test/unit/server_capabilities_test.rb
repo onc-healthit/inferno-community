@@ -79,15 +79,18 @@ class ServerCapabilitiesTest < MiniTest::Test
     expected_interactions = [
       {
         resource_type: 'Patient',
-        interactions: ['history-instance', 'read', 'search', 'vread']
+        interactions: ['history-instance', 'read', 'search', 'vread'],
+        operations: []
       },
       {
         resource_type: 'Condition',
-        interactions: ['delete', 'update']
+        interactions: ['delete', 'update'],
+        operations: []
       },
       {
         resource_type: 'Observation',
-        interactions: []
+        interactions: [],
+        operations: []
       }
     ]
 

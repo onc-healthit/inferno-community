@@ -24,7 +24,8 @@ module Inferno
           rest.resource.map do |resource|
             {
               resource_type: resource.type,
-              interactions: resource_interactions(resource).sort
+              interactions: resource_interactions(resource).sort,
+              operations: resource_operations(resource).sort
             }
           end
         end
@@ -74,6 +75,10 @@ module Inferno
 
       def resource_interactions(resource)
         resource.interaction.map { |interaction| interaction_display(interaction) }
+      end
+
+      def resource_operations(resource)
+        resource.operation.map(&:name)
       end
     end
   end

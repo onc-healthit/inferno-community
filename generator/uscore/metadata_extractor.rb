@@ -77,6 +77,7 @@ module Inferno
           profile: profile,
           title: profile_title,
           interactions: [],
+          operations: [],
           searches: [],
           search_param_descriptions: {},
           element_descriptions: {},
@@ -98,6 +99,7 @@ module Inferno
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)
             add_interactions(resource, new_sequence)
+            add_operations(resource, new_sequence)
             add_include_search(resource, new_sequence)
             add_revinclude_targets(resource, new_sequence)
 
@@ -153,6 +155,17 @@ module Inferno
             expectation: interaction['extension'][0]['valueCode']
           }
           sequence[:interactions] << new_interaction
+        end
+      end
+
+      def add_operations(resource, sequence)
+        operations = resource['operation']
+        operations&.each do |operation|
+          new_operation = {
+            operation: operation['name'],
+            expectation: operation['extension'][0]['valueCode']
+          }
+          sequence[:operations] << new_operation
         end
       end
 

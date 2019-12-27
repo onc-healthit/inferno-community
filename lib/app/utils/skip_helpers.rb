@@ -2,9 +2,9 @@
 
 module Inferno
   module SkipHelpers
-    def skip_if_not_supported(resource, methods)
-      skip_message = "This server does not support #{resource} #{methods.join(',')} operation(s) according to conformance statement."
-      skip skip_message unless @instance.conformance_supported?(resource, methods)
+    def skip_if_not_supported(resource, methods = [], operations = [])
+      skip_message = "This server does not support #{resource} #{(methods + operations).join(',')} operation(s) according to conformance statement."
+      skip skip_message unless @instance.conformance_supported?(resource, methods, operations)
     end
 
     def omit_if_tls_disabled
