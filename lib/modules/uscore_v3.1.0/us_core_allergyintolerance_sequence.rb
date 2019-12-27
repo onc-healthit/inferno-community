@@ -111,7 +111,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'AllergyIntolerance')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'AllergyIntolerance')
       end
 
       test :read_interaction do

@@ -256,7 +256,7 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               assert_response_ok(reply)
-              @resources_found += fetch_all_bundled_resources(reply.resource, '#{sequence[:resource]}')
+              @resources_found |= fetch_all_bundled_resources(reply.resource, '#{sequence[:resource]}')
             )
           end
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)

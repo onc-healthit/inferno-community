@@ -124,7 +124,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
       end
 
       test :search_by_patient_code do
@@ -151,7 +151,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
       end
 
       test :search_by_patient_category_date do
@@ -180,7 +180,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -215,7 +215,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
       end
 
       test :search_by_patient_code_date do
@@ -245,7 +245,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DiagnosticReport')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])

@@ -136,7 +136,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'PractitionerRole')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'PractitionerRole')
       end
 
       test :vread_interaction do

@@ -142,7 +142,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'Organization')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'Organization')
       end
 
       test :vread_interaction do

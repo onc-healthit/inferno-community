@@ -111,7 +111,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'Device')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'Device')
       end
 
       test :read_interaction do

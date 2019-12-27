@@ -127,7 +127,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'MedicationRequest')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'MedicationRequest')
       end
 
       test :search_by_patient_intent_encounter do
@@ -156,7 +156,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'MedicationRequest')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'MedicationRequest')
       end
 
       test :search_by_patient_intent_authoredon do
@@ -186,7 +186,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'MedicationRequest')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'MedicationRequest')
       end
 
       test :read_interaction do

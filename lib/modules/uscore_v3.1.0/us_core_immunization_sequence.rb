@@ -116,7 +116,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'Immunization')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'Immunization')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -151,7 +151,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
         validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'Immunization')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'Immunization')
       end
 
       test :read_interaction do

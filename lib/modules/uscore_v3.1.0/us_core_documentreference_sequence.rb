@@ -129,7 +129,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DocumentReference')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DocumentReference')
       end
 
       test :search_by_patient_type do
@@ -156,7 +156,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DocumentReference')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DocumentReference')
       end
 
       test :search_by_patient_category_date do
@@ -185,7 +185,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DocumentReference')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DocumentReference')
       end
 
       test :search_by_patient_category do
@@ -212,7 +212,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DocumentReference')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DocumentReference')
       end
 
       test :search_by_patient_type_period do
@@ -242,7 +242,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DocumentReference')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DocumentReference')
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:period])
@@ -277,7 +277,7 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
         validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         assert_response_ok(reply)
-        @resources_found += fetch_all_bundled_resources(reply.resource, 'DocumentReference')
+        @resources_found |= fetch_all_bundled_resources(reply.resource, 'DocumentReference')
       end
 
       test :read_interaction do
