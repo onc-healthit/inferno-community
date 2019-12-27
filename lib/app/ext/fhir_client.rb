@@ -7,6 +7,7 @@ module FHIR
     attr_accessor :requests
 
     def record_requests(reply)
+      reply.response[:timestamp] = DateTime.now
       @requests ||= []
       @requests << reply
     end
