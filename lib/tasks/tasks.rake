@@ -180,14 +180,15 @@ namespace :inferno do |_argv|
     Inferno.logger.warn 'Please use :tests_to_xls, which will replace this task'
     args.with_defaults(module: 'argonaut', group: 'active')
     args.with_defaults(filename: "#{args.module}_testlist.csv")
-    sequences = Inferno::Module.get(args.module)&.sequences
+    inferno_module = Inferno::Module.get(args.module)
+    sequences = inferno_module&.sequences
     if sequences.nil?
       puts "No sequence found for module: #{args.module}"
       exit
     end
 
     flat_tests = sequences.map do |klass|
-      klass.tests.map do |test|
+      klass.tests(inferno_module).map do |test|
         test.metadata_hash.merge(
           sequence: klass.to_s,
           sequence_required: !klass.optional?
@@ -257,7 +258,7 @@ namespace :inferno do |_argv|
 
     test_set.groups.each do |group|
       group.test_cases.each do |test_case|
-        test_case.sequence.tests.each do |test|
+        test_case.sequence.tests(test_module).each do |test|
           [group.name,
            group.overview,
            '',

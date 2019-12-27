@@ -89,7 +89,7 @@ module Inferno
 
                 submitted_test_cases_count = sequence_result.next_test_cases.split(',')
                 total_tests = submitted_test_cases_count.reduce(first_test_count) do |total, set|
-                  sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
+                  sequence_test_count = test_set.test_case_by_id(set).sequence.test_count(@instance.module)
                   total + sequence_test_count
                 end
 

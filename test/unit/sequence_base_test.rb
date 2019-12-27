@@ -134,4 +134,101 @@ class SequenceBaseTest < MiniTest::Test
       end
     end
   end
+
+  class OptionalTestSequence < Inferno::Sequence::SequenceBase
+    2.times do |index|
+      test :"test #{index}" do
+        metadata do
+          id "0#{index + 1}"
+          name 'a'
+          description 'a'
+          link 'http://example.com'
+          optional if index.odd?
+        end
+      end
+    end
+  end
+
+  describe '.tests' do
+    before do
+      @sequence_class = OptionalTestSequence
+    end
+
+    it 'returns all tests if no arguments are given' do
+      assert_equal 2, @sequence_class.tests.length
+    end
+
+    it 'returns all tests if module.hide_optional is false' do
+      inferno_module = OpenStruct.new(hide_optional: false)
+
+      assert_equal 2, @sequence_class.tests(inferno_module).length
+    end
+
+    it 'returns only required if module.hide_optional is truth' do
+      inferno_module = OpenStruct.new(hide_optional: true)
+
+      assert_equal 1, @sequence_class.tests(inferno_module).length
+      @sequence_class.tests(inferno_module).each { |test| assert_equal true, test.required? }
+    end
+  end
+
+  describe '.test_count' do
+    before do
+      @sequence_class = OptionalTestSequence
+    end
+
+    it 'includes all tests if no arguments are given' do
+      assert_equal 2, @sequence_class.test_count
+    end
+
+    it 'includes all tests if module.hide_optional is false' do
+      inferno_module = OpenStruct.new(hide_optional: false)
+
+      assert_equal 2, @sequence_class.test_count(inferno_module)
+    end
+
+    it 'returns only required if module.hide_optional is truth' do
+      inferno_module = OpenStruct.new(hide_optional: true)
+
+      assert_equal 1, @sequence_class.test_count(inferno_module)
+    end
+  end
+
+  describe '#tests' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = OptionalTestSequence.new(@instance, client)
+    end
+
+    it 'uses @instance.module if no argument is supplied' do
+      module_without_optional = OpenStruct.new(hide_optional: true)
+      module_with_optional = OpenStruct.new(hide_optional: false)
+
+      @instance.instance_variable_set(:@module, module_without_optional)
+      assert_equal 1, @sequence.tests.length
+
+      @instance.instance_variable_set(:@module, module_with_optional)
+      assert_equal 2, @sequence.tests.length
+    end
+  end
+
+  describe '#test_count' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = OptionalTestSequence.new(@instance, client)
+    end
+
+    it 'uses @instance.module if no argument is supplied' do
+      module_without_optional = OpenStruct.new(hide_optional: true)
+      module_with_optional = OpenStruct.new(hide_optional: false)
+
+      @instance.instance_variable_set(:@module, module_without_optional)
+      assert_equal 1, @sequence.test_count
+
+      @instance.instance_variable_set(:@module, module_with_optional)
+      assert_equal 2, @sequence.test_count
+    end
+  end
 end
