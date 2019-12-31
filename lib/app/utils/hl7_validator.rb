@@ -13,6 +13,10 @@ module Inferno
 
     def validate(resource, fhir_models_klass, profile_url = nil)
       profile_url ||= fhir_models_klass::Definitions.resource_definition(resource.resourceType).url
+
+      Inferno.logger.info("Validating #{resource.resourceType} resource with id #{resource.id}")
+      Inferno.logger.info("POST #{@validator_url}/validate?profile=#{profile_url}")
+
       result = RestClient.post "#{@validator_url}/validate", resource.to_json, params: { profile: profile_url }
       outcome = fhir_models_klass.from_contents(result.body)
       fatals = issues_by_severity(outcome.issue, 'fatal')
