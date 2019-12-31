@@ -42,13 +42,13 @@ module Inferno
 
         expires_in = token_response_body['expires_in']
         if expires_in.present? # rubocop:disable Style/IfUnlessModifier
-          assert expires_in.is_a?(Numeric), "`expires_in` field is not a number: #{expires_in.inspect}"
+          warning { assert expires_in.is_a?(Numeric), "`expires_in` field is not a number: #{expires_in.inspect}" }
         end
 
         @instance.update(
           token: token_response_body['access_token'],
           token_retrieved_at: DateTime.now,
-          token_expires_in: expires_in
+          token_expires_in: expires_in.to_i
         )
 
         @instance.patient_id = token_response_body['patient'] if token_response_body['patient'].present?
