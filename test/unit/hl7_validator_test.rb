@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'byebug'
 
 describe Inferno::HL7Validator do
   before do
@@ -13,7 +12,10 @@ describe Inferno::HL7Validator do
     it "Shouldn't pass back any messages" do
       patient = FHIR::Patient.new
       stub_request(:post, "#{@validator_url}/validate")
-        .with(query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' })
+        .with(
+          query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
+          body: patient.to_json
+        )
         .to_return(status: 200, body: load_fixture('validator_good_response'))
       result = @validator.validate(patient, FHIR)
 
@@ -27,7 +29,10 @@ describe Inferno::HL7Validator do
       patient = FHIR::Patient.new(gender: 'robot')
 
       stub_request(:post, "#{@validator_url}/validate")
-        .with(query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' })
+        .with(
+          query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
+          body: patient.to_json
+        )
         .to_return(status: 200, body: load_fixture('validator_bad_response'))
       result = @validator.validate(patient, FHIR)
 
