@@ -13,6 +13,7 @@ require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
+require_relative 'utils/hl7_validator'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -511,8 +512,8 @@ module Inferno
         entries.each do |entry|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          base_resource_validation_errors = entry.resource.validate
-          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
 
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
@@ -564,8 +565,10 @@ module Inferno
       end
 
       def validate_resource(resource_type, resource, profile)
-        errors = profile.validate_resource(resource)
-        @test_warnings.concat(profile.warnings.reject(&:empty?))
+        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
+        errors = resource_validation_errors[:errors]
+        @test_warnings.concat resource_validation_errors[:warnings]
+
         errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
         @profiles_failed[profile.url].concat(errors) unless errors.empty?
         errors
@@ -594,7 +597,8 @@ module Inferno
             validate_resource(resource_type, resource, p)
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource.validate
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:errors]
           end
         end
         # TODO
@@ -697,13 +701,10 @@ module Inferno
         end
         if p
           @profiles_encountered << p.url
-          errors = p.validate_resource(resource)
-          unless errors.empty?
-            errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
-            @profiles_failed[p.url].concat(errors)
-          end
+          errors = validate_resource(resource_type, resource, p)
         else
-          errors = entry.resource.validate
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          errors = resource_validation_errors[:errors]
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
