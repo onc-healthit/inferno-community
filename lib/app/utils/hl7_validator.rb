@@ -6,7 +6,7 @@ module Inferno
     @validator_url = nil
 
     def initialize(validator_url)
-      raise ArgumentError, 'Validator URL is unset' if validator_url.nil? || validator_url.empty?
+      raise ArgumentError, 'Validator URL is unset' if validator_url.blank?
 
       @validator_url = validator_url
     end
