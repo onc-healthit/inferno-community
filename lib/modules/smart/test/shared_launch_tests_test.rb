@@ -437,6 +437,22 @@ describe Inferno::Sequence::SharedLaunchTests do
       assert warnings.include?('`expires_in` field is not a number: "DEF"')
     end
 
+    it 'generates a warning if no expires_in provided but still successfully saves patient id' do
+      @instance.scopes = 'GHI'
+      response = {
+        access_token: 'ABC',
+        token_type: 'Bearer',
+        scope: 'GHI',
+        patient: '5'
+      }
+      @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
+      @sequence.run_test(@test)
+
+      warnings = @sequence.instance_variable_get(:@test_warnings)
+      assert warnings.include?('Token exchange response did not contain the recommended `expires_in` field')
+      assert @instance.patient_id == '5', 'patient_id not saved when expires_in empty'
+    end
+
     it 'succeeds if the token_type is "bearer" and an access token and scope are included' do
       @instance.scopes = 'GHI'
       response = {

@@ -55,7 +55,11 @@ module Inferno
         @instance.update(encounter_id: token_response_body['encounter']) if token_response_body['encounter'].present?
 
         required_keys = ['token_type', 'scope']
-        required_keys << 'expires_in' if require_expires_in
+        if require_expires_in
+          required_keys << 'expires_in'
+        else
+          warning { assert expires_in.present?, 'Token exchange response did not contain the recommended `expires_in` field' }
+        end
 
         required_keys.each do |key|
           assert token_response_body[key].present?, "Token response did not contain #{key} as required"
