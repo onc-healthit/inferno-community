@@ -6,7 +6,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
   let(:full_body) do
     {
       'access_token' => 'abc',
-      'expires_in' => 'def',
+      'expires_in' => 300,
       'token_type' => 'Bearer',
       'scope' => 'jkl'
     }
