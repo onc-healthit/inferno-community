@@ -350,7 +350,6 @@ module Inferno
         end
 
         skip 'No Location resources appear to be available.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'Location.status',
@@ -363,16 +362,17 @@ module Inferno
           'Location.address.postalCode',
           'Location.managingOrganization'
         ]
-        must_support_elements.each do |path|
-          @location_ary&.each do |resource|
-            truncated_path = path.gsub('Location.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @location_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Location resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Location.', '')
+          @location_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@location_ary&.length} provided Location resource(s)"
+
         @instance.save!
       end
 

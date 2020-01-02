@@ -255,7 +255,6 @@ module Inferno
         end
 
         skip 'No Practitioner resources appear to be available.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'Practitioner.identifier',
@@ -265,16 +264,17 @@ module Inferno
           'Practitioner.name',
           'Practitioner.name.family'
         ]
-        must_support_elements.each do |path|
-          @practitioner_ary&.each do |resource|
-            truncated_path = path.gsub('Practitioner.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @practitioner_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Practitioner resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Practitioner.', '')
+          @practitioner_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_ary&.length} provided Practitioner resource(s)"
+
         @instance.save!
       end
 
