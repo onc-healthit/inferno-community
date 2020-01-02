@@ -270,7 +270,6 @@ module Inferno
         end
 
         skip 'No Organization resources appear to be available.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'Organization.identifier',
@@ -288,16 +287,17 @@ module Inferno
           'Organization.address.postalCode',
           'Organization.address.country'
         ]
-        must_support_elements.each do |path|
-          @organization_ary&.each do |resource|
-            truncated_path = path.gsub('Organization.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @organization_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Organization resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Organization.', '')
+          @organization_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.length} provided Organization resource(s)"
+
         @instance.save!
       end
 

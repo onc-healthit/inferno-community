@@ -416,25 +416,27 @@ module Inferno
 
             Patient.communication.language
 
+            Patient.extension:race
+
+            Patient.extension:ethnicity
+
+            Patient.extension:birthsex
+
           )
           versions :r4
         end
 
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
-        must_support_confirmed = {}
 
-        extensions_list = {
+        must_support_extensions = {
           'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
           'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
           'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
         }
-        extensions_list.each do |id, url|
-          @patient_ary&.each do |resource|
-            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
-            break if must_support_confirmed[id]
+        missing_must_support_extensions = must_support_extensions.reject do |_id, url|
+          @patient_ary&.any? do |resource|
+            resource.extension.any? { |extension| extension.url == url }
           end
-          skip_notification = "Could not find #{id} in any of the #{@patient_ary.length} provided Patient resource(s)"
-          skip skip_notification unless must_support_confirmed[id]
         end
 
         must_support_elements = [
@@ -459,16 +461,19 @@ module Inferno
           'Patient.communication',
           'Patient.communication.language'
         ]
-        must_support_elements.each do |path|
-          @patient_ary&.each do |resource|
-            truncated_path = path.gsub('Patient.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @patient_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Patient resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Patient.', '')
+          @patient_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        missing_must_support_elements += missing_must_support_extensions.keys
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.length} provided Patient resource(s)"
+
         @instance.save!
       end
 

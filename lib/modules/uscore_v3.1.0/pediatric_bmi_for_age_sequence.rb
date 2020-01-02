@@ -400,7 +400,6 @@ module Inferno
         end
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'Observation.status',
@@ -433,16 +432,17 @@ module Inferno
           'Observation.component.valuePeriod',
           'Observation.component.dataAbsentReason'
         ]
-        must_support_elements.each do |path|
-          @observation_ary&.each do |resource|
-            truncated_path = path.gsub('Observation.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @observation_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Observation resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Observation.', '')
+          @observation_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.length} provided Observation resource(s)"
+
         @instance.save!
       end
 

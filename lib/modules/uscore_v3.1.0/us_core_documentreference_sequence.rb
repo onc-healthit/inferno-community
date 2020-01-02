@@ -436,7 +436,6 @@ module Inferno
         end
 
         skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'DocumentReference.identifier',
@@ -457,16 +456,17 @@ module Inferno
           'DocumentReference.context.encounter',
           'DocumentReference.context.period'
         ]
-        must_support_elements.each do |path|
-          @document_reference_ary&.each do |resource|
-            truncated_path = path.gsub('DocumentReference.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @document_reference_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided DocumentReference resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('DocumentReference.', '')
+          @document_reference_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.length} provided DocumentReference resource(s)"
+
         @instance.save!
       end
 

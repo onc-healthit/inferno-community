@@ -336,7 +336,6 @@ module Inferno
         end
 
         skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'Condition.clinicalStatus',
@@ -345,16 +344,17 @@ module Inferno
           'Condition.code',
           'Condition.subject'
         ]
-        must_support_elements.each do |path|
-          @condition_ary&.each do |resource|
-            truncated_path = path.gsub('Condition.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @condition_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Condition resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Condition.', '')
+          @condition_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@condition_ary&.length} provided Condition resource(s)"
+
         @instance.save!
       end
 

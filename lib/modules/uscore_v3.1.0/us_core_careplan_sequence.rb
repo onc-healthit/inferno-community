@@ -328,7 +328,6 @@ module Inferno
         end
 
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
-        must_support_confirmed = {}
 
         must_support_elements = [
           'CarePlan.text',
@@ -339,16 +338,17 @@ module Inferno
           'CarePlan.category',
           'CarePlan.subject'
         ]
-        must_support_elements.each do |path|
-          @care_plan_ary&.each do |resource|
-            truncated_path = path.gsub('CarePlan.', '')
-            must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-            break if must_support_confirmed[path]
-          end
-          resource_count = @care_plan_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided CarePlan resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('CarePlan.', '')
+          @care_plan_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.length} provided CarePlan resource(s)"
+
         @instance.save!
       end
 
