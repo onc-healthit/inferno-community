@@ -409,7 +409,7 @@ module Inferno
           end
 
           test[:test_code] += %(
-            assert missing_must_support_elements.empty?,
+            skip_if missing_must_support_elements.present?,
               "Could not find \#{missing_must_support_elements.join(', ')} in the \#{@#{sequence[:resource].underscore}_ary&.length} provided #{sequence[:resource]} resource(s)"
           )
         end
