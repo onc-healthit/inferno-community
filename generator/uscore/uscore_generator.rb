@@ -349,60 +349,73 @@ module Inferno
           )
         }
 
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+        must_support_elements = sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }
+        must_support_elements.each do |element|
           test[:description] += %(
             #{element[:path]}
           )
+          # class is mapped to local_class in fhir_models. Update this after it
+          # has been added to the description so that the description contains
+          # the original path
+          element[:path] = element[:path].gsub('.class', '.local_class')
         end
+
+        must_support_extensions = sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }
+        must_support_extensions.each do |extension|
+          test[:description] += %(
+            #{extension[:id]}
+          )
+        end
+
         test[:test_code] += %(
           #{skip_if_not_found(sequence)}
-          must_support_confirmed = {}
         )
 
-        extensions_list = []
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
-          extensions_list << "'#{extension[:id]}': '#{extension[:url]}'"
-        end
-        if extensions_list.any?
+        if must_support_extensions.present?
+          extensions_list = must_support_extensions.map { |extension| "'#{extension[:id]}': '#{extension[:url]}'" }
+
           test[:test_code] += %(
-              extensions_list = {
-                #{extensions_list.join(",\n          ")}
-              }
-              extensions_list.each do |id, url|
-                @#{sequence[:resource].underscore}_ary&.each do |resource|
-                  must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
-                  break if must_support_confirmed[id]
-                end
-                skip_notification = "Could not find \#{id} in any of the \#{@#{sequence[:resource].underscore}_ary.length} provided #{sequence[:resource]} resource(s)"
-                skip skip_notification unless must_support_confirmed[id]
+            must_support_extensions = {
+              #{extensions_list.join(",\n          ")}
+            }
+            missing_must_support_extensions = must_support_extensions.reject do |_id, url|
+              @#{sequence[:resource].underscore}_ary&.any? do |resource|
+                resource.extension.any? { |extension| extension.url == url }
               end
-      )
-        end
-        elements_list = []
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
-          element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
-          elements_list << "'#{element[:path]}'"
+            end
+          )
         end
 
-        if elements_list.any?
+        if must_support_elements.present?
+          elements_list = must_support_elements.map { |element| "'#{element[:path]}'" }
+
           test[:test_code] += %(
-              must_support_elements = [
-                #{elements_list.join(",\n          ")}
-              ]
-              must_support_elements.each do |path|
-                @#{sequence[:resource].underscore}_ary&.each do |resource|
-                  truncated_path = path.gsub('#{sequence[:resource]}.', '')
-                  must_support_confirmed[path] = true if resolve_element_from_path(resource, truncated_path).present?
-                  break if must_support_confirmed[path]
-                end
-                resource_count = @#{sequence[:resource].underscore}_ary.length
+            must_support_elements = [
+              #{elements_list.join(",\n          ")}
+            ]
 
-                skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
-              end)
+            missing_must_support_elements = must_support_elements.reject do |path|
+              truncated_path = path.gsub('#{sequence[:resource]}.', '')
+              @#{sequence[:resource].underscore}_ary&.any? do |resource|
+                resolve_element_from_path(resource, truncated_path).present?
+              end
+            end
+          )
+
+          if must_support_extensions.present?
+            test[:test_code] += %(
+              missing_must_support_elements += missing_must_support_extensions.keys
+            )
+          end
+
+          test[:test_code] += %(
+            assert missing_must_support_elements.empty?,
+              "Could not find \#{missing_must_support_elements.join(', ')} in the \#{@#{sequence[:resource].underscore}_ary&.length} provided #{sequence[:resource]} resource(s)"
+          )
         end
 
         test[:test_code] += %(
-              @instance.save!)
+          @instance.save!)
 
         sequence[:tests] << test
       end
