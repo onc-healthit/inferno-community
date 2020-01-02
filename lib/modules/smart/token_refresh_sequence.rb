@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative './shared_launch_tests'
+
 module Inferno
   module Sequence
     class TokenRefreshSequence < SequenceBase
