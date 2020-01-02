@@ -27,32 +27,32 @@ module Inferno
         skip_if token_response.blank?, no_token_response_message
 
         assert_valid_json(token_response.body)
-        token_response_body = JSON.parse(token_response.body)
+        @token_response_body = JSON.parse(token_response.body)
 
         @instance.save
-        if token_response_body.key?('id_token') # rubocop:disable Style/IfUnlessModifier
-          @instance.update(id_token: token_response_body['id_token'])
+        if @token_response_body.key?('id_token') # rubocop:disable Style/IfUnlessModifier
+          @instance.update(id_token: @token_response_body['id_token'])
         end
 
-        if token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
-          @instance.update(refresh_token: token_response_body['refresh_token'])
+        if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
+          @instance.update(refresh_token: @token_response_body['refresh_token'])
         end
 
-        assert token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
+        assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
 
-        expires_in = token_response_body['expires_in']
+        expires_in = @token_response_body['expires_in']
         if expires_in.present? # rubocop:disable Style/IfUnlessModifier
           warning { assert expires_in.is_a?(Numeric), "`expires_in` field is not a number: #{expires_in.inspect}" }
         end
 
         @instance.update(
-          token: token_response_body['access_token'],
+          token: @token_response_body['access_token'],
           token_retrieved_at: DateTime.now,
           token_expires_in: expires_in.to_i
         )
 
-        @instance.patient_id = token_response_body['patient'] if token_response_body['patient'].present?
-        @instance.update(encounter_id: token_response_body['encounter']) if token_response_body['encounter'].present?
+        @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
+        @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
 
         required_keys = ['token_type', 'scope']
         if require_expires_in
@@ -62,14 +62,14 @@ module Inferno
         end
 
         required_keys.each do |key|
-          assert token_response_body[key].present?, "Token response did not contain #{key} as required"
+          assert @token_response_body[key].present?, "Token response did not contain #{key} as required"
         end
 
         # case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
-        assert token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
+        assert @token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
 
         expected_scopes = @instance.scopes.split(' ')
-        actual_scopes = token_response_body['scope'].split(' ')
+        actual_scopes = @token_response_body['scope'].split(' ')
 
         warning do
           missing_scopes = expected_scopes - actual_scopes
@@ -80,14 +80,14 @@ module Inferno
         assert extra_scopes.empty?, "Token response contained unrequested scopes: #{extra_scopes.join(', ')}"
 
         warning do
-          assert token_response_body['patient'].present?, 'No patient id provided in token exchange.'
+          assert @token_response_body['patient'].present?, 'No patient id provided in token exchange.'
         end
 
         warning do
-          assert token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
+          assert @token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
         end
 
-        received_scopes = token_response_body['scope'] || @instance.scopes
+        received_scopes = @token_response_body['scope'] || @instance.scopes
 
         @instance.update(received_scopes: received_scopes)
       end
