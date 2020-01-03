@@ -43,7 +43,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:search])
+        skip_if_known_not_supported(:AllergyIntolerance, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -129,7 +129,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:read])
+        skip_if_known_not_supported(:AllergyIntolerance, [:read])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
@@ -147,7 +147,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:vread])
+        skip_if_known_not_supported(:AllergyIntolerance, [:vread])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
@@ -165,7 +165,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:history])
+        skip_if_known_not_supported(:AllergyIntolerance, [:history])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
@@ -264,7 +264,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:search, :read])
+        skip_if_known_not_supported(:AllergyIntolerance, [:search, :read])
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@allergy_intolerance)

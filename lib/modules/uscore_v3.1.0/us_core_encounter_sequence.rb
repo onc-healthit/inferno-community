@@ -63,7 +63,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:search])
+        skip_if_known_not_supported(:Encounter, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -288,7 +288,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:read])
+        skip_if_known_not_supported(:Encounter, [:read])
         skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@encounter, versioned_resource_class('Encounter'))
@@ -306,7 +306,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:vread])
+        skip_if_known_not_supported(:Encounter, [:vread])
         skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
@@ -324,7 +324,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:history])
+        skip_if_known_not_supported(:Encounter, [:history])
         skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
@@ -462,7 +462,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Encounter, [:search, :read])
+        skip_if_known_not_supported(:Encounter, [:search, :read])
         skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@encounter)

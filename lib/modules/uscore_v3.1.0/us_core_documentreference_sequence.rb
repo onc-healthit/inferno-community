@@ -63,7 +63,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:search])
+        skip_if_known_not_supported(:DocumentReference, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -290,7 +290,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:read])
+        skip_if_known_not_supported(:DocumentReference, [:read])
         skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@document_reference, versioned_resource_class('DocumentReference'))
@@ -308,7 +308,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:vread])
+        skip_if_known_not_supported(:DocumentReference, [:vread])
         skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@document_reference, versioned_resource_class('DocumentReference'))
@@ -326,7 +326,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:history])
+        skip_if_known_not_supported(:DocumentReference, [:history])
         skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@document_reference, versioned_resource_class('DocumentReference'))
@@ -342,7 +342,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [], [:docref])
+        skip_if_known_not_supported(:DocumentReference, [], [:docref])
         search_string = "/DocumentReference/$docref?patient=#{@instance.patient_id}"
         reply = @client.get(search_string, @client.fhir_headers)
         assert_response_ok(reply)
@@ -480,7 +480,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DocumentReference, [:search, :read])
+        skip_if_known_not_supported(:DocumentReference, [:search, :read])
         skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@document_reference)

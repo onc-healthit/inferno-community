@@ -55,7 +55,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:search])
+        skip_if_known_not_supported(:DiagnosticReport, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -267,7 +267,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:read])
+        skip_if_known_not_supported(:DiagnosticReport, [:read])
         skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
@@ -285,7 +285,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:vread])
+        skip_if_known_not_supported(:DiagnosticReport, [:vread])
         skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
@@ -303,7 +303,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:history])
+        skip_if_known_not_supported(:DiagnosticReport, [:history])
         skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
@@ -422,7 +422,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
+        skip_if_known_not_supported(:DiagnosticReport, [:search, :read])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@diagnostic_report)

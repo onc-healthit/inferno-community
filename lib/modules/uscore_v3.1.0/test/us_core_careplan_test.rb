@@ -31,6 +31,10 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
     it 'skips if the CarePlan search interaction is not supported' do
       @instance.server_capabilities.destroy
+      Inferno::Models::ServerCapabilities.create(
+        testing_instance_id: @instance.id,
+        capabilities: FHIR::CapabilityStatement.new.to_json
+      )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -380,6 +384,10 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
     it 'skips if the CarePlan read interaction is not supported' do
       @instance.server_capabilities.destroy
+      Inferno::Models::ServerCapabilities.create(
+        testing_instance_id: @instance.id,
+        capabilities: FHIR::CapabilityStatement.new.to_json
+      )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

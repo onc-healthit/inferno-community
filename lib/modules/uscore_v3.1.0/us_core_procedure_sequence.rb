@@ -51,7 +51,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:search])
+        skip_if_known_not_supported(:Procedure, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -207,7 +207,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:read])
+        skip_if_known_not_supported(:Procedure, [:read])
         skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@procedure, versioned_resource_class('Procedure'))
@@ -225,7 +225,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:vread])
+        skip_if_known_not_supported(:Procedure, [:vread])
         skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@procedure, versioned_resource_class('Procedure'))
@@ -243,7 +243,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:history])
+        skip_if_known_not_supported(:Procedure, [:history])
         skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@procedure, versioned_resource_class('Procedure'))
@@ -345,7 +345,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Procedure, [:search, :read])
+        skip_if_known_not_supported(:Procedure, [:search, :read])
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@procedure)

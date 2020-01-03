@@ -44,7 +44,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:read])
+        skip_if_known_not_supported(:PractitionerRole, [:read])
 
         practitioner_role_references = @instance.resource_references.select { |reference| reference.resource_type == 'PractitionerRole' }
         skip 'No PractitionerRole references found from the prior searches' if practitioner_role_references.blank?
@@ -70,7 +70,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:search])
+        skip_if_known_not_supported(:PractitionerRole, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -157,7 +157,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:vread])
+        skip_if_known_not_supported(:PractitionerRole, [:vread])
         skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
@@ -175,7 +175,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:history])
+        skip_if_known_not_supported(:PractitionerRole, [:history])
         skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
@@ -321,7 +321,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:search, :read])
+        skip_if_known_not_supported(:PractitionerRole, [:search, :read])
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@practitioner_role)

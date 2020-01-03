@@ -30,7 +30,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:read])
+        skip_if_known_not_supported(:Provenance, [:read])
 
         provenance_references = @instance.resource_references.select { |reference| reference.resource_type == 'Provenance' }
         skip 'No Provenance references found from the prior searches' if provenance_references.blank?
@@ -57,7 +57,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:vread])
+        skip_if_known_not_supported(:Provenance, [:vread])
         skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
@@ -75,7 +75,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:history])
+        skip_if_known_not_supported(:Provenance, [:history])
         skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@provenance, versioned_resource_class('Provenance'))
@@ -169,7 +169,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:search, :read])
+        skip_if_known_not_supported(:Provenance, [:search, :read])
         skip 'No Provenance resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@provenance)

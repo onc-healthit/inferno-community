@@ -51,7 +51,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:search])
+        skip_if_known_not_supported(:CarePlan, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -216,7 +216,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:read])
+        skip_if_known_not_supported(:CarePlan, [:read])
         skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@care_plan, versioned_resource_class('CarePlan'))
@@ -234,7 +234,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:vread])
+        skip_if_known_not_supported(:CarePlan, [:vread])
         skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@care_plan, versioned_resource_class('CarePlan'))
@@ -252,7 +252,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:history])
+        skip_if_known_not_supported(:CarePlan, [:history])
         skip 'No CarePlan resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@care_plan, versioned_resource_class('CarePlan'))
@@ -362,7 +362,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:CarePlan, [:search, :read])
+        skip_if_known_not_supported(:CarePlan, [:search, :read])
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@care_plan)
