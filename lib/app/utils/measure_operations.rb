@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'securerandom'
+
 module Inferno
   module MeasureOperations
     # Run the $evaluate-measure operation for the given Measure
@@ -11,9 +13,42 @@ module Inferno
       @client.get "Measure/#{measure_id}/$evaluate-measure#{params_string}", @client.fhir_headers(format: FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     end
 
-    def submit_data
-      # TODO
-      nil
+    def create_measure_report(measure_id, patient_id, period_start, period_end)
+      FHIR::STU3::MeasureReport.new.from_hash(
+        type: 'individual',
+        identifier: [{
+          value: SecureRandom.uuid
+        }],
+        patient: {
+          reference: "Patient/#{patient_id}"
+        },
+        measure: {
+          reference: "Measure/#{measure_id}"
+        },
+        period: {
+          start: period_start,
+          end: period_end
+        }
+      )
+    end
+
+    def submit_data(measure_id, patient_resources, measure_report)
+      parameters = FHIR::STU3::Parameters.new
+      measure_report_param = FHIR::STU3::Parameters::Parameter.new(name: 'measure-report')
+      measure_report_param.resource = measure_report
+      parameters.parameter.push(measure_report_param)
+
+      patient_resources.each do |r|
+        resource_param = FHIR::STU3::Parameters::Parameter.new(name: 'resource')
+        resource_param.resource = r
+        parameters.parameter.push(resource_param)
+      end
+
+      headers = {
+        content_type: 'application/json'
+      }
+
+      @client.post("Measure/#{measure_id}/$submit-data", parameters, headers)
     end
 
     def collect_data(measure_id, params = {})
