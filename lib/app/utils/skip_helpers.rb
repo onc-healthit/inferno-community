@@ -3,9 +3,10 @@
 module Inferno
   module SkipHelpers
     def skip_if_known_not_supported(resource, methods = [], operations = [])
-      # In the case that the user has not run the any capability statement sequences, we 
+      # In the case that the user has not run the any capability statement sequences, we
       # will allow this to silently pass because we don't know if the server supports it or not.
       return if @instance.server_capabilities.nil?
+
       skip_if_not_supported(resource, methods, operations)
     end
 
