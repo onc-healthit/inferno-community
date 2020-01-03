@@ -9,6 +9,8 @@ services:
       - bdt_service
   bdt_service:
     image: infernocommunity/inferno-bdt-service
+  validator_service:
+    image: infernocommunity/fhir-validator-wrapper
   nginx_server:
     image: nginx
     volumes:
