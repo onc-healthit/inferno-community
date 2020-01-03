@@ -7,20 +7,18 @@ test_sets:
   ad_hoc_testing:
     view: default
     tests:
-      - name: Discovery
+      - name: SMART App Launch
         sequences:
-        - UsCoreR4CapabilityStatementSequence
         - SMARTDiscoverySequence
-        run_all: true
-      - name: Authorization and Authentication
-        sequences:
         - DynamicRegistrationSequence
         - ManualRegistrationSequence
         - StandaloneLaunchSequence
         - EHRLaunchSequence
-      - name: US Core R4 Patient Based Profiles
+      - name: US Core v3.1.0 Profiles
         run_all: true
-        sequences:<% non_delayed_sequences.each do |sequence| %>
+        sequences:
+        - UsCoreR4CapabilityStatementSequence
+        - USCore310PatientSequence<% non_delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>

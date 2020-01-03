@@ -7,20 +7,18 @@ test_sets:
   ad_hoc_testing:
     view: default
     tests:
-      - name: Discovery
+      - name: SMART App Launch
         sequences:
-        - UsCoreR4CapabilityStatementSequence
         - SMARTDiscoverySequence
-        run_all: true
-      - name: Authorization and Authentication
-        sequences:
         - DynamicRegistrationSequence
         - ManualRegistrationSequence
         - StandaloneLaunchSequence
         - EHRLaunchSequence
-      - name: US Core R4 Patient Based Profiles
+      - name: US Core v3.1.0 Profiles
         run_all: true
         sequences:
+        - UsCoreR4CapabilityStatementSequence
+        - USCore310PatientSequence
         - USCore310AllergyintoleranceSequence
         - USCore310CareplanSequence
         - USCore310CareteamSequence
@@ -45,7 +43,6 @@ test_sets:
         - USCore310HeadcircumSequence
         - USCore310HeartrateSequence
         - USCore310ResprateSequence
-        - USCore310PatientSequence
         - USCore310ProcedureSequence
         - USCoreR4ClinicalNotesSequence
         - USCore310LocationSequence
