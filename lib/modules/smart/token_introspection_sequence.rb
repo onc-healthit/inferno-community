@@ -103,7 +103,7 @@ module Inferno
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
-        expected_scopes = @instance.scopes.split(' ')
+        expected_scopes = @instance.received_scopes.split(' ')
         actual_scopes = @introspection_response_body['scope'].split(' ')
 
         Inferno.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"

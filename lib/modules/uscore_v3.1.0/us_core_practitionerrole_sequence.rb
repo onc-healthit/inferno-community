@@ -17,12 +17,12 @@ module Inferno
         case property
 
         when 'specialty'
-          value_found = can_resolve_path(resource, 'specialty.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'specialty on resource does not match specialty requested'
+          value_found = resolve_element_from_path(resource, 'specialty.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'specialty on resource does not match specialty requested'
 
         when 'practitioner'
-          value_found = can_resolve_path(resource, 'practitioner.reference') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'practitioner on resource does not match practitioner requested'
+          value_found = resolve_element_from_path(resource, 'practitioner.reference') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'practitioner on resource does not match practitioner requested'
 
         end
       end
@@ -36,7 +36,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read PractitionerRole from the server'
+          name 'Server returns correct PractitionerRole resource from the PractitionerRole read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to PractitionerRole can be resolved and read.
@@ -44,16 +44,18 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:read])
+        skip_if_known_not_supported(:PractitionerRole, [:read])
 
-        practitioner_role_id = @instance.resource_references.find { |reference| reference.resource_type == 'PractitionerRole' }&.resource_id
-        skip 'No PractitionerRole references found from the prior searches' if practitioner_role_id.nil?
+        practitioner_role_references = @instance.resource_references.select { |reference| reference.resource_type == 'PractitionerRole' }
+        skip 'No PractitionerRole references found from the prior searches' if practitioner_role_references.blank?
 
-        @practitioner_role = validate_read_reply(
-          FHIR::PractitionerRole.new(id: practitioner_role_id),
-          FHIR::PractitionerRole
-        )
-        @practitioner_role_ary = Array.wrap(@practitioner_role).compact
+        @practitioner_role_ary = practitioner_role_references.map do |reference|
+          validate_read_reply(
+            FHIR::PractitionerRole.new(id: reference.resource_id),
+            FHIR::PractitionerRole
+          )
+        end
+        @practitioner_role = @practitioner_role_ary.first
         @resources_found = @practitioner_role.present?
       end
 
@@ -68,7 +70,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:search])
+        skip_if_known_not_supported(:PractitionerRole, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -83,9 +85,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from PractitionerRole search by specialty' do
+      test :search_by_specialty do
         metadata do
           id '03'
+          name 'Server returns expected results from PractitionerRole search by specialty'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -104,21 +107,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
-        @practitioner_role = reply&.resource&.entry&.first&.resource
-        @practitioner_role_ary = fetch_all_bundled_resources(reply&.resource)
+        @practitioner_role = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
+          .resource
+        @practitioner_role_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
         save_delayed_sequence_references(@practitioner_role_ary)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
-      test 'Server returns expected results from PractitionerRole search by practitioner' do
+      test :search_by_practitioner do
         metadata do
           id '04'
+          name 'Server returns expected results from PractitionerRole search by practitioner'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -128,8 +133,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@practitioner_role.nil?, 'Expected valid PractitionerRole resource to be present'
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
         search_params = {
           'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
@@ -144,15 +148,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '05'
-          name 'PractitionerRole vread interaction supported'
+          name 'Server returns correct PractitionerRole resource from PractitionerRole vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the PractitionerRole vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:vread])
+        skip_if_known_not_supported(:PractitionerRole, [:vread])
         skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
@@ -161,15 +166,16 @@ module Inferno
       test :history_interaction do
         metadata do
           id '06'
-          name 'PractitionerRole history interaction supported'
+          name 'Server returns correct PractitionerRole resource from PractitionerRole history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the PractitionerRole history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:history])
+        skip_if_known_not_supported(:PractitionerRole, [:history])
         skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
@@ -206,7 +212,7 @@ module Inferno
         assert practitioner_results, 'No Practitioner resources were returned from this search'
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -225,11 +231,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'PractitionerRole resources associated with Patient conform to US Core R4 profiles' do
+      test 'PractitionerRole resources returned conform to US Core R4 profiles' do
         metadata do
           id '09'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
@@ -242,11 +249,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
         test_resources_against_profile('PractitionerRole')
       end
 
-      test 'At least one of every must support element is provided in any PractitionerRole for this patient.' do
+      test 'All must support elements are provided in the PractitionerRole resources returned.' do
         metadata do
           id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -277,8 +284,8 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @practitioner_role_ary&.any?
-        must_support_confirmed = {}
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+
         must_support_elements = [
           'PractitionerRole.practitioner',
           'PractitionerRole.organization',
@@ -290,20 +297,21 @@ module Inferno
           'PractitionerRole.telecom.value',
           'PractitionerRole.endpoint'
         ]
-        must_support_elements.each do |path|
-          @practitioner_role_ary&.each do |resource|
-            truncated_path = path.gsub('PractitionerRole.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @practitioner_role_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided PractitionerRole resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('PractitionerRole.', '')
+          @practitioner_role_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_role_ary&.length} provided PractitionerRole resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within PractitionerRole resource is valid and can be read.' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/references.html'
@@ -313,8 +321,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:PractitionerRole, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:PractitionerRole, [:search, :read])
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@practitioner_role)
       end

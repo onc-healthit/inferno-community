@@ -4,7 +4,7 @@ require_relative '../../../../test/test_helper'
 
 class StandaloneLaunchSequenceTest < MiniTest::Test
   def setup
-    @instance = Inferno::Models::TestingInstance.new(
+    @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -15,10 +15,9 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       initiate_login_uri: 'http://localhost:4567/launch',
       redirect_uris: 'http://localhost:4567/redirect',
-      scopes: 'launch openid patient/*.* profile'
+      scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*'
     )
 
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
@@ -49,6 +48,14 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
           }
         )
 
+      stub_request(:post, @instance.oauth_token_endpoint)
+        .with(
+          headers: {
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => "Basic #{Base64.strict_encode64('INVALID_CLIENT_ID:' + @instance.client_secret)}"
+          }
+        )
+        .to_return(status: 400)
       # Responses must NOT contain client_id in the body or the client secret in any situation
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(
@@ -58,7 +65,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
             'Authorization' => "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
           }
         )
-        .to_return(status: 401)
+        .to_return(status: 400)
     else
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
@@ -76,7 +83,7 @@ class StandaloneLaunchSequenceTest < MiniTest::Test
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(body: /INVALID_/,
             headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
-      .to_return(status: 401)
+      .to_return(status: 400)
 
     sequence_result = @sequence.start
 

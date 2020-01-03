@@ -22,7 +22,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Medication from the server'
+          name 'Server returns correct Medication resource from the Medication read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Medication can be resolved and read.
@@ -30,31 +30,34 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:read])
+        skip_if_known_not_supported(:Medication, [:read])
 
-        medication_id = @instance.resource_references.find { |reference| reference.resource_type == 'Medication' }&.resource_id
-        skip 'No Medication references found from the prior searches' if medication_id.nil?
+        medication_references = @instance.resource_references.select { |reference| reference.resource_type == 'Medication' }
+        skip 'No Medication references found from the prior searches' if medication_references.blank?
 
-        @medication = validate_read_reply(
-          FHIR::Medication.new(id: medication_id),
-          FHIR::Medication
-        )
-        @medication_ary = Array.wrap(@medication).compact
+        @medication_ary = medication_references.map do |reference|
+          validate_read_reply(
+            FHIR::Medication.new(id: reference.resource_id),
+            FHIR::Medication
+          )
+        end
+        @medication = @medication_ary.first
         @resources_found = @medication.present?
       end
 
       test :vread_interaction do
         metadata do
           id '02'
-          name 'Medication vread interaction supported'
+          name 'Server returns correct Medication resource from Medication vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Medication vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:vread])
+        skip_if_known_not_supported(:Medication, [:vread])
         skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@medication, versioned_resource_class('Medication'))
@@ -63,42 +66,24 @@ module Inferno
       test :history_interaction do
         metadata do
           id '03'
-          name 'Medication history interaction supported'
+          name 'Server returns correct Medication resource from Medication history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Medication history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:history])
+        skip_if_known_not_supported(:Medication, [:history])
         skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Medication resources returned conform to US Core R4 profiles' do
         metadata do
           id '04'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
-          )
-          versions :r4
-        end
-
-        search_params = {}
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Medication'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
-      end
-
-      test 'Medication resources associated with Patient conform to US Core R4 profiles' do
-        metadata do
-          id '05'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
 
@@ -109,13 +94,13 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Medication resources appear to be available.' unless @resources_found
         test_resources_against_profile('Medication')
       end
 
-      test 'At least one of every must support element is provided in any Medication for this patient.' do
+      test 'All must support elements are provided in the Medication resources returned.' do
         metadata do
-          id '06'
+          id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -128,27 +113,28 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @medication_ary&.any?
-        must_support_confirmed = {}
+        skip 'No Medication resources appear to be available.' unless @resources_found
+
         must_support_elements = [
           'Medication.code'
         ]
-        must_support_elements.each do |path|
-          @medication_ary&.each do |resource|
-            truncated_path = path.gsub('Medication.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @medication_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Medication resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Medication.', '')
+          @medication_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@medication_ary&.length} provided Medication resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Medication resource is valid and can be read.' do
         metadata do
-          id '07'
+          id '06'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
@@ -156,8 +142,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Medication, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Medication, [:search, :read])
+        skip 'No Medication resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@medication)
       end

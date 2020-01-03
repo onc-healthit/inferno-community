@@ -9,8 +9,6 @@ ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
 require 'webmock/minitest'
 require 'rack/test'
-require 'json/jwt'
-
 test_log_filename = File.join('tmp', 'test.log')
 FileUtils.rm test_log_filename if File.exist? test_log_filename
 
@@ -89,7 +87,7 @@ def get_test_instance(url: 'http://www.example.com',
                       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                       scopes: 'launch openid patient/*.* profile',
                       selected_module: 'argonaut',
-                      token: JSON::JWT.new(iss: 'foo'))
+                      token: 'ACCESS_TOKEN')
 
   @instance = Inferno::Models::TestingInstance.new(url: url,
                                                    client_name: client_name,

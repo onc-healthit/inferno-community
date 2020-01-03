@@ -6,7 +6,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
   let(:full_body) do
     {
       'access_token' => 'abc',
-      'expires_in' => 'def',
+      'expires_in' => 300,
       'token_type' => 'Bearer',
       'scope' => 'jkl'
     }
@@ -16,13 +16,18 @@ describe Inferno::Sequence::TokenRefreshSequence do
     @sequence_class = Inferno::Sequence::TokenRefreshSequence
     @token_endpoint = 'http://www.example.com/token'
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new(oauth_token_endpoint: @token_endpoint, scopes: 'jkl')
+    @instance = Inferno::Models::TestingInstance.create(
+      oauth_token_endpoint: @token_endpoint,
+      scopes: 'jkl',
+      refresh_token: 'abc'
+    )
+    @sequence = @sequence_class.new(@instance, @client)
+    @sequence.instance_variable_set(:@params, 'abc' => 'def')
   end
 
   describe 'invalid refresh token test' do
     before do
       @test = @sequence_class[:invalid_refresh_token]
-      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'fails when the token refresh response has a success status' do
@@ -45,7 +50,6 @@ describe Inferno::Sequence::TokenRefreshSequence do
   describe 'invalid client id test' do
     before do
       @test = @sequence_class[:invalid_client_id]
-      @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'fails when the token refresh response has a success status' do
@@ -68,7 +72,13 @@ describe Inferno::Sequence::TokenRefreshSequence do
   describe 'refresh with scope parameter test' do
     before do
       @test = @sequence_class[:refresh_with_scope]
-      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'skips if no refresh token has been received' do
+      @instance.update(refresh_token: nil)
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No refresh token was received during the SMART launch', exception.message
     end
 
     it 'succeeds when the token refresh succeeds' do
@@ -91,7 +101,13 @@ describe Inferno::Sequence::TokenRefreshSequence do
   describe 'refresh without scope parameter test' do
     before do
       @test = @sequence_class[:refresh_without_scope]
-      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'skips if no refresh token has been received' do
+      @instance.update(refresh_token: nil)
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No refresh token was received during the SMART launch', exception.message
     end
 
     it 'succeeds when the token refresh succeeds' do
@@ -120,14 +136,10 @@ describe Inferno::Sequence::TokenRefreshSequence do
       )
     end
 
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-    end
+    it 'skips if no refresh token has been received' do
+      exception = assert_raises(Inferno::SkipException) { @sequence.validate_and_save_refresh_response(nil) }
 
-    it 'fails when the token response has an error status' do
-      response = OpenStruct.new(code: 400)
-      exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
-      assert_equal('Bad response code: expected 200, 201, but found 400. ', exception.message)
+      assert_equal @sequence.no_token_response_message, exception.message
     end
 
     it 'fails when the token response body is invalid json' do
@@ -143,7 +155,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     it 'fails when the token response does not contain a required field' do
-      required_fields = ['expires_in', 'token_type', 'scope']
+      required_fields = ['token_type', 'scope', 'expires_in']
       required_fields.each do |field|
         body = full_body.reject { |key, _| key == field }.to_json
         response = OpenStruct.new(code: 200, body: body)
@@ -178,7 +190,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response headers did not contain cache_control as is recommended for token exchanges.')
+      assert_includes(warnings, 'Token response headers did not contain cache_control as is required in the SMART App Launch Guide.')
     end
 
     it 'creates a warning when the pragma header is missing' do
@@ -186,7 +198,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response headers did not contain pragma as is recommended for token exchanges.')
+      assert_includes(warnings, 'Token response headers did not contain pragma as is required in the SMART App Launch Guide.')
     end
 
     it 'creates a warning when the cache_control header is not set to "no-store"' do
@@ -194,7 +206,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response header should have cache_control containing no-store.')
+      assert_includes(warnings, 'Token response header must have cache_control containing no-store.')
     end
 
     it 'creates a warning when the pragma header is not set to "no-cache"' do
@@ -202,15 +214,15 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token response header should have pragma containing no-cache.')
+      assert_includes(warnings, 'Token response header must have pragma containing no-cache.')
     end
   end
 end
 
 class TokenRefreshSequenceTest < MiniTest::Test
   def setup
-    refresh_token = JSON::JWT.new(iss: 'foo_refresh')
-    @instance = Inferno::Models::TestingInstance.new(
+    refresh_token = 'REFRESH_TOKEN'
+    @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -225,11 +237,11 @@ class TokenRefreshSequenceTest < MiniTest::Test
       refresh_token: refresh_token
     )
 
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
     @sequence = Inferno::Sequence::TokenRefreshSequence.new(@instance, client, true)
+    @sequence.instance_variable_set(:@params, 'abc' => 'def')
     @standalone_token_exchange = load_json_fixture(:standalone_token_exchange)
     @confidential_client_secret = SecureRandom.uuid
   end
@@ -324,14 +336,18 @@ class TokenRefreshSequenceTest < MiniTest::Test
   end
 
   def test_pass_if_confidential_client
-    @instance.client_secret = @confidential_client_secret
-    @instance.confidential_client = true
+    @instance.update(
+      client_secret: @confidential_client_secret,
+      confidential_client: true
+    )
     all_pass
   end
 
   def test_pass_if_public_client
-    @instance.client_secret = nil
-    @instance.confidential_client = false
+    @instance.update(
+      client_secret: nil,
+      confidential_client: false
+    )
     all_pass
   end
 

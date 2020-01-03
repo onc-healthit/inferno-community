@@ -89,13 +89,20 @@ module Inferno
 
                 submitted_test_cases_count = sequence_result.next_test_cases.split(',')
                 total_tests = submitted_test_cases_count.reduce(first_test_count) do |total, set|
-                  sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
+                  sequence_test_count = test_set.test_case_by_id(set).sequence.test_count(@instance.module)
                   total + sequence_test_count
                 end
 
-                sequence_result = sequence.resume(request, headers, request.params, @error_message) do |result|
+                sequence_result = sequence.resume(request, headers, request.params, @error_message) do
                   count += 1
-                  out << js_update_result(sequence, test_set, result, count, sequence.test_count, count, total_tests)
+                  out << js_update_result(
+                    instance: @instance,
+                    sequence: sequence,
+                    test_set: test_set,
+                    set_count: count,
+                    count: count,
+                    total: total_tests
+                  )
                   @instance.save!
                 end
                 all_test_cases << test_case.id
@@ -134,10 +141,17 @@ module Inferno
                   @instance.reload # ensure that we have all the latest data
                   sequence = test_case.sequence.new(@instance, client, settings.disable_tls_tests)
                   count = 0
-                  sequence_result = sequence.start do |result|
+                  sequence_result = sequence.start do
                     test_count += 1
                     count += 1
-                    out << js_update_result(sequence, test_set, result, count, sequence.test_count, test_count, total_tests)
+                    out << js_update_result(
+                      instance: @instance,
+                      sequence: sequence,
+                      test_set: test_set,
+                      set_count: count,
+                      count: test_count,
+                      total: total_tests
+                    )
                   end
                   all_test_cases << test_case.id
                   failed_test_cases << test_case.id if sequence_result.fail?

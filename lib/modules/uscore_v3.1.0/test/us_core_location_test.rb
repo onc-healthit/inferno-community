@@ -12,7 +12,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
     @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = '123'
+    @patient_id = 'example'
     @instance.patient_id = @patient_id
     set_resource_support(@instance, 'Location')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
@@ -27,6 +27,10 @@ describe Inferno::Sequence::USCore310LocationSequence do
 
     it 'skips if the Location read interaction is not supported' do
       @instance.server_capabilities.destroy
+      Inferno::Models::ServerCapabilities.create(
+        testing_instance_id: @instance.id,
+        capabilities: FHIR::CapabilityStatement.new.to_json
+      )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -121,6 +125,10 @@ describe Inferno::Sequence::USCore310LocationSequence do
 
     it 'skips if the Location search interaction is not supported' do
       @instance.server_capabilities.destroy
+      Inferno::Models::ServerCapabilities.create(
+        testing_instance_id: @instance.id,
+        capabilities: FHIR::CapabilityStatement.new.to_json
+      )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -152,6 +160,353 @@ describe Inferno::Sequence::USCore310LocationSequence do
       exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
 
       assert_equal 'Do not test if no bearer token set', exception.message
+    end
+  end
+
+  describe 'Location search by name test' do
+    before do
+      @test = @sequence_class[:search_by_name]
+      @sequence = @sequence_class.new(@instance, @client)
+      @location = FHIR.from_contents(load_fixture(:us_core_location))
+      @location_ary = [@location]
+      @sequence.instance_variable_set(:'@location', @location)
+      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+
+      @query = {
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'name'))
+      }
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Location.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Location', exception.message
+    end
+
+    it 'skips if an empty Bundle is received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Bundle.new.to_json)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Location resources appear to be available.', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Location.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Location search by address test' do
+    before do
+      @test = @sequence_class[:search_by_address]
+      @sequence = @sequence_class.new(@instance, @client)
+      @location = FHIR.from_contents(load_fixture(:us_core_location))
+      @location_ary = [@location]
+      @sequence.instance_variable_set(:'@location', @location)
+      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'address': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address'))
+      }
+    end
+
+    it 'skips if no Location resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Location resources appear to be available.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Location.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Location', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Location.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Location search by address-city test' do
+    before do
+      @test = @sequence_class[:search_by_address_city]
+      @sequence = @sequence_class.new(@instance, @client)
+      @location = FHIR.from_contents(load_fixture(:us_core_location))
+      @location_ary = [@location]
+      @sequence.instance_variable_set(:'@location', @location)
+      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'address-city': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.city'))
+      }
+    end
+
+    it 'skips if no Location resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Location resources appear to be available.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Location.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Location', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Location.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Location search by address-state test' do
+    before do
+      @test = @sequence_class[:search_by_address_state]
+      @sequence = @sequence_class.new(@instance, @client)
+      @location = FHIR.from_contents(load_fixture(:us_core_location))
+      @location_ary = [@location]
+      @sequence.instance_variable_set(:'@location', @location)
+      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'address-state': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.state'))
+      }
+    end
+
+    it 'skips if no Location resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Location resources appear to be available.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Location.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Location', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Location.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Location search by address-postalcode test' do
+    before do
+      @test = @sequence_class[:search_by_address_postalcode]
+      @sequence = @sequence_class.new(@instance, @client)
+      @location = FHIR.from_contents(load_fixture(:us_core_location))
+      @location_ary = [@location]
+      @sequence.instance_variable_set(:'@location', @location)
+      @sequence.instance_variable_set(:'@location_ary', @location_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'address-postalcode': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.postalCode'))
+      }
+    end
+
+    it 'skips if no Location resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Location resources appear to be available.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@location_ary', [FHIR::Location.new])
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Location.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Location', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Location.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Location")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@location_ary).to_json)
+
+      @sequence.run_test(@test)
     end
   end
 end

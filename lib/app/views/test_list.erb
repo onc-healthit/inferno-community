@@ -60,7 +60,7 @@
       <% end %>
 
       <% if result.result == 'todo' %> TODO: <% end %>
-      <strong><%= result.test_id %></strong>:
+      <strong><%= test_case_prefix %><%= result.test_id %></strong>:
       <% unless result.required %> OPTIONAL |  <% end %>
       <%=result.name %>
       <button class="test-results-more" data-testing-instance-id="<%=sequence_result.testing_instance.id%>" data-test-result-id="<%=result.id%>">results...</button>
@@ -74,10 +74,10 @@
     </li>
   <% end %>
   <% start_at = 0%>
-  <% start_at = [sequence_result.test_results.length, sequence_class.tests.length].min unless sequence_result.nil? %>
-  <% sequence_class.tests[start_at..-1].each_with_index do |test, index| %>
+  <% start_at = [sequence_result.test_results.length, sequence_class.tests(instance.module).length].min unless sequence_result.nil? %>
+  <% sequence_class.tests(instance.module)[start_at..-1].each_with_index do |test, index| %>
     <li>
-      <strong><%= test.id %></strong>:
+      <strong><%= test_case_prefix %><%= test.id %></strong>:
         <% if test.optional? %> OPTIONAL |  <% end %>
         <%= test.name %>
         <button class="test-list-more"

@@ -17,18 +17,18 @@ module Inferno
         case property
 
         when 'name'
-          value_found = can_resolve_path(resource, 'name') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'name on resource does not match name requested'
+          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'name on resource does not match name requested'
 
         when 'address'
-          value_found = can_resolve_path(resource, 'address') do |address|
+          value_found = resolve_element_from_path(resource, 'address') do |address|
             address&.text&.start_with?(value) ||
               address&.city&.start_with?(value) ||
               address&.state&.start_with?(value) ||
               address&.postalCode&.start_with?(value) ||
               address&.country&.start_with?(value)
           end
-          assert value_found, 'address on resource does not match address requested'
+          assert value_found.present?, 'address on resource does not match address requested'
 
         end
       end
@@ -42,7 +42,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Organization from the server'
+          name 'Server returns correct Organization resource from the Organization read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Organization can be resolved and read.
@@ -50,16 +50,18 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:read])
+        skip_if_known_not_supported(:Organization, [:read])
 
-        organization_id = @instance.resource_references.find { |reference| reference.resource_type == 'Organization' }&.resource_id
-        skip 'No Organization references found from the prior searches' if organization_id.nil?
+        organization_references = @instance.resource_references.select { |reference| reference.resource_type == 'Organization' }
+        skip 'No Organization references found from the prior searches' if organization_references.blank?
 
-        @organization = validate_read_reply(
-          FHIR::Organization.new(id: organization_id),
-          FHIR::Organization
-        )
-        @organization_ary = Array.wrap(@organization).compact
+        @organization_ary = organization_references.map do |reference|
+          validate_read_reply(
+            FHIR::Organization.new(id: reference.resource_id),
+            FHIR::Organization
+          )
+        end
+        @organization = @organization_ary.first
         @resources_found = @organization.present?
       end
 
@@ -74,7 +76,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:search])
+        skip_if_known_not_supported(:Organization, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -89,9 +91,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Organization search by name' do
+      test :search_by_name do
         metadata do
           id '03'
+          name 'Server returns expected results from Organization search by name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -110,21 +113,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found
 
-        @organization = reply&.resource&.entry&.first&.resource
-        @organization_ary = fetch_all_bundled_resources(reply&.resource)
+        @organization = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Organization' }
+          .resource
+        @organization_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
         save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
-      test 'Server returns expected results from Organization search by address' do
+      test :search_by_address do
         metadata do
           id '04'
+          name 'Server returns expected results from Organization search by address'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -134,8 +139,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@organization.nil?, 'Expected valid Organization resource to be present'
+        skip 'No Organization resources appear to be available.' unless @resources_found
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
@@ -150,15 +154,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '05'
-          name 'Organization vread interaction supported'
+          name 'Server returns correct Organization resource from Organization vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Organization vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:vread])
+        skip_if_known_not_supported(:Organization, [:vread])
         skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@organization, versioned_resource_class('Organization'))
@@ -167,21 +172,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '06'
-          name 'Organization history interaction supported'
+          name 'Server returns correct Organization resource from Organization history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Organization history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:history])
+        skip_if_known_not_supported(:Organization, [:history])
         skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Organization search by name + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -200,11 +206,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Organization resources associated with Patient conform to US Core R4 profiles' do
+      test 'Organization resources returned conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
@@ -217,11 +224,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Organization resources appear to be available.' unless @resources_found
         test_resources_against_profile('Organization')
       end
 
-      test 'At least one of every must support element is provided in any Organization for this patient.' do
+      test 'All must support elements are provided in the Organization resources returned.' do
         metadata do
           id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -262,8 +269,8 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @organization_ary&.any?
-        must_support_confirmed = {}
+        skip 'No Organization resources appear to be available.' unless @resources_found
+
         must_support_elements = [
           'Organization.identifier',
           'Organization.identifier.system',
@@ -280,20 +287,21 @@ module Inferno
           'Organization.address.postalCode',
           'Organization.address.country'
         ]
-        must_support_elements.each do |path|
-          @organization_ary&.each do |resource|
-            truncated_path = path.gsub('Organization.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @organization_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Organization resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Organization.', '')
+          @organization_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.length} provided Organization resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Organization resource is valid and can be read.' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/references.html'
@@ -303,8 +311,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Organization, [:search, :read])
+        skip 'No Organization resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@organization)
       end

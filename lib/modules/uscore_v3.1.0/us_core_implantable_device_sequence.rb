@@ -16,12 +16,12 @@ module Inferno
         case property
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'type'
-          value_found = can_resolve_path(resource, 'type.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'type on resource does not match type requested'
+          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'type on resource does not match type requested'
 
         end
       end
@@ -43,7 +43,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:search])
+        skip_if_known_not_supported(:Device, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -57,9 +57,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Device search by patient' do
+      test :search_by_patient do
         metadata do
           id '02'
+          name 'Server returns expected results from Device search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -77,21 +78,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Device' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        @device = reply&.resource&.entry&.first&.resource
-        @device_ary = fetch_all_bundled_resources(reply&.resource)
+        @device = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Device' }
+          .resource
+        @device_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
         save_delayed_sequence_references(@device_ary)
         validate_search_reply(versioned_resource_class('Device'), reply, search_params)
       end
 
-      test 'Server returns expected results from Device search by patient+type' do
+      test :search_by_patient_type do
         metadata do
           id '03'
+          name 'Server returns expected results from Device search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -102,8 +105,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@device.nil?, 'Expected valid Device resource to be present'
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -119,7 +121,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '04'
-          name 'Device read interaction supported'
+          name 'Server returns correct Device resource from Device read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Device read interaction.
@@ -127,7 +129,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:read])
+        skip_if_known_not_supported(:Device, [:read])
         skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@device, versioned_resource_class('Device'))
@@ -136,15 +138,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '05'
-          name 'Device vread interaction supported'
+          name 'Server returns correct Device resource from Device vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Device vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:vread])
+        skip_if_known_not_supported(:Device, [:vread])
         skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@device, versioned_resource_class('Device'))
@@ -153,21 +156,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '06'
-          name 'Device history interaction supported'
+          name 'Server returns correct Device resource from Device history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Device history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:history])
+        skip_if_known_not_supported(:Device, [:history])
         skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@device, versioned_resource_class('Device'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Device search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -185,11 +189,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Device resources associated with Patient conform to US Core R4 profiles' do
+      test 'Device resources returned conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
@@ -202,11 +207,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Device')
       end
 
-      test 'At least one of every must support element is provided in any Device for this patient.' do
+      test 'All must support elements are provided in the Device resources returned.' do
         metadata do
           id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -241,8 +246,8 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @device_ary&.any?
-        must_support_confirmed = {}
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+
         must_support_elements = [
           'Device.udiCarrier',
           'Device.udiCarrier.deviceIdentifier',
@@ -256,20 +261,21 @@ module Inferno
           'Device.type',
           'Device.patient'
         ]
-        must_support_elements.each do |path|
-          @device_ary&.each do |resource|
-            truncated_path = path.gsub('Device.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @device_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Device resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Device.', '')
+          @device_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.length} provided Device resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Device resource is valid and can be read.' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/references.html'
@@ -279,8 +285,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Device, [:search, :read])
+        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@device)
       end

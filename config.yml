@@ -37,6 +37,10 @@ include_extras: true
 
 badge_text: Community
 
+# Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
+resource_validator: internal
+external_resource_validator_url: http://validator_service:4567
+
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
   - onc
@@ -44,7 +48,6 @@ modules:
   - bdt
   - argonaut
   - uscore_v3.1.0
-  - bulk_data
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:

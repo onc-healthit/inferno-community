@@ -16,41 +16,39 @@ module Inferno
         case property
 
         when '_id'
-          value_found = can_resolve_path(resource, 'id') { |value_in_resource| value_in_resource == value }
-          assert value_found, '_id on resource does not match _id requested'
+          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, '_id on resource does not match _id requested'
 
         when 'birthdate'
-          value_found = can_resolve_path(resource, 'birthDate') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'birthdate on resource does not match birthdate requested'
+          value_found = resolve_element_from_path(resource, 'birthDate') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'birthdate on resource does not match birthdate requested'
 
         when 'family'
-          value_found = can_resolve_path(resource, 'name.family') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'family on resource does not match family requested'
+          value_found = resolve_element_from_path(resource, 'name.family') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'family on resource does not match family requested'
 
         when 'gender'
-          value_found = can_resolve_path(resource, 'gender') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'gender on resource does not match gender requested'
+          value_found = resolve_element_from_path(resource, 'gender') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'gender on resource does not match gender requested'
 
         when 'given'
-          value_found = can_resolve_path(resource, 'name.given') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'given on resource does not match given requested'
+          value_found = resolve_element_from_path(resource, 'name.given') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'given on resource does not match given requested'
 
         when 'identifier'
-          value_found = can_resolve_path(resource, 'identifier.value') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'identifier on resource does not match identifier requested'
+          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'identifier on resource does not match identifier requested'
 
         when 'name'
           value = value.downcase
-          value_found = can_resolve_path(resource, 'name') do |name|
+          value_found = resolve_element_from_path(resource, 'name') do |name|
             name&.text&.start_with?(value) ||
               name&.family&.downcase&.include?(value) ||
               name&.given&.any? { |given| given.downcase.start_with?(value) } ||
               name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
               name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
           end
-          assert value_found, 'name on resource does not match name requested'
+          assert value_found.present?, 'name on resource does not match name requested'
 
         end
       end
@@ -72,7 +70,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Patient, [:search])
+        skip_if_known_not_supported(:Patient, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -86,9 +84,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Patient search by _id' do
+      test :search_by__id do
         metadata do
           id '02'
+          name 'Server returns expected results from Patient search by _id'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -106,21 +105,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Patient' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        @patient = reply&.resource&.entry&.first&.resource
-        @patient_ary = fetch_all_bundled_resources(reply&.resource)
+        @patient = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Patient' }
+          .resource
+        @patient_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
         save_delayed_sequence_references(@patient_ary)
         validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
       end
 
-      test 'Server returns expected results from Patient search by identifier' do
+      test :search_by_identifier do
         metadata do
           id '03'
+          name 'Server returns expected results from Patient search by identifier'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -130,8 +131,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'identifier'))
@@ -143,9 +143,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by name' do
+      test :search_by_name do
         metadata do
           id '04'
+          name 'Server returns expected results from Patient search by name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -155,8 +156,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name'))
@@ -168,9 +168,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by gender+name' do
+      test :search_by_gender_name do
         metadata do
           id '05'
+          name 'Server returns expected results from Patient search by gender+name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -180,8 +181,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'gender')),
@@ -194,9 +194,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+name' do
+      test :search_by_birthdate_name do
         metadata do
           id '06'
+          name 'Server returns expected results from Patient search by birthdate+name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -206,8 +207,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
@@ -220,9 +220,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by birthdate+family' do
+      test :search_by_birthdate_family do
         metadata do
           id '07'
+          name 'Server returns expected results from Patient search by birthdate+family'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -233,8 +234,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'birthDate')),
@@ -247,9 +247,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Patient search by family+gender' do
+      test :search_by_family_gender do
         metadata do
           id '08'
+          name 'Server returns expected results from Patient search by family+gender'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -260,8 +261,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@patient.nil?, 'Expected valid Patient resource to be present'
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'family': get_value_for_search_param(resolve_element_from_path(@patient_ary, 'name.family')),
@@ -277,7 +277,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '09'
-          name 'Patient read interaction supported'
+          name 'Server returns correct Patient resource from Patient read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Patient read interaction.
@@ -285,7 +285,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Patient, [:read])
+        skip_if_known_not_supported(:Patient, [:read])
         skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@patient, versioned_resource_class('Patient'))
@@ -294,15 +294,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '10'
-          name 'Patient vread interaction supported'
+          name 'Server returns correct Patient resource from Patient vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Patient vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Patient, [:vread])
+        skip_if_known_not_supported(:Patient, [:vread])
         skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@patient, versioned_resource_class('Patient'))
@@ -311,21 +312,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '11'
-          name 'Patient history interaction supported'
+          name 'Server returns correct Patient resource from Patient history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Patient history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Patient, [:history])
+        skip_if_known_not_supported(:Patient, [:history])
         skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Patient search by _id + _revIncludes: Provenance:target' do
         metadata do
           id '12'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -343,11 +345,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Patient resources associated with Patient conform to US Core R4 profiles' do
+      test 'Patient resources returned conform to US Core R4 profiles' do
         metadata do
           id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
@@ -360,11 +363,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Patient')
       end
 
-      test 'At least one of every must support element is provided in any Patient for this patient.' do
+      test 'All must support elements are provided in the Patient resources returned.' do
         metadata do
           id '14'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -413,24 +416,27 @@ module Inferno
 
             Patient.communication.language
 
+            Patient.extension:race
+
+            Patient.extension:ethnicity
+
+            Patient.extension:birthsex
+
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @patient_ary&.any?
-        must_support_confirmed = {}
-        extensions_list = {
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+
+        must_support_extensions = {
           'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
           'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
           'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
         }
-        extensions_list.each do |id, url|
-          @patient_ary&.each do |resource|
-            must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
-            break if must_support_confirmed[id]
+        missing_must_support_extensions = must_support_extensions.reject do |_id, url|
+          @patient_ary&.any? do |resource|
+            resource.extension.any? { |extension| extension.url == url }
           end
-          skip_notification = "Could not find #{id} in any of the #{@patient_ary.length} provided Patient resource(s)"
-          skip skip_notification unless must_support_confirmed[id]
         end
 
         must_support_elements = [
@@ -455,20 +461,23 @@ module Inferno
           'Patient.communication',
           'Patient.communication.language'
         ]
-        must_support_elements.each do |path|
-          @patient_ary&.each do |resource|
-            truncated_path = path.gsub('Patient.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @patient_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Patient resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Patient.', '')
+          @patient_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        missing_must_support_elements += missing_must_support_extensions.keys
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.length} provided Patient resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Patient resource is valid and can be read.' do
         metadata do
           id '15'
           link 'http://hl7.org/fhir/references.html'
@@ -478,8 +487,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Patient, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Patient, [:search, :read])
+        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@patient)
       end

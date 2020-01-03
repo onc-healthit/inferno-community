@@ -13,6 +13,7 @@ require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
+require_relative 'utils/hl7_validator'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -81,7 +82,8 @@ module Inferno
             request_url: request.url,
             request_headers: headers.to_json,
             request_payload: request.body.read,
-            instance_id: @instance.id
+            instance_id: @instance.id,
+            timestamp: DateTime.now
           )
         end
 
@@ -114,7 +116,7 @@ module Inferno
 
         output_results = save_output(sequence_name)
 
-        run_tests(self.class.tests[start_at..-1], &block)
+        run_tests(tests[start_at..-1], &block)
 
         update_output(sequence_name, output_results)
 
@@ -208,12 +210,12 @@ module Inferno
         end
       end
 
-      def self.test_count
-        tests.length
+      def self.test_count(inferno_module = nil)
+        tests(inferno_module).length
       end
 
-      def test_count
-        self.class.test_count
+      def test_count(inferno_module = @instance.module)
+        tests(inferno_module).length
       end
 
       def sequence_name
@@ -307,8 +309,18 @@ module Inferno
         @@test_id_prefixes[sequence_name]
       end
 
-      def self.tests
-        @tests ||= []
+      def self.all_tests
+        @all_tests ||= []
+      end
+
+      def self.tests(inferno_module = nil)
+        return all_tests unless inferno_module&.hide_optional
+
+        all_tests.select(&:required?)
+      end
+
+      def tests(inferno_module = @instance.module)
+        self.class.tests(inferno_module)
       end
 
       def self.[](key)
@@ -355,7 +367,7 @@ module Inferno
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
       def self.extends_sequence(klass)
-        tests.concat(klass.tests)
+        all_tests.concat(klass.all_tests)
       end
 
       # Defines a new test.
@@ -366,11 +378,11 @@ module Inferno
         @@test_index += 1
         new_test = InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
 
-        if new_test.key.present? && tests.any? { |test| test.key == new_test.key }
+        if new_test.key.present? && all_tests.any? { |test| test.key == new_test.key }
           raise InvalidKeyException, "Duplicate test key #{new_test.key.inspect} in #{self.name.demodulize}"
         end
 
-        tests << new_test
+        all_tests << new_test
       end
 
       def wrap_test(test)
@@ -497,16 +509,11 @@ module Inferno
         entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
         assert entries.present?, 'No resources of this type were returned'
 
-        if klass == versioned_resource_class('Patient')
-          assert reply.resource.get_by_id(@instance.patient_id).present?, 'Server returned nil patient'
-          assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', 'text', 'meta', 'lastUpdated']), 'Server returned wrong patient'
-        end
-
         entries.each do |entry|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          base_resource_validation_errors = entry.resource.validate
-          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
 
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
@@ -558,8 +565,10 @@ module Inferno
       end
 
       def validate_resource(resource_type, resource, profile)
-        errors = profile.validate_resource(resource)
-        @test_warnings.concat(profile.warnings.reject(&:empty?))
+        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
+        errors = resource_validation_errors[:errors]
+        @test_warnings.concat resource_validation_errors[:warnings]
+
         errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
         @profiles_failed[profile.url].concat(errors) unless errors.empty?
         errors
@@ -588,7 +597,8 @@ module Inferno
             validate_resource(resource_type, resource, p)
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource.validate
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:errors]
           end
         end
         # TODO
@@ -691,59 +701,48 @@ module Inferno
         end
         if p
           @profiles_encountered << p.url
-          errors = p.validate_resource(resource)
-          unless errors.empty?
-            errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
-            @profiles_failed[p.url].concat(errors)
-          end
+          errors = validate_resource(resource_type, resource, p)
         else
-          errors = entry.resource.validate
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          errors = resource_validation_errors[:errors]
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def can_resolve_path(element, path)
-        if path.empty?
-          return false if element.nil?
-
-          return Array.wrap(element).any? { |el| yield(el) } if block_given?
-
-          return true
-        end
-
-        path_ary = path.split('.')
-        el_as_array = Array.wrap(element)
-        cur_path_part = path_ary.shift.to_sym
-        return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
-
-        if block_given?
-          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) } }
-        else
-          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
-        end
-      end
-
       def resolve_element_from_path(element, path)
         el_as_array = Array.wrap(element)
-        return el_as_array&.first if path.empty?
+        if path.empty?
+          return nil if element.nil?
+
+          return el_as_array.find { |el| yield(el) } if block_given?
+
+          return el_as_array.first
+        end
 
         path_ary = path.split('.')
         cur_path_part = path_ary.shift.to_sym
+        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? }
 
-        found_subset = el_as_array.select { |el| el.try(cur_path_part).present? }
-        return nil if found_subset.empty?
-
-        found_subset.each do |el|
-          el_found = resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
-          return el_found unless el_found.nil?
+        el_as_array.each do |el|
+          el_found = if block_given?
+                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) }
+                     else
+                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
+                     end
+          return el_found unless el_found.blank?
         end
+
         nil
       end
 
       def get_value_for_search_param(element)
         case element
         when FHIR::Period
-          element.start || element.end
+          if element.start.present?
+            'gt' + element.start
+          else
+            'lt' + element.end
+          end
         when FHIR::Reference
           element.reference
         when FHIR::CodeableConcept
@@ -762,6 +761,8 @@ module Inferno
       end
 
       def date_comparator_value(comparator, date)
+        date = date.slice(2..-1) if ['gt', 'ge', 'lt', 'le'].include? date[0, 2]
+
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema

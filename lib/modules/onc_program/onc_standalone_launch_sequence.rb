@@ -51,7 +51,7 @@ module Inferno
 
       test :onc_scopes do
         metadata do
-          id '09'
+          id '10'
           name 'Patient-level access with OpenID Connect and Refresh Token scopes used.'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           description %(
@@ -59,7 +59,7 @@ module Inferno
           )
         end
 
-        scopes = @instance.scopes.split(' ')
+        scopes = @instance.received_scopes.split(' ')
 
         missing_scopes = required_scopes - scopes
         assert missing_scopes.empty?, "Required scopes missing: #{missing_scopes.join(', ')}"

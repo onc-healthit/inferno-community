@@ -293,6 +293,12 @@
               value: instance.bulk_token_endpoint,
               })%>   
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_access_token,
+              label: 'Bulk Bearer Token',
+              instance: instance,
+              value: instance.bulk_access_token,
+              })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
               instance: instance,
               label: 'Bulk Client ID',
@@ -337,8 +343,7 @@
                 
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
-          </div>
-
+          </div>     
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

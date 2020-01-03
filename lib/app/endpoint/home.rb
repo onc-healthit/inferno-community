@@ -74,12 +74,17 @@ module Inferno
         # Returns test details for a specific test including any applicable requests and responses.
         #   This route is typically used for retrieving test metadata before the test has been run
         get '/test_details/:module/:sequence_name/:test_index?' do
-          sequence = Inferno::Module.get(params[:module]).sequences.find do |x|
+          inferno_module = Inferno::Module.get(params[:module])
+          sequence = inferno_module.sequences.find do |x|
             x.sequence_name == params[:sequence_name]
           end
+
           halt 404 unless sequence
-          @test = sequence.tests[params[:test_index].to_i]
+
+          @test = sequence.tests(inferno_module)[params[:test_index].to_i]
+
           halt 404 unless @test.present?
+
           erb :test_details, layout: false
         end
 

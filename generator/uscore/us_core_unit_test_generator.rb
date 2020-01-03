@@ -26,8 +26,45 @@ module Inferno
         File.write(file_name, unit_tests)
       end
 
+      def generate_search_test(
+        test_key:,
+        resource_type:,
+        search_params:,
+        is_first_search:,
+        is_fixed_value_search:,
+        has_comparator_tests:,
+        fixed_value_search_param:,
+        class_name:,
+        sequence_name:,
+        delayed_sequence:
+      )
+
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
+
+        resource_var_name = resource_type.underscore
+
+        test = template.result_with_hash(
+          test_key: test_key,
+          resource_type: resource_type,
+          resource_var_name: resource_var_name,
+          search_params: search_params,
+          search_param_string: search_params_to_string(search_params),
+          sequence_name: sequence_name,
+          is_first_search: is_first_search,
+          is_fixed_value_search: is_fixed_value_search,
+          has_comparator_tests: has_comparator_tests,
+          has_dynamic_search_params: dynamic_search_params(search_params).present?,
+          fixed_value_search_param: fixed_value_search_param&.dig(:name),
+          fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', '),
+          fixed_value_search_path: fixed_value_search_param&.dig(:path),
+          delayed_sequence: delayed_sequence
+        )
+        tests[class_name] << test
+      end
+
       def generate_authorization_test(test_key:, resource_type:, search_params:, class_name:, sequence_name:)
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'authorization_unit_test.rb.erb')))
+
         test = template.result_with_hash(
           test_key: test_key,
           resource_type: resource_type,
@@ -35,6 +72,7 @@ module Inferno
           dynamic_search_params: dynamic_search_params(search_params),
           sequence_name: sequence_name
         )
+
         tests[class_name] << test
       end
 

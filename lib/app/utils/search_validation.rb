@@ -67,6 +67,14 @@ module Inferno
     end
 
     def validate_date_search(search_value, target_value)
+      if target_value.instance_of? FHIR::Period
+        validate_period_search(search_value, target_value)
+      else
+        validate_datetime_search(search_value, target_value)
+      end
+    end
+
+    def validate_datetime_search(search_value, target_value)
       comparator = search_value[0..1]
       if ['eq', 'ge', 'gt', 'le', 'lt', 'ne', 'sa', 'eb', 'ap'].include? comparator
         search_value = search_value[2..-1]

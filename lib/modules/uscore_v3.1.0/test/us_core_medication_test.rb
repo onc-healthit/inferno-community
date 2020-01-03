@@ -12,7 +12,7 @@ describe Inferno::Sequence::USCore310MedicationSequence do
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
     @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = '123'
+    @patient_id = 'example'
     @instance.patient_id = @patient_id
     set_resource_support(@instance, 'Medication')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
@@ -27,6 +27,10 @@ describe Inferno::Sequence::USCore310MedicationSequence do
 
     it 'skips if the Medication read interaction is not supported' do
       @instance.server_capabilities.destroy
+      Inferno::Models::ServerCapabilities.create(
+        testing_instance_id: @instance.id,
+        capabilities: FHIR::CapabilityStatement.new.to_json
+      )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

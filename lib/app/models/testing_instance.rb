@@ -19,6 +19,8 @@ module Inferno
 
       property :client_name, String, default: 'Inferno'
       property :scopes, String
+      property :received_scopes, String
+      property :encounter_id, String
       property :launch_type, String
       property :state, String
       property :selected_module, String
@@ -34,6 +36,7 @@ module Inferno
 
       property :token, String
       property :token_retrieved_at, DateTime
+      property :token_expires_in, Integer
       property :id_token, String
       property :refresh_token, String
       property :created_at, DateTime, default: proc { DateTime.now }
@@ -72,6 +75,8 @@ module Inferno
       property :bulk_public_key, String
       property :bulk_private_key, String
       property :bulk_access_token, String
+      property :bulk_lines_to_validate, String
+      property :bulk_status_output, String
 
       has n, :sequence_results
       has n, :resource_references
@@ -196,18 +201,24 @@ module Inferno
         end
       end
 
-      def conformance_supported?(resource, methods = [])
+      def conformance_supported?(resource, methods = [], operations = [])
         resource_support = supported_resource_interactions.find do |interactions|
           interactions[:resource_type] == resource.to_s
         end
 
         return false if resource_support.blank?
 
-        methods.all? do |method|
+        methods_supported = methods.all? do |method|
           method = method == :history ? 'history-instance' : method.to_s
 
           resource_support[:interactions].include? method
         end
+
+        operations_supported = operations.all? do |operation|
+          resource_support[:operations].include? operation.to_s
+        end
+
+        methods_supported && operations_supported
       end
 
       def save_resource_reference(type, id, profile = nil)
@@ -245,6 +256,10 @@ module Inferno
         else
           FHIR::CapabilityStatement
         end
+      end
+
+      def token_expiration_time
+        token_retrieved_at + token_expires_in.seconds
       end
 
       private

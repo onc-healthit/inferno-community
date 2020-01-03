@@ -72,10 +72,17 @@ module Inferno
               create_interaction_test(sequence, interaction)
             end
 
+          sequence[:operations]
+            .select { |operation| operation[:expectation] == 'SHALL' }
+            .each do |operation|
+              create_docref_test(sequence) if operation[:operation] == 'docref'
+            end
+
           create_include_test(sequence) if sequence[:include_params].any?
           create_revinclude_test(sequence) if sequence[:revincludes].any?
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
+          create_multiple_or_test(sequence)
           create_references_resolved_test(sequence)
         end
       end
@@ -85,7 +92,7 @@ module Inferno
           sequence[:delayed_sequence] = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
         end
         metadata[:delayed_sequences] = metadata[:sequences].select { |seq| seq[:delayed_sequence] }
-        metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:delayed_sequence] }
+        metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:resource] == 'Patient' || seq[:delayed_sequence] }
       end
 
       def find_first_search(sequence)
@@ -106,7 +113,7 @@ module Inferno
       def create_read_test(sequence)
         test_key = :resource_read
         read_test = {
-          tests_that: "Can read #{sequence[:resource]} from the server",
+          tests_that: "Server returns correct #{sequence[:resource]} resource from the #{sequence[:resource]} read interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
@@ -114,16 +121,18 @@ module Inferno
         }
 
         read_test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:read])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:read])
 
-              #{sequence[:resource].underscore}_id = @instance.resource_references.find { |reference| reference.resource_type == '#{sequence[:resource]}' }&.resource_id
-              skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_id.nil?
+              #{sequence[:resource].underscore}_references = @instance.resource_references.select { |reference| reference.resource_type == '#{sequence[:resource]}' }
+              skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_references.blank?
 
-              @#{sequence[:resource].underscore} = validate_read_reply(
-                FHIR::#{sequence[:resource]}.new(id: #{sequence[:resource].underscore}_id),
-                FHIR::#{sequence[:resource]}
-              )
-              @#{sequence[:resource].underscore}_ary = Array.wrap(@#{sequence[:resource].underscore}).compact
+              @#{sequence[:resource].underscore}_ary = #{sequence[:resource].underscore}_references.map do |reference|
+                validate_read_reply(
+                  FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
+                  FHIR::#{sequence[:resource]}
+                )
+              end
+              @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary.first
               @resources_found = @#{sequence[:resource].underscore}.present?)
         sequence[:tests] << read_test
 
@@ -152,7 +161,7 @@ module Inferno
         unit_test_params = get_search_param_hash(search_parameters, sequence, true)
 
         authorization_test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:search])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:search])
 
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -170,6 +179,24 @@ module Inferno
           class_name: sequence[:class_name],
           sequence_name: sequence[:name]
         )
+      end
+
+      def create_docref_test(sequence)
+        docref_test = {
+          tests_that: 'The server is capable of returning a reference to a generated CDA document in response to the $docref operation',
+          index: sequence[:tests].length + 1,
+          link: 'http://hl7.org/fhir/us/core/2019Sep/CapabilityStatement-us-core-server.html#documentreference',
+          description: 'A server SHALL be capable of responding to a $docref operation and capable of returning at least a reference to a generated CCD document, if available.'
+        }
+
+        docref_test[:test_code] = %(
+          skip_if_known_not_supported(:#{sequence[:resource]}, [], [:docref])
+          search_string = "/DocumentReference/$docref?patient=\#{@instance.patient_id}"
+          reply = @client.get(search_string, @client.fhir_headers)
+          assert_response_ok(reply)
+        )
+
+        sequence[:tests] << docref_test
       end
 
       def create_include_test(sequence)
@@ -199,14 +226,16 @@ module Inferno
       end
 
       def create_revinclude_test(sequence)
+        first_search = find_first_search(sequence)
+        return if first_search.blank?
+
         revinclude_test = {
-          tests_that: "Server returns the appropriate resources from the following _revincludes: #{sequence[:revincludes].join(',')}",
+          tests_that: "Server returns Provenance resources from #{sequence[:resource]} search by #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
           description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}"
         }
-        first_search = find_first_search(sequence)
-        search_params = first_search.nil? ? "\nsearch_params = {}" : get_search_params(first_search[:names], sequence)
+        search_params = get_search_params(first_search[:names], sequence)
         revinclude_test[:test_code] = search_params
         sequence[:revincludes].each do |revinclude|
           resource_name = revinclude.split(':').first
@@ -216,16 +245,19 @@ module Inferno
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
                 assert_response_ok(reply)
                 assert_bundle_response(reply)
-                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
-                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
+                #{resource_variable} = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == '#{resource_name}'}
+                skip 'No #{resource_name} resources were returned from this search' unless #{resource_variable}.present?
+                #{resource_variable}.each { |reference| @instance.save_resource_reference('#{resource_name}', reference.id) }
           )
         end
         sequence[:tests] << revinclude_test
       end
 
       def create_search_test(sequence, search_param)
+        test_key = :"search_by_#{search_param[:names].map(&:underscore).join('_')}"
         search_test = {
           tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
           optional: search_param[:expectation] != 'SHALL',
@@ -246,15 +278,32 @@ module Inferno
             get_first_search(search_param[:names], sequence)
           else
             %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-              assert !@#{sequence[:resource].underscore}.nil?, 'Expected valid #{sequence[:resource]} resource to be present'
-      #{get_search_params(search_param[:names], sequence)}
+              #{skip_if_not_found(sequence)}
+              #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              assert_response_ok(reply))
+              assert_response_ok(reply)
+            )
           end
-        search_test[:test_code] += get_comparator_searches(search_param[:names], sequence)
+        comparator_search_code = get_comparator_searches(search_param[:names], sequence)
+        search_test[:test_code] += comparator_search_code
         sequence[:tests] << search_test
+
+        is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
+        fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
+
+        unit_test_generator.generate_search_test(
+          test_key: test_key,
+          resource_type: sequence[:resource],
+          search_params: get_search_param_hash(search_param[:names], sequence),
+          is_first_search: is_first_search,
+          is_fixed_value_search: is_fixed_value_search,
+          has_comparator_tests: comparator_search_code.present?,
+          fixed_value_search_param: fixed_value_search_param,
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name],
+          delayed_sequence: sequence[:delayed_sequence]
+        )
       end
 
       def create_interaction_test(sequence, interaction)
@@ -262,15 +311,16 @@ module Inferno
 
         test_key = :"#{interaction[:code]}_interaction"
         interaction_test = {
-          tests_that: "#{sequence[:resource]} #{interaction[:code]} interaction supported",
+          tests_that: "Server returns correct #{sequence[:resource]} resource from #{sequence[:resource]} #{interaction[:code]} interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
-          description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction."
+          description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction.",
+          optional: interaction[:expectation] != 'SHALL'
         }
 
         interaction_test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
               skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
               validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
@@ -289,7 +339,7 @@ module Inferno
 
       def create_must_support_test(sequence)
         test = {
-          tests_that: "At least one of every must support element is provided in any #{sequence[:resource]} for this patient.",
+          tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
           link: 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support',
           test_code: '',
@@ -299,68 +349,80 @@ module Inferno
           )
         }
 
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+        must_support_elements = sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }
+        must_support_elements.each do |element|
           test[:description] += %(
             #{element[:path]}
           )
+          # class is mapped to local_class in fhir_models. Update this after it
+          # has been added to the description so that the description contains
+          # the original path
+          element[:path] = element[:path].gsub('.class', '.local_class')
         end
-        test[:test_code] += %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information' unless @#{sequence[:resource].underscore}_ary&.any?)
+
+        must_support_extensions = sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }
+        must_support_extensions.each do |extension|
+          test[:description] += %(
+            #{extension[:id]}
+          )
+        end
 
         test[:test_code] += %(
-              must_support_confirmed = {})
+          #{skip_if_not_found(sequence)}
+        )
 
-        extensions_list = []
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }.each do |extension|
-          extensions_list << "'#{extension[:id]}': '#{extension[:url]}'"
-        end
-        if extensions_list.any?
+        if must_support_extensions.present?
+          extensions_list = must_support_extensions.map { |extension| "'#{extension[:id]}': '#{extension[:url]}'" }
+
           test[:test_code] += %(
-              extensions_list = {
-                #{extensions_list.join(",\n          ")}
-              }
-              extensions_list.each do |id, url|
-                @#{sequence[:resource].underscore}_ary&.each do |resource|
-                  must_support_confirmed[id] = true if resource.extension.any? { |extension| extension.url == url }
-                  break if must_support_confirmed[id]
-                end
-                skip_notification = "Could not find \#{id} in any of the \#{@#{sequence[:resource].underscore}_ary.length} provided #{sequence[:resource]} resource(s)"
-                skip skip_notification unless must_support_confirmed[id]
+            must_support_extensions = {
+              #{extensions_list.join(",\n          ")}
+            }
+            missing_must_support_extensions = must_support_extensions.reject do |_id, url|
+              @#{sequence[:resource].underscore}_ary&.any? do |resource|
+                resource.extension.any? { |extension| extension.url == url }
               end
-      )
-        end
-        elements_list = []
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
-          element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
-          elements_list << "'#{element[:path]}'"
+            end
+          )
         end
 
-        if elements_list.any?
+        if must_support_elements.present?
+          elements_list = must_support_elements.map { |element| "'#{element[:path]}'" }
+
           test[:test_code] += %(
-              must_support_elements = [
-                #{elements_list.join(",\n          ")}
-              ]
-              must_support_elements.each do |path|
-                @#{sequence[:resource].underscore}_ary&.each do |resource|
-                  truncated_path = path.gsub('#{sequence[:resource]}.', '')
-                  must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-                  break if must_support_confirmed[path]
-                end
-                resource_count = @#{sequence[:resource].underscore}_ary.length
+            must_support_elements = [
+              #{elements_list.join(",\n          ")}
+            ]
 
-                skip "Could not find \#{path} in any of the \#{resource_count} provided #{sequence[:resource]} resource(s)" unless must_support_confirmed[path]
-              end)
+            missing_must_support_elements = must_support_elements.reject do |path|
+              truncated_path = path.gsub('#{sequence[:resource]}.', '')
+              @#{sequence[:resource].underscore}_ary&.any? do |resource|
+                resolve_element_from_path(resource, truncated_path).present?
+              end
+            end
+          )
+
+          if must_support_extensions.present?
+            test[:test_code] += %(
+              missing_must_support_elements += missing_must_support_extensions.keys
+            )
+          end
+
+          test[:test_code] += %(
+            skip_if missing_must_support_elements.present?,
+              "Could not find \#{missing_must_support_elements.join(', ')} in the \#{@#{sequence[:resource].underscore}_ary&.length} provided #{sequence[:resource]} resource(s)"
+          )
         end
 
         test[:test_code] += %(
-              @instance.save!)
+          @instance.save!)
 
         sequence[:tests] << test
       end
 
       def create_resource_profile_test(sequence)
         test = {
-          tests_that: "#{sequence[:resource]} resources associated with Patient conform to US Core R4 profiles",
+          tests_that: "#{sequence[:resource]} resources returned conform to US Core R4 profiles",
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
           description: %(
@@ -369,33 +431,68 @@ module Inferno
           )
         }
         test[:test_code] = %(
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+              #{skip_if_not_found(sequence)}
               test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
 
         sequence[:tests] << test
       end
 
+      def create_multiple_or_test(sequence)
+        test = {
+          tests_that: 'The server returns expected results when parameters use composite-or',
+          index: sequence[:tests].length + 1,
+          link: sequence[:profile],
+          test_code: ''
+        }
+
+        multiple_or_params = get_multiple_or_params(sequence)
+
+        multiple_or_params.each do |param|
+          multiple_or_search = sequence[:searches].find { |search| (search[:names].include? param) && search[:expectation] == 'SHALL' }
+          next if multiple_or_search.blank?
+
+          second_val_var = "second_#{param}_val"
+          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }"
+          test[:test_code] += %(
+            #{get_search_params(multiple_or_search[:names], sequence)}
+            #{second_val_var} = #{resolve_el_str}
+            skip 'Cannot find second value for #{param} to perform a multipleOr search' if #{second_val_var}.nil?
+            #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            assert_response_ok(reply)
+          )
+        end
+        sequence[:tests] << test if test[:test_code].present?
+      end
+
+      def get_multiple_or_params(sequence)
+        sequence[:search_param_descriptions]
+          .select { |_param, description| description[:multiple_or] == 'SHALL' }
+          .map { |param, _description| param.to_s }
+      end
+
       def create_references_resolved_test(sequence)
         test = {
-          tests_that: 'All references can be resolved',
+          tests_that: "Every reference within #{sequence[:resource]} resource is valid and can be read.",
           index: sequence[:tests].length + 1,
           link: 'http://hl7.org/fhir/references.html',
           description: 'This test checks if references found in resources from prior searches can be resolved.'
         }
 
         test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:search, :read])
-              skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:search, :read])
+              #{skip_if_not_found(sequence)}
 
               validate_reference_resolutions(@#{sequence[:resource].underscore}))
         sequence[:tests] << test
       end
 
-      def resolve_element_path(search_param_description)
+      def resolve_element_path(search_param_description, resolve_block = '')
         element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
         path_parts = element_path.split('.')
         resource_val = "@#{path_parts.shift.underscore}_ary"
-        "get_value_for_search_param(resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}'))"
+        "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}') #{resolve_block}"
       end
 
       def get_value_path_by_type(type)
@@ -431,12 +528,17 @@ module Inferno
           validation_profile_uri(sequence)
         ].compact.join(', ')
 
-        search_code = if search_parameters == ['patient'] || sequence[:delayed_sequence] || search_param_constants(search_parameters, sequence)
-                        get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
-                      else
-                        get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
-                      end
-        search_code
+        if fixed_value_search?(search_parameters, sequence)
+          get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        else
+          get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+        end
+      end
+
+      def fixed_value_search?(search_parameters, sequence)
+        search_parameters != ['patient'] &&
+          !sequence[:delayed_sequence] &&
+          !search_param_constants(search_parameters, sequence)
       end
 
       def get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
@@ -446,45 +548,69 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
+          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
-          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+          #{skip_if_not_found(sequence)}
 
-          @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
-          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply&.resource)
+          @#{sequence[:resource].underscore} = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+            .resource
+          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
           save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
           save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
           validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
         )
       end
 
+      def fixed_value_search_param(search_parameters, sequence)
+        name = search_parameters.find { |param| param != 'patient' }
+        search_description = sequence[:search_param_descriptions][name.to_sym]
+        values = search_description[:values]
+        path =
+          search_description[:path]
+            .split('.')
+            .drop(1)
+            .map { |path_part| path_part == 'class' ? 'local_class' : path_part }
+            .join('.')
+        path += get_value_path_by_type(search_description[:type])
+
+        {
+          name: name,
+          path: path,
+          values: values
+        }
+      end
+
       def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
         # assume only patient + one other parameter
-        non_patient_search_param = search_parameters.find { |param| param != 'patient' }
-        non_patient_values = sequence[:search_param_descriptions][non_patient_search_param.to_sym][:values]
-        values_variable_name = "#{non_patient_search_param.tr('-', '_')}_val"
+        search_param = fixed_value_search_param(search_parameters, sequence)
+        find_two_values = get_multiple_or_params(sequence).include? search_param[:name]
+        values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
-          #{values_variable_name} = [#{non_patient_values.map { |val| "'#{val}'" }.join(', ')}]
+          @#{sequence[:resource].underscore}_ary = []
+          #{'values_found = 0' if find_two_values}
+          #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           #{values_variable_name}.each do |val|
-            search_params = { 'patient': @instance.patient_id, '#{non_patient_search_param}': val }
+            search_params = { 'patient': @instance.patient_id, '#{search_param[:name]}': val }
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
             assert_response_ok(reply)
             assert_bundle_response(reply)
 
-            resource_count = reply&.resource&.entry&.length || 0
-            @resources_found = true if resource_count.positive?
-            next unless @resources_found
+            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
-            @#{sequence[:resource].underscore} = reply&.resource&.entry&.first&.resource
-            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply&.resource)
+            @resources_found = true
+            @#{sequence[:resource].underscore} = reply.resource.entry
+              .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+              .resource
+            @#{sequence[:resource].underscore}_ary += fetch_all_bundled_resources(reply.resource)
+            #{'values_found += 1' if find_two_values}
 
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-            break
+            break#{' if values_found == 2' if find_two_values}
           end
-          skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found)
+          #{skip_if_not_found(sequence)})
       end
 
       def get_search_params(search_parameters, sequence, grab_first_value = false)
@@ -520,7 +646,7 @@ module Inferno
             elsif grab_first_value && !sequence[:delayed_sequence]
               sequence[:search_param_descriptions][param.to_sym][:values].first
             else
-              resolve_element_path(sequence[:search_param_descriptions][param.to_sym])
+              "get_value_for_search_param(#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym])})"
             end
         end
       end
@@ -544,7 +670,6 @@ module Inferno
                 comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
-                assert_response_ok(reply)
               end)
           end
         end
@@ -557,6 +682,11 @@ module Inferno
           comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
           param_comparators[param] = comparators if comparators.present?
         end
+      end
+
+      def skip_if_not_found(sequence)
+        use_other_patient = ' Please use patients with more information.'
+        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
       end
 
       def search_param_constants(search_parameters, sequence)
@@ -573,19 +703,10 @@ module Inferno
           path_parts = path_parts.map { |part| part == 'class' ? 'local_class' : part }
           path_parts.shift
           case type
-          when 'Period'
+          when 'Period', 'date'
             search_validators += %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |period|
-                  validate_period_search(value, period)
-                end
-                assert value_found, '#{element} on resource does not match #{element} requested'
-      )
-          when 'date'
-            search_validators += %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |date|
-                  validate_date_search(value, date)
-                end
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') { |date| validate_date_search(value, date) }
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
           when 'HumanName'
             # When a string search parameter refers to the types HumanName and Address,
@@ -593,39 +714,40 @@ module Inferno
             # https://www.hl7.org/fhir/search.html#string
             search_validators += %(
                 value = value.downcase
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |name|
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |name|
                   name&.text&.start_with?(value) ||
                     name&.family&.downcase&.include?(value) ||
                     name&.given&.any? { |given| given.downcase.start_with?(value) } ||
                     name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
                     name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
                 end
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
           when 'Address'
             search_validators += %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.')}') do |address|
+                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |address|
                   address&.text&.start_with?(value) ||
                     address&.city&.start_with?(value) ||
                     address&.state&.start_with?(value) ||
                     address&.postalCode&.start_with?(value) ||
                     address&.country&.start_with?(value)
                 end
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
             )
           else
             # searching by patient requires special case because we are searching by a resource identifier
             # references can also be URL's, so we made need to resolve those url's
+            path = path_parts.join('.') + get_value_path_by_type(type)
             search_validators +=
               if ['subject', 'patient'].include? element.to_s
                 %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |reference| [value, 'Patient/' + value].include? reference }
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                value_found = resolve_element_from_path(resource, '#{path}') { |reference| [value, 'Patient/' + value].include? reference }
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
               else
                 %(
-                value_found = can_resolve_path(resource, '#{path_parts.join('.') + get_value_path_by_type(type)}') { |value_in_resource| value_in_resource == value }
-                assert value_found, '#{element} on resource does not match #{element} requested'
+                value_found = resolve_element_from_path(resource, '#{path}') { |value_in_resource| value.split(',').include? value_in_resource }
+                assert value_found.present?, '#{element} on resource does not match #{element} requested'
       )
               end
           end

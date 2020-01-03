@@ -16,26 +16,24 @@ module Inferno
         case property
 
         when 'status'
-          value_found = can_resolve_path(resource, 'status') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'status on resource does not match status requested'
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'status on resource does not match status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'category'
-          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'category on resource does not match category requested'
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'category on resource does not match category requested'
 
         when 'code'
-          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'code on resource does not match code requested'
+          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'code on resource does not match code requested'
 
         when 'date'
-          value_found = can_resolve_path(resource, 'effectiveDateTime') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'date on resource does not match date requested'
+          value_found = resolve_element_from_path(resource, 'effective') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'date on resource does not match date requested'
 
         end
       end
@@ -57,7 +55,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:search])
+        skip_if_known_not_supported(:DiagnosticReport, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -72,9 +70,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+category' do
+      test :search_by_patient_category do
         metadata do
           id '02'
+          name 'Server returns expected results from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -84,6 +83,8 @@ module Inferno
           versions :r4
         end
 
+        @diagnostic_report_ary = []
+
         category_val = ['LAB']
         category_val.each do |val|
           search_params = { 'patient': @instance.patient_id, 'category': val }
@@ -91,24 +92,26 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          resource_count = reply&.resource&.entry&.length || 0
-          @resources_found = true if resource_count.positive?
-          next unless @resources_found
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DiagnosticReport' }
 
-          @diagnostic_report = reply&.resource&.entry&.first&.resource
-          @diagnostic_report_ary = fetch_all_bundled_resources(reply&.resource)
+          @resources_found = true
+          @diagnostic_report = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == 'DiagnosticReport' }
+            .resource
+          @diagnostic_report_ary += fetch_all_bundled_resources(reply.resource)
 
           save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
           save_delayed_sequence_references(@diagnostic_report_ary)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
           break
         end
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient' do
+      test :search_by_patient do
         metadata do
           id '03'
+          name 'Server returns expected results from DiagnosticReport search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -118,8 +121,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnostic_report.nil?, 'Expected valid DiagnosticReport resource to be present'
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id
@@ -130,9 +132,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+code' do
+      test :search_by_patient_code do
         metadata do
           id '04'
+          name 'Server returns expected results from DiagnosticReport search by patient+code'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -142,8 +145,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnostic_report.nil?, 'Expected valid DiagnosticReport resource to be present'
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -156,26 +158,26 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+category+date' do
+      test :search_by_patient_category_date do
         metadata do
           id '05'
+          name 'Server returns expected results from DiagnosticReport search by patient+category+date'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+category+date on the DiagnosticReport resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnostic_report.nil?, 'Expected valid DiagnosticReport resource to be present'
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
           'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -183,18 +185,18 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-          assert_response_ok(reply)
         end
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+status' do
+      test :search_by_patient_status do
         metadata do
           id '06'
+          name 'Server returns expected results from DiagnosticReport search by patient+status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -205,8 +207,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnostic_report.nil?, 'Expected valid DiagnosticReport resource to be present'
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -219,27 +220,27 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from DiagnosticReport search by patient+code+date' do
+      test :search_by_patient_code_date do
         metadata do
           id '07'
+          name 'Server returns expected results from DiagnosticReport search by patient+code+date'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
             A server SHOULD support searching by patient+code+date on the DiagnosticReport resource
 
-              including support for these date comparators: gt, lt, le
+              including support for these date comparators: gt, lt, le, ge
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@diagnostic_report.nil?, 'Expected valid DiagnosticReport resource to be present'
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
           'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effectiveDateTime'))
+          'date': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary, 'effective'))
         }
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
@@ -247,19 +248,18 @@ module Inferno
         validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
         assert_response_ok(reply)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
           comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), comparator_search_params)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
-          assert_response_ok(reply)
         end
       end
 
       test :read_interaction do
         metadata do
           id '08'
-          name 'DiagnosticReport read interaction supported'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the DiagnosticReport read interaction.
@@ -267,7 +267,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:read])
+        skip_if_known_not_supported(:DiagnosticReport, [:read])
         skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
@@ -276,15 +276,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '09'
-          name 'DiagnosticReport vread interaction supported'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the DiagnosticReport vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:vread])
+        skip_if_known_not_supported(:DiagnosticReport, [:vread])
         skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
@@ -293,21 +294,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '10'
-          name 'DiagnosticReport history interaction supported'
+          name 'Server returns correct DiagnosticReport resource from DiagnosticReport history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the DiagnosticReport history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:history])
+        skip_if_known_not_supported(:DiagnosticReport, [:history])
         skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from DiagnosticReport search by patient + category + _revIncludes: Provenance:target' do
         metadata do
           id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -327,11 +329,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'DiagnosticReport resources associated with Patient conform to US Core R4 profiles' do
+      test 'DiagnosticReport resources returned conform to US Core R4 profiles' do
         metadata do
           id '12'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
@@ -344,11 +347,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
       end
 
-      test 'At least one of every must support element is provided in any DiagnosticReport for this patient.' do
+      test 'All must support elements are provided in the DiagnosticReport resources returned.' do
         metadata do
           id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -381,8 +384,8 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @diagnostic_report_ary&.any?
-        must_support_confirmed = {}
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+
         must_support_elements = [
           'DiagnosticReport.status',
           'DiagnosticReport.category',
@@ -395,20 +398,21 @@ module Inferno
           'DiagnosticReport.performer',
           'DiagnosticReport.result'
         ]
-        must_support_elements.each do |path|
-          @diagnostic_report_ary&.each do |resource|
-            truncated_path = path.gsub('DiagnosticReport.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @diagnostic_report_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided DiagnosticReport resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('DiagnosticReport.', '')
+          @diagnostic_report_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@diagnostic_report_ary&.length} provided DiagnosticReport resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within DiagnosticReport resource is valid and can be read.' do
         metadata do
           id '14'
           link 'http://hl7.org/fhir/references.html'
@@ -418,8 +422,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:DiagnosticReport, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:DiagnosticReport, [:search, :read])
+        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@diagnostic_report)
       end

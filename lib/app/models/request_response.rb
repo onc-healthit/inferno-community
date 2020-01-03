@@ -15,11 +15,14 @@ module Inferno
       property :direction, String
       property :instance_id, String
 
+      property :timestamp, DateTime, default: proc { DateTime.now }
+
       has n, :test_results, through: Resource
 
       def self.from_request(req, instance_id, direction = nil)
         request = req.request
         response = req.response
+
         new(
           direction: direction || req&.direction,
           request_method: request[:method],
@@ -29,7 +32,8 @@ module Inferno
           response_code: response[:code],
           response_headers: response[:headers].to_json,
           response_body: response[:body],
-          instance_id: instance_id
+          instance_id: instance_id,
+          timestamp: response[:timestamp]
         )
       end
     end

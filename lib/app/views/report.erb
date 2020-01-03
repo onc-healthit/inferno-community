@@ -145,7 +145,7 @@
                         </span> - 
                         <div class="sequence-out-of">
                           <% if sequence_results[test_case.id].nil? %>
-                            <%= test_case.sequence.test_count %> <% 'test'.pluralize(test_case.sequence.test_count) %>
+                            <%= test_case.sequence.test_count(instance.module) %> <%= 'test'.pluralize(test_case.sequence.test_count(instance.module)) %>
                           <% else %>
                             <%= sequence_results[test_case.id].required_passed %>/<%= sequence_results[test_case.id].total_required_tests_except_omitted%> Required Tests Passed
                             <% if sequence_results[test_case.id].optional_total > 0%> -
@@ -169,7 +169,7 @@
           </div>
         <div class="report-result-details">
           
-            <%= erb(:test_list,{},{instance: instance, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
+            <%= erb(:test_list,{},{instance: instance, test_case_prefix: test_case.prefix, sequence_class: test_case.sequence, sequence_result: sequence_results[test_case.id] }) %>
           
         </div>
         </div>

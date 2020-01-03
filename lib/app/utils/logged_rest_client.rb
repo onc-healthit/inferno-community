@@ -29,6 +29,8 @@ module Inferno
                 }
               end
 
+      reply[:timestamp] = DateTime.now
+
       request[:payload] = begin
                             JSON.parse(request[:payload])
                           rescue StandardError

@@ -16,26 +16,24 @@ module Inferno
         case property
 
         when 'category'
-          value_found = can_resolve_path(resource, 'category.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'category on resource does not match category requested'
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'category on resource does not match category requested'
 
         when 'clinical-status'
-          value_found = can_resolve_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'clinical-status on resource does not match clinical-status requested'
+          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'onset-date'
-          value_found = can_resolve_path(resource, 'onsetDateTime') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'onset-date on resource does not match onset-date requested'
+          value_found = resolve_element_from_path(resource, 'onsetDateTime') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'onset-date on resource does not match onset-date requested'
 
         when 'code'
-          value_found = can_resolve_path(resource, 'code.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'code on resource does not match code requested'
+          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'code on resource does not match code requested'
 
         end
       end
@@ -57,7 +55,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Condition, [:search])
+        skip_if_known_not_supported(:Condition, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -71,9 +69,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from Condition search by patient' do
+      test :search_by_patient do
         metadata do
           id '02'
+          name 'Server returns expected results from Condition search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -91,21 +90,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Condition' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        @condition = reply&.resource&.entry&.first&.resource
-        @condition_ary = fetch_all_bundled_resources(reply&.resource)
+        @condition = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Condition' }
+          .resource
+        @condition_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('Condition'), reply)
         save_delayed_sequence_references(@condition_ary)
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
       end
 
-      test 'Server returns expected results from Condition search by patient+category' do
+      test :search_by_patient_category do
         metadata do
           id '03'
+          name 'Server returns expected results from Condition search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -116,8 +117,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@condition.nil?, 'Expected valid Condition resource to be present'
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -130,22 +130,22 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Condition search by patient+onset-date' do
+      test :search_by_patient_onset_date do
         metadata do
           id '04'
+          name 'Server returns expected results from Condition search by patient+onset-date'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
             A server SHOULD support searching by patient+onset-date on the Condition resource
 
-              including support for these onset-date comparators: gt, lt, le
+              including support for these onset-date comparators: gt, lt, le, ge
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@condition.nil?, 'Expected valid Condition resource to be present'
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -157,18 +157,18 @@ module Inferno
         validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         assert_response_ok(reply)
 
-        ['gt', 'lt', 'le'].each do |comparator|
+        ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:'onset-date'])
           comparator_search_params = { 'patient': search_params[:patient], 'onset-date': comparator_val }
           reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
           validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-          assert_response_ok(reply)
         end
       end
 
-      test 'Server returns expected results from Condition search by patient+clinical-status' do
+      test :search_by_patient_clinical_status do
         metadata do
           id '05'
+          name 'Server returns expected results from Condition search by patient+clinical-status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -179,8 +179,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@condition.nil?, 'Expected valid Condition resource to be present'
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -193,9 +192,10 @@ module Inferno
         assert_response_ok(reply)
       end
 
-      test 'Server returns expected results from Condition search by patient+code' do
+      test :search_by_patient_code do
         metadata do
           id '06'
+          name 'Server returns expected results from Condition search by patient+code'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -206,8 +206,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@condition.nil?, 'Expected valid Condition resource to be present'
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -223,7 +222,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '07'
-          name 'Condition read interaction supported'
+          name 'Server returns correct Condition resource from Condition read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Condition read interaction.
@@ -231,7 +230,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Condition, [:read])
+        skip_if_known_not_supported(:Condition, [:read])
         skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@condition, versioned_resource_class('Condition'))
@@ -240,15 +239,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '08'
-          name 'Condition vread interaction supported'
+          name 'Server returns correct Condition resource from Condition vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Condition vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Condition, [:vread])
+        skip_if_known_not_supported(:Condition, [:vread])
         skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@condition, versioned_resource_class('Condition'))
@@ -257,21 +257,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '09'
-          name 'Condition history interaction supported'
+          name 'Server returns correct Condition resource from Condition history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Condition history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Condition, [:history])
+        skip_if_known_not_supported(:Condition, [:history])
         skip 'No Condition resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@condition, versioned_resource_class('Condition'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Condition search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '10'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -289,11 +290,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Condition resources associated with Patient conform to US Core R4 profiles' do
+      test 'Condition resources returned conform to US Core R4 profiles' do
         metadata do
           id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
@@ -306,11 +308,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Condition')
       end
 
-      test 'At least one of every must support element is provided in any Condition for this patient.' do
+      test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
           id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -333,8 +335,8 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @condition_ary&.any?
-        must_support_confirmed = {}
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
+
         must_support_elements = [
           'Condition.clinicalStatus',
           'Condition.verificationStatus',
@@ -342,20 +344,21 @@ module Inferno
           'Condition.code',
           'Condition.subject'
         ]
-        must_support_elements.each do |path|
-          @condition_ary&.each do |resource|
-            truncated_path = path.gsub('Condition.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @condition_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Condition resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Condition.', '')
+          @condition_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@condition_ary&.length} provided Condition resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Condition resource is valid and can be read.' do
         metadata do
           id '13'
           link 'http://hl7.org/fhir/references.html'
@@ -365,8 +368,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Condition, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Condition, [:search, :read])
+        skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@condition)
       end

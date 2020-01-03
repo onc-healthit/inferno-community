@@ -64,8 +64,9 @@ module Inferno
           # Cancels the currently running test
           get '/:id/test_sets/:test_set_id/sequence_result/:sequence_result_id/cancel' do
             sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
-            halt 404 if sequence_result.testing_instance.id != params[:id]
-            test_set = sequence_result.testing_instance.module.test_sets[params[:test_set_id].to_sym]
+            instance = sequence_result.testing_instance
+            halt 404 if instance.id != params[:id]
+            test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
 
             sequence_result.result = 'cancel'
@@ -77,13 +78,13 @@ module Inferno
               last_result.message = cancel_message
             end
 
-            sequence = sequence_result.testing_instance.module.sequences.find do |x|
+            sequence = instance.module.sequences.find do |x|
               x.sequence_name == sequence_result.name
             end
 
             current_test_count = sequence_result.result_count
 
-            sequence.tests.each_with_index do |test, index|
+            sequence.tests(instance.module).each_with_index do |test, index|
               next if index < current_test_count
 
               sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test.id,
@@ -131,7 +132,7 @@ module Inferno
             instance.reload # ensure that we have all the latest data
 
             total_tests = submitted_test_cases.reduce(0) do |total, set|
-              sequence_test_count = test_set.test_case_by_id(set).sequence.test_count
+              sequence_test_count = test_set.test_case_by_id(set).sequence.test_count(instance.module)
               total + sequence_test_count
             end
 
@@ -178,10 +179,17 @@ module Inferno
                 instance.reload # ensure that we have all the latest data
                 sequence = test_case.sequence.new(instance, client, settings.disable_tls_tests)
                 count = 0
-                sequence_result = sequence.start(test_set.id, test_case.id) do |result|
+                sequence_result = sequence.start(test_set.id, test_case.id) do
                   count += 1
                   test_count += 1
-                  out << js_update_result(sequence, test_set, result, count, sequence.test_count, test_count, total_tests)
+                  out << js_update_result(
+                    instance: instance,
+                    sequence: sequence,
+                    test_set: test_set,
+                    set_count: count,
+                    count: test_count,
+                    total: total_tests
+                  )
                 end
 
                 sequence_result.next_test_cases = ([next_test_case] + submitted_test_cases).join(',')

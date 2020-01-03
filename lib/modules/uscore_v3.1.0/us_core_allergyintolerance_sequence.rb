@@ -16,12 +16,12 @@ module Inferno
         case property
 
         when 'clinical-status'
-          value_found = can_resolve_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'clinical-status on resource does not match clinical-status requested'
+          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         end
       end
@@ -43,7 +43,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:search])
+        skip_if_known_not_supported(:AllergyIntolerance, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -57,9 +57,10 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server returns expected results from AllergyIntolerance search by patient' do
+      test :search_by_patient do
         metadata do
           id '02'
+          name 'Server returns expected results from AllergyIntolerance search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -77,21 +78,23 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        @allergy_intolerance = reply&.resource&.entry&.first&.resource
-        @allergy_intolerance_ary = fetch_all_bundled_resources(reply&.resource)
+        @allergy_intolerance = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
+          .resource
+        @allergy_intolerance_ary = fetch_all_bundled_resources(reply.resource)
         save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
         save_delayed_sequence_references(@allergy_intolerance_ary)
         validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
       end
 
-      test 'Server returns expected results from AllergyIntolerance search by patient+clinical-status' do
+      test :search_by_patient_clinical_status do
         metadata do
           id '03'
+          name 'Server returns expected results from AllergyIntolerance search by patient+clinical-status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -102,8 +105,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@allergy_intolerance.nil?, 'Expected valid AllergyIntolerance resource to be present'
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         search_params = {
           'patient': @instance.patient_id,
@@ -119,7 +121,7 @@ module Inferno
       test :read_interaction do
         metadata do
           id '04'
-          name 'AllergyIntolerance read interaction supported'
+          name 'Server returns correct AllergyIntolerance resource from AllergyIntolerance read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the AllergyIntolerance read interaction.
@@ -127,7 +129,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:read])
+        skip_if_known_not_supported(:AllergyIntolerance, [:read])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
@@ -136,15 +138,16 @@ module Inferno
       test :vread_interaction do
         metadata do
           id '05'
-          name 'AllergyIntolerance vread interaction supported'
+          name 'Server returns correct AllergyIntolerance resource from AllergyIntolerance vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the AllergyIntolerance vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:vread])
+        skip_if_known_not_supported(:AllergyIntolerance, [:vread])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
@@ -153,21 +156,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '06'
-          name 'AllergyIntolerance history interaction supported'
+          name 'Server returns correct AllergyIntolerance resource from AllergyIntolerance history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the AllergyIntolerance history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:history])
+        skip_if_known_not_supported(:AllergyIntolerance, [:history])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from AllergyIntolerance search by patient + _revIncludes: Provenance:target' do
         metadata do
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -185,11 +189,12 @@ module Inferno
         reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'AllergyIntolerance resources associated with Patient conform to US Core R4 profiles' do
+      test 'AllergyIntolerance resources returned conform to US Core R4 profiles' do
         metadata do
           id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
@@ -202,11 +207,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('AllergyIntolerance')
       end
 
-      test 'At least one of every must support element is provided in any AllergyIntolerance for this patient.' do
+      test 'All must support elements are provided in the AllergyIntolerance resources returned.' do
         metadata do
           id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -227,28 +232,29 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @allergy_intolerance_ary&.any?
-        must_support_confirmed = {}
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+
         must_support_elements = [
           'AllergyIntolerance.clinicalStatus',
           'AllergyIntolerance.verificationStatus',
           'AllergyIntolerance.code',
           'AllergyIntolerance.patient'
         ]
-        must_support_elements.each do |path|
-          @allergy_intolerance_ary&.each do |resource|
-            truncated_path = path.gsub('AllergyIntolerance.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @allergy_intolerance_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided AllergyIntolerance resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('AllergyIntolerance.', '')
+          @allergy_intolerance_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@allergy_intolerance_ary&.length} provided AllergyIntolerance resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within AllergyIntolerance resource is valid and can be read.' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/references.html'
@@ -258,8 +264,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:AllergyIntolerance, [:search, :read])
+        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@allergy_intolerance)
       end

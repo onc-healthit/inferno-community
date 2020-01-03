@@ -6,26 +6,29 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
   REQUEST_HEADERS = { 'Accept' => 'application/json', 'Content-type' => 'application/x-www-form-urlencoded' }.freeze
 
   def setup
-    introspect_token = JSON::JWT.new(iss: 'foo')
-    introspect_refresh_token = JSON::JWT.new(iss: 'foo_refresh')
+    introspect_token = 'INTROSPECT_TOKEN'
+    introspect_refresh_token = 'INTROSPECT_REFRESH_TOKEN'
     resource_id = SecureRandom.uuid
     resource_secret = SecureRandom.hex(32)
 
-    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                                     client_name: 'Inferno',
-                                                     base_url: 'http://localhost:4567',
-                                                     scopes: 'launch openid patient/*.* profile',
-                                                     oauth_introspection_endpoint: 'https://oauth_reg.example.com/introspect',
-                                                     introspect_token: introspect_token,
-                                                     selected_module: 'argonaut',
-                                                     introspect_refresh_token: introspect_refresh_token,
-                                                     resource_id: resource_id,
-                                                     resource_secret: resource_secret,
-                                                     token_retrieved_at: DateTime.now)
-    @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
+    @instance = Inferno::Models::TestingInstance.create(
+      url: 'http://www.example.com',
+      client_name: 'Inferno',
+      base_url: 'http://localhost:4567',
+      received_scopes: 'launch openid patient/*.* profile',
+      oauth_introspection_endpoint: 'https://oauth_reg.example.com/introspect',
+      introspect_token: introspect_token,
+      selected_module: 'argonaut',
+      introspect_refresh_token: introspect_refresh_token,
+      resource_id: resource_id,
+      resource_secret: resource_secret,
+      token_retrieved_at: DateTime.now
+    )
+
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2
     client.default_json
+
     @sequence = Inferno::Sequence::TokenIntrospectionSequence.new(@instance, client, true)
   end
 
@@ -38,7 +41,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
     response = {
       'active' => true,
-      'scope' => @instance.scopes,
+      'scope' => @instance.received_scopes,
       'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
@@ -109,7 +112,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
     response = {
       'active' => false,
-      'scope' => @instance.scopes,
+      'scope' => @instance.received_scopes,
       'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
@@ -149,7 +152,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
     response = {
       'active' => true,
-      'scope' => @instance.scopes,
+      'scope' => @instance.received_scopes,
       'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
@@ -190,7 +193,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
     response = {
       'active' => true,
-      'scope' => @instance.scopes.split(' ')[0...-1].join(' '), # remove last scope
+      'scope' => @instance.received_scopes.split(' ')[0...-1].join(' '), # remove last scope
       'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
@@ -230,7 +233,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
     response = {
       'active' => true,
-      'scope' => @instance.scopes + ' extra', # add extra scope
+      'scope' => @instance.received_scopes + ' extra', # add extra scope
       'exp' => 2.hours.from_now.to_i
     }
     refresh_params = {
@@ -270,7 +273,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     }
     response = {
       'active' => false,
-      'scope' => @instance.scopes,
+      'scope' => @instance.received_scopes,
       'exp' => 30.minutes.from_now.to_i # should be at least 60 minutes
     }
     refresh_params = {

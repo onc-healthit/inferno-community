@@ -22,7 +22,7 @@ module Inferno
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Provenance from the server'
+          name 'Server returns correct Provenance resource from the Provenance read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Provenance can be resolved and read.
@@ -30,31 +30,34 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:read])
+        skip_if_known_not_supported(:Provenance, [:read])
 
-        provenance_id = @instance.resource_references.find { |reference| reference.resource_type == 'Provenance' }&.resource_id
-        skip 'No Provenance references found from the prior searches' if provenance_id.nil?
+        provenance_references = @instance.resource_references.select { |reference| reference.resource_type == 'Provenance' }
+        skip 'No Provenance references found from the prior searches' if provenance_references.blank?
 
-        @provenance = validate_read_reply(
-          FHIR::Provenance.new(id: provenance_id),
-          FHIR::Provenance
-        )
-        @provenance_ary = Array.wrap(@provenance).compact
+        @provenance_ary = provenance_references.map do |reference|
+          validate_read_reply(
+            FHIR::Provenance.new(id: reference.resource_id),
+            FHIR::Provenance
+          )
+        end
+        @provenance = @provenance_ary.first
         @resources_found = @provenance.present?
       end
 
       test :vread_interaction do
         metadata do
           id '02'
-          name 'Provenance vread interaction supported'
+          name 'Server returns correct Provenance resource from Provenance vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Provenance vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:vread])
+        skip_if_known_not_supported(:Provenance, [:vread])
         skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
@@ -63,21 +66,22 @@ module Inferno
       test :history_interaction do
         metadata do
           id '03'
-          name 'Provenance history interaction supported'
+          name 'Server returns correct Provenance resource from Provenance history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Provenance history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:history])
+        skip_if_known_not_supported(:Provenance, [:history])
         skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@provenance, versioned_resource_class('Provenance'))
       end
 
-      test 'Provenance resources associated with Patient conform to US Core R4 profiles' do
+      test 'Provenance resources returned conform to US Core R4 profiles' do
         metadata do
           id '04'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
@@ -90,11 +94,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip 'No Provenance resources appear to be available.' unless @resources_found
         test_resources_against_profile('Provenance')
       end
 
-      test 'At least one of every must support element is provided in any Provenance for this patient.' do
+      test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
           id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -127,8 +131,8 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @provenance_ary&.any?
-        must_support_confirmed = {}
+        skip 'No Provenance resources appear to be available.' unless @resources_found
+
         must_support_elements = [
           'Provenance.target',
           'Provenance.recorded',
@@ -141,20 +145,21 @@ module Inferno
           'Provenance.agent',
           'Provenance.agent.type'
         ]
-        must_support_elements.each do |path|
-          @provenance_ary&.each do |resource|
-            truncated_path = path.gsub('Provenance.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @provenance_ary.length
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Provenance resource(s)" unless must_support_confirmed[path]
+        missing_must_support_elements = must_support_elements.reject do |path|
+          truncated_path = path.gsub('Provenance.', '')
+          @provenance_ary&.any? do |resource|
+            resolve_element_from_path(resource, truncated_path).present?
+          end
         end
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.length} provided Provenance resource(s)"
+
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Provenance resource is valid and can be read.' do
         metadata do
           id '06'
           link 'http://hl7.org/fhir/references.html'
@@ -164,8 +169,8 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Provenance, [:search, :read])
+        skip 'No Provenance resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@provenance)
       end

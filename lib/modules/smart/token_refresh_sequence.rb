@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './shared_launch_tests'
+
 module Inferno
   module Sequence
     class TokenRefreshSequence < SequenceBase
+      include SharedLaunchTests
+
       title 'Token Refresh'
       description 'Demonstrate token refresh capability.'
       test_id_prefix 'TR'
@@ -37,11 +41,13 @@ module Inferno
       test :invalid_refresh_token do
         metadata do
           id '01'
-          name 'Refresh token exchange fails when provided invalid Refresh Token.'
+          name 'Refresh token exchange fails when supplied invalid Refresh Token'
           link 'https://tools.ietf.org/html/rfc6749'
           description %(
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
+
+        skip_if_no_refresh_token
 
         token_response = perform_refresh_request(@instance.client_id, INVALID_REFRESH_TOKEN)
         assert_response_bad_or_unauthorized token_response
@@ -50,11 +56,13 @@ module Inferno
       test :invalid_client_id do
         metadata do
           id '02'
-          name 'Refresh token exchange fails when provided invalid Client ID.'
+          name 'Refresh token exchange fails when supplied invalid Client ID'
           link 'https://tools.ietf.org/html/rfc6749'
           description %(
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
+
+        skip_if_no_refresh_token
 
         token_response = perform_refresh_request(INVALID_CLIENT_ID, @instance.refresh_token)
         assert_response_bad_or_unauthorized token_response
@@ -63,7 +71,7 @@ module Inferno
       test :refresh_without_scope do
         metadata do
           id '03'
-          name 'Server successfully refreshes the access token when optional scope parameter omitted.'
+          name 'Server successfully refreshes the access token when optional scope parameter omitted'
           link 'https://tools.ietf.org/html/rfc6749'
           description %(
             Server successfully exchanges refresh token at OAuth token endpoint without providing scope in
@@ -79,16 +87,21 @@ module Inferno
           )
         end
 
+        skip_if_no_refresh_token
+
         specify_scopes = false
 
         token_response = perform_refresh_request(@instance.client_id, @instance.refresh_token, specify_scopes)
+        assert_response_ok(token_response)
+
         validate_and_save_refresh_response(token_response)
+        @refresh_successful = true
       end
 
       test :refresh_with_scope do
         metadata do
           id '04'
-          name 'Server successfully refreshes the access token when optional scope parameter provided.'
+          name 'Server successfully refreshes the access token when optional scope parameter provided'
           link 'https://tools.ietf.org/html/rfc6749'
           description %(
             Server successfully exchanges refresh token at OAuth token endpoint while providing scope in
@@ -103,74 +116,24 @@ module Inferno
           )
         end
 
+        skip_if_no_refresh_token
+
         specify_scopes = true
 
         token_response = perform_refresh_request(@instance.client_id, @instance.refresh_token, specify_scopes)
+        assert_response_ok(token_response)
+
         validate_and_save_refresh_response(token_response)
+        @refresh_successful = true
+      end
+
+      def skip_if_no_refresh_token
+        skip_if @instance.refresh_token.blank?, 'No refresh token was received during the SMART launch'
       end
 
       def validate_and_save_refresh_response(token_response)
-        assert_response_ok(token_response)
-        assert_valid_json(token_response.body)
-        token_response_body = JSON.parse(token_response.body)
-
-        # The minimum we need to 'progress' is the access token,
-        # so first just check and save access token, before validating rest of payload.
-        # This is done to make things easier for developers.
-
-        assert token_response_body.key?('access_token'), 'Token response did not contain access_token as required'
-
-        token_retrieved_at = DateTime.now
-
-        @instance.resource_references.each(&:destroy)
-        @instance.resource_references << Inferno::Models::ResourceReference.new(resource_type: 'Patient', resource_id: token_response_body['patient']) if token_response_body.key?('patient')
-
-        @instance.save!
-
-        @instance.update(token: token_response_body['access_token'], token_retrieved_at: token_retrieved_at)
-
-        ['expires_in', 'token_type', 'scope'].each do |key|
-          assert token_response_body.key?(key), "Token response did not contain #{key} as required"
-        end
-
-        # case insentitive per https://tools.ietf.org/html/rfc6749#section-5.1
-        assert token_response_body['token_type'].casecmp('bearer').zero?, 'Token type must be Bearer.'
-
-        expected_scopes = @instance.scopes.split(' ')
-        actual_scopes = token_response_body['scope'].split(' ')
-
-        warning do
-          missing_scopes = (expected_scopes - actual_scopes)
-          assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
-
-          assert token_response_body.key?('patient'), 'No patient id provided in token exchange.'
-        end
-
-        scopes = token_response_body['scope'] || @instance.scopes
-
-        @instance.save!
-        @instance.update(scopes: scopes)
-
-        if token_response_body.key?('id_token')
-          @instance.save!
-          @instance.update(id_token: token_response_body['id_token'])
-        end
-
-        if token_response_body.key?('refresh_token')
-          @instance.save!
-          @instance.update(refresh_token: token_response_body['refresh_token'])
-        end
-
-        warning do
-          # These should be required but due to a gap in the SMART App Launch Guide they are not currently required
-          # See https://github.com/HL7/smart-app-launch/issues/293
-          [:cache_control, :pragma].each do |key|
-            assert token_response.headers.key?(key), "Token response headers did not contain #{key} as is recommended for token exchanges."
-          end
-
-          assert token_response.headers[:cache_control].downcase.include?('no-store'), 'Token response header should have cache_control containing no-store.'
-          assert token_response.headers[:pragma].downcase.include?('no-cache'), 'Token response header should have pragma containing no-cache.'
-        end
+        validate_token_response_contents(token_response, require_expires_in: true)
+        warning { validate_token_response_headers(token_response) }
       end
 
       def encoded_secret(client_id, client_secret)
