@@ -47,7 +47,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:search])
+        skip_if_known_not_supported(:Goal, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -168,7 +168,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:read])
+        skip_if_known_not_supported(:Goal, [:read])
         skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@goal, versioned_resource_class('Goal'))
@@ -186,7 +186,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:vread])
+        skip_if_known_not_supported(:Goal, [:vread])
         skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@goal, versioned_resource_class('Goal'))
@@ -204,7 +204,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:history])
+        skip_if_known_not_supported(:Goal, [:history])
         skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@goal, versioned_resource_class('Goal'))
@@ -306,7 +306,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:search, :read])
+        skip_if_known_not_supported(:Goal, [:search, :read])
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@goal)

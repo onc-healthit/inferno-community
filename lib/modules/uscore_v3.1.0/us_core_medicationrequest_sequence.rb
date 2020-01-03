@@ -55,7 +55,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:MedicationRequest, [:search])
+        skip_if_known_not_supported(:MedicationRequest, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -203,7 +203,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:MedicationRequest, [:read])
+        skip_if_known_not_supported(:MedicationRequest, [:read])
         skip 'No MedicationRequest resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@medication_request, versioned_resource_class('MedicationRequest'))
@@ -221,7 +221,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:MedicationRequest, [:vread])
+        skip_if_known_not_supported(:MedicationRequest, [:vread])
         skip 'No MedicationRequest resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@medication_request, versioned_resource_class('MedicationRequest'))
@@ -239,7 +239,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:MedicationRequest, [:history])
+        skip_if_known_not_supported(:MedicationRequest, [:history])
         skip 'No MedicationRequest resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@medication_request, versioned_resource_class('MedicationRequest'))
@@ -414,7 +414,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:MedicationRequest, [:search, :read])
+        skip_if_known_not_supported(:MedicationRequest, [:search, :read])
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@medication_request)

@@ -43,7 +43,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:search])
+        skip_if_known_not_supported(:Device, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -129,7 +129,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:read])
+        skip_if_known_not_supported(:Device, [:read])
         skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@device, versioned_resource_class('Device'))
@@ -147,7 +147,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:vread])
+        skip_if_known_not_supported(:Device, [:vread])
         skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@device, versioned_resource_class('Device'))
@@ -165,7 +165,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:history])
+        skip_if_known_not_supported(:Device, [:history])
         skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@device, versioned_resource_class('Device'))
@@ -285,7 +285,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Device, [:search, :read])
+        skip_if_known_not_supported(:Device, [:search, :read])
         skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@device)

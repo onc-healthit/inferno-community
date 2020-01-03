@@ -50,7 +50,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:read])
+        skip_if_known_not_supported(:Organization, [:read])
 
         organization_references = @instance.resource_references.select { |reference| reference.resource_type == 'Organization' }
         skip 'No Organization references found from the prior searches' if organization_references.blank?
@@ -76,7 +76,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:search])
+        skip_if_known_not_supported(:Organization, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -163,7 +163,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:vread])
+        skip_if_known_not_supported(:Organization, [:vread])
         skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@organization, versioned_resource_class('Organization'))
@@ -181,7 +181,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:history])
+        skip_if_known_not_supported(:Organization, [:history])
         skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@organization, versioned_resource_class('Organization'))
@@ -311,7 +311,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Organization, [:search, :read])
+        skip_if_known_not_supported(:Organization, [:search, :read])
         skip 'No Organization resources appear to be available.' unless @resources_found
 
         validate_reference_resolutions(@organization)

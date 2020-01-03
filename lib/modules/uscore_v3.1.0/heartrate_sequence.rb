@@ -55,7 +55,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Observation, [:search])
+        skip_if_known_not_supported(:Observation, [:search])
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -244,7 +244,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Observation, [:read])
+        skip_if_known_not_supported(:Observation, [:read])
         skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_read_reply(@observation, versioned_resource_class('Observation'))
@@ -262,7 +262,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Observation, [:vread])
+        skip_if_known_not_supported(:Observation, [:vread])
         skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_vread_reply(@observation, versioned_resource_class('Observation'))
@@ -280,7 +280,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Observation, [:history])
+        skip_if_known_not_supported(:Observation, [:history])
         skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
         validate_history_reply(@observation, versioned_resource_class('Observation'))
@@ -462,7 +462,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Observation, [:search, :read])
+        skip_if_known_not_supported(:Observation, [:search, :read])
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         validate_reference_resolutions(@observation)

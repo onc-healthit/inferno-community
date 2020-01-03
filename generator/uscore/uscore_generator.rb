@@ -121,7 +121,7 @@ module Inferno
         }
 
         read_test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:read])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:read])
 
               #{sequence[:resource].underscore}_references = @instance.resource_references.select { |reference| reference.resource_type == '#{sequence[:resource]}' }
               skip 'No #{sequence[:resource]} references found from the prior searches' if #{sequence[:resource].underscore}_references.blank?
@@ -161,7 +161,7 @@ module Inferno
         unit_test_params = get_search_param_hash(search_parameters, sequence, true)
 
         authorization_test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:search])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:search])
 
               @client.set_no_auth
               omit 'Do not test if no bearer token set' if @instance.token.blank?
@@ -190,7 +190,7 @@ module Inferno
         }
 
         docref_test[:test_code] = %(
-          skip_if_not_supported(:#{sequence[:resource]}, [], [:docref])
+          skip_if_known_not_supported(:#{sequence[:resource]}, [], [:docref])
           search_string = "/DocumentReference/$docref?patient=\#{@instance.patient_id}"
           reply = @client.get(search_string, @client.fhir_headers)
           assert_response_ok(reply)
@@ -320,7 +320,7 @@ module Inferno
         }
 
         interaction_test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
               skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
               validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
@@ -481,7 +481,7 @@ module Inferno
         }
 
         test[:test_code] = %(
-              skip_if_not_supported(:#{sequence[:resource]}, [:search, :read])
+              skip_if_known_not_supported(:#{sequence[:resource]}, [:search, :read])
               #{skip_if_not_found(sequence)}
 
               validate_reference_resolutions(@#{sequence[:resource].underscore}))
