@@ -1,0 +1,1173 @@
+openapi: 3.0.0
+
+info:
+  title: Inferno API
+  description: JSON API for Inferno
+  version: v1
+
+servers:
+  - url: https://inferno.healthit.gov/inferno/api/v1
+    description: Production server
+  - url: http://localhost:4567/api/v1
+    description: Local server
+
+paths:
+  /test_set:
+    get:
+      description: >
+        Returns all of the available test sets. 
+      summary: All test sets
+      responses:
+        '200':
+          $ref: '#/components/responses/200TestSets'
+  /test_set/{test_set_id}:
+    get:
+      description: > 
+        Returns a specific test set. 
+        Each test_set is identified by a unique `id`. 
+      summary: Specific test set
+      parameters: 
+        - $ref: '#/components/parameters/TestSetID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200TestSet'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /preset:
+    get:
+      description: > 
+        Returns all of the available presets. 
+      summary: All presets
+      responses:
+        '200':
+          $ref: '#/components/responses/200Presets'
+  /preset/{preset_id}:
+    get:
+      description: > 
+        Returns a specific preset. 
+        Each preset is identified by a unique `id`. 
+      summary: Specific preset
+      parameters: 
+        - $ref: '#/components/parameters/PresetID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Preset'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance:
+    post:
+      description: > 
+        Creates a new instance. 
+        An instance can be created either with new parameters or using a preset. 
+      summary: Creates an instance
+      requestBody: 
+        $ref: '#/components/requestBodies/CreateInstance'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Instance'
+        '400':
+          $ref: '#/components/responses/400WronglyUsed'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}:
+    get:
+      description: > 
+        Returns a specific instance. 
+        Each instance is identified by a unique `id`. 
+      summary: Specific instance
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Instance'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module:
+    get:
+      description: > 
+        Returns the module of a specified instance. 
+        A module represents the available tests. 
+      summary: Module of an instance
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Module'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group:
+    get:
+      description: > 
+        Returns all of groups available for the specified instance. 
+      summary: All groups
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Groups'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}:
+    get:
+      description: > 
+        Returns the contents of a specific group for the specified instance. 
+      summary: Specific groups
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Group'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}/$execute:
+    post:
+      description: > 
+        Executes the specified group on the instance. 
+        The tests will not run if the group is not executable.
+      summary: Execute group
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Results'
+        '400':
+          $ref: '#/components/responses/400WronglyUsed'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}/$execute_stream:
+    post:
+      description: > 
+        Executes the specified group on the instance. 
+        A stream will send updates while the tests are running, following with the usual results. 
+        The stream uses NDJSON format. 
+      summary: Execute group with stream
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200GroupStream'
+        '400':
+          $ref: '#/components/responses/400WronglyUsed'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}/sequence:
+    get:
+      description: > 
+        Returns all of sequences available for the specified instance in the specified group. 
+      summary: All sequences
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Sequences'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}/sequence/{sequence_id}:
+    get:
+      description: > 
+        Returns a specific sequence for the specified instance in a specific group. 
+      summary: Specific sequence
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+        - $ref: '#/components/parameters/SequenceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Sequence'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}/sequence/{sequence_id}/$execute:
+    post:
+      description: > 
+        Executes the specified sequence on the instance. 
+        The tests will not run if the sequence is not executable.
+      summary: Execute sequence
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+        - $ref: '#/components/parameters/SequenceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Result'
+        '400':
+          $ref: '#/components/responses/400WronglyUsed'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/module/group/{group_id}/sequence/{sequence_id}/$execute_stream:
+    post:
+      description: > 
+        Executes the specified sequence on the instance. 
+        A stream will send updates while the tests are running, following with the usual results.
+        The stream uses NDJSON format. 
+      summary: Execute sequence with stream
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+        - $ref: '#/components/parameters/SequenceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200SequenceStream'
+        '400':
+          $ref: '#/components/responses/400WronglyUsed'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/result:
+    get:
+      description: > 
+        Returns all available results for a specified instance. 
+      summary: All results
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Results'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/result/{result_id}:
+    get:
+      description: > 
+        Returns a specific result. 
+      summary: Specific result
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/ResultID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Result'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/result/{result_id}/request:
+    get:
+      description: > 
+        Returns the requests from a specific result. 
+      summary: All requests of a result
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/ResultID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Requests'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/result/{result_id}/request/{request_id}:
+    get:
+      description: > 
+        Returns a specific request from a specific result. 
+      summary: Specific request
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/ResultID'
+        - $ref: '#/components/parameters/RequestID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Request'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/result/group/{group_id}:
+    get:
+      description: > 
+        Returns available results for a specified instance in a specified group. 
+      summary: Results of a group
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Results'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/result/group/{group_id}/sequence/{sequence_id}:
+    get:
+      description: > 
+        Returns the available result of a sequence. 
+        If the result does not exist because the sequence has not been run, it will return an empty object. 
+      summary: Result of a sequence
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+        - $ref: '#/components/parameters/GroupID'
+        - $ref: '#/components/parameters/SequenceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Result'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /instance/{instance_id}/report:
+    get:
+      description: > 
+        Returns the report of an instance. 
+      summary: Report
+      parameters: 
+        - $ref: '#/components/parameters/InstanceID'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Report'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+components: 
+  parameters: 
+    TestSetID:
+      in: path
+      name: test_set_id
+      description: ID of a test set
+      required: true
+      schema:
+        type: string
+    PresetID:
+      in: path
+      name: preset_id
+      description: ID of a preset
+      required: true
+      schema:
+        type: string
+    InstanceID:
+      in: path
+      name: instance_id
+      description: ID of an instance
+      required: true
+      schema:
+        type: string
+    GroupID:
+      in: path
+      name: group_id
+      description: ID of a group
+      required: true
+      schema:
+        type: string
+    SequenceID:
+      in: path
+      name: sequence_id
+      description: ID of a sequence
+      required: true
+      schema:
+        type: string
+    ResultID:
+      in: path
+      name: result_id
+      description: ID of a result
+      required: true
+      schema:
+        type: string
+    RequestID:
+      in: path
+      name: request_id
+      description: ID of a request
+      required: true
+      schema:
+        type: string
+  responses: 
+    404NotFound: 
+      description: A specified resource was not found.
+      content: 
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/Error'
+    400WronglyUsed: 
+      description: The request was wrongly used. 
+      content: 
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/Error'           
+    200TestSet:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/TestSet'
+    200TestSets:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: array
+            items: 
+              $ref: '#/components/schemas/TestSet'
+    200Preset:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Preset'
+    200Presets:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: array
+            items: 
+              $ref: '#/components/schemas/Preset'
+    200Instance:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Instance'
+    200Module:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Module'
+    200Groups:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: array
+            items: 
+              $ref: '#/components/schemas/Group'
+    200Group:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Group'
+    200GroupStream:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            anyOf:
+              - type: array
+                items:
+                  $ref: '#/components/schemas/Result'
+              - $ref: '#/components/schemas/Stream'
+    200Sequences:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: array
+            items: 
+              $ref: '#/components/schemas/Sequence'
+    200Sequence:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Sequence'
+    200SequenceStream:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            anyOf:
+              - $ref: '#/components/schemas/Result'
+              - $ref: '#/components/schemas/Stream'
+    200Results:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: array
+            items: 
+              $ref: '#/components/schemas/Result'
+    200Result:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Result'
+              - type: object
+                properties: {}
+    200Requests:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            type: array
+            items: 
+              $ref: '#/components/schemas/Request'
+    200Request:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            oneOf: 
+              - $ref: '#/components/schemas/Request'
+              - type: object
+                properties: {}
+    200Report:
+      description: OK
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Report'
+  schemas:
+    Error:
+      description: >
+        An error occurs when a specified ID is unknown or when the request is used incorrectly. 
+      properties:
+        type:
+          type: string
+          description: error
+        description: 
+          type: string
+      required:
+        - type
+        - description
+    TestSet:
+      description: >
+        A test set represents a set of defined tests that support a specific certification or implementation guide. 
+        A test set ID is used when creating an instance to specify which set of tests to run on the FHIR Server. 
+      properties:
+        id:
+          type: string
+          description: test_set
+        name: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        description: 
+          type: string
+        fhir_version: 
+          type: string
+      required: 
+        - id
+        - name
+        - url
+        - description
+    Preset: 
+      description: >
+        A preset represents a preconfigured FHIR server that contains prefilled information such as the client id. 
+        The presets can be tested using Infenro instead of providing a new FHIR Server. 
+      properties:
+        type: 
+          type: string
+          description: preset
+        id: 
+          type: string
+        name: 
+          type: string
+        fhir_server: 
+          type: string
+          format: uri
+        test_set: 
+          type: string
+        client_id: 
+          type: string
+        client_secret: 
+          type: string
+        instructions: 
+          type: string
+          format: uri
+      required: 
+        - type
+        - id
+        - url
+        - name
+        - fhir_server
+        - test_set
+    Instance: 
+      description: >
+        Inferno's API is based on the instance, which represents the FHIR server being tested and its state. 
+        An instance can be created using provided information or by using a preset. 
+        An instance's ID is used in all other requests relating to the FHIR server. 
+      properties:
+        type:
+          type: string
+          description: instance
+        id: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        reference: 
+          type: object
+          properties:
+            module_url: 
+              type: string
+              format: uri
+            results_url: 
+              type: string
+              format: uri
+          required: 
+            - module_url
+            - results_url
+        fhir_uri: 
+          type: string
+          format: uri
+        fhir_version:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        oauth_server_endpoints:
+          type: object
+          properties:
+            oauth_auth: 
+              type: string
+              format: uri
+            oauth_token: 
+              type: string
+              format: uri
+            oauth_reg: 
+              type: string
+              format: uri
+        client_oauth_endpoints: 
+          type: object
+          properties:
+            launch_uri:
+              type: string
+              format: uri
+            redirect_uri:
+              type: string
+              format: uri
+        oauth_client_data:
+          type: object
+          properties:
+            scopes: 
+              type: string
+            client_id:
+              type: string
+            client_secret:
+              type: string
+            client_state:
+              type: string
+            bearer_token:
+              type: string
+            refresh_token:
+              type: string
+      required: 
+        - type
+        - id
+        - url
+        - reference
+        - fhir_uri
+        - created_at
+    Sequence:
+      description: >
+        A sequence represents an individual test. 
+        Each sequence belongs to a group, and each sequence contains a smaller set of tests. 
+      properties:
+        type:
+          type: string
+          description: sequence
+        id: 
+          type: string
+        name: 
+          type: string 
+        url: 
+          type: string
+          format: uri
+        reference:
+          type: object
+          properties:
+            instance_url: 
+              type: string
+              format: uri
+            group_url: 
+              type: string
+              format: uri
+            sequence_results_url: 
+              type: string
+              format: uri
+            sequence_execute_url: 
+              type: string
+              format: uri
+          required: 
+            - instance_url
+            - group_url
+            - sequence_results_url
+        description: 
+          type: string
+        about: 
+          type: string
+        run: 
+          type: boolean
+          description: >
+            Indicates whether the sequence can be executed on the instance. 
+            If false, then the sequence must be executed in its group. 
+        tests:
+          type: array
+          items: 
+            type: object
+            properties:
+              name: 
+                type: string
+              description: 
+                type: string
+              details: 
+                type: string
+              required: 
+                type: boolean
+              url:
+                type: string
+                format: uri
+            required: 
+              - name
+              - description
+              - required
+      required: 
+        - type
+        - id
+        - name
+        - url
+        - reference
+        - run
+        - tests
+    Group:
+      description: >
+        A group represents a group of sequences. 
+        Each group contains sequences. 
+      properties:
+        type: 
+          type: string
+          description: group
+        id: 
+          type: string
+        name: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        reference:
+          type: object
+          properties:
+            instance_url: 
+              type: string
+              format: uri
+            group_results_url: 
+              type: string
+              format: uri
+            group_execute_url: 
+              type: string
+              format: uri
+          required: 
+            - instance_url
+            - group_results_url
+        description:
+          type: string
+        instructions: 
+          type: string
+        run: 
+          type: boolean
+          description: >
+            Indicates whether the group can be executed on the instance. 
+            If false, then each sequence in the group must be executed individually. 
+        sequences:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Sequence'
+      required: 
+        - type
+        - id
+        - name
+        - url
+        - reference
+        - run
+        - sequences
+    Module: 
+      description: >
+        A module represents all of the available tests of a Test Set that can be executed on an instance. 
+        A module contains groups, which contain sequences. 
+      properties:
+        type: 
+          type: string
+          description: module
+        id: 
+          type: string
+        name: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        reference:
+          type: object
+          properties:
+            instance_url: 
+              type: string
+              format: uri
+          required: 
+            - instance_url
+        description: 
+          type: string
+        fhir_version: 
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+      required: 
+        - type
+        - id
+        - name
+        - url
+        - reference
+        - groups
+    Result:
+      description: >
+        A result represents the result from executing a test on an instance. 
+        There is one result produced for each sequence executed. 
+        If the result does not yet exist because the sequence hasn't been executed, then the result is represented by an empty object. 
+      properties:
+        type: 
+          type: string
+          description: result
+        id: 
+          type: string
+        name: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        references:
+          type: object
+          properties:
+            instance_url: 
+              type: string
+              format: uri
+            group_url: 
+              type: string
+              format: uri
+            sequence_url: 
+              type: string
+              format: uri
+          required: 
+            - instance_url
+            - group_url
+            - sequence_url
+        status: 
+          type: string
+          description: >
+            The overall status of the result based on the individual result statuses. 
+            Options: pass, fail, skip, omit, error
+        created_at: 
+          type: string
+          format: date-time
+        counts:
+          type: object
+          properties:
+            required_passed: 
+              type: integer
+            required_total:
+              type: integer
+            optional_passed: 
+              type: integer
+            optional_total: 
+              type: integer
+          required: 
+            - required_passed
+            - required_total
+            - optional_passed
+            - optional_total
+        inputs:
+          $ref: '#/components/schemas/IO'
+        outputs:
+          $ref: '#/components/schemas/IO'
+        http_requests:
+          type: array
+          description: >
+            The http requests performed during the test. 
+          items: 
+            type: object
+            properties:
+              request: 
+                type: string
+              details: 
+                type: string
+                format: uri
+                description: >
+                  A GET request to this uri will return the corresponding request information. 
+            required: 
+              - request
+              - details
+        test_list:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              status:
+                type: string
+                description: >
+                  Options: pass, fail, skip, omit, error
+            required: 
+              - name
+              - status
+      required: 
+        - type
+        - id
+        - name
+        - url
+        - references
+        - status
+        - created_at
+        - counts
+        - test_list
+    Request: 
+      description: 
+        A request represents an HTTP request that was performed during a test. 
+        It includes the request and the response. 
+      properties: 
+        type: 
+          type: string
+          description: request
+        id:
+          type: string
+        name: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        references:
+          type: object
+          properties:
+            instance_url: 
+              type: string
+              format: uri
+            result_url: 
+              type: string
+              format: uri
+          required: 
+            - instance_url
+            - result_url
+        request:
+          type: object
+          properties:
+            headers: 
+              type: string
+            payload:
+              type: string
+        response:
+          type: object
+          properties:
+            headers: 
+              type: string
+            body:
+              type: string
+              description: Base64 encoded
+      required: 
+        - type
+        - id
+        - name
+        - url
+        - references
+    Report: 
+      description: >
+        A report represents an overall summary of all of the tests that were performed on the instance. 
+        It includes both a general summary and a summary of all of the tests, including the tests in the module that were not run. 
+      properties:
+        type: 
+          type: string
+          description: report
+        id: 
+          type: string
+        name: 
+          type: string
+        url: 
+          type: string
+          format: uri
+        references:
+          type: object
+          properties:
+            instance_url: 
+              type: string
+              format: uri
+            module_url: 
+              type: string
+              format: uri
+            results_url: 
+              type: string
+              format: uri
+          required: 
+            - instance_url
+            - module_url
+            - results_url
+        last_updated: 
+          type: string
+          format: date-time
+        report_url: 
+          type: string
+          format: uri
+        final_result: 
+          type: string
+        request_response: 
+          type: integer
+        resource_references:
+          type: integer
+        supported_resources:
+          type: integer
+        fhir_version: 
+          type: string
+        inferno_version: 
+          type: string
+        results_summary:
+          type: array
+          items:
+            type: object
+            properties:
+              group_name: 
+                type: string
+              sequences: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    sequence_name: 
+                      type: string
+                    status: 
+                      type: string
+                    description:
+                      type: string
+                    required_tests_passed: 
+                      type: string
+                    test_count: 
+                      type: string
+                    inputs: 
+                      $ref: '#/components/schemas/IO'
+                    test_list: 
+                      type: array
+                      items: 
+                        type: object
+                        properties:
+                          name: 
+                            type: string
+                          status: 
+                            type: string
+                          details: 
+                            type: string
+                          http_requests: 
+                            type: string
+                        required: 
+                          - name
+                    outputs: 
+                      $ref: '#/components/schemas/IO'
+                  required: 
+                    - sequence_name
+            required: 
+              - group_name
+              - sequences
+      required: 
+        - type
+        - id
+        - name
+        - url
+        - references
+        - last_updated
+        - report_url
+        - final_result
+        - request_response
+        - resource_references
+        - supported_resources
+        - inferno_version
+        - results_summary
+    IO: 
+      description: >
+        This represents all of the possible inputs and outputs of a test. 
+        None are required. 
+      properties:
+        client_id: 
+          type: string
+        confidential_client:
+          type: boolean
+        client_secret: 
+          type: string
+        oauth_authorize_endpoint: 
+          type: string
+          format: uri
+        oauth_token_endpoint: 
+          type: string
+          format: uri
+        oauth_register_endpoint:
+          type: string
+          format: uri
+        oauth_introspective_enpoint: 
+          type: string
+          format: uri
+        scopes: 
+          type: string
+        initiate_login_uri: 
+          type: string
+          format: uri
+        redirect_uris: 
+          type: string
+          format: uri
+        url: 
+          type: string
+          format: uri
+        token: 
+          type: string
+        patient_id: 
+          type: string
+        id_token: 
+          type: string
+    Stream:
+      description: >
+        A stream represents an update while a test is running. 
+        Streams are used in NDJSON format. 
+        Following the stream is the final result or results. 
+      properties:
+        type:
+          type: string
+          description: update
+        sequence: 
+          type: object
+          properties:
+            sequence_name: 
+              type: string
+            sequence_count:
+              type: integer
+            sequence_total: 
+              type: integer
+          required: 
+            - sequence_name
+            - sequence_count
+            - sequence_total
+        group:
+          type: object
+          properties:            
+            group_count: 
+              type: integer
+            group_total: 
+              type: integer
+          required:
+            - group_count
+            - group_total
+      required:
+        - type
+        - sequence
+        - group
+  requestBodies:
+    CreateInstance:
+      description: >
+        These are the parameters required to create an instance. 
+        An instance can be created either by using a new FHIR server and related information, or by using a preset. 
+      required: true
+      content: 
+        application/json:
+          schema: 
+            oneOf:
+            - type: object
+              properties:
+                fhir_server:
+                  type: string
+                  format: uri
+                test_set:
+                  type: string
+                  description: ID of a test set
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+              required: 
+                - fhir_server
+                - test_set
+            - type: object
+              properties: 
+                preset: 
+                  type: string
+                  description: ID of a preset
+              required:
+                - preset

@@ -127,6 +127,7 @@ module Inferno
           result.pass!
 
           result.update_result_counts
+          result.save!
         end
       end
 
