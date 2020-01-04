@@ -1,0 +1,182 @@
+describe 'PractitionerRole chained search by practitioner test' do
+  before do
+    @test = @sequence_class[:chained_search_by_practitioner]
+    @sequence = @sequence_class.new(@instance, @client)
+    @practitioner = FHIR::Practitioner.new(name: [{ family: 'FAMILY_NAME' }])
+    identifier_system = 'http://www.example.com/system'
+    identifier_value = 'IDENTIFIER'
+    @practitioner_with_identifier = FHIR::Practitioner.new(
+      identifier: [{ system: identifier_system, value: identifier_value }],
+      name: [{ family: 'FAMILY_NAME' }]
+    )
+    @identifier_string = "#{identifier_system}|#{identifier_value}"
+    @practitioner_role = FHIR::PractitionerRole.new(
+      id: '123',
+      practitioner: { reference: 'Practitioner/practitioner1' }
+    )
+
+    @sequence.instance_variable_set(:'@practitioner_role_ary', [@practitioner_role])
+    @sequence.instance_variable_set(:'@resources_found', true)
+  end
+
+  it 'skips if no PractitionerRole resources have been found' do
+    @sequence.instance_variable_set(:'@resources_found', false)
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_equal 'No PractitionerRole resources appear to be available.', exception.message
+  end
+
+  it 'skips if no PractitionerRoles contain a Practitioner reference' do
+    @sequence.instance_variable_set(:'@practitioner_role_ary', [FHIR::PractitionerRole.new])
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_equal 'No PractitionerRoles containing a Practitioner reference were found', exception.message
+  end
+
+  it 'fails if the Practitioner can not be fetched' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 400)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_match(/Unable to resolve Practitioner reference:/, exception.message)
+  end
+
+  it 'fails if a Practitioner resource in not received' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: FHIR::Patient.new.to_json)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Expected FHIR Practitioner but found: Patient', exception.message
+  end
+
+  it 'skips if the Practitioner has no family name' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: FHIR::Practitioner.new.to_json)
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_equal 'Practitioner has no family name', exception.message
+  end
+
+  it 'fails if searching by practitioner.name returns a non-success response' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 400)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
+  end
+
+  it 'fails if searching by practitioner.name does not return a Bundle' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: @practitioner_role.to_json)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Expected FHIR Bundle but found: PractitionerRole', exception.message
+  end
+
+  it 'fails if searching by practitioner.name does not return the expected PractitionerRole' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::PractitionerRole.new]).to_json)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'PractitionerRole with id 123 not found in search results for practitioner.name = FAMILY_NAME', exception.message
+  end
+
+  it 'skips if the Practitioner has no identifier' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_equal 'Practitioner has no identifier', exception.message
+  end
+
+  it 'fails if searching by practitioner.identifier returns a non-success response' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner_with_identifier.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
+      .to_return(status: 400)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
+  end
+
+  it 'fails if searching by practitioner.identifier does not return a Bundle' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner_with_identifier.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
+      .to_return(status: 200, body: FHIR::PractitionerRole.new.to_json)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal 'Expected FHIR Bundle but found: PractitionerRole', exception.message
+  end
+
+  it 'fails if searching by practitioner.identifier does not return the expected PractitionerRole' do
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner_with_identifier.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
+      .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::PractitionerRole.new]).to_json)
+
+    exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+    assert_equal "PractitionerRole with id 123 not found in search results for practitioner.identifier = #{@identifier_string}", exception.message
+  end
+
+  it 'succeeds if the PractitionerRole is found in both chained searches' do
+    bundle = wrap_resources_in_bundle([@practitioner_role])
+    stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+      .with(headers: @auth_header)
+      .to_return(status: 200, body: @practitioner_with_identifier.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+      .to_return(status: 200, body: bundle.to_json)
+    stub_request(:get, "#{@base_url}/PractitionerRole")
+      .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
+      .to_return(status: 200, body: bundle.to_json)
+
+    @sequence.run_test(@test)
+  end
+end

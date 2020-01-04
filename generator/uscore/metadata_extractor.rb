@@ -243,13 +243,12 @@ module Inferno
           param_metadata[:multiple_or] = multiple_or_expectation
 
           if search_param_definition['chain'].present?
-            binding.pry
             expectations =
               search_param_definition['_chain']
                 .map { |expectation| expectation['extension'].first['valueCode'] }
             param_metadata[:chain] =
               search_param_definition['chain'].zip(expectations)
-                .map { |chain, expectation| { chain: chain, expectation: expectation }  }
+                .map { |chain, expectation| { chain: chain, expectation: expectation } }
           end
 
           sequence[:search_param_descriptions][param] = param_metadata
