@@ -53,6 +53,16 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
     requests_with_external_references + [FHIR::Medication.new]
   end
 
+  let(:search_params) do
+    {
+      patient: @instance.patient_id,
+      intent: 'order',
+      status: 'active,on-hold,cancelled,entered-in-error,stopped,draft,unknown'
+    }
+  end
+
+  let(:search_params_with_medication) { search_params.merge(_include: 'MedicationRequest:medication') }
+
   describe '_include Medications test' do
     before do
       @test = @sequence_class[:include_medications]
@@ -61,7 +71,7 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'fails if the MedicationRequest search is not successful' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 404)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -71,7 +81,7 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'fails if the MedicationRequest search does not return a Bundle' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: FHIR::MedicationRequest.new.to_json)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -81,7 +91,7 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'skips if no resources are found' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: FHIR::Bundle.new.to_json)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -91,7 +101,7 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'omits if no MedicationRequests with external references are found' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_without_external_references).to_json)
 
       exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
@@ -101,10 +111,10 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'fails if the search including Medications is not successful' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_with_external_references).to_json)
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order', _include: 'MedicationRequest:medication' })
+        .with(query: search_params_with_medication)
         .to_return(status: 400)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -114,10 +124,10 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'fails if the search including Medications does not return a Bundle' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_with_external_references).to_json)
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order', _include: 'MedicationRequest:medication' })
+        .with(query: search_params_with_medication)
         .to_return(status: 200, body: FHIR::Medication.new.to_json)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -127,10 +137,10 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'fails if the Bundle does not contain any Medications' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_with_external_references).to_json)
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order', _include: 'MedicationRequest:medication' })
+        .with(query: search_params_with_medication)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_with_external_references).to_json)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -140,10 +150,10 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
 
     it 'succeeds if the Bundle contains Medications' do
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order' })
+        .with(query: search_params)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_with_external_references).to_json)
       stub_request(:get, "#{@url}/MedicationRequest")
-        .with(query: { patient: @patient_id, intent: 'order', _include: 'MedicationRequest:medication' })
+        .with(query: search_params_with_medication)
         .to_return(status: 200, body: wrap_resources_in_bundle(requests_with_medication).to_json)
 
       @sequence.run_test(@test)

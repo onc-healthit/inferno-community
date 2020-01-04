@@ -35,7 +35,10 @@ module Inferno
 
         search_params = {
           patient: @instance.patient_id,
-          intent: 'order'
+          intent: 'order',
+          # servers may not support searching for patient + intent without
+          # status, but are required to support patient + intent + status
+          status: 'active,on-hold,cancelled,entered-in-error,stopped,draft,unknown'
         }
         response = get_resource_by_params(FHIR::MedicationRequest, search_params)
         assert_response_ok(response)
