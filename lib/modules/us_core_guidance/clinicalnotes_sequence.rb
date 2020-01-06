@@ -7,9 +7,9 @@ module Inferno
 
       title 'Clinical Notes Guideline Tests'
 
-      description 'Verify that DocumentReference and DiagnosticReport resources on the FHIR server follow the US Core R4 Clinical Notes Guideline'
+      description 'Verify that DocumentReference and DiagnosticReport resources on the FHIR server follow the US Core Implementation Guide'
 
-      test_id_prefix 'ClinicalNotes'
+      test_id_prefix 'USCCN'
 
       requires :token, :patient_id
       conformance_supports :DocumentReference, :DiagnosticReport
@@ -21,29 +21,50 @@ module Inferno
 
       )
 
-      @clinical_notes_found = false
+      @all_document_reference_found = false
+      @all_diagnostic_report_found = false
+
+      @document_attachments = ClinicalNoteAttachment.new('DocumentReference')
+      @report_attachments = ClinicalNoteAttachment.new('DiagnosticReport')
 
       def test_clinical_notes_document_reference(type_code)
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
-
-        assert @actual_type_codes.include?(type_code), "Clinical Notes shall have at least one DocumentReference with type #{type_code}"
-      end
-
-      def test_clinical_notes_diagnostic_report(category_code)
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
-
         search_params = { 'patient': @instance.patient_id, 'category': category_code }
-        resource_class = 'DiagnosticReport'
-        @report_attachments = ClinicalNoteAttachment.new(resource_class)
+        resource_class = 'DocumentReference'
 
         reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
 
-        assert @resources_found, "Clinical Notes shall have at least one DiagnosticReport with category #{category_code}"
+        if (!resource_count.postive?)
+          @all_document_reference_found = false
+          skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
+        end
+
+        document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
+
+        document_references&.each do |document|
+          document&.content&.select { |content| !@document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
+            @document_attachments.attachment[content.attachment.url] = report.id
+          end
+        end
+      end
+
+      def test_clinical_notes_diagnostic_report(category_code)
+        search_params = { 'patient': @instance.patient_id, 'category': category_code }
+        resource_class = 'DiagnosticReport'
+
+        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        resource_count = reply&.resource&.entry&.length || 0
+
+        if (!resource_count.postive?)
+          @all_diagnostic_report_found = false
+          skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
+        end
 
         diagnostic_reports = reply&.resource&.entry&.map { |entry| entry&.resource }
 
@@ -54,7 +75,7 @@ module Inferno
         end
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+clinicalnotes' do
+      test 'Server shall have Consultation Notes' do
         metadata do
           id '01'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
@@ -63,46 +84,10 @@ module Inferno
           versions :r4
         end
 
-        @client.set_no_auth if @instance.token.blank?
-
-        search_params = { 'patient': @instance.patient_id, 'category': 'clinical-note' }
-        resource_class = 'DocumentReference'
-
-        @document_attachments = ClinicalNoteAttachment.new(resource_class)
-
-        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        resource_count = reply&.resource&.entry&.length || 0
-        @clinical_notes_found = true if resource_count.positive?
-
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
-
-        document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
-
-        @required_type_codes = Set[
-          '11488-4', # Consultation Note
-          '18842-5', # Dischard Summary
-          '34117-2', # History and physical note
-          '28570-0', # Procedure note
-          '11506-3' # Progress note
-        ]
-
-        @actual_type_codes = Set[]
-
-        document_references&.select { |document| document&.type&.coding&.present? }&.each do |document|
-          document.type.coding.select { |coding| coding&.system == 'http://loinc.org' && @required_type_codes.include?(coding&.code) }&.each do |coding|
-            @actual_type_codes << coding.code
-
-            document&.content&.select { |content| !@document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-              @document_attachments.attachment[content.attachment.url] = document.id
-            end
-          end
-        end
+        test_clinical_notes_document_reference('http://loinc.org|11488-4')
       end
 
-      test 'Server shall have Consultation Notes' do
+      test 'Server shall have Discharge Summary' do
         metadata do
           id '02'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
@@ -111,10 +96,10 @@ module Inferno
           versions :r4
         end
 
-        test_clinical_notes_document_reference('11488-4')
+        test_clinical_notes_document_reference('http://loinc.org|18842-5')
       end
 
-      test 'Server shall have Discharge Summary' do
+      test 'Server shall have History and Physical Note' do
         metadata do
           id '03'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
@@ -123,10 +108,10 @@ module Inferno
           versions :r4
         end
 
-        test_clinical_notes_document_reference('18842-5')
+        test_clinical_notes_document_reference('http://loinc.org|34117-2')
       end
 
-      test 'Server shall have History and Physical Note' do
+      test 'Server shall have Procedures Note' do
         metadata do
           id '04'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
@@ -135,10 +120,10 @@ module Inferno
           versions :r4
         end
 
-        test_clinical_notes_document_reference('34117-2')
+        test_clinical_notes_document_reference('http://loinc.org|28570-0')
       end
 
-      test 'Server shall have Procedures Note' do
+      test 'Server shall have Progress Note' do
         metadata do
           id '05'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
@@ -147,24 +132,12 @@ module Inferno
           versions :r4
         end
 
-        test_clinical_notes_document_reference('28570-0')
-      end
-
-      test 'Server shall have Progress Note' do
-        metadata do
-          id '06'
-          link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          description %(
-          )
-          versions :r4
-        end
-
-        test_clinical_notes_document_reference('11506-3')
+        test_clinical_notes_document_reference('http://loinc.org|11506-3')
       end
 
       test 'Server returns Cardiology report from DiagnosticReport search by patient+category' do
         metadata do
-          id '07'
+          id '06'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -176,7 +149,7 @@ module Inferno
 
       test 'Server returns Pathology report from DiagnosticReport search by patient+category' do
         metadata do
-          id '08'
+          id '07'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -188,7 +161,7 @@ module Inferno
 
       test 'Server returns Radiology report from DiagnosticReport search by patient+category' do
         metadata do
-          id '09'
+          id '08'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -200,14 +173,14 @@ module Inferno
 
       test 'DiagnosticReport and DocumentReference reference the same attachment' do
         metadata do
-          id '10'
+          id '09'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
           versions :r4
         end
 
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
+        skip 'Not all required Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @all_document_reference_found && @all_diagnostic_report_found
 
         assert_attachment_matched(@document_attachments, @report_attachments)
         assert_attachment_matched(@report_attachments, @document_attachments)
