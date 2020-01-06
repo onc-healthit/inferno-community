@@ -10,7 +10,6 @@ describe Inferno::Sequence::USCoreR4MedicationListSequence do
     @instance = Inferno::Models::TestingInstance.create
     @patient_id = '123'
     @instance.patient_id = @patient_id
-    # @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
   end
 
   let(:request_with_code) do
