@@ -318,6 +318,24 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
     end
 
+    def stub_name_search
+      stub_request(:get, "#{@base_url}/PractitionerRole")
+        .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
+        .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+    end
+
+    def stub_practitioner_read
+      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+        .with(headers: @auth_header)
+        .to_return(status: 200, body: @practitioner_with_identifier.to_json)
+    end
+
+    def stub_practitioner_read_without_identifier
+      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
+        .with(headers: @auth_header)
+        .to_return(status: 200, body: @practitioner.to_json)
+    end
+
     it 'skips if no PractitionerRole resources have been found' do
       @sequence.instance_variable_set(:'@resources_found', false)
 
@@ -365,9 +383,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'fails if searching by practitioner.name returns a non-success response' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner.to_json)
+      stub_practitioner_read_without_identifier
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
         .to_return(status: 400)
@@ -378,9 +394,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'fails if searching by practitioner.name does not return a Bundle' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner.to_json)
+      stub_practitioner_read_without_identifier
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
         .to_return(status: 200, body: @practitioner_role.to_json)
@@ -391,9 +405,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'fails if searching by practitioner.name does not return the expected PractitionerRole' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner.to_json)
+      stub_practitioner_read_without_identifier
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
         .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::PractitionerRole.new]).to_json)
@@ -404,12 +416,8 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'skips if the Practitioner has no identifier' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner.to_json)
-      stub_request(:get, "#{@base_url}/PractitionerRole")
-        .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
-        .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+      stub_practitioner_read_without_identifier
+      stub_name_search
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -417,12 +425,8 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'fails if searching by practitioner.identifier returns a non-success response' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner_with_identifier.to_json)
-      stub_request(:get, "#{@base_url}/PractitionerRole")
-        .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
-        .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+      stub_practitioner_read
+      stub_name_search
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
         .to_return(status: 400)
@@ -433,12 +437,8 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'fails if searching by practitioner.identifier does not return a Bundle' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner_with_identifier.to_json)
-      stub_request(:get, "#{@base_url}/PractitionerRole")
-        .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
-        .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+      stub_practitioner_read
+      stub_name_search
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
         .to_return(status: 200, body: FHIR::PractitionerRole.new.to_json)
@@ -449,12 +449,8 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'fails if searching by practitioner.identifier does not return the expected PractitionerRole' do
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner_with_identifier.to_json)
-      stub_request(:get, "#{@base_url}/PractitionerRole")
-        .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
-        .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
+      stub_practitioner_read
+      stub_name_search
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
         .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::PractitionerRole.new]).to_json)
@@ -465,16 +461,11 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     end
 
     it 'succeeds if the PractitionerRole is found in both chained searches' do
-      bundle = wrap_resources_in_bundle([@practitioner_role])
-      stub_request(:get, "#{@base_url}/#{@practitioner_role.practitioner.reference}")
-        .with(headers: @auth_header)
-        .to_return(status: 200, body: @practitioner_with_identifier.to_json)
-      stub_request(:get, "#{@base_url}/PractitionerRole")
-        .with(headers: @auth_header, query: { 'practitioner.name': @practitioner.name.first.family })
-        .to_return(status: 200, body: bundle.to_json)
+      stub_practitioner_read
+      stub_name_search
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(headers: @auth_header, query: { 'practitioner.identifier': @identifier_string })
-        .to_return(status: 200, body: bundle.to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle([@practitioner_role]).to_json)
 
       @sequence.run_test(@test)
     end
