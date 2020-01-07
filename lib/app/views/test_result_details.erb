@@ -73,6 +73,16 @@
       </div>
     <% end %>
 
+    <% unless @test_result.validation_messages.empty? %>
+      <div class="test-result-details-warnings">
+        <% @test_result.validation_messages.each do |w| %>
+          <div class="test-result-details-warning">
+            <span class="oi oi-info" title="Information" aria-hidden="true"></span> <%=CGI.escapeHTML w.message %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <div class="test-result-details-header"><%=@test_result.request_responses.count %> Request<% if @test_result.request_responses.count != 1 %>s<% end %></div>
 
     <% @test_result.request_responses.each_with_index do |rr,index| %>

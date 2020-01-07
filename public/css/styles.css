@@ -800,13 +800,16 @@ body {
   color: #FF9500;
 }
 
+.result-details-icon-info {
+  color: #000000;
+}
+
 .result-details-icon-requests {
   color: #336699;
 }
 
 .result-details-message {
   margin-left: 19px;
-
 }
 
 .result-details h1{

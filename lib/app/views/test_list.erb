@@ -46,6 +46,11 @@
             <span class="oi oi-warning"></span>
           </div>
       <% end %>
+      <% if result.validation_messages.length > 0 %>
+          <div class="result-details-icon result-details-icon-info" style="float:right;" data-toggle="tooltip" title="<%= result.validation_messages.length %> informational message(s). Messages do not result in a test failure.">
+            <span class="oi oi-info"></span>
+          </div>
+      <% end %>
 
       <% unless result.request_responses.find{ |f| f.direction == 'outbound'}.nil? %>
           <div class="result-details-icon result-details-icon-requests" style="float:right;" data-toggle="tooltip" title="Test contains outbound http requests.">

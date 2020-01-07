@@ -16,7 +16,9 @@ module Inferno
 
       {
         errors: errors.reject(&:empty?),
-        warnings: warnings.reject(&:empty?)
+        warnings: warnings.reject(&:empty?),
+        # This key is included for compatibility with the HL7 Validator class
+        information: []
       }
     end
   end
