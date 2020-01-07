@@ -2,6 +2,16 @@
 
 module Inferno
   module Sequence
+    class ClinicalNoteAttachment
+      attr_reader :resource_class
+      attr_reader :attachment
+
+      def initialize(resource_class)
+        @resource_class = resource_class
+        @attachment = {}
+      end
+    end
+
     class USCoreR4ClinicalNotesSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
@@ -21,13 +31,11 @@ module Inferno
 
       )
 
-      @all_document_reference_found = false
-      @all_diagnostic_report_found = false
+      attr_accessor :document_attachments
 
-      @document_attachments = ClinicalNoteAttachment.new('DocumentReference')
       @report_attachments = ClinicalNoteAttachment.new('DiagnosticReport')
 
-      def test_clinical_notes_document_reference(type_code)
+      def test_clinical_notes_document_reference(category_code)
         search_params = { 'patient': @instance.patient_id, 'category': category_code }
         resource_class = 'DocumentReference'
 
@@ -37,16 +45,18 @@ module Inferno
 
         resource_count = reply&.resource&.entry&.length || 0
 
-        if (!resource_count.postive?)
-          @all_document_reference_found = false
+        unless resource_count.positive?
+          @skip_document_reference = true
           skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
         end
+
+        @document_attachments = ClinicalNoteAttachment.new('DocumentReference') if document_attachments.nil?
 
         document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
 
         document_references&.each do |document|
           document&.content&.select { |content| !@document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-            @document_attachments.attachment[content.attachment.url] = report.id
+            @document_attachments.attachment[content.attachment.url] = document.id
           end
         end
       end
@@ -61,8 +71,8 @@ module Inferno
 
         resource_count = reply&.resource&.entry&.length || 0
 
-        if (!resource_count.postive?)
-          @all_diagnostic_report_found = false
+        unless resource_count.postive?
+          @skip_diagnostic_report = true
           skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
         end
 
@@ -75,9 +85,10 @@ module Inferno
         end
       end
 
-      test 'Server shall have Consultation Notes' do
+      test :have_consultation_note do
         metadata do
           id '01'
+          name 'Server shall have Consultation Notes'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -180,7 +191,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'Not all required Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @all_document_reference_found && @all_diagnostic_report_found
+        skip 'Not all required Clinical Notes appear to be available for this patient. Please use patients with more information.' if @skip_document_reference || @skip_diagnostic_report
 
         assert_attachment_matched(@document_attachments, @report_attachments)
         assert_attachment_matched(@report_attachments, @document_attachments)
@@ -191,16 +202,6 @@ module Inferno
         not_matched_attachments = not_matched_urls.map { |url| "#{url} in #{source_attachments.resource_class}/#{source_attachments.attachment[url]}" }
 
         assert not_matched_attachments.empty?, "Attachments #{not_matched_attachments.join(', ')} are not referenced in any #{target_attachments.resource_class}."
-      end
-    end
-
-    class ClinicalNoteAttachment
-      attr_reader :resource_class
-      attr_reader :attachment
-
-      def initialize(resource_class)
-        @resource_class = resource_class
-        @attachment = {}
       end
     end
   end
