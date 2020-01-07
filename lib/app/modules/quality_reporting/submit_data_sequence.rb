@@ -24,12 +24,12 @@ module Inferno
         assert(!@instance.measure_to_test.nil?, 'No measure selected. You must run the Prerequisite sequences prior to running Reporting Actions sequences.')
         # Get the patient data to submit. We currently support cms124, cms130, cms165 only
         patient_bundle_path = case @instance.measure_to_test
-                              when 'measure-EXM124-FHIR3-7.2.000'
+                              when 'measure-exm124-FHIR3'
                                 '../../../../resources/quality_reporting/CMS124/Bundle/cms124-patient-bundle.json'
-                              when 'measure-EXM130-FHIR3-7.2.000'
+                              when 'measure-exm130-FHIR3'
                                 '../../../../resources/quality_reporting/CMS130/Bundle/cms130-patient-bundle.json'
-                              when 'measure-exm165-FHIR3'
-                                '../../../../resources/quality_reporting/CMS165/Bundle/cms165-patient-bundle.json'
+                                # when 'measure-exm165-FHIR3'
+                                # '../../../../resources/quality_reporting/CMS165/Bundle/cms165-patient-bundle.json'
                               end
 
         patient_file = File.expand_path(patient_bundle_path, __dir__)

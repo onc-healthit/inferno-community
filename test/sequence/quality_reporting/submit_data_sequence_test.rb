@@ -15,13 +15,10 @@ class SubmitDataSequenceTest < MiniTest::Test
 
   MEASURES_TO_TEST = [
     {
-      measure_id: 'measure-EXM124-FHIR3-7.2.000'
+      measure_id: 'measure-exm124-FHIR3'
     },
     {
-      measure_id: 'measure-EXM130-FHIR3-7.2.000'
-    },
-    {
-      measure_id: 'measure-exm165-FHIR3'
+      measure_id: 'measure-exm130-FHIR3'
     }
   ].freeze
 
