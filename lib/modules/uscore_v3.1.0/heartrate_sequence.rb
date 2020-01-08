@@ -410,8 +410,6 @@ module Inferno
 
             Observation.category
 
-            Observation.category
-
             Observation.category.coding
 
             Observation.category.coding.system
@@ -425,8 +423,6 @@ module Inferno
             Observation.effectiveDateTime
 
             Observation.effectivePeriod
-
-            Observation.valueQuantity
 
             Observation.valueQuantity
 
@@ -477,15 +473,13 @@ module Inferno
         must_support_elements = [
           { path: 'Observation.status', fixed_value: '' },
           { path: 'Observation.category', fixed_value: '' },
-          { path: 'Observation.category', fixed_value: '' },
           { path: 'Observation.category.coding', fixed_value: '' },
           { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
-          { path: 'Observation.category.coding.code', fixed_value: '' },
+          { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
           { path: 'Observation.code', fixed_value: '' },
           { path: 'Observation.subject', fixed_value: '' },
           { path: 'Observation.effectiveDateTime', fixed_value: '' },
           { path: 'Observation.effectivePeriod', fixed_value: '' },
-          { path: 'Observation.valueQuantity', fixed_value: '' },
           { path: 'Observation.valueQuantity', fixed_value: '' },
           { path: 'Observation.valueQuantity.value', fixed_value: '' },
           { path: 'Observation.valueQuantity.unit', fixed_value: '' },

@@ -116,15 +116,11 @@ module Inferno
 
             Provenance.recorded
 
-            Provenance.agent
-
             Provenance.agent.type
 
             Provenance.agent.who
 
             Provenance.agent.onBehalfOf
-
-            Provenance.agent
 
             Provenance.agent.type.coding.code
 
@@ -141,11 +137,9 @@ module Inferno
         must_support_elements = [
           { path: 'Provenance.target', fixed_value: '' },
           { path: 'Provenance.recorded', fixed_value: '' },
-          { path: 'Provenance.agent', fixed_value: '' },
           { path: 'Provenance.agent.type', fixed_value: '' },
           { path: 'Provenance.agent.who', fixed_value: '' },
           { path: 'Provenance.agent.onBehalfOf', fixed_value: '' },
-          { path: 'Provenance.agent', fixed_value: '' },
           { path: 'Provenance.agent.type.coding.code', fixed_value: 'author' },
           { path: 'Provenance.agent', fixed_value: '' },
           { path: 'Provenance.agent.type.coding.code', fixed_value: 'transmitter' }

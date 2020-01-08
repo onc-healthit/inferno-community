@@ -249,11 +249,9 @@ module Inferno
 
             Practitioner.identifier
 
-            Practitioner.identifier.system
-
             Practitioner.identifier.value
 
-            Practitioner.identifier
+            Practitioner.identifier.system
 
             Practitioner.name
 
@@ -267,9 +265,8 @@ module Inferno
 
         must_support_elements = [
           { path: 'Practitioner.identifier', fixed_value: '' },
-          { path: 'Practitioner.identifier.system', fixed_value: '' },
           { path: 'Practitioner.identifier.value', fixed_value: '' },
-          { path: 'Practitioner.identifier', fixed_value: '' },
+          { path: 'Practitioner.identifier.system', fixed_value: 'http://hl7.org/fhir/sid/us-npi' },
           { path: 'Practitioner.name', fixed_value: '' },
           { path: 'Practitioner.name.family', fixed_value: '' }
         ]

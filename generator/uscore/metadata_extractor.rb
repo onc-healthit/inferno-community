@@ -224,7 +224,13 @@ module Inferno
             elsif element['patternCodeableConcept'].present?
               must_support_element[:fixed_value] = element['patternCodeableConcept']['coding'].first['code']
               must_support_element[:path] += '.coding.code'
+            elsif element['fixedCode'].present?
+              must_support_element[:fixed_value] = element['fixedCode']
+            elsif element['patternIdentifier'].present?
+              must_support_element[:fixed_value] = element['patternIdentifier']['system']
+              must_support_element[:path] += '.system'
             end
+            sequence[:must_supports].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
             sequence[:must_supports] << must_support_element
           end
         end

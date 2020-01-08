@@ -496,6 +496,7 @@ module Inferno
           )
         }
 
+        sequence[:must_supports] = sequence[:must_supports].uniq
         sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
           test[:description] += %(
             #{element[:path]}

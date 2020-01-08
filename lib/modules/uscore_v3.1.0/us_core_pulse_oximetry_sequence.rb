@@ -410,8 +410,6 @@ module Inferno
 
             Observation.category
 
-            Observation.category
-
             Observation.category.coding
 
             Observation.category.coding.system
@@ -419,8 +417,6 @@ module Inferno
             Observation.category.coding.code
 
             Observation.code
-
-            Observation.code.coding
 
             Observation.code.coding
 
@@ -436,8 +432,6 @@ module Inferno
 
             Observation.valueQuantity
 
-            Observation.valueQuantity
-
             Observation.valueQuantity.value
 
             Observation.valueQuantity.unit
@@ -447,8 +441,6 @@ module Inferno
             Observation.valueQuantity.code
 
             Observation.dataAbsentReason
-
-            Observation.component
 
             Observation.component.code
 
@@ -474,33 +466,7 @@ module Inferno
 
             Observation.component.valuePeriod
 
-            Observation.component.dataAbsentReason
-
-            Observation.component
-
             Observation.component.code.coding.code
-
-            Observation.component.valueQuantity
-
-            Observation.component.valueCodeableConcept
-
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
 
             Observation.component.valueQuantity.value
 
@@ -590,121 +556,9 @@ module Inferno
 
             Observation.component.valuePeriod.code
 
-            Observation.component.dataAbsentReason
-
             Observation.component
 
             Observation.component.code.coding.code
-
-            Observation.component.valueQuantity
-
-            Observation.component.valueCodeableConcept
-
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
-
-            Observation.component.valueQuantity.value
-
-            Observation.component.valueCodeableConcept.value
-
-            Observation.component.valueString.value
-
-            Observation.component.valueBoolean.value
-
-            Observation.component.valueInteger.value
-
-            Observation.component.valueRange.value
-
-            Observation.component.valueRatio.value
-
-            Observation.component.valueSampledData.value
-
-            Observation.component.valueTime.value
-
-            Observation.component.valueDateTime.value
-
-            Observation.component.valuePeriod.value
-
-            Observation.component.valueQuantity.unit
-
-            Observation.component.valueCodeableConcept.unit
-
-            Observation.component.valueString.unit
-
-            Observation.component.valueBoolean.unit
-
-            Observation.component.valueInteger.unit
-
-            Observation.component.valueRange.unit
-
-            Observation.component.valueRatio.unit
-
-            Observation.component.valueSampledData.unit
-
-            Observation.component.valueTime.unit
-
-            Observation.component.valueDateTime.unit
-
-            Observation.component.valuePeriod.unit
-
-            Observation.component.valueQuantity.system
-
-            Observation.component.valueCodeableConcept.system
-
-            Observation.component.valueString.system
-
-            Observation.component.valueBoolean.system
-
-            Observation.component.valueInteger.system
-
-            Observation.component.valueRange.system
-
-            Observation.component.valueRatio.system
-
-            Observation.component.valueSampledData.system
-
-            Observation.component.valueTime.system
-
-            Observation.component.valueDateTime.system
-
-            Observation.component.valuePeriod.system
-
-            Observation.component.valueQuantity.code
-
-            Observation.component.valueCodeableConcept.code
-
-            Observation.component.valueString.code
-
-            Observation.component.valueBoolean.code
-
-            Observation.component.valueInteger.code
-
-            Observation.component.valueRange.code
-
-            Observation.component.valueRatio.code
-
-            Observation.component.valueSampledData.code
-
-            Observation.component.valueTime.code
-
-            Observation.component.valueDateTime.code
-
-            Observation.component.valuePeriod.code
 
             Observation.component.dataAbsentReason
 
@@ -717,26 +571,22 @@ module Inferno
         must_support_elements = [
           { path: 'Observation.status', fixed_value: '' },
           { path: 'Observation.category', fixed_value: '' },
-          { path: 'Observation.category', fixed_value: '' },
           { path: 'Observation.category.coding', fixed_value: '' },
           { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
-          { path: 'Observation.category.coding.code', fixed_value: '' },
+          { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
           { path: 'Observation.code', fixed_value: '' },
           { path: 'Observation.code.coding', fixed_value: '' },
-          { path: 'Observation.code.coding', fixed_value: '' },
           { path: 'Observation.code.coding.system', fixed_value: 'http://loinc.org' },
-          { path: 'Observation.code.coding.code', fixed_value: '' },
+          { path: 'Observation.code.coding.code', fixed_value: '59408-5' },
           { path: 'Observation.subject', fixed_value: '' },
           { path: 'Observation.effectiveDateTime', fixed_value: '' },
           { path: 'Observation.effectivePeriod', fixed_value: '' },
-          { path: 'Observation.valueQuantity', fixed_value: '' },
           { path: 'Observation.valueQuantity', fixed_value: '' },
           { path: 'Observation.valueQuantity.value', fixed_value: '' },
           { path: 'Observation.valueQuantity.unit', fixed_value: '' },
           { path: 'Observation.valueQuantity.system', fixed_value: '' },
           { path: 'Observation.valueQuantity.code', fixed_value: '' },
           { path: 'Observation.dataAbsentReason', fixed_value: '' },
-          { path: 'Observation.component', fixed_value: '' },
           { path: 'Observation.component.code', fixed_value: '' },
           { path: 'Observation.component.valueQuantity', fixed_value: '' },
           { path: 'Observation.component.valueCodeableConcept', fixed_value: '' },
@@ -749,20 +599,7 @@ module Inferno
           { path: 'Observation.component.valueTime', fixed_value: '' },
           { path: 'Observation.component.valueDateTime', fixed_value: '' },
           { path: 'Observation.component.valuePeriod', fixed_value: '' },
-          { path: 'Observation.component.dataAbsentReason', fixed_value: '' },
-          { path: 'Observation.component', fixed_value: '' },
           { path: 'Observation.component.code.coding.code', fixed_value: '3151-8' },
-          { path: 'Observation.component.valueQuantity', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept', fixed_value: '' },
-          { path: 'Observation.component.valueString', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean', fixed_value: '' },
-          { path: 'Observation.component.valueInteger', fixed_value: '' },
-          { path: 'Observation.component.valueRange', fixed_value: '' },
-          { path: 'Observation.component.valueRatio', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData', fixed_value: '' },
-          { path: 'Observation.component.valueTime', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod', fixed_value: '' },
           { path: 'Observation.component.valueQuantity.value', fixed_value: '' },
           { path: 'Observation.component.valueCodeableConcept.value', fixed_value: '' },
           { path: 'Observation.component.valueString.value', fixed_value: '' },
@@ -807,64 +644,8 @@ module Inferno
           { path: 'Observation.component.valueTime.code', fixed_value: '' },
           { path: 'Observation.component.valueDateTime.code', fixed_value: '' },
           { path: 'Observation.component.valuePeriod.code', fixed_value: '' },
-          { path: 'Observation.component.dataAbsentReason', fixed_value: '' },
           { path: 'Observation.component', fixed_value: '' },
           { path: 'Observation.component.code.coding.code', fixed_value: '3150-0' },
-          { path: 'Observation.component.valueQuantity', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept', fixed_value: '' },
-          { path: 'Observation.component.valueString', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean', fixed_value: '' },
-          { path: 'Observation.component.valueInteger', fixed_value: '' },
-          { path: 'Observation.component.valueRange', fixed_value: '' },
-          { path: 'Observation.component.valueRatio', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData', fixed_value: '' },
-          { path: 'Observation.component.valueTime', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod', fixed_value: '' },
-          { path: 'Observation.component.valueQuantity.value', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept.value', fixed_value: '' },
-          { path: 'Observation.component.valueString.value', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean.value', fixed_value: '' },
-          { path: 'Observation.component.valueInteger.value', fixed_value: '' },
-          { path: 'Observation.component.valueRange.value', fixed_value: '' },
-          { path: 'Observation.component.valueRatio.value', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData.value', fixed_value: '' },
-          { path: 'Observation.component.valueTime.value', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime.value', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod.value', fixed_value: '' },
-          { path: 'Observation.component.valueQuantity.unit', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept.unit', fixed_value: '' },
-          { path: 'Observation.component.valueString.unit', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean.unit', fixed_value: '' },
-          { path: 'Observation.component.valueInteger.unit', fixed_value: '' },
-          { path: 'Observation.component.valueRange.unit', fixed_value: '' },
-          { path: 'Observation.component.valueRatio.unit', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData.unit', fixed_value: '' },
-          { path: 'Observation.component.valueTime.unit', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime.unit', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod.unit', fixed_value: '' },
-          { path: 'Observation.component.valueQuantity.system', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept.system', fixed_value: '' },
-          { path: 'Observation.component.valueString.system', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean.system', fixed_value: '' },
-          { path: 'Observation.component.valueInteger.system', fixed_value: '' },
-          { path: 'Observation.component.valueRange.system', fixed_value: '' },
-          { path: 'Observation.component.valueRatio.system', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData.system', fixed_value: '' },
-          { path: 'Observation.component.valueTime.system', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime.system', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod.system', fixed_value: '' },
-          { path: 'Observation.component.valueQuantity.code', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept.code', fixed_value: '' },
-          { path: 'Observation.component.valueString.code', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean.code', fixed_value: '' },
-          { path: 'Observation.component.valueInteger.code', fixed_value: '' },
-          { path: 'Observation.component.valueRange.code', fixed_value: '' },
-          { path: 'Observation.component.valueRatio.code', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData.code', fixed_value: '' },
-          { path: 'Observation.component.valueTime.code', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime.code', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod.code', fixed_value: '' },
           { path: 'Observation.component.dataAbsentReason', fixed_value: '' }
         ]
 

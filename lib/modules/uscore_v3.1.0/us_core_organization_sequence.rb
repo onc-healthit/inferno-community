@@ -248,13 +248,11 @@ module Inferno
 
             Organization.identifier
 
-            Organization.identifier.system
-
             Organization.identifier.value
 
-            Organization.identifier
+            Organization.identifier.system
 
-            Organization.identifier
+            Organization.identifier.system
 
             Organization.active
 
@@ -282,10 +280,9 @@ module Inferno
 
         must_support_elements = [
           { path: 'Organization.identifier', fixed_value: '' },
-          { path: 'Organization.identifier.system', fixed_value: '' },
           { path: 'Organization.identifier.value', fixed_value: '' },
-          { path: 'Organization.identifier', fixed_value: '' },
-          { path: 'Organization.identifier', fixed_value: '' },
+          { path: 'Organization.identifier.system', fixed_value: 'http://hl7.org/fhir/sid/us-npi' },
+          { path: 'Organization.identifier.system', fixed_value: 'urn:oid:2.16.840.1.113883.4.7' },
           { path: 'Organization.active', fixed_value: '' },
           { path: 'Organization.name', fixed_value: '' },
           { path: 'Organization.telecom', fixed_value: '' },
