@@ -545,13 +545,14 @@ module Inferno
               #{elements_list.join(",\n")}
             ]
 
-            missing_must_support_elements = must_support_elements.reject do |path|
-              truncated_path = path.gsub('#{sequence[:resource]}.', '')
+            missing_must_support_elements = must_support_elements.reject do |element|
+              truncated_path = element[:path].gsub('#{sequence[:resource]}.', '')
               @#{sequence[:resource].underscore}_ary&.any? do |resource|
                 value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
                 value_found.present?
               end
             end
+            missing_must_support_elements.map! { |must_support| "\#{must_support[:path]}\#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
           )
 
           if must_support_extensions.present?
