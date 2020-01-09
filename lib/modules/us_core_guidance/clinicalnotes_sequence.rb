@@ -31,12 +31,10 @@ module Inferno
 
       )
 
-      attr_accessor :document_attachments
-
-      @report_attachments = ClinicalNoteAttachment.new('DiagnosticReport')
+      attr_accessor :document_attachments, :report_attachments, :skip_document_reference, :skip_diagnostic_report
 
       def test_clinical_notes_document_reference(category_code)
-        search_params = { 'patient': @instance.patient_id, 'category': category_code }
+        search_params = { 'patient': @instance.patient_id, 'type': category_code }
         resource_class = 'DocumentReference'
 
         reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
@@ -47,10 +45,10 @@ module Inferno
 
         unless resource_count.positive?
           @skip_document_reference = true
-          skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
+          skip "This patient does not have #{resource_class} with type #{category_code}. Please use patients with more information."
         end
 
-        @document_attachments = ClinicalNoteAttachment.new('DocumentReference') if document_attachments.nil?
+        @document_attachments = ClinicalNoteAttachment.new('DocumentReference') if @document_attachments.nil?
 
         document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
 
@@ -71,10 +69,12 @@ module Inferno
 
         resource_count = reply&.resource&.entry&.length || 0
 
-        unless resource_count.postive?
+        unless resource_count.positive?
           @skip_diagnostic_report = true
           skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
         end
+
+        @report_attachments = ClinicalNoteAttachment.new('DiagnosticReport') if @report_attachments.nil?
 
         diagnostic_reports = reply&.resource&.entry&.map { |entry| entry&.resource }
 
@@ -88,7 +88,7 @@ module Inferno
       test :have_consultation_note do
         metadata do
           id '01'
-          name 'Server shall have Consultation Notes'
+          name 'Server shall have Consultation Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -98,9 +98,10 @@ module Inferno
         test_clinical_notes_document_reference('http://loinc.org|11488-4')
       end
 
-      test 'Server shall have Discharge Summary' do
+      test :have_discharge_summary do
         metadata do
           id '02'
+          name 'Server shall have Discharge Summary from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -110,9 +111,10 @@ module Inferno
         test_clinical_notes_document_reference('http://loinc.org|18842-5')
       end
 
-      test 'Server shall have History and Physical Note' do
+      test :have_history_note do
         metadata do
           id '03'
+          name 'Server shall have History and Physical Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -122,9 +124,10 @@ module Inferno
         test_clinical_notes_document_reference('http://loinc.org|34117-2')
       end
 
-      test 'Server shall have Procedures Note' do
+      test :have_procedures_note do
         metadata do
           id '04'
+          name 'Server returns Procedures Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -134,9 +137,10 @@ module Inferno
         test_clinical_notes_document_reference('http://loinc.org|28570-0')
       end
 
-      test 'Server shall have Progress Note' do
+      test :have_progress_note do
         metadata do
           id '05'
+          name 'Server shall have Progress Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -146,9 +150,10 @@ module Inferno
         test_clinical_notes_document_reference('http://loinc.org|11506-3')
       end
 
-      test 'Server returns Cardiology report from DiagnosticReport search by patient+category' do
+      test :have_cardiology_report do
         metadata do
           id '06'
+          name 'Server returns Cardiology report from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -158,9 +163,10 @@ module Inferno
         test_clinical_notes_diagnostic_report('http://loinc.org|LP29708-2')
       end
 
-      test 'Server returns Pathology report from DiagnosticReport search by patient+category' do
+      test :have_pathology_report do
         metadata do
           id '07'
+          name 'Server returns Pathology report from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -170,9 +176,10 @@ module Inferno
         test_clinical_notes_diagnostic_report('http://loinc.org|LP7839-6')
       end
 
-      test 'Server returns Radiology report from DiagnosticReport search by patient+category' do
+      test :have_radiology_report do
         metadata do
           id '08'
+          name 'Server returns Radiology report from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -182,9 +189,10 @@ module Inferno
         test_clinical_notes_diagnostic_report('http://loinc.org|LP29684-5')
       end
 
-      test 'DiagnosticReport and DocumentReference reference the same attachment' do
+      test :have_matched_attachments do
         metadata do
           id '09'
+          name 'DiagnosticReport and DocumentReference reference the same attachment'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
