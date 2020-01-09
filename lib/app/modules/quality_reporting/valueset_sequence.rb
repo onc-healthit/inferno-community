@@ -10,7 +10,6 @@ module Inferno
       title 'ValueSet Availability'
 
       test_id_prefix 'valueset'
-      requires :measure_to_test
       description 'Ensure that all required value sets for a target measure are available'
 
       test 'Check ValueSet Availability' do
@@ -21,7 +20,7 @@ module Inferno
         end
 
         measure_id = @instance.measure_to_test
-        assert !measure_id.nil?, 'Expected Measure To Test to be defined.'
+        assert !measure_id.nil?, 'Expected Measure To Test to be defined. The Measure Availability Sequence must be performed before this sequence.'
         valueset_urls = get_all_dependent_valuesets(measure_id)
         missing_valuesets = []
 
