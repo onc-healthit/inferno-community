@@ -16,6 +16,7 @@ module Inferno
     attr_accessor :name
     attr_accessor :test_sets
     attr_accessor :title
+    attr_accessor :measures
 
     def initialize(params)
       @name = params[:name]
@@ -83,9 +84,7 @@ module Inferno
       measures_endpoint = Inferno::CQF_RULER + 'Measure'
       resp = cqf_ruler_client.client.get(measures_endpoint, headers)
       bundle = FHIR::STU3::Bundle.new JSON.parse(resp.body)
-      measure_resources = bundle.entry.select { |e| e.resource.class == FHIR::STU3::Measure }
-      measure_ids = measure_resources.map { |measure| measure.resource.id }
-      @measures = measure_ids
+      @measures = bundle.entry.select { |e| e.resource.class == FHIR::STU3::Measure }
     rescue StandardError
       @measures = []
     end

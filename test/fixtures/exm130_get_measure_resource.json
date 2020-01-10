@@ -1,80 +1,160 @@
 {
   "resourceType": "Bundle",
-  "id": "7e75b287-9d86-450a-98d2-0df3727a2466",
-  "meta": {
-    "lastUpdated": "2019-09-19T15:03:19.772+00:00"
-  },
+  "id": "8a444bb9-898f-4d0b-a1b3-c78c11e9fa42",
   "type": "searchset",
   "total": 1,
-  "link": [
-    {
-      "relation": "self",
-      "url": "http://localhost:8080/cqf-ruler-dstu3/fhir/Measure?_sort=_lastUpdated&name=EXM130"
-    }
-  ],
   "entry": [
     {
-      "fullUrl": "http://localhost:8080/cqf-ruler-dstu3/fhir/Measure/MitreTestScript-measure-col",
       "resource": {
         "resourceType": "Measure",
-        "id": "MitreTestScript-measure-col",
+        "id": "measure-exm130-FHIR3",
         "meta": {
           "versionId": "1",
-          "lastUpdated": "2019-09-19T15:03:04.662+00:00"
+          "lastUpdated": "2020-01-08T02:19:01.753+00:00",
+          "profile": [
+            "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/proportion-measure-cqfm"
+          ]
         },
-        "text": {
-          "status": "generated"
-        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-populationBasis",
+            "valueCode": "boolean"
+          }
+        ],
+        "url": "http://hl7.org/fhir/us/cqfmeasures/Measure/measure-exm130-FHIR3",
         "identifier": [
           {
             "use": "official",
-            "system": "http://hl7.org/fhir/cqi/ecqm/Measure/Identifier/payer-extract",
-            "value": "COL"
+            "system": "http://hl7.org/fhir/cqi/ecqm/Measure/Identifier/cms",
+            "value": "130"
+          },
+          {
+            "use": "official",
+            "system": "http://hl7.org/fhir/cqi/ecqm/Measure/Identifier/nqf",
+            "value": "0034"
           }
         ],
-        "version": "1.0.0",
+        "version": "7.2.000",
         "name": "EXM130",
-        "title": "Colorectal Cancer Screening. Cohort Definition",
+        "title": "Colorectal Cancer Screening",
         "status": "active",
         "experimental": true,
-        "date": "2015-03-08",
-        "description": "Colorectal Cancer Screening. Cohort Definition",
-        "topic": [
+        "date": "2018-08-28",
+        "publisher": "National Committee for Quality Assurance",
+        "description": "Percentage of adults 50-75 years of age who had appropriate screening for colorectal cancer",
+        "purpose": "Patients 50-75 years of age with a visit during the measurement period",
+        "approvalDate": "2016-01-01",
+        "lastReviewDate": "2016-09-01",
+        "effectivePeriod": {
+          "start": "2018-01-01",
+          "end": "2018-12-31"
+        },
+        "useContext": [
+          {
+            "code": {
+              "code": "program"
+            },
+            "valueCodeableConcept": {
+              "text": "eligible-provider"
+            }
+          }
+        ],
+        "jurisdiction": [
           {
             "coding": [
               {
-                "system": "http://hl7.org/fhir/c80-doc-typecodes",
-                "code": "57024-2"
+                "system": "urn:iso:std:iso:3166",
+                "code": "US"
               }
             ]
           }
         ],
-        "library": [
+        "topic": [
           {
-            "reference": "Library/MitreTestScript-library-col-logic"
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "57024-2",
+                "display": "Health Quality Measure Document"
+              }
+            ]
           }
         ],
+        "contributor": [
+          {
+            "type": "author",
+            "name": "National Committee for Quality Assurance"
+          }
+        ],
+        "contact": [
+          {
+            "telecom": [
+              {
+                "system": "url",
+                "value": "http://www.ncqa.org/"
+              }
+            ]
+          }
+        ],
+        "copyright": "This Physician Performance Measure (Measure) and related data specifications were developed by the National Committee for Quality Assurance (NCQA). NCQA is not responsible for any use of the Measure. NCQA makes no representations, warranties, or endorsement about the quality of any organization or physician that uses or reports performance measures and NCQA has no liability to anyone who relies on such measures or specifications. NCQA holds a copyright in the Measure. The Measure can be reproduced and distributed, without modification, for noncommercial purposes (eg, use by healthcare providers in connection with their practices) without obtaining approval from NCQA. Commercial use is defined as the sale, licensing, or distribution of the Measure for commercial gain, or incorporation of the Measure into a product or service that is sold, licensed or distributed for commercial gain. All commercial uses or requests for modification must be approved by NCQA and are subject to a license at the discretion of NCQA. (C) 2012-2017 National Committee for Quality Assurance. All Rights Reserved. Limited proprietary coding is contained in the Measure specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets. NCQA disclaims all liability for use or accuracy of any third party codes contained in the specifications. CPT(R) contained in the Measure specifications is copyright 2004-2017 American Medical Association. LOINC(R) copyright 2004-2017 Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms(R) (SNOMED CT[R] ) copyright 2004-2017 International Health Terminology Standards Development Organisation. ICD-10 copyright 2017 World Health Organization. All Rights Reserved.",
+        "relatedArtifact": [
+          {
+            "type": "citation",
+            "citation": "U.S. Preventive Services Task Force. \"Screening for Colorectal Cancer: U.S. Preventive Services Task Force Recommendation Statement.\" JAMA, vol. 315, no. 23, 2016, pp. 2564-2575. doi: 10.1001/jama.2016.5989"
+          },
+          {
+            "type": "citation",
+            "citation": "Howlader, N., A.M. Noone, M. Krapcho, D. Miller, K. Bishop, C.L. Kosary, M. Yu, J. Ruhl, Z. Tatalovich, A. Mariotto, D.R. Lewis, H.S. Chen, E.J. Feuer, and K.A. Cronin. \"SEER Cancer Statistics Review, 1975-2014.\" Washington, DC: National Cancer Institute, 2017. Available at https://seer.cancer.gov/csr/1975_2014/"
+          },
+          {
+            "type": "citation",
+            "citation": "American Cancer Society. \"Can Colorectal Polyps and Cancer Be Found Early?\" Last modified March 2017. Washington, DC: American Cancer Society. Available at https://www.cancer.org/cancer/colon-rectal-cancer/detection-diagnosis-staging/detection.html."
+          }
+        ],
+        "library": [
+          {
+            "reference": "Library/library-exm130-FHIR3"
+          }
+        ],
+        "disclaimer": "The performance Measure is not a clinical guideline and does not establish a standard of medical care, and has not been tested for all potential applications. THE MEASURE AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND. Due to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM].",
         "scoring": {
           "coding": [
             {
+              "system": "http://hl7.org/fhir/measure-scoring",
               "code": "proportion"
             }
           ]
         },
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/measure-type",
+                "code": "process"
+              }
+            ]
+          }
+        ],
+        "rationale": "Colorectal cancer represents 8 percent of all new cancer cases and is the second leading cause of cancer deaths in the United States. In 2017, there were an estimated 135,430 new cases of colorectal cancer and an estimated 50,260 deaths attributed to it. According to the National Cancer Institute, about 4.3 percent of men and women will be diagnosed with colorectal cancer at some point during their lifetimes. For most adults, older age is the most important risk factor for colorectal cancer, although being male and black are also associated with higher incidence and mortality. Colorectal cancer is most frequently diagnosed among people 65 to 74 years old (Howlader et al. 2017). Screening can be effective for finding precancerous lesions (polyps) that could later become malignant, and for detecting early cancers that can be more easily and effectively treated. Precancerous polyps usually take about 10 to 15 years to develop into colorectal cancer, and most can be found and removed before turning into cancer. The five-year relative survival rate for people whose colorectal cancer is found in the early stage before it has spread is about 90 percent (American Cancer Society 2017).",
+        "clinicalRecommendationStatement": "The U. S. Preventive Services Task Force (2016) recommends screening for colorectal cancer starting at age 50 years and continuing until age 75 years. This is a Grade A recommendation (U.S. Preventive Services Task Force 2016). Screening tests: -Colonoscopy (every 10 years) -Flexible sigmoidoscopy (every 5 years) -Fecal occult blood test (annually) -FIT-DNA (every 3 years) -Computed tomographic colonography (every 5 years)",
+        "improvementNotation": "increase",
+        "guidance": "Patient self-report for procedures as well as diagnostic studies should be recorded in \"Procedure, Performed\" template or \"Diagnostic Study, Performed\" template in QRDA-1. Do not count DRE, FOBT tests performed in an office setting or performed on a sample collected via DRE.",
         "group": [
           {
             "identifier": {
-              "value": "COL-cohort"
+              "value": "group-1"
             },
             "population": [
               {
                 "identifier": {
-                  "value": "initial-population"
+                  "value": "initial-population-identifier"
                 },
                 "code": {
                   "coding": [
                     {
-                      "code": "initial-population"
+                      "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                      "code": "initial-population",
+                      "display": "Initial Population"
                     }
                   ]
                 },
@@ -82,12 +162,14 @@
               },
               {
                 "identifier": {
-                  "value": "numerator"
+                  "value": "numerator-identifier"
                 },
                 "code": {
                   "coding": [
                     {
-                      "code": "numerator"
+                      "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                      "code": "numerator",
+                      "display": "Numerator"
                     }
                   ]
                 },
@@ -95,18 +177,101 @@
               },
               {
                 "identifier": {
-                  "value": "denominator"
+                  "value": "denominator-identifier"
                 },
                 "code": {
                   "coding": [
                     {
-                      "code": "denominator"
+                      "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                      "code": "denominator",
+                      "display": "Denominator"
                     }
                   ]
                 },
                 "criteria": "Denominator"
+              },
+              {
+                "identifier": {
+                  "value": "denominator-exclusions-identifier"
+                },
+                "code": {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                      "code": "denominator-exclusion",
+                      "display": "Denominator Exclusion"
+                    }
+                  ]
+                },
+                "criteria": "Denominator Exclusion"
               }
             ]
+          }
+        ],
+        "supplementalData": [
+          {
+            "identifier": {
+              "value": "sde-ethnicity"
+            },
+            "usage": [
+              {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/measure-data-usage",
+                    "code": "supplemental-data"
+                  }
+                ]
+              }
+            ],
+            "criteria": "SDE Ethnicity"
+          },
+          {
+            "identifier": {
+              "value": "sde-payer"
+            },
+            "usage": [
+              {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/measure-data-usage",
+                    "code": "supplemental-data"
+                  }
+                ]
+              }
+            ],
+            "criteria": "SDE Payer"
+          },
+          {
+            "identifier": {
+              "value": "sde-race"
+            },
+            "usage": [
+              {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/measure-data-usage",
+                    "code": "supplemental-data"
+                  }
+                ]
+              }
+            ],
+            "criteria": "SDE Race"
+          },
+          {
+            "identifier": {
+              "value": "sde-sex"
+            },
+            "usage": [
+              {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/measure-data-usage",
+                    "code": "supplemental-data"
+                  }
+                ]
+              }
+            ],
+            "criteria": "SDE Sex"
           }
         ]
       },

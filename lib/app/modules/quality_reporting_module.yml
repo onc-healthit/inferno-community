@@ -5,7 +5,7 @@ default_test_set: developer
 fhir_version: stu3
 test_sets:
   developer:
-    view: default
+    view: guided
     tests:
       - name: Prerequisites
         sequences:

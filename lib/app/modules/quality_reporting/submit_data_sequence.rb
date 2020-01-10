@@ -22,6 +22,9 @@ module Inferno
         end
 
         assert(!@instance.measure_to_test.nil?, 'No measure selected. You must run the Prerequisite sequences prior to running Reporting Actions sequences.')
+
+        @client.additional_headers = { 'x-api-key': @instance.api_key, 'Authorization': @instance.auth_header }
+
         # Get the patient data to submit. We currently support cms124, cms130, cms165 only
         patient_bundle_path = case @instance.measure_to_test
                               when 'measure-exm124-FHIR3'
