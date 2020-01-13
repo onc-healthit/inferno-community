@@ -388,13 +388,13 @@ module Inferno
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'CarePlan.text', fixed_value: '' },
-          { path: 'CarePlan.text.status', fixed_value: '' },
-          { path: 'CarePlan.status', fixed_value: '' },
-          { path: 'CarePlan.intent', fixed_value: '' },
-          { path: 'CarePlan.category', fixed_value: '' },
+          { path: 'CarePlan.text' },
+          { path: 'CarePlan.text.status' },
+          { path: 'CarePlan.status' },
+          { path: 'CarePlan.intent' },
+          { path: 'CarePlan.category' },
           { path: 'CarePlan.category.coding.code', fixed_value: 'assess-plan' },
-          { path: 'CarePlan.subject', fixed_value: '' }
+          { path: 'CarePlan.subject' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

@@ -353,15 +353,15 @@ module Inferno
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          { path: 'PractitionerRole.practitioner', fixed_value: '' },
-          { path: 'PractitionerRole.organization', fixed_value: '' },
-          { path: 'PractitionerRole.code', fixed_value: '' },
-          { path: 'PractitionerRole.specialty', fixed_value: '' },
-          { path: 'PractitionerRole.location', fixed_value: '' },
-          { path: 'PractitionerRole.telecom', fixed_value: '' },
-          { path: 'PractitionerRole.telecom.system', fixed_value: '' },
-          { path: 'PractitionerRole.telecom.value', fixed_value: '' },
-          { path: 'PractitionerRole.endpoint', fixed_value: '' }
+          { path: 'PractitionerRole.practitioner' },
+          { path: 'PractitionerRole.organization' },
+          { path: 'PractitionerRole.code' },
+          { path: 'PractitionerRole.specialty' },
+          { path: 'PractitionerRole.location' },
+          { path: 'PractitionerRole.telecom' },
+          { path: 'PractitionerRole.telecom.system' },
+          { path: 'PractitionerRole.telecom.value' },
+          { path: 'PractitionerRole.endpoint' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

@@ -361,15 +361,15 @@ module Inferno
         skip 'No Location resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Location.status', fixed_value: '' },
-          { path: 'Location.name', fixed_value: '' },
-          { path: 'Location.telecom', fixed_value: '' },
-          { path: 'Location.address', fixed_value: '' },
-          { path: 'Location.address.line', fixed_value: '' },
-          { path: 'Location.address.city', fixed_value: '' },
-          { path: 'Location.address.state', fixed_value: '' },
-          { path: 'Location.address.postalCode', fixed_value: '' },
-          { path: 'Location.managingOrganization', fixed_value: '' }
+          { path: 'Location.status' },
+          { path: 'Location.name' },
+          { path: 'Location.telecom' },
+          { path: 'Location.address' },
+          { path: 'Location.address.line' },
+          { path: 'Location.address.city' },
+          { path: 'Location.address.state' },
+          { path: 'Location.address.postalCode' },
+          { path: 'Location.managingOrganization' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

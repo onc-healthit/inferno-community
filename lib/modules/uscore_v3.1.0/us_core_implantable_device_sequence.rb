@@ -279,17 +279,17 @@ module Inferno
         skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Device.udiCarrier', fixed_value: '' },
-          { path: 'Device.udiCarrier.deviceIdentifier', fixed_value: '' },
-          { path: 'Device.udiCarrier.carrierAIDC', fixed_value: '' },
-          { path: 'Device.udiCarrier.carrierHRF', fixed_value: '' },
-          { path: 'Device.distinctIdentifier', fixed_value: '' },
-          { path: 'Device.manufactureDate', fixed_value: '' },
-          { path: 'Device.expirationDate', fixed_value: '' },
-          { path: 'Device.lotNumber', fixed_value: '' },
-          { path: 'Device.serialNumber', fixed_value: '' },
-          { path: 'Device.type', fixed_value: '' },
-          { path: 'Device.patient', fixed_value: '' }
+          { path: 'Device.udiCarrier' },
+          { path: 'Device.udiCarrier.deviceIdentifier' },
+          { path: 'Device.udiCarrier.carrierAIDC' },
+          { path: 'Device.udiCarrier.carrierHRF' },
+          { path: 'Device.distinctIdentifier' },
+          { path: 'Device.manufactureDate' },
+          { path: 'Device.expirationDate' },
+          { path: 'Device.lotNumber' },
+          { path: 'Device.serialNumber' },
+          { path: 'Device.type' },
+          { path: 'Device.patient' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

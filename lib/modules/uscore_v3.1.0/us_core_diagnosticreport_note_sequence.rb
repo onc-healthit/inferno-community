@@ -440,9 +440,7 @@ module Inferno
 
             DiagnosticReport.encounter
 
-            DiagnosticReport.effectiveDateTime
-
-            DiagnosticReport.effectivePeriod
+            DiagnosticReport.effective[x]
 
             DiagnosticReport.issued
 
@@ -457,16 +455,15 @@ module Inferno
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'DiagnosticReport.status', fixed_value: '' },
-          { path: 'DiagnosticReport.category', fixed_value: '' },
-          { path: 'DiagnosticReport.code', fixed_value: '' },
-          { path: 'DiagnosticReport.subject', fixed_value: '' },
-          { path: 'DiagnosticReport.encounter', fixed_value: '' },
-          { path: 'DiagnosticReport.effectiveDateTime', fixed_value: '' },
-          { path: 'DiagnosticReport.effectivePeriod', fixed_value: '' },
-          { path: 'DiagnosticReport.issued', fixed_value: '' },
-          { path: 'DiagnosticReport.performer', fixed_value: '' },
-          { path: 'DiagnosticReport.presentedForm', fixed_value: '' }
+          { path: 'DiagnosticReport.status' },
+          { path: 'DiagnosticReport.category' },
+          { path: 'DiagnosticReport.code' },
+          { path: 'DiagnosticReport.subject' },
+          { path: 'DiagnosticReport.encounter' },
+          { path: 'DiagnosticReport.effective' },
+          { path: 'DiagnosticReport.issued' },
+          { path: 'DiagnosticReport.performer' },
+          { path: 'DiagnosticReport.presentedForm' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

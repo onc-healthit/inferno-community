@@ -280,10 +280,10 @@ module Inferno
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'AllergyIntolerance.clinicalStatus', fixed_value: '' },
-          { path: 'AllergyIntolerance.verificationStatus', fixed_value: '' },
-          { path: 'AllergyIntolerance.code', fixed_value: '' },
-          { path: 'AllergyIntolerance.patient', fixed_value: '' }
+          { path: 'AllergyIntolerance.clinicalStatus' },
+          { path: 'AllergyIntolerance.verificationStatus' },
+          { path: 'AllergyIntolerance.code' },
+          { path: 'AllergyIntolerance.patient' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

@@ -308,7 +308,7 @@ module Inferno
 
             Goal.target
 
-            Goal.target.dueDate
+            Goal.target.due[x]
 
           )
           versions :r4
@@ -317,11 +317,11 @@ module Inferno
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Goal.lifecycleStatus', fixed_value: '' },
-          { path: 'Goal.description', fixed_value: '' },
-          { path: 'Goal.subject', fixed_value: '' },
-          { path: 'Goal.target', fixed_value: '' },
-          { path: 'Goal.target.dueDate', fixed_value: '' }
+          { path: 'Goal.lifecycleStatus' },
+          { path: 'Goal.description' },
+          { path: 'Goal.subject' },
+          { path: 'Goal.target' },
+          { path: 'Goal.target.due' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

@@ -538,23 +538,23 @@ module Inferno
         skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'DocumentReference.identifier', fixed_value: '' },
-          { path: 'DocumentReference.status', fixed_value: '' },
-          { path: 'DocumentReference.type', fixed_value: '' },
-          { path: 'DocumentReference.category', fixed_value: '' },
-          { path: 'DocumentReference.subject', fixed_value: '' },
-          { path: 'DocumentReference.date', fixed_value: '' },
-          { path: 'DocumentReference.author', fixed_value: '' },
-          { path: 'DocumentReference.custodian', fixed_value: '' },
-          { path: 'DocumentReference.content', fixed_value: '' },
-          { path: 'DocumentReference.content.attachment', fixed_value: '' },
-          { path: 'DocumentReference.content.attachment.contentType', fixed_value: '' },
-          { path: 'DocumentReference.content.attachment.data', fixed_value: '' },
-          { path: 'DocumentReference.content.attachment.url', fixed_value: '' },
-          { path: 'DocumentReference.content.format', fixed_value: '' },
-          { path: 'DocumentReference.context', fixed_value: '' },
-          { path: 'DocumentReference.context.encounter', fixed_value: '' },
-          { path: 'DocumentReference.context.period', fixed_value: '' }
+          { path: 'DocumentReference.identifier' },
+          { path: 'DocumentReference.status' },
+          { path: 'DocumentReference.type' },
+          { path: 'DocumentReference.category' },
+          { path: 'DocumentReference.subject' },
+          { path: 'DocumentReference.date' },
+          { path: 'DocumentReference.author' },
+          { path: 'DocumentReference.custodian' },
+          { path: 'DocumentReference.content' },
+          { path: 'DocumentReference.content.attachment' },
+          { path: 'DocumentReference.content.attachment.contentType' },
+          { path: 'DocumentReference.content.attachment.data' },
+          { path: 'DocumentReference.content.attachment.url' },
+          { path: 'DocumentReference.content.format' },
+          { path: 'DocumentReference.context' },
+          { path: 'DocumentReference.context.encounter' },
+          { path: 'DocumentReference.context.period' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

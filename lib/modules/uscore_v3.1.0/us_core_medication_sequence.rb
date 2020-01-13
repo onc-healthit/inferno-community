@@ -121,7 +121,7 @@ module Inferno
         skip 'No Medication resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Medication.code', fixed_value: '' }
+          { path: 'Medication.code' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

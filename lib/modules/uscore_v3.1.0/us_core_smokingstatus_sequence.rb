@@ -414,7 +414,7 @@ module Inferno
 
             Observation.issued
 
-            Observation.valueCodeableConcept
+            Observation.value[x]
 
           )
           versions :r4
@@ -423,11 +423,11 @@ module Inferno
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Observation.status', fixed_value: '' },
-          { path: 'Observation.code', fixed_value: '' },
-          { path: 'Observation.subject', fixed_value: '' },
-          { path: 'Observation.issued', fixed_value: '' },
-          { path: 'Observation.valueCodeableConcept', fixed_value: '' }
+          { path: 'Observation.status' },
+          { path: 'Observation.code' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.issued' },
+          { path: 'Observation.value' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

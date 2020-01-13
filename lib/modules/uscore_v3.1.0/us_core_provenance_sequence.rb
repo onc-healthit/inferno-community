@@ -135,13 +135,13 @@ module Inferno
         skip 'No Provenance resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Provenance.target', fixed_value: '' },
-          { path: 'Provenance.recorded', fixed_value: '' },
-          { path: 'Provenance.agent.type', fixed_value: '' },
-          { path: 'Provenance.agent.who', fixed_value: '' },
-          { path: 'Provenance.agent.onBehalfOf', fixed_value: '' },
+          { path: 'Provenance.target' },
+          { path: 'Provenance.recorded' },
+          { path: 'Provenance.agent.type' },
+          { path: 'Provenance.agent.who' },
+          { path: 'Provenance.agent.onBehalfOf' },
           { path: 'Provenance.agent.type.coding.code', fixed_value: 'author' },
-          { path: 'Provenance.agent', fixed_value: '' },
+          { path: 'Provenance.agent' },
           { path: 'Provenance.agent.type.coding.code', fixed_value: 'transmitter' }
         ]
 

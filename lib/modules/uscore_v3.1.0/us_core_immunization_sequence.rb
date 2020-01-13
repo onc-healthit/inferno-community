@@ -308,9 +308,7 @@ module Inferno
 
             Immunization.patient
 
-            Immunization.occurrenceDateTime
-
-            Immunization.occurrenceString
+            Immunization.occurrence[x]
 
             Immunization.primarySource
 
@@ -321,13 +319,12 @@ module Inferno
         skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Immunization.status', fixed_value: '' },
-          { path: 'Immunization.statusReason', fixed_value: '' },
-          { path: 'Immunization.vaccineCode', fixed_value: '' },
-          { path: 'Immunization.patient', fixed_value: '' },
-          { path: 'Immunization.occurrenceDateTime', fixed_value: '' },
-          { path: 'Immunization.occurrenceString', fixed_value: '' },
-          { path: 'Immunization.primarySource', fixed_value: '' }
+          { path: 'Immunization.status' },
+          { path: 'Immunization.statusReason' },
+          { path: 'Immunization.vaccineCode' },
+          { path: 'Immunization.patient' },
+          { path: 'Immunization.occurrence' },
+          { path: 'Immunization.primarySource' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

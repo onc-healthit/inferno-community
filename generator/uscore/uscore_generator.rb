@@ -507,6 +507,7 @@ module Inferno
           element[:path] = element[:path].gsub('.class', '.local_class')
         end
 
+        sequence[:must_supports].each { |must_support| must_support[:path].gsub!('[x]', '') }
         must_support_extensions = sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }
         must_support_extensions.each do |extension|
           test[:description] += %(
@@ -536,7 +537,9 @@ module Inferno
         elements_list = []
         sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
           element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
-          elements_list << "{ path: '#{element[:path]}', fixed_value: '#{element[:fixed_value]}' }"
+          element_list_parts = ["path: '#{element[:path]}'"]
+          element_list_parts << ["fixed_value: '#{element[:fixed_value]}'"] if element[:fixed_value].present?
+          elements_list << "{ #{element_list_parts.join(', ')} }"
         end
 
         if elements_list.present?

@@ -264,11 +264,11 @@ module Inferno
         skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Practitioner.identifier', fixed_value: '' },
-          { path: 'Practitioner.identifier.value', fixed_value: '' },
+          { path: 'Practitioner.identifier' },
+          { path: 'Practitioner.identifier.value' },
           { path: 'Practitioner.identifier.system', fixed_value: 'http://hl7.org/fhir/sid/us-npi' },
-          { path: 'Practitioner.name', fixed_value: '' },
-          { path: 'Practitioner.name.family', fixed_value: '' }
+          { path: 'Practitioner.name' },
+          { path: 'Practitioner.name.family' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

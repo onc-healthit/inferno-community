@@ -505,23 +505,23 @@ module Inferno
         skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Encounter.identifier', fixed_value: '' },
-          { path: 'Encounter.identifier.system', fixed_value: '' },
-          { path: 'Encounter.identifier.value', fixed_value: '' },
-          { path: 'Encounter.status', fixed_value: '' },
-          { path: 'Encounter.local_class', fixed_value: '' },
-          { path: 'Encounter.type', fixed_value: '' },
-          { path: 'Encounter.subject', fixed_value: '' },
-          { path: 'Encounter.participant', fixed_value: '' },
-          { path: 'Encounter.participant.type', fixed_value: '' },
-          { path: 'Encounter.participant.period', fixed_value: '' },
-          { path: 'Encounter.participant.individual', fixed_value: '' },
-          { path: 'Encounter.period', fixed_value: '' },
-          { path: 'Encounter.reasonCode', fixed_value: '' },
-          { path: 'Encounter.hospitalization', fixed_value: '' },
-          { path: 'Encounter.hospitalization.dischargeDisposition', fixed_value: '' },
-          { path: 'Encounter.location', fixed_value: '' },
-          { path: 'Encounter.location.location', fixed_value: '' }
+          { path: 'Encounter.identifier' },
+          { path: 'Encounter.identifier.system' },
+          { path: 'Encounter.identifier.value' },
+          { path: 'Encounter.status' },
+          { path: 'Encounter.local_class' },
+          { path: 'Encounter.type' },
+          { path: 'Encounter.subject' },
+          { path: 'Encounter.participant' },
+          { path: 'Encounter.participant.type' },
+          { path: 'Encounter.participant.period' },
+          { path: 'Encounter.participant.individual' },
+          { path: 'Encounter.period' },
+          { path: 'Encounter.reasonCode' },
+          { path: 'Encounter.hospitalization' },
+          { path: 'Encounter.hospitalization.dischargeDisposition' },
+          { path: 'Encounter.location' },
+          { path: 'Encounter.location.location' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

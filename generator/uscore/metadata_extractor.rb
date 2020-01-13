@@ -208,31 +208,20 @@ module Inferno
           end
 
           path = element['path']
-          if path.include? '[x]'
-            choice_el = profile_definition['snapshot']['element'].find { |el| el['id'] == (path.split('[x]').first + '[x]') }
-            choice_el['type'].each do |type|
-              sequence[:must_supports] <<
-                {
-                  type: 'element',
-                  path: path.gsub('[x]', capitalize_first_letter(type['code']))
-                }
-            end
-          else
-            must_support_element = { type: 'element', path: path }
-            if element['fixedUri'].present?
-              must_support_element[:fixed_value] = element['fixedUri']
-            elsif element['patternCodeableConcept'].present?
-              must_support_element[:fixed_value] = element['patternCodeableConcept']['coding'].first['code']
-              must_support_element[:path] += '.coding.code'
-            elsif element['fixedCode'].present?
-              must_support_element[:fixed_value] = element['fixedCode']
-            elsif element['patternIdentifier'].present?
-              must_support_element[:fixed_value] = element['patternIdentifier']['system']
-              must_support_element[:path] += '.system'
-            end
-            sequence[:must_supports].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
-            sequence[:must_supports] << must_support_element
+          must_support_element = { type: 'element', path: path }
+          if element['fixedUri'].present?
+            must_support_element[:fixed_value] = element['fixedUri']
+          elsif element['patternCodeableConcept'].present?
+            must_support_element[:fixed_value] = element['patternCodeableConcept']['coding'].first['code']
+            must_support_element[:path] += '.coding.code'
+          elsif element['fixedCode'].present?
+            must_support_element[:fixed_value] = element['fixedCode']
+          elsif element['patternIdentifier'].present?
+            must_support_element[:fixed_value] = element['patternIdentifier']['system']
+            must_support_element[:path] += '.system'
           end
+          sequence[:must_supports].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
+          sequence[:must_supports] << must_support_element
         end
       end
 

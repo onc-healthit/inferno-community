@@ -356,9 +356,7 @@ module Inferno
 
             Procedure.subject
 
-            Procedure.performedDateTime
-
-            Procedure.performedPeriod
+            Procedure.performed[x]
 
           )
           versions :r4
@@ -367,11 +365,10 @@ module Inferno
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Procedure.status', fixed_value: '' },
-          { path: 'Procedure.code', fixed_value: '' },
-          { path: 'Procedure.subject', fixed_value: '' },
-          { path: 'Procedure.performedDateTime', fixed_value: '' },
-          { path: 'Procedure.performedPeriod', fixed_value: '' }
+          { path: 'Procedure.status' },
+          { path: 'Procedure.code' },
+          { path: 'Procedure.subject' },
+          { path: 'Procedure.performed' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

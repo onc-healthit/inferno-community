@@ -416,11 +416,11 @@ module Inferno
         skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Condition.clinicalStatus', fixed_value: '' },
-          { path: 'Condition.verificationStatus', fixed_value: '' },
-          { path: 'Condition.category', fixed_value: '' },
-          { path: 'Condition.code', fixed_value: '' },
-          { path: 'Condition.subject', fixed_value: '' }
+          { path: 'Condition.clinicalStatus' },
+          { path: 'Condition.verificationStatus' },
+          { path: 'Condition.category' },
+          { path: 'Condition.code' },
+          { path: 'Condition.subject' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

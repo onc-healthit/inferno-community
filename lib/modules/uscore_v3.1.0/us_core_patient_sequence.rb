@@ -525,26 +525,26 @@ module Inferno
         end
 
         must_support_elements = [
-          { path: 'Patient.identifier', fixed_value: '' },
-          { path: 'Patient.identifier.system', fixed_value: '' },
-          { path: 'Patient.identifier.value', fixed_value: '' },
-          { path: 'Patient.name', fixed_value: '' },
-          { path: 'Patient.name.family', fixed_value: '' },
-          { path: 'Patient.name.given', fixed_value: '' },
-          { path: 'Patient.telecom', fixed_value: '' },
-          { path: 'Patient.telecom.system', fixed_value: '' },
-          { path: 'Patient.telecom.value', fixed_value: '' },
-          { path: 'Patient.telecom.use', fixed_value: '' },
-          { path: 'Patient.gender', fixed_value: '' },
-          { path: 'Patient.birthDate', fixed_value: '' },
-          { path: 'Patient.address', fixed_value: '' },
-          { path: 'Patient.address.line', fixed_value: '' },
-          { path: 'Patient.address.city', fixed_value: '' },
-          { path: 'Patient.address.state', fixed_value: '' },
-          { path: 'Patient.address.postalCode', fixed_value: '' },
-          { path: 'Patient.address.period', fixed_value: '' },
-          { path: 'Patient.communication', fixed_value: '' },
-          { path: 'Patient.communication.language', fixed_value: '' }
+          { path: 'Patient.identifier' },
+          { path: 'Patient.identifier.system' },
+          { path: 'Patient.identifier.value' },
+          { path: 'Patient.name' },
+          { path: 'Patient.name.family' },
+          { path: 'Patient.name.given' },
+          { path: 'Patient.telecom' },
+          { path: 'Patient.telecom.system' },
+          { path: 'Patient.telecom.value' },
+          { path: 'Patient.telecom.use' },
+          { path: 'Patient.gender' },
+          { path: 'Patient.birthDate' },
+          { path: 'Patient.address' },
+          { path: 'Patient.address.line' },
+          { path: 'Patient.address.city' },
+          { path: 'Patient.address.state' },
+          { path: 'Patient.address.postalCode' },
+          { path: 'Patient.address.period' },
+          { path: 'Patient.communication' },
+          { path: 'Patient.communication.language' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

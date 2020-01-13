@@ -431,13 +431,9 @@ module Inferno
 
             MedicationRequest.intent
 
-            MedicationRequest.reportedBoolean
+            MedicationRequest.reported[x]
 
-            MedicationRequest.reportedReference
-
-            MedicationRequest.medicationCodeableConcept
-
-            MedicationRequest.medicationReference
+            MedicationRequest.medication[x]
 
             MedicationRequest.subject
 
@@ -458,18 +454,16 @@ module Inferno
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'MedicationRequest.status', fixed_value: '' },
-          { path: 'MedicationRequest.intent', fixed_value: '' },
-          { path: 'MedicationRequest.reportedBoolean', fixed_value: '' },
-          { path: 'MedicationRequest.reportedReference', fixed_value: '' },
-          { path: 'MedicationRequest.medicationCodeableConcept', fixed_value: '' },
-          { path: 'MedicationRequest.medicationReference', fixed_value: '' },
-          { path: 'MedicationRequest.subject', fixed_value: '' },
-          { path: 'MedicationRequest.encounter', fixed_value: '' },
-          { path: 'MedicationRequest.authoredOn', fixed_value: '' },
-          { path: 'MedicationRequest.requester', fixed_value: '' },
-          { path: 'MedicationRequest.dosageInstruction', fixed_value: '' },
-          { path: 'MedicationRequest.dosageInstruction.text', fixed_value: '' }
+          { path: 'MedicationRequest.status' },
+          { path: 'MedicationRequest.intent' },
+          { path: 'MedicationRequest.reported' },
+          { path: 'MedicationRequest.medication' },
+          { path: 'MedicationRequest.subject' },
+          { path: 'MedicationRequest.encounter' },
+          { path: 'MedicationRequest.authoredOn' },
+          { path: 'MedicationRequest.requester' },
+          { path: 'MedicationRequest.dosageInstruction' },
+          { path: 'MedicationRequest.dosageInstruction.text' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

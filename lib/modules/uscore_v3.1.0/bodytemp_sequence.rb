@@ -420,19 +420,17 @@ module Inferno
 
             Observation.subject
 
-            Observation.effectiveDateTime
+            Observation.effective[x]
 
-            Observation.effectivePeriod
+            Observation.value[x]
 
-            Observation.valueQuantity
+            Observation.value[x].value
 
-            Observation.valueQuantity.value
+            Observation.value[x].unit
 
-            Observation.valueQuantity.unit
+            Observation.value[x].system
 
-            Observation.valueQuantity.system
-
-            Observation.valueQuantity.code
+            Observation.value[x].code
 
             Observation.dataAbsentReason
 
@@ -440,27 +438,7 @@ module Inferno
 
             Observation.component.code
 
-            Observation.component.valueQuantity
-
-            Observation.component.valueCodeableConcept
-
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
+            Observation.component.value[x]
 
             Observation.component.dataAbsentReason
 
@@ -471,35 +449,24 @@ module Inferno
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Observation.status', fixed_value: '' },
-          { path: 'Observation.category', fixed_value: '' },
-          { path: 'Observation.category.coding', fixed_value: '' },
+          { path: 'Observation.status' },
+          { path: 'Observation.category' },
+          { path: 'Observation.category.coding' },
           { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
           { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
-          { path: 'Observation.code', fixed_value: '' },
-          { path: 'Observation.subject', fixed_value: '' },
-          { path: 'Observation.effectiveDateTime', fixed_value: '' },
-          { path: 'Observation.effectivePeriod', fixed_value: '' },
-          { path: 'Observation.valueQuantity', fixed_value: '' },
-          { path: 'Observation.valueQuantity.value', fixed_value: '' },
-          { path: 'Observation.valueQuantity.unit', fixed_value: '' },
-          { path: 'Observation.valueQuantity.system', fixed_value: '' },
-          { path: 'Observation.valueQuantity.code', fixed_value: '' },
-          { path: 'Observation.dataAbsentReason', fixed_value: '' },
-          { path: 'Observation.component', fixed_value: '' },
-          { path: 'Observation.component.code', fixed_value: '' },
-          { path: 'Observation.component.valueQuantity', fixed_value: '' },
-          { path: 'Observation.component.valueCodeableConcept', fixed_value: '' },
-          { path: 'Observation.component.valueString', fixed_value: '' },
-          { path: 'Observation.component.valueBoolean', fixed_value: '' },
-          { path: 'Observation.component.valueInteger', fixed_value: '' },
-          { path: 'Observation.component.valueRange', fixed_value: '' },
-          { path: 'Observation.component.valueRatio', fixed_value: '' },
-          { path: 'Observation.component.valueSampledData', fixed_value: '' },
-          { path: 'Observation.component.valueTime', fixed_value: '' },
-          { path: 'Observation.component.valueDateTime', fixed_value: '' },
-          { path: 'Observation.component.valuePeriod', fixed_value: '' },
-          { path: 'Observation.component.dataAbsentReason', fixed_value: '' }
+          { path: 'Observation.code' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.effective' },
+          { path: 'Observation.value' },
+          { path: 'Observation.value.value' },
+          { path: 'Observation.value.unit' },
+          { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
+          { path: 'Observation.value.code' },
+          { path: 'Observation.dataAbsentReason' },
+          { path: 'Observation.component' },
+          { path: 'Observation.component.code' },
+          { path: 'Observation.component.value' },
+          { path: 'Observation.component.dataAbsentReason' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|

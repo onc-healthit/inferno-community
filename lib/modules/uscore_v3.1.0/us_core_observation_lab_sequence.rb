@@ -416,31 +416,9 @@ module Inferno
 
             Observation.subject
 
-            Observation.effectiveDateTime
+            Observation.effective[x]
 
-            Observation.effectivePeriod
-
-            Observation.valueQuantity
-
-            Observation.valueCodeableConcept
-
-            Observation.valueString
-
-            Observation.valueBoolean
-
-            Observation.valueInteger
-
-            Observation.valueRange
-
-            Observation.valueRatio
-
-            Observation.valueSampledData
-
-            Observation.valueTime
-
-            Observation.valueDateTime
-
-            Observation.valuePeriod
+            Observation.value[x]
 
             Observation.dataAbsentReason
 
@@ -451,25 +429,14 @@ module Inferno
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          { path: 'Observation.status', fixed_value: '' },
-          { path: 'Observation.category', fixed_value: '' },
+          { path: 'Observation.status' },
+          { path: 'Observation.category' },
           { path: 'Observation.category.coding.code', fixed_value: 'laboratory' },
-          { path: 'Observation.code', fixed_value: '' },
-          { path: 'Observation.subject', fixed_value: '' },
-          { path: 'Observation.effectiveDateTime', fixed_value: '' },
-          { path: 'Observation.effectivePeriod', fixed_value: '' },
-          { path: 'Observation.valueQuantity', fixed_value: '' },
-          { path: 'Observation.valueCodeableConcept', fixed_value: '' },
-          { path: 'Observation.valueString', fixed_value: '' },
-          { path: 'Observation.valueBoolean', fixed_value: '' },
-          { path: 'Observation.valueInteger', fixed_value: '' },
-          { path: 'Observation.valueRange', fixed_value: '' },
-          { path: 'Observation.valueRatio', fixed_value: '' },
-          { path: 'Observation.valueSampledData', fixed_value: '' },
-          { path: 'Observation.valueTime', fixed_value: '' },
-          { path: 'Observation.valueDateTime', fixed_value: '' },
-          { path: 'Observation.valuePeriod', fixed_value: '' },
-          { path: 'Observation.dataAbsentReason', fixed_value: '' }
+          { path: 'Observation.code' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.effective' },
+          { path: 'Observation.value' },
+          { path: 'Observation.dataAbsentReason' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|
