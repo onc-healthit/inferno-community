@@ -105,6 +105,7 @@ module Inferno
 
             base_path = get_base_path(supported_profile)
             profile_definition = @resource_by_path[base_path]
+            add_required_codeable_concepts(profile_definition, new_sequence)
             add_must_support_elements(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
             add_element_definitions(profile_definition, new_sequence)
@@ -175,6 +176,22 @@ module Inferno
 
       def add_revinclude_targets(resource, sequence)
         sequence[:revincludes] = resource['searchRevInclude'] || []
+      end
+
+      def add_required_codeable_concepts(profile_definition, sequence)
+        required_concepts = profile_definition['snapshot']['element']
+          .select { |element| element['type']&.any? { |type| type['code'] == 'CodeableConcept' } }
+          .select { |e| e.dig('binding', 'strength') == 'required' }
+
+        # The base FHIR vital signs profile has a required binding that isn't
+        # relevant for any of its child profiles
+        return if sequence[:resource] == 'Observation'
+
+        sequence[:required_concepts] = required_concepts.map do |concept|
+          concept['path']
+            .gsub("#{sequence[:resource]}.", '')
+            .gsub('[x]', 'CodeableConcept')
+        end
       end
 
       def add_must_support_elements(profile_definition, sequence)

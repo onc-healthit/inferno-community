@@ -500,8 +500,10 @@ module Inferno
       end
 
       def create_resource_profile_test(sequence)
+        test_key = :validate_resources
         test = {
           tests_that: "#{sequence[:resource]} resources returned conform to US Core R4 profiles",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
           description: %(
@@ -509,11 +511,46 @@ module Inferno
             This includes checking for missing data elements and valueset verification.
           )
         }
+        profile_uri = validation_profile_uri(sequence)
         test[:test_code] = %(
-              #{skip_if_not_found(sequence)}
-              test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
+          #{skip_if_not_found(sequence)}
+          test_resources_against_profile('#{sequence[:resource]}'#{', ' + profile_uri if profile_uri}))
+
+        if sequence[:required_concepts].present?
+          concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
+          test[:description] += %(
+            This test also checks that the following CodeableConcepts with
+            required ValueSet bindings include a code rather than just text:
+            #{concept_string}
+          )
+
+          test[:test_code] += %( do |resource|
+              #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
+                concepts = resolve_path(resource, path)
+                next if concepts.blank?
+
+                code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+
+                unless code_present # rubocop:disable Style/IfUnlessModifier
+                  "The CodeableConcept at '\#{path}' is bound to a required ValueSet but does not contain any codes."
+                end
+              end.compact
+            end
+          )
+        end
 
         sequence[:tests] << test
+
+        if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
+          unit_test_generator.generate_resource_validation_test(
+            test_key: test_key,
+            resource_type: sequence[:resource],
+            class_name: sequence[:class_name],
+            sequence_name: sequence[:name],
+            required_concepts: sequence[:required_concepts],
+            profile_uri: profile_uri
+          )
+        end
       end
 
       def create_multiple_or_test(sequence)
