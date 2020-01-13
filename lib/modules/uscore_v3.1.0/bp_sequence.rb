@@ -308,9 +308,10 @@ module Inferno
         provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Observation resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '11'
+          name 'Observation resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/StructureDefinition/bp'
           description %(
 

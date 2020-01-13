@@ -81,9 +81,10 @@ module Inferno
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Medication resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '04'
+          name 'Medication resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
 

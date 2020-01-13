@@ -81,9 +81,10 @@ module Inferno
         validate_history_reply(@provenance, versioned_resource_class('Provenance'))
       end
 
-      test 'Provenance resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '04'
+          name 'Provenance resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
 
