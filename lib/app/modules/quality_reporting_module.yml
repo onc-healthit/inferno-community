@@ -8,10 +8,12 @@ test_sets:
     view: guided
     tests:
       - name: Prerequisites
+        overview: The server satisfies prerequisite state for quality reporting.
         sequences:
           - MeasureAvailability
           - ValueSetSequence
       - name: Reporting Actions
+        overview: The server correctly handles reporting actions.
         sequences:
           - ResourceSequence
           - SubmitDataSequence
