@@ -26,7 +26,7 @@ module Inferno
         measure_id = @instance.measure_to_test
         measure_resource = @instance.module.measures.find { |m| m.resource.id == measure_id }
 
-        @client.additional_headers = { 'x-api-key': @instance.api_key, 'Authorization': @instance.auth_header }
+        @client.additional_headers = { 'x-api-key': @instance.api_key, 'Authorization': @instance.auth_header } if @instance.api_key && @instance.auth_header
 
         # Search system for measure by identifier and version
         measure_identifier = measure_resource.resource.identifier.find { |id| id.system == 'http://hl7.org/fhir/cqi/ecqm/Measure/Identifier/cms' }

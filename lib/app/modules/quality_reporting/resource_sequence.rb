@@ -22,6 +22,8 @@ module Inferno
           desc 'Add a resource using a POST request, then verify it is available'
         end
 
+        @client.additional_headers = { 'x-api-key': @instance.api_key, 'Authorization': @instance.auth_header } if @instance.api_key && @instance.auth_header
+
         id_string = SecureRandom.uuid
         observation = FHIR::Observation.new
         identifier = FHIR::Identifier.new value: id_string

@@ -19,6 +19,8 @@ module Inferno
           desc 'Expand each Value Set in a measure to ensure they are available'
         end
 
+        @client.additional_headers = { 'x-api-key': @instance.api_key, 'Authorization': @instance.auth_header } if @instance.api_key && @instance.auth_header
+
         measure_id = @instance.measure_to_test
         assert !measure_id.nil?, 'Expected Measure To Test to be defined. The Measure Availability Sequence must be performed before this sequence.'
         valueset_urls = get_all_dependent_valuesets(measure_id)
