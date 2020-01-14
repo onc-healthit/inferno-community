@@ -271,6 +271,14 @@ module Inferno
               including support for these #{param} comparators: #{comparators.keys.join(', ')})
         end
 
+        if sequence[:resource] == 'MedicationRequest'
+          search_test[:description] += %(
+            If any MedicationRequest resources use external references to
+            Medications, the search will be repeated with
+            _include=MedicationRequest:medication.
+          )
+        end
+
         is_first_search = search_param == find_first_search(sequence)
 
         search_test[:test_code] =
@@ -282,7 +290,7 @@ module Inferno
               #{get_search_params(search_param[:names], sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              assert_response_ok(reply)
+              #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
             )
           end
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
@@ -608,6 +616,7 @@ module Inferno
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            #{'test_medication_inclusion(@medication_request_ary, search_params)' if sequence[:resource] == 'MedicationRequest'}
             break#{' if values_found == 2' if find_two_values}
           end
           #{skip_if_not_found(sequence)})
@@ -763,6 +772,28 @@ module Inferno
               end
             end
       )
+        end
+
+        if sequence[:resource] == 'MedicationRequest'
+          validate_function += %(
+            def test_medication_inclusion(medication_requests, search_params)
+              requests_with_external_references =
+                medication_requests
+                  .select { |request| request&.medicationReference&.present? }
+                  .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+
+              return if requests_with_external_references.blank?
+
+              search_params.merge!(_include: 'MedicationRequest:medication')
+              response = get_resource_by_params(FHIR::MedicationRequest, search_params)
+              assert_response_ok(response)
+              assert_bundle_response(response)
+              requests_with_medications = fetch_all_bundled_resources(response.resource)
+
+              medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
+              assert medications.present?, 'No Medications were included in the search results'
+            end
+          )
         end
 
         validate_function
