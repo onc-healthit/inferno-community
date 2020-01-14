@@ -535,6 +535,7 @@ module Inferno
           read_response = @client.read(klass, id)
           assert_response_ok read_response
           read_response = read_response.resource
+          assert id == read_response.id
         end
         assert !read_response.nil?, "Expected #{class_name} resource to be present."
         assert read_response.is_a?(klass), "Expected resource to be of type #{class_name}."
