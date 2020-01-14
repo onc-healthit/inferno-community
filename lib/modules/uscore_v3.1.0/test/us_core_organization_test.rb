@@ -92,6 +92,24 @@ describe Inferno::Sequence::USCore310OrganizationSequence do
       assert_equal 'Expected resource to be of type Organization.', exception.message
     end
 
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'Organization',
+        resource_id: @organization_id,
+        testing_instance: @instance
+      )
+
+      organization = FHIR::Organization.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/Organization/#{@organization_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: organization.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@organization_id}", exception.message
+    end
+
     it 'succeeds when a Organization resource is read successfully' do
       organization = FHIR::Organization.new(
         id: @organization_id
