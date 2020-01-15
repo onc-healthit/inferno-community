@@ -12,6 +12,14 @@ module Inferno
         class_name = sequence[:class_name]
         return if tests[class_name].blank?
 
+        if sequence[:resource] == 'MedicationRequest'
+          tests[class_name] << ERB.new(
+            File.read(
+              File.join(__dir__, 'templates', 'unit_tests', 'medication_inclusion_unit_test.rb.erb')
+            )
+          ).result
+        end
+
         unit_tests = template.result_with_hash(
           class_name: class_name,
           tests: tests[class_name],
