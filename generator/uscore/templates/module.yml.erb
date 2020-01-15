@@ -20,6 +20,5 @@ test_sets:
         - UsCoreR4CapabilityStatementSequence
         - USCore310PatientSequence<% non_delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
-        - USCoreR4MedicationListSequence
         - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
