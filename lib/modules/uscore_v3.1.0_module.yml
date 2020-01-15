@@ -44,7 +44,6 @@ test_sets:
         - USCore310HeartrateSequence
         - USCore310ResprateSequence
         - USCore310ProcedureSequence
-        - USCoreR4MedicationListSequence
         - USCoreR4ClinicalNotesSequence
         - USCore310LocationSequence
         - USCore310MedicationSequence
