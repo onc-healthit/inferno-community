@@ -1,0 +1,61 @@
+describe '#test_medication_inclusion' do
+  before do
+    @sequence = @sequence_class.new(@instance, @client)
+    @request_with_code = FHIR::MedicationRequest.new(medicationCodeableConcept: { coding: [{ code: 'abc' }] })
+    @request_with_internal_reference = FHIR::MedicationRequest.new(medicationReference: { reference: '#456' })
+    @request_with_external_reference = FHIR::MedicationRequest.new(medicationReference: { reference: 'Medication/789' })
+    @search_params = {
+      patient: @instance.patient_id,
+      intent: 'order'
+    }
+    @search_params_with_medication = @search_params.merge(_include: 'MedicationRequest:medication')
+  end
+
+  it 'succeeds if no external Medication references are used' do
+    @sequence.test_medication_inclusion([@request_with_code, @request_with_internal_reference], @search_params)
+  end
+
+  it 'fails if the search including Medications returns a non-success response' do
+    stub_request(:get, "#{@base_url}/MedicationRequest")
+      .with(query: @search_params_with_medication)
+      .to_return(status: 400)
+
+    exception = assert_raises(Inferno::AssertionException) do
+      @sequence.test_medication_inclusion([@request_with_external_reference], @search_params)
+    end
+
+    assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
+  end
+
+  it 'fails if the search including Medications does not return a Bundle' do
+    stub_request(:get, "#{@base_url}/MedicationRequest")
+      .with(query: @search_params_with_medication)
+      .to_return(status: 200, body: FHIR::MedicationRequest.new.to_json)
+
+    exception = assert_raises(Inferno::AssertionException) do
+      @sequence.test_medication_inclusion([@request_with_external_reference], @search_params)
+    end
+
+    assert_equal 'Expected FHIR Bundle but found: MedicationRequest', exception.message
+  end
+
+  it 'fails if no Medications are present in the search results' do
+    stub_request(:get, "#{@base_url}/MedicationRequest")
+      .with(query: @search_params_with_medication)
+      .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::MedicationRequest.new).to_json)
+
+    exception = assert_raises(Inferno::AssertionException) do
+      @sequence.test_medication_inclusion([@request_with_external_reference], @search_params)
+    end
+
+    assert_equal 'No Medications were included in the search results', exception.message
+  end
+
+  it 'succeeds if Medications are present in the search results' do
+    stub_request(:get, "#{@base_url}/MedicationRequest")
+      .with(query: @search_params_with_medication)
+      .to_return(status: 200, body: wrap_resources_in_bundle([@request_with_external_reference, FHIR::Medication.new]).to_json)
+
+    @sequence.test_medication_inclusion([@request_with_external_reference], @search_params)
+  end
+end

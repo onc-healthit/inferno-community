@@ -160,7 +160,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :search_by_address_city do
@@ -186,7 +185,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :search_by_address_state do
@@ -212,7 +210,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :search_by_address_postalcode do
@@ -238,7 +235,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :vread_interaction do

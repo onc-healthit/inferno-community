@@ -103,6 +103,7 @@ module Inferno
           save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
           save_delayed_sequence_references(@observation_ary)
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
           break
         end
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
@@ -131,7 +132,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :search_by_patient_category_date do
@@ -159,7 +159,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -195,7 +194,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
 
         ['gt', 'lt', 'le', 'ge'].each do |comparator|
           comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -230,7 +228,6 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
         validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :read_interaction do

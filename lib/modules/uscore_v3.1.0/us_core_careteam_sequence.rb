@@ -92,6 +92,7 @@ module Inferno
           save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
           save_delayed_sequence_references(@care_team_ary)
           validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+
           break if values_found == 2
         end
         skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
