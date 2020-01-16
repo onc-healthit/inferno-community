@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../utils/result_statuses'
-require_relative 'validation_message'
+require_relative 'information_message'
 
 module Inferno
   module Models
@@ -28,7 +28,7 @@ module Inferno
 
       has n, :request_responses, through: Resource, order: [:timestamp.asc]
       has n, :test_warnings
-      has n, :validation_messages
+      has n, :information_messages
       belongs_to :sequence_result
     end
   end
