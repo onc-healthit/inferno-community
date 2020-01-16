@@ -321,6 +321,8 @@ module Inferno
       def create_chained_search_test(sequence, search_param)
         # NOTE: This test is currently hard-coded because chained searches are
         # only required for PractitionerRole
+        raise StandardError, 'Chained search tests only supported for PractitionerRole' if sequence[:resource] != 'PractitionerRole'
+
         chained_param_string = sequence[:search_param_descriptions][search_param][:chain]
           .map { |param| "#{search_param}.#{param[:chain]}" }
           .join(' and ')
