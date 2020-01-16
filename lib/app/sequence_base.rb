@@ -597,7 +597,6 @@ module Inferno
         )
 
         errors = references.map(&:resource_id).flat_map do |resource_id|
-          # binding.pry if resource_type == 'AllergyIntolerance'
           resource = fetch_resource(resource_type, resource_id)
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p
