@@ -16,7 +16,7 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'read' },
                 { code: 'vread' },
                 { code: 'history-instance' },
-                { code: 'search-type' }
+                { code: 'search-type', documentation: 'DOCUMENTATION' }
               ]
             },
             {
@@ -24,7 +24,8 @@ class ServerCapabilitiesTest < MiniTest::Test
               profile: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
               interaction: [
                 { code: 'delete' },
-                { code: 'update' }
+                { code: 'update' },
+                { code: 'search-type' }
               ]
             },
             {
@@ -84,7 +85,7 @@ class ServerCapabilitiesTest < MiniTest::Test
       },
       {
         resource_type: 'Condition',
-        interactions: ['delete', 'update'],
+        interactions: ['delete', 'search', 'update'],
         operations: []
       },
       {
@@ -137,5 +138,11 @@ class ServerCapabilitiesTest < MiniTest::Test
     ]
 
     assert_equal(expected_profiles, @capabilities.supported_profiles)
+  end
+
+  def test_search_documented
+    assert @capabilities.search_documented?('Patient')
+    refute @capabilities.search_documented?('Condition')
+    refute @capabilities.search_documented?('Observation')
   end
 end
