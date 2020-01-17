@@ -27,9 +27,9 @@ module Inferno
 
         # Get the patient data to submit. We currently support cms124, cms130, cms165 only
         patient_bundle_path = case @instance.measure_to_test
-                              when 'measure-EXM124-FHIR3-7.2.000'
+                              when 'measure-EXM124-FHIR3-7.2.000', 'measure-exm124-FHIR3'
                                 '../../../../resources/quality_reporting/CMS124/Bundle/cms124-patient-bundle.json'
-                              when 'measure-EXM130-FHIR3-7.2.000'
+                              when 'measure-EXM130-FHIR3-7.2.000', 'measure-exm130-FHIR3'
                                 '../../../../resources/quality_reporting/CMS130/Bundle/cms130-patient-bundle.json'
                                 # when 'measure-exm165-FHIR3'
                                 # '../../../../resources/quality_reporting/CMS165/Bundle/cms165-patient-bundle.json'

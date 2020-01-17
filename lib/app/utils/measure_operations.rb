@@ -55,7 +55,9 @@ module Inferno
 
       headers = {
         content_type: 'application/json'
-      }.merge(@client.additional_headers)
+      }
+
+      headers.merge!(@client.additional_headers) if @client.additional_headers
 
       @client.post("Measure/#{measure_id}/$submit-data", parameters, headers)
     end
