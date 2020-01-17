@@ -38,6 +38,24 @@ module Inferno
         end
       end
 
+      def test_medication_inclusion(medication_requests, search_params)
+        requests_with_external_references =
+          medication_requests
+            .select { |request| request&.medicationReference&.present? }
+            .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+
+        return if requests_with_external_references.blank?
+
+        search_params.merge!(_include: 'MedicationRequest:medication')
+        response = get_resource_by_params(FHIR::MedicationRequest, search_params)
+        assert_response_ok(response)
+        assert_bundle_response(response)
+        requests_with_medications = fetch_all_bundled_resources(response.resource)
+
+        medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
+        assert medications.present?, 'No Medications were included in the search results'
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
@@ -79,6 +97,10 @@ module Inferno
 
             A server SHALL support searching by patient+intent on the MedicationRequest resource
 
+            If any MedicationRequest resources use external references to
+            Medications, the search will be repeated with
+            _include=MedicationRequest:medication.
+
           )
           versions :r4
         end
@@ -103,6 +125,7 @@ module Inferno
           save_resource_ids_in_bundle(versioned_resource_class('MedicationRequest'), reply)
           save_delayed_sequence_references(@medication_request_ary)
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+          test_medication_inclusion(@medication_request_ary, search_params)
           break
         end
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
@@ -116,6 +139,10 @@ module Inferno
           description %(
 
             A server SHALL support searching by patient+intent+status on the MedicationRequest resource
+
+            If any MedicationRequest resources use external references to
+            Medications, the search will be repeated with
+            _include=MedicationRequest:medication.
 
           )
           versions :r4
@@ -132,7 +159,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
+        test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
       end
 
       test :search_by_patient_intent_encounter do
@@ -144,6 +171,10 @@ module Inferno
           description %(
 
             A server SHOULD support searching by patient+intent+encounter on the MedicationRequest resource
+
+            If any MedicationRequest resources use external references to
+            Medications, the search will be repeated with
+            _include=MedicationRequest:medication.
 
           )
           versions :r4
@@ -160,7 +191,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
+        test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
       end
 
       test :search_by_patient_intent_authoredon do
@@ -174,6 +205,10 @@ module Inferno
             A server SHOULD support searching by patient+intent+authoredon on the MedicationRequest resource
 
               including support for these authoredon comparators: gt, lt, le, ge
+            If any MedicationRequest resources use external references to
+            Medications, the search will be repeated with
+            _include=MedicationRequest:medication.
+
           )
           versions :r4
         end
@@ -189,7 +224,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
         validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-        assert_response_ok(reply)
+        test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
       end
 
       test :read_interaction do
