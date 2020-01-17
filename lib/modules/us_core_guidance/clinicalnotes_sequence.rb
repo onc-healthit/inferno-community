@@ -29,32 +29,47 @@ module Inferno
         The #{title} Sequence tests DiagnosticReport and DocumentReference resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [US Core Clinical Notes Guidance](https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html)
 
+        The provided patient need to have the following five common clinical notes as DocumentReference resrouces:
+
+        * Consultation Note (11488-4)
+        * Discharge Summary (18842-5)
+        * History & Physical Note (34117-2)
+        * Procedures Note (28570-0)
+        * Progress Note (11506-3)
+
+        The provided patient also need to have the following three common diagnostic reports as DiagnosticReport resources:
+        
+        * Cardiology (LP29708-2)
+        * Pathology (LP7839-6)
+        * Radiology (LP29684-5)
+        
+        
+
       )
 
-      attr_accessor :document_attachments, :report_attachments, :skip_document_reference, :skip_diagnostic_report
+      attr_accessor :document_attachments, :report_attachments
 
       def test_clinical_notes_document_reference(category_code)
         search_params = { 'patient': @instance.patient_id, 'type': category_code }
         resource_class = 'DocumentReference'
 
+        skip_if_known_not_supported(:DocumentReference, [:read])
+
         reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
+        resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
 
-        unless resource_count.positive?
-          @skip_document_reference = true
-          skip "This patient does not have #{resource_class} with type #{category_code}. Please use patients with more information."
-        end
+        skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." unless resources_found
 
-        @document_attachments = ClinicalNoteAttachment.new('DocumentReference') if @document_attachments.nil?
+        self.document_attachments = ClinicalNoteAttachment.new(resource_class) if self.document_attachments.nil?
 
-        document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
+        document_references = fetch_all_bundled_resources(reply.resource)
 
         document_references&.each do |document|
-          document&.content&.select { |content| !@document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-            @document_attachments.attachment[content.attachment.url] = document.id
+          document&.content&.select { |content| !self.document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
+            self.document_attachments.attachment[content.attachment.url] = document.id
           end
         end
       end
@@ -67,20 +82,17 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
+        resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
 
-        unless resource_count.positive?
-          @skip_diagnostic_report = true
-          skip "This patient does not have #{resource_class} with category #{category_code}. Please use patients with more information."
-        end
+        skip "No #{resource_class} resources with category #{category_code} appear to be available. Please use patients with more information." unless resources_found
 
-        @report_attachments = ClinicalNoteAttachment.new('DiagnosticReport') if @report_attachments.nil?
+        self.report_attachments = ClinicalNoteAttachment.new(resource_class) if self.report_attachments.nil?
 
-        diagnostic_reports = reply&.resource&.entry&.map { |entry| entry&.resource }
+        diagnostic_reports = fetch_all_bundled_resources(reply.resource)
 
         diagnostic_reports&.each do |report|
-          report&.presentedForm&.select { |attachment| !@report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
-            @report_attachments.attachment[attachment.url] = report.id
+          report&.presentedForm&.select { |attachment| !self.report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
+            self.report_attachments.attachment[attachment.url] = report.id
           end
         end
       end
@@ -199,10 +211,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'Not all required Clinical Notes appear to be available for this patient. Please use patients with more information.' if @skip_document_reference || @skip_diagnostic_report
+        skip 'There is no attachement in DocumentReference. Please select another patient.' unless self.document_attachments&.attachment&.any?
+        skip 'There is no attachement in DiagnosticReport. Please select another patient.' unless self.report_attachments&.attachment&.any?
 
-        assert_attachment_matched(@document_attachments, @report_attachments)
-        assert_attachment_matched(@report_attachments, @document_attachments)
+        assert_attachment_matched(self.document_attachments, self.report_attachments)
+        assert_attachment_matched(self.report_attachments, self.document_attachments)
       end
 
       def assert_attachment_matched(source_attachments, target_attachments)

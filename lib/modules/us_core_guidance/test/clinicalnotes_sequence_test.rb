@@ -60,7 +60,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/^This patient does not have #{@resource_class} with (type|category) #{@category_code}/, error.message)
+      assert_match(/^No #{@resource_class} resources with (type|category)/, error.message)
     end
   end
 
@@ -225,23 +225,23 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     end
 
     it 'skips if skip_document_reference is true' do
-      @sequence.skip_document_reference = true
+      @sequence.document_attachments.attachment.clear()
 
       error = assert_raises(Inferno::SkipException) do
         @sequence.run_test(@test)
       end
 
-      assert_match(/^Not all required Clinical Notes appear to be available for this patient/, error.message)
+      assert_match(/^There is no attachement in DocumentReference/, error.message)
     end
 
-    it 'skips if skip_diagnostic_report is true' do
-      @sequence.skip_diagnostic_report = true
+    it 'skips if report_attachments is empty' do
+      @sequence.report_attachments.attachment.clear()
 
       error = assert_raises(Inferno::SkipException) do
         @sequence.run_test(@test)
       end
 
-      assert_match(/^Not all required Clinical Notes appear to be available for this patient/, error.message)
+      assert_match(/^There is no attachement in DiagnosticReport/, error.message)
     end
 
     it 'fails if one attachment does not have a match' do
