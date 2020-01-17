@@ -440,6 +440,8 @@ module Inferno
 
             Observation.dataAbsentReason
 
+            Observation.component
+
             Observation.component.code
 
             Observation.component.code.coding.code
@@ -447,8 +449,6 @@ module Inferno
             Observation.component.value[x].system
 
             Observation.component.value[x].code
-
-            Observation.component
 
             Observation.component.code.coding.code
 
@@ -468,6 +468,78 @@ module Inferno
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'Observation.category:VSCat',
+            path: 'Observation.category',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'coding.code',
+                  value: 'vital-signs'
+                },
+                {
+                  path: 'coding.system',
+                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.code.coding:PulseOx',
+            path: 'Observation.code.coding',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'code',
+                  value: '59408-5'
+                },
+                {
+                  path: 'system',
+                  value: 'http://loinc.org'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'Observation.value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          },
+          {
+            name: 'Observation.component:FlowRate',
+            path: 'Observation.component',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'code',
+              code: '3151-8',
+              system: 'http://loinc.org'
+            }
+          },
+          {
+            name: 'Observation.component:Concentration',
+            path: 'Observation.component',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'code',
+              code: '3150-0',
+              system: 'http://loinc.org'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
+          @observation_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'Observation.status' },
           { path: 'Observation.category' },
@@ -486,11 +558,11 @@ module Inferno
           { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
           { path: 'Observation.value.code', fixed_value: '%' },
           { path: 'Observation.dataAbsentReason' },
+          { path: 'Observation.component' },
           { path: 'Observation.component.code' },
           { path: 'Observation.component.code.coding.code', fixed_value: '3151-8' },
           { path: 'Observation.component.value.system', fixed_value: 'http://unitsofmeasure.org' },
           { path: 'Observation.component.value.code', fixed_value: 'l/min' },
-          { path: 'Observation.component' },
           { path: 'Observation.component.code.coding.code', fixed_value: '3150-0' },
           { path: 'Observation.component.value' },
           { path: 'Observation.component.value.value' },
@@ -507,6 +579,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"

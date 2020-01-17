@@ -308,20 +308,35 @@ module Inferno
 
             Goal.target
 
-            Goal.target.due[x]
-
           )
           versions :r4
         end
 
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'Goal.target.due[x]:dueDate',
+            path: 'Goal.target.due',
+            discriminator: {
+              type: 'type',
+              code: 'Date'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Goal.', '')
+          @goal_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'Goal.lifecycleStatus' },
           { path: 'Goal.description' },
           { path: 'Goal.subject' },
-          { path: 'Goal.target' },
-          { path: 'Goal.target.due' }
+          { path: 'Goal.target' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|
@@ -332,6 +347,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@goal_ary&.values&.flatten&.length} provided Goal resource(s)"

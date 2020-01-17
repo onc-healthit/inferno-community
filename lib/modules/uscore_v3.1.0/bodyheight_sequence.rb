@@ -448,6 +448,41 @@ module Inferno
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'Observation.category:VSCat',
+            path: 'Observation.category',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'coding.code',
+                  value: 'vital-signs'
+                },
+                {
+                  path: 'coding.system',
+                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'Observation.value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
+          @observation_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'Observation.status' },
           { path: 'Observation.category' },
@@ -477,6 +512,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"

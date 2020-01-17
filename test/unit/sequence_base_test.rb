@@ -231,4 +231,54 @@ class SequenceBaseTest < MiniTest::Test
       assert_equal 2, @sequence.test_count
     end
   end
+
+  describe '#find_slice_by_values' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
+    end
+
+    it 'fails to find anything when values match on different elements in array' do
+      values = [
+        {
+          path: ['coding', 'code'],
+          value: 'correct-code'
+        },
+        {
+          path: ['coding', 'system'],
+          value: 'correct-system'
+        }
+      ]
+      element = {
+        coding: [
+          { code: 'correct-code', system: 'wrong-system' },
+          { code: 'wrong-code', system: 'correct-system' }
+        ]
+      }
+      element_as_obj = JSON.parse(element.to_json, object_class: OpenStruct)
+      assert @sequence.find_slice_by_values(element_as_obj, values).blank?
+    end
+
+    it 'succeeds to find slice' do
+      values = [
+        {
+          path: ['coding', 'code'],
+          value: 'correct-code'
+        },
+        {
+          path: ['coding', 'system'],
+          value: 'correct-system'
+        }
+      ]
+      element = {
+        coding: [
+          { code: 'correct-code', system: 'correct-system' },
+          { code: 'wrong-code', system: 'wrong-system' }
+        ]
+      }
+      element_as_obj = JSON.parse(element.to_json, object_class: OpenStruct)
+      assert @sequence.find_slice_by_values(element_as_obj, values).present?
+    end
+  end
 end

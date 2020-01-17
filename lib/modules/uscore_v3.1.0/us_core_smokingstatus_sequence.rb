@@ -414,20 +414,35 @@ module Inferno
 
             Observation.issued
 
-            Observation.value[x]
-
           )
           versions :r4
         end
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'Observation.value[x]:valueCodeableConcept',
+            path: 'Observation.value',
+            discriminator: {
+              type: 'type',
+              code: 'Codeableconcept'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
+          @observation_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'Observation.status' },
           { path: 'Observation.code' },
           { path: 'Observation.subject' },
-          { path: 'Observation.issued' },
-          { path: 'Observation.value' }
+          { path: 'Observation.issued' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|
@@ -438,6 +453,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"

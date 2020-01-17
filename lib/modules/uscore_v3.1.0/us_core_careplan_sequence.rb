@@ -377,8 +377,6 @@ module Inferno
 
             CarePlan.category
 
-            CarePlan.category.coding.code
-
             CarePlan.subject
 
           )
@@ -387,13 +385,32 @@ module Inferno
 
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'CarePlan.category:AssessPlan',
+            path: 'CarePlan.category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'assess-plan',
+              system: 'http://hl7.org/fhir/us/core/CodeSystem/careplan-category'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('CarePlan.', '')
+          @care_plan_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'CarePlan.text' },
           { path: 'CarePlan.text.status' },
           { path: 'CarePlan.status' },
           { path: 'CarePlan.intent' },
           { path: 'CarePlan.category' },
-          { path: 'CarePlan.category.coding.code', fixed_value: 'assess-plan' },
           { path: 'CarePlan.subject' }
         ]
 
@@ -405,6 +422,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.values&.flatten&.length} provided CarePlan resource(s)"

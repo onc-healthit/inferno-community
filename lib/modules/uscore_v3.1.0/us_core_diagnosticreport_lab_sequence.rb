@@ -434,8 +434,6 @@ module Inferno
 
             DiagnosticReport.category
 
-            DiagnosticReport.category.coding.code
-
             DiagnosticReport.code
 
             DiagnosticReport.subject
@@ -454,10 +452,29 @@ module Inferno
 
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'DiagnosticReport.category:LaboratorySlice',
+            path: 'DiagnosticReport.category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'LAB',
+              system: 'http://terminology.hl7.org/CodeSystem/v2-0074'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('DiagnosticReport.', '')
+          @diagnostic_report_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'DiagnosticReport.status' },
           { path: 'DiagnosticReport.category' },
-          { path: 'DiagnosticReport.category.coding.code', fixed_value: 'LAB' },
           { path: 'DiagnosticReport.code' },
           { path: 'DiagnosticReport.subject' },
           { path: 'DiagnosticReport.effective' },
@@ -474,6 +491,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@diagnostic_report_ary&.values&.flatten&.length} provided DiagnosticReport resource(s)"

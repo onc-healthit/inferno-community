@@ -810,6 +810,45 @@ module Inferno
         end
         resources
       end
+
+      # pattern, values, type
+      def find_slice(resource, path_to_ary, discriminator)
+        resolve_element_from_path(resource, path_to_ary) do |array_el|
+          case discriminator[:type]
+          when 'patternCodeableConcept'
+            path_to_coding = [discriminator[:path], 'coding'].join('.')
+            resolve_element_from_path(array_el, path_to_coding) do |coding|
+              coding.code == discriminator[:code] && coding.system == discriminator[:system]
+            end
+          when 'patternIdentifier'
+            resolve_element_from_path(array_el, discriminator[:path]) { |identifier| identifier.system == discriminator[:system] }
+          when 'value'
+            values_clone = discriminator[:values].deep_dup
+            values_clone.each do |value_def|
+              value_def[:path] = value_def[:path].split('.')
+            end
+            find_slice_by_values(array_el, values_clone)
+          when 'type'
+            array_el.is_a? FHIR.const_get(discriminator[:code])
+          end
+        end
+      end
+
+      def find_slice_by_values(element, values)
+        unique_first_part = values.map { |value_def| value_def[:path].first }.uniq
+        Array.wrap(element).find do |el|
+          unique_first_part.all? do |part|
+            values_matching = values.select { |value_def| value_def[:path].first == part }
+            values_matching.each { |value_def| value_def[:path] = value_def[:path].drop(1) }
+            resolve_element_from_path(el, part) do |el_found|
+              all_matches = values_matching.select { |value_def| value_def[:path].empty? }.all? { |value_def| value_def[:value] == el_found }
+              remaining_values = values_matching.reject { |value_def| value_def[:path].empty? }
+              remaining_matches = remaining_values.present? ? find_slice_by_values(el_found, remaining_values) : true
+              all_matches && remaining_matches
+            end
+          end
+        end
+      end
     end
 
     Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).each { |file| require file }

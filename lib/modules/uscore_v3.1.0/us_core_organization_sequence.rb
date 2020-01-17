@@ -248,11 +248,9 @@ module Inferno
 
             Organization.identifier
 
+            Organization.identifier.system
+
             Organization.identifier.value
-
-            Organization.identifier.system
-
-            Organization.identifier.system
 
             Organization.active
 
@@ -278,11 +276,38 @@ module Inferno
 
         skip 'No Organization resources appear to be available.' unless @resources_found
 
+        must_support_slices = [
+          {
+            name: 'Organization.identifier:NPI',
+            path: 'Organization.identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          },
+          {
+            name: 'Organization.identifier:CLIA',
+            path: 'Organization.identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'urn:oid:2.16.840.1.113883.4.7'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Organization.', '')
+          @organization_ary&.any? do |resource|
+            slice = find_slice(resource, truncated_path, slice[:discriminator])
+            slice.present?
+          end
+        end
+
         must_support_elements = [
           { path: 'Organization.identifier' },
+          { path: 'Organization.identifier.system' },
           { path: 'Organization.identifier.value' },
-          { path: 'Organization.identifier.system', fixed_value: 'http://hl7.org/fhir/sid/us-npi' },
-          { path: 'Organization.identifier.system', fixed_value: 'urn:oid:2.16.840.1.113883.4.7' },
           { path: 'Organization.active' },
           { path: 'Organization.name' },
           { path: 'Organization.telecom' },
@@ -302,6 +327,8 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.length} provided Organization resource(s)"
