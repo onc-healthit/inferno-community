@@ -243,9 +243,16 @@ module Inferno
           if !profile_element.nil?
             param_metadata[:type] = profile_element['type'].first['code']
             param_metadata[:contains_multiple] = (profile_element['max'] == '*')
-            add_valid_codes(profile_definition, profile_element, FHIR.const_get(sequence[:resource])::METADATA[param.to_s], param_metadata)
+            search_path = param_metadata[:path].gsub("#{sequence[:resource]}.", '')
+            add_valid_codes(
+              profile_definition,
+              profile_element,
+              FHIR.const_get(sequence[:resource])::METADATA[search_path],
+              param_metadata
+            )
           else
-            # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
+            # search is a variable type, eg. Condition.onsetDateTime - element
+            # in profile def is Condition.onset[x]
             param_metadata[:type] = search_param_definition['type']
             param_metadata[:contains_multiple] = false
           end
