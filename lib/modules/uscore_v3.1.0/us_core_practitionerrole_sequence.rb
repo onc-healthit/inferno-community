@@ -144,9 +144,65 @@ module Inferno
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
-      test :vread_interaction do
+      test :chained_search_by_practitioner do
         metadata do
           id '05'
+          name 'Server returns expected results from PractitionerRole chained search by practitioner.identifier and practitioner.name'
+          link 'https://www.hl7.org/fhir/us/core/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters'
+          description %(
+
+            A server SHALL support searching the PractitionerRole resource
+            with the chained parameters practitioner.identifier and practitioner.name
+
+          )
+          versions :r4
+        end
+
+        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+
+        practitioner_role = @practitioner_role_ary.find { |role| role.practitioner&.reference.present? }
+        skip_if practitioner_role.blank?, 'No PractitionerRoles containing a Practitioner reference were found'
+
+        begin
+          practitioner = practitioner_role.practitioner.read
+        rescue ClientException => e
+          assert false, "Unable to resolve Practitioner reference: #{e}"
+        end
+
+        assert practitioner.resourceType == 'Practitioner', "Expected FHIR Practitioner but found: #{practitioner.resourceType}"
+
+        name = practitioner.name&.first&.family
+        skip_if name.blank?, 'Practitioner has no family name'
+
+        name_search_response = @client.search(FHIR::PractitionerRole, search: { parameters: { 'practitioner.name': name } })
+        assert_response_ok(name_search_response)
+        assert_bundle_response(name_search_response)
+
+        name_bundle_entries = fetch_all_bundled_resources(name_search_response.resource)
+
+        practitioner_role_found = name_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
+        assert practitioner_role_found, "PractitionerRole with id #{practitioner_role.id} not found in search results for practitioner.name = #{name}"
+
+        identifier = practitioner.identifier.first
+        skip_if identifier.blank?, 'Practitioner has no identifier'
+        identifier_string = "#{identifier.system}|#{identifier.value}"
+
+        identifier_search_response = @client.search(
+          FHIR::PractitionerRole,
+          search: { parameters: { 'practitioner.identifier': identifier_string } }
+        )
+        assert_response_ok(identifier_search_response)
+        assert_bundle_response(identifier_search_response)
+
+        identifier_bundle_entries = fetch_all_bundled_resources(identifier_search_response.resource)
+
+        practitioner_role_found = identifier_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
+        assert practitioner_role_found, "PractitionerRole with id #{practitioner_role.id} not found in search results for practitioner.identifier = #{identifier_string}"
+      end
+
+      test :vread_interaction do
+        metadata do
+          id '06'
           name 'Server returns correct PractitionerRole resource from PractitionerRole vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -164,7 +220,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '06'
+          id '07'
           name 'Server returns correct PractitionerRole resource from PractitionerRole history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -182,7 +238,7 @@ module Inferno
 
       test 'Server returns the appropriate resource from the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
         metadata do
-          id '07'
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#include'
           optional
           description %(
@@ -213,7 +269,7 @@ module Inferno
 
       test 'Server returns Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
         metadata do
-          id '08'
+          id '09'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -237,7 +293,7 @@ module Inferno
 
       test 'PractitionerRole resources returned conform to US Core R4 profiles' do
         metadata do
-          id '09'
+          id '10'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
 
@@ -254,7 +310,7 @@ module Inferno
 
       test 'All must support elements are provided in the PractitionerRole resources returned.' do
         metadata do
-          id '10'
+          id '11'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -312,7 +368,7 @@ module Inferno
 
       test 'Every reference within PractitionerRole resource is valid and can be read.' do
         metadata do
-          id '11'
+          id '12'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

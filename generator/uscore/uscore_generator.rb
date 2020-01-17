@@ -60,6 +60,10 @@ module Inferno
             .select { |search_param| search_param[:expectation] == 'SHOULD' }
             .each { |search_param| create_search_test(sequence, search_param) }
 
+          sequence[:search_param_descriptions]
+            .select { |_, description| description[:chain].present? }
+            .each { |search_param, _| create_chained_search_test(sequence, search_param) }
+
           # make tests for each SHALL and SHOULD interaction
           sequence[:interactions]
             .select { |interaction| ['SHALL', 'SHOULD'].include? interaction[:expectation] }
@@ -312,6 +316,73 @@ module Inferno
           sequence_name: sequence[:name],
           delayed_sequence: sequence[:delayed_sequence]
         )
+      end
+
+      def create_chained_search_test(sequence, search_param)
+        # NOTE: This test is currently hard-coded because chained searches are
+        # only required for PractitionerRole
+        raise StandardError, 'Chained search tests only supported for PractitionerRole' if sequence[:resource] != 'PractitionerRole'
+
+        chained_param_string = sequence[:search_param_descriptions][search_param][:chain]
+          .map { |param| "#{search_param}.#{param[:chain]}" }
+          .join(' and ')
+        search_test = {
+          tests_that: "Server returns expected results from #{sequence[:resource]} chained search by #{chained_param_string}",
+          key: :"chained_search_by_#{search_param}",
+          index: sequence[:tests].length + 1,
+          link: 'https://www.hl7.org/fhir/us/core/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters',
+          optional: false,
+          description: %(
+            A server SHALL support searching the #{sequence[:resource]} resource
+            with the chained parameters #{chained_param_string}
+          )
+        }
+
+        search_test[:test_code] = %(
+          #{skip_if_not_found(sequence)}
+
+          practitioner_role = @practitioner_role_ary.find { |role| role.practitioner&.reference.present? }
+          skip_if practitioner_role.blank?, 'No PractitionerRoles containing a Practitioner reference were found'
+
+          begin
+            practitioner = practitioner_role.practitioner.read
+          rescue ClientException => e
+            assert false, "Unable to resolve Practitioner reference: \#{e}"
+          end
+
+          assert practitioner.resourceType == 'Practitioner', "Expected FHIR Practitioner but found: \#{practitioner.resourceType}"
+
+          name = practitioner.name&.first&.family
+          skip_if name.blank?, 'Practitioner has no family name'
+
+          name_search_response = @client.search(FHIR::PractitionerRole, search: { parameters: { 'practitioner.name': name }})
+          assert_response_ok(name_search_response)
+          assert_bundle_response(name_search_response)
+
+          name_bundle_entries = fetch_all_bundled_resources(name_search_response.resource)
+
+          practitioner_role_found = name_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
+          assert practitioner_role_found, "PractitionerRole with id \#{practitioner_role.id} not found in search results for practitioner.name = \#{name}"
+
+          identifier = practitioner.identifier.first
+          skip_if identifier.blank?, 'Practitioner has no identifier'
+          identifier_string = "\#{identifier.system}|\#{identifier.value}"
+
+          identifier_search_response = @client.search(
+            FHIR::PractitionerRole,
+            search: { parameters: { 'practitioner.identifier': identifier_string } }
+          )
+          assert_response_ok(identifier_search_response)
+          assert_bundle_response(identifier_search_response)
+
+          identifier_bundle_entries = fetch_all_bundled_resources(identifier_search_response.resource)
+
+          practitioner_role_found = identifier_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
+          assert practitioner_role_found, "PractitionerRole with id \#{practitioner_role.id} not found in search results for practitioner.identifier = \#{identifier_string}"
+        )
+
+        sequence[:tests] << search_test
+        unit_test_generator.generate_chained_search_test(class_name: sequence[:class_name])
       end
 
       def create_interaction_test(sequence, interaction)

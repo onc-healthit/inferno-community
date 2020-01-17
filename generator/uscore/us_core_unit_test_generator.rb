@@ -99,6 +99,12 @@ module Inferno
         tests[class_name] << test
       end
 
+      def generate_chained_search_test(class_name:)
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'chained_search_unit_test.rb.erb')))
+
+        tests[class_name] << template.result
+      end
+
       def no_resources_found_message(interaction_test, resource_type)
         if interaction_test
           "No #{resource_type} resources could be found for this patient. Please use patients with more information."
