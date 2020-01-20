@@ -154,7 +154,7 @@ module Inferno
       test :have_progress_note do
         metadata do
           id '05'
-          name 'Server shall have Progress Note from DocumentReference search by patient+type'
+          name 'Server returns Progress Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
