@@ -87,8 +87,8 @@ module FHIR
       "Basic #{Base64.strict_encode64(client_id + ':' + client_secret)}"
     end
 
-    def self.for_testing_instance(instance)
-      new(instance.url).tap do |client|
+    def self.for_testing_instance(instance, url_property: 'url')
+      new(instance.send(url_property)).tap do |client|
         client.testing_instance = instance
         case instance.fhir_version
         when 'stu3'
