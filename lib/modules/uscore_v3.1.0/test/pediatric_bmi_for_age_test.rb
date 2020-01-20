@@ -9,9 +9,9 @@ describe Inferno::Sequence::USCore310PediatricBmiForAgeSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310PediatricBmiForAgeSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0', fhir_version: 'r4')
+    @client = FHIR::Client.for_testing_instance(@instance)
     @patient_id = 'example'
     @instance.patient_id = @patient_id
     set_resource_support(@instance, 'Observation')
