@@ -569,7 +569,10 @@ module Inferno
 
       def validate_resource(resource_type, resource, profile)
         resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
+
         errors = resource_validation_errors[:errors]
+        errors.concat(yield resource) if block_given?
+
         @test_warnings.concat resource_validation_errors[:warnings]
         @information_messages.concat resource_validation_errors[:information]
 
@@ -586,7 +589,7 @@ module Inferno
         resource
       end
 
-      def test_resources(resource_type)
+      def test_resources(resource_type, &block)
         references = @instance.resource_references.all(resource_type: resource_type)
         skip_if(
           references.empty?,
@@ -598,23 +601,22 @@ module Inferno
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p
             @profiles_encountered << p.url
-            validate_resource(resource_type, resource, p)
+            validate_resource(resource_type, resource, p, &block)
           else
             warn { assert false, 'No profiles found for this Resource' }
             issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
             issues[:errors]
           end
         end
-        # TODO
-        # bundle = client.next_bundle
+
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def test_resources_against_profile(resource_type, specified_profile = nil)
+      def test_resources_against_profile(resource_type, specified_profile = nil, &block)
         @profiles_encountered ||= Set.new
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
 
-        return test_resources(resource_type) if specified_profile.blank?
+        return test_resources(resource_type, &block) if specified_profile.blank?
 
         profile = Inferno::ValidationUtil::DEFINITIONS[specified_profile]
         skip_if(
@@ -643,10 +645,9 @@ module Inferno
         @profiles_encountered << profile.url
 
         errors = resources.flat_map do |resource|
-          validate_resource(resource_type, resource, profile)
+          validate_resource(resource_type, resource, profile, &block)
         end
-        # TODO
-        # bundle = client.next_bundle
+
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
@@ -711,6 +712,17 @@ module Inferno
           errors = resource_validation_errors[:errors]
         end
         assert(errors.empty?, errors.join("<br/>\n"))
+      end
+
+      def resolve_path(elements, path)
+        elements = Array.wrap(elements)
+        return elements if path.blank?
+
+        paths = path.split('.')
+
+        elements.flat_map do |element|
+          resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
+        end.compact
       end
 
       def resolve_element_from_path(element, path)

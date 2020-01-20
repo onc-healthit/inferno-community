@@ -105,6 +105,22 @@ module Inferno
         tests[class_name] << template.result
       end
 
+      def generate_resource_validation_test(test_key:, resource_type:, class_name:, sequence_name:, required_concepts:, profile_uri:)
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'resource_validation_unit_test.rb.erb')))
+        resource_var_name = resource_type.underscore
+
+        test = template.result_with_hash(
+          test_key: test_key,
+          resource_type: resource_type,
+          resource_var_name: resource_var_name,
+          concept_paths: path_array_string(required_concepts),
+          sequence_name: sequence_name,
+          profile_uri: profile_uri
+        )
+
+        tests[class_name] << test
+      end
+
       def no_resources_found_message(interaction_test, resource_type)
         if interaction_test
           "No #{resource_type} resources could be found for this patient. Please use patients with more information."
@@ -151,6 +167,10 @@ module Inferno
           variable_name: match[1],
           resource_path: match[2]
         }
+      end
+
+      def path_array_string(paths)
+        paths.map { |path| "'#{path}'" }.join ', '
       end
     end
   end

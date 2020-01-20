@@ -330,9 +330,10 @@ module Inferno
         provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'DiagnosticReport resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '12'
+          name 'DiagnosticReport resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
 

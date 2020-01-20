@@ -291,21 +291,37 @@ module Inferno
         provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Condition resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '11'
+          name 'Condition resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
 
             This test checks if the resources returned from prior searches conform to the US Core profiles.
             This includes checking for missing data elements and valueset verification.
 
+            This test also checks that the following CodeableConcepts with
+            required ValueSet bindings include a code rather than just text:
+            'clinicalStatus' and 'verificationStatus'
+
           )
           versions :r4
         end
 
         skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('Condition')
+        test_resources_against_profile('Condition') do |resource|
+          ['clinicalStatus', 'verificationStatus'].flat_map do |path|
+            concepts = resolve_path(resource, path)
+            next if concepts.blank?
+
+            code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+
+            unless code_present # rubocop:disable Style/IfUnlessModifier
+              "The CodeableConcept at '#{path}' is bound to a required ValueSet but does not contain any codes."
+            end
+          end.compact
+        end
       end
 
       test 'All must support elements are provided in the Condition resources returned.' do
