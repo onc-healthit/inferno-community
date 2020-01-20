@@ -29,7 +29,8 @@ module Inferno
         The #{title} Sequence tests DiagnosticReport and DocumentReference resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [US Core Clinical Notes Guidance](https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html)
 
-        The provided patient need to have the following five common clinical notes as DocumentReference resrouces:
+        In this set of tests, Inferno serves as a FHIR client that attempts to access different types of Clinical Notes
+        specified in the Guidance. The provided patient need to have the following five common clinical notes as DocumentReference resrouces:
 
         * Consultation Note (11488-4)
         * Discharge Summary (18842-5)
@@ -38,13 +39,14 @@ module Inferno
         * Progress Note (11506-3)
 
         The provided patient also need to have the following three common diagnostic reports as DiagnosticReport resources:
-        
+
         * Cardiology (LP29708-2)
         * Pathology (LP7839-6)
         * Radiology (LP29684-5)
-        
-        
 
+        In order to enable consistent access to scanned narrative-only clinical reports,
+        the US Core server shall expose these reports through both
+        DiagnosticReport and DocumentReference by representing the same attachment url.
       )
 
       attr_accessor :document_attachments, :report_attachments
@@ -63,13 +65,13 @@ module Inferno
 
         skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." unless resources_found
 
-        self.document_attachments = ClinicalNoteAttachment.new(resource_class) if self.document_attachments.nil?
+        self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
 
         document_references = fetch_all_bundled_resources(reply.resource)
 
         document_references&.each do |document|
-          document&.content&.select { |content| !self.document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-            self.document_attachments.attachment[content.attachment.url] = document.id
+          document&.content&.select { |content| !document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
+            document_attachments.attachment[content.attachment.url] = document.id
           end
         end
       end
@@ -86,13 +88,13 @@ module Inferno
 
         skip "No #{resource_class} resources with category #{category_code} appear to be available. Please use patients with more information." unless resources_found
 
-        self.report_attachments = ClinicalNoteAttachment.new(resource_class) if self.report_attachments.nil?
+        self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
 
         diagnostic_reports = fetch_all_bundled_resources(reply.resource)
 
         diagnostic_reports&.each do |report|
-          report&.presentedForm&.select { |attachment| !self.report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
-            self.report_attachments.attachment[attachment.url] = report.id
+          report&.presentedForm&.select { |attachment| !report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
+            report_attachments.attachment[attachment.url] = report.id
           end
         end
       end
@@ -211,11 +213,11 @@ module Inferno
           versions :r4
         end
 
-        skip 'There is no attachement in DocumentReference. Please select another patient.' unless self.document_attachments&.attachment&.any?
-        skip 'There is no attachement in DiagnosticReport. Please select another patient.' unless self.report_attachments&.attachment&.any?
+        skip 'There is no attachement in DocumentReference. Please select another patient.' unless document_attachments&.attachment&.any?
+        skip 'There is no attachement in DiagnosticReport. Please select another patient.' unless report_attachments&.attachment&.any?
 
-        assert_attachment_matched(self.document_attachments, self.report_attachments)
-        assert_attachment_matched(self.report_attachments, self.document_attachments)
+        assert_attachment_matched(document_attachments, report_attachments)
+        assert_attachment_matched(report_attachments, document_attachments)
       end
 
       def assert_attachment_matched(source_attachments, target_attachments)
