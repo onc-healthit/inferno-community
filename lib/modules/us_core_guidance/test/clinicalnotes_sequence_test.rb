@@ -225,7 +225,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     end
 
     it 'skips if skip_document_reference is true' do
-      @sequence.document_attachments.attachment.clear()
+      @sequence.document_attachments.attachment.clear
 
       error = assert_raises(Inferno::SkipException) do
         @sequence.run_test(@test)
@@ -235,7 +235,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     end
 
     it 'skips if report_attachments is empty' do
-      @sequence.report_attachments.attachment.clear()
+      @sequence.report_attachments.attachment.clear
 
       error = assert_raises(Inferno::SkipException) do
         @sequence.run_test(@test)
