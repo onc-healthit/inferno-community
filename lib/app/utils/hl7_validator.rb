@@ -25,7 +25,8 @@ module Inferno
       information = issues_by_severity(outcome.issue, 'information')
       {
         errors: fatals.concat(errors).reject(&:empty?),
-        warnings: warnings.concat(information).reject(&:empty?)
+        warnings: warnings,
+        information: information
       }
     end
 

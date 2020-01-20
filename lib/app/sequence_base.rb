@@ -63,6 +63,7 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
+        @information_messages = []
       end
 
       def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
@@ -388,6 +389,7 @@ module Inferno
       def wrap_test(test)
         lambda do
           @test_warnings = []
+          @information_messages = []
           Models::TestResult.new(
             test_id: test.id,
             name: test.name,
@@ -415,6 +417,7 @@ module Inferno
             end
 
             result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
+            result.information_messages = @information_messages.map { |m| Models::InformationMessage.new(message: m) }
             Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
         end
@@ -568,6 +571,7 @@ module Inferno
         resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
         errors = resource_validation_errors[:errors]
         @test_warnings.concat resource_validation_errors[:warnings]
+        @information_messages.concat resource_validation_errors[:information]
 
         errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
         @profiles_failed[profile.url].concat(errors) unless errors.empty?
