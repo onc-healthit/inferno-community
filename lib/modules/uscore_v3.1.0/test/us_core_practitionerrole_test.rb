@@ -11,7 +11,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
     @base_url = 'http://www.example.com/fhir'
     @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
     @patient_id = 'example'
     @instance.patient_id = @patient_id
     set_resource_support(@instance, 'PractitionerRole')
