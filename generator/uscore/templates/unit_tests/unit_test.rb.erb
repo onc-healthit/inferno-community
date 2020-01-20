@@ -10,7 +10,7 @@ describe Inferno::Sequence::<%= class_name %> do
     @sequence_class = Inferno::Sequence::<%= class_name %>
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: '<%= module_name %>', fhir_version: 'r4')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: '<%= module_name %>')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_id = 'example'
     @instance.patient_id = @patient_id

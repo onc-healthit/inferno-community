@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCore310LocationSequence do
     @sequence_class = Inferno::Sequence::USCore310LocationSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0', fhir_version: 'r4')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_id = 'example'
     @instance.patient_id = @patient_id
