@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': 'LAB'
       }
     end
@@ -79,7 +79,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category'))
       }
     end
@@ -181,7 +181,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -244,7 +244,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code'))
       }
     end
@@ -316,7 +316,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'category')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
       }
@@ -381,7 +381,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'status'))
       }
     end
@@ -453,7 +453,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportLabSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'code')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary, 'effective'))
       }

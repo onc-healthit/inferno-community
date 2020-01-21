@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
       @sequence.instance_variable_set(:'@condition_ary', @condition_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -143,7 +143,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary, 'category'))
       }
     end
@@ -215,7 +215,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'onset-date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary, 'onsetDateTime'))
       }
     end
@@ -279,7 +279,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary, 'clinicalStatus'))
       }
     end
@@ -351,7 +351,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary, 'code'))
       }
     end

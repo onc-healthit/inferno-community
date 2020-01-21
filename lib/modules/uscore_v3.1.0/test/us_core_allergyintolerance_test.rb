@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
       @sequence.instance_variable_set(:'@allergy_intolerance_ary', @allergy_intolerance_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -143,7 +143,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@allergy_intolerance_ary, 'clinicalStatus'))
       }
     end

@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -215,7 +215,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
 
       @query = {
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'period')),
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -349,7 +349,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'status'))
       }
     end
@@ -422,7 +422,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
 
       @query = {
         'class': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'local_class')),
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -493,7 +493,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary, 'type'))
       }
     end

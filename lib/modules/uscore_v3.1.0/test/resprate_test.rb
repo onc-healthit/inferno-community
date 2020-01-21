@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'code': '9279-1'
       }
     end
@@ -79,7 +79,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code'))
       }
     end
@@ -181,7 +181,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
       }
@@ -246,7 +246,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category'))
       }
     end
@@ -318,7 +318,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'code')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'effective'))
       }
@@ -383,7 +383,7 @@ describe Inferno::Sequence::USCore310ResprateSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'category')),
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary, 'status'))
       }

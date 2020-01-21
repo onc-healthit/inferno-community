@@ -17,6 +17,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
@@ -149,13 +153,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Provenance.', '')
-          @provenance_ary&.any? do |resource|
+          @provenance_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.length} provided Provenance resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.values&.flatten&.length} provided Provenance resource(s)"
 
         @instance.save!
       end
@@ -173,7 +177,9 @@ module Inferno
         skip_if_known_not_supported(:Provenance, [:search, :read])
         skip 'No Provenance resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@provenance)
+        @provenance_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end

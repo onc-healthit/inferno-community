@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -143,7 +143,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary, 'occurrence'))
       }
     end
@@ -207,7 +207,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary, 'status'))
       }
     end

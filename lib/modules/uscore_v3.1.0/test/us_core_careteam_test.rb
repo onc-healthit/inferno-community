@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'status': 'proposed'
       }
     end
@@ -79,7 +79,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence.instance_variable_set(:'@care_team_ary', @care_team_ary)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary, 'status'))
       }
     end

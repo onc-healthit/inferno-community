@@ -31,6 +31,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
@@ -74,15 +78,22 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+        patient_ids.each do |patient|
+          search_params = {
+            'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary[patient], 'specialty'))
+          }
 
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+          @client.set_bearer_token(@instance.token)
+          assert_response_unauthorized reply
+        end
       end
 
       test :search_by_specialty do
@@ -98,26 +109,42 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        @practitioner_role_ary = {}
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary[patient], 'specialty'))
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
+          resolved_one = true
 
+          reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
+
+          next unless any_resources
+
+          @resources_found = true
+
+          @practitioner_role = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
+            .resource
+          @practitioner_role_ary[patient] = fetch_all_bundled_resources(reply.resource)
+          save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
+          save_delayed_sequence_references(@practitioner_role_ary[patient])
+          validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
-
-        @practitioner_role = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
-          .resource
-        @practitioner_role_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
-        save_delayed_sequence_references(@practitioner_role_ary)
-        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
       test :search_by_practitioner do
@@ -134,14 +161,24 @@ module Inferno
         end
 
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary[patient], 'practitioner'))
+          }
 
-        search_params = {
-          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+          validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :chained_search_by_practitioner do
@@ -248,9 +285,15 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary[patient], 'specialty'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        if search_params.any? { |param, value| value.nil? }
+          could_not_resolve_all = search_params.keys
+          next
+        end
+
+        resolved_one = true
 
         search_params['_include'] = 'PractitionerRole:endpoint'
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
@@ -277,18 +320,31 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        any_provenances = false
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary[patient], 'specialty'))
+          }
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+
+          resolved_one = true
+
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          any_provenances ||= provenance_results.present?
+          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+        end
+        skip 'No Provenance resources were returned from this search' unless any_provenances
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :validate_resources do
@@ -356,13 +412,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('PractitionerRole.', '')
-          @practitioner_role_ary&.any? do |resource|
+          @practitioner_role_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_role_ary&.length} provided PractitionerRole resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_role_ary&.values&.flatten&.length} provided PractitionerRole resource(s)"
 
         @instance.save!
       end
@@ -380,7 +436,9 @@ module Inferno
         skip_if_known_not_supported(:PractitionerRole, [:search, :read])
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@practitioner_role)
+        @practitioner_role_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end

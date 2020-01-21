@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -214,7 +214,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'type'))
       }
     end
@@ -286,7 +286,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'category')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'date'))
       }
@@ -359,7 +359,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'category'))
       }
     end
@@ -431,7 +431,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'type')),
         'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'context.period'))
       }
@@ -496,7 +496,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary, 'status'))
       }
     end

@@ -9,7 +9,7 @@ module Inferno
 
       test_id_prefix 'USCG'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :Goal
 
       def validate_resource_item(resource, property, value)
@@ -34,6 +34,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :unauthorized_search do
@@ -51,14 +55,17 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+          resolved_one = true
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+          @client.set_bearer_token(@instance.token)
+          assert_response_unauthorized reply
+        end
       end
 
       test :search_by_patient do
@@ -74,25 +81,37 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        @goal_ary = {}
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          resolved_one = true
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Goal' }
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Goal' }
+
+          next unless any_resources
+
+          @resources_found = true
+
+          @goal = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == 'Goal' }
+            .resource
+          @goal_ary[patient] = fetch_all_bundled_resources(reply.resource)
+          save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
+          save_delayed_sequence_references(@goal_ary[patient])
+          validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        @goal = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Goal' }
-          .resource
-        @goal_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
-        save_delayed_sequence_references(@goal_ary)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
       end
 
       test :search_by_patient_target_date do
@@ -111,22 +130,32 @@ module Inferno
         end
 
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'target.dueDate'))
+          }
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+          resolved_one = true
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
-          comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+          validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
+            comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
+            reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
+          end
         end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_lifecycle_status do
@@ -144,15 +173,25 @@ module Inferno
         end
 
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'lifecycleStatus'))
+          }
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+          validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+        end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :read_interaction do
@@ -218,17 +257,26 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        any_provenances = false
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+          resolved_one = true
+
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          any_provenances ||= provenance_results.present?
+          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+        end
+        skip 'No Provenance resources were returned from this search' unless any_provenances
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :validate_resources do
@@ -284,13 +332,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Goal.', '')
-          @goal_ary&.any? do |resource|
+          @goal_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@goal_ary&.length} provided Goal resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@goal_ary&.values&.flatten&.length} provided Goal resource(s)"
 
         @instance.save!
       end
@@ -308,7 +356,9 @@ module Inferno
         skip_if_known_not_supported(:Goal, [:search, :read])
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@goal)
+        @goal_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end

@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
       @sequence.instance_variable_set(:'@goal_ary', @goal_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -143,7 +143,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'target-date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@goal_ary, 'target.dueDate'))
       }
     end
@@ -207,7 +207,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'lifecycle-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
       }
     end

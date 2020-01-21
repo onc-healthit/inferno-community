@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'intent': 'proposal'
       }
     end
@@ -79,7 +79,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @sequence.instance_variable_set(:'@medication_request_ary', @medication_request_ary)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'intent': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'intent'))
       }
     end
@@ -181,7 +181,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'intent': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'intent')),
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'status'))
       }
@@ -254,7 +254,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'intent': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'intent')),
         'encounter': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'encounter'))
       }
@@ -327,7 +327,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'intent': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'intent')),
         'authoredon': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@medication_request_ary, 'authoredOn'))
       }

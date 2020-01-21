@@ -9,7 +9,7 @@ module Inferno
 
       test_id_prefix 'USCCP'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :CarePlan
 
       def validate_resource_item(resource, property, value)
@@ -38,6 +38,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :unauthorized_search do
@@ -55,15 +59,18 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': 'assess-plan'
+          }
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': 'assess-plan'
-        }
+          resolved_one = true
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+          @client.set_bearer_token(@instance.token)
+          assert_response_unauthorized reply
+        end
       end
 
       test :search_by_patient_category do
@@ -79,28 +86,34 @@ module Inferno
           versions :r4
         end
 
-        @care_plan_ary = []
+        @care_plan_ary = {}
+        @resources_found = false
 
         category_val = ['assess-plan']
-        category_val.each do |val|
-          search_params = { 'patient': @instance.patient_id, 'category': val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          @care_plan_ary[patient] = []
+          category_val.each do |val|
+            search_params = { 'patient': patient, 'category': val }
+            reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
 
-          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CarePlan' }
+            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CarePlan' }
 
-          @resources_found = true
-          @care_plan = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'CarePlan' }
-            .resource
-          @care_plan_ary += fetch_all_bundled_resources(reply.resource)
+            @resources_found = true
+            @care_plan = reply.resource.entry
+              .find { |entry| entry&.resource&.resourceType == 'CarePlan' }
+              .resource
+            @care_plan_ary[patient] += fetch_all_bundled_resources(reply.resource)
 
-          save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
-          save_delayed_sequence_references(@care_plan_ary)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+            save_resource_ids_in_bundle(versioned_resource_class('CarePlan'), reply)
+            save_delayed_sequence_references(@care_plan_ary[patient])
+            validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
 
-          break
+            break
+          end
         end
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
       end
@@ -121,23 +134,33 @@ module Inferno
         end
 
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category')),
+            'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'period'))
+          }
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+          resolved_one = true
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:date])
+            comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
+            reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
+          end
         end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_category_status_date do
@@ -156,24 +179,34 @@ module Inferno
         end
 
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category')),
+            'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'status')),
+            'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'period'))
+          }
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status')),
-          'date': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'period'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+          resolved_one = true
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'status': search_params[:status], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:date])
+            comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'status': search_params[:status], 'date': comparator_val }
+            reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
+          end
         end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_category_status do
@@ -191,16 +224,26 @@ module Inferno
         end
 
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category')),
+            'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'status'))
+          }
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
 
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+        end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :read_interaction do
@@ -266,19 +309,32 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary, 'category'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        any_provenances = false
+        could_not_resolve_all = []
+        resolved_one = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'))
+          }
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+          if search_params.any? { |param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+
+          resolved_one = true
+
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          any_provenances ||= provenance_results.present?
+          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+        end
+        skip 'No Provenance resources were returned from this search' unless any_provenances
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :validate_resources do
@@ -340,13 +396,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('CarePlan.', '')
-          @care_plan_ary&.any? do |resource|
+          @care_plan_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.length} provided CarePlan resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.values&.flatten&.length} provided CarePlan resource(s)"
 
         @instance.save!
       end
@@ -364,7 +420,9 @@ module Inferno
         skip_if_known_not_supported(:CarePlan, [:search, :read])
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@care_plan)
+        @care_plan_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end

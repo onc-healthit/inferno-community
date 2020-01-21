@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -78,7 +78,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @sequence.instance_variable_set(:'@device_ary', @device_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': 'patient'
       }
     end
 
@@ -143,7 +143,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary, 'type'))
       }
     end

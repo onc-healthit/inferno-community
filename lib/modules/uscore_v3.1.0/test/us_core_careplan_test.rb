@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': 'assess-plan'
       }
     end
@@ -79,7 +79,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category'))
       }
     end
@@ -181,7 +181,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
       }
@@ -246,7 +246,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
@@ -312,7 +312,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': 'patient',
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status'))
       }
