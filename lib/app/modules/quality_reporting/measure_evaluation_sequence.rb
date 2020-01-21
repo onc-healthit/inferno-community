@@ -3,13 +3,11 @@
 require_relative '../../utils/measure_operations'
 require_relative '../../utils/bundle'
 
-
 module Inferno
   module Sequence
     class MeasureEvaluationSequence < SequenceBase
       include MeasureOperations
       include BundleParserUtil
-
 
       title 'Measure Evaluation'
 
@@ -18,7 +16,6 @@ module Inferno
       description 'Ensure that measure report returned by $evaluate-measure operation for selected measure is correct'
 
       requires :measure_to_test
-
 
       test 'Evaluate Measure' do
         metadata do
@@ -37,16 +34,15 @@ module Inferno
           'periodEnd': period_end
         }.freeze
 
-
         # Get measure report from cqf-ruler and build expected results
         expected_results_report = get_measure_evaluation(measure_id, PARAMS.compact)
         expected_results = {}
         expected_results_report.group.each do |group|
-            group.population.each do |population|
-                name = population.code.coding[0].code
-                count = population.count
-                expected_results[name] = count
-            end
+          group.population.each do |population|
+            name = population.code.coding[0].code
+            count = population.count
+            expected_results[name] = count
+          end
         end
 
         evaluate_measure_response = evaluate_measure(measure_id, PARAMS.compact)
