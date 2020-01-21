@@ -104,6 +104,15 @@ module Inferno
       FHIR::STU3::Measure.new JSON.parse(measure_request.body)
     end
 
+    def get_measure_evaluation(measure_id, params = {})
+      measure_evaluation_endpoint = Inferno::CQF_RULER + 'Measure'
+      params_string = params.empty? ? '' : "?#{params.to_query}"
+      evaluation_response = cqf_ruler_client.client.get("#{measure_evaluation_endpoint}/#{measure_id}/$evaluate-measure#{params_string}")
+      raise StandardError, "Could not retrieve measure_evaluation #{measure_id} from CQF Ruler." if evaluation_response.code != 200
+
+      FHIR::STU3::MeasureReport.new JSON.parse(evaluation_response.body)
+    end
+
     def get_library_resource(library_id)
       libraries_endpoint = Inferno::CQF_RULER + 'Library'
       library_request = cqf_ruler_client.client.get("#{libraries_endpoint}/#{library_id}")
