@@ -15,7 +15,8 @@ module Inferno
       'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9',
       'http://hl7.org/fhir/sid/icd-9-cm/diagnosis' => 'ICD9',
       'http://hl7.org/fhir/sid/icd-9-cm/procedure' => 'ICD9',
-      'http://hl7.org/fhir/sid/cvx' => 'CVX'
+      'http://hl7.org/fhir/sid/cvx' => 'CVX',
+      'http://hl7.org/fhir/ndfrt' => 'Ndfrt'
     }.freeze
 
     @known_valuesets = {}
@@ -137,7 +138,7 @@ module Inferno
     end
 
     def self.get_valueset(url)
-      @known_valuesets[url]&.valueset || raise(UnknownValueSetException, url)
+      @known_valuesets[url] || raise(UnknownValueSetException, url)
     end
 
     def self.get_valueset_by_id(id)

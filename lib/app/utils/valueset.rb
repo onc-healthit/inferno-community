@@ -29,7 +29,8 @@ module Inferno
         'http://hl7.org/fhir/ndfrt' => 'NDFRT',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
         'http://www.ama-assn.org/go/cpt' => 'CPT',
-        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS'
+        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS',
+        'http://rxnav.nlm.nih.gov/REST/Ndfrt' => 'VANDF'
       }.freeze
 
       CODE_SYS = {
@@ -42,7 +43,12 @@ module Inferno
         'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => 'resources/us_core_r4/CodeSystem-us-core-documentreference-category.json',
         'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => 'resources/us_core_r4/CodeSystem-us-core-provenance-participant-type.json',
         'http://terminology.hl7.org/CodeSystem/provenance-participant-type' => 'resources/misc_valuesets/CodeSystem-provenance-participant-type.json',
-        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json'
+        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json',
+        'http://hl7.org/fhir/condition-clinical' => 'resources/misc_valuesets/codesystem-condition-clinical.json',
+        'http://hl7.org/fhir/condition-ver-status' => 'resources/misc_valuesets/codesystem-condition-ver-status.json',
+        'http://hl7.org/fhir/observation-category' => 'resources/misc_valuesets/codesystem-observation-category.json',
+        'http://hl7.org/fhir/referencerange-meaning' => 'resources/misc_valuesets/codesystem-referencerange-meaning.json',
+        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json'
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
