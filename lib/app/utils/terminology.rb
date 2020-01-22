@@ -153,11 +153,9 @@ module Inferno
 
     def self.bloom_file_name(codesystem)
       uri = URI(codesystem)
-      if uri.host && uri.port
-        return (uri.host + uri.path).gsub(%r{[./]}, '_')
-      else
-        return codesystem.gsub(%r{[.\W]}, '_')
-      end
+      return (uri.host + uri.path).gsub(%r{[./]}, '_') if uri.host && uri.port
+
+      codesystem.gsub(/[.\W]/, '_')
     end
 
     def self.loaded_code_systems

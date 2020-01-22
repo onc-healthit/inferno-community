@@ -65,23 +65,19 @@ module Inferno
       end
 
       get '/ValueSet/?:id_param?/$validate-code', provides: ['application/fhir+json', 'application/fhir+xml'] do
-        begin
-          valueset_validates_code
-        rescue => e
-          binding.pry
-          # TODO: Return an error if the validates code op fails
-        end
+        valueset_validates_code
+      rescue StandardError => e
+        issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'structure', details: { text: e.message })
+        return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
       end
 
       post '/ValueSet/?:id_param?/$validate-code', provides: ['application/fhir+json', 'application/fhir+xml'] do
-        begin
-          body = request.body.read
-          parsed_body = FHIR.from_contents(body)
-          valueset_validates_code(parsed_body, params[:id_param])
-        rescue => e
-          binding.pry
-          # TODO: Return an error if the validates code op fails
-        end
+        body = request.body.read
+        parsed_body = FHIR.from_contents(body)
+        valueset_validates_code(parsed_body, params[:id_param])
+      rescue StandardError => e
+        issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'structure', details: { text: e.message })
+        return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
       end
 
       get '/CodeSystem/?:id_param?/$validate-code', provides: ['application/fhir+json', 'application/fhir+xml'] do
@@ -89,14 +85,12 @@ module Inferno
       end
 
       post '/CodeSystem/?:id_param?/$validate-code', provides: ['application/fhir+json', 'application/fhir+xml'] do
-        begin
-          body = request.body.read
-          parsed_body = FHIR.from_contents(body)
-          codesystem_validates_code(parsed_body, params[:id_param])
-        rescue => exception
-          binding.pry
-          # TODO: Return an error if the validates code op fails
-        end
+        body = request.body.read
+        parsed_body = FHIR.from_contents(body)
+        codesystem_validates_code(parsed_body, params[:id_param])
+      rescue StandardError => e
+        issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'structure', details: { text: e.message })
+        return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
       end
 
       def valueset_validates_code(parameters, id_param = nil)
@@ -110,16 +104,16 @@ module Inferno
         if validation_fn
           code_valid = validation_fn.call(coding)
           return_params = if code_valid
-            FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
-          else
-            message = "The code '#{coding['code']}' from the code system '#{coding['system']}' is not valid in the valueset '#{valueset_response}'"
-            params = [
-              FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
-              FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),
-              FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
-            ]
-            FHIR::Parameters.new(parameter: params)
-          end
+                            FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
+                          else
+                            message = "The code '#{coding['code']}' from the code system '#{coding['system']}' is not valid in the valueset '#{valueset_response}'"
+                            params = [
+                              FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
+                              FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),
+                              FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
+                            ]
+                            FHIR::Parameters.new(parameter: params)
+                          end
           return respond_with_type(return_params, request.accept, 200)
         else
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: 'The specified code system is not known by the terminology server' })
@@ -158,16 +152,16 @@ module Inferno
         validation_fn = FHIR::StructureDefinition.vs_validators[coding['system']]
         if validation_fn
           retval = if validation_fn.call(coding)
-            FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
-          else
-            message = "The code '#{coding['code']}' is not a valid member of '#{coding['system']}'"
-            params = [
-              FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
-              FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),
-              FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
-            ]
-            FHIR::Parameters.new(parameter: params)
-          end
+                     FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
+                   else
+                     message = "The code '#{coding['code']}' is not a valid member of '#{coding['system']}'"
+                     params = [
+                       FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
+                       FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),
+                       FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
+                     ]
+                     FHIR::Parameters.new(parameter: params)
+                   end
           respond_with_type(retval, request.accept, 200)
         else
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: 'The specified code system is not known by the terminology server' })
@@ -206,7 +200,8 @@ module Inferno
         elsif params[:context]
           # TODO: implement me
         else
-          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: 'No parameter that identifies the terminology/Valueset to validate against was supplied' })
+          issue_text = 'No parameter that identifies the terminology/Valueset to validate against was supplied'
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: issue_text })
           return FHIR::OperationOutcome.new(issue: issue)
         end
         valueset.url
