@@ -17,7 +17,7 @@
       "value": "abc123"
     }
   ],
-  "status": "finished",
+  "status": "planned",
   "class": {
     "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
     "code": "AMB",
