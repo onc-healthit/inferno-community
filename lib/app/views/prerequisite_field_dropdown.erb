@@ -18,7 +18,9 @@
     <div class="form-group">
         <select class="custom-select custom-select-lg" name="<%=prerequisite.to_s%>" style="margin-left: 10px;" id="<%=prerequisite.to_s%>"">
         <% instance.module.testable_measures.each do |measure| %>
-            <option value=<%=measure%>> <%=measure%> </option>
+            <% if id = measure.resource.identifier.find { |id| id.system == 'http://hl7.org/fhir/cqi/ecqm/Measure/Identifier/cms' } %>
+              <option value=<%=measure.resource.id%>> <%= "CMS#{id.value} v#{measure.resource.version}" %> </option>
+            <% end %>
         <% end %>
         <input type="hidden" name="prerequisite_input" id="prerequisite_input" value=<%=value%> />
         </select>

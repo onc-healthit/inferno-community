@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'securerandom'
+require_relative '../ext/measure_report'
 
 module Inferno
   module MeasureOperations
@@ -16,6 +17,14 @@ module Inferno
     def create_measure_report(measure_id, patient_id, period_start, period_end)
       FHIR::STU3::MeasureReport.new.from_hash(
         type: 'individual',
+        _type: {
+          'extension': [
+            {
+              'url': 'https://www.hl7.org/fhir/measurereport-definitions.html#MeasureReport.type',
+              'valueString': 'data-collection'
+            }
+          ]
+        },
         identifier: [{
           value: SecureRandom.uuid
         }],
@@ -47,6 +56,8 @@ module Inferno
       headers = {
         content_type: 'application/json'
       }
+
+      headers.merge!(@client.additional_headers) if @client.additional_headers
 
       @client.post("Measure/#{measure_id}/$submit-data", parameters, headers)
     end

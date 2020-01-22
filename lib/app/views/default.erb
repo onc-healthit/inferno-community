@@ -232,6 +232,16 @@
               instance: instance,
               value: instance.measure_to_test,
               })%>
+        <%= erb(:prerequisite_field,{},{prerequisite: :api_key,
+              label: 'API Key',
+              instance: instance,
+              value: instance.api_key,
+              })%>
+        <%= erb(:prerequisite_field,{},{prerequisite: :auth_header,
+              label: 'Authorization Header',
+              instance: instance,
+              value: instance.auth_header,
+              })%>
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
