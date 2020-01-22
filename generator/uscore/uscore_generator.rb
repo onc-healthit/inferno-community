@@ -787,7 +787,7 @@ module Inferno
         if search_param_string.include? 'get_value_for_search_param'
           search_param_value_check =
             %(
-              if search_params.any? { |param, value| value.nil? }
+              if search_params.any? { |_param, value| value.nil? }
                 could_not_resolve_all = search_params.keys
                 next
               end
