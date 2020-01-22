@@ -536,6 +536,11 @@ module Inferno
         end
 
         must_support_slices = sequence[:must_supports].select { |must_support| must_support[:type] == 'slice' }
+        must_support_slices.each do |slice|
+          test[:description] += %(
+            #{slice[:name]}
+          )
+        end
         slices_list = must_support_slices.map do |slice_def|
           %({
               name: '#{slice_def[:name]}',
@@ -552,8 +557,8 @@ module Inferno
             missing_slices = must_support_slices.reject do |slice|
               truncated_path = slice[:path].gsub('#{sequence[:resource]}.', '')
               @#{sequence[:resource].underscore}_ary&.any? do |resource|
-                slice = find_slice(resource, truncated_path, slice[:discriminator])
-                slice.present?
+                slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+                slice_found.present?
               end
             end
           )
@@ -616,7 +621,6 @@ module Inferno
         elsif struct.is_a? String
           "'#{struct}'"
         else
-          binding.pry
           "''"
         end
       end

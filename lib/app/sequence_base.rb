@@ -816,7 +816,7 @@ module Inferno
         resolve_element_from_path(resource, path_to_ary) do |array_el|
           case discriminator[:type]
           when 'patternCodeableConcept'
-            path_to_coding = [discriminator[:path], 'coding'].join('.')
+            path_to_coding = discriminator[:path].present? ? [discriminator[:path], 'coding'].join('.') : 'coding'
             resolve_element_from_path(array_el, path_to_coding) do |coding|
               coding.code == discriminator[:code] && coding.system == discriminator[:system]
             end

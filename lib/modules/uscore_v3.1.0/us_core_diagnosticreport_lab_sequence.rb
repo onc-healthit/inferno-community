@@ -446,6 +446,8 @@ module Inferno
 
             DiagnosticReport.result
 
+            DiagnosticReport.category:LaboratorySlice
+
           )
           versions :r4
         end
@@ -467,8 +469,8 @@ module Inferno
         missing_slices = must_support_slices.reject do |slice|
           truncated_path = slice[:path].gsub('DiagnosticReport.', '')
           @diagnostic_report_ary&.any? do |resource|
-            slice = find_slice(resource, truncated_path, slice[:discriminator])
-            slice.present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
 
