@@ -28,6 +28,9 @@ class MeasureEvaluationSequenceTest < MiniTest::Test
       stub_request(:get, /\$evaluate-measure/)
         .to_return(status: 200, body: measure_report.to_json, headers: {})
     end
+    sequence_result = @sequence.start
+    assert sequence_result.pass?, 'The sequence should be marked as pass.'
+    assert sequence_result.test_results.all? { |r| r.pass? || r.skip? }, 'All tests should pass'
   end
 
   def test_evaluate_measure_fail_mismatched_population_counts

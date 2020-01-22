@@ -13,10 +13,14 @@ module Inferno
 
       test_id_prefix 'evaluate_measure'
 
-      description 'Ensure that measure report returned by $evaluate-measure operation for selected measure is correct'
+      description 'Ensure that measure report returned by the $evaluate-measure operation for selected measure is correct'
 
       requires :measure_to_test
-
+      # Parameters appended to the url for $evaluate-measure call
+      PARAMS = {
+        'periodStart': '2019-01-01',
+        'periodEnd': '2019-12-31'
+      }.freeze
       test 'Evaluate Measure' do
         metadata do
           id '01'
@@ -24,15 +28,7 @@ module Inferno
           desc 'Run the $evaluate-measure operation for a measure, results should match those reported by CQF-Ruler'
         end
 
-        period_start = '2019-01-01'
-        period_end = '2019-12-31'
         measure_id = @instance.measure_to_test
-
-        # Parameters appended to the url for $evaluate-measure call
-        PARAMS = {
-          'periodStart': period_start,
-          'periodEnd': period_end
-        }.freeze
 
         # Get measure report from cqf-ruler and build expected results
         expected_results_report = get_measure_evaluation(measure_id, PARAMS.compact)
