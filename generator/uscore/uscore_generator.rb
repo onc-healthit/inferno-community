@@ -654,6 +654,10 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               assert_response_ok(reply)
+              resources_returned = fetch_all_bundled_resources(reply.resource)
+              assert #{param_value_name(param)}.split(',').all? do |val|
+                resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
+              end
             end
             skip 'Cannot find second value for #{param} to perform a multipleOr search' unless found_second_val
           )

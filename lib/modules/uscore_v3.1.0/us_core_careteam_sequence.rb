@@ -296,6 +296,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
           validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
           assert_response_ok(reply)
+          resources_returned = fetch_all_bundled_resources(reply.resource)
+          assert search_params[:status].split(',').all? do |val|
+            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+          end
         end
         skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
