@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative '../utils/capability_statement_generator'
 require_relative '../utils/terminology'
 require 'sinatra/custom_logger'
 
@@ -11,50 +12,14 @@ module Inferno
       Inferno::Terminology.load_valuesets_from_directory('resources', true)
       set :logger, Logger.new('terminology_misses.log')
 
+      CS_NOT_SUPPORTED_TEXT = 'The specified code system is not known by the terminology server'
+
       get '/metadata', provides: ['application/fhir+json', 'application/fhir+xml'] do
-        if params[:mode] == 'terminology'
-          capability = FHIR::TerminologyCapabilities.new
-          capability.id = 'InfernoFHIRServer'
-          capability.url = "#{request.base_url}#{Inferno::BASE_PATH}/fhir/metadata?mode=terminology"
-          capability.description = 'TerminologyCapability resource for the Inferno terminology endpoint'
-          capability.date = Time.now.utc.iso8601
-          capability.status = 'active'
-          loaded_code_systems = Inferno::Terminology.loaded_code_systems
-          capability.codeSystem = loaded_code_systems.map { |sys| FHIR::TerminologyCapabilities::CodeSystem.new(uri: sys) }
-        else
-          capability = FHIR::CapabilityStatement.new
-          capability.id = 'InfernoFHIRServer'
-          capability.url = "#{request.base_url}#{Inferno::BASE_PATH}/fhir/metadata"
-          capability.description = 'CapabilityStatement resource for the Inferno terminology endpoint'
-          capability.date = Time.now.utc.iso8601
-          capability.kind = 'instance'
-          capability.status = 'active'
-          capability.fhirVersion = '4.0.1'
-          capability.rest = FHIR::CapabilityStatement::Rest.new(
-            mode: 'server',
-            resource: [
-              FHIR::CapabilityStatement::Rest::Resource.new(
-                type: 'ValueSet',
-                operation: [
-                  FHIR::CapabilityStatement::Rest::Resource::Operation.new(
-                    name: 'validate-code',
-                    definition: 'http://hl7.org/fhir/OperationDefinition/ValueSet-validate-code'
-                  )
-                ]
-              ),
-              FHIR::CapabilityStatement::Rest::Resource.new(
-                type: 'CodeSystem',
-                operation: [
-                  FHIR::CapabilityStatement::Rest::Resource::Operation.new(
-                    name: 'validate-code',
-                    definition: 'http://hl7.org/fhir/OperationDefinition/CodeSystem-validate-code'
-                  )
-                ]
-              )
-            ]
-          )
-          capability.format = ['xml', 'json']
-        end
+        capability = if params[:mode] == 'terminology'
+                       CapabilityStatementGenerator.terminology_capabilities(request.base_url)
+                     else
+                       CapabilityStatementGenerator.capability_statement(request.base_url)
+                     end
         respond_with_type(capability, request.accept, 200)
       end
 
@@ -96,6 +61,7 @@ module Inferno
         validation_fn = FHIR::StructureDefinition.vs_validators[valueset_response]
 
         if validation_fn
+          # NOTE: This function does not yet validate `display` attributes
           code_valid = validation_fn.call(coding)
           return_params = if code_valid
                             FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
@@ -109,7 +75,7 @@ module Inferno
                           end
           return respond_with_type(return_params, request.accept, 200)
         else
-          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: 'The specified code system is not known by the terminology server' })
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: CS_NOT_SUPPORTED_TEXT })
           logger.warn "Need code system #{coding['system']}"
           return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
@@ -144,6 +110,7 @@ module Inferno
         coding = normalize_codesystem_coding(parameters, id_param)
         validation_fn = FHIR::StructureDefinition.vs_validators[coding['system']]
         if validation_fn
+          # NOTE: This function does not yet validate `display` attributes
           retval = if validation_fn.call(coding)
                      FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
                    else
@@ -156,7 +123,7 @@ module Inferno
                    end
           respond_with_type(retval, request.accept, 200)
         else
-          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: 'The specified code system is not known by the terminology server' })
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: CS_NOT_SUPPORTED_TEXT })
           logger.warn "Need code system #{coding['system']}"
           return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
