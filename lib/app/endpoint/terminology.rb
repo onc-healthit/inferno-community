@@ -51,12 +51,6 @@ module Inferno
                   )
                 ]
               )
-            ],
-            operation: [
-              FHIR::CapabilityStatement::Rest::Resource::Operation.new(
-                name: 'validate-code',
-                definition: 'http://hl7.org/fhir/OperationDefinition/Resource-validate'
-              )
             ]
           )
           capability.format = ['xml', 'json']
@@ -109,14 +103,13 @@ module Inferno
                             message = "The code '#{coding['code']}' from the code system '#{coding['system']}' is not valid in the valueset '#{valueset_response}'"
                             params = [
                               FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
-                              FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),
                               FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
                             ]
                             FHIR::Parameters.new(parameter: params)
                           end
           return respond_with_type(return_params, request.accept, 200)
         else
-          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: 'The specified code system is not known by the terminology server' })
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: 'The specified code system is not known by the terminology server' })
           logger.warn "Need code system #{coding['system']}"
           return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
@@ -157,25 +150,19 @@ module Inferno
                      message = "The code '#{coding['code']}' is not a valid member of '#{coding['system']}'"
                      params = [
                        FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
-                       FHIR::Parameters::Parameter.new(name: 'cause', valueString: 'invalid'),
                        FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
                      ]
                      FHIR::Parameters.new(parameter: params)
                    end
           respond_with_type(retval, request.accept, 200)
         else
-          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: 'The specified code system is not known by the terminology server' })
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: 'The specified code system is not known by the terminology server' })
           logger.warn "Need code system #{coding['system']}"
           return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
       end
 
       private
-
-      def validate_code(valueset, coding, _display)
-        valueset.contains_code?(coding)
-        # TODO: Figure out how to validate displays, seeing as we don't have access to displays in the valueset object
-      end
 
       def get_valueset(id_param, url_param)
         # if this param is present, the operation was called on a particular ValueSet instance
@@ -185,7 +172,7 @@ module Inferno
           rescue Inferno::Terminology::UnknownValueSetException
             error_code = { code: 'MSG_NO_MATCH', display: "No ValueSet found matching the id '#{pid_param}''" }
             logger.warn "Need Valueset #{id_param}"
-            issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'value', details: { coding: error_code })
+            issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-found', details: { coding: error_code })
             return FHIR::OperationOutcome.new(issue: issue)
           end
         elsif url_param && !url_param.empty?
@@ -194,11 +181,14 @@ module Inferno
           rescue Inferno::Terminology::UnknownValueSetException
             error_code = { code: 'MSG_NO_MATCH', display: "No ValueSet found matching the URL '#{url_param}''" }
             logger.warn "Need Valueset #{url_param}"
-            issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'value', details: { coding: error_code })
+            issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-found', details: { coding: error_code })
             return FHIR::OperationOutcome.new(issue: issue)
           end
         elsif params[:context]
-          # TODO: implement me
+          # NOTE: We don't currently support context-based validate-code parameters, so we'll return an OperationOutcome for now.
+          issue_text = 'Context parameters are not currently supported by this terminology server'
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: issue_text })
+          return FHIR::OperationOutcome.new(issue: issue)
         else
           issue_text = 'No parameter that identifies the terminology/Valueset to validate against was supplied'
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: issue_text })
