@@ -166,16 +166,16 @@ module Inferno
 
       def get_valueset(id_param, url_param)
         # if this param is present, the operation was called on a particular ValueSet instance
-        if id_param && !id_param.empty?
+        if id_param.present?
           begin
-            valueset = Inferno::Terminology.get_valueset_by_id(params[:id_param])
+            valueset = Inferno::Terminology.get_valueset_by_id(id_param)
           rescue Inferno::Terminology::UnknownValueSetException
-            error_code = { code: 'MSG_NO_MATCH', display: "No ValueSet found matching the id '#{pid_param}''" }
+            error_code = { code: 'MSG_NO_MATCH', display: "No ValueSet found matching the id '#{id_param}''" }
             logger.warn "Need Valueset #{id_param}"
             issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-found', details: { coding: error_code })
             return FHIR::OperationOutcome.new(issue: issue)
           end
-        elsif url_param && !url_param.empty?
+        elsif url_param.present?
           begin
             valueset = Inferno::Terminology.get_valueset(url_param)
           rescue Inferno::Terminology::UnknownValueSetException
