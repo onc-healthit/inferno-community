@@ -23,10 +23,14 @@ module Inferno
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
         'http://www.icd10data.com/icd10pcs' => 'ICD10CM',
+        'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
+        'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
         'http://hl7.org/fhir/ndfrt' => 'NDFRT',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
-        'http://www.ama-assn.org/go/cpt' => 'CPT'
+        'http://www.ama-assn.org/go/cpt' => 'CPT',
+        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS',
+        'http://rxnav.nlm.nih.gov/REST/Ndfrt' => 'VANDF'
       }.freeze
 
       CODE_SYS = {
@@ -37,11 +41,20 @@ module Inferno
         'urn:oid:2.16.840.1.113883.6.238' => 'resources/us_core_r4/CodeSystem-cdcrec.json',
         'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => 'resources/us_core_r4/CodeSystem-condition-category.json',
         'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => 'resources/us_core_r4/CodeSystem-us-core-documentreference-category.json',
-        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json'
+        'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => 'resources/us_core_r4/CodeSystem-us-core-provenance-participant-type.json',
+        'http://terminology.hl7.org/CodeSystem/provenance-participant-type' => 'resources/misc_valuesets/CodeSystem-provenance-participant-type.json',
+        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json',
+        'http://hl7.org/fhir/condition-clinical' => 'resources/misc_valuesets/codesystem-condition-clinical.json',
+        'http://hl7.org/fhir/condition-ver-status' => 'resources/misc_valuesets/codesystem-condition-ver-status.json',
+        'http://hl7.org/fhir/observation-category' => 'resources/misc_valuesets/codesystem-observation-category.json',
+        'http://hl7.org/fhir/referencerange-meaning' => 'resources/misc_valuesets/codesystem-referencerange-meaning.json',
+        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json'
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
       FILTER_PROP = {
+        'CLASSTYPE' => 'LCN',
+        'DOC' => 'Doc',
         'SCALE_TYP' => 'LOINC_SCALE_TYP'
       }.freeze
 
@@ -73,6 +86,10 @@ module Inferno
       # Return the number of codes in the valueset
       def count
         @valueset.length
+      end
+
+      def included_code_systems
+        @valueset_model.compose.include.map(&:system).compact.uniq
       end
 
       # Creates the whole valueset
@@ -208,7 +225,7 @@ module Inferno
           puts "loading #{system} codes..."
           return load_code_system(system)
         end
-        raise "Can't handle #{filter&.op}" unless ['=', 'in', 'is-a', nil].include? filter&.op
+        raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
         raise UnknownCodeSystemException, system if SAB[system].nil?
 
         if filter.nil?
@@ -216,8 +233,14 @@ module Inferno
             filtered_set.add(system: system, code: row[0])
           end
         elsif ['=', 'in', nil].include? filter&.op
-          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
-            filtered_set.add(system: system, code: row[0])
+          if FILTER_PROP[filter.property]
+            @db.execute("SELECT code FROM mrsat WHERE ATN = '#{filter_prop_or_self(filter.property)}' AND ATV = '#{filter_prop_or_self(filter.value)}'") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
+          else
+            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
           end
         elsif filter&.op == 'is-a'
           filtered_set = filter_is_a(system, filter)
@@ -284,6 +307,10 @@ module Inferno
         end
         subsume.call(filter.value)
         desired_children
+      end
+
+      def filter_prop_or_self(prop)
+        FILTER_PROP[prop] || prop
       end
 
       class FilterOperationException < StandardError
