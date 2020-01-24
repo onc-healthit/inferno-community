@@ -84,22 +84,17 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        patient_ids.each do |patient|
-          search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@organization_ary[patient], 'name'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-          @client.set_bearer_token(@instance.token)
-          assert_response_unauthorized reply
-        end
+        reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+        assert_response_unauthorized reply
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test :search_by_name do
@@ -115,42 +110,24 @@ module Inferno
           versions :r4
         end
 
-        @organization_ary = {}
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@organization_ary[patient], 'name'))
-          }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+        }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
-
-          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
-
-          next unless any_resources
-
-          @resources_found = true
-
-          @organization = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Organization' }
-            .resource
-          @organization_ary[patient] = fetch_all_bundled_resources(reply.resource)
-          save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
-          save_delayed_sequence_references(@organization_ary[patient])
-          validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
-        end
-
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
         skip 'No Organization resources appear to be available.' unless @resources_found
+        @organization = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Organization' }
+          .resource
+        @organization_ary = fetch_all_bundled_resources(reply.resource)
+        save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
+        save_delayed_sequence_references(@organization_ary)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
       test :search_by_address do
@@ -167,24 +144,15 @@ module Inferno
         end
 
         skip 'No Organization resources appear to be available.' unless @resources_found
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'address': get_value_for_search_param(resolve_element_from_path(@organization_ary[patient], 'address'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-          validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
-        end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
       test :vread_interaction do
@@ -233,31 +201,22 @@ module Inferno
           versions :r4
         end
 
-        any_provenances = false
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@organization_ary[patient], 'name'))
-          }
+        provenance_results = []
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          search_params['_revinclude'] = 'Provenance:target'
-          reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
-          provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-          any_provenances ||= provenance_results.present?
-          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
-        end
-        skip 'No Provenance resources were returned from this search' unless any_provenances
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        search_params['_revinclude'] = 'Provenance:target'
+        reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
@@ -340,14 +299,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Organization.', '')
-          @organization_ary&.values&.flatten&.any? do |resource|
+          @organization_ary&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.values&.flatten&.length} provided Organization resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.length} provided Organization resource(s)"
         @instance.save!
       end
 
@@ -364,7 +322,7 @@ module Inferno
         skip_if_known_not_supported(:Organization, [:search, :read])
         skip 'No Organization resources appear to be available.' unless @resources_found
 
-        @organization_ary&.values&.flatten&.each do |resource|
+        @organization_ary&.each do |resource|
           validate_reference_resolutions(resource)
         end
       end
