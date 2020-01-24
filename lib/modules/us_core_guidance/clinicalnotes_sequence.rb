@@ -2,14 +2,24 @@
 
 module Inferno
   module Sequence
+    class ClinicalNoteAttachment
+      attr_reader :resource_class
+      attr_reader :attachment
+
+      def initialize(resource_class)
+        @resource_class = resource_class
+        @attachment = {}
+      end
+    end
+
     class USCoreR4ClinicalNotesSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
       title 'Clinical Notes Guideline Tests'
 
-      description 'Verify that DocumentReference and DiagnosticReport resources on the FHIR server follow the US Core R4 Clinical Notes Guideline'
+      description 'Verify that DocumentReference and DiagnosticReport resources on the FHIR server follow the US Core Implementation Guide'
 
-      test_id_prefix 'ClinicalNotes'
+      test_id_prefix 'USCCN'
 
       requires :token, :patient_id
       conformance_supports :DocumentReference, :DiagnosticReport
@@ -19,152 +29,145 @@ module Inferno
         The #{title} Sequence tests DiagnosticReport and DocumentReference resources associated with the provided patient.  The resources
         returned will be checked for consistency against the [US Core Clinical Notes Guidance](https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html)
 
+        In this set of tests, Inferno serves as a FHIR client that attempts to access different types of Clinical Notes
+        specified in the Guidance. The provided patient need to have the following five common clinical notes as DocumentReference resrouces:
+
+        * Consultation Note (11488-4)
+        * Discharge Summary (18842-5)
+        * History & Physical Note (34117-2)
+        * Procedures Note (28570-0)
+        * Progress Note (11506-3)
+
+        The provided patient also need to have the following three common diagnostic reports as DiagnosticReport resources:
+
+        * Cardiology (LP29708-2)
+        * Pathology (LP7839-6)
+        * Radiology (LP29684-5)
+
+        In order to enable consistent access to scanned narrative-only clinical reports,
+        the US Core server shall expose these reports through both
+        DiagnosticReport and DocumentReference by representing the same attachment url.
       )
 
-      @clinical_notes_found = false
+      attr_accessor :document_attachments, :report_attachments
 
-      def test_clinical_notes_document_reference(type_code)
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
+      def test_clinical_notes_document_reference(category_code)
+        search_params = { 'patient': @instance.patient_id, 'type': category_code }
+        resource_class = 'DocumentReference'
 
-        assert @actual_type_codes.include?(type_code), "Clinical Notes shall have at least one DocumentReference with type #{type_code}"
+        skip_if_known_not_supported(:DocumentReference, [:read])
+
+        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
+
+        skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." unless resources_found
+
+        self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
+
+        document_references = fetch_all_bundled_resources(reply.resource)
+
+        document_references&.each do |document|
+          document&.content&.select { |content| !document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
+            document_attachments.attachment[content.attachment.url] = document.id
+          end
+        end
       end
 
       def test_clinical_notes_diagnostic_report(category_code)
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
-
         search_params = { 'patient': @instance.patient_id, 'category': category_code }
         resource_class = 'DiagnosticReport'
-        @report_attachments = ClinicalNoteAttachment.new(resource_class)
 
         reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+        resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
 
-        assert @resources_found, "Clinical Notes shall have at least one DiagnosticReport with category #{category_code}"
+        skip "No #{resource_class} resources with category #{category_code} appear to be available. Please use patients with more information." unless resources_found
 
-        diagnostic_reports = reply&.resource&.entry&.map { |entry| entry&.resource }
+        self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
+
+        diagnostic_reports = fetch_all_bundled_resources(reply.resource)
 
         diagnostic_reports&.each do |report|
-          report&.presentedForm&.select { |attachment| !@report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
-            @report_attachments.attachment[attachment.url] = report.id
+          report&.presentedForm&.select { |attachment| !report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
+            report_attachments.attachment[attachment.url] = report.id
           end
         end
       end
 
-      test 'Server returns expected results from DocumentReference search by patient+clinicalnotes' do
+      test :have_consultation_note do
         metadata do
           id '01'
+          name 'Server shall have Consultation Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
           versions :r4
         end
 
-        @client.set_no_auth if @instance.token.blank?
-
-        search_params = { 'patient': @instance.patient_id, 'category': 'clinical-note' }
-        resource_class = 'DocumentReference'
-
-        @document_attachments = ClinicalNoteAttachment.new(resource_class)
-
-        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        resource_count = reply&.resource&.entry&.length || 0
-        @clinical_notes_found = true if resource_count.positive?
-
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
-
-        document_references = reply&.resource&.entry&.map { |entry| entry&.resource }
-
-        @required_type_codes = Set[
-          '11488-4', # Consultation Note
-          '18842-5', # Dischard Summary
-          '34117-2', # History and physical note
-          '28570-0', # Procedure note
-          '11506-3' # Progress note
-        ]
-
-        @actual_type_codes = Set[]
-
-        document_references&.select { |document| document&.type&.coding&.present? }&.each do |document|
-          document.type.coding.select { |coding| coding&.system == 'http://loinc.org' && @required_type_codes.include?(coding&.code) }&.each do |coding|
-            @actual_type_codes << coding.code
-
-            document&.content&.select { |content| !@document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-              @document_attachments.attachment[content.attachment.url] = document.id
-            end
-          end
-        end
+        test_clinical_notes_document_reference('http://loinc.org|11488-4')
       end
 
-      test 'Server shall have Consultation Notes' do
+      test :have_discharge_summary do
         metadata do
           id '02'
+          name 'Server shall have Discharge Summary from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
           versions :r4
         end
 
-        test_clinical_notes_document_reference('11488-4')
+        test_clinical_notes_document_reference('http://loinc.org|18842-5')
       end
 
-      test 'Server shall have Discharge Summary' do
+      test :have_history_note do
         metadata do
           id '03'
+          name 'Server shall have History and Physical Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
           versions :r4
         end
 
-        test_clinical_notes_document_reference('18842-5')
+        test_clinical_notes_document_reference('http://loinc.org|34117-2')
       end
 
-      test 'Server shall have History and Physical Note' do
+      test :have_procedures_note do
         metadata do
           id '04'
+          name 'Server returns Procedures Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
           versions :r4
         end
 
-        test_clinical_notes_document_reference('34117-2')
+        test_clinical_notes_document_reference('http://loinc.org|28570-0')
       end
 
-      test 'Server shall have Procedures Note' do
+      test :have_progress_note do
         metadata do
           id '05'
+          name 'Server returns Progress Note from DocumentReference search by patient+type'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
           versions :r4
         end
 
-        test_clinical_notes_document_reference('28570-0')
+        test_clinical_notes_document_reference('http://loinc.org|11506-3')
       end
 
-      test 'Server shall have Progress Note' do
+      test :have_cardiology_report do
         metadata do
           id '06'
-          link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
-          description %(
-          )
-          versions :r4
-        end
-
-        test_clinical_notes_document_reference('11506-3')
-      end
-
-      test 'Server returns Cardiology report from DiagnosticReport search by patient+category' do
-        metadata do
-          id '07'
+          name 'Server returns Cardiology report from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -174,9 +177,10 @@ module Inferno
         test_clinical_notes_diagnostic_report('http://loinc.org|LP29708-2')
       end
 
-      test 'Server returns Pathology report from DiagnosticReport search by patient+category' do
+      test :have_pathology_report do
         metadata do
-          id '08'
+          id '07'
+          name 'Server returns Pathology report from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -186,9 +190,10 @@ module Inferno
         test_clinical_notes_diagnostic_report('http://loinc.org|LP7839-6')
       end
 
-      test 'Server returns Radiology report from DiagnosticReport search by patient+category' do
+      test :have_radiology_report do
         metadata do
-          id '09'
+          id '08'
+          name 'Server returns Radiology report from DiagnosticReport search by patient+category'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
           )
@@ -198,19 +203,21 @@ module Inferno
         test_clinical_notes_diagnostic_report('http://loinc.org|LP29684-5')
       end
 
-      test 'DiagnosticReport and DocumentReference reference the same attachment' do
+      test :have_matched_attachments do
         metadata do
-          id '10'
+          id '09'
+          name 'DiagnosticReport and DocumentReference reference the same attachment'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
+            All presentedForms urls referenced in DiagnosticReports shall have corresponding content attachment urls referenced in DocumentReference
           )
           versions :r4
         end
 
-        skip 'No Clinical Notes appear to be available for this patient. Please use patients with more information.' unless @clinical_notes_found
+        skip 'There is no attachement in DocumentReference. Please select another patient.' unless document_attachments&.attachment&.any?
+        skip 'There is no attachement in DiagnosticReport. Please select another patient.' unless report_attachments&.attachment&.any?
 
-        assert_attachment_matched(@document_attachments, @report_attachments)
-        assert_attachment_matched(@report_attachments, @document_attachments)
+        assert_attachment_matched(report_attachments, document_attachments)
       end
 
       def assert_attachment_matched(source_attachments, target_attachments)
@@ -218,16 +225,6 @@ module Inferno
         not_matched_attachments = not_matched_urls.map { |url| "#{url} in #{source_attachments.resource_class}/#{source_attachments.attachment[url]}" }
 
         assert not_matched_attachments.empty?, "Attachments #{not_matched_attachments.join(', ')} are not referenced in any #{target_attachments.resource_class}."
-      end
-    end
-
-    class ClinicalNoteAttachment
-      attr_reader :resource_class
-      attr_reader :attachment
-
-      def initialize(resource_class)
-        @resource_class = resource_class
-        @attachment = {}
       end
     end
   end

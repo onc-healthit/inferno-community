@@ -1,0 +1,187 @@
+{
+  "resourceType": "Bundle",
+  "id": "9d89bb92-1bac-498e-99ac-d2dbaa75caed",
+  "type": "searchset",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "SMART-DiagnosticReport-1-note",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LP29708-2",
+                "display": "Cardiology"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "57698-3",
+              "display": "Lipid Panel"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/1234"
+        },
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "url": "/Binary/SMART-Binary-1-note"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "SMART-DiagnosticReport-2-note",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LP7839-6",
+                "display": "Pathology"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "57698-3",
+              "display": "Lipid Panel"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/1234"
+        },
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "url": "/Binary/SMART-Binary-2-note"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "SMART-DiagnosticReport-3-note",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LP29684-5",
+                "display": "Radiology"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "57698-3",
+              "display": "Lipid Panel"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/1234"
+        },
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "url": "/Binary/SMART-Binary-3-note"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "SMART-DiagnosticReport-4-note",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LP29708-2",
+                "display": "Cardiology"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "57698-3",
+              "display": "Lipid Panel"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/1234"
+        },
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "url": "/Binary/SMART-Binary-4-note"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "SMART-DiagnosticReport-5-note",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LP29708-2",
+                "display": "Cardiology"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "57698-3",
+              "display": "Lipid Panel"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/1234"
+        },
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "url": "/Binary/SMART-Binary-5-note"
+          }
+        ]
+      }
+    }
+  ]
+}
