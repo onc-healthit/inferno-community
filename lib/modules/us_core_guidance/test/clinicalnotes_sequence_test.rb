@@ -245,13 +245,13 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     end
 
     it 'fails if one attachment does not have a match' do
-      @sequence.report_attachments.attachment.delete('/Binary/SMART-Binary-2-note')
+      @sequence.document_attachments.attachment.delete('/Binary/SMART-Binary-2-note')
 
       error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
       end
 
-      assert_equal 'Attachments /Binary/SMART-Binary-2-note in DocumentReference/SMART-DiagnosticReport-2-note are not referenced in any DiagnosticReport.', error.message
+      assert_equal 'Attachments /Binary/SMART-Binary-2-note in DiagnosticReport/SMART-DiagnosticReport-2-note are not referenced in any DocumentReference.', error.message
     end
 
     it 'passes if all attachments are matched' do
