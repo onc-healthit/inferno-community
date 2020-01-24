@@ -13,6 +13,7 @@ module Inferno
       set :logger, Logger.new('terminology_misses.log')
 
       CS_NOT_SUPPORTED_TEXT = 'The specified code system is not known by the terminology server'
+      VS_NOT_SUPPORTED_TEXT = 'The specified valueset is not known byt he terminology server'
 
       get '/metadata', provides: ['application/fhir+json', 'application/fhir+xml'] do
         capability = if params[:mode] == 'terminology'
@@ -75,8 +76,8 @@ module Inferno
                           end
           return respond_with_type(return_params, request.accept, 200)
         else
-          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: CS_NOT_SUPPORTED_TEXT })
-          logger.warn "Need code system #{coding['system']}"
+          issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: VS_NOT_SUPPORTED_TEXT })
+          logger.warn "Need valueset #{valueset_response}"
           return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
       end
