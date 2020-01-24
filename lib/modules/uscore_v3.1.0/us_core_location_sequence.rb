@@ -96,22 +96,17 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
-        patient_ids.each do |patient|
-          search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'name'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          @client.set_bearer_token(@instance.token)
-          assert_response_unauthorized reply
-        end
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        assert_response_unauthorized reply
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test :search_by_name do
@@ -127,42 +122,24 @@ module Inferno
           versions :r4
         end
 
-        @location_ary = {}
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'name'))
-          }
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
-
-          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
-
-          next unless any_resources
-
-          @resources_found = true
-
-          @location = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Location' }
-            .resource
-          @location_ary[patient] = fetch_all_bundled_resources(reply.resource)
-          save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
-          save_delayed_sequence_references(@location_ary[patient])
-          validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        end
-
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
         skip 'No Location resources appear to be available.' unless @resources_found
+        @location = reply.resource.entry
+          .find { |entry| entry&.resource&.resourceType == 'Location' }
+          .resource
+        @location_ary = fetch_all_bundled_resources(reply.resource)
+        save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
+        save_delayed_sequence_references(@location_ary)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address do
@@ -179,24 +156,15 @@ module Inferno
         end
 
         skip 'No Location resources appear to be available.' unless @resources_found
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'address': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'address'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address_city do
@@ -214,24 +182,15 @@ module Inferno
         end
 
         skip 'No Location resources appear to be available.' unless @resources_found
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'address.city'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address_state do
@@ -249,24 +208,15 @@ module Inferno
         end
 
         skip 'No Location resources appear to be available.' unless @resources_found
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'address.state'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address_postalcode do
@@ -284,24 +234,15 @@ module Inferno
         end
 
         skip 'No Location resources appear to be available.' unless @resources_found
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'address.postalCode'))
-          }
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          validate_search_reply(versioned_resource_class('Location'), reply, search_params)
-        end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :vread_interaction do
@@ -350,31 +291,22 @@ module Inferno
           versions :r4
         end
 
-        any_provenances = false
-        could_not_resolve_all = []
-        resolved_one = false
-        patient_ids.each do |patient|
-          search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@location_ary[patient], 'name'))
-          }
+        provenance_results = []
 
-          if search_params.any? { |param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+        search_params = {
+          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+        }
 
-          resolved_one = true
+        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
-          search_params['_revinclude'] = 'Provenance:target'
-          reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
-          provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-          any_provenances ||= provenance_results.present?
-          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
-        end
-        skip 'No Provenance resources were returned from this search' unless any_provenances
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        search_params['_revinclude'] = 'Provenance:target'
+        reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+        provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
@@ -442,14 +374,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Location.', '')
-          @location_ary&.values&.flatten&.any? do |resource|
+          @location_ary&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@location_ary&.values&.flatten&.length} provided Location resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@location_ary&.length} provided Location resource(s)"
         @instance.save!
       end
 
@@ -466,7 +397,7 @@ module Inferno
         skip_if_known_not_supported(:Location, [:search, :read])
         skip 'No Location resources appear to be available.' unless @resources_found
 
-        @location_ary&.values&.flatten&.each do |resource|
+        @location_ary&.each do |resource|
           validate_reference_resolutions(resource)
         end
       end

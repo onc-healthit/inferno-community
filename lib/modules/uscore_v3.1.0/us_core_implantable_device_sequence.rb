@@ -51,17 +51,17 @@ module Inferno
 
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
+
         patient_ids.each do |patient|
           search_params = {
             'patient': patient
           }
 
-          resolved_one = true
-
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
-          @client.set_bearer_token(@instance.token)
           assert_response_unauthorized reply
         end
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test :search_by_patient do
@@ -78,14 +78,10 @@ module Inferno
         end
 
         @device_ary = {}
-        could_not_resolve_all = []
-        resolved_one = false
         patient_ids.each do |patient|
           search_params = {
             'patient': patient
           }
-
-          resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
           assert_response_ok(reply)
@@ -106,7 +102,6 @@ module Inferno
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
         skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
       end
 
@@ -125,24 +120,26 @@ module Inferno
         end
 
         skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+
         could_not_resolve_all = []
         resolved_one = false
+
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
             'type': get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'))
           }
 
-          if search_params.any? { |param, value| value.nil? }
+          if search_params.any? { |_param, value| value.nil? }
             could_not_resolve_all = search_params.keys
             next
           end
-
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         end
+
         skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
@@ -209,26 +206,21 @@ module Inferno
           versions :r4
         end
 
-        any_provenances = false
-        could_not_resolve_all = []
-        resolved_one = false
+        provenance_results = []
         patient_ids.each do |patient|
           search_params = {
             'patient': patient
           }
 
-          resolved_one = true
-
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-          any_provenances ||= provenance_results.present?
+          provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
           provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
-        skip 'No Provenance resources were returned from this search' unless any_provenances
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
@@ -302,14 +294,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Device.', '')
-          @device_ary&.values&.flatten&.any? do |resource|
+          @device_aryy&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.values&.flatten&.length} provided Device resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_aryy&.values&.flatten&.length} provided Device resource(s)"
         @instance.save!
       end
 

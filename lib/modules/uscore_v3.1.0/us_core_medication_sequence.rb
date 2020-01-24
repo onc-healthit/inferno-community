@@ -126,14 +126,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Medication.', '')
-          @medication_ary&.values&.flatten&.any? do |resource|
+          @medication_ary&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@medication_ary&.values&.flatten&.length} provided Medication resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@medication_ary&.length} provided Medication resource(s)"
         @instance.save!
       end
 
@@ -150,7 +149,7 @@ module Inferno
         skip_if_known_not_supported(:Medication, [:search, :read])
         skip 'No Medication resources appear to be available.' unless @resources_found
 
-        @medication_ary&.values&.flatten&.each do |resource|
+        @medication_ary&.each do |resource|
           validate_reference_resolutions(resource)
         end
       end
