@@ -9,7 +9,7 @@ module Inferno
 
       test_id_prefix 'USCAI'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :AllergyIntolerance
 
       def validate_resource_item(resource, property, value)
@@ -30,6 +30,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :unauthorized_search do
@@ -48,13 +52,16 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          assert_response_unauthorized reply
+        end
+
         @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
       end
 
       test :search_by_patient do
@@ -70,25 +77,32 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        @allergy_intolerance_ary = {}
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
+
+          next unless any_resources
+
+          @resources_found = true
+
+          @allergy_intolerance = reply.resource.entry
+            .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
+            .resource
+          @allergy_intolerance_ary[patient] = fetch_all_bundled_resources(reply.resource)
+          save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
+          save_delayed_sequence_references(@allergy_intolerance_ary[patient])
+          validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        end
 
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
-
-        @allergy_intolerance = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
-          .resource
-        @allergy_intolerance_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
-        save_delayed_sequence_references(@allergy_intolerance_ary)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
       end
 
       test :search_by_patient_clinical_status do
@@ -107,14 +121,26 @@ module Inferno
 
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary, 'clinicalStatus'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :read_interaction do
@@ -180,17 +206,21 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+        end
+
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
       test :validate_resources do
@@ -258,14 +288,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('AllergyIntolerance.', '')
-          @allergy_intolerance_ary&.any? do |resource|
+          @allergy_intolerance_aryy&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@allergy_intolerance_ary&.length} provided AllergyIntolerance resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@allergy_intolerance_aryy&.values&.flatten&.length} provided AllergyIntolerance resource(s)"
         @instance.save!
       end
 
@@ -282,7 +311,9 @@ module Inferno
         skip_if_known_not_supported(:AllergyIntolerance, [:search, :read])
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        validate_reference_resolutions(@allergy_intolerance)
+        @allergy_intolerance_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end

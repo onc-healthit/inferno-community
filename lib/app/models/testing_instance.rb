@@ -58,6 +58,7 @@ module Inferno
 
       property :must_support_confirmed, String, default: ''
 
+      property :patient_ids, String
       property :group_id, String
 
       # Bulk Data Parameters
@@ -176,6 +177,8 @@ module Inferno
         return if patient_id.to_s == self.patient_id.to_s
 
         resource_references.destroy
+
+        self.patient_ids = patient_id
 
         ResourceReference.create(
           resource_type: 'Patient',

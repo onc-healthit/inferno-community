@@ -37,6 +37,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
@@ -84,11 +88,13 @@ module Inferno
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
+
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-        @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test :search_by_name do
@@ -107,16 +113,14 @@ module Inferno
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
+
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
-
         skip 'No Organization resources appear to be available.' unless @resources_found
-
         @organization = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Organization' }
           .resource
@@ -144,6 +148,7 @@ module Inferno
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
         }
+
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
@@ -196,18 +201,22 @@ module Inferno
           versions :r4
         end
 
+        provenance_results = []
+
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
+
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
-        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
+        provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
         provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
@@ -297,7 +306,6 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.length} provided Organization resource(s)"
-
         @instance.save!
       end
 
@@ -314,7 +322,9 @@ module Inferno
         skip_if_known_not_supported(:Organization, [:search, :read])
         skip 'No Organization resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@organization)
+        @organization_ary&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end

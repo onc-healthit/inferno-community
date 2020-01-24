@@ -17,6 +17,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
@@ -129,7 +133,6 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@medication_ary&.length} provided Medication resource(s)"
-
         @instance.save!
       end
 
@@ -146,7 +149,9 @@ module Inferno
         skip_if_known_not_supported(:Medication, [:search, :read])
         skip 'No Medication resources appear to be available.' unless @resources_found
 
-        validate_reference_resolutions(@medication)
+        @medication_ary&.each do |resource|
+          validate_reference_resolutions(resource)
+        end
       end
     end
   end
