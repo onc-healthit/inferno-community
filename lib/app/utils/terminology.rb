@@ -145,6 +145,61 @@ module Inferno
       end
     end
 
+
+    # Parse the expansions that are in FHIR Models into valueset validators
+    def self.load_fhir_models_expansions
+      require 'bloomer'
+      codesystem_bfilters = {}
+      FHIR::Definitions.expansions.each do |expansion|
+        next if @known_valuesets[expansion['url']]
+        url = expansion['url']
+        valueset = Inferno::Terminology::Valueset.new(@db)
+        valueset.valueset_model = FHIR::ValueSet.new(expansion)
+        valueset.vsa = self
+        if valueset&.valueset_model&.expansion&.contains
+          valueset.process_expanded_valueset
+        else
+          valueset.process_valueset
+        end
+        @known_valuesets[valueset.url] = valueset
+
+        bfilter = valueset.generate_bloom
+
+        validate_fn = lambda do |coding|
+          probe = "#{coding['system']}|#{coding['code']}"
+          bfilter.include? probe
+        end
+        # Register the validators with FHIR Models for validation
+        FHIR::DSTU2::StructureDefinition.validates_vs(expansion['url'], &validate_fn)
+        FHIR::StructureDefinition.validates_vs(expansion['url'], &validate_fn)
+        @loaded_validators[expansion['url']] = expansion['expansion']['total']
+      end
+    end
+
+    def self.parse_codesystems_from_valuesets
+      codesystem_bloomfilters = {}
+      @known_valuesets.each do |url, valueset|
+        next if url == 'http://hl7.org/fhir/ValueSet/message-events' || url == 'http://hl7.org/fhir/ValueSet/mimetypes' || url == 'http://hl7.org/fhir/us/core/ValueSet/us-core-provenance-participant-type'
+        valueset.valueset.each do |coding|
+          codesystem_bloomfilters[coding['system']] ||= Bloomer::Scalable.new 
+          codesystem_bloomfilters[coding['system']].add coding
+        end
+      end
+      binding.pry
+
+      codesystem_bloomfilters.each do |codesystem, bfilter|
+        next if @loaded_validators[codesystem]
+        validate_fn = lambda do |coding|
+          probe = "#{coding['system']}|#{coding['code']}"
+          bfilter.include? probe
+        end
+        # Register the validators with FHIR Models for validation
+        FHIR::DSTU2::StructureDefinition.validates_vs(codesystem, &validate_fn)
+        FHIR::StructureDefinition.validates_vs(codesystem, &validate_fn)
+        @loaded_validators[codesystem] = bfilter.count
+      end
+    end
+
     # Returns the ValueSet with the provided URL
     #
     # @param [String] url the url of the desired valueset

@@ -10,6 +10,8 @@ module Inferno
       set :prefix, '/fhir'
       Inferno::Terminology.register_umls_db('umls.db')
       Inferno::Terminology.load_valuesets_from_directory('resources', true)
+      Inferno::Terminology.load_fhir_models_expansions
+      Inferno::Terminology.parse_codesystems_from_valuesets
       set :logger, Logger.new('terminology_misses.log')
 
       CS_NOT_SUPPORTED_TEXT = 'The specified code system is not known by the terminology server'

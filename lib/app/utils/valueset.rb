@@ -107,6 +107,14 @@ module Inferno
         @valueset = include_set
       end
 
+      def process_expanded_valueset
+        include_set = Set.new
+        @valueset_model.expansion.contains.each do |contain|
+          include_set.add(system: contain.system, code: contain.code)
+        end
+        @valueset = include_set
+      end
+
       def generate_array
         x = []
         get_valueset_rows valueset do |row|
@@ -180,6 +188,7 @@ module Inferno
           end
           # Import whole code systems if given
         elsif vscs.system
+          binding.pry if SAB[vscs.system].nil?
           intersection_set = filter_code_set(vscs.system)
         end
 
