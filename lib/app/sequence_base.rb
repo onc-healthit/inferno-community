@@ -651,7 +651,8 @@ module Inferno
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def validate_reference_resolutions(resource, resolved_references = Set.new, max_resolutions = 1000000)
+      # Set max_resolutions in a single sequence to a large number by default
+      def validate_reference_resolutions(resource, resolved_references = Set.new, max_resolutions = 1_000_000)
         problems = []
 
         walk_resource(resource) do |value, meta, path|
