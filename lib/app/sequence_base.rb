@@ -651,11 +651,14 @@ module Inferno
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def validate_reference_resolutions(resource)
+      def validate_reference_resolutions(resource, resolved_references = Set.new, max_resolutions = Float::Infinity)
         problems = []
 
         walk_resource(resource) do |value, meta, path|
           next if meta['type'] != 'Reference'
+          next if value.reference.blank?
+          next if resolved_references.include?(value.reference)
+          next if resolved_references.length > max_resolutions
 
           begin
             # Should potentially update valid? method in fhir_dstu2_models
@@ -670,10 +673,13 @@ module Inferno
               end
             end
             value.read
+            resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
           end
         end
+
+        Inferno.logger.info "Surpassed the maximum reference resolutions: #{max_resolutions}" if resolved_references.length > max_resolutions
 
         assert(problems.empty?, problems.join("<br/>\n"))
       end

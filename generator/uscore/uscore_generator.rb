@@ -682,8 +682,11 @@ module Inferno
               skip_if_known_not_supported(:#{sequence[:resource]}, [:search, :read])
               #{skip_if_not_found(sequence)}
 
+              validated_resources = Set.new
+              max_resolutions = 50
+
               #{resource_array}&.each do |resource|
-                validate_reference_resolutions(resource)
+                validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
               end)
         sequence[:tests] << test
       end

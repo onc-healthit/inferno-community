@@ -322,8 +322,11 @@ module Inferno
         skip_if_known_not_supported(:Organization, [:search, :read])
         skip 'No Organization resources appear to be available.' unless @resources_found
 
+        validated_resources = Set.new
+        max_resolutions = 50
+
         @organization_ary&.each do |resource|
-          validate_reference_resolutions(resource)
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end
