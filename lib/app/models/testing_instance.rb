@@ -180,12 +180,11 @@ module Inferno
 
         # For patient id list, don't clear it out but rather add it to the list of known
         # patients to pull from.
-        if self.patient_ids.blank?
-          self.patient_ids = patient_id
-        else
-          self.patient_ids = self.patient_ids.split(',').append(patient_id).uniq.join(',')
-        end
-
+        self.patient_ids = if patient_ids.blank?
+                             patient_id
+                           else
+                             patient_ids.split(',').append(patient_id).uniq.join(',')
+                           end
 
         ResourceReference.create(
           resource_type: 'Patient',

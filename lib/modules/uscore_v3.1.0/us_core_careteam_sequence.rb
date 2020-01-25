@@ -288,7 +288,7 @@ module Inferno
           end
           resolved_one = true
 
-          second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') do |el| 
+          second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') do |el|
             get_value_for_search_param(el) != search_params[:status]
           end
           next if second_status_val.nil?
