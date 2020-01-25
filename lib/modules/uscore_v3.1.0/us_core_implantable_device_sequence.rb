@@ -294,13 +294,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Device.', '')
-          @device_aryy&.values&.flatten&.any? do |resource|
+          @device_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_aryy&.values&.flatten&.length} provided Device resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.values&.flatten&.length} provided Device resource(s)"
         @instance.save!
       end
 
@@ -317,8 +317,11 @@ module Inferno
         skip_if_known_not_supported(:Device, [:search, :read])
         skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        validated_resources = Set.new
+        max_resolutions = 50
+
         @device_ary&.values&.flatten&.each do |resource|
-          validate_reference_resolutions(resource)
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end
