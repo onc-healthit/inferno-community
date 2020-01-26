@@ -26,11 +26,9 @@ module Inferno
         'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
         'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
-        'http://hl7.org/fhir/ndfrt' => 'NDFRT',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
         'http://www.ama-assn.org/go/cpt' => 'CPT',
-        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS',
-        'http://rxnav.nlm.nih.gov/REST/Ndfrt' => 'VANDF'
+        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS'
       }.freeze
 
       CODE_SYS = {
@@ -96,6 +94,7 @@ module Inferno
       #
       # Creates a [Set] representing the valueset
       def process_valueset
+        puts "Processing #{@valueset_model.url}"
         include_set = Set.new
         @valueset_model.compose.include.each do |include|
           # Cumulative of each include
@@ -142,7 +141,8 @@ module Inferno
       # @param [String] filename the name of the file
       def save_bloom_to_file(filename = "resources/validators/bloom/#{(URI(url).host + URI(url).path).gsub(%r{[./]}, '_')}.msgpack")
         generate_bloom unless @bf
-        File.write(filename, @bf.to_msgpack) unless @bf.nil?
+        bloom_file = File.new(filename, 'wb')
+        bloom_file.write(@bf.to_msgpack) unless @bf.nil?
         filename
       end
 
@@ -222,7 +222,7 @@ module Inferno
 
         filtered_set = Set.new
         if CODE_SYS.include? system
-          puts "loading #{system} codes..."
+          puts "  loading #{system} codes..."
           return load_code_system(system)
         end
         raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
@@ -270,7 +270,7 @@ module Inferno
       # @param [Object] url the url of the desired valueset
       # @return [Set] the imported valueset
       def import_valueset(url)
-        @vsa.get_valueset(url)
+        @vsa.get_valueset(url).valueset
       end
 
       # Filters UMLS codes for "is-a" filters
@@ -281,7 +281,6 @@ module Inferno
       def filter_is_a(system, filter)
         children = {}
         find_children = lambda do |_parent, system|
-          puts 'getting children...'
           @db.execute("SELECT c1.code, c2.code
           FROM mrrel r
             JOIN mrconso c1 ON c1.aui=r.aui1

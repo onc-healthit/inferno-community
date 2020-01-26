@@ -15,9 +15,16 @@ module Inferno
       'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9',
       'http://hl7.org/fhir/sid/icd-9-cm/diagnosis' => 'ICD9',
       'http://hl7.org/fhir/sid/icd-9-cm/procedure' => 'ICD9',
-      'http://hl7.org/fhir/sid/cvx' => 'CVX',
-      'http://hl7.org/fhir/ndfrt' => 'Ndfrt'
+      'http://hl7.org/fhir/sid/cvx' => 'CVX'
     }.freeze
+
+    SKIP_SYS = [
+      'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem',
+      'http://fhir.org/guides/argonaut/ValueSet/languages',
+      'http://hl7.org/fhir/us/core/ValueSet/simple-language',
+      'http://fhir.org/guides/argonaut/ValueSet/substance-ndfrt',
+      'http://fhir.org/guides/argonaut/ValueSet/substance'
+    ].freeze
 
     @known_valuesets = {}
     @valueset_ids = nil
@@ -41,7 +48,7 @@ module Inferno
         root_dir = 'resources/terminology/validators/bloom'
         FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
         @known_valuesets.each do |k, vs|
-          next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages') || (k == 'http://hl7.org/fhir/us/core/ValueSet/simple-language')
+          next if SKIP_SYS.include? k
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
@@ -93,7 +100,8 @@ module Inferno
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
       end
-      File.write(filename, bf.to_msgpack) unless bf.nil?
+      bloom_file = File.new(filename, 'wb')
+      bloom_file.write(bf.to_msgpack) unless bf.nil?
     end
 
     # Saves the valueset to a csv
@@ -137,6 +145,10 @@ module Inferno
       end
     end
 
+    # Returns the ValueSet with the provided URL
+    #
+    # @param [String] url the url of the desired valueset
+    # @return [Inferno::Terminology::ValueSet] ValueSet
     def self.get_valueset(url)
       @known_valuesets[url] || raise(UnknownValueSetException, url)
     end
