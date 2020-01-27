@@ -294,13 +294,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Device.', '')
-          @device_aryy&.values&.flatten&.any? do |resource|
+          @device_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_aryy&.values&.flatten&.length} provided Device resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.values&.flatten&.length} provided Device resource(s)"
         @instance.save!
       end
 

@@ -559,13 +559,13 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('DocumentReference.', '')
-          @document_reference_aryy&.values&.flatten&.any? do |resource|
+          @document_reference_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_aryy&.values&.flatten&.length} provided DocumentReference resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"
         @instance.save!
       end
 
