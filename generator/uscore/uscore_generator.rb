@@ -446,24 +446,27 @@ module Inferno
           end
         sequence[:tests] << search_test
 
-        is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
-        fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
+        # NOTE: disable unit test generation until it has been updated to
+        # support multiple patients
 
-        unit_test_generator.generate_search_test(
-          test_key: test_key,
-          resource_type: sequence[:resource],
-          search_params: get_search_param_hash(search_param[:names], sequence),
-          is_first_search: is_first_search,
-          is_fixed_value_search: is_fixed_value_search,
-          is_status_search: status_search?(search_param[:names]),
-          has_comparator_tests: comparator_search_code.present?,
-          has_status_searches: sequence_has_status_search?(sequence),
-          fixed_value_search_param: fixed_value_search_param,
-          class_name: sequence[:class_name],
-          sequence_name: sequence[:name],
-          delayed_sequence: sequence[:delayed_sequence],
-          status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
-        )
+        # is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
+        # fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
+
+        # unit_test_generator.generate_search_test(
+        #   test_key: test_key,
+        #   resource_type: sequence[:resource],
+        #   search_params: get_search_param_hash(search_param[:names], sequence),
+        #   is_first_search: is_first_search,
+        #   is_fixed_value_search: is_fixed_value_search,
+        #   is_status_search: status_search?(search_param[:names]),
+        #   has_comparator_tests: comparator_search_code.present?,
+        #   has_status_searches: sequence_has_status_search?(sequence),
+        #   fixed_value_search_param: fixed_value_search_param,
+        #   class_name: sequence[:class_name],
+        #   sequence_name: sequence[:name],
+        #   delayed_sequence: sequence[:delayed_sequence],
+        #   status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
+        # )
       end
 
       def create_chained_search_test(sequence, search_param)

@@ -46,6 +46,39 @@ module Inferno
         end
       end
 
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities.search_documented?('Encounter'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                 search interaction for this resource is not documented in the
+                 CapabilityStatement. If this response was due to the server
+                 requiring a status parameter, the server must document this
+                 requirement in its CapabilityStatement.)
+        end
+
+        ['planned', 'arrived', 'triaged', 'in-progress', 'onleave', 'finished', 'cancelled', 'entered-in-error', 'unknown'].each do |status_value|
+          params_with_status = search_param.merge('status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'Encounter' }
+          next if entries.blank?
+
+          search_param.merge!('status': status_value)
+          break
+        end
+
+        reply
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
@@ -104,6 +137,9 @@ module Inferno
           }
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
@@ -155,6 +191,9 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         end
 
@@ -193,11 +232,14 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
             comparator_val = date_comparator_value(comparator, search_params[:date])
-            comparator_search_params = { 'date': comparator_val, 'patient': search_params[:patient] }
+            comparator_search_params = search_params.merge('date': comparator_val)
             reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
             validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
           end
@@ -237,6 +279,9 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         end
 
@@ -275,6 +320,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         end
 
@@ -313,6 +359,9 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         end
 
@@ -351,6 +400,9 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         end
 
@@ -428,6 +480,9 @@ module Inferno
 
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
           assert_response_ok(reply)
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
