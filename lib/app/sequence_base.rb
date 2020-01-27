@@ -659,7 +659,7 @@ module Inferno
           next if meta['type'] != 'Reference'
           next if value.reference.blank?
           next if resolved_references.include?(value.reference)
-          next if resolved_references.length > max_resolutions
+          break if resolved_references.length > max_resolutions
 
           begin
             # Should potentially update valid? method in fhir_dstu2_models
