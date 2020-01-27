@@ -448,7 +448,7 @@ module Inferno
         )
 
         sequence[:tests] << search_test
-        unit_test_generator.generate_chained_search_test(class_name: sequence[:class_name])
+        # unit_test_generator.generate_chained_search_test(class_name: sequence[:class_name])
       end
 
       def create_interaction_test(sequence, interaction)
