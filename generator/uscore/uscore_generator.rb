@@ -448,6 +448,8 @@ module Inferno
         )
 
         sequence[:tests] << search_test
+        # NOTE: unit test has an intermittent failure and is disabled until this
+        # failure can be addressed
         # unit_test_generator.generate_chained_search_test(class_name: sequence[:class_name])
       end
 
