@@ -515,7 +515,7 @@ module Inferno
         test[:test_code] += %(
           #{skip_if_not_found(sequence)}
         )
-        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_aryy&.values&.flatten"
+        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
         if must_support_extensions.present?
           extensions_list = must_support_extensions.map { |extension| "'#{extension[:id]}': '#{extension[:url]}'" }
