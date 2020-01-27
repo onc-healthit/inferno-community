@@ -519,7 +519,7 @@ module Inferno
           'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
         }
         missing_must_support_extensions = must_support_extensions.reject do |_id, url|
-          @patient_aryy&.values&.flatten&.any? do |resource|
+          @patient_ary&.values&.flatten&.any? do |resource|
             resource.extension.any? { |extension| extension.url == url }
           end
         end
@@ -549,7 +549,7 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |path|
           truncated_path = path.gsub('Patient.', '')
-          @patient_aryy&.values&.flatten&.any? do |resource|
+          @patient_ary&.values&.flatten&.any? do |resource|
             resolve_element_from_path(resource, truncated_path).present?
           end
         end
@@ -557,7 +557,7 @@ module Inferno
         missing_must_support_elements += missing_must_support_extensions.keys
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_aryy&.values&.flatten&.length} provided Patient resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.values&.flatten&.length} provided Patient resource(s)"
         @instance.save!
       end
 
