@@ -520,9 +520,10 @@ module Inferno
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
           assert_response_ok(reply)
           resources_returned = fetch_all_bundled_resources(reply.resource)
-          assert search_params[:status].split(',').all? do |val|
+          missing_values = search_params[:status].split(',').reject do |val|
             resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
           end
+          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
         end
         skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
