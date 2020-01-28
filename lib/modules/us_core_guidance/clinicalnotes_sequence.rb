@@ -38,7 +38,7 @@ module Inferno
         * Procedures Note (28570-0)
         * Progress Note (11506-3)
 
-        The provided patient also need to have the following three common diagnostic reports as DiagnosticReport resources:
+        The provided patient also needs to have the following three common diagnostic reports as DiagnosticReport resources:
 
         * Cardiology (LP29708-2)
         * Pathology (LP7839-6)
