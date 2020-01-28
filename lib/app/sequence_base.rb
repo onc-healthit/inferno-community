@@ -527,14 +527,19 @@ module Inferno
       def validate_read_reply(resource, klass)
         class_name = klass.name.demodulize
         assert !resource.nil?, "No #{class_name} resources available from search."
-        id = resource&.id
-        assert !id.nil?, "#{class_name} id not returned"
-        read_response = @client.read(klass, id)
-        assert_response_ok read_response
-        read_response = read_response.resource
+        if resource.is_a? versioned_resource_class('Reference')
+          read_response = resource.read
+          id = resource.reference.split('/').last
+        else
+          id = resource&.id
+          assert !id.nil?, "#{class_name} id not returned"
+          read_response = @client.read(klass, id)
+          assert_response_ok read_response
+          read_response = read_response.resource
+        end
         assert !read_response.nil?, "Expected #{class_name} resource to be present."
         assert read_response.is_a?(klass), "Expected resource to be of type #{class_name}."
-        assert read_response.id == id, "Expected resource to contain id: #{id}"
+        assert read_response.id.present? && read_response.id == id, "Expected resource to contain id: #{id}"
         read_response
       end
 
