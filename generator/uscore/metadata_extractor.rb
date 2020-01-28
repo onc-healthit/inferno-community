@@ -197,6 +197,9 @@ module Inferno
       def add_must_support_elements(profile_definition, sequence)
         profile_elements = profile_definition['snapshot']['element']
         profile_elements.select { |el| el['mustSupport'] }.each do |element|
+          # not including components in vital-sign profiles because they don't make sense outside of BP
+          next if profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns' && element['path'].include?('component')
+
           if element['path'].end_with? 'extension'
             sequence[:must_supports] <<
               {

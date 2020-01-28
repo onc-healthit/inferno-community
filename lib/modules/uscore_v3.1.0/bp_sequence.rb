@@ -426,29 +426,9 @@ module Inferno
 
             Observation.dataAbsentReason
 
-            Observation.component
-
-            Observation.component.value[x].system
-
-            Observation.component.value[x].code
-
-            Observation.component.code
-
-            Observation.component.value[x]
-
-            Observation.component.value[x].value
-
-            Observation.component.value[x].unit
-
-            Observation.component.dataAbsentReason
-
             Observation.category:VSCat
 
             Observation.value[x]:valueQuantity
-
-            Observation.component:SystolicBP
-
-            Observation.component:DiastolicBP
 
           )
           versions :r4
@@ -481,40 +461,6 @@ module Inferno
               type: 'type',
               code: 'Quantity'
             }
-          },
-          {
-            name: 'Observation.component:SystolicBP',
-            path: 'Observation.component',
-            discriminator: {
-              type: 'value',
-              values: [
-                {
-                  path: 'code.coding.code',
-                  value: '8480-6'
-                },
-                {
-                  path: 'code.coding.system',
-                  value: 'http://loinc.org'
-                }
-              ]
-            }
-          },
-          {
-            name: 'Observation.component:DiastolicBP',
-            path: 'Observation.component',
-            discriminator: {
-              type: 'value',
-              values: [
-                {
-                  path: 'code.coding.code',
-                  value: '8462-4'
-                },
-                {
-                  path: 'code.coding.system',
-                  value: 'http://loinc.org'
-                }
-              ]
-            }
           }
         ]
         missing_slices = must_support_slices.reject do |slice|
@@ -535,15 +481,7 @@ module Inferno
           { path: 'Observation.subject' },
           { path: 'Observation.effective' },
           { path: 'Observation.value' },
-          { path: 'Observation.dataAbsentReason' },
-          { path: 'Observation.component' },
-          { path: 'Observation.component.value.system', fixed_value: 'http://unitsofmeasure.org' },
-          { path: 'Observation.component.value.code', fixed_value: 'mm[Hg]' },
-          { path: 'Observation.component.code' },
-          { path: 'Observation.component.value' },
-          { path: 'Observation.component.value.value' },
-          { path: 'Observation.component.value.unit' },
-          { path: 'Observation.component.dataAbsentReason' }
+          { path: 'Observation.dataAbsentReason' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|
