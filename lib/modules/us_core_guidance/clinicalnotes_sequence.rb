@@ -30,7 +30,7 @@ module Inferno
         returned will be checked for consistency against the [US Core Clinical Notes Guidance](https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html)
 
         In this set of tests, Inferno serves as a FHIR client that attempts to access different types of Clinical Notes
-        specified in the Guidance. The provided patient need to have the following five common clinical notes as DocumentReference resrouces:
+        specified in the Guidance. The provided patient needs to have the following five common clinical notes as DocumentReference resources:
 
         * Consultation Note (11488-4)
         * Discharge Summary (18842-5)
