@@ -92,6 +92,24 @@ describe Inferno::Sequence::USCore310LocationSequence do
       assert_equal 'Expected resource to be of type Location.', exception.message
     end
 
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'Location',
+        resource_id: @location_id,
+        testing_instance: @instance
+      )
+
+      location = FHIR::Location.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/Location/#{@location_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: location.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@location_id}", exception.message
+    end
+
     it 'succeeds when a Location resource is read successfully' do
       location = FHIR::Location.new(
         id: @location_id

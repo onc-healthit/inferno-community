@@ -92,6 +92,24 @@ describe Inferno::Sequence::USCore310MedicationSequence do
       assert_equal 'Expected resource to be of type Medication.', exception.message
     end
 
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'Medication',
+        resource_id: @medication_id,
+        testing_instance: @instance
+      )
+
+      medication = FHIR::Medication.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/Medication/#{@medication_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: medication.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@medication_id}", exception.message
+    end
+
     it 'succeeds when a Medication resource is read successfully' do
       medication = FHIR::Medication.new(
         id: @medication_id

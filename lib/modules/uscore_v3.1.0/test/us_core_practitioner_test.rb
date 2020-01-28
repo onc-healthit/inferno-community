@@ -92,6 +92,24 @@ describe Inferno::Sequence::USCore310PractitionerSequence do
       assert_equal 'Expected resource to be of type Practitioner.', exception.message
     end
 
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'Practitioner',
+        resource_id: @practitioner_id,
+        testing_instance: @instance
+      )
+
+      practitioner = FHIR::Practitioner.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/Practitioner/#{@practitioner_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: practitioner.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@practitioner_id}", exception.message
+    end
+
     it 'succeeds when a Practitioner resource is read successfully' do
       practitioner = FHIR::Practitioner.new(
         id: @practitioner_id
