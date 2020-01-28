@@ -448,8 +448,11 @@ module Inferno
         skip_if_known_not_supported(:Condition, [:search, :read])
         skip 'No Condition resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        validated_resources = Set.new
+        max_resolutions = 50
+
         @condition_ary&.values&.flatten&.each do |resource|
-          validate_reference_resolutions(resource)
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end

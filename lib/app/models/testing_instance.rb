@@ -178,7 +178,13 @@ module Inferno
 
         resource_references.destroy
 
-        self.patient_ids = patient_id
+        # For patient id list, don't clear it out but rather add it to the list of known
+        # patients to pull from.
+        self.patient_ids = if patient_ids.blank?
+                             patient_id
+                           else
+                             patient_ids.split(',').append(patient_id).uniq.join(',')
+                           end
 
         ResourceReference.create(
           resource_type: 'Patient',

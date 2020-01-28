@@ -313,8 +313,11 @@ module Inferno
         skip_if_known_not_supported(:CareTeam, [:search, :read])
         skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
 
+        validated_resources = Set.new
+        max_resolutions = 50
+
         @care_team_ary&.values&.flatten&.each do |resource|
-          validate_reference_resolutions(resource)
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end

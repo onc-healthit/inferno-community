@@ -149,8 +149,11 @@ module Inferno
         skip_if_known_not_supported(:Medication, [:search, :read])
         skip 'No Medication resources appear to be available.' unless @resources_found
 
+        validated_resources = Set.new
+        max_resolutions = 50
+
         @medication_ary&.each do |resource|
-          validate_reference_resolutions(resource)
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end
