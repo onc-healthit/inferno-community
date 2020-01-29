@@ -5,8 +5,8 @@
             "name": "coding",
             "valueCoding":
                     {
-                        "system": "http://snomed.info/sct",
-                        "code": "69322001"
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender",
+                        "code": "F"
                     }
         }
     ]

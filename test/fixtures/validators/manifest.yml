@@ -7,3 +7,7 @@
   :file: hl7_org_fhir_us_core_ValueSet_birthsex.msgpack
   :count: 3
   :type: bloom
+- :url: http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender
+  :file: hl7_org_fhir_us_core_ValueSet_birthsex.msgpack
+  :count: 3
+  :type: bloom

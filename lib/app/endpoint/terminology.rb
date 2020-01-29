@@ -55,19 +55,26 @@ module Inferno
 
       def valueset_validates_code(parameters, id_param = nil)
         # Get a valueset, in one of the many ways a valueset can be specified
-        coding = normalize_valueset_coding(parameters)
+        coding_arr = normalize_valueset_coding(parameters)
         valueset_response = get_valueset(id_param, find_param(parameters, 'url'))
         return respond_with_type(valueset_response, request.accept, 400) if valueset_response.is_a? FHIR::OperationOutcome
 
         validation_fn = FHIR::StructureDefinition.vs_validators[valueset_response]
 
         if validation_fn
-          # NOTE: This function does not yet validate `display` attributes
-          code_valid = validation_fn.call(coding)
-          return_params = if code_valid
+          codes_valid_arr = coding_arr.map do |coding|
+            # NOTE: This function does not yet validate `display` attributes
+            validation_fn.call(coding)
+          end
+          return_params = if codes_valid_arr.any?
                             FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
                           else
-                            message = "The code '#{coding['code']}' from the code system '#{coding['system']}' is not valid in the valueset '#{valueset_response}'"
+                            message = if coding_arr.length == 1
+                                        coding = coding_arr.first
+                                        "The code '#{coding['code']}' from the code system '#{coding['system']}' is not valid in the valueset '#{valueset_response}'"
+                                      else
+                                        "None of the codes included in the CodeableConcept are valid in the valueset #{valueset_response}"
+                                      end
                             params = [
                               FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
                               FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
@@ -88,41 +95,54 @@ module Inferno
 
       def normalize_valueset_coding(parameters)
         if find_param(parameters, 'coding')
-          find_param(parameters, 'coding').to_hash
+          [find_param(parameters, 'coding').to_hash]
         elsif find_param(parameters, 'system') && find_param(parameters, 'code')
-          { 'code' => find_param(parameters, 'code'), 'system' => find_param(parameters, 'system') }
+          [{ 'code' => find_param(parameters, 'code'), 'system' => find_param(parameters, 'system') }]
+        elsif find_param(parameters, 'codeableConcept')
+          find_param(parameters, 'codeableConcept').to_hash['coding']
         else
-          {}
+          []
         end
       end
 
       def normalize_codesystem_coding(parameters, system_param = nil)
         if find_param(parameters, 'coding')
-          find_param(parameters, 'coding').to_hash
+          [find_param(parameters, 'coding').to_hash]
         elsif (find_param(parameters, 'url') || system_param) && find_param(parameters, 'code')
           system_param ||= find_param(parameters, 'url')
-          { 'code' => find_param(parameters, 'code'), 'system' => system_param }
+          [{ 'code' => find_param(parameters, 'code'), 'system' => system_param }]
+        elsif find_param(parameters, 'codeableConcept')
+          find_param(parameters, 'codeableConcept').to_hash['coding']
         else
-          {}
+          []
         end
       end
 
       def codesystem_validates_code(parameters, id_param)
-        coding = normalize_codesystem_coding(parameters, id_param)
-        validation_fn = FHIR::StructureDefinition.vs_validators[coding['system']]
+        coding_arr = normalize_codesystem_coding(parameters, id_param)
+        validation_fn = FHIR::StructureDefinition.vs_validators[coding_arr.first['system']]
         if validation_fn
           # NOTE: This function does not yet validate `display` attributes
-          retval = if validation_fn.call(coding)
-                     FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
-                   else
-                     message = "The code '#{coding['code']}' is not a valid member of '#{coding['system']}'"
-                     params = [
-                       FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
-                       FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
-                     ]
-                     FHIR::Parameters.new(parameter: params)
-                   end
-          respond_with_type(retval, request.accept, 200)
+          codes_valid_arr = coding_arr.map do |coding|
+            # NOTE: This function does not yet validate `display` attributes
+            validation_fn.call(coding)
+          end
+          return_params = if codes_valid_arr.all?
+                            FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
+                          else
+                            coding = coding_arr.first
+                            message = if coding_arr.length == 1
+                                        "The code '#{coding['code']}' is not a valid member of '#{coding['system']}'"
+                                      else
+                                        "None of the codes included in the CodeableConcept are valid in '#{coding['system']}'"
+                                      end
+                            params = [
+                              FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: false),
+                              FHIR::Parameters::Parameter.new(name: 'message', valueString: message)
+                            ]
+                            FHIR::Parameters.new(parameter: params)
+                          end
+          respond_with_type(return_params, request.accept, 200)
         else
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: CS_NOT_SUPPORTED_TEXT })
           logger.warn "Need code system #{coding['system']}"

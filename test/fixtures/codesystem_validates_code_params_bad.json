@@ -5,8 +5,8 @@
             "name": "coding",
             "valueCoding":
                     {
-                        "system": "http://snomed.info/sct",
-                        "code": "Robot"
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender",
+                        "code": "Q"
                     }
         }
     ]

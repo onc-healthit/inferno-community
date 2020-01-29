@@ -41,15 +41,25 @@ class TerminologyEndpointTest < MiniTest::Test
   end
 
   def test_codesystem_validates_good_code
-    skip # skipped until we can increase our codesystem support
     post '/fhir/CodeSystem/$validate-code', load_fixture('codesystem_validates_code_params_good'), 'CONTENT_TYPE' => 'application/fhir+json'
     assert last_response.ok?, 'Operation should return a 200 status code'
     assert FHIR.from_contents(last_response.body).parameter.find { |p| p.name == 'result' }&.value
   end
 
   def test_codesystem_validates_bad_code
-    skip # skipped until we can increase our codesystem support
     post '/fhir/CodeSystem/$validate-code', load_fixture('codesystem_validates_code_params_bad'), 'CONTENT_TYPE' => 'application/fhir+json'
+    assert last_response.ok?, 'Operation should return a 200 status code'
+    refute FHIR.from_contents(last_response.body).parameter.find { |p| p.name == 'result' }&.value
+  end
+
+  def test_valueset_validates_good_codeableconcept
+    post 'fhir/ValueSet/$validate-code', load_fixture('valueset_validates_codeableconcept_params_good'), 'CONTENT_TYPE' => 'application/fhir+json'
+    assert last_response.ok?, 'Operation should return a 200 status code'
+    assert FHIR.from_contents(last_response.body).parameter.find { |p| p.name == 'result' }&.value
+  end
+
+  def test_valueset_validates_bad_codeableconcept
+    post 'fhir/ValueSet/$validate-code', load_fixture('valueset_validates_codeableconcept_params_bad'), 'CONTENT_TYPE' => 'application/fhir+json'
     assert last_response.ok?, 'Operation should return a 200 status code'
     refute FHIR.from_contents(last_response.body).parameter.find { |p| p.name == 'result' }&.value
   end

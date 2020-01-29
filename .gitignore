@@ -14,3 +14,11 @@ tmp/*
 resources/terminology/*
 sequence_coverage.csv
 fhir-pgdata/
+.byebug_history
+
+# UMLS-related gitignores
+MRCONSO.pipe
+MRREL.pipe
+MRSAT.pipe
+umls.db
+umls.zip

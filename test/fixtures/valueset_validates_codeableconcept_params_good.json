@@ -1,0 +1,24 @@
+{
+  "resourceType" : "Parameters",
+  "parameter" : [
+      {
+        "name": "url",
+        "valueUrl": "http://hl7.org/fhir/us/core/ValueSet/birthsex"
+      },
+      {
+      "name" : "codeableConcept",
+      "valueCodeableConcept" : {
+        "coding" : [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender",
+            "code": "F"
+          },
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender",
+            "code": "M"
+          }
+        ]
+      }
+    }
+  ]
+}
