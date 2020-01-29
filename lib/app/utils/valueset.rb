@@ -46,7 +46,10 @@ module Inferno
         'http://hl7.org/fhir/condition-ver-status' => 'resources/misc_valuesets/codesystem-condition-ver-status.json',
         'http://hl7.org/fhir/observation-category' => 'resources/misc_valuesets/codesystem-observation-category.json',
         'http://hl7.org/fhir/referencerange-meaning' => 'resources/misc_valuesets/codesystem-referencerange-meaning.json',
-        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json'
+        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json',
+        'http://terminology.hl7.org/CodeSystem/practitioner-role' => 'resources/misc_valuesets/codesystem-observation-category.json',
+        'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => 'resources/misc_valuesets/v3-RoleCode.cs.json',
+        'http://terminology.hl7.org/CodeSystem/v2-0131' => 'resources/misc_valuesets/v2-0131.cs.json'
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -188,7 +191,6 @@ module Inferno
           end
           # Import whole code systems if given
         elsif vscs.system
-          binding.pry if SAB[vscs.system].nil?
           intersection_set = filter_code_set(vscs.system)
         end
 
@@ -243,7 +245,7 @@ module Inferno
           end
         elsif ['=', 'in', nil].include? filter&.op
           if FILTER_PROP[filter.property]
-            @db.execute("SELECT code FROM mrsat WHERE ATN = '#{filter_prop_or_self(filter.property)}' AND ATV = '#{filter_prop_or_self(filter.value)}'") do |row|
+            @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
               filtered_set.add(system: system, code: row[0])
             end
           else
@@ -317,7 +319,10 @@ module Inferno
         desired_children
       end
 
-      def filter_prop_or_self(prop)
+      # fp_self is short for filter_prop_or_self
+      # @param [String] prop The property name
+      # @return [String] either the value from FILTER_PROP for that key, or prop if that key isn't in FILTER_PROP
+      def fp_self(prop)
         FILTER_PROP[prop] || prop
       end
 
