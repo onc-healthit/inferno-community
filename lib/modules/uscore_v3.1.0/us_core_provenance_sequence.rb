@@ -162,7 +162,7 @@ module Inferno
         ]
         missing_slices = must_support_slices.reject do |slice|
           truncated_path = slice[:path].gsub('Provenance.', '')
-          @provenance_ary&.any? do |resource|
+          @provenance_ary&.values&.flatten&.any? do |resource|
             slice_found = find_slice(resource, truncated_path, slice[:discriminator])
             slice_found.present?
           end
@@ -181,7 +181,7 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |element|
           truncated_path = element[:path].gsub('Provenance.', '')
-          @provenance_ary&.any? do |resource|
+          @provenance_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end

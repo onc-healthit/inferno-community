@@ -126,7 +126,7 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |element|
           truncated_path = element[:path].gsub('Medication.', '')
-          @medication_ary&.any? do |resource|
+          @medication_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
