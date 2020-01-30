@@ -480,7 +480,7 @@ namespace :terminology do |_argv|
   desc 'download and execute UMLS terminology data'
   task :download_umls, [:username, :password] do |_t, args|
     # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
-    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2018AB/umls-2018AB-full.zip'
+    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip'
 
     puts 'Getting Login Page'
     response = RestClient.get default_target_file
