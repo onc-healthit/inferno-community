@@ -278,7 +278,7 @@ module Inferno
         ]
         missing_slices = must_support_slices.reject do |slice|
           truncated_path = slice[:path].gsub('Practitioner.', '')
-          @practitioner_ary&.values&.flatten&.any? do |resource|
+          @practitioner_ary&.any? do |resource|
             slice_found = find_slice(resource, truncated_path, slice[:discriminator])
             slice_found.present?
           end

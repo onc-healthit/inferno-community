@@ -238,7 +238,7 @@ module Inferno
               type_code = type_element['type'].first['code']
               must_support_element[:discriminator] = {
                 type: 'type',
-                code: type_code.capitalize
+                code: capitalize_first_letter(type_code)
               }
             elsif discriminators.first['type'] == 'value'
               must_support_element[:discriminator] = {

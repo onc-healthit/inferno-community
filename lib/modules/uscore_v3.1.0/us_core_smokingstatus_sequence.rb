@@ -428,7 +428,7 @@ module Inferno
             path: 'Observation.value',
             discriminator: {
               type: 'type',
-              code: 'Codeableconcept'
+              code: 'CodeableConcept'
             }
           }
         ]

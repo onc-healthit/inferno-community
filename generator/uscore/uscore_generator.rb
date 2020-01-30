@@ -556,7 +556,7 @@ module Inferno
             ]
             missing_slices = must_support_slices.reject do |slice|
               truncated_path = slice[:path].gsub('#{sequence[:resource]}.', '')
-              @#{sequence[:resource].underscore}_ary&.values&.flatten&.any? do |resource|
+              @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
                 slice_found = find_slice(resource, truncated_path, slice[:discriminator])
                 slice_found.present?
               end
