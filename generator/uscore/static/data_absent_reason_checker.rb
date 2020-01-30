@@ -26,7 +26,7 @@ module Inferno
     def contains_data_absent_code?(body)
       if body.include? DAR_CODE_SYSTEM_URL
         resource = FHIR.from_contents(body)
-        walk_resource(resource) do |element, meta, path|
+        walk_resource(resource) do |element, meta, _path|
           next unless meta['type'] == 'Coding'
 
           return true if element.code == 'unknown' && element.system == DAR_CODE_SYSTEM_URL

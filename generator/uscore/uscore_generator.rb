@@ -38,7 +38,7 @@ module Inferno
           FileUtils.cp(static_file, sequence_out_path)
         end
         Dir.glob(File.join(__dir__, 'static_test', '*')).each do |static_file|
-          FileUtils.cp(static_file, "#{File.join(sequence_out_path, 'test')}")
+          FileUtils.cp(static_file, File.join(sequence_out_path, 'test').to_s)
         end
       end
 
