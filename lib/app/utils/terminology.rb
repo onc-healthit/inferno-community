@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require_relative 'valueset'
+require 'bloomer'
+require 'bloomer/msgpackable'
+
 module Inferno
   class Terminology
     CODE_SYSTEMS = {
@@ -100,7 +103,6 @@ module Inferno
     #
     # @param [String] filename the name of the file
     def self.save_bloom_to_file(codeset, filename)
-      require 'bloomer'
       bf = Bloomer::Scalable.new
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
@@ -152,7 +154,7 @@ module Inferno
 
     # Parse the expansions that are in FHIR Models into valueset validators
     def self.load_fhir_models_expansions
-      require 'bloomer'
+      Inferno.logger.debug "Loading FHIR Models Expansions"
       FHIR::Definitions.expansions.each do |expansion|
         url = expansion['url']
         next if @known_valuesets[url]
@@ -183,17 +185,24 @@ module Inferno
 
     def self.parse_codesystems_from_valuesets
       codesystem_bloomfilters = {}
+      validators = []
+      root_dir = 'resources/terminology/codesystems/bloom'
+      FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
+      Inferno.logger.debug "Parsing codesystems from valuesets"
       @known_valuesets.each do |url, valueset|
         next if SKIP_SYS.include? url
+        Inferno.logger.debug "Parsing valueset #{url}"
 
         valueset.valueset.each do |coding|
-          codesystem_bloomfilters[coding['system']] ||= Bloomer::Scalable.new
-          codesystem_bloomfilters[coding['system']].add coding
+          codesystem_bloomfilters[coding[:system]] ||= Bloomer::Scalable.new
+          codesystem_bloomfilters[coding[:system]].add coding
         end
       end
 
       codesystem_bloomfilters.each do |codesystem, bfilter|
+        Inferno.logger.debug "Processing codesystem #{codesystem}"
         next if @loaded_validators[codesystem]
+        next unless codesystem
 
         validate_fn = lambda do |coding|
           probe = "#{coding['system']}|#{coding['code']}"
@@ -203,7 +212,15 @@ module Inferno
         FHIR::DSTU2::StructureDefinition.validates_vs(codesystem, &validate_fn)
         FHIR::StructureDefinition.validates_vs(codesystem, &validate_fn)
         @loaded_validators[codesystem] = bfilter.count
+
+        # Save to file after registering
+        filename = "#{root_dir}/#{codesystem.gsub(/\W/, '_')}.msgpack"
+        bloom_file = File.new(filename, 'wb')
+        bloom_file.write(bfilter.to_msgpack)
+        bloom_file.close
+        validators << { url: codesystem, file: File.basename(filename), count: bfilter.count, type: 'bloom' }
       end
+      File.write("#{root_dir}/manifest.yml", validators.to_yaml)
     end
 
     # Returns the ValueSet with the provided URL
