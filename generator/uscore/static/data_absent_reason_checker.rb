@@ -7,16 +7,29 @@ module Inferno
 
     def check_for_data_absent_reasons
       proc do |reply|
-        if !@instance.data_absent_extension_found && contains_data_absent_extension?(reply.body)
-          @instance.data_absent_extension_found = true
-          @instance.save
-        end
-
-        if !@instance.data_absent_code_found && contains_data_absent_code?(reply.body)
-          @instance.data_absent_code_found = true
-          @instance.save
-        end
+        check_for_data_absent_extension(reply)
+        check_for_data_absent_code(reply)
       end
+    end
+
+    private
+
+    def check_for_data_absent_extension(reply)
+      return if @instance.data_absent_extension_found
+
+      return unless contains_data_absent_extension?(reply.body)
+
+      @instance.data_absent_extension_found = true
+      @instance.save
+    end
+
+    def check_for_data_absent_code(reply)
+      return if @instance.data_absent_code_found
+
+      return unless contains_data_absent_code?(reply.body)
+
+      @instance.data_absent_code_found = true
+      @instance.save
     end
 
     def contains_data_absent_extension?(body)
@@ -24,16 +37,19 @@ module Inferno
     end
 
     def contains_data_absent_code?(body)
-      if body.include? DAR_CODE_SYSTEM_URL
-        resource = FHIR.from_contents(body)
-        walk_resource(resource) do |element, meta, _path|
-          next unless meta['type'] == 'Coding'
+      return false unless body.include? DAR_CODE_SYSTEM_URL
 
-          return true if element.code == 'unknown' && element.system == DAR_CODE_SYSTEM_URL
-        end
+      walk_resource(FHIR.from_contents(body)) do |element, meta, _path|
+        next unless meta['type'] == 'Coding'
+
+        return true if data_absent_coding?(element)
       end
 
       false
+    end
+
+    def data_absent_coding?(coding)
+      coding.code == 'unknown' && coding.system == DAR_CODE_SYSTEM_URL
     end
   end
 end
