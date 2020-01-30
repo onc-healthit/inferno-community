@@ -37,6 +37,9 @@ module Inferno
         Dir.glob(File.join(__dir__, 'static', '*')).each do |static_file|
           FileUtils.cp(static_file, sequence_out_path)
         end
+        Dir.glob(File.join(__dir__, 'static_test', '*')).each do |static_file|
+          FileUtils.cp(static_file, "#{File.join(sequence_out_path, 'test')}")
+        end
       end
 
       def generate_search_validators(metadata)
