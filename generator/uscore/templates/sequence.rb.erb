@@ -5,7 +5,7 @@ require_relative './data_absent_reason_checker'
 module Inferno
   module Sequence
     class <%=class_name%> < SequenceBase
-      include DataAbsentReasonChecker
+      include Inferno::DataAbsentReasonChecker
 
       title '<%=title%> Tests'
 

@@ -140,7 +140,8 @@ module Inferno
               @#{sequence[:resource].underscore}_ary = #{sequence[:resource].underscore}_references.map do |reference|
                 validate_read_reply(
                   FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
-                  FHIR::#{sequence[:resource]}
+                  FHIR::#{sequence[:resource]},
+                  check_for_data_absent_reasons
                 )
               end
               @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary.first
@@ -556,11 +557,18 @@ module Inferno
           optional: interaction[:expectation] != 'SHALL'
         }
 
+        validate_reply_args = [
+          "@#{sequence[:resource].underscore}",
+          "versioned_resource_class('#{sequence[:resource]}')"
+        ]
+        validate_reply_args << 'check_for_data_absent_reasons' if interaction[:code] == 'read'
+        validate_reply_args_string = validate_reply_args.join(', ')
+
         interaction_test[:test_code] = %(
               skip_if_known_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
               skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-              validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
+              validate_#{interaction[:code]}_reply(#{validate_reply_args_string}))
 
         sequence[:tests] << interaction_test
 

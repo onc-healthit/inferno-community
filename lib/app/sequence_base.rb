@@ -524,7 +524,7 @@ module Inferno
         end
       end
 
-      def validate_read_reply(resource, klass)
+      def validate_read_reply(resource, klass, reply_handler = nil)
         class_name = klass.name.demodulize
         assert !resource.nil?, "No #{class_name} resources available from search."
         if resource.is_a? versioned_resource_class('Reference')
@@ -535,6 +535,7 @@ module Inferno
           assert !id.nil?, "#{class_name} id not returned"
           read_response = @client.read(klass, id)
           assert_response_ok read_response
+          reply_handler&.call(read_response)
           read_response = read_response.resource
         end
         assert !read_response.nil?, "Expected #{class_name} resource to be present."
