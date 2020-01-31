@@ -15,7 +15,6 @@ module Inferno
 
       description 'Ensure that measure report returned by the $evaluate-measure operation for selected measure is correct'
 
-      requires :measure_to_test
       # Parameters appended to the url for $evaluate-measure call
       PARAMS = {
         'periodStart': '2019-01-01',
@@ -29,6 +28,7 @@ module Inferno
         end
 
         measure_id = @instance.measure_to_test
+        assert !measure_id.nil?, 'Expected Measure To Test to be defined. The Measure Availability Sequence must be performed before this sequence.'
 
         # Get measure report from cqf-ruler and build expected results
         expected_results_report = get_measure_evaluation(measure_id, PARAMS.compact)
