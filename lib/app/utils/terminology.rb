@@ -154,7 +154,7 @@ module Inferno
 
     # Parse the expansions that are in FHIR Models into valueset validators
     def self.load_fhir_models_expansions
-      Inferno.logger.debug "Loading FHIR Models Expansions"
+      Inferno.logger.debug 'Loading FHIR Models Expansions'
       FHIR::Definitions.expansions.each do |expansion|
         url = expansion['url']
         next if @known_valuesets[url]
@@ -188,9 +188,10 @@ module Inferno
       validators = []
       root_dir = 'resources/terminology/codesystems/bloom'
       FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
-      Inferno.logger.debug "Parsing codesystems from valuesets"
+      Inferno.logger.debug 'Parsing codesystems from valuesets'
       @known_valuesets.each do |url, valueset|
         next if SKIP_SYS.include? url
+
         Inferno.logger.debug "Parsing valueset #{url}"
 
         valueset.valueset.each do |coding|

@@ -97,7 +97,7 @@ module Inferno
       #
       # Creates a [Set] representing the valueset
       def process_valueset
-        puts "Processing #{@valueset_model.url}"
+        Inferno.logger.debug "Processing #{@valueset_model.url}"
         include_set = Set.new
         @valueset_model.compose.include.each do |include|
           # Cumulative of each include
@@ -226,14 +226,14 @@ module Inferno
             col = filter.property
             where << "#{col} = '#{filter.value}'"
           else
-            puts "Cannot handle filter operation: #{filter.op}"
+            Inferno.logger.debug "Cannot handle filter operation: #{filter.op}"
           end
           where
         end
 
         filtered_set = Set.new
         if CODE_SYS.include? system
-          puts "  loading #{system} codes..."
+          Inferno.logger.debug "  loading #{system} codes..."
           return load_code_system(system)
         end
         raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
