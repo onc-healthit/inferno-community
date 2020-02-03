@@ -54,6 +54,7 @@ module Inferno
       delegate :versioned_resource_class, to: :@client
       delegate :versioned_conformance_class, to: :@instance
       delegate :save_resource_ids_in_bundle, to: :@instance
+      delegate :save_resource_references, to: :@instance
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
