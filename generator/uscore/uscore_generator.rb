@@ -916,18 +916,20 @@ module Inferno
             #{status_search_code(sequence, search_parameters)}
             assert_response_ok(reply)
             assert_bundle_response(reply)
+
             @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
             #{skip_if_not_found(sequence)}
             @#{sequence[:resource].underscore} = reply.resource.entry
               .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
               .resource
             @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
             save_resource_references(#{save_resource_references_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
           )
         else
-          %(
+          first_search = %(
             @#{sequence[:resource].underscore}_ary = {}
             patient_ids.each do |patient|
               #{get_search_params(search_parameters, sequence)}
@@ -946,6 +948,20 @@ module Inferno
                 .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
                 .resource
               @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          )
+
+          if sequence[:resource] == 'Device'
+            first_search += %(.select do |resource|
+                  resource&.type&.coding&.any? do |coding|
+                    system_match = @instance.device_system.blank? || coding.system == @instance.device_system
+                    code_match = @instance.device_code.blank? || coding.code == @instance.device_code
+                    system_match && code_match
+                  end
+                end
+            )
+          end
+
+          first_search + %(
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
