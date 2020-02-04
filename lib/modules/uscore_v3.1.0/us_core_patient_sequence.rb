@@ -111,6 +111,7 @@ module Inferno
           }
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
@@ -162,6 +163,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
@@ -198,6 +200,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
@@ -235,6 +238,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
@@ -272,6 +276,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
@@ -310,6 +315,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
@@ -348,6 +354,7 @@ module Inferno
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
@@ -425,6 +432,7 @@ module Inferno
 
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
+
           assert_response_ok(reply)
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }

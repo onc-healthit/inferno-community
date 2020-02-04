@@ -289,6 +289,7 @@ module Inferno
         revinclude_test[:test_code] += %(
               search_params['_revinclude'] = '#{revinclude}'
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, first_search[:names])}
               assert_response_ok(reply)
               assert_bundle_response(reply)
               #{resource_variable} += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == '#{resource_name}'}
@@ -301,6 +302,83 @@ module Inferno
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
         sequence[:tests] << revinclude_test
+      end
+
+      def sequence_has_status_search?(sequence)
+        status_search? sequence[:search_param_descriptions].keys
+      end
+
+      def status_search?(params)
+        params.any? { |param| param.to_s.include? 'status' }
+      end
+
+      def status_search_code(sequence, current_search)
+        if sequence_has_status_search?(sequence) && !status_search?(current_search)
+          %(
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          )
+        else
+          ''
+        end
+      end
+
+      def status_param_strings(sequence)
+        search_param, param_metadata = sequence[:search_param_descriptions]
+          .find { |key, _| key.to_s.include? 'status' }
+
+        status_value_string =
+          if param_metadata[:multiple_or] == 'SHALL'
+            "'#{param_metadata[:values].to_a.join(',')}'"
+          else
+            param_metadata[:values]
+              .map { |value| "'#{value}'" }
+              .join(', ')
+          end
+
+        {
+          param: "'#{search_param}'",
+          value: status_value_string
+        }
+      end
+
+      def perform_search_with_status_code(sequence)
+        status_param = status_param_strings(sequence)
+
+        %(
+          def perform_search_with_status(reply, search_param)
+            begin
+              parsed_reply = JSON.parse(reply.body)
+              assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+            rescue JSON::ParserError
+              assert false, 'Server returned a status of 400 without an OperationOutcome.'
+            end
+
+
+            warning do
+              assert @instance.server_capabilities.search_documented?('#{sequence[:resource]}'),
+                %(Server returned a status of 400 with an OperationOutcome, but the
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
+            end
+
+            [#{status_param[:value]}].each do |status_value|
+              params_with_status = search_param.merge(#{status_param[:param]}: status_value)
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), params_with_status)
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
+
+              entries = reply.resource.entry.select { |entry| entry.resource.resourceType== '#{sequence[:resource]}' }
+              next if entries.blank?
+
+              search_param.merge!(#{status_param[:param]}: status_value)
+              break
+            end
+
+            reply
+          end
+        )
       end
 
       def create_search_test(sequence, search_param)
@@ -347,6 +425,7 @@ module Inferno
             reply_code = %(
               #{search_params}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, search_param[:names])}
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
@@ -367,6 +446,9 @@ module Inferno
           end
         sequence[:tests] << search_test
 
+        # NOTE: disable unit test generation until it has been updated to
+        # support multiple patients
+
         # is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
         # fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
 
@@ -376,11 +458,14 @@ module Inferno
         #   search_params: get_search_param_hash(search_param[:names], sequence),
         #   is_first_search: is_first_search,
         #   is_fixed_value_search: is_fixed_value_search,
+        #   is_status_search: status_search?(search_param[:names]),
         #   has_comparator_tests: comparator_search_code.present?,
+        #   has_status_searches: sequence_has_status_search?(sequence),
         #   fixed_value_search_param: fixed_value_search_param,
         #   class_name: sequence[:class_name],
         #   sequence_name: sequence[:name],
-        #   delayed_sequence: sequence[:delayed_sequence]
+        #   delayed_sequence: sequence[:delayed_sequence],
+        #   status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
         # )
       end
 
@@ -754,6 +839,7 @@ module Inferno
           %(
             #{get_search_params(search_parameters, sequence)}
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            #{status_search_code(sequence, search_parameters)}
             assert_response_ok(reply)
             assert_bundle_response(reply)
             @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
@@ -772,6 +858,7 @@ module Inferno
             patient_ids.each do |patient|
               #{get_search_params(search_parameters, sequence)}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, search_parameters)}
               assert_response_ok(reply)
               assert_bundle_response(reply)
 
@@ -829,6 +916,7 @@ module Inferno
             #{values_variable_name}.each do |val|
               search_params = { 'patient': patient, '#{search_param[:name]}': val }
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, search_parameters)}
               assert_response_ok(reply)
               assert_bundle_response(reply)
 
@@ -902,10 +990,6 @@ module Inferno
 
       def get_comparator_searches(search_params, sequence)
         search_code = ''
-        search_assignments = search_params.map do |param|
-          "'#{param}': #{param_value_name(param)}"
-        end
-        search_assignments_str = "{ #{search_assignments.join(', ')} }"
         param_comparators = find_comparators(search_params, sequence)
         param_comparators.each do |param, comparators|
           param_val_name = param_value_name(param)
@@ -916,7 +1000,7 @@ module Inferno
             search_code += %(\n
               [#{comparators.keys.map { |comparator| "'#{comparator}'" }.join(', ')}].each do |comparator|
                 comparator_val = date_comparator_value(comparator, #{param_val_name})
-                comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
+                comparator_search_params = search_params.merge('#{param}': comparator_val)
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
               end)
@@ -1006,41 +1090,45 @@ module Inferno
           end
         end
 
-        validate_function = ''
-
-        unless search_validators.empty?
-          validate_function = %(
-            def validate_resource_item(resource, property, value)
-              case property
-      #{search_validators}
+        validate_functions =
+          if search_validators.empty?
+            ''
+          else
+            %(
+              def validate_resource_item(resource, property, value)
+                case property
+        #{search_validators}
+                end
               end
-            end
-      )
-        end
+            )
+          end
 
-        if sequence[:resource] == 'MedicationRequest'
-          validate_function += %(
-            def test_medication_inclusion(medication_requests, search_params)
-              requests_with_external_references =
-                medication_requests
-                  .select { |request| request&.medicationReference&.present? }
-                  .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+        validate_functions += test_medication_inclusion_code if sequence[:resource] == 'MedicationRequest'
+        validate_functions += perform_search_with_status_code(sequence) if sequence_has_status_search?(sequence)
 
-              return if requests_with_external_references.blank?
+        validate_functions
+      end
 
-              search_params.merge!(_include: 'MedicationRequest:medication')
-              response = get_resource_by_params(FHIR::MedicationRequest, search_params)
-              assert_response_ok(response)
-              assert_bundle_response(response)
-              requests_with_medications = fetch_all_bundled_resources(response.resource)
+      def test_medication_inclusion_code
+        %(
+          def test_medication_inclusion(medication_requests, search_params)
+            requests_with_external_references =
+              medication_requests
+                .select { |request| request&.medicationReference&.present? }
+                .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
 
-              medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
-              assert medications.present?, 'No Medications were included in the search results'
-            end
-          )
-        end
+            return if requests_with_external_references.blank?
 
-        validate_function
+            search_params.merge!(_include: 'MedicationRequest:medication')
+            response = get_resource_by_params(FHIR::MedicationRequest, search_params)
+            assert_response_ok(response)
+            assert_bundle_response(response)
+            requests_with_medications = fetch_all_bundled_resources(response.resource)
+
+            medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
+            assert medications.present?, 'No Medications were included in the search results'
+          end
+        )
       end
 
       def generate_module(module_info)

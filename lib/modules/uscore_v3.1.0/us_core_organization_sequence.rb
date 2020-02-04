@@ -117,6 +117,7 @@ module Inferno
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
@@ -152,6 +153,7 @@ module Inferno
         search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
@@ -211,6 +213,7 @@ module Inferno
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
         provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }

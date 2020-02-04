@@ -26,6 +26,39 @@ module Inferno
         end
       end
 
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities.search_documented?('CareTeam'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                 search interaction for this resource is not documented in the
+                 CapabilityStatement. If this response was due to the server
+                 requiring a status parameter, the server must document this
+                 requirement in its CapabilityStatement.)
+        end
+
+        ['proposed,active,suspended,inactive,entered-in-error'].each do |status_value|
+          params_with_status = search_param.merge('status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'CareTeam' }
+          next if entries.blank?
+
+          search_param.merge!('status': status_value)
+          break
+        end
+
+        reply
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
@@ -87,6 +120,7 @@ module Inferno
           status_val.each do |val|
             search_params = { 'patient': patient, 'status': val }
             reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+
             assert_response_ok(reply)
             assert_bundle_response(reply)
 
@@ -190,6 +224,7 @@ module Inferno
 
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+
           assert_response_ok(reply)
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
