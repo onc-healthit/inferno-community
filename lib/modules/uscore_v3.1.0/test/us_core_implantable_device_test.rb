@@ -157,7 +157,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@device_ary', { 'example' => FHIR::Device.new })
+      @sequence.instance_variable_set(:'@device_ary', 'example' => FHIR::Device.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

@@ -289,7 +289,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@medication_request_ary', { 'example' => FHIR::MedicationRequest.new })
+      @sequence.instance_variable_set(:'@medication_request_ary', 'example' => FHIR::MedicationRequest.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -362,7 +362,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@medication_request_ary', { 'example' => FHIR::MedicationRequest.new })
+      @sequence.instance_variable_set(:'@medication_request_ary', 'example' => FHIR::MedicationRequest.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -498,7 +498,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@medication_request_ary', { 'example' => FHIR::MedicationRequest.new })
+      @sequence.instance_variable_set(:'@medication_request_ary', 'example' => FHIR::MedicationRequest.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

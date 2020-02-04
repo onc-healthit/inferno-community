@@ -220,7 +220,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@goal_ary', { 'example' => FHIR::Goal.new })
+      @sequence.instance_variable_set(:'@goal_ary', 'example' => FHIR::Goal.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -336,7 +336,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@goal_ary', { 'example' => FHIR::Goal.new })
+      @sequence.instance_variable_set(:'@goal_ary', 'example' => FHIR::Goal.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

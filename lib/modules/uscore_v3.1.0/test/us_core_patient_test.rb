@@ -156,7 +156,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', { 'example' => FHIR::Patient.new })
+      @sequence.instance_variable_set(:'@patient_ary', 'example' => FHIR::Patient.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -227,7 +227,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', { 'example' => FHIR::Patient.new })
+      @sequence.instance_variable_set(:'@patient_ary', 'example' => FHIR::Patient.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -299,7 +299,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', { 'example' => FHIR::Patient.new })
+      @sequence.instance_variable_set(:'@patient_ary', 'example' => FHIR::Patient.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -371,7 +371,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', { 'example' => FHIR::Patient.new })
+      @sequence.instance_variable_set(:'@patient_ary', 'example' => FHIR::Patient.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -443,7 +443,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', { 'example' => FHIR::Patient.new })
+      @sequence.instance_variable_set(:'@patient_ary', 'example' => FHIR::Patient.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -515,7 +515,7 @@ describe Inferno::Sequence::USCore310PatientSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@patient_ary', { 'example' => FHIR::Patient.new })
+      @sequence.instance_variable_set(:'@patient_ary', 'example' => FHIR::Patient.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

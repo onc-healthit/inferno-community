@@ -220,7 +220,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@condition_ary', { 'example' => FHIR::Condition.new })
+      @sequence.instance_variable_set(:'@condition_ary', 'example' => FHIR::Condition.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -355,7 +355,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@condition_ary', { 'example' => FHIR::Condition.new })
+      @sequence.instance_variable_set(:'@condition_ary', 'example' => FHIR::Condition.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -471,7 +471,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@condition_ary', { 'example' => FHIR::Condition.new })
+      @sequence.instance_variable_set(:'@condition_ary', 'example' => FHIR::Condition.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -543,7 +543,7 @@ describe Inferno::Sequence::USCore310ConditionSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@condition_ary', { 'example' => FHIR::Condition.new })
+      @sequence.instance_variable_set(:'@condition_ary', 'example' => FHIR::Condition.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

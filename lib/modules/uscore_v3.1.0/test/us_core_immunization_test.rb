@@ -220,7 +220,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@immunization_ary', { 'example' => FHIR::Immunization.new })
+      @sequence.instance_variable_set(:'@immunization_ary', 'example' => FHIR::Immunization.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -336,7 +336,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@immunization_ary', { 'example' => FHIR::Immunization.new })
+      @sequence.instance_variable_set(:'@immunization_ary', 'example' => FHIR::Immunization.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

@@ -220,7 +220,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@allergy_intolerance_ary', { 'example' => FHIR::AllergyIntolerance.new })
+      @sequence.instance_variable_set(:'@allergy_intolerance_ary', 'example' => FHIR::AllergyIntolerance.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
