@@ -35,7 +35,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with(body: hash_including(refresh_token: @sequence_class::INVALID_REFRESH_TOKEN))
         .to_return(status: 200)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh response has an error status' do
@@ -61,7 +63,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     it 'omits when the using a public client' do
       @instance.confidential_client = false
 
-      assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
+
+      assert_equal 'This test is only valid for confidential clients.', exception.message
     end
 
     it 'fails when the token refresh response has a success status' do
@@ -69,7 +73,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with(headers: @auth_header)
         .to_return(status: 200)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh has an error status' do
@@ -106,7 +112,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with(body: hash_including(scope: 'jkl'))
         .to_return(status: 400)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
   end
 
@@ -135,7 +143,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with { |request| !request.body.include? 'scope' }
         .to_return(status: 400)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
   end
 
