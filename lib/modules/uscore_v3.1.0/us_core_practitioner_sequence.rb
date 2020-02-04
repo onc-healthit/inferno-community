@@ -90,7 +90,7 @@ module Inferno
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
         assert_response_unauthorized reply
@@ -115,7 +115,7 @@ module Inferno
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
 
@@ -151,7 +151,7 @@ module Inferno
           'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
 
@@ -210,7 +210,7 @@ module Inferno
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
