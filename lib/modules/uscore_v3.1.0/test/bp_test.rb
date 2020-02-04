@@ -172,7 +172,7 @@ describe Inferno::Sequence::USCore310BpSequence do
       it 'fails if a 400 is received without an OperationOutcome' do
         ['85354-9'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
@@ -188,7 +188,7 @@ describe Inferno::Sequence::USCore310BpSequence do
       it 'warns if the search is not documented in the CapabilityStatement' do
         ['85354-9'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
@@ -208,7 +208,7 @@ describe Inferno::Sequence::USCore310BpSequence do
       it 'fails if searching with status is not successful' do
         ['85354-9'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
@@ -227,7 +227,7 @@ describe Inferno::Sequence::USCore310BpSequence do
       it 'fails if searching with status does not return a Bundle' do
         ['85354-9'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
@@ -246,7 +246,7 @@ describe Inferno::Sequence::USCore310BpSequence do
       it 'succeeds if searching with status returns valid resources' do
         ['85354-9'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")

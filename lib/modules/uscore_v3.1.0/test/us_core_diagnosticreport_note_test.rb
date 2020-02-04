@@ -172,7 +172,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       it 'fails if a 400 is received without an OperationOutcome' do
         ['LP29684-5', 'LP29708-2', 'LP7839-6'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/DiagnosticReport")
@@ -188,7 +188,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       it 'warns if the search is not documented in the CapabilityStatement' do
         ['LP29684-5', 'LP29708-2', 'LP7839-6'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/DiagnosticReport")
@@ -208,7 +208,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       it 'fails if searching with status is not successful' do
         ['LP29684-5', 'LP29708-2', 'LP7839-6'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/DiagnosticReport")
@@ -227,7 +227,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       it 'fails if searching with status does not return a Bundle' do
         ['LP29684-5', 'LP29708-2', 'LP7839-6'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/DiagnosticReport")
@@ -246,7 +246,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       it 'succeeds if searching with status returns valid resources' do
         ['LP29684-5', 'LP29708-2', 'LP7839-6'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/DiagnosticReport")

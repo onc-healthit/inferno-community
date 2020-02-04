@@ -172,7 +172,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       it 'fails if a 400 is received without an OperationOutcome' do
         ['assess-plan'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/CarePlan")
@@ -188,7 +188,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       it 'warns if the search is not documented in the CapabilityStatement' do
         ['assess-plan'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/CarePlan")
@@ -208,7 +208,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       it 'fails if searching with status is not successful' do
         ['assess-plan'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/CarePlan")
@@ -227,7 +227,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       it 'fails if searching with status does not return a Bundle' do
         ['assess-plan'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/CarePlan")
@@ -246,7 +246,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       it 'succeeds if searching with status returns valid resources' do
         ['assess-plan'].each do |value|
           query_params = {
-            'patient': @instance.patient_id,
+            'patient': @sequence.patient_ids.first,
             'category': value
           }
           stub_request(:get, "#{@base_url}/CarePlan")

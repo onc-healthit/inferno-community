@@ -157,7 +157,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% if is_first_search && is_fixed_value_search %>
       [<%= fixed_value_search_string %>].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           '<%= fixed_value_search_param %>': value
         }
         stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -179,7 +179,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% if is_first_search && is_fixed_value_search %>
       [<%= fixed_value_search_string %>].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           '<%= fixed_value_search_param %>': value
         }
         stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -205,7 +205,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% if is_first_search && is_fixed_value_search %>
       [<%= fixed_value_search_string %>].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           '<%= fixed_value_search_param %>': value
         }
         stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -233,7 +233,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% if is_first_search && is_fixed_value_search %>
       [<%= fixed_value_search_string %>].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           '<%= fixed_value_search_param %>': value
         }
         stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -262,7 +262,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
     <% if is_first_search && is_fixed_value_search %>
       [<%= fixed_value_search_string %>].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           '<%= fixed_value_search_param %>': value
         }
         stub_request(:get, "#{@base_url}/<%= resource_type %>")
