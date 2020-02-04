@@ -50,11 +50,23 @@ describe Inferno::Sequence::TokenRefreshSequence do
   describe 'invalid client id test' do
     before do
       @test = @sequence_class[:invalid_client_id]
+      @client_secret = 'SECRET'
+      @instance.client_secret = @client_secret
+      @instance.confidential_client = true
+      @auth_header = {
+        'Authorization': @sequence.encoded_secret(@sequence_class::INVALID_CLIENT_ID, @client_secret)
+      }
+    end
+
+    it 'omits when the using a public client' do
+      @instance.confidential_client = false
+
+      assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
     end
 
     it 'fails when the token refresh response has a success status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
+        .with(headers: @auth_header)
         .to_return(status: 200)
 
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -62,7 +74,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
     it 'succeeds when the token refresh has an error status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
+        .with(headers: @auth_header)
         .to_return(status: 400)
 
       @sequence.run_test(@test)
