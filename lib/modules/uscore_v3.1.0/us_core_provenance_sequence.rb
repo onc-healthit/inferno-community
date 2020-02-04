@@ -181,7 +181,7 @@ module Inferno
 
         missing_must_support_elements = must_support_elements.reject do |element|
           truncated_path = element[:path].gsub('Provenance.', '')
-          @provenance_ary&.values&.flatten&.any? do |resource|
+          @provenance_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
