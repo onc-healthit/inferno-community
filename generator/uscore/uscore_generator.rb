@@ -449,7 +449,10 @@ module Inferno
                 end
               )
             end
+
+            search_param_string = search_param[:names].map { |param| "'#{param}'" }.join(', ')
             %(
+              skip_if_known_search_not_supported(#{sequence[:resource]}, [#{search_param_string}])
               #{skip_if_not_found(sequence)}
               #{resolved_one_str if resolve_param_from_resource && !sequence[:delayed_sequence]}
               #{reply_code}

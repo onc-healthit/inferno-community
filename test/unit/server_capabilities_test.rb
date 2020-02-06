@@ -17,6 +17,16 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'vread' },
                 { code: 'history-instance' },
                 { code: 'search-type', documentation: 'DOCUMENTATION' }
+              ],
+              searchParam: [
+                {
+                  name: '_id',
+                  type: 'token'
+                },
+                {
+                  name: 'birthdate',
+                  type: 'date'
+                }
               ]
             },
             {
@@ -144,5 +154,11 @@ class ServerCapabilitiesTest < MiniTest::Test
     assert @capabilities.search_documented?('Patient')
     refute @capabilities.search_documented?('Condition')
     refute @capabilities.search_documented?('Observation')
+  end
+
+  def test_supported_search_params
+    assert_equal ['_id', 'birthdate'], @capabilities.supported_search_params('Patient')
+    assert_equal [], @capabilities.supported_search_params('Condition')
+    assert_equal [], @capabilities.supported_search_params('Location')
   end
 end

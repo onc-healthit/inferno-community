@@ -59,6 +59,12 @@ module Inferno
         end
       end
 
+      def supported_search_params(resource_type)
+        statement&.rest&.first&.resource
+            &.find { |resource| resource&.type == resource_type }
+            &.searchParam&.map(&:name) || []
+      end
+
       private
 
       def statement
