@@ -142,7 +142,7 @@ module Inferno
           elsif value.start_with? '@'
             "'#{param}': #{value}"
           elsif value == 'patient'
-            "'#{param}': 'example'"
+            "'#{param}': @sequence.patient_ids.first"
           else
             "'#{param}': '#{value}'"
           end
@@ -153,7 +153,7 @@ module Inferno
         param_info = dynamic_search_param(value)
         path = param_info[:resource_path]
         variable_name = param_info[:variable_name]
-        variable_name.gsub!('[patient]', "['example']")
+        variable_name.gsub!('[patient]', '[@sequence.patient_ids.first]')
         "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
       end
 

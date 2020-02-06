@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -73,12 +73,12 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @device = FHIR.from_contents(load_fixture(:us_core_implantable_device))
-      @device_ary = { 'example' => @device }
+      @device_ary = { @sequence.patient_ids.first => @device }
       @sequence.instance_variable_set(:'@device', @device)
       @sequence.instance_variable_set(:'@device_ary', @device_ary)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -136,15 +136,15 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
       @device = FHIR.from_contents(load_fixture(:us_core_implantable_device))
-      @device_ary = { 'example' => @device }
+      @device_ary = { @sequence.patient_ids.first => @device }
       @sequence.instance_variable_set(:'@device', @device)
       @sequence.instance_variable_set(:'@device_ary', @device_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary['example'], 'type'))
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary[@sequence.patient_ids.first], 'type'))
       }
     end
 
@@ -157,7 +157,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@device_ary', 'example' => FHIR::Device.new)
+      @sequence.instance_variable_set(:'@device_ary', @sequence.patient_ids.first => FHIR::Device.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

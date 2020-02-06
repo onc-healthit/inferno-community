@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -73,12 +73,12 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @immunization = FHIR.from_contents(load_fixture(:us_core_immunization))
-      @immunization_ary = { 'example' => @immunization }
+      @immunization_ary = { @sequence.patient_ids.first => @immunization }
       @sequence.instance_variable_set(:'@immunization', @immunization)
       @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -199,15 +199,15 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @test = @sequence_class[:search_by_patient_date]
       @sequence = @sequence_class.new(@instance, @client)
       @immunization = FHIR.from_contents(load_fixture(:us_core_immunization))
-      @immunization_ary = { 'example' => @immunization }
+      @immunization_ary = { @sequence.patient_ids.first => @immunization }
       @sequence.instance_variable_set(:'@immunization', @immunization)
       @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary['example'], 'occurrence'))
+        'patient': @sequence.patient_ids.first,
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary[@sequence.patient_ids.first], 'occurrence'))
       }
     end
 
@@ -220,7 +220,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@immunization_ary', 'example' => FHIR::Immunization.new)
+      @sequence.instance_variable_set(:'@immunization_ary', @sequence.patient_ids.first => FHIR::Immunization.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -315,15 +315,15 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
       @immunization = FHIR.from_contents(load_fixture(:us_core_immunization))
-      @immunization_ary = { 'example' => @immunization }
+      @immunization_ary = { @sequence.patient_ids.first => @immunization }
       @sequence.instance_variable_set(:'@immunization', @immunization)
       @sequence.instance_variable_set(:'@immunization_ary', @immunization_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@immunization_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -336,7 +336,7 @@ describe Inferno::Sequence::USCore310ImmunizationSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@immunization_ary', 'example' => FHIR::Immunization.new)
+      @sequence.instance_variable_set(:'@immunization_ary', @sequence.patient_ids.first => FHIR::Immunization.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

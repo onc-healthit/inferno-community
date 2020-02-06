@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example',
+        'patient': @sequence.patient_ids.first,
         'status': 'proposed'
       }
     end
@@ -74,13 +74,13 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
       @care_team = FHIR.from_contents(load_fixture(:us_core_careteam))
-      @care_team_ary = { 'example' => @care_team }
+      @care_team_ary = { @sequence.patient_ids.first => @care_team }
       @sequence.instance_variable_set(:'@care_team', @care_team)
       @sequence.instance_variable_set(:'@care_team_ary', @care_team_ary)
 
       @query = {
-        'patient': 'example',
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 

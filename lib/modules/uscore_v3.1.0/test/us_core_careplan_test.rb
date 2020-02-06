@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example',
+        'patient': @sequence.patient_ids.first,
         'category': 'assess-plan'
       }
     end
@@ -74,13 +74,13 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = { 'example' => @care_plan }
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'category'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'))
       }
     end
 
@@ -267,16 +267,16 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = { 'example' => @care_plan }
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'period'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
       }
     end
 
@@ -289,7 +289,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', 'example' => FHIR::CarePlan.new)
+      @sequence.instance_variable_set(:'@care_plan_ary', @sequence.patient_ids.first => FHIR::CarePlan.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -384,17 +384,17 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category_status_date]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = { 'example' => @care_plan }
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'status')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'period'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
       }
     end
 
@@ -407,7 +407,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', 'example' => FHIR::CarePlan.new)
+      @sequence.instance_variable_set(:'@care_plan_ary', @sequence.patient_ids.first => FHIR::CarePlan.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -450,16 +450,16 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category_status]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = { 'example' => @care_plan }
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -472,7 +472,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', 'example' => FHIR::CarePlan.new)
+      @sequence.instance_variable_set(:'@care_plan_ary', @sequence.patient_ids.first => FHIR::CarePlan.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

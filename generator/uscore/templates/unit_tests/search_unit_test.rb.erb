@@ -3,7 +3,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
     @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
     @<%= resource_var_name %> = FHIR.from_contents(load_fixture(:<%= sequence_name %>))
-    @<%= resource_var_name %>_ary = <% unless delayed_sequence %>{ 'example' => @<%= resource_var_name %> }<% else %> [ @<%= resource_var_name %> ] <% end %>
+    @<%= resource_var_name %>_ary = <% unless delayed_sequence %>{ @sequence.patient_ids.first => @<%= resource_var_name %> }<% else %> [ @<%= resource_var_name %> ] <% end %>
     @sequence.instance_variable_set(:'@<%= resource_var_name %>', @<%= resource_var_name %>)
     @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', @<%= resource_var_name %>_ary)
 <% unless is_first_search %>
@@ -25,7 +25,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
   <% if has_dynamic_search_params %>
   it 'skips if a value for one of the search parameters cannot be found' do
-    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', <% unless delayed_sequence %>'example' => FHIR::<%= resource_type %>.new <% else %> [FHIR::<%= resource_type %>.new] <% end %>)
+    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', <% unless delayed_sequence %>@sequence.patient_ids.first => FHIR::<%= resource_type %>.new <% else %> [FHIR::<%= resource_type %>.new] <% end %>)
 
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

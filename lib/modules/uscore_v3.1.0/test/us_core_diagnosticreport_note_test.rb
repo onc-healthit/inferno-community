@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example',
+        'patient': @sequence.patient_ids.first,
         'category': 'LP29684-5'
       }
     end
@@ -74,13 +74,13 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
       @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = { 'example' => @diagnostic_report }
+      @diagnostic_report_ary = { @sequence.patient_ids.first => @diagnostic_report }
       @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'category'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'category'))
       }
     end
 
@@ -267,14 +267,14 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = { 'example' => @diagnostic_report }
+      @diagnostic_report_ary = { @sequence.patient_ids.first => @diagnostic_report }
       @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -393,15 +393,15 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:search_by_patient_code]
       @sequence = @sequence_class.new(@instance, @client)
       @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = { 'example' => @diagnostic_report }
+      @diagnostic_report_ary = { @sequence.patient_ids.first => @diagnostic_report }
       @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'code'))
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'code'))
       }
     end
 
@@ -414,7 +414,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', 'example' => FHIR::DiagnosticReport.new)
+      @sequence.instance_variable_set(:'@diagnostic_report_ary', @sequence.patient_ids.first => FHIR::DiagnosticReport.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -528,16 +528,16 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
       @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = { 'example' => @diagnostic_report }
+      @diagnostic_report_ary = { @sequence.patient_ids.first => @diagnostic_report }
       @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'effective'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'effective'))
       }
     end
 
@@ -550,7 +550,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', 'example' => FHIR::DiagnosticReport.new)
+      @sequence.instance_variable_set(:'@diagnostic_report_ary', @sequence.patient_ids.first => FHIR::DiagnosticReport.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -645,15 +645,15 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
       @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = { 'example' => @diagnostic_report }
+      @diagnostic_report_ary = { @sequence.patient_ids.first => @diagnostic_report }
       @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -666,7 +666,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', 'example' => FHIR::DiagnosticReport.new)
+      @sequence.instance_variable_set(:'@diagnostic_report_ary', @sequence.patient_ids.first => FHIR::DiagnosticReport.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -717,16 +717,16 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @test = @sequence_class[:search_by_patient_code_date]
       @sequence = @sequence_class.new(@instance, @client)
       @diagnostic_report = FHIR.from_contents(load_fixture(:us_core_diagnosticreport_note))
-      @diagnostic_report_ary = { 'example' => @diagnostic_report }
+      @diagnostic_report_ary = { @sequence.patient_ids.first => @diagnostic_report }
       @sequence.instance_variable_set(:'@diagnostic_report', @diagnostic_report)
       @sequence.instance_variable_set(:'@diagnostic_report_ary', @diagnostic_report_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary['example'], 'effective'))
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'effective'))
       }
     end
 
@@ -739,7 +739,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@diagnostic_report_ary', 'example' => FHIR::DiagnosticReport.new)
+      @sequence.instance_variable_set(:'@diagnostic_report_ary', @sequence.patient_ids.first => FHIR::DiagnosticReport.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

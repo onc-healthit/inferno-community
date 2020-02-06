@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -73,12 +73,12 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @allergy_intolerance = FHIR.from_contents(load_fixture(:us_core_allergyintolerance))
-      @allergy_intolerance_ary = { 'example' => @allergy_intolerance }
+      @allergy_intolerance_ary = { @sequence.patient_ids.first => @allergy_intolerance }
       @sequence.instance_variable_set(:'@allergy_intolerance', @allergy_intolerance)
       @sequence.instance_variable_set(:'@allergy_intolerance_ary', @allergy_intolerance_ary)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -199,15 +199,15 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
       @test = @sequence_class[:search_by_patient_clinical_status]
       @sequence = @sequence_class.new(@instance, @client)
       @allergy_intolerance = FHIR.from_contents(load_fixture(:us_core_allergyintolerance))
-      @allergy_intolerance_ary = { 'example' => @allergy_intolerance }
+      @allergy_intolerance_ary = { @sequence.patient_ids.first => @allergy_intolerance }
       @sequence.instance_variable_set(:'@allergy_intolerance', @allergy_intolerance)
       @sequence.instance_variable_set(:'@allergy_intolerance_ary', @allergy_intolerance_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@allergy_intolerance_ary['example'], 'clinicalStatus'))
+        'patient': @sequence.patient_ids.first,
+        'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@allergy_intolerance_ary[@sequence.patient_ids.first], 'clinicalStatus'))
       }
     end
 
@@ -220,7 +220,7 @@ describe Inferno::Sequence::USCore310AllergyintoleranceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@allergy_intolerance_ary', 'example' => FHIR::AllergyIntolerance.new)
+      @sequence.instance_variable_set(:'@allergy_intolerance_ary', @sequence.patient_ids.first => FHIR::AllergyIntolerance.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -73,12 +73,12 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -199,14 +199,14 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by__id]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary['example'], 'id'))
+        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary[@sequence.patient_ids.first], 'id'))
       }
     end
 
@@ -219,7 +219,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', 'example' => FHIR::Encounter.new)
+      @sequence.instance_variable_set(:'@encounter_ary', @sequence.patient_ids.first => FHIR::Encounter.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -333,15 +333,15 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by_date_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary['example'], 'period')),
-        'patient': 'example'
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary[@sequence.patient_ids.first], 'period')),
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -354,7 +354,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', 'example' => FHIR::Encounter.new)
+      @sequence.instance_variable_set(:'@encounter_ary', @sequence.patient_ids.first => FHIR::Encounter.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -449,14 +449,14 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by_identifier]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary['example'], 'identifier'))
+        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary[@sequence.patient_ids.first], 'identifier'))
       }
     end
 
@@ -469,7 +469,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', 'example' => FHIR::Encounter.new)
+      @sequence.instance_variable_set(:'@encounter_ary', @sequence.patient_ids.first => FHIR::Encounter.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -583,15 +583,15 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -604,7 +604,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', 'example' => FHIR::Encounter.new)
+      @sequence.instance_variable_set(:'@encounter_ary', @sequence.patient_ids.first => FHIR::Encounter.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -655,15 +655,15 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by_class_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'class': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary['example'], 'local_class')),
-        'patient': 'example'
+        'class': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary[@sequence.patient_ids.first], 'local_class')),
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -676,7 +676,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', 'example' => FHIR::Encounter.new)
+      @sequence.instance_variable_set(:'@encounter_ary', @sequence.patient_ids.first => FHIR::Encounter.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -790,15 +790,15 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
       @encounter = FHIR.from_contents(load_fixture(:us_core_encounter))
-      @encounter_ary = { 'example' => @encounter }
+      @encounter_ary = { @sequence.patient_ids.first => @encounter }
       @sequence.instance_variable_set(:'@encounter', @encounter)
       @sequence.instance_variable_set(:'@encounter_ary', @encounter_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary['example'], 'type'))
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@encounter_ary[@sequence.patient_ids.first], 'type'))
       }
     end
 
@@ -811,7 +811,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@encounter_ary', 'example' => FHIR::Encounter.new)
+      @sequence.instance_variable_set(:'@encounter_ary', @sequence.patient_ids.first => FHIR::Encounter.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example',
+        'patient': @sequence.patient_ids.first,
         'code': '8867-4'
       }
     end
@@ -74,13 +74,13 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       @test = @sequence_class[:search_by_patient_code]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:heartrate))
-      @observation_ary = { 'example' => @observation }
+      @observation_ary = { @sequence.patient_ids.first => @observation }
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
       @query = {
-        'patient': 'example',
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'code'))
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'))
       }
     end
 
@@ -267,16 +267,16 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:heartrate))
-      @observation_ary = { 'example' => @observation }
+      @observation_ary = { @sequence.patient_ids.first => @observation }
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'effective'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
       }
     end
 
@@ -289,7 +289,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', 'example' => FHIR::Observation.new)
+      @sequence.instance_variable_set(:'@observation_ary', @sequence.patient_ids.first => FHIR::Observation.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -384,15 +384,15 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:heartrate))
-      @observation_ary = { 'example' => @observation }
+      @observation_ary = { @sequence.patient_ids.first => @observation }
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'category'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'))
       }
     end
 
@@ -405,7 +405,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', 'example' => FHIR::Observation.new)
+      @sequence.instance_variable_set(:'@observation_ary', @sequence.patient_ids.first => FHIR::Observation.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -519,16 +519,16 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       @test = @sequence_class[:search_by_patient_code_date]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:heartrate))
-      @observation_ary = { 'example' => @observation }
+      @observation_ary = { @sequence.patient_ids.first => @observation }
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'code')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'effective'))
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
       }
     end
 
@@ -541,7 +541,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', 'example' => FHIR::Observation.new)
+      @sequence.instance_variable_set(:'@observation_ary', @sequence.patient_ids.first => FHIR::Observation.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -636,16 +636,16 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
       @test = @sequence_class[:search_by_patient_category_status]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:heartrate))
-      @observation_ary = { 'example' => @observation }
+      @observation_ary = { @sequence.patient_ids.first => @observation }
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -658,7 +658,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', 'example' => FHIR::Observation.new)
+      @sequence.instance_variable_set(:'@observation_ary', @sequence.patient_ids.first => FHIR::Observation.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 

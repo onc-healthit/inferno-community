@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -73,12 +73,12 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @query = {
-        'patient': 'example'
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -199,14 +199,14 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by__id]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'id'))
+        '_id': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'id'))
       }
     end
 
@@ -219,7 +219,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', 'example' => FHIR::DocumentReference.new)
+      @sequence.instance_variable_set(:'@document_reference_ary', @sequence.patient_ids.first => FHIR::DocumentReference.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -333,15 +333,15 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'type'))
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'type'))
       }
     end
 
@@ -354,7 +354,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', 'example' => FHIR::DocumentReference.new)
+      @sequence.instance_variable_set(:'@document_reference_ary', @sequence.patient_ids.first => FHIR::DocumentReference.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -468,16 +468,16 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'date'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'date'))
       }
     end
 
@@ -490,7 +490,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', 'example' => FHIR::DocumentReference.new)
+      @sequence.instance_variable_set(:'@document_reference_ary', @sequence.patient_ids.first => FHIR::DocumentReference.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -604,15 +604,15 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'category'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'category'))
       }
     end
 
@@ -625,7 +625,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', 'example' => FHIR::DocumentReference.new)
+      @sequence.instance_variable_set(:'@document_reference_ary', @sequence.patient_ids.first => FHIR::DocumentReference.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -739,16 +739,16 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by_patient_type_period]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'type')),
-        'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'context.period'))
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'type')),
+        'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'context.period'))
       }
     end
 
@@ -761,7 +761,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', 'example' => FHIR::DocumentReference.new)
+      @sequence.instance_variable_set(:'@document_reference_ary', @sequence.patient_ids.first => FHIR::DocumentReference.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -856,15 +856,15 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
       @document_reference = FHIR.from_contents(load_fixture(:us_core_documentreference))
-      @document_reference_ary = { 'example' => @document_reference }
+      @document_reference_ary = { @sequence.patient_ids.first => @document_reference }
       @sequence.instance_variable_set(:'@document_reference', @document_reference)
       @sequence.instance_variable_set(:'@document_reference_ary', @document_reference_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': 'example',
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary['example'], 'status'))
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -877,7 +877,7 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@document_reference_ary', 'example' => FHIR::DocumentReference.new)
+      @sequence.instance_variable_set(:'@document_reference_ary', @sequence.patient_ids.first => FHIR::DocumentReference.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
