@@ -54,23 +54,23 @@ module Inferno
       end
 
       def valueset_validates_code(parameters, id_param = nil)
+        codings = normalize_coding(parameters, find_param(parameters, 'system'))
         # Get a valueset, in one of the many ways a valueset can be specified
-        coding_arr = normalize_valueset_coding(parameters)
         valueset_response = get_valueset(id_param, find_param(parameters, 'url'))
         return respond_with_type(valueset_response, request.accept, 400) if valueset_response.is_a? FHIR::OperationOutcome
 
         validation_fn = FHIR::StructureDefinition.vs_validators[valueset_response]
 
         if validation_fn
-          codes_valid_arr = coding_arr.map do |coding|
+          valid_codes = codings.map do |coding|
             # NOTE: This function does not yet validate `display` attributes
             validation_fn.call(coding)
           end
-          return_params = if codes_valid_arr.any?
+          return_params = if valid_codes.any?
                             FHIR::Parameters.new(parameter: [FHIR::Parameters::Parameter.new(name: 'result', valueBoolean: true)])
                           else
-                            message = if coding_arr.length == 1
-                                        coding = coding_arr.first
+                            message = if codings.length == 1
+                                        coding = codings.first
                                         "The code '#{coding['code']}' from the code system '#{coding['system']}' is not valid in the valueset '#{valueset_response}'"
                                       else
                                         "None of the codes included in the CodeableConcept are valid in the valueset #{valueset_response}"
@@ -93,25 +93,13 @@ module Inferno
         parameters.parameter.detect { |param| param.name == name }&.value
       end
 
-      def normalize_valueset_coding(parameters)
+      def normalize_coding(parameters, system_param = nil)
         if find_param(parameters, 'coding')
           [find_param(parameters, 'coding').to_hash]
-        elsif find_param(parameters, 'system') && find_param(parameters, 'code')
-          [{ 'code' => find_param(parameters, 'code'), 'system' => find_param(parameters, 'system') }]
-        elsif find_param(parameters, 'codeableConcept')
-          find_param(parameters, 'codeableConcept').to_hash['coding']
-        else
-          []
-        end
-      end
-
-      def normalize_codesystem_coding(parameters, system_param = nil)
-        if find_param(parameters, 'coding')
-          [find_param(parameters, 'coding').to_hash]
-        elsif (find_param(parameters, 'url') || system_param) && find_param(parameters, 'code')
-          system_param ||= find_param(parameters, 'url')
+        elsif system_param && find_param(parameters, 'code')
           [{ 'code' => find_param(parameters, 'code'), 'system' => system_param }]
         elsif find_param(parameters, 'codeableConcept')
+          # NOTE: This branch doesn't wrap the response in an array because the 'coding' field on a CodeableConcept is already an array
           find_param(parameters, 'codeableConcept').to_hash['coding']
         else
           []
@@ -119,7 +107,8 @@ module Inferno
       end
 
       def codesystem_validates_code(parameters, id_param)
-        coding_arr = normalize_codesystem_coding(parameters, id_param)
+        id_param ||= find_param(parameters, 'url')
+        coding_arr = normalize_coding(parameters, id_param)
         validation_fn = FHIR::StructureDefinition.vs_validators[coding_arr.first['system']]
         if validation_fn
           # NOTE: This function does not yet validate `display` attributes
