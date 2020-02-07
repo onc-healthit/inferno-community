@@ -67,7 +67,7 @@ module Inferno
 
         self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
 
-        document_references = fetch_all_bundled_resources(reply.resource)
+        document_references = fetch_all_bundled_resources(reply)
 
         document_references&.each do |document|
           document&.content&.select { |content| !document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
@@ -90,7 +90,7 @@ module Inferno
 
         self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
 
-        diagnostic_reports = fetch_all_bundled_resources(reply.resource)
+        diagnostic_reports = fetch_all_bundled_resources(reply)
 
         diagnostic_reports&.each do |report|
           report&.presentedForm&.select { |attachment| !report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
