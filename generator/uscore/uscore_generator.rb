@@ -450,9 +450,8 @@ module Inferno
               )
             end
 
-            search_param_string = search_param[:names].map { |param| "'#{param}'" }.join(', ')
             %(
-              skip_if_known_search_not_supported(#{sequence[:resource]}, [#{search_param_string}])
+              #{skip_if_search_not_supported_code(sequence, search_param)}
               #{skip_if_not_found(sequence)}
               #{resolved_one_str if resolve_param_from_resource && !sequence[:delayed_sequence]}
               #{reply_code}
@@ -479,6 +478,11 @@ module Inferno
           delayed_sequence: sequence[:delayed_sequence],
           status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
         )
+      end
+
+      def skip_if_search_not_supported_code(sequence, search_params)
+        search_param_string = search_params[:names].map { |param| "'#{param}'" }.join(', ')
+        "skip_if_known_search_not_supported('#{sequence[:resource]}', [#{search_param_string}])"
       end
 
       def create_chained_search_test(sequence, search_param)
@@ -801,6 +805,9 @@ module Inferno
           resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }" # rubocop:disable Metrics/LineLength
           search_params = get_search_params(multiple_or_search[:names], sequence)
           resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
+          test[:test_code] += %(
+            #{skip_if_search_not_supported_code(sequence, multiple_or_search)}
+          )
           if resolve_param_from_resource
             test[:test_code] += %(
               could_not_resolve_all = []
