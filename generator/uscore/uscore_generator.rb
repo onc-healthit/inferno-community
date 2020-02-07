@@ -815,7 +815,7 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               assert_response_ok(reply)
-              resources_returned = fetch_all_bundled_resources(reply.resource)
+              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               missing_values = #{param_value_name(param)}.split(',').reject do |val|
                 resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
               end
@@ -1197,7 +1197,7 @@ module Inferno
             response = get_resource_by_params(FHIR::MedicationRequest, search_params)
             assert_response_ok(response)
             assert_bundle_response(response)
-            requests_with_medications = fetch_all_bundled_resources(response.resource, check_for_data_absent_reasons)
+            requests_with_medications = fetch_all_bundled_resources(response, check_for_data_absent_reasons)
 
             medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
             assert medications.present?, 'No Medications were included in the search results'
