@@ -162,7 +162,7 @@ module Inferno
 
         search_parameters = first_search[:names]
         search_params = get_search_params(search_parameters, sequence, true)
-        # unit_test_params = get_search_param_hash(search_parameters, sequence, true)
+        unit_test_params = get_search_param_hash(search_parameters, sequence, true)
         reply_code = %(
           #{search_params}
           reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
@@ -187,13 +187,13 @@ module Inferno
 
         sequence[:tests] << authorization_test
 
-        # unit_test_generator.generate_authorization_test(
-        #   test_key: test_key,
-        #   resource_type: sequence[:resource],
-        #   search_params: unit_test_params,
-        #   class_name: sequence[:class_name],
-        #   sequence_name: sequence[:name]
-        # )
+        unit_test_generator.generate_authorization_test(
+          test_key: test_key,
+          resource_type: sequence[:resource],
+          search_params: unit_test_params,
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name]
+        )
       end
 
       def create_docref_test(sequence)
@@ -446,27 +446,24 @@ module Inferno
           end
         sequence[:tests] << search_test
 
-        # NOTE: disable unit test generation until it has been updated to
-        # support multiple patients
+        is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
+        fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
 
-        # is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
-        # fixed_value_search_param = is_fixed_value_search ? fixed_value_search_param(search_param[:names], sequence) : nil
-
-        # unit_test_generator.generate_search_test(
-        #   test_key: test_key,
-        #   resource_type: sequence[:resource],
-        #   search_params: get_search_param_hash(search_param[:names], sequence),
-        #   is_first_search: is_first_search,
-        #   is_fixed_value_search: is_fixed_value_search,
-        #   is_status_search: status_search?(search_param[:names]),
-        #   has_comparator_tests: comparator_search_code.present?,
-        #   has_status_searches: sequence_has_status_search?(sequence),
-        #   fixed_value_search_param: fixed_value_search_param,
-        #   class_name: sequence[:class_name],
-        #   sequence_name: sequence[:name],
-        #   delayed_sequence: sequence[:delayed_sequence],
-        #   status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
-        # )
+        unit_test_generator.generate_search_test(
+          test_key: test_key,
+          resource_type: sequence[:resource],
+          search_params: get_search_param_hash(search_param[:names], sequence),
+          is_first_search: is_first_search,
+          is_fixed_value_search: is_fixed_value_search,
+          is_status_search: status_search?(search_param[:names]),
+          has_comparator_tests: comparator_search_code.present?,
+          has_status_searches: sequence_has_status_search?(sequence),
+          fixed_value_search_param: fixed_value_search_param,
+          class_name: sequence[:class_name],
+          sequence_name: sequence[:name],
+          delayed_sequence: sequence[:delayed_sequence],
+          status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
+        )
       end
 
       def create_chained_search_test(sequence, search_param)
@@ -560,12 +557,12 @@ module Inferno
         sequence[:tests] << interaction_test
 
         if interaction[:code] == 'read' # rubocop:disable Style/GuardClause
-          # unit_test_generator.generate_resource_read_test(
-          #   test_key: test_key,
-          #   resource_type: sequence[:resource],
-          #   class_name: sequence[:class_name],
-          #   interaction_test: true
-          # )
+          unit_test_generator.generate_resource_read_test(
+            test_key: test_key,
+            resource_type: sequence[:resource],
+            class_name: sequence[:class_name],
+            interaction_test: true
+          )
         end
       end
 
@@ -695,14 +692,14 @@ module Inferno
         sequence[:tests] << test
 
         if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
-          # unit_test_generator.generate_resource_validation_test(
-          #   test_key: test_key,
-          #   resource_type: sequence[:resource],
-          #   class_name: sequence[:class_name],
-          #   sequence_name: sequence[:name],
-          #   required_concepts: sequence[:required_concepts],
-          #   profile_uri: profile_uri
-          # )
+          unit_test_generator.generate_resource_validation_test(
+            test_key: test_key,
+            resource_type: sequence[:resource],
+            class_name: sequence[:class_name],
+            sequence_name: sequence[:name],
+            required_concepts: sequence[:required_concepts],
+            profile_uri: profile_uri
+          )
         end
       end
 
@@ -949,7 +946,7 @@ module Inferno
 
         if search_param_string.include? 'get_value_for_search_param'
           search_param_value_check = if sequence[:delayed_sequence]
-                                       "search_params.each { |param, value| skip \"Could not resolve \#{param} in given resource\" if value.nil? }"
+                                       "search_params.each { |param, value| skip \"Could not resolve \#{param} in any resource.\" if value.nil? }"
                                      else %(
                                         if search_params.any? { |_param, value| value.nil? }
                                           could_not_resolve_all = search_params.keys

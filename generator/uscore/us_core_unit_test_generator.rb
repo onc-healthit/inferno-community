@@ -141,6 +141,8 @@ module Inferno
             dynamic_search_param_string(param, value)
           elsif value.start_with? '@'
             "'#{param}': #{value}"
+          elsif value == 'patient'
+            "'#{param}': @sequence.patient_ids.first"
           else
             "'#{param}': '#{value}'"
           end
@@ -151,6 +153,7 @@ module Inferno
         param_info = dynamic_search_param(value)
         path = param_info[:resource_path]
         variable_name = param_info[:variable_name]
+        variable_name.gsub!('[patient]', '[@sequence.patient_ids.first]')
         "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
       end
 
@@ -168,7 +171,7 @@ module Inferno
       #   get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
       # this method extracts the variable name '@careplan_ary' and the path 'category'
       def dynamic_search_param(param_value)
-        match = param_value.match(/(@\w+).*'([\w\.]+)'/)
+        match = param_value.match(/(@[^,]+).*'([\w\.]+)'/)
         {
           variable_name: match[1],
           resource_path: match[2]

@@ -89,7 +89,7 @@ module Inferno
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
         assert_response_unauthorized reply
@@ -114,7 +114,7 @@ module Inferno
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
 
@@ -150,7 +150,7 @@ module Inferno
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
 
@@ -209,7 +209,7 @@ module Inferno
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)

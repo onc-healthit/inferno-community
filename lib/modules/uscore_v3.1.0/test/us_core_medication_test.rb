@@ -12,8 +12,8 @@ describe Inferno::Sequence::USCore310MedicationSequence do
     @token = 'ABC'
     @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
     @client = FHIR::Client.for_testing_instance(@instance)
-    @patient_id = 'example'
-    @instance.patient_id = @patient_id
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     set_resource_support(@instance, 'Medication')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
