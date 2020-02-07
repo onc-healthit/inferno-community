@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310ProvenanceSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Provenance Tests'
 
       description 'Verify that Provenance resources on the FHIR server follow the US Core Implementation Guide'
@@ -42,7 +46,8 @@ module Inferno
         @provenance_ary = provenance_references.map do |reference|
           validate_read_reply(
             FHIR::Provenance.new(id: reference.resource_id),
-            FHIR::Provenance
+            FHIR::Provenance,
+            check_for_data_absent_reasons
           )
         end
         @provenance = @provenance_ary.first

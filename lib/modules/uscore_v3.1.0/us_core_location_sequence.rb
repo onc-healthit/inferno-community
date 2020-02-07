@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310LocationSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Location Tests'
 
       description 'Verify that Location resources on the FHIR server follow the US Core Implementation Guide'
@@ -74,7 +78,8 @@ module Inferno
         @location_ary = location_references.map do |reference|
           validate_read_reply(
             FHIR::Location.new(id: reference.resource_id),
-            FHIR::Location
+            FHIR::Location,
+            check_for_data_absent_reasons
           )
         end
         @location = @location_ary.first
@@ -137,7 +142,7 @@ module Inferno
         @location = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Location' }
           .resource
-        @location_ary = fetch_all_bundled_resources(reply.resource)
+        @location_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
         save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
         save_delayed_sequence_references(@location_ary)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
@@ -309,7 +314,8 @@ module Inferno
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          .select { |resource| resource.resourceType == 'Provenance' }
         provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?

@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310OrganizationSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Organization Tests'
 
       description 'Verify that Organization resources on the FHIR server follow the US Core Implementation Guide'
@@ -62,7 +66,8 @@ module Inferno
         @organization_ary = organization_references.map do |reference|
           validate_read_reply(
             FHIR::Organization.new(id: reference.resource_id),
-            FHIR::Organization
+            FHIR::Organization,
+            check_for_data_absent_reasons
           )
         end
         @organization = @organization_ary.first
@@ -125,7 +130,7 @@ module Inferno
         @organization = reply.resource.entry
           .find { |entry| entry&.resource&.resourceType == 'Organization' }
           .resource
-        @organization_ary = fetch_all_bundled_resources(reply.resource)
+        @organization_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
         save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
         save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
@@ -216,7 +221,8 @@ module Inferno
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          .select { |resource| resource.resourceType == 'Provenance' }
         provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?

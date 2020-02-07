@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310AllergyintoleranceSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'AllergyIntolerance Tests'
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the US Core Implementation Guide'
@@ -132,7 +136,7 @@ module Inferno
           @allergy_intolerance = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
             .resource
-          @allergy_intolerance_ary[patient] = fetch_all_bundled_resources(reply.resource)
+          @allergy_intolerance_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
           save_delayed_sequence_references(@allergy_intolerance_ary[patient])
           validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
@@ -194,7 +198,7 @@ module Inferno
         skip_if_known_not_supported(:AllergyIntolerance, [:read])
         skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
+        validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -256,7 +260,8 @@ module Inferno
 
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
           provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
 

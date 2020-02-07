@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310GoalSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Goal Tests'
 
       description 'Verify that Goal resources on the FHIR server follow the US Core Implementation Guide'
@@ -136,7 +140,7 @@ module Inferno
           @goal = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'Goal' }
             .resource
-          @goal_ary[patient] = fetch_all_bundled_resources(reply.resource)
+          @goal_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
           save_delayed_sequence_references(@goal_ary[patient])
           validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
@@ -247,7 +251,7 @@ module Inferno
         skip_if_known_not_supported(:Goal, [:read])
         skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@goal, versioned_resource_class('Goal'))
+        validate_read_reply(@goal, versioned_resource_class('Goal'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -309,7 +313,8 @@ module Inferno
 
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
           provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
 
