@@ -1,0 +1,25 @@
+name: mcode
+title: mCode
+description : mCode
+fhir_version: r4
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests:
+      - name: Discovery
+        sequences:
+        - UsCoreR4CapabilityStatementSequence
+        - SMARTDiscoverySequence
+        run_all: true
+      - name: Authorization and Authentication
+        sequences:
+        - DynamicRegistrationSequence
+        - ManualRegistrationSequence
+        - StandaloneLaunchSequence
+        - EHRLaunchSequence
+      - name: mCode Patient Based Profiles
+        run_all: true
+        sequences:
+        - PrimaryCancerConditionSequence
+
