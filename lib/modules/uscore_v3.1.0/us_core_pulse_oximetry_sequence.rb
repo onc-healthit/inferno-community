@@ -459,8 +459,6 @@ module Inferno
 
             Observation.category
 
-            Observation.category
-
             Observation.category.coding
 
             Observation.category.coding.system
@@ -471,29 +469,23 @@ module Inferno
 
             Observation.code.coding
 
-            Observation.code.coding
-
             Observation.code.coding.system
 
             Observation.code.coding.code
 
             Observation.subject
 
-            Observation.effectiveDateTime
+            Observation.effective[x]
 
-            Observation.effectivePeriod
+            Observation.value[x]
 
-            Observation.valueQuantity
+            Observation.value[x].value
 
-            Observation.valueQuantity
+            Observation.value[x].unit
 
-            Observation.valueQuantity.value
+            Observation.value[x].system
 
-            Observation.valueQuantity.unit
-
-            Observation.valueQuantity.system
-
-            Observation.valueQuantity.code
+            Observation.value[x].code
 
             Observation.dataAbsentReason
 
@@ -501,261 +493,33 @@ module Inferno
 
             Observation.component.code
 
-            Observation.component.valueQuantity
+            Observation.component.code.coding.code
 
-            Observation.component.valueCodeableConcept
+            Observation.component.value[x].system
 
-            Observation.component.valueString
+            Observation.component.value[x].code
 
-            Observation.component.valueBoolean
+            Observation.component.code.coding.code
 
-            Observation.component.valueInteger
+            Observation.component.value[x]
 
-            Observation.component.valueRange
+            Observation.component.value[x].value
 
-            Observation.component.valueRatio
+            Observation.component.value[x].unit
 
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
+            Observation.component.value[x].code
 
             Observation.component.dataAbsentReason
 
-            Observation.component
+            Observation.category:VSCat
 
-            Observation.component.code
+            Observation.code.coding:PulseOx
 
-            Observation.component.valueQuantity
+            Observation.value[x]:valueQuantity
 
-            Observation.component.valueCodeableConcept
+            Observation.component:FlowRate
 
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
-
-            Observation.component.valueQuantity.value
-
-            Observation.component.valueCodeableConcept.value
-
-            Observation.component.valueString.value
-
-            Observation.component.valueBoolean.value
-
-            Observation.component.valueInteger.value
-
-            Observation.component.valueRange.value
-
-            Observation.component.valueRatio.value
-
-            Observation.component.valueSampledData.value
-
-            Observation.component.valueTime.value
-
-            Observation.component.valueDateTime.value
-
-            Observation.component.valuePeriod.value
-
-            Observation.component.valueQuantity.unit
-
-            Observation.component.valueCodeableConcept.unit
-
-            Observation.component.valueString.unit
-
-            Observation.component.valueBoolean.unit
-
-            Observation.component.valueInteger.unit
-
-            Observation.component.valueRange.unit
-
-            Observation.component.valueRatio.unit
-
-            Observation.component.valueSampledData.unit
-
-            Observation.component.valueTime.unit
-
-            Observation.component.valueDateTime.unit
-
-            Observation.component.valuePeriod.unit
-
-            Observation.component.valueQuantity.system
-
-            Observation.component.valueCodeableConcept.system
-
-            Observation.component.valueString.system
-
-            Observation.component.valueBoolean.system
-
-            Observation.component.valueInteger.system
-
-            Observation.component.valueRange.system
-
-            Observation.component.valueRatio.system
-
-            Observation.component.valueSampledData.system
-
-            Observation.component.valueTime.system
-
-            Observation.component.valueDateTime.system
-
-            Observation.component.valuePeriod.system
-
-            Observation.component.valueQuantity.code
-
-            Observation.component.valueCodeableConcept.code
-
-            Observation.component.valueString.code
-
-            Observation.component.valueBoolean.code
-
-            Observation.component.valueInteger.code
-
-            Observation.component.valueRange.code
-
-            Observation.component.valueRatio.code
-
-            Observation.component.valueSampledData.code
-
-            Observation.component.valueTime.code
-
-            Observation.component.valueDateTime.code
-
-            Observation.component.valuePeriod.code
-
-            Observation.component.dataAbsentReason
-
-            Observation.component
-
-            Observation.component.code
-
-            Observation.component.valueQuantity
-
-            Observation.component.valueCodeableConcept
-
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
-
-            Observation.component.valueQuantity.value
-
-            Observation.component.valueCodeableConcept.value
-
-            Observation.component.valueString.value
-
-            Observation.component.valueBoolean.value
-
-            Observation.component.valueInteger.value
-
-            Observation.component.valueRange.value
-
-            Observation.component.valueRatio.value
-
-            Observation.component.valueSampledData.value
-
-            Observation.component.valueTime.value
-
-            Observation.component.valueDateTime.value
-
-            Observation.component.valuePeriod.value
-
-            Observation.component.valueQuantity.unit
-
-            Observation.component.valueCodeableConcept.unit
-
-            Observation.component.valueString.unit
-
-            Observation.component.valueBoolean.unit
-
-            Observation.component.valueInteger.unit
-
-            Observation.component.valueRange.unit
-
-            Observation.component.valueRatio.unit
-
-            Observation.component.valueSampledData.unit
-
-            Observation.component.valueTime.unit
-
-            Observation.component.valueDateTime.unit
-
-            Observation.component.valuePeriod.unit
-
-            Observation.component.valueQuantity.system
-
-            Observation.component.valueCodeableConcept.system
-
-            Observation.component.valueString.system
-
-            Observation.component.valueBoolean.system
-
-            Observation.component.valueInteger.system
-
-            Observation.component.valueRange.system
-
-            Observation.component.valueRatio.system
-
-            Observation.component.valueSampledData.system
-
-            Observation.component.valueTime.system
-
-            Observation.component.valueDateTime.system
-
-            Observation.component.valuePeriod.system
-
-            Observation.component.valueQuantity.code
-
-            Observation.component.valueCodeableConcept.code
-
-            Observation.component.valueString.code
-
-            Observation.component.valueBoolean.code
-
-            Observation.component.valueInteger.code
-
-            Observation.component.valueRange.code
-
-            Observation.component.valueRatio.code
-
-            Observation.component.valueSampledData.code
-
-            Observation.component.valueTime.code
-
-            Observation.component.valueDateTime.code
-
-            Observation.component.valuePeriod.code
-
-            Observation.component.dataAbsentReason
+            Observation.component:Concentration
 
           )
           versions :r4
@@ -763,166 +527,119 @@ module Inferno
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        must_support_elements = [
-          'Observation.status',
-          'Observation.category',
-          'Observation.category',
-          'Observation.category.coding',
-          'Observation.category.coding.system',
-          'Observation.category.coding.code',
-          'Observation.code',
-          'Observation.code.coding',
-          'Observation.code.coding',
-          'Observation.code.coding.system',
-          'Observation.code.coding.code',
-          'Observation.subject',
-          'Observation.effectiveDateTime',
-          'Observation.effectivePeriod',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity.value',
-          'Observation.valueQuantity.unit',
-          'Observation.valueQuantity.system',
-          'Observation.valueQuantity.code',
-          'Observation.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.valueQuantity.value',
-          'Observation.component.valueCodeableConcept.value',
-          'Observation.component.valueString.value',
-          'Observation.component.valueBoolean.value',
-          'Observation.component.valueInteger.value',
-          'Observation.component.valueRange.value',
-          'Observation.component.valueRatio.value',
-          'Observation.component.valueSampledData.value',
-          'Observation.component.valueTime.value',
-          'Observation.component.valueDateTime.value',
-          'Observation.component.valuePeriod.value',
-          'Observation.component.valueQuantity.unit',
-          'Observation.component.valueCodeableConcept.unit',
-          'Observation.component.valueString.unit',
-          'Observation.component.valueBoolean.unit',
-          'Observation.component.valueInteger.unit',
-          'Observation.component.valueRange.unit',
-          'Observation.component.valueRatio.unit',
-          'Observation.component.valueSampledData.unit',
-          'Observation.component.valueTime.unit',
-          'Observation.component.valueDateTime.unit',
-          'Observation.component.valuePeriod.unit',
-          'Observation.component.valueQuantity.system',
-          'Observation.component.valueCodeableConcept.system',
-          'Observation.component.valueString.system',
-          'Observation.component.valueBoolean.system',
-          'Observation.component.valueInteger.system',
-          'Observation.component.valueRange.system',
-          'Observation.component.valueRatio.system',
-          'Observation.component.valueSampledData.system',
-          'Observation.component.valueTime.system',
-          'Observation.component.valueDateTime.system',
-          'Observation.component.valuePeriod.system',
-          'Observation.component.valueQuantity.code',
-          'Observation.component.valueCodeableConcept.code',
-          'Observation.component.valueString.code',
-          'Observation.component.valueBoolean.code',
-          'Observation.component.valueInteger.code',
-          'Observation.component.valueRange.code',
-          'Observation.component.valueRatio.code',
-          'Observation.component.valueSampledData.code',
-          'Observation.component.valueTime.code',
-          'Observation.component.valueDateTime.code',
-          'Observation.component.valuePeriod.code',
-          'Observation.component.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.valueQuantity.value',
-          'Observation.component.valueCodeableConcept.value',
-          'Observation.component.valueString.value',
-          'Observation.component.valueBoolean.value',
-          'Observation.component.valueInteger.value',
-          'Observation.component.valueRange.value',
-          'Observation.component.valueRatio.value',
-          'Observation.component.valueSampledData.value',
-          'Observation.component.valueTime.value',
-          'Observation.component.valueDateTime.value',
-          'Observation.component.valuePeriod.value',
-          'Observation.component.valueQuantity.unit',
-          'Observation.component.valueCodeableConcept.unit',
-          'Observation.component.valueString.unit',
-          'Observation.component.valueBoolean.unit',
-          'Observation.component.valueInteger.unit',
-          'Observation.component.valueRange.unit',
-          'Observation.component.valueRatio.unit',
-          'Observation.component.valueSampledData.unit',
-          'Observation.component.valueTime.unit',
-          'Observation.component.valueDateTime.unit',
-          'Observation.component.valuePeriod.unit',
-          'Observation.component.valueQuantity.system',
-          'Observation.component.valueCodeableConcept.system',
-          'Observation.component.valueString.system',
-          'Observation.component.valueBoolean.system',
-          'Observation.component.valueInteger.system',
-          'Observation.component.valueRange.system',
-          'Observation.component.valueRatio.system',
-          'Observation.component.valueSampledData.system',
-          'Observation.component.valueTime.system',
-          'Observation.component.valueDateTime.system',
-          'Observation.component.valuePeriod.system',
-          'Observation.component.valueQuantity.code',
-          'Observation.component.valueCodeableConcept.code',
-          'Observation.component.valueString.code',
-          'Observation.component.valueBoolean.code',
-          'Observation.component.valueInteger.code',
-          'Observation.component.valueRange.code',
-          'Observation.component.valueRatio.code',
-          'Observation.component.valueSampledData.code',
-          'Observation.component.valueTime.code',
-          'Observation.component.valueDateTime.code',
-          'Observation.component.valuePeriod.code',
-          'Observation.component.dataAbsentReason'
+        must_support_slices = [
+          {
+            name: 'Observation.category:VSCat',
+            path: 'Observation.category',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'coding.code',
+                  value: 'vital-signs'
+                },
+                {
+                  path: 'coding.system',
+                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.code.coding:PulseOx',
+            path: 'Observation.code.coding',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'code',
+                  value: '59408-5'
+                },
+                {
+                  path: 'system',
+                  value: 'http://loinc.org'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'Observation.value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          },
+          {
+            name: 'Observation.component:FlowRate',
+            path: 'Observation.component',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'code',
+              code: '3151-8',
+              system: 'http://loinc.org'
+            }
+          },
+          {
+            name: 'Observation.component:Concentration',
+            path: 'Observation.component',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'code',
+              code: '3150-0',
+              system: 'http://loinc.org'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Observation.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
           @observation_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
+
+        must_support_elements = [
+          { path: 'Observation.status' },
+          { path: 'Observation.category' },
+          { path: 'Observation.category.coding' },
+          { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
+          { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
+          { path: 'Observation.code' },
+          { path: 'Observation.code.coding' },
+          { path: 'Observation.code.coding.system', fixed_value: 'http://loinc.org' },
+          { path: 'Observation.code.coding.code', fixed_value: '59408-5' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.effective' },
+          { path: 'Observation.value' },
+          { path: 'Observation.value.value' },
+          { path: 'Observation.value.unit' },
+          { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
+          { path: 'Observation.value.code', fixed_value: '%' },
+          { path: 'Observation.dataAbsentReason' },
+          { path: 'Observation.component' },
+          { path: 'Observation.component.code' },
+          { path: 'Observation.component.code.coding.code', fixed_value: '3151-8' },
+          { path: 'Observation.component.value.system', fixed_value: 'http://unitsofmeasure.org' },
+          { path: 'Observation.component.value.code', fixed_value: 'l/min' },
+          { path: 'Observation.component.code.coding.code', fixed_value: '3150-0' },
+          { path: 'Observation.component.value' },
+          { path: 'Observation.component.value.value' },
+          { path: 'Observation.component.value.unit' },
+          { path: 'Observation.component.value.code', fixed_value: '%' },
+          { path: 'Observation.component.dataAbsentReason' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Observation.', '')
+          @observation_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"

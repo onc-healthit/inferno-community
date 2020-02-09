@@ -459,39 +459,17 @@ module Inferno
 
             Observation.category
 
-            Observation.category
-
             Observation.code
 
             Observation.subject
 
-            Observation.effectiveDateTime
+            Observation.effective[x]
 
-            Observation.effectivePeriod
-
-            Observation.valueQuantity
-
-            Observation.valueCodeableConcept
-
-            Observation.valueString
-
-            Observation.valueBoolean
-
-            Observation.valueInteger
-
-            Observation.valueRange
-
-            Observation.valueRatio
-
-            Observation.valueSampledData
-
-            Observation.valueTime
-
-            Observation.valueDateTime
-
-            Observation.valuePeriod
+            Observation.value[x]
 
             Observation.dataAbsentReason
+
+            Observation.category:Laboratory
 
           )
           versions :r4
@@ -499,34 +477,46 @@ module Inferno
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        must_support_elements = [
-          'Observation.status',
-          'Observation.category',
-          'Observation.category',
-          'Observation.code',
-          'Observation.subject',
-          'Observation.effectiveDateTime',
-          'Observation.effectivePeriod',
-          'Observation.valueQuantity',
-          'Observation.valueCodeableConcept',
-          'Observation.valueString',
-          'Observation.valueBoolean',
-          'Observation.valueInteger',
-          'Observation.valueRange',
-          'Observation.valueRatio',
-          'Observation.valueSampledData',
-          'Observation.valueTime',
-          'Observation.valueDateTime',
-          'Observation.valuePeriod',
-          'Observation.dataAbsentReason'
+        must_support_slices = [
+          {
+            name: 'Observation.category:Laboratory',
+            path: 'Observation.category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'laboratory',
+              system: 'http://terminology.hl7.org/CodeSystem/observation-category'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Observation.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
           @observation_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
+
+        must_support_elements = [
+          { path: 'Observation.status' },
+          { path: 'Observation.category' },
+          { path: 'Observation.code' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.effective' },
+          { path: 'Observation.value' },
+          { path: 'Observation.dataAbsentReason' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Observation.', '')
+          @observation_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"

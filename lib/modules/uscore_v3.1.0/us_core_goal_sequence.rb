@@ -351,7 +351,7 @@ module Inferno
 
             Goal.target
 
-            Goal.target.dueDate
+            Goal.target.due[x]:dueDate
 
           )
           versions :r4
@@ -359,20 +359,41 @@ module Inferno
 
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        must_support_elements = [
-          'Goal.lifecycleStatus',
-          'Goal.description',
-          'Goal.subject',
-          'Goal.target',
-          'Goal.target.dueDate'
+        must_support_slices = [
+          {
+            name: 'Goal.target.due[x]:dueDate',
+            path: 'Goal.target.due',
+            discriminator: {
+              type: 'type',
+              code: 'Date'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Goal.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Goal.', '')
           @goal_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
+
+        must_support_elements = [
+          { path: 'Goal.lifecycleStatus' },
+          { path: 'Goal.description' },
+          { path: 'Goal.subject' },
+          { path: 'Goal.target' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Goal.', '')
+          @goal_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@goal_ary&.values&.flatten&.length} provided Goal resource(s)"

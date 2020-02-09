@@ -421,9 +421,9 @@ module Inferno
 
             CarePlan.category
 
-            CarePlan.category
-
             CarePlan.subject
+
+            CarePlan.category:AssessPlan
 
           )
           versions :r4
@@ -431,22 +431,45 @@ module Inferno
 
         skip 'No CarePlan resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        must_support_elements = [
-          'CarePlan.text',
-          'CarePlan.text.status',
-          'CarePlan.status',
-          'CarePlan.intent',
-          'CarePlan.category',
-          'CarePlan.category',
-          'CarePlan.subject'
+        must_support_slices = [
+          {
+            name: 'CarePlan.category:AssessPlan',
+            path: 'CarePlan.category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'assess-plan',
+              system: 'http://hl7.org/fhir/us/core/CodeSystem/careplan-category'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('CarePlan.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('CarePlan.', '')
           @care_plan_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
+
+        must_support_elements = [
+          { path: 'CarePlan.text' },
+          { path: 'CarePlan.text.status' },
+          { path: 'CarePlan.status' },
+          { path: 'CarePlan.intent' },
+          { path: 'CarePlan.category' },
+          { path: 'CarePlan.subject' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('CarePlan.', '')
+          @care_plan_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.values&.flatten&.length} provided CarePlan resource(s)"

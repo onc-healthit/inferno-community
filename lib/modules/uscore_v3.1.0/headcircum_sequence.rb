@@ -459,8 +459,6 @@ module Inferno
 
             Observation.category
 
-            Observation.category
-
             Observation.category.coding
 
             Observation.category.coding.system
@@ -471,51 +469,23 @@ module Inferno
 
             Observation.subject
 
-            Observation.effectiveDateTime
+            Observation.effective[x]
 
-            Observation.effectivePeriod
+            Observation.value[x]
 
-            Observation.valueQuantity
+            Observation.value[x].value
 
-            Observation.valueQuantity
+            Observation.value[x].unit
 
-            Observation.valueQuantity.value
+            Observation.value[x].system
 
-            Observation.valueQuantity.unit
-
-            Observation.valueQuantity.system
-
-            Observation.valueQuantity.code
+            Observation.value[x].code
 
             Observation.dataAbsentReason
 
-            Observation.component
+            Observation.category:VSCat
 
-            Observation.component.code
-
-            Observation.component.valueQuantity
-
-            Observation.component.valueCodeableConcept
-
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
-
-            Observation.component.dataAbsentReason
+            Observation.value[x]:valueQuantity
 
           )
           versions :r4
@@ -523,46 +493,68 @@ module Inferno
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
-        must_support_elements = [
-          'Observation.status',
-          'Observation.category',
-          'Observation.category',
-          'Observation.category.coding',
-          'Observation.category.coding.system',
-          'Observation.category.coding.code',
-          'Observation.code',
-          'Observation.subject',
-          'Observation.effectiveDateTime',
-          'Observation.effectivePeriod',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity.value',
-          'Observation.valueQuantity.unit',
-          'Observation.valueQuantity.system',
-          'Observation.valueQuantity.code',
-          'Observation.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.dataAbsentReason'
+        must_support_slices = [
+          {
+            name: 'Observation.category:VSCat',
+            path: 'Observation.category',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'coding.code',
+                  value: 'vital-signs'
+                },
+                {
+                  path: 'coding.system',
+                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'Observation.value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Observation.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
           @observation_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
+
+        must_support_elements = [
+          { path: 'Observation.status' },
+          { path: 'Observation.category' },
+          { path: 'Observation.category.coding' },
+          { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
+          { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
+          { path: 'Observation.code' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.effective' },
+          { path: 'Observation.value' },
+          { path: 'Observation.value.value' },
+          { path: 'Observation.value.unit' },
+          { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
+          { path: 'Observation.value.code' },
+          { path: 'Observation.dataAbsentReason' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Observation.', '')
+          @observation_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"

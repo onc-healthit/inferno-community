@@ -492,9 +492,7 @@ module Inferno
 
             DiagnosticReport.encounter
 
-            DiagnosticReport.effectiveDateTime
-
-            DiagnosticReport.effectivePeriod
+            DiagnosticReport.effective[x]
 
             DiagnosticReport.issued
 
@@ -509,24 +507,25 @@ module Inferno
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'DiagnosticReport.status',
-          'DiagnosticReport.category',
-          'DiagnosticReport.code',
-          'DiagnosticReport.subject',
-          'DiagnosticReport.encounter',
-          'DiagnosticReport.effectiveDateTime',
-          'DiagnosticReport.effectivePeriod',
-          'DiagnosticReport.issued',
-          'DiagnosticReport.performer',
-          'DiagnosticReport.presentedForm'
+          { path: 'DiagnosticReport.status' },
+          { path: 'DiagnosticReport.category' },
+          { path: 'DiagnosticReport.code' },
+          { path: 'DiagnosticReport.subject' },
+          { path: 'DiagnosticReport.encounter' },
+          { path: 'DiagnosticReport.effective' },
+          { path: 'DiagnosticReport.issued' },
+          { path: 'DiagnosticReport.performer' },
+          { path: 'DiagnosticReport.presentedForm' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('DiagnosticReport.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('DiagnosticReport.', '')
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@diagnostic_report_ary&.values&.flatten&.length} provided DiagnosticReport resource(s)"

@@ -533,34 +533,36 @@ module Inferno
         end
 
         must_support_elements = [
-          'Patient.identifier',
-          'Patient.identifier.system',
-          'Patient.identifier.value',
-          'Patient.name',
-          'Patient.name.family',
-          'Patient.name.given',
-          'Patient.telecom',
-          'Patient.telecom.system',
-          'Patient.telecom.value',
-          'Patient.telecom.use',
-          'Patient.gender',
-          'Patient.birthDate',
-          'Patient.address',
-          'Patient.address.line',
-          'Patient.address.city',
-          'Patient.address.state',
-          'Patient.address.postalCode',
-          'Patient.address.period',
-          'Patient.communication',
-          'Patient.communication.language'
+          { path: 'Patient.identifier' },
+          { path: 'Patient.identifier.system' },
+          { path: 'Patient.identifier.value' },
+          { path: 'Patient.name' },
+          { path: 'Patient.name.family' },
+          { path: 'Patient.name.given' },
+          { path: 'Patient.telecom' },
+          { path: 'Patient.telecom.system' },
+          { path: 'Patient.telecom.value' },
+          { path: 'Patient.telecom.use' },
+          { path: 'Patient.gender' },
+          { path: 'Patient.birthDate' },
+          { path: 'Patient.address' },
+          { path: 'Patient.address.line' },
+          { path: 'Patient.address.city' },
+          { path: 'Patient.address.state' },
+          { path: 'Patient.address.postalCode' },
+          { path: 'Patient.address.period' },
+          { path: 'Patient.communication' },
+          { path: 'Patient.communication.language' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Patient.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Patient.', '')
           @patient_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         missing_must_support_elements += missing_must_support_extensions.keys
 

@@ -560,31 +560,33 @@ module Inferno
         skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Encounter.identifier',
-          'Encounter.identifier.system',
-          'Encounter.identifier.value',
-          'Encounter.status',
-          'Encounter.local_class',
-          'Encounter.type',
-          'Encounter.subject',
-          'Encounter.participant',
-          'Encounter.participant.type',
-          'Encounter.participant.period',
-          'Encounter.participant.individual',
-          'Encounter.period',
-          'Encounter.reasonCode',
-          'Encounter.hospitalization',
-          'Encounter.hospitalization.dischargeDisposition',
-          'Encounter.location',
-          'Encounter.location.location'
+          { path: 'Encounter.identifier' },
+          { path: 'Encounter.identifier.system' },
+          { path: 'Encounter.identifier.value' },
+          { path: 'Encounter.status' },
+          { path: 'Encounter.local_class' },
+          { path: 'Encounter.type' },
+          { path: 'Encounter.subject' },
+          { path: 'Encounter.participant' },
+          { path: 'Encounter.participant.type' },
+          { path: 'Encounter.participant.period' },
+          { path: 'Encounter.participant.individual' },
+          { path: 'Encounter.period' },
+          { path: 'Encounter.reasonCode' },
+          { path: 'Encounter.hospitalization' },
+          { path: 'Encounter.hospitalization.dischargeDisposition' },
+          { path: 'Encounter.location' },
+          { path: 'Encounter.location.location' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Encounter.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Encounter.', '')
           @encounter_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@encounter_ary&.values&.flatten&.length} provided Encounter resource(s)"

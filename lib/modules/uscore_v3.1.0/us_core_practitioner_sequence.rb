@@ -256,11 +256,11 @@ module Inferno
 
             Practitioner.identifier.value
 
-            Practitioner.identifier
-
             Practitioner.name
 
             Practitioner.name.family
+
+            Practitioner.identifier:NPI
 
           )
           versions :r4
@@ -268,21 +268,43 @@ module Inferno
 
         skip 'No Practitioner resources appear to be available.' unless @resources_found
 
-        must_support_elements = [
-          'Practitioner.identifier',
-          'Practitioner.identifier.system',
-          'Practitioner.identifier.value',
-          'Practitioner.identifier',
-          'Practitioner.name',
-          'Practitioner.name.family'
+        must_support_slices = [
+          {
+            name: 'Practitioner.identifier:NPI',
+            path: 'Practitioner.identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Practitioner.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Practitioner.', '')
           @practitioner_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
+
+        must_support_elements = [
+          { path: 'Practitioner.identifier' },
+          { path: 'Practitioner.identifier.system' },
+          { path: 'Practitioner.identifier.value' },
+          { path: 'Practitioner.name' },
+          { path: 'Practitioner.name.family' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Practitioner.', '')
+          @practitioner_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_ary&.length} provided Practitioner resource(s)"

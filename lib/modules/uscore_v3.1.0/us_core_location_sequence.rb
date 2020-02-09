@@ -367,23 +367,25 @@ module Inferno
         skip 'No Location resources appear to be available.' unless @resources_found
 
         must_support_elements = [
-          'Location.status',
-          'Location.name',
-          'Location.telecom',
-          'Location.address',
-          'Location.address.line',
-          'Location.address.city',
-          'Location.address.state',
-          'Location.address.postalCode',
-          'Location.managingOrganization'
+          { path: 'Location.status' },
+          { path: 'Location.name' },
+          { path: 'Location.telecom' },
+          { path: 'Location.address' },
+          { path: 'Location.address.line' },
+          { path: 'Location.address.city' },
+          { path: 'Location.address.state' },
+          { path: 'Location.address.postalCode' },
+          { path: 'Location.managingOrganization' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Location.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Location.', '')
           @location_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@location_ary&.length} provided Location resource(s)"

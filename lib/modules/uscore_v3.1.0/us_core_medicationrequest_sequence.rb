@@ -477,13 +477,9 @@ module Inferno
 
             MedicationRequest.intent
 
-            MedicationRequest.reportedBoolean
+            MedicationRequest.reported[x]
 
-            MedicationRequest.reportedReference
-
-            MedicationRequest.medicationCodeableConcept
-
-            MedicationRequest.medicationReference
+            MedicationRequest.medication[x]
 
             MedicationRequest.subject
 
@@ -504,26 +500,26 @@ module Inferno
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'MedicationRequest.status',
-          'MedicationRequest.intent',
-          'MedicationRequest.reportedBoolean',
-          'MedicationRequest.reportedReference',
-          'MedicationRequest.medicationCodeableConcept',
-          'MedicationRequest.medicationReference',
-          'MedicationRequest.subject',
-          'MedicationRequest.encounter',
-          'MedicationRequest.authoredOn',
-          'MedicationRequest.requester',
-          'MedicationRequest.dosageInstruction',
-          'MedicationRequest.dosageInstruction.text'
+          { path: 'MedicationRequest.status' },
+          { path: 'MedicationRequest.intent' },
+          { path: 'MedicationRequest.reported' },
+          { path: 'MedicationRequest.medication' },
+          { path: 'MedicationRequest.subject' },
+          { path: 'MedicationRequest.encounter' },
+          { path: 'MedicationRequest.authoredOn' },
+          { path: 'MedicationRequest.requester' },
+          { path: 'MedicationRequest.dosageInstruction' },
+          { path: 'MedicationRequest.dosageInstruction.text' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('MedicationRequest.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('MedicationRequest.', '')
           @medication_request_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@medication_request_ary&.values&.flatten&.length} provided MedicationRequest resource(s)"

@@ -593,31 +593,33 @@ module Inferno
         skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'DocumentReference.identifier',
-          'DocumentReference.status',
-          'DocumentReference.type',
-          'DocumentReference.category',
-          'DocumentReference.subject',
-          'DocumentReference.date',
-          'DocumentReference.author',
-          'DocumentReference.custodian',
-          'DocumentReference.content',
-          'DocumentReference.content.attachment',
-          'DocumentReference.content.attachment.contentType',
-          'DocumentReference.content.attachment.data',
-          'DocumentReference.content.attachment.url',
-          'DocumentReference.content.format',
-          'DocumentReference.context',
-          'DocumentReference.context.encounter',
-          'DocumentReference.context.period'
+          { path: 'DocumentReference.identifier' },
+          { path: 'DocumentReference.status' },
+          { path: 'DocumentReference.type' },
+          { path: 'DocumentReference.category' },
+          { path: 'DocumentReference.subject' },
+          { path: 'DocumentReference.date' },
+          { path: 'DocumentReference.author' },
+          { path: 'DocumentReference.custodian' },
+          { path: 'DocumentReference.content' },
+          { path: 'DocumentReference.content.attachment' },
+          { path: 'DocumentReference.content.attachment.contentType' },
+          { path: 'DocumentReference.content.attachment.data' },
+          { path: 'DocumentReference.content.attachment.url' },
+          { path: 'DocumentReference.content.format' },
+          { path: 'DocumentReference.context' },
+          { path: 'DocumentReference.context.encounter' },
+          { path: 'DocumentReference.context.period' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('DocumentReference.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('DocumentReference.', '')
           @document_reference_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"

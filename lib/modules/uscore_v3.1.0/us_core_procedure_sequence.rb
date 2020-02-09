@@ -402,9 +402,7 @@ module Inferno
 
             Procedure.subject
 
-            Procedure.performedDateTime
-
-            Procedure.performedPeriod
+            Procedure.performed[x]
 
           )
           versions :r4
@@ -413,19 +411,20 @@ module Inferno
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         must_support_elements = [
-          'Procedure.status',
-          'Procedure.code',
-          'Procedure.subject',
-          'Procedure.performedDateTime',
-          'Procedure.performedPeriod'
+          { path: 'Procedure.status' },
+          { path: 'Procedure.code' },
+          { path: 'Procedure.subject' },
+          { path: 'Procedure.performed' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Procedure.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Procedure.', '')
           @procedure_ary&.values&.flatten&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@procedure_ary&.values&.flatten&.length} provided Procedure resource(s)"
