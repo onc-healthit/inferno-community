@@ -65,7 +65,7 @@ module Inferno
 
       # The ValueSet [Set]
       def valueset
-        @valueset || process_valueset
+        @valueset || process
       end
 
       # Read the desired valueset from a JSON file
@@ -91,6 +91,17 @@ module Inferno
 
       def included_code_systems
         @valueset_model.compose.include.map(&:system).compact.uniq
+      end
+
+      # Creates the whole valuese
+      # Delegates to process_expanded_valueset if there's already an expansion
+      # Otherwise it delegates to process_valueset to do the expansion
+      def process
+        if @valueset_model&.expansion&.contains
+          process_expanded_valueset
+        else
+          process_valueset
+        end
       end
 
       # Creates the whole valueset

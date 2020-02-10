@@ -163,11 +163,7 @@ module Inferno
         valueset = Inferno::Terminology::Valueset.new(@db)
         valueset.valueset_model = FHIR::ValueSet.new(expansion)
         valueset.vsa = self
-        if valueset&.valueset_model&.expansion&.contains
-          valueset.process_expanded_valueset
-        else
-          valueset.process_valueset
-        end
+
         @known_valuesets[valueset.url] = valueset
 
         bfilter = valueset.generate_bloom
@@ -201,9 +197,10 @@ module Inferno
       end
 
       codesystem_bloomfilters.each do |codesystem, bfilter|
-        Inferno.logger.debug "Processing codesystem #{codesystem}"
-        next if @loaded_validators[codesystem]
         next unless codesystem
+        next if @loaded_validators[codesystem]
+
+        Inferno.logger.debug "Processing codesystem #{codesystem}"
 
         validate_fn = lambda do |coding|
           probe = "#{coding['system']}|#{coding['code']}"
