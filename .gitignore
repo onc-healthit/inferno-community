@@ -14,3 +14,8 @@ tmp/*
 resources/terminology/*
 sequence_coverage.csv
 fhir-pgdata/
+
+# Auto-generated terminology files
+MR*.pipe
+umls.db
+umls.zip
