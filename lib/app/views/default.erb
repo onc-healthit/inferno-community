@@ -231,18 +231,11 @@
               value: instance.refresh_token,
               })%>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :device_code,
+        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
               label: 'Implantable Device Type Code',
-              description: 'Enter the code for an Implantable Device type. If blank, Inferno will validate all Device resources against the Implantable Device profile',
+              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
               instance: instance,
-              value: instance.device_code,
-        })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :device_system,
-              label: 'Implantable Device Type System',
-              description: 'Enter the system for an Implantable Device type',
-              instance: instance,
-              value: instance.device_system,
+              value: instance.device_codes,
         })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,

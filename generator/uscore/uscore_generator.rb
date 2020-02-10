@@ -952,10 +952,9 @@ module Inferno
 
           if sequence[:resource] == 'Device'
             first_search += %(.select do |resource|
-                  resource&.type&.coding&.any? do |coding|
-                    system_match = @instance.device_system.blank? || coding.system == @instance.device_system
-                    code_match = @instance.device_code.blank? || coding.code == @instance.device_code
-                    system_match && code_match
+                  device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
+                  device_codes.blank? || resource&.type&.coding&.any? do |coding|
+                    device_codes.include?(coding.code)
                   end
                 end
             )
