@@ -65,8 +65,7 @@ describe FHIR::Client do
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(body: {
                 grant_type: 'refresh_token',
-                refresh_token: @instance.refresh_token,
-                client_id: @instance.client_id
+                refresh_token: @instance.refresh_token
               })
         .to_return(status: 500)
 
@@ -80,8 +79,7 @@ describe FHIR::Client do
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(body: {
                 grant_type: 'refresh_token',
-                refresh_token: @instance.refresh_token,
-                client_id: @instance.client_id
+                refresh_token: @instance.refresh_token
               })
         .to_return(status: 200, body: @token_response.to_json)
 
@@ -119,8 +117,7 @@ describe FHIR::Client do
       stub_request(:post, @instance.oauth_token_endpoint)
         .with(body: {
                 grant_type: 'refresh_token',
-                refresh_token: @instance.refresh_token,
-                client_id: @instance.client_id
+                refresh_token: @instance.refresh_token
               })
         .to_return(status: 200, body: @token_response.to_json)
 
