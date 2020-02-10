@@ -93,7 +93,7 @@ module Inferno
         @valueset_model.compose.include.map(&:system).compact.uniq
       end
 
-      # Creates the whole valuese
+      # Creates the whole valueset
       # Delegates to process_expanded_valueset if there's already an expansion
       # Otherwise it delegates to process_valueset to do the expansion
       def process
