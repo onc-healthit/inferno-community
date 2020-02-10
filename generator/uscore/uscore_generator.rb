@@ -367,7 +367,7 @@ module Inferno
 
 
             warning do
-              assert @instance.server_capabilities.search_documented?('#{sequence[:resource]}'),
+              assert @instance.server_capabilities&.search_documented?('#{sequence[:resource]}'),
                 %(Server returned a status of 400 with an OperationOutcome, but the
                 search interaction for this resource is not documented in the
                 CapabilityStatement. If this response was due to the server
