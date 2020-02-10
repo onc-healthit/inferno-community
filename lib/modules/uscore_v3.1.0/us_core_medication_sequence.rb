@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310MedicationSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Medication Tests'
 
       description 'Verify that Medication resources on the FHIR server follow the US Core Implementation Guide'
@@ -42,7 +46,8 @@ module Inferno
         @medication_ary = medication_references.map do |reference|
           validate_read_reply(
             FHIR::Medication.new(id: reference.resource_id),
-            FHIR::Medication
+            FHIR::Medication,
+            check_for_data_absent_reasons
           )
         end
         @medication = @medication_ary.first

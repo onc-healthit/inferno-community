@@ -29,7 +29,17 @@ module Inferno
           generate_sequence(sequence)
           unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
         end
+        copy_static_files
         generate_module(metadata)
+      end
+
+      def copy_static_files
+        Dir.glob(File.join(__dir__, 'static', '*')).each do |static_file|
+          FileUtils.cp(static_file, sequence_out_path)
+        end
+        Dir.glob(File.join(__dir__, 'static_test', '*')).each do |static_file|
+          FileUtils.cp(static_file, File.join(sequence_out_path, 'test').to_s)
+        end
       end
 
       def generate_search_validators(metadata)
@@ -133,7 +143,8 @@ module Inferno
               @#{sequence[:resource].underscore}_ary = #{sequence[:resource].underscore}_references.map do |reference|
                 validate_read_reply(
                   FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
-                  FHIR::#{sequence[:resource]}
+                  FHIR::#{sequence[:resource]},
+                  check_for_data_absent_reasons
                 )
               end
               @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary.first
@@ -292,7 +303,8 @@ module Inferno
               #{status_search_code(sequence, first_search[:names])}
               assert_response_ok(reply)
               assert_bundle_response(reply)
-              #{resource_variable} += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == '#{resource_name}'}
+              #{resource_variable} += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+                .select { |resource| resource.resourceType == '#{resource_name}'}
               #{resource_variable}.each { |reference| @instance.save_resource_reference('#{resource_name}', reference.id) }
         )
 
@@ -507,7 +519,7 @@ module Inferno
           assert_response_ok(name_search_response)
           assert_bundle_response(name_search_response)
 
-          name_bundle_entries = fetch_all_bundled_resources(name_search_response.resource)
+          name_bundle_entries = fetch_all_bundled_resources(name_search_response, check_for_data_absent_reasons)
 
           practitioner_role_found = name_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
           assert practitioner_role_found, "PractitionerRole with id \#{practitioner_role.id} not found in search results for practitioner.name = \#{name}"
@@ -523,7 +535,7 @@ module Inferno
           assert_response_ok(identifier_search_response)
           assert_bundle_response(identifier_search_response)
 
-          identifier_bundle_entries = fetch_all_bundled_resources(identifier_search_response.resource)
+          identifier_bundle_entries = fetch_all_bundled_resources(identifier_search_response, check_for_data_absent_reasons)
 
           practitioner_role_found = identifier_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
           assert practitioner_role_found, "PractitionerRole with id \#{practitioner_role.id} not found in search results for practitioner.identifier = \#{identifier_string}"
@@ -548,11 +560,18 @@ module Inferno
           optional: interaction[:expectation] != 'SHALL'
         }
 
+        validate_reply_args = [
+          "@#{sequence[:resource].underscore}",
+          "versioned_resource_class('#{sequence[:resource]}')"
+        ]
+        validate_reply_args << 'check_for_data_absent_reasons' if interaction[:code] == 'read'
+        validate_reply_args_string = validate_reply_args.join(', ')
+
         interaction_test[:test_code] = %(
               skip_if_known_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
               skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-              validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
+              validate_#{interaction[:code]}_reply(#{validate_reply_args_string}))
 
         sequence[:tests] << interaction_test
 
@@ -796,7 +815,7 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               assert_response_ok(reply)
-              resources_returned = fetch_all_bundled_resources(reply.resource)
+              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               missing_values = #{param_value_name(param)}.split(',').reject do |val|
                 resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
               end
@@ -902,7 +921,7 @@ module Inferno
             @#{sequence[:resource].underscore} = reply.resource.entry
               .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
               .resource
-            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
+            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
             validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
@@ -926,7 +945,7 @@ module Inferno
               @#{sequence[:resource].underscore} = reply.resource.entry
                 .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
                 .resource
-              @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply.resource)
+              @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
@@ -981,7 +1000,7 @@ module Inferno
               @#{sequence[:resource].underscore} = reply.resource.entry
                 .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
                 .resource
-              @#{sequence[:resource].underscore}_ary[patient] += fetch_all_bundled_resources(reply.resource)
+              @#{sequence[:resource].underscore}_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               #{'values_found += 1' if find_two_values}
 
               save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
@@ -1178,7 +1197,7 @@ module Inferno
             response = get_resource_by_params(FHIR::MedicationRequest, search_params)
             assert_response_ok(response)
             assert_bundle_response(response)
-            requests_with_medications = fetch_all_bundled_resources(response.resource)
+            requests_with_medications = fetch_all_bundled_resources(response, check_for_data_absent_reasons)
 
             medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
             assert medications.present?, 'No Medications were included in the search results'

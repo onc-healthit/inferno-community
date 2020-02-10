@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class <%=class_name%> < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title '<%=title%> Tests'
 
       description 'Verify that <%=resource%> resources on the FHIR server follow the US Core Implementation Guide'

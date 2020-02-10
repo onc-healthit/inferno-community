@@ -51,3 +51,4 @@ test_sets:
         - USCore310PractitionerSequence
         - USCore310PractitionerroleSequence
         - USCore310ProvenanceSequence
+        - USCoreR4DataAbsentReasonSequence

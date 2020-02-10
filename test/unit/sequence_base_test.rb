@@ -97,7 +97,7 @@ class SequenceBaseTest < MiniTest::Test
       stub_request(:get, @bundle1.link.first.url)
         .to_return(body: @bundle2)
 
-      all_resources = @sequence.fetch_all_bundled_resources(@bundle1)
+      all_resources = @sequence.fetch_all_bundled_resources(OpenStruct.new(resource: @bundle1))
       assert all_resources.map(&:id) == ['1', '2']
     end
 
@@ -106,12 +106,14 @@ class SequenceBaseTest < MiniTest::Test
         .to_return(body: '', status: 404)
 
       assert_raises Inferno::AssertionException do
-        @sequence.fetch_all_bundled_resources(@bundle1)
+        @sequence.fetch_all_bundled_resources(OpenStruct.new(resource: @bundle1))
       end
     end
 
     it 'returns resources when no next page' do
-      all_resources = @sequence.fetch_all_bundled_resources(FHIR.from_contents(@bundle2))
+      all_resources = @sequence.fetch_all_bundled_resources(
+        OpenStruct.new(resource: FHIR.from_contents(@bundle2))
+      )
       assert all_resources.map(&:id) == ['2']
     end
   end

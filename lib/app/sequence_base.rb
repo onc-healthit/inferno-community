@@ -524,7 +524,7 @@ module Inferno
         end
       end
 
-      def validate_read_reply(resource, klass)
+      def validate_read_reply(resource, klass, reply_handler = nil)
         class_name = klass.name.demodulize
         assert !resource.nil?, "No #{class_name} resources available from search."
         if resource.is_a? versioned_resource_class('Reference')
@@ -535,6 +535,7 @@ module Inferno
           assert !id.nil?, "#{class_name} id not returned"
           read_response = @client.read(klass, id)
           assert_response_ok read_response
+          reply_handler&.call(read_response)
           read_response = read_response.resource
         end
         assert !read_response.nil?, "Expected #{class_name} resource to be present."
@@ -798,14 +799,23 @@ module Inferno
         end
       end
 
-      def fetch_all_bundled_resources(bundle)
+      def fetch_all_bundled_resources(reply, reply_handler = nil)
         page_count = 1
         resources = []
+        bundle = reply.resource
         until bundle.nil? || page_count == 20
           resources += bundle&.entry&.map { |entry| entry&.resource }
           next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
-          bundle = bundle.next_bundle
-          assert next_bundle_link.nil? || !bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
+          reply_handler&.call(reply)
+          break if next_bundle_link.blank?
+
+          reply = @client.raw_read_url(next_bundle_link)
+          error_message = "Could not resolve next bundle. #{next_bundle_link}"
+          assert_response_ok(reply, error_message)
+          assert_valid_json(reply.body, error_message)
+
+          bundle = FHIR.from_contents(reply.body)
+
           page_count += 1
         end
         resources

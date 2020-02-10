@@ -145,7 +145,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     it 'fails when the token response body is invalid json' do
       response = OpenStruct.new(code: 200, body: '{')
       exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
-      assert_equal('Invalid JSON', exception.message)
+      assert_equal('Invalid JSON. ', exception.message)
     end
 
     it 'fails when the token response does not contain an access token' do

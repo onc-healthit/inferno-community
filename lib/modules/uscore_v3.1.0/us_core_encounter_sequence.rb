@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310EncounterSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Encounter Tests'
 
       description 'Verify that Encounter resources on the FHIR server follow the US Core Implementation Guide'
@@ -152,7 +156,7 @@ module Inferno
           @encounter = reply.resource.entry
             .find { |entry| entry&.resource&.resourceType == 'Encounter' }
             .resource
-          @encounter_ary[patient] = fetch_all_bundled_resources(reply.resource)
+          @encounter_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           save_resource_ids_in_bundle(versioned_resource_class('Encounter'), reply)
           save_delayed_sequence_references(@encounter_ary[patient])
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
@@ -423,7 +427,7 @@ module Inferno
         skip_if_known_not_supported(:Encounter, [:read])
         skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
 
-        validate_read_reply(@encounter, versioned_resource_class('Encounter'))
+        validate_read_reply(@encounter, versioned_resource_class('Encounter'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -485,7 +489,8 @@ module Inferno
 
           assert_response_ok(reply)
           assert_bundle_response(reply)
-          provenance_results += fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
           provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
 
