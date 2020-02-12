@@ -14,6 +14,18 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
     }
   end
 
+  it 'skips if the search params are not supported' do
+    capabilities = Inferno::Models::ServerCapabilities.new
+    def capabilities.supported_search_params(_)
+      [<%=supported_search_params_string%>]
+    end
+    @instance.server_capabilities = capabilities
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_match(/The server doesn't support the search parameters:/, exception.message)
+  end
+
 <% unless is_first_search %>
   it 'skips if no <%= resource_type %> resources have been found' do
     @sequence.instance_variable_set(:'@resources_found', false)

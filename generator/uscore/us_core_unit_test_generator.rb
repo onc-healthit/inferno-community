@@ -53,12 +53,18 @@ module Inferno
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
 
         resource_var_name = resource_type.underscore
+        supported_search_params_string =
+          search_params.keys
+            .take(search_params.length - 1)
+            .map { |value| "'#{value}'" }
+            .join(', ')
 
         test = template.result_with_hash(
           test_key: test_key,
           resource_type: resource_type,
           resource_var_name: resource_var_name,
           search_params: search_params,
+          supported_search_params_string: supported_search_params_string,
           search_param_string: search_params_to_string(search_params),
           sequence_name: sequence_name,
           is_first_search: is_first_search,
