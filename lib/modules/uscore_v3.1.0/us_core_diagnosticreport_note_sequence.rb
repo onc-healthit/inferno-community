@@ -51,7 +51,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('DiagnosticReport'),
+          assert @instance.server_capabilities&.search_documented?('DiagnosticReport'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -127,6 +127,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'category'])
         @diagnostic_report_ary = {}
         @resources_found = false
 
@@ -173,6 +174,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('DiagnosticReport', ['patient'])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         patient_ids.each do |patient|
@@ -201,6 +203,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'code'])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -242,6 +245,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'category', 'date'])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -291,6 +295,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'status'])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -331,6 +336,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'code', 'date'])
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []

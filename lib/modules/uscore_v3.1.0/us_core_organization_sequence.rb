@@ -115,6 +115,8 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Organization', ['name'])
+
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
@@ -149,6 +151,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Organization', ['address'])
         skip 'No Organization resources appear to be available.' unless @resources_found
 
         search_params = {

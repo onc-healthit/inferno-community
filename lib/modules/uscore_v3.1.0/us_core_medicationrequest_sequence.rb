@@ -69,7 +69,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('MedicationRequest'),
+          assert @instance.server_capabilities&.search_documented?('MedicationRequest'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -149,6 +149,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent'])
         @medication_request_ary = {}
         @resources_found = false
 
@@ -199,6 +200,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -244,6 +246,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'encounter'])
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -292,6 +295,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'authoredon'])
         skip 'No MedicationRequest resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -540,6 +544,8 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
 
         could_not_resolve_all = []
         resolved_one = false

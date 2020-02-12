@@ -47,7 +47,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('Procedure'),
+          assert @instance.server_capabilities&.search_documented?('Procedure'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -122,6 +122,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Procedure', ['patient'])
         @procedure_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -167,6 +168,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Procedure', ['patient', 'date'])
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -216,6 +218,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Procedure', ['patient', 'code', 'date'])
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -265,6 +268,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Procedure', ['patient', 'status'])
         skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []

@@ -39,7 +39,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('AllergyIntolerance'),
+          assert @instance.server_capabilities&.search_documented?('AllergyIntolerance'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -114,6 +114,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('AllergyIntolerance', ['patient'])
         @allergy_intolerance_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -159,6 +160,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('AllergyIntolerance', ['patient', 'clinical-status'])
         skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []

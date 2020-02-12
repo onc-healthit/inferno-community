@@ -43,7 +43,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('Immunization'),
+          assert @instance.server_capabilities&.search_documented?('Immunization'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -118,6 +118,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Immunization', ['patient'])
         @immunization_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -164,6 +165,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Immunization', ['patient', 'date'])
         skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -212,6 +214,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Immunization', ['patient', 'status'])
         skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []

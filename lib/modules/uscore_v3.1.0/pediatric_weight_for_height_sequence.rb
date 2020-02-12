@@ -51,7 +51,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('Observation'),
+          assert @instance.server_capabilities&.search_documented?('Observation'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -127,6 +127,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Observation', ['patient', 'code'])
         @observation_ary = {}
         @resources_found = false
 
@@ -174,6 +175,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Observation', ['patient', 'category', 'date'])
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -222,6 +224,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Observation', ['patient', 'category'])
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -264,6 +267,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Observation', ['patient', 'code', 'date'])
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -313,6 +317,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Observation', ['patient', 'category', 'status'])
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []

@@ -127,6 +127,8 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Location', ['name'])
+
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
         }
@@ -161,6 +163,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Location', ['address'])
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
@@ -188,6 +191,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Location', ['address-city'])
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
@@ -215,6 +219,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Location', ['address-state'])
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {
@@ -242,6 +247,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Location', ['address-postalcode'])
         skip 'No Location resources appear to be available.' unless @resources_found
 
         search_params = {

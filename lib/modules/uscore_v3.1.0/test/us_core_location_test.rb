@@ -14,7 +14,6 @@ describe Inferno::Sequence::USCore310LocationSequence do
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
-    set_resource_support(@instance, 'Location')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
@@ -26,7 +25,6 @@ describe Inferno::Sequence::USCore310LocationSequence do
     end
 
     it 'skips if the Location read interaction is not supported' do
-      @instance.server_capabilities.destroy
       Inferno::Models::ServerCapabilities.create(
         testing_instance_id: @instance.id,
         capabilities: FHIR::CapabilityStatement.new.to_json
@@ -142,7 +140,6 @@ describe Inferno::Sequence::USCore310LocationSequence do
     end
 
     it 'skips if the Location search interaction is not supported' do
-      @instance.server_capabilities.destroy
       Inferno::Models::ServerCapabilities.create(
         testing_instance_id: @instance.id,
         capabilities: FHIR::CapabilityStatement.new.to_json
@@ -193,6 +190,18 @@ describe Inferno::Sequence::USCore310LocationSequence do
       @query = {
         'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'name'))
       }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        []
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -258,6 +267,18 @@ describe Inferno::Sequence::USCore310LocationSequence do
       @query = {
         'address': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address'))
       }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        []
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Location resources have been found' do
@@ -331,6 +352,18 @@ describe Inferno::Sequence::USCore310LocationSequence do
       }
     end
 
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        []
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
+    end
+
     it 'skips if no Location resources have been found' do
       @sequence.instance_variable_set(:'@resources_found', false)
 
@@ -402,6 +435,18 @@ describe Inferno::Sequence::USCore310LocationSequence do
       }
     end
 
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        []
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
+    end
+
     it 'skips if no Location resources have been found' do
       @sequence.instance_variable_set(:'@resources_found', false)
 
@@ -471,6 +516,18 @@ describe Inferno::Sequence::USCore310LocationSequence do
       @query = {
         'address-postalcode': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@location_ary, 'address.postalCode'))
       }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        []
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Location resources have been found' do

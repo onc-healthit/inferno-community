@@ -116,6 +116,8 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Practitioner', ['name'])
+
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
@@ -150,6 +152,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Practitioner', ['identifier'])
         skip 'No Practitioner resources appear to be available.' unless @resources_found
 
         search_params = {

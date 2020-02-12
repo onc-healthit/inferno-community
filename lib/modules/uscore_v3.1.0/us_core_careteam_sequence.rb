@@ -39,7 +39,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('CareTeam'),
+          assert @instance.server_capabilities&.search_documented?('CareTeam'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -115,6 +115,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
         @care_team_ary = {}
         @resources_found = false
         values_found = 0
@@ -313,6 +314,8 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
 
         could_not_resolve_all = []
         resolved_one = false

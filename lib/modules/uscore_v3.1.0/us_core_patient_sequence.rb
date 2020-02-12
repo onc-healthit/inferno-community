@@ -108,6 +108,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['_id'])
         @patient_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -150,6 +151,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['identifier'])
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -187,6 +189,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['name'])
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -224,6 +227,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['gender', 'name'])
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -262,6 +266,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['birthdate', 'name'])
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -301,6 +306,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['birthdate', 'family'])
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
@@ -340,6 +346,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['family', 'gender'])
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
 
         could_not_resolve_all = []
