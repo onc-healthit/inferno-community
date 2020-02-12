@@ -278,12 +278,13 @@ module Inferno
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
           description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}",
-          test_code: ''
+          test_code: skip_if_not_found_code(sequence)
         }
         search_params = get_search_params(first_search[:names], sequence)
         resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
         if resolve_param_from_resource && !sequence[:delayed_sequence]
           revinclude_test[:test_code] += %(
+
             could_not_resolve_all = []
             resolved_one = false
           )
@@ -450,7 +451,7 @@ module Inferno
               )
             end
             %(
-              #{skip_if_not_found(sequence)}
+              #{skip_if_not_found_code(sequence)}
               #{resolved_one_str if resolve_param_from_resource && !sequence[:delayed_sequence]}
               #{reply_code}
               #{skip_if_could_not_resolve if resolve_param_from_resource && !sequence[:delayed_sequence]}
@@ -499,7 +500,7 @@ module Inferno
         }
 
         search_test[:test_code] = %(
-          #{skip_if_not_found(sequence)}
+          #{skip_if_not_found_code(sequence)}
 
           practitioner_role = @practitioner_role_ary.find { |role| role.practitioner&.reference.present? }
           skip_if practitioner_role.blank?, 'No PractitionerRoles containing a Practitioner reference were found'
@@ -569,7 +570,7 @@ module Inferno
 
         interaction_test[:test_code] = %(
               skip_if_known_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
-              skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
+              #{skip_if_not_found_code(sequence)}
 
               validate_#{interaction[:code]}_reply(#{validate_reply_args_string}))
 
@@ -617,7 +618,7 @@ module Inferno
         end
 
         test[:test_code] += %(
-          #{skip_if_not_found(sequence)}
+          #{skip_if_not_found_code(sequence)}
         )
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
@@ -740,7 +741,7 @@ module Inferno
         }
         profile_uri = validation_profile_uri(sequence)
         test[:test_code] = %(
-          #{skip_if_not_found(sequence)}
+          #{skip_if_not_found_code(sequence)}
           test_resources_against_profile('#{sequence[:resource]}'#{', ' + profile_uri if profile_uri}))
 
         if sequence[:required_concepts].present?
@@ -844,7 +845,7 @@ module Inferno
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         test[:test_code] = %(
               skip_if_known_not_supported(:#{sequence[:resource]}, [:search, :read])
-              #{skip_if_not_found(sequence)}
+              #{skip_if_not_found_code(sequence)}
 
               validated_resources = Set.new
               max_resolutions = 50
@@ -918,11 +919,10 @@ module Inferno
             assert_bundle_response(reply)
 
             @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-            #{skip_if_not_found(sequence)}
-            @#{sequence[:resource].underscore} = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-              .resource
+            #{skip_if_not_found_code(sequence)}
             @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary
+              .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
             save_resource_references(#{save_resource_references_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
@@ -942,11 +942,6 @@ module Inferno
 
               next unless any_resources
 
-              @resources_found = true
-
-              @#{sequence[:resource].underscore} = reply.resource.entry
-                .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-                .resource
               @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           )
 
@@ -957,16 +952,23 @@ module Inferno
                     device_codes.include?(coding.code)
                   end
                 end
+              if  @#{sequence[:resource].underscore}_ary[patient].blank? && reply&.resource&.entry&.present?
+                @skip_if_not_found_message = "No Devices of the specified type (\#{@instance&.device_codes}) were found"
+              end
             )
           end
 
           first_search + %(
+              @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary[patient]
+                .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
+              @resources_found = @#{sequence[:resource].underscore}.present?
+
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
             end
 
-            #{skip_if_not_found(sequence)}
+            #{skip_if_not_found_code(sequence)}
           )
         end
       end
@@ -1025,7 +1027,7 @@ module Inferno
               break#{' if values_found == 2' if find_two_values}
             end
           end
-          #{skip_if_not_found(sequence)})
+          #{skip_if_not_found_code(sequence)})
       end
 
       def get_search_params(search_parameters, sequence, grab_first_value = false)
@@ -1106,9 +1108,8 @@ module Inferno
         end
       end
 
-      def skip_if_not_found(sequence)
-        use_other_patient = ' Please use patients with more information.'
-        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
+      def skip_if_not_found_code(sequence)
+        "skip_if_not_found(resource_type: '#{sequence[:resource]}', delayed: #{sequence[:delayed_sequence]})"
       end
 
       def skip_if_could_not_resolve

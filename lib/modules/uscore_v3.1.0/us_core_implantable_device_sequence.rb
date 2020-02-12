@@ -13,7 +13,7 @@ module Inferno
 
       test_id_prefix 'USCID'
 
-      requires :token, :patient_ids
+      requires :token, :patient_ids, :device_codes
       conformance_supports :Device
 
       def validate_resource_item(resource, property, value)
@@ -82,6 +82,7 @@ module Inferno
         end
 
         @device_ary = {}
+        binding.pry
         patient_ids.each do |patient|
           search_params = {
             'patient': patient
@@ -102,7 +103,14 @@ module Inferno
             .find { |entry| entry&.resource&.resourceType == 'Device' }
             .resource
           @device_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
+            .select do |resource|
+            device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
+            device_codes.blank? || resource&.type&.coding&.any? do |coding|
+              device_codes.include?(coding.code)
+            end
+          end
+
+          save_resource_references(versioned_resource_class('Device'), @device_ary[patient])
           save_delayed_sequence_references(@device_ary[patient])
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         end
