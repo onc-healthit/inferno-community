@@ -65,7 +65,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
       exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
 
-      assert_equal 'This test is only valid for confidential clients.', exception.message
+      assert_equal 'This test is only applicable to confidential clients.', exception.message
     end
 
     it 'fails when the token refresh response has a success status' do

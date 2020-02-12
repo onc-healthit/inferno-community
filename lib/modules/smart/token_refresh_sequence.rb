@@ -62,7 +62,7 @@ module Inferno
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
 
-        omit 'This test is only valid for confidential clients.' unless @instance.confidential_client
+        omit 'This test is only applicable to confidential clients.' unless @instance.confidential_client
 
         skip_if_no_refresh_token
 

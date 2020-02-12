@@ -14,6 +14,8 @@ test_sets:
         - ManualRegistrationSequence
         - StandaloneLaunchSequence
         - EHRLaunchSequence
+        - TokenRefreshSequence
+        - OpenIDConnectSequence
       - name: US Core v3.1.0 Profiles
         run_all: true
         sequences:
