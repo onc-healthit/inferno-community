@@ -139,18 +139,18 @@ module Inferno
 
           next unless any_resources
 
-          @resources_found = true
-
-          @procedure = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Procedure' }
-            .resource
           @procedure_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('Procedure'), reply)
+
+          @procedure = @procedure_ary[patient]
+            .find { |resource| resource.resourceType == 'Procedure' }
+          @resources_found = @procedure.present?
+
+          save_resource_references(versioned_resource_class('Procedure'), @procedure_ary[patient])
           save_delayed_sequence_references(@procedure_ary[patient])
           validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
         end
 
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
       end
 
       test :search_by_patient_date do
@@ -167,7 +167,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -216,7 +216,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -265,7 +265,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -302,7 +302,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Procedure, [:read])
-        skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         validate_read_reply(@procedure, versioned_resource_class('Procedure'), check_for_data_absent_reasons)
       end
@@ -320,7 +320,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Procedure, [:vread])
-        skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         validate_vread_reply(@procedure, versioned_resource_class('Procedure'))
       end
@@ -338,7 +338,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Procedure, [:history])
-        skip 'No Procedure resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         validate_history_reply(@procedure, versioned_resource_class('Procedure'))
       end
@@ -352,7 +352,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -388,7 +388,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
         test_resources_against_profile('Procedure')
       end
 
@@ -413,7 +413,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         must_support_elements = [
           { path: 'Procedure.status' },
@@ -447,7 +447,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Procedure, [:search, :read])
-        skip 'No Procedure resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Procedure', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

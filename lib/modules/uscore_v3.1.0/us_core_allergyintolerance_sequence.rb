@@ -131,18 +131,18 @@ module Inferno
 
           next unless any_resources
 
-          @resources_found = true
-
-          @allergy_intolerance = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
-            .resource
           @allergy_intolerance_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
+
+          @allergy_intolerance = @allergy_intolerance_ary[patient]
+            .find { |resource| resource.resourceType == 'AllergyIntolerance' }
+          @resources_found = @allergy_intolerance.present?
+
+          save_resource_references(versioned_resource_class('AllergyIntolerance'), @allergy_intolerance_ary[patient])
           save_delayed_sequence_references(@allergy_intolerance_ary[patient])
           validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
       end
 
       test :search_by_patient_clinical_status do
@@ -159,7 +159,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -196,7 +196,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:read])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'), check_for_data_absent_reasons)
       end
@@ -214,7 +214,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:vread])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validate_vread_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
       end
@@ -232,7 +232,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:history])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validate_history_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
       end
@@ -246,7 +246,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -286,7 +286,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
         test_resources_against_profile('AllergyIntolerance') do |resource|
           ['clinicalStatus', 'verificationStatus'].flat_map do |path|
             concepts = resolve_path(resource, path)
@@ -322,7 +322,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         must_support_elements = [
           { path: 'AllergyIntolerance.clinicalStatus' },
@@ -356,7 +356,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

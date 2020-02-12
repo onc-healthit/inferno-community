@@ -946,7 +946,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       @sequence.instance_variable_set(:'@resources_found', false)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No Encounter resources could be found for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Encounter resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'fails if a non-success response code is received' do

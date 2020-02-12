@@ -126,13 +126,14 @@ module Inferno
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
+
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Practitioner' }
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
-        @practitioner = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Practitioner' }
-          .resource
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
         @practitioner_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-        save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
+        @practitioner = @practitioner_ary
+          .find { |resource| resource.resourceType == 'Practitioner' }
+
+        save_resource_references(versioned_resource_class('Practitioner'), @practitioner_ary)
         save_delayed_sequence_references(@practitioner_ary)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
@@ -150,7 +151,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
@@ -176,7 +177,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Practitioner, [:vread])
-        skip 'No Practitioner resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         validate_vread_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
@@ -194,7 +195,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Practitioner, [:history])
-        skip 'No Practitioner resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
@@ -208,7 +209,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
         provenance_results = []
 
         search_params = {
@@ -243,7 +244,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
         test_resources_against_profile('Practitioner')
       end
 
@@ -272,7 +273,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         must_support_slices = [
           {
@@ -328,7 +329,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Practitioner, [:search, :read])
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         validated_resources = Set.new
         max_resolutions = 50

@@ -137,13 +137,14 @@ module Inferno
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
+
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Location' }
-        skip 'No Location resources appear to be available.' unless @resources_found
-        @location = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Location' }
-          .resource
+        skip_if_not_found(resource_type: 'Location', delayed: true)
         @location_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-        save_resource_ids_in_bundle(versioned_resource_class('Location'), reply)
+        @location = @location_ary
+          .find { |resource| resource.resourceType == 'Location' }
+
+        save_resource_references(versioned_resource_class('Location'), @location_ary)
         save_delayed_sequence_references(@location_ary)
         validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
@@ -161,7 +162,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
@@ -188,7 +189,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
           'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
@@ -215,7 +216,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
           'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
@@ -242,7 +243,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
           'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
@@ -268,7 +269,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Location, [:vread])
-        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         validate_vread_reply(@location, versioned_resource_class('Location'))
       end
@@ -286,7 +287,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Location, [:history])
-        skip 'No Location resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         validate_history_reply(@location, versioned_resource_class('Location'))
       end
@@ -300,7 +301,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Location', delayed: true)
         provenance_results = []
 
         search_params = {
@@ -335,7 +336,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
         test_resources_against_profile('Location')
       end
 
@@ -370,7 +371,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         must_support_elements = [
           { path: 'Location.status' },
@@ -409,7 +410,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Location, [:search, :read])
-        skip 'No Location resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Location', delayed: true)
 
         validated_resources = Set.new
         max_resolutions = 50

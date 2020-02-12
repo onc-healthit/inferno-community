@@ -150,14 +150,14 @@ module Inferno
               .resource
             @observation_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
 
-            save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
+            save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
             save_delayed_sequence_references(@observation_ary[patient])
             validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
 
             break
           end
         end
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
       end
 
       test :search_by_patient_category_date do
@@ -174,7 +174,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -222,7 +222,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -264,7 +264,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -313,7 +313,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -351,7 +351,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:read])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validate_read_reply(@observation, versioned_resource_class('Observation'), check_for_data_absent_reasons)
       end
@@ -369,7 +369,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:vread])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validate_vread_reply(@observation, versioned_resource_class('Observation'))
       end
@@ -387,7 +387,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:history])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
@@ -401,6 +401,7 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -447,7 +448,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
       end
 
@@ -530,7 +531,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         must_support_slices = [
           {
@@ -662,7 +663,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:search, :read])
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50
