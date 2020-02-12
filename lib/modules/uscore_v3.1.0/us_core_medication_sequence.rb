@@ -106,6 +106,17 @@ module Inferno
 
         skip 'No Medication resources appear to be available.' unless @resources_found
         test_resources_against_profile('Medication')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/medication-status|4.0.1',
+            path: 'status'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @medication_ary)
+        end
       end
 
       test 'All must support elements are provided in the Medication resources returned.' do

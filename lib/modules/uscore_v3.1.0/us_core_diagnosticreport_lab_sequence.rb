@@ -476,6 +476,17 @@ module Inferno
 
         skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/diagnostic-report-status',
+            path: 'status'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @diagnostic_report_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the DiagnosticReport resources returned.' do

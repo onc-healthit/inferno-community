@@ -449,6 +449,17 @@ module Inferno
 
         skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/observation-status',
+            path: 'status'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @observation_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Observation resources returned.' do

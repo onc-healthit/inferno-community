@@ -255,6 +255,17 @@ module Inferno
 
         skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('CareTeam')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/care-team-status',
+            path: 'status'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @care_team_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the CareTeam resources returned.' do

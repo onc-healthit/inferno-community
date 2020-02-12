@@ -442,6 +442,24 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = [
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/condition-clinical',
+            path: 'clinicalStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/condition-ver-status',
+            path: 'verificationStatus'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @condition_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Condition resources returned.' do

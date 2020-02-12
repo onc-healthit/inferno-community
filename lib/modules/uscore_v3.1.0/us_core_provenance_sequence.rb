@@ -106,6 +106,17 @@ module Inferno
 
         skip 'No Provenance resources appear to be available.' unless @resources_found
         test_resources_against_profile('Provenance')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-entity-role|4.0.1',
+            path: 'entity.role'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @provenance_ary)
+        end
       end
 
       test 'All must support elements are provided in the Provenance resources returned.' do

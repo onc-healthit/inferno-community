@@ -326,6 +326,29 @@ module Inferno
 
         skip 'No PractitionerRole resources appear to be available.' unless @resources_found
         test_resources_against_profile('PractitionerRole')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-system|4.0.1',
+            path: 'telecom.system'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-use|4.0.1',
+            path: 'telecom.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/days-of-week|4.0.1',
+            path: 'availableTime.daysOfWeek'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @practitioner_role_ary)
+        end
       end
 
       test 'All must support elements are provided in the PractitionerRole resources returned.' do

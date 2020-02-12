@@ -337,6 +337,17 @@ module Inferno
 
         skip 'No Immunization resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Immunization')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/immunization-status',
+            path: 'status'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @immunization_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Immunization resources returned.' do

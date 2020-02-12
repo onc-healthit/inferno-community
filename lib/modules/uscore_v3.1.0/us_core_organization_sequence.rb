@@ -244,6 +244,29 @@ module Inferno
 
         skip 'No Organization resources appear to be available.' unless @resources_found
         test_resources_against_profile('Organization')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use|4.0.1',
+            path: 'identifier.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
+            path: 'address.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
+            path: 'address.type'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @organization_ary)
+        end
       end
 
       test 'All must support elements are provided in the Organization resources returned.' do

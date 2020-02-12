@@ -337,6 +337,17 @@ module Inferno
 
         skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Goal')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/goal-status',
+            path: 'lifecycleStatus'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @goal_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Goal resources returned.' do

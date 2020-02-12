@@ -299,6 +299,48 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = [
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-clinical',
+            path: 'clinicalStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-verification',
+            path: 'verificationStatus'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-type|4.0.1',
+            path: 'type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-category|4.0.1',
+            path: 'category'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality|4.0.1',
+            path: 'criticality'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/reaction-event-severity|4.0.1',
+            path: 'reaction.severity'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @allergy_intolerance_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the AllergyIntolerance resources returned.' do

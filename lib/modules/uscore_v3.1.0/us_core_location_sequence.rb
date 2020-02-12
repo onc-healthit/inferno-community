@@ -337,6 +337,41 @@ module Inferno
 
         skip 'No Location resources appear to be available.' unless @resources_found
         test_resources_against_profile('Location')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/location-status|4.0.1',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/location-mode|4.0.1',
+            path: 'mode'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
+            path: 'address.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
+            path: 'address.type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/days-of-week|4.0.1',
+            path: 'hoursOfOperation.daysOfWeek'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @location_ary)
+        end
       end
 
       test 'All must support elements are provided in the Location resources returned.' do

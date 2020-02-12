@@ -463,6 +463,65 @@ module Inferno
 
         skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
         test_resources_against_profile('Patient')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use|4.0.1',
+            path: 'identifier.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/name-use|4.0.1',
+            path: 'name.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-system',
+            path: 'telecom.system'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-use',
+            path: 'telecom.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/administrative-gender',
+            path: 'gender'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
+            path: 'address.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
+            path: 'address.type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1',
+            path: 'contact.gender'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/link-type|4.0.1',
+            path: 'link.type'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @patient_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Patient resources returned.' do

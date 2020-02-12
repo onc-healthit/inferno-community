@@ -106,6 +106,7 @@ module Inferno
             base_path = get_base_path(supported_profile)
             profile_definition = @resource_by_path[base_path]
             add_required_codeable_concepts(profile_definition, new_sequence)
+            add_terminology_bindings(profile_definition, new_sequence)
             add_must_support_elements(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
             add_element_definitions(profile_definition, new_sequence)
@@ -192,6 +193,18 @@ module Inferno
             .gsub("#{sequence[:resource]}.", '')
             .gsub('[x]', 'CodeableConcept')
         end
+      end
+
+      def add_terminology_bindings(profile_definition, sequence)
+        sequence[:bindings] = profile_definition['snapshot']['element']
+          .select { |e| e['binding'].present? }
+          .map do |e|
+            { type: e['type'].first['code'],
+              strength: e.dig('binding', 'strength'),
+              system: e.dig('binding', 'valueSet'),
+              path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')
+            }
+          end
       end
 
       def add_must_support_elements(profile_definition, sequence)

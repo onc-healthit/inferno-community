@@ -546,6 +546,42 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/document-reference-status',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/composition-status|4.0.1',
+            path: 'docStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-type',
+            path: 'type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/document-relationship-type|4.0.1',
+            path: 'relatesTo.code'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/mimetypes|4.0.1',
+            path: 'content.attachment.contentType'
+          }
+        ]
+        bindings.each do |binding|
+          validate_terminology(binding, @document_reference_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the DocumentReference resources returned.' do

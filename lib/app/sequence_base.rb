@@ -859,6 +859,24 @@ module Inferno
           end
         end
       end
+
+      def validate_terminology(binding, resources)
+        validation_fn = FHIR::StructureDefinition.vs_validators[binding[:system]]
+        warning do
+          assert validation_fn.present?, "No system found for #{binding[:system]}"
+        end
+        return if validation_fn.blank?
+
+        invalid_code_found = resolve_element_from_path(resources, binding[:path]) do |el|
+          case binding['type']
+          when 'CodeableConcept'
+            el.coding.none? { |coding| validation_fn.call(coding.code) }
+          else
+            !validation_fn.call(el)
+          end
+        end
+        assert invalid_code_found.blank?, 'test'
+      end
     end
 
     Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).each { |file| require file }
