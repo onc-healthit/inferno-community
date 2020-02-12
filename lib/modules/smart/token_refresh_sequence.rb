@@ -149,11 +149,7 @@ module Inferno
         }
         oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
-        if @instance.confidential_client
-          oauth2_headers['Authorization'] = encoded_secret(client_id, @instance.client_secret)
-        else
-          oauth2_params['client_id'] = client_id
-        end
+        oauth2_headers['Authorization'] = encoded_secret(client_id, @instance.client_secret) if @instance.confidential_client
 
         oauth2_params['scope'] = @instance.scopes if provide_scope
 
