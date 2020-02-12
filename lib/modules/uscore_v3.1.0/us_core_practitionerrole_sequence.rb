@@ -119,13 +119,14 @@ module Inferno
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
+
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
-        @practitioner_role = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
-          .resource
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
         @practitioner_role_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-        save_resource_ids_in_bundle(versioned_resource_class('PractitionerRole'), reply)
+        @practitioner_role = @practitioner_role_ary
+          .find { |resource| resource.resourceType == 'PractitionerRole' }
+
+        save_resource_references(versioned_resource_class('PractitionerRole'), @practitioner_role_ary)
         save_delayed_sequence_references(@practitioner_role_ary)
         validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
@@ -143,7 +144,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         search_params = {
           'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
@@ -170,7 +171,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         practitioner_role = @practitioner_role_ary.find { |role| role.practitioner&.reference.present? }
         skip_if practitioner_role.blank?, 'No PractitionerRoles containing a Practitioner reference were found'
@@ -225,7 +226,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:PractitionerRole, [:vread])
-        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         validate_vread_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
       end
@@ -243,7 +244,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:PractitionerRole, [:history])
-        skip 'No PractitionerRole resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         validate_history_reply(@practitioner_role, versioned_resource_class('PractitionerRole'))
       end
@@ -289,7 +290,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
         provenance_results = []
 
         search_params = {
@@ -324,7 +325,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
         test_resources_against_profile('PractitionerRole')
       end
 
@@ -359,7 +360,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         must_support_elements = [
           { path: 'PractitionerRole.practitioner' },
@@ -398,7 +399,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:PractitionerRole, [:search, :read])
-        skip 'No PractitionerRole resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         validated_resources = Set.new
         max_resolutions = 50

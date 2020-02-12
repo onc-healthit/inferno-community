@@ -151,18 +151,18 @@ module Inferno
 
           next unless any_resources
 
-          @resources_found = true
-
-          @encounter = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Encounter' }
-            .resource
           @encounter_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('Encounter'), reply)
+
+          @encounter = @encounter_ary[patient]
+            .find { |resource| resource.resourceType == 'Encounter' }
+          @resources_found = @encounter.present?
+
+          save_resource_references(versioned_resource_class('Encounter'), @encounter_ary[patient])
           save_delayed_sequence_references(@encounter_ary[patient])
           validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
       end
 
       test :search_by__id do
@@ -178,7 +178,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -218,7 +218,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -266,7 +266,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -306,7 +306,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -345,7 +345,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -386,7 +386,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -425,7 +425,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:read])
-        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validate_read_reply(@encounter, versioned_resource_class('Encounter'), check_for_data_absent_reasons)
       end
@@ -443,7 +443,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:vread])
-        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
       end
@@ -461,7 +461,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:history])
-        skip 'No Encounter resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end
@@ -475,7 +475,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -511,7 +511,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
         test_resources_against_profile('Encounter')
       end
 
@@ -562,7 +562,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         must_support_elements = [
           { path: 'Encounter.identifier' },
@@ -609,7 +609,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:search, :read])
-        skip 'No Encounter resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

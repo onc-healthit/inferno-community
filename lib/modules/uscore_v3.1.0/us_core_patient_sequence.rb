@@ -123,18 +123,18 @@ module Inferno
 
           next unless any_resources
 
-          @resources_found = true
-
-          @patient = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Patient' }
-            .resource
           @patient_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('Patient'), reply)
+
+          @patient = @patient_ary[patient]
+            .find { |resource| resource.resourceType == 'Patient' }
+          @resources_found = @patient.present?
+
+          save_resource_references(versioned_resource_class('Patient'), @patient_ary[patient])
           save_delayed_sequence_references(@patient_ary[patient])
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
       end
 
       test :search_by_identifier do
@@ -150,7 +150,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -187,7 +187,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -224,7 +224,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -262,7 +262,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -301,7 +301,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -340,7 +340,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -377,7 +377,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Patient, [:read])
-        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         validate_read_reply(@patient, versioned_resource_class('Patient'), check_for_data_absent_reasons)
       end
@@ -395,7 +395,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Patient, [:vread])
-        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         validate_vread_reply(@patient, versioned_resource_class('Patient'))
       end
@@ -413,7 +413,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Patient, [:history])
-        skip 'No Patient resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         validate_history_reply(@patient, versioned_resource_class('Patient'))
       end
@@ -427,7 +427,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -461,7 +461,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
         test_resources_against_profile('Patient')
       end
 
@@ -524,7 +524,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         must_support_extensions = {
           'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
@@ -587,7 +587,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Patient, [:search, :read])
-        skip 'No Patient resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

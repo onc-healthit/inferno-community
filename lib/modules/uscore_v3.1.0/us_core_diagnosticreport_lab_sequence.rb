@@ -150,14 +150,14 @@ module Inferno
               .resource
             @diagnostic_report_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
 
-            save_resource_ids_in_bundle(versioned_resource_class('DiagnosticReport'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
+            save_resource_references(versioned_resource_class('DiagnosticReport'), @diagnostic_report_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
             save_delayed_sequence_references(@diagnostic_report_ary[patient])
             validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
 
             break
           end
         end
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
       end
 
       test :search_by_patient do
@@ -173,7 +173,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         patient_ids.each do |patient|
           search_params = {
@@ -201,7 +201,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -242,7 +242,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -291,7 +291,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -331,7 +331,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -378,7 +378,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DiagnosticReport, [:read])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         validate_read_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'), check_for_data_absent_reasons)
       end
@@ -396,7 +396,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DiagnosticReport, [:vread])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         validate_vread_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
       end
@@ -414,7 +414,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DiagnosticReport, [:history])
-        skip 'No DiagnosticReport resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         validate_history_reply(@diagnostic_report, versioned_resource_class('DiagnosticReport'))
       end
@@ -428,6 +428,7 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -474,7 +475,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
         test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
       end
 
@@ -509,7 +510,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         must_support_slices = [
           {
@@ -569,7 +570,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DiagnosticReport, [:search, :read])
-        skip 'No DiagnosticReport resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

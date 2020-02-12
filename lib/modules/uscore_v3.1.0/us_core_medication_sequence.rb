@@ -67,7 +67,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Medication, [:vread])
-        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         validate_vread_reply(@medication, versioned_resource_class('Medication'))
       end
@@ -85,7 +85,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Medication, [:history])
-        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
@@ -104,7 +104,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
         test_resources_against_profile('Medication')
       end
 
@@ -123,7 +123,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         must_support_elements = [
           { path: 'Medication.code' }
@@ -154,7 +154,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Medication, [:search, :read])
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         validated_resources = Set.new
         max_resolutions = 50

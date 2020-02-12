@@ -135,18 +135,18 @@ module Inferno
 
           next unless any_resources
 
-          @resources_found = true
-
-          @goal = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Goal' }
-            .resource
           @goal_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
+
+          @goal = @goal_ary[patient]
+            .find { |resource| resource.resourceType == 'Goal' }
+          @resources_found = @goal.present?
+
+          save_resource_references(versioned_resource_class('Goal'), @goal_ary[patient])
           save_delayed_sequence_references(@goal_ary[patient])
           validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         end
 
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
       end
 
       test :search_by_patient_target_date do
@@ -164,7 +164,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -212,7 +212,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -249,7 +249,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Goal, [:read])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validate_read_reply(@goal, versioned_resource_class('Goal'), check_for_data_absent_reasons)
       end
@@ -267,7 +267,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Goal, [:vread])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validate_vread_reply(@goal, versioned_resource_class('Goal'))
       end
@@ -285,7 +285,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Goal, [:history])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validate_history_reply(@goal, versioned_resource_class('Goal'))
       end
@@ -299,7 +299,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -335,7 +335,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
         test_resources_against_profile('Goal')
       end
 
@@ -362,7 +362,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         must_support_slices = [
           {
@@ -416,7 +416,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Goal, [:search, :read])
-        skip 'No Goal resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

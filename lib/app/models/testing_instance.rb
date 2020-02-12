@@ -64,6 +64,8 @@ module Inferno
       property :data_absent_code_found, Boolean
       property :data_absent_extension_found, Boolean
 
+      property :device_codes, String
+
       # Bulk Data Parameters
       property :bulk_url, String
       property :bulk_token_endpoint, String
@@ -250,14 +252,20 @@ module Inferno
         reload
       end
 
+      def save_resource_references(klass, resources, profile = nil)
+        resources
+          .select { |resource| resource.is_a? klass }
+          .each do |resource|
+            save_resource_reference(klass.name.demodulize, resource.id, profile)
+          end
+      end
+
       def save_resource_ids_in_bundle(klass, reply, profile = nil)
         return if reply&.resource&.entry&.blank?
 
-        reply.resource.entry
-          .select { |entry| entry.resource.class == klass }
-          .each do |entry|
-          save_resource_reference(klass.name.demodulize, entry.resource.id, profile)
-        end
+        resources = reply.resource.entry.map(&:resource)
+
+        save_resource_references(klass, resources, profile)
       end
 
       def versioned_conformance_class

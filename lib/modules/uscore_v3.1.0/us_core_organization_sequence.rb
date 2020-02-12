@@ -125,13 +125,14 @@ module Inferno
 
         assert_response_ok(reply)
         assert_bundle_response(reply)
+
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
-        skip 'No Organization resources appear to be available.' unless @resources_found
-        @organization = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Organization' }
-          .resource
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
         @organization_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-        save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
+        @organization = @organization_ary
+          .find { |resource| resource.resourceType == 'Organization' }
+
+        save_resource_references(versioned_resource_class('Organization'), @organization_ary)
         save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
@@ -149,7 +150,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
@@ -175,7 +176,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Organization, [:vread])
-        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         validate_vread_reply(@organization, versioned_resource_class('Organization'))
       end
@@ -193,7 +194,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Organization, [:history])
-        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end
@@ -207,7 +208,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
         provenance_results = []
 
         search_params = {
@@ -242,7 +243,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
         test_resources_against_profile('Organization')
       end
 
@@ -287,7 +288,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         must_support_slices = [
           {
@@ -359,7 +360,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Organization, [:search, :read])
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         validated_resources = Set.new
         max_resolutions = 50

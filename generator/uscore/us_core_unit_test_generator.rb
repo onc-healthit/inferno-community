@@ -129,7 +129,7 @@ module Inferno
 
       def no_resources_found_message(interaction_test, resource_type)
         if interaction_test
-          "No #{resource_type} resources could be found for this patient. Please use patients with more information."
+          "No #{resource_type} resources appear to be available. Please use patients with more information."
         else
           "No #{resource_type} references found from the prior searches"
         end

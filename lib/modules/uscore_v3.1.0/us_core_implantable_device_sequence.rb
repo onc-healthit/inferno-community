@@ -13,7 +13,7 @@ module Inferno
 
       test_id_prefix 'USCID'
 
-      requires :token, :patient_ids
+      requires :token, :patient_ids, :device_codes
       conformance_supports :Device
 
       def validate_resource_item(resource, property, value)
@@ -96,18 +96,27 @@ module Inferno
 
           next unless any_resources
 
-          @resources_found = true
-
-          @device = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Device' }
-            .resource
           @device_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          save_resource_ids_in_bundle(versioned_resource_class('Device'), reply)
+            .select do |resource|
+            device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
+            device_codes.blank? || resource&.type&.coding&.any? do |coding|
+              device_codes.include?(coding.code)
+            end
+          end
+          if @device_ary[patient].blank? && reply&.resource&.entry&.present?
+            @skip_if_not_found_message = "No Devices of the specified type (#{@instance&.device_codes}) were found"
+          end
+
+          @device = @device_ary[patient]
+            .find { |resource| resource.resourceType == 'Device' }
+          @resources_found = @device.present?
+
+          save_resource_references(versioned_resource_class('Device'), @device_ary[patient])
           save_delayed_sequence_references(@device_ary[patient])
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         end
 
-        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
       end
 
       test :search_by_patient_type do
@@ -124,7 +133,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -161,7 +170,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Device, [:read])
-        skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
 
         validate_read_reply(@device, versioned_resource_class('Device'), check_for_data_absent_reasons)
       end
@@ -179,7 +188,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Device, [:vread])
-        skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
 
         validate_vread_reply(@device, versioned_resource_class('Device'))
       end
@@ -197,7 +206,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Device, [:history])
-        skip 'No Device resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
 
         validate_history_reply(@device, versioned_resource_class('Device'))
       end
@@ -211,7 +220,7 @@ module Inferno
           )
           versions :r4
         end
-
+        skip_if_not_found(resource_type: 'Device', delayed: false)
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -245,7 +254,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
         test_resources_against_profile('Device')
       end
 
@@ -284,7 +293,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
 
         must_support_elements = [
           { path: 'Device.udiCarrier' },
@@ -325,7 +334,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Device, [:search, :read])
-        skip 'No Device resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Device', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

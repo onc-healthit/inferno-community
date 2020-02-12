@@ -26,5 +26,11 @@ module Inferno
         skip "Invalid #{url_name} URI: '#{url}'", details
       end
     end
+
+    def skip_if_not_found(resource_type:, delayed:)
+      default_message = "No #{resource_type} resources appear to be available."
+      default_message += ' Please use patients with more information.' unless delayed
+      skip_unless @resources_found, @skip_if_not_found_message || default_message
+    end
   end
 end

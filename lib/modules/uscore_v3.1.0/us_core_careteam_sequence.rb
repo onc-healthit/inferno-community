@@ -137,14 +137,14 @@ module Inferno
             @care_team_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             values_found += 1
 
-            save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
+            save_resource_references(versioned_resource_class('CareTeam'), @care_team_ary[patient])
             save_delayed_sequence_references(@care_team_ary[patient])
             validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
 
             break if values_found == 2
           end
         end
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
       end
 
       test :read_interaction do
@@ -159,7 +159,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:read])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         validate_read_reply(@care_team, versioned_resource_class('CareTeam'), check_for_data_absent_reasons)
       end
@@ -177,7 +177,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:vread])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         validate_vread_reply(@care_team, versioned_resource_class('CareTeam'))
       end
@@ -195,7 +195,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:history])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         validate_history_reply(@care_team, versioned_resource_class('CareTeam'))
       end
@@ -209,6 +209,7 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         could_not_resolve_all = []
         resolved_one = false
@@ -253,7 +254,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
         test_resources_against_profile('CareTeam')
       end
 
@@ -280,7 +281,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         must_support_elements = [
           { path: 'CareTeam.status' },
@@ -358,7 +359,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:search, :read])
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50

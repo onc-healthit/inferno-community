@@ -67,7 +67,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Provenance, [:vread])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
       end
@@ -85,7 +85,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Provenance, [:history])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validate_history_reply(@provenance, versioned_resource_class('Provenance'))
       end
@@ -104,7 +104,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Provenance resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
         test_resources_against_profile('Provenance')
       end
 
@@ -141,7 +141,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Provenance resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         must_support_slices = [
           {
@@ -211,7 +211,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Provenance, [:search, :read])
-        skip 'No Provenance resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validated_resources = Set.new
         max_resolutions = 50
