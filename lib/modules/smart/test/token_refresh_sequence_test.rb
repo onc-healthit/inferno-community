@@ -317,8 +317,6 @@ class TokenRefreshSequenceTest < MiniTest::Test
 
     if @instance.client_secret.present?
       headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
-    else
-      body['client_id'] = body_with_scope['client_id'] = @instance.client_id
     end
 
     stub_request(:post, @instance.oauth_token_endpoint)
