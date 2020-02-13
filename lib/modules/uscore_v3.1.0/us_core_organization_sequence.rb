@@ -264,8 +264,8 @@ module Inferno
             path: 'address.type'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @organization_ary)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @organization_ary)
         end
       end
 

@@ -114,8 +114,8 @@ module Inferno
             path: 'status'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @medication_ary)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @medication_ary)
         end
       end
 

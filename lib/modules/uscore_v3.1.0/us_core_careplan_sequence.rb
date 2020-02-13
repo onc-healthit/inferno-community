@@ -437,8 +437,8 @@ module Inferno
             path: 'activity.detail.status'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @care_plan_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @care_plan_ary&.values&.flatten)
         end
       end
 

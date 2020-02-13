@@ -265,8 +265,8 @@ module Inferno
             path: 'gender'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @practitioner_ary)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @practitioner_ary)
         end
       end
 

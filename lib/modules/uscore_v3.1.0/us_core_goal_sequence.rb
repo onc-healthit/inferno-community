@@ -345,8 +345,8 @@ module Inferno
             path: 'lifecycleStatus'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @goal_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @goal_ary&.values&.flatten)
         end
       end
 

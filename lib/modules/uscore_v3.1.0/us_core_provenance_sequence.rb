@@ -114,8 +114,8 @@ module Inferno
             path: 'entity.role'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @provenance_ary)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @provenance_ary)
         end
       end
 

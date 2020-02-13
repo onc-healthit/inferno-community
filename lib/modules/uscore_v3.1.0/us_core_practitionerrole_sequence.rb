@@ -346,8 +346,8 @@ module Inferno
             path: 'availableTime.daysOfWeek'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @practitioner_role_ary)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @practitioner_role_ary)
         end
       end
 

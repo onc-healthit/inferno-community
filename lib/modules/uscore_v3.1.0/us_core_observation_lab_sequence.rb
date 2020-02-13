@@ -457,8 +457,8 @@ module Inferno
             path: 'status'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @observation_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @observation_ary&.values&.flatten)
         end
       end
 

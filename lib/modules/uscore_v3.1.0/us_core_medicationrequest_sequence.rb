@@ -487,8 +487,8 @@ module Inferno
             path: 'priority'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @medication_request_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @medication_request_ary&.values&.flatten)
         end
       end
 

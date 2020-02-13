@@ -338,8 +338,8 @@ module Inferno
             path: 'reaction.severity'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @allergy_intolerance_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @allergy_intolerance_ary&.values&.flatten)
         end
       end
 

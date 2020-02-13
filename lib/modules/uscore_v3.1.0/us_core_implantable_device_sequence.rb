@@ -267,8 +267,8 @@ module Inferno
             path: 'deviceName.type'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @device_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @device_ary&.values&.flatten)
         end
       end
 

@@ -519,8 +519,8 @@ module Inferno
             path: 'link.type'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @patient_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @patient_ary&.values&.flatten)
         end
       end
 

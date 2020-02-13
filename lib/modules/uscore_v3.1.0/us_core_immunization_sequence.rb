@@ -345,8 +345,8 @@ module Inferno
             path: 'status'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @immunization_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @immunization_ary&.values&.flatten)
         end
       end
 

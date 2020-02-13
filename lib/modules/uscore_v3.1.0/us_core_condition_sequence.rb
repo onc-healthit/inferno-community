@@ -457,8 +457,8 @@ module Inferno
             path: 'verificationStatus'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @condition_ary&.values&.flatten)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @condition_ary&.values&.flatten)
         end
       end
 

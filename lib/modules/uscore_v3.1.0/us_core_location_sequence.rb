@@ -369,8 +369,8 @@ module Inferno
             path: 'hoursOfOperation.daysOfWeek'
           }
         ]
-        bindings.each do |binding|
-          validate_terminology(binding, @location_ary)
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @location_ary)
         end
       end
 
