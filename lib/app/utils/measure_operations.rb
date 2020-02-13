@@ -15,7 +15,7 @@ module Inferno
     end
 
     def create_measure_report(measure_id, patient_id, period_start, period_end)
-      FHIR::STU3::MeasureReport.new.from_hash(
+      FHIR::MeasureReport.new.from_hash(
         type: 'individual',
         _type: {
           'extension': [
@@ -42,13 +42,13 @@ module Inferno
     end
 
     def submit_data(measure_id, patient_resources, measure_report)
-      parameters = FHIR::STU3::Parameters.new
-      measure_report_param = FHIR::STU3::Parameters::Parameter.new(name: 'measure-report')
+      parameters = FHIR::Parameters.new
+      measure_report_param = FHIR::Parameters::Parameter.new(name: 'measure-report')
       measure_report_param.resource = measure_report
       parameters.parameter.push(measure_report_param)
 
       patient_resources.each do |r|
-        resource_param = FHIR::STU3::Parameters::Parameter.new(name: 'resource')
+        resource_param = FHIR::Parameters::Parameter.new(name: 'resource')
         resource_param.resource = r
         parameters.parameter.push(resource_param)
       end
@@ -112,7 +112,7 @@ module Inferno
       measure_request = cqf_ruler_client.client.get("#{measures_endpoint}/#{measure_id}")
       raise StandardError, "Could not retrieve measure #{measure_id} from CQF Ruler." if measure_request.code != 200
 
-      FHIR::STU3::Measure.new JSON.parse(measure_request.body)
+      FHIR::Measure.new JSON.parse(measure_request.body)
     end
 
     def get_measure_evaluation(measure_id, params = {})
@@ -121,7 +121,7 @@ module Inferno
       evaluation_response = cqf_ruler_client.client.get("#{measure_evaluation_endpoint}/#{measure_id}/$evaluate-measure#{params_string}")
       raise StandardError, "Could not retrieve measure_evaluation #{measure_id} from CQF Ruler." if evaluation_response.code != 200
 
-      FHIR::STU3::MeasureReport.new JSON.parse(evaluation_response.body)
+      FHIR::MeasureReport.new JSON.parse(evaluation_response.body)
     end
 
     def get_library_resource(library_id)
@@ -129,7 +129,7 @@ module Inferno
       library_request = cqf_ruler_client.client.get("#{libraries_endpoint}/#{library_id}")
       raise StandardError, "Could not retrieve library #{library_id} from CQF Ruler." if library_request.code != 200
 
-      FHIR::STU3::Library.new JSON.parse(library_request.body)
+      FHIR::Library.new JSON.parse(library_request.body)
     end
 
     def get_all_dependent_valuesets(measure_id)
@@ -137,7 +137,7 @@ module Inferno
 
       # The entry measure has related libraries but no data requirements, so
       # grab the main library.
-      main_library_id = measure.library[0].reference.sub('Library/', '')
+      main_library_id = measure.library[0].sub('Library/', '')
       main_library = get_library_resource(main_library_id)
 
       get_all_library_dependent_valuesets(main_library)
@@ -145,13 +145,13 @@ module Inferno
 
     def get_required_library_ids(library)
       refs = library.relatedArtifact.select { |ref| ref.type == 'depends-on' }
-      refs.map { |ref| ref.resource.reference.sub 'Library/', '' }
+      refs.map { |ref| ref.resource.sub 'Library/', '' }
     end
 
     def get_valueset_urls(library)
       library.dataRequirement.lazy
-        .select { |dr| !dr.codeFilter.nil? && !dr.codeFilter[0].nil? && !dr.codeFilter[0].valueSetString.nil? }
-        .map { |dr| dr.codeFilter[0].valueSetString[/([0-9]+\.)+[0-9]+/] }
+        .select { |dr| !dr.codeFilter.nil? && !dr.codeFilter[0].nil? && !dr.codeFilter[0].valueSet.nil? }
+        .map { |dr| dr.codeFilter[0].valueSet[/([0-9]+\.)+[0-9]+/] }
         .uniq
         .to_a
     end

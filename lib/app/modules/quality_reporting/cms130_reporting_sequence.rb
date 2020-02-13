@@ -47,7 +47,7 @@ module Inferno
       test 'Evaluate Measure' do
         metadata do
           id '01'
-          link 'https://hl7.org/fhir/STU3/measure-operations.html#evaluate-measure'
+          link 'https://www.hl7.org/fhir/operation-measure-evaluate-measure.html'
           desc 'Run the $evaluate-measure operation for an individual that should be in the IPP and Denominator'
         end
 
@@ -62,7 +62,7 @@ module Inferno
         assert_response_ok evaluate_measure_response
 
         # Load response body into a FHIR MeasureReport class
-        measure_report = FHIR::STU3.from_contents(evaluate_measure_response.body)
+        measure_report = FHIR.from_contents(evaluate_measure_response.body)
         group = measure_report&.group
         assert(!group.nil?)
 
@@ -94,17 +94,17 @@ module Inferno
         assert_response_ok collect_data_response
 
         # Load response body into a FHIR Parameters class
-        parameters = FHIR::STU3.from_contents(collect_data_response.body)
+        parameters = FHIR.from_contents(collect_data_response.body)
         assert !parameters.nil?, 'Response must be a Parameters object.'
 
         # Assert that the Parameters response contains a MeasureReport
-        measure_report_param = parameters.parameter.find { |p| p.resource.is_a?(FHIR::STU3::MeasureReport) }
+        measure_report_param = parameters.parameter.find { |p| p.resource.is_a?(FHIR::MeasureReport) }
         assert !measure_report_param.nil?, 'Response Parameters must contain a MeasureReport.'
         assert measure_report_param.name == 'measurereport', 'Expected MeasureReport Parameter to have name "measurereport".'
 
         # Assert that the Parameters response contains the Patient
         patient_param = parameters.parameter.find do |p|
-          p.resource.is_a?(FHIR::STU3::Patient) &&
+          p.resource.is_a?(FHIR::Patient) &&
             p.resource.id == patient_id
         end
         assert !patient_param.nil?, "Response Parameters must contain Patient: #{patient_id}."
@@ -112,7 +112,7 @@ module Inferno
 
         # Assert that the Parameters response contains the Observation
         observation_param = parameters.parameter.find do |p|
-          p.resource.is_a?(FHIR::STU3::Observation) &&
+          p.resource.is_a?(FHIR::Observation) &&
             p.resource.id == observation_id
         end
         assert !observation_param.nil?, "Response Parameters must contain the Observation relevant to the measure: #{observation_id}."

@@ -31,7 +31,7 @@ module Inferno
       test 'Evaluate Measure' do
         metadata do
           id '01'
-          link 'https://hl7.org/fhir/STU3/measure-operations.html#evaluate-measure'
+          link 'https://www.hl7.org/fhir/operation-measure-evaluate-measure.html'
           desc 'Run the $evaluate-measure operation for an individual that should be in the IPP and Denominator'
         end
 
