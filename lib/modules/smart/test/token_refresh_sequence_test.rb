@@ -315,9 +315,7 @@ class TokenRefreshSequenceTest < MiniTest::Test
     exchange_response_json = exchange_response.to_json
     exchange_response_json = '<bad>' if failure_mode == :bad_json_response
 
-    if @instance.client_secret.present?
-      headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
-    end
+    headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}" if @instance.client_secret.present?
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,
