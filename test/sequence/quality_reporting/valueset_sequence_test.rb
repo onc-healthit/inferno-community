@@ -21,12 +21,9 @@ class ValueSetSequenceTest < MiniTest::Test
 
   # load up the CMS130 artifacts to use for testing
   PROJECT_ROOT = "#{__dir__}/../../.."
-  EXM_130_MEASURE_PATH = File.expand_path('test/fixtures/measure-EXM130_FHIR4-7.2.000.json', PROJECT_ROOT)
-  EXM_130_DEPENDENT_LIBRARY_BUNDLE_PATH = File.expand_path('test/fixtures/library-deps-EXM130_FHIR4-7.2.000-bundle.json', PROJECT_ROOT)
-  EXM_130_MAIN_LIBRARY_PATH = File.expand_path('test/fixtures/library-EXM130_FHIR4-7.2.000.json', PROJECT_ROOT)
-  EXM_130_MEASURE = FHIR::Measure.new JSON.parse(File.read(EXM_130_MEASURE_PATH))
-  EXM_130_MAIN_LIBRARY = FHIR::Library.new JSON.parse(File.read(EXM_130_MAIN_LIBRARY_PATH))
-  EXM_130_DEPENDENT_LIBRARY_BUNDLE = FHIR::Bundle.new JSON.parse(File.read(EXM_130_DEPENDENT_LIBRARY_BUNDLE_PATH))
+  EXM_130_MEASURE = FHIR::Measure.new load_json_fixture('measure-EXM130_FHIR4-7.2.000')
+  EXM_130_MAIN_LIBRARY = FHIR::Library.new load_json_fixture('library-EXM130_FHIR4-7.2.000')
+  EXM_130_DEPENDENT_LIBRARY_BUNDLE = FHIR::Bundle.new load_json_fixture('library-deps-EXM130_FHIR4-7.2.000-bundle')
 
   MEASURES_TO_TEST = [
     {
@@ -38,7 +35,6 @@ class ValueSetSequenceTest < MiniTest::Test
 
   def stub_measure_resource_requests(measure_info)
     measure_resource = measure_info[:measure]
-
     stub_request(:get, "http://localhost:8080/cqf-ruler-r4/fhir/Measure/#{measure_info[:measure].id}")
       .with(headers: CQF_REQUEST_HEADERS)
       .to_return(status: 200, body: measure_resource.to_json, headers: {})
