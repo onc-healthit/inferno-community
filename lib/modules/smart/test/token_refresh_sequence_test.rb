@@ -35,7 +35,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with(body: hash_including(refresh_token: @sequence_class::INVALID_REFRESH_TOKEN))
         .to_return(status: 200)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh response has an error status' do
@@ -50,19 +52,35 @@ describe Inferno::Sequence::TokenRefreshSequence do
   describe 'invalid client id test' do
     before do
       @test = @sequence_class[:invalid_client_id]
+      @client_secret = 'SECRET'
+      @instance.client_secret = @client_secret
+      @instance.confidential_client = true
+      @auth_header = {
+        'Authorization': @sequence.encoded_secret(@sequence_class::INVALID_CLIENT_ID, @client_secret)
+      }
+    end
+
+    it 'omits when the using a public client' do
+      @instance.confidential_client = false
+
+      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
+
+      assert_equal 'This test is only applicable to confidential clients.', exception.message
     end
 
     it 'fails when the token refresh response has a success status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
+        .with(headers: @auth_header)
         .to_return(status: 200)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh has an error status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
+        .with(headers: @auth_header)
         .to_return(status: 400)
 
       @sequence.run_test(@test)
@@ -94,7 +112,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with(body: hash_including(scope: 'jkl'))
         .to_return(status: 400)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
   end
 
@@ -123,7 +143,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
         .with { |request| !request.body.include? 'scope' }
         .to_return(status: 400)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
   end
 
@@ -293,11 +315,7 @@ class TokenRefreshSequenceTest < MiniTest::Test
     exchange_response_json = exchange_response.to_json
     exchange_response_json = '<bad>' if failure_mode == :bad_json_response
 
-    if @instance.client_secret.present?
-      headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}"
-    else
-      body['client_id'] = body_with_scope['client_id'] = @instance.client_id
-    end
+    headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.client_id + ':' + @instance.client_secret)}" if @instance.client_secret.present?
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,

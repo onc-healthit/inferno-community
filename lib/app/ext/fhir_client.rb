@@ -48,11 +48,7 @@ module FHIR
       }
       oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
-      if testing_instance.confidential_client
-        oauth2_headers['Authorization'] = encoded_secret(testing_instance.client_id, testing_instance.client_secret)
-      else
-        oauth2_params['client_id'] = testing_instance.client_id
-      end
+      oauth2_headers['Authorization'] = encoded_secret(testing_instance.client_id, testing_instance.client_secret) if testing_instance.confidential_client
 
       begin
         token_response = Inferno::LoggedRestClient.post(
