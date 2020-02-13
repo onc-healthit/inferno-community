@@ -16,7 +16,7 @@ class ValueSetSequenceTest < MiniTest::Test
     'Accept' => '*/*',
     'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
     'Host' => 'localhost:8080',
-    'User-Agent' => 'rest-client/2.1.0 (darwin18.7.0 x86_64) ruby/2.5.6p201'
+    'User-Agent' => %r{rest-client\/2.1.0.*ruby\/2.5.6p201}
   }.freeze
 
   # load up the CMS130 artifacts to use for testing
