@@ -25,7 +25,7 @@ class MeasureAvailabilityTest < MiniTest::Test
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', selected_module: 'quality_reporting')
     @instance.save!
     client = FHIR::Client.new(@instance.url)
-    client.use_stu3
+    client.use_r4
     client.default_json
     @sequence = Inferno::Sequence::MeasureAvailability.new(@instance, client, true)
   end
@@ -36,7 +36,7 @@ class MeasureAvailabilityTest < MiniTest::Test
     MEASURES_TO_TEST.each do |req|
       # Set other variables needed
       measure_search_fixture = load_json_fixture(req[:mock_get_measure_response])
-      measure_search_bundle = FHIR::STU3.from_contents(measure_search_fixture.to_json)
+      measure_search_bundle = FHIR.from_contents(measure_search_fixture.to_json)
 
       @instance.measure_to_test = req[:measure_id]
       @instance.module.measures = measure_search_bundle.entry
