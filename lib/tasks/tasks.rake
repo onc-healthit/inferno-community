@@ -790,7 +790,6 @@ namespace :terminology do |_argv|
     Inferno::Terminology.register_umls_db args.database
     Inferno::Terminology.load_valuesets_from_directory('resources', true)
     Inferno::Terminology.load_fhir_models_expansions
-    Inferno::Terminology.parse_codesystems_from_valuesets
     Inferno::Terminology.create_validators(validator_type)
   end
 end

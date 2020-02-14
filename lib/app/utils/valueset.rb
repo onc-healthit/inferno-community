@@ -65,7 +65,7 @@ module Inferno
 
       # The ValueSet [Set]
       def valueset
-        @valueset || process
+        @valueset || process_valueset
       end
 
       # Read the desired valueset from a JSON file
@@ -93,13 +93,22 @@ module Inferno
         @valueset_model.compose.include.map(&:system).compact.uniq
       end
 
-      # Creates the whole valueset
       # Delegates to process_expanded_valueset if there's already an expansion
       # Otherwise it delegates to process_valueset to do the expansion
-      def process
+      def process_with_expansions
+        valueset_toocostly = @valueset_model&.expansion&.extension&.find { |vs| vs.url == 'http://hl7.org/fhir/StructureDefinition/valueset-toocostly' }&.value
+        valueset_unclosed = @valueset_model&.expansion&.extension&.find { |vs| vs.url == 'http://hl7.org/fhir/StructureDefinition/valueset-unclosed' }&.value
         if @valueset_model&.expansion&.contains
-          process_expanded_valueset
+          # This is moved into a nested clause so we can tell in the debug statements which path we're taking
+          if valueset_toocostly || valueset_unclosed
+            Inferno.logger.debug("Valueset too costly or unclosed: #{url}")
+            process_valueset
+          else
+            Inferno.logger.debug("Processing expanded valueset: #{url}")
+            process_expanded_valueset
+          end
         else
+          Inferno.logger.debug("Processing composed valueset: #{url}")
           process_valueset
         end
       end
