@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'securerandom'
-require_relative '../ext/measure_report'
 
 module Inferno
   module MeasureOperations
@@ -16,15 +15,7 @@ module Inferno
 
     def create_measure_report(measure_id, patient_id, period_start, period_end)
       FHIR::MeasureReport.new.from_hash(
-        type: 'individual',
-        _type: {
-          'extension': [
-            {
-              'url': 'https://www.hl7.org/fhir/measurereport-definitions.html#MeasureReport.type',
-              'valueString': 'data-collection'
-            }
-          ]
-        },
+        type: 'data-collection',
         identifier: [{
           value: SecureRandom.uuid
         }],
