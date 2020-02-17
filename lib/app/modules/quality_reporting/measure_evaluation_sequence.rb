@@ -23,7 +23,7 @@ module Inferno
       test 'Evaluate Measure' do
         metadata do
           id '01'
-          link 'https://hl7.org/fhir/STU3/measure-operations.html#evaluate-measure'
+          link 'http://www.hl7.org/fhir/operation-measure-evaluate-measure.html'
           desc 'Run the $evaluate-measure operation for a measure, results should match those reported by CQF-Ruler'
         end
 
@@ -45,7 +45,7 @@ module Inferno
         assert_response_ok evaluate_measure_response
 
         # Load response body into a FHIR MeasureReport class
-        measure_report = FHIR::STU3.from_contents(evaluate_measure_response.body)
+        measure_report = FHIR.from_contents(evaluate_measure_response.body)
         group = measure_report&.group
         assert(!group.nil?)
 

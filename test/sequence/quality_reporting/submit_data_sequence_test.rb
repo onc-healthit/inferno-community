@@ -8,17 +8,17 @@ class SubmitDataSequenceTest < MiniTest::Test
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     @instance.measure_to_test = 'TestMeasure'
     client = FHIR::Client.new(@instance.url)
-    client.use_stu3
+    client.use_r4
     client.default_json
     @sequence = Inferno::Sequence::SubmitDataSequence.new(@instance, client, true)
   end
 
   MEASURES_TO_TEST = [
     {
-      measure_id: 'measure-EXM124-FHIR3-7.2.000'
+      measure_id: 'measure-EXM124-FHIR4-8.2.000'
     },
     {
-      measure_id: 'measure-EXM130-FHIR3-7.2.000'
+      measure_id: 'measure-EXM130-FHIR4-7.2.000'
     }
   ].freeze
 

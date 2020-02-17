@@ -15,7 +15,7 @@ module Inferno
       test 'Check ValueSet Availability' do
         metadata do
           id '01'
-          link 'https://hl7.org/fhir/STU3/valueset-operations.html#expand'
+          link 'https://www.hl7.org/fhir/operation-valueset-expand.html'
           desc 'Expand each Value Set in a measure to ensure they are available'
         end
 

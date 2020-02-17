@@ -2,7 +2,7 @@ name: quality_reporting
 title: FHIR Quality Reporting
 description: Quality Reporting with FHIR
 default_test_set: developer
-fhir_version: stu3
+fhir_version: r4
 test_sets:
   developer:
     view: guided

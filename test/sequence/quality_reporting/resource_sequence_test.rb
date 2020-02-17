@@ -14,7 +14,7 @@ class ResourceSequenceTest < MiniTest::Test
     @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com', selected_module: 'quality_reporting')
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
-    client.use_stu3
+    client.use_r4
     client.default_json
     @sequence = Inferno::Sequence::ResourceSequence.new(@instance, client, true)
   end

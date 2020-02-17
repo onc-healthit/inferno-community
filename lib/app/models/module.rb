@@ -83,8 +83,8 @@ module Inferno
       headers = { 'content-type' => 'application/json+fhir' }
       measures_endpoint = Inferno::CQF_RULER + 'Measure'
       resp = cqf_ruler_client.client.get(measures_endpoint, headers)
-      bundle = FHIR::STU3::Bundle.new JSON.parse(resp.body)
-      @measures = bundle.entry.select { |e| e.resource.class == FHIR::STU3::Measure }
+      bundle = FHIR::Bundle.new JSON.parse(resp.body)
+      @measures = bundle.entry.select { |e| e.resource.class == FHIR::Measure }
     rescue StandardError
       @measures = []
     end
