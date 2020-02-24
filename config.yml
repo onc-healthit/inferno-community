@@ -79,3 +79,7 @@ presets:
 
 # cqf-ruler data store endpoint
 cqf_ruler_endpoint: http://localhost:8080/cqf-ruler-r4/fhir/
+
+# Timeout for requests to FHIR servers (in seconds)
+# Monkey-patched into rest-client in lib/ext/request.rb
+timeout: 900

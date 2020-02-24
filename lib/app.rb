@@ -25,6 +25,7 @@ require_relative 'app/models/module'
 require_relative 'version'
 require_relative 'app/models'
 require_relative 'app/utils/terminology'
+require_relative 'ext/request'
 
 module Inferno
   class App
