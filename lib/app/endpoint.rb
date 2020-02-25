@@ -20,6 +20,7 @@ module Inferno
       Inferno::EXTRAS = settings.include_extras
       Inferno::NDJSON_SERVICE_TYPE = settings.ndjson_service_type.to_sym
       Inferno::CQF_RULER = settings.cqf_ruler_endpoint
+      Inferno::TIMEOUT = settings.timeout
 
       if settings.logging_enabled
         $stdout.sync = true # output in Docker is heavily delayed without this
