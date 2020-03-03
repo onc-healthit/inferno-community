@@ -13,3 +13,4 @@ tmp/*
 .vscode/*
 resources/terminology/*
 resources/quality_reporting/NDJson
+keyfile
