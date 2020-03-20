@@ -698,13 +698,15 @@ module Inferno
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
               rescue NameError
                 next
               end
             end
           end
         end
+
+        @instance.reload
       end
 
       def check_resource_against_profile(resource, resource_type, specified_profile = nil)
