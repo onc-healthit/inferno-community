@@ -1,7 +1,7 @@
 <ul class='test-list'>
   <% sequence_result && sequence_result.test_results.each do |result, index| %>
     <% result.request_responses.each do |rr|%>
-      <li>
+      <li class='test-list-item'>
         <span>
           <strong>
             <%= rr.request_method.upcase %> &nbsp;
