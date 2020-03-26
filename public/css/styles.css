@@ -815,13 +815,28 @@ body {
 .result-details h1{
   font-size: 1.5em;
 }
- .result-details h2 {
+
+.result-details h2 {
   font-size: 1.3em;
 }
- .result-details h3, .result-details h4, .result-details h5 {
+
+.result-details h3, .result-details h4, .result-details h5 {
   font-size: 1.1em;
 }
- .more-information {
+
+.result-details-message p {
+  margin-bottom: 0.25em;
+}
+
+.result-details-message ul {
+  padding-left: 1em;
+}
+
+.result-details-optional-fail {
+  margin-top: 0.5em;
+}
+
+.more-information {
   padding: 10px;
 }
 
