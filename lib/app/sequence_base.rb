@@ -517,7 +517,7 @@ module Inferno
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
-          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
+          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: \n\n* #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
             validate_resource_item(entry.resource, key.to_s, value)
@@ -613,7 +613,7 @@ module Inferno
           end
         end
 
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       def test_resources_against_profile(resource_type, specified_profile = nil, &block)
@@ -652,7 +652,7 @@ module Inferno
           validate_resource(resource_type, resource, profile, &block)
         end
 
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       # Set max_resolutions in a single sequence to a large number by default
@@ -686,7 +686,7 @@ module Inferno
 
         Inferno.logger.info "Surpassed the maximum reference resolutions: #{max_resolutions}" if resolved_references.length > max_resolutions
 
-        assert(problems.empty?, problems.join("<br/>\n"))
+        assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
       def save_delayed_sequence_references(resources)
@@ -722,7 +722,7 @@ module Inferno
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
           errors = resource_validation_errors[:errors]
         end
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       def resolve_path(elements, path)
