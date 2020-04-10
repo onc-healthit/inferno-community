@@ -137,7 +137,7 @@ bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/onc-healthit/inferno/wiki/Using-with-Continuous-Integration-Systems).
 
 ## Contact Us
-The Inferno development team can be reached by email at inferno@groups.mitre.org.  Inferno also has a dedicated [HL7 FHIR chat channel](https://chat.fhir.org/#narrow/stream/153-inferno).
+The Inferno development team can be reached by email at inferno@groups.mitre.org.  Inferno also has a dedicated [HL7 FHIR chat channel](https://chat.fhir.org/#narrow/stream/179309-inferno).
 
 ## License
 
