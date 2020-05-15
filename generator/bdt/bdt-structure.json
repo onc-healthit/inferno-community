@@ -578,6 +578,69 @@
       "path": "4"
     },
     {
+      "name": "Metadata",
+      "type": "group",
+      "children": [
+        {
+          "name": "CapabilityStatement",
+          "type": "group",
+          "children": [
+            {
+              "id": "CapabilityStatement-1",
+              "name": "The CapabilityStatement instantiates the bulk-data CapabilityStatement",
+              "description": "To declare conformance with this IG, a server <b>should</b> include the following URL in its own <code>CapabilityStatement.instantiates</code>: <a target=\"_blank\" href=\"https://build.fhir.org/ig/HL7/bulk-data/CapabilityStatement-bulk-data.html\">http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data</a>. The <code>CapabilityStatement</code> should contain something like:<pre>\"instantiates\": [\n    \"http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data\"\n]</pre>",
+              "type": "test",
+              "path": "5.0.0"
+            },
+            {
+              "id": "CapabilityStatement-2",
+              "name": "Includes the token endpoint in the CapabilityStatement",
+              "description": "If a server requires SMART on FHIR authorization for access, its metadata <b>must</b> support automated discovery of OAuth2 endpoints by including a “complex” extension (that is, an extension with multiple components inside) on the <code>CapabilityStatement.rest.security</code> element. Any time a client sees this extension, it must be prepared to authorize using SMART’s OAuth2-based protocol.<br/> This test is expecting to find the in CapabilityStatement an entry like:<pre>\"rest\": [\n  {\n    \"mode\": \"server\",\n    \"security\": {\n      \"extension\": [\n        {\n          \"url\": \"http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris\",\n          \"extension\": [\n            {\n              \"url\": \"token\",\n              \"valueUri\": \"https://someserver.org/auth/token\"\n            }\n          ]\n        }\n      ]\n    }\n  }\n]</pre>Having a CapabilityStatement is optional for bulk data servers, unless they are also FHIR servers (which they typically are). However, missing a CapabilityStatement will generate a warning here. ",
+              "type": "test",
+              "path": "5.0.1"
+            },
+            {
+              "id": "CapabilityStatement-3",
+              "name": "Check if \"export\" operation is defined in the CapabilityStatement",
+              "description": "This test expects to find in the CapabilityStatement an entry like:<pre>\"rest\": [\n  {\n    \"operation\": [\n      {\n        \"name\" : \"export\"\n      }\n    ]\n  }\n]</pre>",
+              "type": "test",
+              "path": "5.0.2"
+            },
+            {
+              "id": "CapabilityStatement-4",
+              "name": "Check if \"patient-export\" operation is defined in the CapabilityStatement",
+              "description": "This test expects to find in the CapabilityStatement an entry like:<pre>\"rest\": [\n  {\n    \"operation\": [\n      {\n        \"name\" : \"patient-export\"\n      }\n    ]\n  }\n]</pre>",
+              "type": "test",
+              "path": "5.0.3"
+            },
+            {
+              "id": "CapabilityStatement-5",
+              "name": "Check if \"group-export\" operation is defined in the CapabilityStatement",
+              "description": "This test expects to find in the CapabilityStatement an entry like:<pre>\"rest\": [\n  {\n    \"operation\": [\n      {\n        \"name\" : \"group-export\"\n      }\n    ]\n  }\n]</pre>",
+              "type": "test",
+              "path": "5.0.4"
+            }
+          ],
+          "path": "5.0"
+        },
+        {
+          "name": "Well Known SMART Configuration",
+          "type": "group",
+          "children": [
+            {
+              "id": "WellKnownSmartConfiguration-1",
+              "name": "Includes token_endpoint definition",
+              "description": "This test verifies that the server provides a <code>/.well-known/smart-configuration</code> and that a <code>token_endpoint</code> property is declared within that file.",
+              "type": "test",
+              "path": "5.1.0"
+            }
+          ],
+          "path": "5.1"
+        }
+      ],
+      "path": "5"
+    },
+    {
       "name": "Status Endpoint",
       "type": "group",
       "children": [
@@ -586,24 +649,24 @@
           "name": "Responds with 202 for active transaction IDs",
           "description": "<p>The status endpoint should return <b>202</b> status code until the export is completed.</p>See <a target=\"_blank\" href=\"https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status\">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---in-progress-status</a>",
           "type": "test",
-          "path": "5.0"
+          "path": "6.0"
         },
         {
           "id": "Status-02",
           "name": "Replies properly in case of error",
           "description": "Runs a set of assertions to verify that:<ul><li>The returned HTTP status code is 5XX</li><li>The server returns a FHIR OperationOutcome resource in JSON format</li></ul><p>Note that even if some of the requested resources cannot successfully be exported, the overall export operation MAY still succeed. In this case, the Response.error array of the completion response MUST be populated (see below) with one or more files in ndjson format containing FHIR OperationOutcome resources to indicate what went wrong.</p>See <a target=\"_blank\" href=\"https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1\">https://github.com/HL7/bulk-data/blob/master/spec/export/index.md#response---error-status-1</a>",
           "type": "test",
-          "path": "5.1"
+          "path": "6.1"
         },
         {
           "id": "Status-03",
           "name": "Generates valid status response",
           "description": "Runs a set of assertions to verify that:<ul><li>The status endpoint should return <b>200</b> status code when the export is completed</li><li>The status endpoint should respond with <b>JSON</b></li><li>The <code>expires</code> header (if set) must be valid date in the future</li><li>The JSON response contains <code>transactionTime</code> which is a valid <a target=\"_blank\" href=\"http://hl7.org/fhir/datatypes.html#instant\">FHIR instant</a></li><li>The JSON response contains the kick-off URL in <code>request</code> property</li><li>The JSON response contains <code>requiresAccessToken</code> boolean property</li><li>The JSON response contains an <code>output</code> array in which:<ul><li>Every item has valid <code>type</code> property</li><li>Every item has valid <code>url</code> property</li><li>Every item may a <code>count</code> number property</li></ul></li><li>The JSON response contains an <code>error</code> array in which:<ul><li>Every item has valid <code>type</code> property</li><li>Every item has valid <code>url</code> property</li><li>Every item may a <code>count</code> number property</li></ul></li></ul>",
           "type": "test",
-          "path": "5.2"
+          "path": "6.2"
         }
       ],
-      "path": "5"
+      "path": "6"
     }
   ]
 }

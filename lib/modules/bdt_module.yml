@@ -24,4 +24,5 @@ test_sets:
           - BDTPatientSequence
           - BDTSystemSequence
           - BDTGroupSequence
+          - BDTCapabilityStatementSequence
           - BDTStatusSequence

@@ -23,7 +23,10 @@ module Inferno
         request = req.request
         response = req.response
 
-        unescape_unicode(response[:body])
+        response_body = response[:body]
+        response_body = '' if response_body.nil?
+        escaped_body = response_body.dup
+        unescape_unicode(escaped_body)
 
         new(
           direction: direction || req&.direction,

@@ -30,7 +30,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('5.0')
+        run_bdt('6.0')
       end
       test 'Replies properly in case of error' do
         metadata do
@@ -42,7 +42,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('5.1')
+        run_bdt('6.1')
       end
       test 'Generates valid status response' do
         metadata do
@@ -54,7 +54,7 @@ module Inferno
           versions :r4
         end
 
-        run_bdt('5.2')
+        run_bdt('6.2')
       end
     end
   end
