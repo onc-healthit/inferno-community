@@ -7,7 +7,7 @@ module Inferno
     class BDTCapabilityStatementSequence < BDTBase
       title 'Metadata'
 
-      description ''
+      description 'Verify the CapabilityStatement conforms to the SMART Bulk Data IG.'
 
       test_id_prefix 'CapabilityStatement'
 

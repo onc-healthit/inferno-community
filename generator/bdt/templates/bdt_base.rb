@@ -81,7 +81,6 @@ module Inferno
           'path' => path,
           'settings' => settings
         }
-        binding.pry
         response = RestClient.post(BDT_URL, payload.to_json, content_type: :json, accept: :json)
         response.body.split("\n").each do |chunk|
           message = JSON.parse(chunk.strip)
