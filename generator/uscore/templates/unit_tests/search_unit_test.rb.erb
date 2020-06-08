@@ -12,6 +12,24 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
     @query = {
       <%= search_param_string %>
     }
+
+  <% if token_param%>
+    @query_with_system = {
+      <%= token_with_system_search_string %>
+    }
+  <% end %>
+  end
+
+  it 'skips if the search params are not supported' do
+    capabilities = Inferno::Models::ServerCapabilities.new
+    def capabilities.supported_search_params(_)
+      [<%=supported_search_params_string%>]
+    end
+    @instance.server_capabilities = capabilities
+
+    exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+    assert_match(/The server doesn't support the search parameters:/, exception.message)
   end
 
 <% unless is_first_search %>
@@ -141,15 +159,57 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
         .with(query: query_params, headers: @auth_header)
         .to_return(status: 200, body: body)
+      reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: reference_with_type_params, headers: @auth_header)
+        .to_return(status: 200, body: body)
     end
   <% else %>
     stub_request(:get, "#{@base_url}/<%= resource_type %>")
       .with(query: @query, headers: @auth_header)
       .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json)
+    <% if is_first_search  && resource_type != 'Patient'%> 
+      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: reference_with_type_params, headers: @auth_header)
+      .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json)
+    <% end %>
+  <% end %>
+  <% if token_param %>
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query_with_system, headers: @auth_header)
+      .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json)
   <% end %>
 
     @sequence.run_test(@test)
   end
+<% end %>
+<% if resource_type == 'MedicationRequest' %>
+    it 'stores contained Medication resources for validation in a later test' do
+      medication_request = FHIR.from_contents(load_fixture(:med_request_contained))
+      medication = medication_request.contained.first
+      ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
+        query_params = @query.merge('intent': value)
+        body =
+          if @sequence.resolve_element_from_path(medication_request, 'intent') == value
+            wrap_resources_in_bundle([medication_request]).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient]), headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      @sequence.run_test(@test)
+      contained_medications = @sequence.instance_variable_get(:@contained_medications)
+
+      assert_equal 1, contained_medications.length
+      assert_equal medication.id, contained_medications.first.id
+    end
 <% end %>
 <% if has_status_searches && !is_status_search %>
   describe 'with servers that require status' do
@@ -271,6 +331,9 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
         stub_request(:get, "#{@base_url}/<%= resource_type %>")
           .with(query: query_params.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], <%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
       end
     <% else %>
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -279,6 +342,16 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
         .with(query: @query.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
+      <% if is_first_search %>
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], <%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
+      <% end %>
+    <% end %>
+    <% if token_param %>
+    stub_request(:get, "#{@base_url}/<%= resource_type %>")
+      .with(query: @query_with_system.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+      .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
     <% end %>
 
       @sequence.run_test(@test)

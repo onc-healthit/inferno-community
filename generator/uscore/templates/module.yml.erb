@@ -23,3 +23,8 @@ test_sets:
         - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4DataAbsentReasonSequence
+value_sets:<% sequences.each do |sequence| %><% sequence[:bindings].each do |binding| %>
+- value_set_url: <%=binding[:system]%>
+  strength: <%=binding[:strength]%>
+  profile: <%=sequence[:profile]%><% end %><% end %>
+

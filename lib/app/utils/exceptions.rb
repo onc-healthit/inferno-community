@@ -83,16 +83,19 @@ module Inferno
   class RedirectException < RuntimeError
     attr_accessor :endpoint
     attr_accessor :url
-    def initialize(url, endpoint)
+    attr_accessor :expect_failure
+    def initialize(url, endpoint, expect_failure = false)
       super("Redirecting to #{url} and waiting at endpoint #{endpoint}")
       @url = url
       @endpoint = endpoint
+      @expect_failure = expect_failure
     end
 
     def update_result(result)
       result.wait!
       result.wait_at_endpoint = endpoint
       result.redirect_to_url = url
+      result.expect_redirect_failure = expect_failure
     end
   end
 
@@ -106,10 +109,13 @@ module Inferno
   end
 end
 
-# monkey patch this exception from fhir_client
-class ClientException
-  def update_result(result)
-    result.fail!
-    result.message = message
+# Monkey patch common exceptions so that we don't get hard errors.
+# These are runtime issues on servers, not unhandled exceptions with Inferno
+[ClientException, SocketError, RestClient::Exceptions::OpenTimeout, RestClient::RequestTimeout, Errno::EADDRNOTAVAIL, Errno::ECONNRESET].each do |exception_type|
+  exception_type.class_eval do
+    def update_result(result)
+      result.fail!
+      result.message = message
+    end
   end
 end

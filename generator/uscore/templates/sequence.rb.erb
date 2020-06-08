@@ -1,15 +1,82 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/<%=name.downcase%>_definitions'
 
 module Inferno
   module Sequence
     class <%=class_name%> < SequenceBase
-      include Inferno::DataAbsentReasonChecker
+      include Inferno::DataAbsentReasonChecker  
+      include Inferno::USCore310ProfileDefinitions
 
       title '<%=title%> Tests'
 
-      description 'Verify that <%=resource%> resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the <%=profile_name%>.'
+
+      details %(
+        # Background
+
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for <%= resource %> queries.  These queries must contain resources conforming to <%= profile_name %> as specified
+        in the US Core v3.1.0 Implementation Guide. <% if resource == 'Device' %>If the system under test contains Device
+        resources that are not implantable, and therefore do not conform to the US Core Implantable Device profile,
+        the tester should provide an Implantable Device Code to the test to ensure that only the appropriate device types
+        are validated against this profile.<% end %>
+
+        # Testing Methodology
+
+        <% if resource == 'Provenance' %>
+        Previously run sequences store references to US Core Provenance resources that are associated with other US Core
+        resources using the appropriate `_revincludes` search.  This set of tests uses these found resources to verify
+        support for the `read` operation.  Each of these resources must conform to the US Core Provenance profile.
+        <% elsif delayed_sequence %>
+        Because <%=resource%> resources are not present o not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        this profile found in other resources are used for testing. If no references can be found this way, then all the tests
+        in this sequence are skipped.
+        
+        <%else%>
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+        <%searches.select { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory]}.each do |search| %>
+          * <%=search[:names].join(' + ')%><%end%>
+
+        <% if searches.any? {|search_param| search_param[:expectation] == 'SHALL' && !search_param[:must_support_or_mandatory]} %>
+        Note that this test sequence does not include the following mandatory <%=resource%> search combinations because they search elements
+        that are neither mandatory nor must support for the <%=profile_name%>:
+        <%searches.select { |search_param| search_param[:expectation] == 'SHALL' && !search_param[:must_support_or_mandatory]}.each do |search| %>
+          * <%=search[:names].join('+ ')%><%end%>
+        <% end %>
+        
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its 
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is 
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a 
+        value cannot be found this way, the search is skipped.
+        
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for <%=resource%> resources and save them 
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search 
+        for gender=male returns a female patient. 
+        <%end%>
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the [<%=profile_name%>](<%=profile%>).
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found 
+        and will fail if any attempted read fails.
+      )
 
       test_id_prefix '<%=test_id_prefix%>'
 
@@ -17,15 +84,14 @@ module Inferno
       conformance_supports :<%=resource%><%="
       delayed_sequence" if delayed_sequence%>
 <%=search_validator%>
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
 
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
 
-      @resources_found = false<% tests.each do |test|%>
+      @resources_found = false
+      <% tests.each do |test|%>
+
 
 <% if test[:key].present? %>
       test :<%= test[:key] %> do

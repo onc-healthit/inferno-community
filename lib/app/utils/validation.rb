@@ -177,6 +177,9 @@ module Inferno
         return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if observation_contains_code(resource, '8867-4')
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
+
+        # if none of the US Core profile matches, use FHIR base profile
+        return
       elsif resource.resourceType == 'DiagnosticReport'
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 

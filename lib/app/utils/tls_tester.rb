@@ -57,11 +57,11 @@ module Inferno
       http.max_version = ssl_version
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       begin
-        http.request_get(@host)
+        http.request_get(@uri)
       rescue StandardError => e
         return true, "Correctly denied connection error of type #{e.class} happened, message is #{e.message}"
       end
-      [false, "Should not allow connections with #{readable_version}"]
+      [false, "Must deny access to clients requesting #{readable_version}"]
     end
 
     def verify_ensure_tls_v1_2
