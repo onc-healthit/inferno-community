@@ -2,12 +2,14 @@
 
 require_relative './data_absent_reason_checker'
 require_relative './profile_definitions/heartrate_definitions'
+require_relative './uscore_helpers'
 
 module Inferno
   module Sequence
     class USCore310HeartrateSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreHelpers
 
       title 'Observation Heart Rate Tests'
 

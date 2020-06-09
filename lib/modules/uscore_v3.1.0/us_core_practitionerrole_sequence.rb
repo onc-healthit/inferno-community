@@ -2,12 +2,14 @@
 
 require_relative './data_absent_reason_checker'
 require_relative './profile_definitions/us_core_practitionerrole_definitions'
+require_relative './uscore_helpers'
 
 module Inferno
   module Sequence
     class USCore310PractitionerroleSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreHelpers
 
       title 'PractitionerRole Tests'
 

@@ -2,12 +2,14 @@
 
 require_relative './data_absent_reason_checker'
 require_relative './profile_definitions/us_core_encounter_definitions'
+require_relative './uscore_helpers'
 
 module Inferno
   module Sequence
     class USCore310EncounterSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreHelpers
 
       title 'Encounter Tests'
 
@@ -23,10 +25,28 @@ module Inferno
         # Testing Methodology
 
 
-        Because Encounter resources are not present o not exist in USCDI, no searches are performed on this test sequence. Instead, references to
-        this profile found in other resources are used for testing. If no references can be found this way, then all the tests
-        in this sequence are skipped.
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
 
+          * patient
+          * _id
+          * date + patient
+
+
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for Encounter resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
 
         ## Must Support
         Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
@@ -47,9 +67,8 @@ module Inferno
 
       test_id_prefix 'USCE'
 
-      requires :token
+      requires :token, :patient_ids
       conformance_supports :Encounter
-      delayed_sequence
 
       def validate_resource_item(resource, property, value)
         case property
@@ -62,8 +81,15 @@ module Inferno
 
         when 'class'
           values_found = resolve_path(resource, 'local_class')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |coding|
+            if value.include? '|'
+              coding.system == coding_system && coding.code == coding_value
+            else
+              coding.code == value
+            end
+          end
           assert match_found, "class in Encounter/#{resource.id} (#{values_found}) does not match class requested (#{value})"
 
         when 'date'
@@ -147,36 +173,9 @@ module Inferno
 
       @resources_found = false
 
-      test :resource_read do
-        metadata do
-          id '01'
-          name 'Server returns correct Encounter resource from the Encounter read interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-            This test will attempt to Reference to Encounter can be resolved and read.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:Encounter, [:read])
-
-        encounter_references = @instance.resource_references.select { |reference| reference.resource_type == 'Encounter' }
-        skip 'No Encounter references found from the prior searches' if encounter_references.blank?
-
-        @encounter_ary = encounter_references.map do |reference|
-          validate_read_reply(
-            FHIR::Encounter.new(id: reference.resource_id),
-            FHIR::Encounter,
-            check_for_data_absent_reasons
-          )
-        end
-        @encounter = @encounter_ary.first
-        @resources_found = @encounter.present?
-      end
-
       test :search_by_patient do
         metadata do
-          id '02'
+          id '01'
           name 'Server returns valid results for Encounter search by patient.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -189,33 +188,47 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['patient'])
+        @encounter_ary = {}
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params = {
-          'patient': patient
-        }
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Encounter' }
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Encounter' }
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
-        search_result_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-        @encounter_ary += search_result_resources
-        @encounter = @encounter_ary
-          .find { |resource| resource.resourceType == 'Encounter' }
+          next unless any_resources
 
-        save_resource_references(versioned_resource_class('Encounter'), @encounter_ary)
-        save_delayed_sequence_references(@encounter_ary, USCore310EncounterSequenceDefinitions::DELAYED_REFERENCES)
-        validate_reply_entries(search_result_resources, search_params)
+          @encounter_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+          @encounter = @encounter_ary[patient]
+            .find { |resource| resource.resourceType == 'Encounter' }
+          @resources_found = @encounter.present?
+
+          save_resource_references(versioned_resource_class('Encounter'), @encounter_ary[patient])
+          save_delayed_sequence_references(@encounter_ary[patient], USCore310EncounterSequenceDefinitions::DELAYED_REFERENCES)
+          validate_reply_entries(@encounter_ary[patient], search_params)
+
+          search_params = search_params.merge('patient': "Patient/#{patient}")
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert search_with_type.length == @encounter_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+        end
+
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
       end
 
       test :search_by__id do
         metadata do
-          id '03'
+          id '02'
           name 'Server returns valid results for Encounter search by _id.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -228,24 +241,32 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['_id'])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        search_params = {
-          '_id': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'id') { |el| get_value_for_search_param(el).present? })
-        }
+        resolved_one = false
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
+        patient_ids.each do |patient|
+          search_params = {
+            '_id': get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'id') { |el| get_value_for_search_param(el).present? })
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          next if search_params.any? { |_param, value| value.nil? }
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          resolved_one = true
 
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        end
+
+        skip 'Could not resolve all parameters (_id) in any resource.' unless resolved_one
       end
 
       test :search_by_date_patient do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns valid results for Encounter search by date+patient.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -262,32 +283,40 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['date', 'patient'])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        search_params = {
-          'date': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'period') { |el| get_value_for_search_param(el).present? }),
-          'patient': patient
-        }
+        resolved_one = false
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
+        patient_ids.each do |patient|
+          search_params = {
+            'date': get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'period') { |el| get_value_for_search_param(el).present? }),
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          next if search_params.any? { |_param, value| value.nil? }
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          resolved_one = true
 
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = search_params.merge('date': comparator_val)
-          reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:date])
+            comparator_search_params = search_params.merge('date': comparator_val)
+            reply = get_resource_by_params(versioned_resource_class('Encounter'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('Encounter'), reply, comparator_search_params)
+          end
         end
+
+        skip 'Could not resolve all parameters (date, patient) in any resource.' unless resolved_one
       end
 
       test :search_by_identifier do
         metadata do
-          id '05'
+          id '04'
           name 'Server returns valid results for Encounter search by identifier.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -301,29 +330,37 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['identifier'])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        search_params = {
-          'identifier': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier') { |el| get_value_for_search_param(el).present? })
-        }
+        resolved_one = false
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
+        patient_ids.each do |patient|
+          search_params = {
+            'identifier': get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'identifier') { |el| get_value_for_search_param(el).present? })
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          next if search_params.any? { |_param, value| value.nil? }
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          resolved_one = true
 
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-        value_with_system = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'identifier'), true)
-        token_with_system_search_params = search_params.merge('identifier': value_with_system)
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), token_with_system_search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, token_with_system_search_params)
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'identifier'), true)
+          token_with_system_search_params = search_params.merge('identifier': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Encounter'), reply, token_with_system_search_params)
+        end
+
+        skip 'Could not resolve all parameters (identifier) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_status do
         metadata do
-          id '06'
+          id '05'
           name 'Server returns valid results for Encounter search by patient+status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -337,23 +374,31 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['patient', 'status'])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        search_params = {
-          'patient': patient,
-          'status': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'status') { |el| get_value_for_search_param(el).present? })
-        }
+        resolved_one = false
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'status': get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          next if search_params.any? { |_param, value| value.nil? }
 
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+
+          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+        end
+
+        skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
       end
 
       test :search_by_class_patient do
         metadata do
-          id '07'
+          id '06'
           name 'Server returns valid results for Encounter search by class+patient.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -367,30 +412,38 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['class', 'patient'])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        search_params = {
-          'class': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class') { |el| get_value_for_search_param(el).present? }),
-          'patient': patient
-        }
+        resolved_one = false
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
+        patient_ids.each do |patient|
+          search_params = {
+            'class': get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'local_class') { |el| get_value_for_search_param(el).present? }),
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          next if search_params.any? { |_param, value| value.nil? }
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          resolved_one = true
 
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-        value_with_system = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'local_class'), true)
-        token_with_system_search_params = search_params.merge('class': value_with_system)
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), token_with_system_search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, token_with_system_search_params)
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'local_class'), true)
+          token_with_system_search_params = search_params.merge('class': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Encounter'), reply, token_with_system_search_params)
+        end
+
+        skip 'Could not resolve all parameters (class, patient) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_type do
         metadata do
-          id '08'
+          id '07'
           name 'Server returns valid results for Encounter search by patient+type.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -404,25 +457,50 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('Encounter', ['patient', 'type'])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        search_params = {
-          'patient': patient,
-          'type': get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type') { |el| get_value_for_search_param(el).present? })
-        }
+        resolved_one = false
 
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'type': get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'type') { |el| get_value_for_search_param(el).present? })
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          next if search_params.any? { |_param, value| value.nil? }
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          resolved_one = true
 
-        validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-        value_with_system = get_value_for_search_param(resolve_element_from_path(@encounter_ary, 'type'), true)
-        token_with_system_search_params = search_params.merge('type': value_with_system)
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), token_with_system_search_params)
-        validate_search_reply(versioned_resource_class('Encounter'), reply, token_with_system_search_params)
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@encounter_ary[patient], 'type'), true)
+          token_with_system_search_params = search_params.merge('type': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Encounter'), reply, token_with_system_search_params)
+        end
+
+        skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one
+      end
+
+      test :read_interaction do
+        metadata do
+          id '08'
+          name 'Server returns correct Encounter resource from Encounter read interaction'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          description %(
+            A server SHALL support the Encounter read interaction.
+          )
+          versions :r4
+        end
+
+        skip_if_known_not_supported(:Encounter, [:read])
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
+
+        validate_read_reply(@encounter, versioned_resource_class('Encounter'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -438,7 +516,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:vread])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validate_vread_reply(@encounter, versioned_resource_class('Encounter'))
       end
@@ -456,7 +534,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:history])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validate_history_reply(@encounter, versioned_resource_class('Encounter'))
       end
@@ -477,24 +555,24 @@ module Inferno
         end
 
         skip_if_known_revinclude_not_supported('Encounter', 'Provenance:target')
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params = {
-          'patient': patient
-        }
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-        reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          .select { |resource| resource.resourceType == 'Provenance' }
-
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
+        end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
         save_delayed_sequence_references(provenance_results, USCore310EncounterSequenceDefinitions::DELAYED_REFERENCES)
 
@@ -517,14 +595,14 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
         test_resources_against_profile('Encounter')
         bindings = USCore310EncounterSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
           begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @encounter_ary)
+            invalid_bindings = resources_with_invalid_binding(binding_def, @encounter_ary&.values&.flatten)
           rescue Inferno::Terminology::UnknownValueSetException => e
             warning do
               assert false, e.message
@@ -540,11 +618,11 @@ module Inferno
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
           begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @encounter_ary)
+            invalid_bindings = resources_with_invalid_binding(binding_def, @encounter_ary&.values&.flatten)
             binding_def_new = binding_def
             # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
             if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @encounter_ary)
+              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @encounter_ary&.values&.flatten)
               binding_def_new = binding_def.except(:system)
             end
           rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
@@ -592,11 +670,11 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
         must_supports = USCore310EncounterSequenceDefinitions::MUST_SUPPORTS
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
-          @encounter_ary&.any? do |resource|
+          @encounter_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
@@ -604,7 +682,7 @@ module Inferno
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@encounter_ary&.length} provided Encounter resource(s)"
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@encounter_ary&.values&.flatten&.length} provided Encounter resource(s)"
         @instance.save!
       end
 
@@ -622,12 +700,12 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Encounter, [:search, :read])
-        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
         validated_resources = Set.new
         max_resolutions = 50
 
-        @encounter_ary&.each do |resource|
+        @encounter_ary&.values&.flatten&.each do |resource|
           validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end

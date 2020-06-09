@@ -26,6 +26,8 @@ module Inferno
 
           * DocumentReference
 
+          * Encounter
+
           * Goal
 
           * Immunization
@@ -81,6 +83,7 @@ module Inferno
           'Device',
           'DiagnosticReport',
           'DocumentReference',
+          'Encounter',
           'Goal',
           'Immunization',
           'MedicationRequest',
@@ -466,9 +469,59 @@ module Inferno
         end
       end
 
-      test :validate_goal_authorization do
+      test :validate_encounter_authorization do
         metadata do
           id '10'
+          name 'Access to Encounter resources are restricted properly based on patient-selected scope'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
+          description %(
+          )
+        end
+
+        skip_if @instance.patient_id.nil?, 'Patient ID not provided to test.'
+        skip_if @instance.received_scopes.nil?, 'No scopes were received.'
+
+        params = {
+          patient: @instance.patient_id
+        }
+
+        options = {
+          search: {
+            flag: false,
+            compartment: nil,
+            parameters: params
+          }
+        }
+        reply = @client.search('Encounter', options)
+        access_allowed_scope = scope_granting_access('Encounter', resource_access_as_scope)
+
+        if access_allowed_scope.present?
+
+          if reply.code == 400
+            error_message = 'Server is expected to grant access to the resource.  A search without a status can return an HTTP 400 status, but must also must include an OperationOutcome. No OperationOutcome is present in the body of the response.'
+            begin
+              parsed_reply = JSON.parse(reply.body)
+              assert parsed_reply['resourceType'] == 'OperationOutcome', error_message
+            rescue JSON::ParserError
+              assert false, error_message
+            end
+
+            options[:search][:parameters].merge!({ 'status': 'finished' })
+
+            reply = @client.search('Encounter', options)
+          end
+
+          assert_response_ok reply
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
+
+        else
+          assert_response_unauthorized reply
+        end
+      end
+
+      test :validate_goal_authorization do
+        metadata do
+          id '11'
           name 'Access to Goal resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -518,7 +571,7 @@ module Inferno
 
       test :validate_immunization_authorization do
         metadata do
-          id '11'
+          id '12'
           name 'Access to Immunization resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -568,7 +621,7 @@ module Inferno
 
       test :validate_medicationrequest_authorization do
         metadata do
-          id '12'
+          id '13'
           name 'Access to MedicationRequest resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -619,7 +672,7 @@ module Inferno
 
       test :validate_observation_authorization do
         metadata do
-          id '13'
+          id '14'
           name 'Access to Observation resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -670,7 +723,7 @@ module Inferno
 
       test :validate_procedure_authorization do
         metadata do
-          id '14'
+          id '15'
           name 'Access to Procedure resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(

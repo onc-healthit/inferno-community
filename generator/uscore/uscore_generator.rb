@@ -97,8 +97,7 @@ module Inferno
       def mark_delayed_sequences(metadata)
         metadata[:sequences].each do |sequence|
           non_patient_search = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
-          non_uscdi_resources = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'Provenance']
-          sequence[:delayed_sequence] = non_patient_search || non_uscdi_resources.include?(sequence[:resource])
+          sequence[:delayed_sequence] = non_patient_search
         end
         metadata[:delayed_sequences] = metadata[:sequences].select { |seq| seq[:delayed_sequence] }
         metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:resource] == 'Patient' || seq[:delayed_sequence] }
@@ -1283,6 +1282,16 @@ module Inferno
                 codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
               else
                 codeable_concept.coding.any? { |coding| coding.code == value }
+              end
+            end)
+        when 'Coding'
+          %(coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+            coding_value = value.split('|').last
+            match_found = values_found.any? do |coding|
+              if value.include? '|'
+                coding.system == coding_system && coding.code == coding_value
+              else
+                coding.code == value
               end
             end)
         when 'Identifier'

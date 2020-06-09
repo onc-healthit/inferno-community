@@ -27,6 +27,7 @@ test_sets:
         - USCore310DiagnosticreportNoteSequence
         - USCore310DiagnosticreportLabSequence
         - USCore310DocumentreferenceSequence
+        - USCore310EncounterSequence
         - USCore310GoalSequence
         - USCore310ImmunizationSequence
         - USCore310MedicationrequestSequence
@@ -44,7 +45,6 @@ test_sets:
         - USCore310ResprateSequence
         - USCore310ProcedureSequence
         - USCoreR4ClinicalNotesSequence
-        - USCore310EncounterSequence
         - USCore310LocationSequence
         - USCore310OrganizationSequence
         - USCore310PractitionerSequence

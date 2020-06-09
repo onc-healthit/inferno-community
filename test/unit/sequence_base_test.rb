@@ -27,61 +27,6 @@ class SequenceBaseTest < MiniTest::Test
     @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
   end
 
-  def test_save_delayed_resource_references
-    delayed_resources = ['Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole']
-    some_non_delayed_resources = ['AllergyIntolerance', 'CarePlan', 'Careteam', 'Condition', 'Device', 'Observation', 'Encounter', 'Goal']
-
-    delayed_resources.each do |res|
-      set_resource_reference(@allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(Array.wrap(@allergy_intolerance_resource))
-      assert @instance.resource_references.any? { |ref| ref.resource_type == res }, "#{res} reference should be saved"
-    end
-    some_non_delayed_resources.each do |res|
-      set_resource_reference(@allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(Array.wrap(@allergy_intolerance_resource))
-      assert @instance.resource_references.none? { |ref| ref.resource_type == res }, "#{res} reference should not be saved"
-    end
-  end
-
-  def set_resource_reference(resource, type)
-    new_reference = FHIR::Reference.new
-    new_reference.reference = "#{type}/1234"
-    resource.recorder = new_reference
-  end
-
-  describe '#get_value_for_search_param' do
-    before do
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
-      client = FHIR::Client.new('')
-      @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
-    end
-
-    it 'returns value from period' do
-      { start: 'now', end: 'later' }.each do |key, value|
-        element = FHIR::Period.new(key => value)
-        expected_value = if key == :start
-                           'gt' + value
-                         else
-                           'lt' + value
-                         end
-        assert @sequence.get_value_for_search_param(element) == expected_value
-      end
-    end
-
-    it 'returns value from address' do
-      {
-        state: 'mass',
-        text: 'mitre',
-        postalCode: '12345',
-        city: 'boston',
-        country: 'usa'
-      }.each do |key, value|
-        element = FHIR::Address.new(key => value)
-        assert @sequence.get_value_for_search_param(element) == value
-      end
-    end
-  end
-
   describe '#fetch_all_bundled_resources' do
     before do
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))

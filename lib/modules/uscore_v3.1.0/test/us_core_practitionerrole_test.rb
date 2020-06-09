@@ -201,11 +201,6 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@practitioner_role_ary).to_json)
 
-      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
-      stub_request(:get, "#{@base_url}/PractitionerRole")
-        .with(query: reference_with_type_params, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@practitioner_role_ary).to_json)
-
       stub_request(:get, "#{@base_url}/PractitionerRole")
         .with(query: @query_with_system, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@practitioner_role_ary).to_json)

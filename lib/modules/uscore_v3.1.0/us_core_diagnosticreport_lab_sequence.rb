@@ -2,12 +2,14 @@
 
 require_relative './data_absent_reason_checker'
 require_relative './profile_definitions/us_core_diagnosticreport_lab_definitions'
+require_relative './uscore_helpers'
 
 module Inferno
   module Sequence
     class USCore310DiagnosticreportLabSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreHelpers
 
       title 'DiagnosticReport for Laboratory Results Reporting Tests'
 

@@ -78,12 +78,6 @@ module Inferno
           resources: [
             'Organization'
           ]
-        },
-        {
-          path: 'context.encounter',
-          resources: [
-            'Encounter'
-          ]
         }
       ].freeze
 

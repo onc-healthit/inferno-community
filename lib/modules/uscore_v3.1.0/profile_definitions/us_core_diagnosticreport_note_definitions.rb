@@ -43,12 +43,6 @@ module Inferno
 
       DELAYED_REFERENCES = [
         {
-          path: 'encounter',
-          resources: [
-            'Encounter'
-          ]
-        },
-        {
           path: 'performer',
           resources: [
             'Practitioner',

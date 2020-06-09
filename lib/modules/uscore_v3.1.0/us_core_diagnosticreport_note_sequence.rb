@@ -2,12 +2,14 @@
 
 require_relative './data_absent_reason_checker'
 require_relative './profile_definitions/us_core_diagnosticreport_note_definitions'
+require_relative './uscore_helpers'
 
 module Inferno
   module Sequence
     class USCore310DiagnosticreportNoteSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreHelpers
 
       title 'DiagnosticReport for Report and Note exchange Tests'
 

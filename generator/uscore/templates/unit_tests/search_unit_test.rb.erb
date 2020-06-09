@@ -168,7 +168,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
     stub_request(:get, "#{@base_url}/<%= resource_type %>")
       .with(query: @query, headers: @auth_header)
       .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json)
-    <% if is_first_search  && resource_type != 'Patient'%> 
+    <% if is_first_search  && resource_type != 'Patient' && !delayed_sequence%> 
       reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
         .with(query: reference_with_type_params, headers: @auth_header)
@@ -342,7 +342,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
         .with(query: @query.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
-      <% if is_first_search %>
+      <% if is_first_search && !delayed_sequence%>
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
           .with(query: @query.merge('patient': 'Patient/' + @query[:patient], <%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)

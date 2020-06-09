@@ -2,12 +2,14 @@
 
 require_relative './data_absent_reason_checker'
 require_relative './profile_definitions/us_core_provenance_definitions'
+require_relative './uscore_helpers'
 
 module Inferno
   module Sequence
     class USCore310ProvenanceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreHelpers
 
       title 'Provenance Tests'
 
