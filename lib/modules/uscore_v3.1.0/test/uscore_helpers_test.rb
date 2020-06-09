@@ -3,23 +3,6 @@ require_relative '../uscore_helpers'
 
 include Inferno::USCoreHelpers
 describe Inferno::USCoreHelpers do
-  def test_save_delayed_resource_references
-    allergy_intolerance_resource = FHIR.from_contents(load_fixture(:us_core_allergyintolerance))
-
-    delayed_resources = ['Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole']
-    some_non_delayed_resources = ['AllergyIntolerance', 'CarePlan', 'Careteam', 'Condition', 'Device', 'Observation', 'Encounter', 'Goal']
-
-    delayed_resources.each do |res|
-      set_resource_reference(allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(Array.wrap(allergy_intolerance_resource))
-      assert @instance.resource_references.any? { |ref| ref.resource_type == res }, "#{res} reference should be saved"
-    end
-    some_non_delayed_resources.each do |res|
-      set_resource_reference(allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(Array.wrap(allergy_intolerance_resource))
-      assert @instance.resource_references.none? { |ref| ref.resource_type == res }, "#{res} reference should not be saved"
-    end
-  end
 
   def set_resource_reference(resource, type)
     new_reference = FHIR::Reference.new

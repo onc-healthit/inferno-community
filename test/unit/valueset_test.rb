@@ -59,13 +59,13 @@ class ValueSetTest < Minitest::Test
   end
 
   def test_get_medication_codes_valueset
-    vs = Inferno::Terminology::ValueSet.new(@db)
+    vs = Inferno::Terminology::Valueset.new(@db)
     vs.read_valueset('resources/argonauts/ValueSet-medication-codes.json')
     assert vs.valueset.length == 8, 'Expected 8 concepts'
   end
 
   def test_medication_codes_bloom_filter
-    vs = Inferno::Terminology::ValueSet.new(@db)
+    vs = Inferno::Terminology::Valueset.new(@db)
     vs.read_valueset('resources/argonauts/ValueSet-medication-codes.json')
     bf = vs.generate_bloom
     assert bf.count == 8, 'Expected 8 entries in the filter'
