@@ -174,6 +174,34 @@ module Inferno
       end.uniq.compact
     end
 
+    # This function accepts a valueset URL, code, and optional system, and returns true
+    # if the code or code/system combination is valid for the valueset
+    # represented by that URL
+    #
+    # @param String valueset_url the URL for the valueset to validate against
+    # @param String code the code to validate against the valueset
+    # @param String system an optional codesystem to validate against. Defaults to nil
+    # @return Boolean whether the code or code/system is in the valueset
+    def self.validate_code(valueset_url: nil, code:, system: nil)
+      # Get the valueset from the url. Redundant if the 'system' is not nil,
+      # but allows us to throw a better error if the valueset isn't known by Inferno
+      if valueset_url
+        validation_fn = FHIR::StructureDefinition.vs_validators[valueset_url]
+        raise(UnknownValueSetException, valueset_url) unless validation_fn
+      else
+        validation_fn = FHIR::StructureDefinition.vs_validators[system]
+        raise(Inferno::Terminology::ValueSet::UnknownCodeSystemException, system) unless validation_fn
+      end
+
+      if system
+        validation_fn.call('code' => code, 'system' => system)
+      else
+        @loaded_validators[valueset_url][:code_systems].any? do |possible_system|
+          validation_fn.call('code' => code, 'system' => possible_system)
+        end
+      end
+    end
+
     class UnknownValueSetException < StandardError
       def initialize(value_set)
         super("Unknown ValueSet: #{value_set}")
