@@ -11,6 +11,7 @@ module Inferno
         'Patient-level export' => 'Verify the system is capable of performing a Patient-Level Export that conforms to the SMART Bulk Data IG.',
         'System-level export' => 'Verify the system is capable of performing a System-Level Export that conforms to the SMART Bulk Data IG.',
         'Group-level export' => 'Verify the system is capable of performing a Group-Level Export that conforms to the SMART Bulk Data IG.',
+        'Metadata' => 'Verify the CapabilityStatement conforms to the SMART Bulk Data IG.',
         'Status Endpoint' => 'Verify the status endpoint conforms to the SMART Bulk Data IG for Export.'
       }.freeze
 
