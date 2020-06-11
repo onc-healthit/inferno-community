@@ -41,9 +41,7 @@ module Inferno
 
         omit_if_tls_disabled
         assert_tls_1_2 @instance.oauth_introspection_endpoint
-        warning do
-          assert_deny_previous_tls @instance.oauth_introspection_endpoint
-        end
+        assert_deny_previous_tls @instance.oauth_introspection_endpoint
       end
 
       test 'Token introspection endpoint responds properly to introspection request for access token' do

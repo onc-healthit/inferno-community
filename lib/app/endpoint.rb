@@ -72,7 +72,9 @@ module Inferno
           end
         end
         modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
-        erb :index, {}, modules: modules, presets: presets
+        @missing_validators = Inferno::Terminology.missing_validators
+
+        erb :index_onc_program, {}, modules: modules, presets: presets, hide_header: true
       end
     end
   end
@@ -80,4 +82,3 @@ end
 
 require_relative 'endpoint/landing'
 require_relative 'endpoint/home'
-require_relative 'endpoint/terminology'

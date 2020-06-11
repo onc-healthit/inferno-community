@@ -21,7 +21,7 @@ module Inferno
 
       test_id_prefix 'USCCN'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :DocumentReference, :DiagnosticReport
 
       details %(
@@ -52,51 +52,65 @@ module Inferno
       attr_accessor :document_attachments, :report_attachments
 
       def test_clinical_notes_document_reference(category_code)
-        search_params = { 'patient': @instance.patient_id, 'type': category_code }
+        skip_if_known_not_supported(:DocumentReference, [:search])
+
         resource_class = 'DocumentReference'
+        patient_ids = @instance.patient_ids.split(',')
 
-        skip_if_known_not_supported(:DocumentReference, [:read])
+        resources_found = patient_ids.any? do |patient_id|
+          search_params = { 'patient': patient_id, 'type': category_code }
 
-        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
+
+          self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
+
+          document_references = fetch_all_bundled_resources(reply)
+
+          document_references&.each do |document|
+            document&.content&.select { |content| !document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
+              document_attachments.attachment[content.attachment.url] = document.id
+            end
+          end
+
+          true
+        end
 
         skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." unless resources_found
-
-        self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
-
-        document_references = fetch_all_bundled_resources(reply)
-
-        document_references&.each do |document|
-          document&.content&.select { |content| !document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-            document_attachments.attachment[content.attachment.url] = document.id
-          end
-        end
       end
 
       def test_clinical_notes_diagnostic_report(category_code)
-        search_params = { 'patient': @instance.patient_id, 'category': category_code }
+        skip_if_known_not_supported(:DiagnosticReport, [:search])
+
         resource_class = 'DiagnosticReport'
+        patient_ids = @instance.patient_ids.split(',')
 
-        reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+        resources_found = patient_ids.any? do |patient_id|
+          search_params = { 'patient': patient_id, 'category': category_code }
 
-        resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
+          reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
+
+          self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
+
+          diagnostic_reports = fetch_all_bundled_resources(reply)
+
+          diagnostic_reports&.each do |report|
+            report&.presentedForm&.select { |attachment| !report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
+              report_attachments.attachment[attachment.url] = report.id
+            end
+          end
+
+          true
+        end
 
         skip "No #{resource_class} resources with category #{category_code} appear to be available. Please use patients with more information." unless resources_found
-
-        self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
-
-        diagnostic_reports = fetch_all_bundled_resources(reply)
-
-        diagnostic_reports&.each do |report|
-          report&.presentedForm&.select { |attachment| !report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
-            report_attachments.attachment[attachment.url] = report.id
-          end
-        end
       end
 
       test :have_consultation_note do
@@ -207,9 +221,16 @@ module Inferno
         metadata do
           id '09'
           name 'DiagnosticReport and DocumentReference reference the same attachment'
-          link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
+          link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html#fhir-resources-to-exchange-clinical-notes'
           description %(
-            All presentedForms urls referenced in DiagnosticReports shall have corresponding content attachment urls referenced in DocumentReference
+            All presentedForms urls referenced in DiagnosticReports shall have corresponding content attachment urls referenced in DocumentReference.
+
+            There is no single best practice for representing a scanned, or narrative-only report due to the overlapping scope of the underlying resources and
+            variability in system implementation. Reports may be represented by either a DocumentReference or a DiagnosticReport. To require Clients query both
+            DocumentReference and DiagnosticReport to get all the information for a patient is potentially dangerous if a client doesn’t understand or follow this requirement.
+
+            To simplify the requirement, US Core IG requires servers implement the duplicate reference to allow a client to find a Pathology report, or other Diagnostic Reports,
+            in either Resource.
           )
           versions :r4
         end

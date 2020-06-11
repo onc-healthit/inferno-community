@@ -1,0 +1,18 @@
+version: '3.2'
+services:
+  terminology_builder:
+    build:
+      context: .
+      dockerfile: terminology_dockerfile
+    volumes:
+      - type: bind
+        source: "./resources/terminology/validators"
+        target: "/var/www/inferno/resources/terminology/validators"
+        consistency: delegated
+      - type: bind
+        source: "./tmp"
+        target: "/var/www/inferno/tmp"
+        consistency: delegated
+    environment:
+      UMLS_USERNAME:
+      UMLS_PASSWORD:

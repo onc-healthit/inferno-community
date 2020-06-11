@@ -78,11 +78,20 @@ module Inferno
       property :bulk_since_param, String
       property :bulk_jwks_url_auth, String
       property :bulk_jwks_auth, String
-      property :bulk_public_key, String
-      property :bulk_private_key, String
+      property :bulk_encryption_method, String, default: 'ES384'
+      property :bulk_data_jwks, String
       property :bulk_access_token, String
       property :bulk_lines_to_validate, String
       property :bulk_status_output, String
+      property :bulk_patient_ids_in_group, String
+      property :bulk_device_types_in_group, String
+      property :bulk_stop_after_must_support, String, default: 'true'
+      property :bulk_scope, String
+      property :disable_bulk_data_require_access_token_test, Boolean, default: false
+
+      # These are used by BDT
+      property :bulk_public_key, String
+      property :bulk_private_key, String
 
       has n, :sequence_results
       has n, :resource_references
@@ -118,8 +127,8 @@ module Inferno
           return_data << {
             group: group,
             result_details: result_details,
-            result: group_result(result_details),
-            missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? }
+            result: group_result(result_details, group.test_cases.length),
+            missing_variables: group.lock_variables_without_defaults.select { |var| send(var.to_sym).nil? }
           }
         end
 
@@ -235,29 +244,28 @@ module Inferno
         methods_supported && operations_supported
       end
 
-      def save_resource_reference(type, id, profile = nil)
-        resource_references
-          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
-          .each(&:destroy)
+      def save_resource_reference_without_reloading(type, id, profile = nil)
+        ResourceReference
+          .all(resource_type: type, resource_id: id, testing_instance_id: self.id)
+          .destroy
 
-        new_reference = ResourceReference.new(
+        ResourceReference.create!(
           resource_type: type,
           resource_id: id,
-          profile: profile
+          profile: profile,
+          testing_instance: self
         )
-        resource_references << new_reference
-
-        save!
-        # Ensure the instance resource references are accurate
-        reload
       end
 
       def save_resource_references(klass, resources, profile = nil)
         resources
           .select { |resource| resource.is_a? klass }
           .each do |resource|
-            save_resource_reference(klass.name.demodulize, resource.id, profile)
+            save_resource_reference_without_reloading(klass.name.demodulize, resource.id, profile)
           end
+
+        # Ensure the instance resource references are accurate
+        reload
       end
 
       def save_resource_ids_in_bundle(klass, reply, profile = nil)
@@ -282,14 +290,43 @@ module Inferno
         token_retrieved_at + token_expires_in.seconds
       end
 
+      def bulk_private_key_set
+        return unless bulk_data_jwks.present?
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('sign') } }.to_json
+      end
+
+      def bulk_public_key_set
+        return unless bulk_data_jwks.present?
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('verify') } }.to_json
+      end
+
+      def bulk_selected_public_key
+        return unless bulk_data_jwks.present?
+
+        JSON.parse(bulk_public_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
+        end
+      end
+
+      def bulk_selected_private_key
+        return unless bulk_data_jwks.present?
+
+        JSON.parse(bulk_private_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
+        end
+      end
+
       private
 
-      def group_result(results)
-        return :skip if results[:skip].positive?
+      def group_result(results, total_in_group)
         return :fail if results[:fail].positive?
         return :fail if results[:cancel].positive?
         return :error if results[:error].positive?
+        return :skip if results[:skip].positive?
         return :not_run if results[:total].zero?
+        return :not_run if results[:total] < total_in_group
 
         :pass
       end

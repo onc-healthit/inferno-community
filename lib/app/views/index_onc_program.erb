@@ -1,0 +1,334 @@
+<!--<div class="container-fluid onc-index-page" role="main" style="background-color: #ffc62f;padding: 3px;"></div>-->
+<div class="container-fluid onc-index-page" role="main" style="background-color: #fff; padding: 50px 0 10px;">
+  
+  <%= erb(:missing_valuesets, {}, {}) %>
+
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+
+        <div class="col-12" style="color: #063d75; text-align: center;">
+        <img src="/images/icon_logo.png" style='width: 125px; display:block; margin-left: auto; margin-right: auto;'>
+        <div style="    font-weight: bolder;
+        margin: 12px;
+        display: inline-block;
+        font-size: 36px;
+        /* font-style: normal; */
+        font-family: 'Roboto Condensed';">
+        INFERNO PROGRAM EDITION
+        </div>
+        <div style="display: inline-block; font-size: 26px;">
+        Test conformance to the Standardized API for Patient and Population Services criterion § 170.315(g)(10) in the 2015 Edition Cures Update.
+        </div>
+        <!--<div style="display: inline-block; font-size: 26px; margin-top: 50px;">
+        <button class="btn btn-dark" type="button">Start Testing</button>
+        </div>-->
+        <form method="POST" action="<%=base_path%>/" style="margin:  0 auto;margin-top: 40px;width: 800px;" class="form-inline">
+        <input type="hidden" name="client_endpoint_key" value="static" />
+        <%= erb(:module_options,{},modules: modules) %>
+
+  <div class="form-group mx-sm-3 mb-2">
+    <label for="fhir_server" class="sr-only">FHIR Server</label>
+    <input type="url" required class="form-control form-control-lg"  style="width: 600px" id="fhir_server" name="fhir_server" placeholder="Enter a FHIR Endpoint" aria-label="Start Testing">
+  </div>
+  <button type="submit" class="btn btn-lg btn-secondary mb-2">START TESTING</button>
+
+
+        <% if presets.present? %>
+          <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
+          <div class="form-group" style="margin-left: 250px;">
+            <label for="preset-select" class="preset-label">
+              Or test Inferno against
+            </label>
+            <select class="custom-select custom-select-lg" name="preset" style="padding-left: 5px;margin: 0 0;border: 0;text-decoration: underline;" id="preset-select">
+              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">a public sandbox</option>
+              <% presets.each do |preset| %>
+                <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
+              <% end %>
+              <input type="hidden" name="preset" id="preset" value="" />
+            </select>
+            
+            <a id="instructions-link" class="instructions-link" href="" target="_blank" style="display:none">Instructions</a>
+          </div>
+
+        </div>
+
+        <% end %>
+      </fieldset>
+    </form>
+
+    </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid onc-index-page" role="main" style="margin-top: 60px; background-image: url(/images/gradient.png);background-color: #f2f2f2;padding: 3px;background-size:cover;"></div>
+<div class="container-fluid onc-index-page" role="main" style="background-color: #efefef; border-bottom: 1px solid #dedede;">
+<div class="row">
+<div class="col">
+  <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+<ul class="nav nav-pills mb-3" id="pills-tab" style="margin-right: 0px; font-size: 20px;margin-bottom: 0px !important;" role="tablist">
+<li class="nav-item">
+  <a class="nav-link active" id="pills-overview-tab" data-toggle="pill" href="#pills-overview" role="tab" aria-controls="pills-overview" aria-selected="true">OVERVIEW</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-data-tab" data-toggle="pill" href="#pills-data" role="tab" aria-controls="pills-data" aria-selected="false">SAMPLE DATA</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-install-tab" data-toggle="pill" href="#pills-install" role="tab" aria-controls="pills-install" aria-selected="false">INSTALLATION INSTRUCTIONS</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-notes-tab" data-toggle="pill" href="#pills-notes" role="tab" aria-controls="pills-notes" aria-selected="false">RELEASE NOTES</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+<div class="container" style="background-color: white">
+  <div class="main index-page onc-index">
+
+    <div class="onc-index-banner">
+
+    </div>
+
+    <div class="onc-index-below">
+ 
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane show active" style="font-size: 20px;" id="pills-overview" role="tabpanel" aria-labelledby="pills-overview-tab">
+    <div style="padding: 15px 0; font-size: 30px;">Inferno Program Edition</div>
+
+
+    <p>
+    Inferno Program Edition is a streamlined testing tool for  Health
+    Level 7 (HL7®) Fast Healthcare Interoperability Resources (FHIR®) services seeking to meet
+    the requirements of the Standardized API for Patient and Population Services criterion § 170.315(g)(10) in the 2015 Edition Cures Update.
+    </p>
+    <p>
+    Inferno behaves like an API consumer, making a series of HTTP requests that mimic a real world client to ensure that the API
+    supports all required standards, including:
+    </p>
+    <ul>
+    <li>FHIR Release 4.0.1</li>
+    <li>FHIR US Core Implementation Guide (IG)
+    STU 3.1.0</li>
+    <li>SMART Application Launch Framework Implementation Guide Release 1.0.0</li>
+    <li>HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1) </li>
+    </ul>
+    <p>
+    Inferno is open source and freely available for use or adoption by the health IT community
+    including EHR vendors, health app developers, and testing labs. It can be used as a testing tool
+    for the EHR Certification program supported by the Office of the National Coordinator for Health IT (ONC).
+    </p>
+
+    <p>
+    To get started, enter the endpoint of the FHIR service.  Inferno Program Edition is only intended to be
+    used on test systems that do not contain PHI.
+    </p>
+  
+  </div>
+
+  <div class="tab-pane" style="font-size: 20px;" id="pills-data" role="tabpanel" aria-labelledby="pills-data-tab">
+    <div style="padding: 15px 0; font-size: 30px;">Sample Test Data</div>
+    <p>
+    Inferno does not currently require a specific set of data to be entered into the system under test prior to testing.
+    Instead, it leverages FHIR's built-in conformance rules to ensure that data returned
+    is valid FHIR, conforms to required profiles, and contains all elements that must be supported. This allows
+    systems to use test data that is relevant to their intended uses.
+    </p>
+
+    <p>
+If needed, Inferno supplies multiple synthetic data sets suitable for testing. These data sets are ideal for testing
+because they provide coverage of all US Core profiles and support for all MUST SUPPORT data elements without
+requiring a large set of patients or sacrificing realism.
+</p>
+<p>
+Use of these data sets is optional.
+</p>
+<p>
+The synthetic data sets are available for download in compressed archives at <a href="https://github.com/inferno-community/uscore-data-sets">Inferno US Core Data Sets</a>.
+</p>
+<p>
+There are three data sets available:
+</p>
+<ul>
+  <li><b>Single patient</b> with all US Core profiled resources and USCDI elements</li>
+  <li><b>Small population</b>, handful of patients covering all US Core profiles and USCDI elements</li>
+  <li><b>Large population</b>, hundreds of patients covering all US Core profiles and USCDI elements</li>
+</ul>
+<p>
+Each data set is available as FHIR JSON Transaction Bundles and FHIR Bulk Data format.
+</p>
+<p>
+Additional data sets can be generated using the open-source <a href="https://github.com/synthetichealth/synthea">Synthea<sup>TM</sup></a> tool and the <a href="https://github.com/inferno-community/uscore-data-script">Inferno US Core Data Script</a>.
+</p>
+
+  </div>
+  <div class="tab-pane" id="pills-install" role="tabpanel" aria-labelledby="pills-install-tab">
+    <div style="padding: 15px 0; font-size: 30px;">How to Install Locally</div>
+
+    <p>
+    ONC provides a demonstration instance of Inferno Program Edition at <a href="https://inferno.healthit.gov/inferno">https://inferno.healthit.gov/inferno</a>.
+    However, Inferno is intended to be downloaded and run locally.
+    </p>
+
+    <p>
+Docker is the recommended installation method for Windows devices and can also be used on Linux and MacOS hosts.
+</p>
+<p>
+Install <a href="http://www.docker.com">Docker</a> for the host platform as well as the <a href="https://docs.docker.com/compose/install/">docker-compose tool</a> (which may be included in the distribution, as is the case for Windows and MacOS).
+</p>
+<ol>
+<li><a href="https://github.com/onc-healthit/inferno-program/releases">Download the latest release</a> of the inferno project to your local computer on a directory of your choice.
+<li>Open a terminal in the directory where the project was downloaded (above).
+<li>Run the command docker-compose up to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
+<li>Navigate to http://localhost:4567 to find the running application.
+</ol>
+
+<p>
+If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run docker-compose up --build to rebuild the containers.
+</p>
+
+<p>
+For alternate installation options, please visit <a href='https://github.com/onc-healthit/inferno-program#installation-and-deployment'>the documentation</a>.
+</p>
+  
+  </div>
+  <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
+    <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.0</div>
+      <p>
+        The v1.0.0 release of Inferno Program Edition marks the first release containing complete coverage
+        of the test procedure for the Standardized API for Patient and Population Services criterion within the ONC 2015
+        Certification Edition Cures Update.
+      </p>
+      <p>
+        Updates from the previous version includes:
+      </p>
+      <ul>
+        <li>Public client SMART App Launch testing.</li>
+        <li>Additional SMART App Launch tests to ensure that authorization server properly validate launches.</li>
+        <li>Improved testing for patient selection of resources to grant or deny.</li>
+        <li>Alignment between USCDI and US Core test requirements.</li>
+        <li>Token revocation tests.</li>
+        <li>Improved visual inspection tests.</li>
+      </ul>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_0_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.6</div>
+      <ul>
+        <li>Added high-level 'Other' step for tests that do not fit in other steps.</li>
+        <li>Added visual inspection tests.</li>
+        <li>Updated token refresh test to require that refresh tokens are refreshed.</li>
+        <li>Updates to allow empty NDJSON lines because specification is vague on if they are allowed or not.</li>
+        <li>Improve test matrix to include Inferno Tests and Test Procedure Steps in separate tabs.</li>
+      </ul>
+
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_6.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.5</div>
+      <ul>
+        <li>Improved resource validation messages in Bulk Data Group Validation.</li>
+        <li>Fixed issue where 'warning' and 'info' messages were reported as 'errors' in Bulk Data Group Validation.</li>
+        <li>Fixed logging issue resulting in 'frozen literal' error in Bulk Data Group Validation.</li>
+        <li>Removed option to register application with Backend Services using JWK sets directly.  URL JWK Set registration is required.</li>
+        <li>Refined behavior allowing users to limit the number of resources validated for large bulk data sets.</li>
+        <li>Improved error messages to be more descriptive when incorrect search results returned during US Core queries.</li>
+        <li>Fixed issue where test results expanded by default incorrectly labeled the 'Show'/'Hide' button.</li>
+        <li>Improved code sharing for US Core profile validation between Bulk Data and Single Patient Queries.</li>
+      </ul>
+
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_5.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.4</div>
+      <ul>
+        <li>Updated skipped tests results to expand by default, in the same way that failed tests are expanded by default.</li>
+        <li>Fixed issue where Authorization header was incorrectly included in queries to SMART Well Known endpoints in certain situations.</li>
+        <li>Updated test names and descriptions in US Core tests to provide more detailed information and to be more precise.</li>
+        <li>Removed search queries for non-USCDI resources that have US Core v3.1 Profiles (e.g. US Core PractitionerRole).  Non-USCDI resources referenced by USCDI resources are still validated against US Core profiles when necessary.</li>
+        <li>Relaxed overly strict SSL requirements for certain Bulk Data HTTP requests.</li>
+      </ul>
+
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_4.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure. 
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.3</div>
+    <p>
+      <ul>
+        <li>Introduce <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_3.xlsx'>Test Procedure Matrix</a> to document mapping to 2015 Cures Update Test Procedure</li>
+        <li>Fix footer links to GitHub repositories</li>
+        <li>Improve error message formatting</li>
+        <li>Prevent HTML from being rendered in HTTP Responses</li>
+        <li>Fix bug in US Core Encounter Profile tests</li>
+        <li>Allow users to disable TLS certificate validation for Bulk Data tests</li>
+        <li>Add Inferno Reference Server to public deployment</li>
+        <li>Fix Access Verify Sequence when servers return 400 in certain cases</li>
+        <li>Add CodeSystem validation to supplement existing ValueSet validation</li>
+      </ul>
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.2</div>
+    <p>
+      <ul>
+        <li>Check Must Support requirements in the bulk data tests</li>
+        <li>Update description of USCCN-09 to better describe the requirements around attachments being referenced in DiagnosticReports and DocumentReferences</li>
+        <li>Check all patients in clinical notes tests</li>
+        <li>Reword warning for bulk data validation counts</li>
+        <li>Fix possible fatal error in BDE-06</li>
+        <li>Fix fatal error in USCE-12</li>
+      </ul>
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.1</div>
+    <p>
+      <ul>
+        <li>Update default configuration to persist data when running in docker</li>
+        <li>Update default configuration to use correct validator</li>
+        <li>Correct outdated EHR launch scopes</li>
+        <li>Add test for bulk data DELETE request</li>
+        <li>Remove unused terminology service code</li>
+        <li>Remove launch/encounter scope from the standalone launch tests</li>
+        </li>
+      </ul>
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.0</div>
+
+    <p>
+    The v0.9.0 release of Inferno Program Edition marks the first public release of the Inferno testing
+    tool targetting the Standardized API for Patient and Population Services criterion within the ONC 2015
+    Certification Edition Cures Update.
+    </p>
+    <p>
+    This release includes testing for all relevant implementation specifications required by the certification criterion,
+    including FHIR Release 4.0.1, FHIR US Core Implementation Guide STU 3.1.0, SMART Application Launch Framework
+    Implementation Guide Release 1.0.0, and HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1).
+    <p>
+    <p>
+    Inferno Program Edition will support the test procedure accompanying § 170.315(g)(10).  This version is provided as a
+    preview and may diverge from the test procedure in a number ways.  These will be addressed prior to the
+    effective date of the rule. Please report any issues at the <a href="https://github.com/onc-healthit/inferno-program/issues">Inferno Program Edition</a> GitHub repository.
+    </p>
+
+    <p>This version is configured to use the following by default:
+
+    <ul>
+    <li>FHIR Validation provided by <a href='https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'>FHIR Validator</a> v4.3.1-SNAPSHOT </li>
+    <li>Terminology codes validated against <a href='https://www.nlm.nih.gov/research/umls/index.html'>Unified Medical Language System (UMLS)</a> version 2019AB.  Account required for local installation.
+    </ul>
+
+    </p>
+
+</div>
+
+
+    </div>
+  </div>
+</div>
+</div>

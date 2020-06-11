@@ -1,0 +1,25 @@
+# Most of the same things we .gitignore
+**/.DS_Store
+*.log
+*.log.*
+config.yml.bak
+data/*
+.project
+.settings/.jsdtscope
+.settings/org.eclipse.wst.jsdt.ui.superType.container
+.settings/org.eclipse.wst.jsdt.ui.superType.name
+.idea
+coverage
+tmp/*
+.vscode/*
+sequence_coverage.csv
+fhir-pgdata/
+
+# Auto-generated terminology files
+MR*.pipe
+umls.db
+umls.zip
+resources/terminology/validators
+
+# Don't need .git in the container
+.git

@@ -14,7 +14,6 @@ describe Inferno::Sequence::USCore310ProvenanceSequence do
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
-    set_resource_support(@instance, 'Provenance')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
@@ -26,7 +25,6 @@ describe Inferno::Sequence::USCore310ProvenanceSequence do
     end
 
     it 'skips if the Provenance read interaction is not supported' do
-      @instance.server_capabilities.destroy
       Inferno::Models::ServerCapabilities.create(
         testing_instance_id: @instance.id,
         capabilities: FHIR::CapabilityStatement.new.to_json

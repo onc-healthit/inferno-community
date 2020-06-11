@@ -18,13 +18,22 @@
         <small><%= description %></small>
       <% end %>
     </label>
-    <input type="text"
-          class="form-control"
-          name="<%=prerequisite.to_s%>"
-          id="<%=prerequisite.to_s%>"
-          placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
-          value="<%=value%>"
-          <%if defined?(readonly) && readonly %>readonly<%end%>
-          <%if defined?(required) && required %>required<%end%>
-          />
+    <% if !defined?(type) || type == 'text' %>
+      <input type="text"
+            class="form-control"
+            name="<%=prerequisite.to_s%>"
+            id="<%=prerequisite.to_s%>"
+            placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
+            value="<%=value%>"
+            <%if defined?(readonly) && readonly %>readonly<%end%>
+            <%if defined?(required) && required %>required<%end%>
+            />
+    <% elsif defined?(type) && type == 'textarea' %>
+      <textarea
+            class="form-control"
+            name="<%=prerequisite.to_s%>"
+            id="<%=prerequisite.to_s%>" rows=6
+            <%if defined?(readonly) && readonly %>readonly="readonly"<%end%> 
+            <%if defined?(required) && required %>required="required"<%end%>><%=value%></textarea>
+    <% end %>
 </div>

@@ -115,7 +115,7 @@ module Inferno
                 next_test_case = submitted_test_cases.shift
                 finished = next_test_case.nil?
                 if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, @instance)
+                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result.expect_redirect_failure, sequence_result, @instance)
                   next_test_case = nil
                   finished = false
                 elsif !submitted_test_cases.empty?
@@ -163,7 +163,7 @@ module Inferno
 
                   sequence_result.save!
                   if sequence_result.redirect_to_url
-                    out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, @instance)
+                    out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result.expect_redirect_failure, sequence_result, @instance)
                     finished = false
                   elsif !submitted_test_cases.empty?
                     out << js_next_sequence(sequence_result.next_test_cases)

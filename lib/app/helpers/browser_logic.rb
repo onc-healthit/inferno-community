@@ -40,9 +40,14 @@ module Inferno
           "<script>console.log('js_redirect'); window.location = '#{location}'</script>"
         end
 
-        def js_redirect_modal(location, _sequence, instance)
+        def js_redirect_modal(location, expect_redirect_failure, _sequence, instance)
           ok_button = "<a href=\"#{location}\" class=\"btn btn-primary\">Continue</a>"
           warning_text = "Inferno will now redirect you to an external website for user authorization.  For this test sequence to complete successfully, you will need to select a patient and authorize the Inferno client to access their data.  Once you authorize the Inferno client to access patient data, you should be redirected back to Inferno.  If something goes wrong, you can always return to Inferno at <a href=\"#{instance.base_url}#{base_path}/#{instance.id}\">#{instance.base_url}#{base_path}/#{instance.id}</a>.<br/><br/>"
+
+          if expect_redirect_failure
+            ok_button = "<a href=\"#{location}\" target=\"_blank\" class=\"btn btn-primary continue_to_confirm\">Perform Invalid Launch in New Window</a><a href=\"#{instance.redirect_uris}?state=#{instance.state}&confirm_fail=true\" class=\"btn btn-primary confirm_to_continue\">Attest Launch Failed</a>"
+            warning_text = 'Inferno will redirect you to an external website at the link below for user authorization in a new browser window.  <strong>It is expected this will fail</strong>.  If the server does not return to Inferno automatically, but does provide an error message, you may return to Inferno and confirm that an error was presented in this window.<br/><br/>'
+          end
 
           "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('#{warning_text} <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea>'); $('#testsRunningModal').find('.modal-footer').append('#{ok_button}');</script>"
         end

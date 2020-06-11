@@ -22,6 +22,8 @@
     "client-public",
     "client-confidential-symmetric",
     "sso-openid-connect",
+    "context-banner",
+    "context-style",
     "context-ehr-patient",
     "context-standalone-patient",
     "context-standalone-encounter",

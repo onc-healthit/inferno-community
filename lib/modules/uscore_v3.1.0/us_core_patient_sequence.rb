@@ -1,15 +1,69 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_patient_definitions'
 
 module Inferno
   module Sequence
     class USCore310PatientSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Patient Tests'
 
-      description 'Verify that Patient resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core Patient Profile.'
+
+      details %(
+        # Background
+
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for Patient queries.  These queries must contain resources conforming to US Core Patient Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
+
+        # Testing Methodology
+
+
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+
+          * _id
+          * identifier
+          * name
+          * gender + name
+          * birthdate + name
+
+
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for Patient resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the [US Core Patient Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient).
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
 
       test_id_prefix 'USCP'
 
@@ -20,46 +74,57 @@ module Inferno
         case property
 
         when '_id'
-          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, '_id on resource does not match _id requested'
+          values_found = resolve_path(resource, 'id')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "_id in Patient/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'birthdate'
-          value_found = resolve_element_from_path(resource, 'birthDate') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'birthdate on resource does not match birthdate requested'
+          values_found = resolve_path(resource, 'birthDate')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "birthdate in Patient/#{resource.id} (#{values_found}) does not match birthdate requested (#{value})"
 
         when 'family'
-          value_found = resolve_element_from_path(resource, 'name.family') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'family on resource does not match family requested'
+          values_found = resolve_path(resource, 'name.family')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "family in Patient/#{resource.id} (#{values_found}) does not match family requested (#{value})"
 
         when 'gender'
-          value_found = resolve_element_from_path(resource, 'gender') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'gender on resource does not match gender requested'
+          values_found = resolve_path(resource, 'gender')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "gender in Patient/#{resource.id} (#{values_found}) does not match gender requested (#{value})"
 
         when 'given'
-          value_found = resolve_element_from_path(resource, 'name.given') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'given on resource does not match given requested'
+          values_found = resolve_path(resource, 'name.given')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
-          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'identifier on resource does not match identifier requested'
+          values_found = resolve_path(resource, 'identifier')
+          identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
+          identifier_value = value.split('|').last
+          match_found = values_found.any? do |identifier|
+            identifier.value == identifier_value && (!value.include?('|') || identifier.system == identifier_system)
+          end
+          assert match_found, "identifier in Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'name'
-          value = value.downcase
-          value_found = resolve_element_from_path(resource, 'name') do |name|
-            name&.text&.start_with?(value) ||
-              name&.family&.downcase&.include?(value) ||
-              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
-              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
-              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
+          values_found = resolve_path(resource, 'name')
+          value_downcase = value.downcase
+          match_found = values_found.any? do |name|
+            name&.text&.downcase&.start_with?(value_downcase) ||
+              name&.family&.downcase&.include?(value_downcase) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value_downcase) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value_downcase) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value_downcase) }
           end
-          assert value_found.present?, 'name on resource does not match name requested'
+          assert match_found, "name in Patient/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         end
       end
-
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
 
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
@@ -67,47 +132,21 @@ module Inferno
 
       @resources_found = false
 
-      test :unauthorized_search do
-        metadata do
-          id '01'
-          name 'Server rejects Patient search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:Patient, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_ids.each do |patient|
-          search_params = {
-            '_id': patient
-          }
-
-          reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-          assert_response_unauthorized reply
-        end
-
-        @client.set_bearer_token(@instance.token)
-      end
-
       test :search_by__id do
         metadata do
-          id '02'
-          name 'Server returns expected results from Patient search by _id'
+          id '01'
+          name 'Server returns valid results for Patient search by _id.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by _id on the Patient resource
-
+            A server SHALL support searching by _id on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['_id'])
         @patient_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -130,8 +169,8 @@ module Inferno
           @resources_found = @patient.present?
 
           save_resource_references(versioned_resource_class('Patient'), @patient_ary[patient])
-          save_delayed_sequence_references(@patient_ary[patient])
-          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          save_delayed_sequence_references(@patient_ary[patient], USCore310PatientSequenceDefinitions::DELAYED_REFERENCES)
+          validate_reply_entries(@patient_ary[patient], search_params)
         end
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)
@@ -139,68 +178,71 @@ module Inferno
 
       test :search_by_identifier do
         metadata do
-          id '03'
-          name 'Server returns expected results from Patient search by identifier'
+          id '02'
+          name 'Server returns valid results for Patient search by identifier.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by identifier on the Patient resource
+            A server SHALL support searching by identifier on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['identifier'])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
-            'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier'))
+            'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier'), true)
+          token_with_system_search_params = search_params.merge('identifier': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Patient'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, token_with_system_search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (identifier) in any resource.' unless resolved_one
       end
 
       test :search_by_name do
         metadata do
-          id '04'
-          name 'Server returns expected results from Patient search by name'
+          id '03'
+          name 'Server returns valid results for Patient search by name.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by name on the Patient resource
+            A server SHALL support searching by name on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['name'])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name'))
+            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -208,37 +250,36 @@ module Inferno
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (name) in any resource.' unless resolved_one
       end
 
       test :search_by_gender_name do
         metadata do
-          id '05'
-          name 'Server returns expected results from Patient search by gender+name'
+          id '04'
+          name 'Server returns valid results for Patient search by gender+name.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by gender+name on the Patient resource
+            A server SHALL support searching by gender+name on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['gender', 'name'])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
-            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender')),
-            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name'))
+            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender') { |el| get_value_for_search_param(el).present? }),
+            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -246,37 +287,36 @@ module Inferno
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (gender, name) in any resource.' unless resolved_one
       end
 
       test :search_by_birthdate_name do
         metadata do
-          id '06'
-          name 'Server returns expected results from Patient search by birthdate+name'
+          id '05'
+          name 'Server returns valid results for Patient search by birthdate+name.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by birthdate+name on the Patient resource
+            A server SHALL support searching by birthdate+name on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['birthdate', 'name'])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
-            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate')),
-            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name'))
+            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate') { |el| get_value_for_search_param(el).present? }),
+            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -284,38 +324,37 @@ module Inferno
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (birthdate, name) in any resource.' unless resolved_one
       end
 
       test :search_by_birthdate_family do
         metadata do
-          id '07'
-          name 'Server returns expected results from Patient search by birthdate+family'
+          id '06'
+          name 'Server returns valid results for Patient search by birthdate+family.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by birthdate+family on the Patient resource
+            A server SHOULD support searching by birthdate+family on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['birthdate', 'family'])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
-            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate')),
-            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family'))
+            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate') { |el| get_value_for_search_param(el).present? }),
+            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -323,38 +362,37 @@ module Inferno
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (birthdate, family) in any resource.' unless resolved_one
       end
 
       test :search_by_family_gender do
         metadata do
-          id '08'
-          name 'Server returns expected results from Patient search by family+gender'
+          id '07'
+          name 'Server returns valid results for Patient search by family+gender.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by family+gender on the Patient resource
+            A server SHOULD support searching by family+gender on the Patient resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Patient', ['family', 'gender'])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
-            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family')),
-            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender'))
+            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family') { |el| get_value_for_search_param(el).present? }),
+            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
@@ -362,12 +400,12 @@ module Inferno
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (family, gender) in any resource.' unless resolved_one
       end
 
       test :read_interaction do
         metadata do
-          id '09'
+          id '08'
           name 'Server returns correct Patient resource from Patient read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -384,7 +422,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '10'
+          id '09'
           name 'Server returns correct Patient resource from Patient vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -402,7 +440,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '11'
+          id '10'
           name 'Server returns correct Patient resource from Patient history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -420,14 +458,22 @@ module Inferno
 
       test 'Server returns Provenance resources from Patient search by _id + _revIncludes: Provenance:target' do
         metadata do
-          id '12'
+          id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
+
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
+
+            This test will perform a search for _id + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('Patient', 'Provenance:target')
         skip_if_not_found(resource_type: 'Patient', delayed: false)
+
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -441,21 +487,24 @@ module Inferno
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             .select { |resource| resource.resourceType == 'Provenance' }
-          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310PatientSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
         metadata do
-          id '13'
-          name 'Patient resources returned conform to US Core R4 profiles'
+          id '12'
+          name 'Patient resources returned from previous search conform to the US Core Patient Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test verifies resources returned from the first search conform to the [US Core Patient Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )
           versions :r4
@@ -463,125 +512,118 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)
         test_resources_against_profile('Patient')
+        bindings = USCore310PatientSequenceDefinitions::BINDINGS
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @patient_ary&.values&.flatten)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @patient_ary&.values&.flatten)
+            binding_def_new = binding_def
+            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
+            if invalid_bindings.present?
+              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @patient_ary&.values&.flatten)
+              binding_def_new = binding_def.except(:system)
+            end
+          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
+        end
+        warning do
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
+        end
       end
 
       test 'All must support elements are provided in the Patient resources returned.' do
         metadata do
-          id '14'
+          id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Patient resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the Patient resources found previously for the following must support elements:
 
-            Patient.identifier
-
-            Patient.identifier.system
-
-            Patient.identifier.value
-
-            Patient.name
-
-            Patient.name.family
-
-            Patient.name.given
-
-            Patient.telecom
-
-            Patient.telecom.system
-
-            Patient.telecom.value
-
-            Patient.telecom.use
-
-            Patient.gender
-
-            Patient.birthDate
-
-            Patient.address
-
-            Patient.address.line
-
-            Patient.address.city
-
-            Patient.address.state
-
-            Patient.address.postalCode
-
-            Patient.address.period
-
-            Patient.communication
-
-            Patient.communication.language
-
-            Patient.extension:race
-
-            Patient.extension:ethnicity
-
-            Patient.extension:birthsex
-
+            * identifier
+            * identifier.system
+            * identifier.value
+            * name
+            * name.family
+            * name.given
+            * telecom
+            * telecom.system
+            * telecom.value
+            * telecom.use
+            * gender
+            * birthDate
+            * address
+            * address.line
+            * address.city
+            * address.state
+            * address.postalCode
+            * address.period
+            * communication
+            * communication.language
+            * Patient.extension:race
+            * Patient.extension:ethnicity
+            * Patient.extension:birthsex
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)
+        must_supports = USCore310PatientSequenceDefinitions::MUST_SUPPORTS
 
-        must_support_extensions = {
-          'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
-          'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
-          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
-        }
-        missing_must_support_extensions = must_support_extensions.reject do |_id, url|
+        missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
           @patient_ary&.values&.flatten&.any? do |resource|
-            resource.extension.any? { |extension| extension.url == url }
+            resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
           end
         end
 
-        must_support_elements = [
-          { path: 'Patient.identifier' },
-          { path: 'Patient.identifier.system' },
-          { path: 'Patient.identifier.value' },
-          { path: 'Patient.name' },
-          { path: 'Patient.name.family' },
-          { path: 'Patient.name.given' },
-          { path: 'Patient.telecom' },
-          { path: 'Patient.telecom.system' },
-          { path: 'Patient.telecom.value' },
-          { path: 'Patient.telecom.use' },
-          { path: 'Patient.gender' },
-          { path: 'Patient.birthDate' },
-          { path: 'Patient.address' },
-          { path: 'Patient.address.line' },
-          { path: 'Patient.address.city' },
-          { path: 'Patient.address.state' },
-          { path: 'Patient.address.postalCode' },
-          { path: 'Patient.address.period' },
-          { path: 'Patient.communication' },
-          { path: 'Patient.communication.language' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Patient.', '')
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @patient_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
-        missing_must_support_elements += missing_must_support_extensions.keys
+        missing_must_support_elements += missing_must_support_extensions.map { |must_support| must_support[:id] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.values&.flatten&.length} provided Patient resource(s)"
         @instance.save!
       end
 
-      test 'Every reference within Patient resource is valid and can be read.' do
+      test 'Every reference within Patient resources can be read.' do
         metadata do
-          id '15'
+          id '14'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end

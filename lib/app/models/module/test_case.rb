@@ -30,7 +30,7 @@ module Inferno
       end
 
       def variable_defaults
-        parameters[:variable_defaults]
+        parameters[:variable_defaults] || {}
       end
     end
   end

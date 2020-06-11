@@ -5,6 +5,7 @@ require 'yaml'
 require_relative 'module/test_group'
 require_relative 'module/test_set'
 require_relative 'module/tag'
+require_relative 'module/test_procedure'
 
 module Inferno
   class Module
@@ -15,9 +16,11 @@ module Inferno
     attr_accessor :fhir_version
     attr_accessor :hide_optional
     attr_accessor :name
+    attr_accessor :test_procedure
     attr_accessor :tags
     attr_accessor :test_sets
     attr_accessor :title
+    attr_accessor :value_sets
 
     def initialize(params)
       @name = params[:name]
@@ -35,6 +38,7 @@ module Inferno
           test_sets[test_set_key] = TestSet.new(test_set_key, test_set)
         end
       end
+      @value_sets = params[:value_sets]
 
       Module.add(name, self)
     end
@@ -80,6 +84,12 @@ module Inferno
     Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_module.yml')).each do |file|
       this_module = YAML.load_file(file).deep_symbolize_keys
       new(this_module)
+    end
+
+    Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_procedure.yml')).each do |file|
+      this_procedure = YAML.load_file(file).deep_symbolize_keys
+      referenced_module = @modules[file.split(%r{/|_procedure\.yml}).last]
+      referenced_module.test_procedure = TestProcedure.new(this_procedure, referenced_module)
     end
   end
 end

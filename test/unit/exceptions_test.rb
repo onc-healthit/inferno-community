@@ -119,3 +119,17 @@ describe ClientException do
     end
   end
 end
+
+describe SocketError do
+  describe '#update_result' do
+    it 'fails the test and sets message' do
+      message = 'MESSAGE'
+      result = Inferno::Models::TestResult.new
+
+      SocketError.new(message).update_result(result)
+
+      assert result.fail?
+      assert result.message == message
+    end
+  end
+end

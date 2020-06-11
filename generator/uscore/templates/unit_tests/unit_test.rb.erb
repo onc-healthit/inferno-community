@@ -14,7 +14,6 @@ describe Inferno::Sequence::<%= class_name %> do
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
-    set_resource_support(@instance, '<%= resource_type %>')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 

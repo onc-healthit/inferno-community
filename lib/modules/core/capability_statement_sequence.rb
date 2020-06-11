@@ -65,9 +65,7 @@ module Inferno
 
         assert_tls_1_2 @instance.url
 
-        warning do
-          assert_deny_previous_tls @instance.url
-        end
+        assert_deny_previous_tls @instance.url
       end
 
       test 'FHIR server supports the conformance interaction' do

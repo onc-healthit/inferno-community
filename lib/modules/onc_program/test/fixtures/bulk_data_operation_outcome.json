@@ -1,0 +1,15 @@
+{
+    "resourceType": "OperationOutcome",
+    "text": {
+      "status": "generated",
+      "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><h1>Operation Outcome</h1><table border=\"0\"><tr><td style=\"font-weight:bold;\">error</td><td>[]</td><td><pre>The Accept header must be application/fhir+json</pre></td></tr></table></div>"
+    },
+    "issue": [
+      {
+        "severity": "error",
+        "code": "processing",
+        "diagnostics": "The Accept header must be application/fhir+json"
+      }
+    ]
+  }
+  

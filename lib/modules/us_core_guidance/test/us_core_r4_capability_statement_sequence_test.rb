@@ -10,6 +10,23 @@ describe Inferno::Sequence::UsCoreR4CapabilityStatementSequence do
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
   end
 
+  describe 'Conformance support tests' do
+    before do
+      @test = @sequence_class[:conformance_support]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'fails (not error) when socket connection issue' do
+      stub_request(:get, /metadata/).to_raise(SocketError)
+
+      exception = assert_raises(SocketError) { @sequence.run_test(@test) }
+      test_result = Inferno::Models::TestResult.new
+      exception.update_result(test_result)
+
+      assert test_result.fail?, "Test result should be fail but is #{test_result.result}"
+    end
+  end
+
   describe 'JSON support test' do
     before do
       @test = @sequence_class[:json_support]

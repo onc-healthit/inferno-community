@@ -1,0 +1,940 @@
+<div class="container" role='main'>
+  <div id="header-module-name">
+  <%=instance.module.title%>
+  <% unless instance.module.fhir_version.nil? %>
+    <span class='badge badge-dark'>FHIR <%=instance.module.fhir_version.upcase%></span>
+  <% end %>
+  </div>
+</div>
+
+<div class="container-fluid server-info sticky-top" role='main'>
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center">
+
+        <div class="col-8">
+          <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo Small'></a>
+          <span class="server-name">
+            <%=instance.url%>
+          </span>
+        </div>
+        <div class="col-4 server-actions">
+
+
+          <% if instance.module.test_sets.length > 1 %>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="oi oi-eye" aria-hidden="true"></span>
+                <%= test_set.id.to_s.gsub(/_/, ' ').titlecase %>
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <% instance.module.test_sets.each do |key, value| %>
+                  <% if key.to_s != test_set.id.to_s %>
+                    <a class="dropdown-item" href="../<%=key.to_s%>/"><%= key.to_s.gsub(/_/, ' ').titlecase %></a>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
+            <span class="oi oi-list" aria-hidden="true"></span>
+            <span id="client-status-button-text">State</span>
+          </button>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#linkModal">
+            <span class="oi oi-link-intact" aria-hidden="true"></span>
+            <span id="save-test-button-text">Save</span>
+          </button>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#helpModal">
+            <strong style='line-height:1em;font-size:1.3em'>?</strong>
+            <span id="help-button-text">Help</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= erb(:missing_valuesets, {}, {}) %>
+
+<div class="container guided">
+  <div class="main main-details" role='region'>
+
+    <% unless locals[:error_code].nil? %>
+      <div class="alert alert-danger" role="alert">
+        <% if error_code == 'no_launch' %>
+          The launch URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the EHR launch test
+          before initiating an EHR launch from the server.
+        <% elsif error_code == 'no_redirect' %>
+          The redirect URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
+          before visiting this redirect url.
+        <% elsif error_code == 'no_ehr_launch' %>
+          No actively running launch sequences found for iss <%=params[:iss]%>.
+          Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.
+        <% elsif error_code == 'no_state' %>
+          Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of <%=params[:state]%>.
+          The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test.
+        <% end %>
+      </div>
+    <% end %>
+    <div class="group-nav">
+      <ul class="nav nav-pills nav-fill">
+      <% test_group = "" if defined?(test_group).nil? %>
+      <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
+        <li class="nav-item group-result-<%= group_with_result[:result].to_s %>">
+          <a class="nav-link<%= if (index == 0 && test_group.blank? ) || (test_group == group_with_result[:group].id) then ' active' end %><%= if (index == 0) then ' nav-link-first' end%>" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
+            <% case group_with_result[:result].to_s
+              when 'pass' %>
+              <div class="group-nav-score group-nav-score-pass" data-toggle="tooltip" title="Test Passed">
+                <span class="oi oi-check" aria-hidden="true"></span>
+              </div>
+            <% when 'fail' %>
+              <div class="group-nav-score group-nav-score-fail" data-toggle="tooltip" title="Test Failed">
+                <span class="oi oi-x" aria-hidden="true"></span>
+              </div>
+            <% end %>
+            <div class="group-nav-label"><%= group_with_result[:group].short_label %></div>
+          </a>
+        </li>
+      <%end%>
+      <li class="nav-item nav-item-no-chevron">
+        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span><div class="group-nav-label"></div></a>
+      </li>
+      </ul>
+    </div>
+
+    <div class="row">
+      <div class="col-12 sequence-table">
+        <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
+          <% group = group_with_result[:group] %>
+          <% group_result = group_with_result[:result] %>
+          <div class="sequence-group sequence-action-boundary tab-pane<%= if (index == 0 && test_group.blank? ) || (test_group == group_with_result[:group].id) then ' active' end %>" data-group="<%= group.name %>" id="group-<%=group.id%>">
+            <div class="sequence-header">
+              <div class='align-items-center'>
+                <div class='group-overview-box'>
+                  <% if group.test_cases.length > 1 %>
+
+                    <a class="sequence-anchor" id="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>" name="<%=group.test_cases.map {|tc| tc.sequence.sequence_name}.join(',')%>"></a>
+
+                  <% end %>
+                  <h1>
+
+                    <% case group_result.to_s
+                      when 'pass' %>
+                      <div class="group-score group-score-pass" data-toggle="tooltip" title="Test Passed">
+                        <span class="oi oi-check" aria-hidden="true"></span>
+                      </div>
+                    <% when 'fail' %>
+                      <div class="group-score group-score-fail" data-toggle="tooltip" title="Test Failed">
+                        <span class="oi oi-x" aria-hidden="true"></span>
+                      </div>
+                    <% when 'cancel' %>
+                      <div class="group-score group-score-fail" data-toggle="tooltip" title="Test Cancelled During Execution">
+                        <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
+                      </div>
+                    <% when 'error' %>
+                      <div class="group-score group-score-error" data-toggle="tooltip" title="Test Test System Error">
+                        !
+                      </div>
+                    <% when 'wait' %>
+                      <div class="group-score group-score-wait" data-toggle="tooltip" title="Test is Awaiting Client Redirect or Launch">
+                        <span class="oi oi-media-pause" title="waiting" aria-hidden="true"></span>
+                      </div>
+                    <% when 'skip' %>
+                      <div class="group-score seqgroupuence-score-skip" data-toggle="tooltip" title="Test Skipped Due to Insufficient Information">
+                          <span class="oi oi-ban" title="Skip" aria-hidden="true"></span>
+                      </div>
+                    <% else %>
+                      <div style="display:inline-block; width: 10px;"></div>
+                    <% end %>
+
+                    
+                    <%= group.name %>
+
+                    <div class="group-steps"> Step <span class="group-step-number"><%=index + 1%></span> of <%= instance.group_results(test_set.id).length %></div>
+                      
+                  </h1>
+                  <div class="group-overview" <% if group_result.to_s == 'not_run' %>style='padding-left: 25px'<%end%>>
+
+                  <% if group_with_result[:missing_variables].select{|v| v != "client_secret"}.length > 0 %>
+                  <!-- removing client secret because it is only necessary if a confidential client -->
+                  <div class="group-message">
+                    Cannot execute this test because the following information was not collected during previously run tests: <%=group_with_result[:missing_variables].select{|v| v != "client_secret"}.join(", ") %>.
+                  </div>
+
+                  <% end %>
+
+                  <div class="group-message">
+                    <% case group_result.to_s
+                      when 'pass' %>
+                          Result: Pass. Tests have successfully passed.
+                      <% when 'fail' %>
+                          Result: Fail. One or more tests have failed, please see below for failure details.
+                      <% when 'cancel' %>
+                          Cancelled
+                      <% when 'error' %>
+                          Errored
+                      <% when 'wait' %>
+                          Paused
+                      <% when 'skip' %>
+                          Skipped
+                      <% end %>
+                  </div>
+                  <%= markdown_to_html(group.overview) %>
+
+                  <div class='buttons-container buttons-container-<%=group_result.to_s%>'>
+                    <% if group.run_all %>
+                      <% case group_result.to_s
+                        when 'pass' %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
+                          </button>
+                        <% when 'fail' %>
+                          <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
+                            <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                              <span class="oi oi-loop"></span> Rerun Skipped Tests
+                            </button>
+                          <% end %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
+                          </button>
+                        <% when 'cancel' %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-media-play"></span> Begin Tests
+                          </button>
+                        <% when 'error' %>
+                          <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
+                            <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                              <span class="oi oi-loop"></span> Rerun Skipped Tests
+                            </button>
+                          <% end %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
+                          </button>
+                        <% when 'wait' %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-media-play"></span> Begin Tests
+                          </button>
+                        <% when 'skip' %>
+                          <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
+                            <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                              <span class="oi oi-loop"></span> Rerun Skipped Tests
+                            </button>
+                          <% end %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
+                          </button>
+                        <% else %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-media-play"></span> Run Tests
+                          </button>
+                      <% end %>
+                    <% else %>
+                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' style='visibility:hidden' disabled=disabled>
+                        <span class="oi oi-media-play"></span> Run Tests
+                      </button> 
+                    <% end %>
+
+                    <% if index < instance.group_results(test_set.id).length - 1 && group_result.to_s != "not_run" %>
+                      <button class="next next-back btn btn-info btn-sm" id=<%='cont-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index + 1)[:group].id%>>
+                        Next <span class="oi oi-media-step-forward"></span>
+                      </button>
+                    <% else %>
+                      <button class="next placeholder btn btn-info btn-sm">
+                        Next <span class="oi oi-media-step-forward"></span>
+                      </button>
+                    <% end %>
+                    
+                    <% if index > 0 %>
+                      <button class="back next-back btn btn-info btn-sm" id=<%='back-'+group.id%> data-next_tab=<%=instance.group_results(test_set.id).at(index - 1)[:group].id%>>
+                        <span class="oi oi-media-step-backward"></span> Back
+                      </button>
+                    <% else %>
+                      <button class="back placeholder btn btn-info btn-sm">
+                        <span class="oi oi-media-step-backward"></span> Back
+                      </button>
+                    <% end %>
+                  </div>
+
+                  </div>
+                  
+                </div>
+                
+              </div>
+            </div>
+            <% group.test_cases.each_with_index do |tc, index| %>
+              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: !group.run_all, index: index}) %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="sequence-group sequence-action-boundary tab-pane" id="group-report">
+          <div class="sequence-header">
+            <div class="align-items-center">
+              <div class="group-overv-ew-box">
+                  <a class="sequence-anchor"></a>
+                <h1>
+                  <%= instance.module.title %> Test Report
+                  <button class="btn print-button" onclick="window.print()">
+                    <span class="oi oi-print" aria-hidden="true"></span>
+                    Print
+                  </button>
+                </h1>
+                <div id="reportDiv">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- Modals -->
+<div class="modal fade" id="PrerequisitesModal" tabindex="-1" role="dialog" aria-labelledby="PrerequisitesModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="PrerequisitesModalTitle">Prerequisites for </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="prerequisites-forms" style="display:none">
+      
+        <% [
+          {
+            field: :onc_visual_single_registration,
+            notes_field: :onc_visual_single_registration_notes,
+            label: 'Health IT Module demonstrated support for application registration for single patients.',
+            description: ''
+          },
+          {
+            field: :onc_visual_multi_registration,
+            notes_field: :onc_visual_multi_registration_notes, 
+            label: 'Health IT Module demonstrated support for application registration for multiple patients.',
+            description: ''
+          },
+          {
+            field: :onc_visual_single_scopes,
+            notes_field: :onc_visual_single_scopes_notes, 
+            label: 'Health IT Module demonstrated a graphical user interface for user to authorize FHIR resources.',
+            description: ''
+          },
+          {
+            field: :onc_visual_single_offline_access,
+            notes_field: :onc_visual_single_offline_access_notes, 
+            label: 'Health IT Module demonstrated a graphical user interface to authorize offline access.',
+            description: ''
+          },
+          {
+            field: :onc_visual_refresh_timeout,
+            notes_field: :onc_visual_refresh_timeout_notes, 
+            label: 'Health IT Module did attest that refresh tokens have three month timeout period',
+            description: ''
+          },
+          {
+            field: :onc_visual_introspection,
+            notes_field: :onc_visual_introspection_notes, 
+            label: 'Health IT developer demonstrated the ability of the Health IT Module / authorization server to validate token it has issued.',
+            description: ''
+          },
+          {
+            field: :onc_visual_data_without_omission,
+            notes_field: :onc_visual_data_without_omission_notes, 
+            label: 'Tester verifies that all information is accurate and without omission.',
+            description: ''
+          },
+          {
+            field: :onc_visual_multi_scopes_no_greater,
+            notes_field: :onc_visual_multi_scopes_no_greater_notes, 
+            label: 'Information returned no greater than scopes pre-authorized for multi-patient queries.',
+            description: ''
+          },
+          {
+            field: :onc_visual_documentation,
+            notes_field: :onc_visual_documentation_notes, 
+            label: 'Health IT developer demonstrated the documentation is available at a publicly accessible URL.',
+            description: ''
+          },
+          {
+            field: :onc_visual_other_resources,
+            notes_field: :onc_visual_other_resources_notes, 
+            label: 'Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.',
+            description: ''
+          },
+          {
+            field: :onc_visual_jwks_cache,
+            notes_field: :onc_visual_jwks_cache_notes, 
+            label: 'The health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.',
+            description: ''
+          },
+          {
+            field: :onc_visual_token_revocation,
+            notes_field: :onc_visual_token_revocation_notes, 
+            label: 'Prior to executing test, Health IT developer demonstrated revoking tokens provided during patient standalone launch.',
+            required_by: 'TokenRevocationSequence',
+            description: ''
+          }
+            ].each do |field| %>
+              <div class="form-group" data-requiredby="<%=field[:required_by] || 'ONCVisualInspectionSequence' %>" data-definedby="" data-prerequisite="<%=field[:field]%>" style="margin-bottom: 0px;">
+                <label style="display:block"><%=field[:label]%>
+                <% if field[:description].present? %>
+                <small><%=field[:description]%></small>
+                <% end %>
+                </label>
+                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
+                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_on" value="true" <%=instance.send(field[:field]) == 'true' ? 'checked' : '' %>>
+                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_on_active">Yes</label>
+                </div>
+                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
+                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_off" value="false"  <%=instance.send(field[:field]) != 'true' ? 'checked' : '' %>>
+                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_off_active">No</label>
+                </div>
+              </div>
+              <div class="form-group" data-requiredby="<%=field[:required_by] || 'ONCVisualInspectionSequence' %>"" data-definedby="" data-prerequisite="<%=field[:notes_field]%>" style="margin-bottom: 2rem;">
+                <label for="<%=field[:notes_field]%>">
+                  <small>Notes, if applicable:</small>
+                </label>
+                <textarea type="textarea" class="form-control" name="<%=field[:notes_field]%>" id="<%=field[:notes_field]%>"><%=instance.send(field[:notes_field])%></textarea>
+              </div>
+        <% end %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :url,
+              label: 'FHIR Endpoint',
+              description: 'URL of the FHIR endpoint used by EHR-launched applications',
+              instance: instance,
+              value: instance.url,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_url,
+              label: 'FHIR Endpoint',
+              description: 'URL of the FHIR endpoint used by standalone applications',
+              instance: instance,
+              value: instance.onc_sl_url,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Dynamic Registration Endpoint',
+              value: instance.oauth_register_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_authorize_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Authorize Endpoint',
+              value: instance.oauth_authorize_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_oauth_authorize_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Authorize Endpoint',
+              description: 'OAuth 2.0 Authorize Endpoint provided during the patient standalone launch',
+              value: instance.onc_sl_oauth_authorize_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Token Endpoint',
+              value: instance.oauth_token_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_oauth_token_endpoint,
+              instance: instance,
+              description: 'OAuth token endpoint provided during the patient standalone launch',
+              label: 'OAuth 2.0 Token Endpoint',
+              value: instance.onc_sl_oauth_token_endpoint}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
+              instance: instance,
+              label: 'Client ID',
+              description: 'Client ID provided during registration of Inferno as a EHR-launched application',
+              value: instance.client_id}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_client_id,
+              label: 'Client ID',
+              description: 'Client ID provided during registration of Inferno as a standalone application',
+              instance: instance,
+              value: instance.onc_sl_client_id,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_public_client_id,
+              label: 'Public Client ID',
+              description: 'Public Client ID provided during registration of Inferno as a standalone application',
+              instance: instance,
+              value: instance.onc_public_client_id,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_token,
+              label: 'Revoked Bearer Token',
+              description: 'Prior to the test, please revoke this bearer token from patient standalone launch.',
+              instance: instance,
+              value: instance.onc_sl_token,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_refresh_token,
+              label: 'Revoked Refresh Token',
+              description: 'Prior to the test, please revoke this refresh token from patient standalone launch.',
+              instance: instance,
+              value: instance.onc_sl_refresh_token,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+              label: 'Patient ID',
+              description: 'Patient ID provided as context in the patient standalone launch.',
+              instance: instance,
+              value: instance.patient_id,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
+              instance: instance,
+              label: 'OAuth 2.0 Dynamic Registration Bearer Token (optional)',
+              value: instance.dynamic_registration_token}); %>
+
+        <%# SPECIAL CASE: CLIENT SECRET %>
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="confidential_client"
+          id="is_confidential"
+          >
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="confidential_client_off_active">Public Client</label>
+          </div>
+          <div class="form-check form-check-inline" data-requiredby>
+            <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
+          </div>
+
+        </div>
+
+        <%# SPECIAL CASE: CLIENT SECRET %>
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:onc_sl_confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="onc_sl_confidential_client"
+          id="onc_sl_is_confidential"
+          >
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="onc_sl_confidential_client" id="onc_sl_confidential_client_off" value="false" <%=!instance.onc_sl_confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="onc_sl_confidential_client_off_active">Public Client</label>
+          </div>
+          <div class="form-check form-check-inline" data-requiredby>
+            <input class="form-check-input" type="radio" name="onc_sl_confidential_client" id="onc_sl_confidential_client_on" value="true" <%=instance.onc_sl_confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="onc_sl_confidential_client_on_active">Confidential Client</label>
+          </div>
+
+        </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
+              label: 'Client Secret',
+              description: 'Client Secret provided during registration of Inferno as a EHR-launched application',
+              instance: instance,
+              value: instance.client_secret}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_client_secret,
+              label: 'Client Secret',
+              description: 'Client Secret provided during registration of Inferno as a standalone application',
+              instance: instance,
+              value: instance.onc_sl_client_secret}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
+              label: 'OAuth Client Name',
+              instance: instance,
+              value: instance.client_name}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
+              label: 'EHR-launched Scope',
+              description: 'OAuth 2.0 scope provided by system to enable all required functionality',
+              instance: instance,
+              value: instance.scopes || 'launch openid fhirUser offline_access user/Medication.read user/AllergyIntolerance.read user/CarePlan.read user/CareTeam.read user/Condition.read user/Device.read user/DiagnosticReport.read user/DocumentReference.read user/Encounter.read user/Goal.read user/Immunization.read user/Location.read user/MedicationRequest.read user/Observation.read user/Organization.read user/Patient.read user/Practitioner.read user/PractitionerRole.read user/Procedure.read user/Provenance.read user/RelatedPerson.read',
+              type: 'textarea',
+              required: true,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_scopes,
+              label: 'Standalone Patient Scope',
+              description: 'OAuth 2.0 scope provided by system to enable all required functionality',
+              instance: instance,
+              type: 'textarea',
+              value: instance.onc_sl_scopes || 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_public_scopes,
+              label: 'Standalone Patient Scope',
+              description: 'OAuth 2.0 scope provided by system to enable public client access for a patient standalone launch',
+              instance: instance,
+              type: 'textarea',
+              value: instance.onc_public_scopes || 'launch/patient openid fhirUser patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_expected_resources,
+              label: 'Expected Resource Grant',
+              description: 'The user will only grant access to the following resources during authorization.',
+              instance: instance,
+              value: instance.onc_sl_expected_resources || 'Patient, Condition, Observation',
+              required: true,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :token_endpoint_auth_method,
+              label: 'Token Endpoint Authorization Method',
+              instance: instance,
+              value: 'none',
+              readonly: true
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :grant_types,
+              label: 'Grant Type',
+              instance: instance,
+              value: 'authorization_code',
+              readonly: true
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :token,
+              label: 'Bearer Token',
+              instance: instance,
+              value: instance.token,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+              label: 'Patient ID',
+              instance: instance,
+              value: instance.patient_id,
+              })%>
+        
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_ids,
+              label: 'Patient IDs',
+              description: 'Comma separated list of patient IDs that in sum contain all MUST SUPPORT elements.',
+              instance: instance,
+              value: instance.patient_ids,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
+              label: 'OAuth 2.0 ID Token',
+              instance: instance,
+              value: instance.id_token,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :refresh_token,
+              label: 'Refresh Token',
+              instance: instance,
+              value: instance.refresh_token,
+              })%>
+        
+        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
+              label: 'Implantable Device Type Code',
+              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
+              instance: instance,
+              value: instance.device_codes,
+        })%>
+                
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_url,
+              label: 'Bulk Data FHIR URL',
+              description: 'The URL of the Bulk FHIR server.',
+              instance: instance,
+              value: instance.bulk_url,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
+              label: 'Backend Services Token Endpoint',
+              description: 'The OAuth 2.0 Token Endpoint used by the Backend Services specification to provide bearer tokens.',
+              instance: instance,
+              value: instance.bulk_token_endpoint,
+              })%>       
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
+              label: 'Bulk Data Client ID',
+              description: 'Client ID provided at registration to the Inferno application.',
+              instance: instance,
+              value: instance.bulk_client_id,
+              })%>   
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_scope,
+              label: 'Bulk Data Scopes',
+              description: 'Bulk Data Scopes provided at registration to the Inferno application.',
+              instance: instance,
+              type: 'textarea',
+              value: instance.bulk_scope || 'system/Medication.read system/AllergyIntolerance.read system/CarePlan.read system/CareTeam.read system/Condition.read system/Device.read system/DiagnosticReport.read system/DocumentReference.read system/Encounter.read system/Goal.read system/Immunization.read system/Location.read system/MedicationRequest.read system/Observation.read system/Organization.read system/system.read system/Practitioner.read system/PractitionerRole.read system/Procedure.read system/Provenance.read',
+              })%>  
+
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="bulk_encryption_method"
+          id="bulk_encryption_method"
+          style="margin-bottom: 0;"
+          >
+          <label style="display:block">Encryption Method
+          <small>The server is required to suport either ES384 or RS384 encryption methods for JWT signature verification.  Select
+          which method to use.</small>
+          </label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_es384" value="ES384" <%=instance.bulk_encryption_method == "ES384" ? "checked" : "" %>>
+            <label style="margin-bottom: 0;" class="form-check-label" for="bulk_encryption_es384_active">ES384</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_rs384" value="RS384" <%=instance.bulk_encryption_method == "RS384" ? "checked" : "" %>>
+            <label style="margin-bottom: 0;" class="form-check-label" for="bulk_encryption_rs384_active">RS384</label>
+          </div>
+        </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
+              label: 'Group ID',
+              instance: instance,
+              description: 'The Group ID associated with the group of patients to be exported.',
+              value: instance.group_id })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_patient_ids_in_group,
+              instance: instance,
+              label: 'Patient IDs in exported Group',
+              description: %(
+                Comma separated list of every Patient ID that is in the specified Group.  This information
+                is provided by the system under test to verify that data returned matches expectations.  Leave blank
+                to not verify Group inclusion.
+              ),              
+              value: instance.bulk_patient_ids_in_group}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_device_types_in_group,
+              instance: instance,
+              label: 'Implantable Device Type Codes in exported Group',
+              description: %(
+                Comma separated list of every Implantable Device type that is in the specified Group.  This information
+                is provided by the system under test to verify that data returned matches expectations.  Leave blank
+                to verify all Device resources against the Implantable Device profile.
+              ),              
+              value: instance.bulk_device_types_in_group}); %>
+
+       <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_stop_after_must_support).map {|seq| seq.sequence_name}.join(',')%>" 
+              data-prerequisite="bulk_stop_after_must_support">
+            <input class="form-check-input" type="checkbox" name="bulk_stop_after_must_support" id="bulk_stop_after_must_support" value=true <%=!instance.bulk_stop_after_must_support.nil? ? "checked" : "" %>>
+            <label class="form-check-label" for="bulk_stop_after_must_support">Limit validation once all must support elements seen
+            <small>Stop validating resources once every must support element seen for each US Core profile for a resource.  Useful if
+            data set returned is very large.</small></label>
+        </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
+              instance: instance,
+              label: 'Limit validation to a maximum resource count',
+              description: %(
+                While testing we need to validate resources in downloaded NDJSON file.
+                Please enter an integer to limit the number of resources validated per resource type.                 
+                To validate all resources, leave this blank.
+              ),              
+              value: instance.bulk_lines_to_validate}); %>
+
+
+     
+      </div>
+      <form method="POST" action="sequence_result">
+        <input type="hidden" name="sequence" value="" />
+        <input type="hidden" name="test_case" value="" />
+        <input type="hidden" name="required_fields" value="" />
+        <div class="modal-body"> 
+          <% test_set.groups.each do |group| %>
+            <% unless group.input_instructions.nil? %>
+              <div class="input-instructions" id="input-instructions-<%=group.id%>">
+                <%= markdown_to_html(group.input_instructions) %>
+              </div>
+            <% end %>
+            
+
+            <% unless group.lock_variables.empty? %>
+              <div style="display:none" class="group-lock-variables" id="group-lock-variables-<%=group.id%>"
+                 data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
+            <%end %>
+          <% end %>
+          <div class="show-bulk-registration-info" style="display:none">
+             <div class="prerequisite-group-title">Backend Authorization Registration</div>
+             <div class="prerequisite-group-box">
+
+             <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
+                    label: 'JWK Set URL',
+                    instance: instance,
+                    description: %(
+                      Register Inferno using this JWK Set URL to communicate keys if supported by the server.  Note that the
+                      server must be able to resolve the URL in order for this to function properly.
+                    ),
+                    value: instance.bulk_jwks_url_auth || "#{instance.base_url}#{base_path}/.well-known/jwks.json",
+                    readonly: true
+                    })%>             
+             </div>
+          </div>
+          <div class="show-uris" style="display:none">
+          <div class="prerequisite-group-title">SMART App Authorization Registration</div>
+             <div class="prerequisite-group-box">
+                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                      instance: instance,
+                      label: 'Redirect URI',
+                      value: instance.redirect_uris,
+                      readonly: true })%>
+            <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
+                    instance: instance,
+                    label: 'Launch URI',
+                    value: instance.initiate_login_uri,
+                    readonly: true })%>
+          
+            </div>
+          </div>
+          <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
+            
+  
+          </div>
+
+          <div class="prerequisite-group-title enabled-prerequisite-group-title">Input Fields</div>
+          <div class="prerequisite-group enabled-prerequisites">
+
+          </div>
+          <div class="prerequisite-group-title disabled-prerequisite-group-title">Predefined Test Parameters <span class="oi oi-lock-locked"></span></div>
+          <div class="prerequisite-group disabled-prerequisites">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Execute</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<% waiting_on_sequence = instance.waiting_on_sequence %>
+<% unless waiting_on_sequence.nil? %>
+
+  <% redirect_to = "#{instance.initiate_login_uri.gsub('launch',waiting_on_sequence.wait_at_endpoint)}" %>
+  <div class="modal fade" id="WaitModal" tabindex="-1" role="dialog" aria-labelledby="WaitModalLabel" data-show="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="WaitModalLabel">Waiting at <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI</h5>
+        </div>
+        <div class="modal-body">
+          <p>
+          <strong>
+          To continue the test, initiate an app launch outside of Inferno from the EHR. 
+          </strong>
+          </p>
+          <p>
+          Inferno is waiting at the specified launch point for the launch sequence to be initiated. The test will continue running with the information provided during the launch from the EHR.
+          </p>
+          <p>
+          Waiting for server to send client browser to <strong><%= waiting_on_sequence.wait_at_endpoint.upcase %></strong> URI:
+          </p>
+          <textarea class="form-control" rows=1 readonly><%=redirect_to %></textarea>
+          <div class="modal-footer">
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/" %>" class="btn btn-secondary">Close</a>
+            <a href="<%= "#{request.base_url}#{base_path}/#{instance.id}/test_sets/#{test_set.id.to_s}/sequence_result/#{waiting_on_sequence.id}/cancel" %>" class="btn btn-danger">Cancel Sequence</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="modal fade" id="stateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Client State</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <%= erb(:state_status, {}, {instance: instance}) %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="testResultDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="testDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="linkModalLabel">Save a link to this test instance</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="save_uri">
+          The results recorded during this testing session can be accessed at the following URI.
+          Please save this URI if you would like to revisit these results, as this secret URI will not be published.
+        </label>
+        <input id="save_uri" type="text" class="form-control" value="<%=instance.base_url%><%=base_path%>/<%=instance.id%>/" readonly="readonly">
+        <p class='alert alert-warning'>
+          This URI is not guaranteed to be permanently accessible.  The team maintaining this instance of Inferno may choose to periodically clear the database.  To ensure that test results are saved indefinitely, it is recommended that users download, install, and use Inferno on their own hardware.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" data-backdrop="static" data-keyboard="false" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Tests Running</h5>
+      </div>
+      <form method="POST" action="TokenIntrospection">
+        <div class="modal-body">
+          Tests are currently running <span class="number-complete"></span>
+          <p>
+            <div class="progress">
+              <div class="progress-bar progress-bar-success progress-bar-striped active" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+            </div>
+          </p>
+        </div>
+
+        <div class="modal-footer">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="helpModalLabel">Help</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h6>Icon Legend</h6>
+        <table class='table table-sm'>
+          <thead class='sr-only'>
+            <tr><td>Icon</td><td>Meaning</td><td>Description</td>
+          </thead>
+          <tbody>
+            <tr><td><span class="oi oi-check result-details-icon result-details-icon-pass" aria-hidden="true"></span></td> <td><strong>Pass</strong></td> <td>A test passed</td></tr>
+            <tr><td><span class="oi oi-x result-details-icon result-details-icon-fail" aria-hidden="true"></span></td> <td><strong>Fail</strong></td> <td>A test failed</td></tr>
+            <tr><td><span class="oi oi-x result-details-icon-fail-optional" aria-hidden="true"></span></td> <td><strong>Optional Fail</strong> </td> <td>An optional test failed - this will not affect the overall count of passed tests</td></tr>
+            <tr><td><span class="oi oi-ban result-details-icon result-details-icon-skip" aria-hidden="true"></span></td> <td><strong>Skip</strong></td> <td>A test was skipped</td></tr>
+            <tr><td><span class="oi oi-media-record result-details-icon result-details-icon-omit" aria-hidden="true"></span></td> <td><strong>Omit</strong></td> <td>A test was omitted and does not affect passed or failed scores</td></tr>
+            <tr><td><span class="oi oi-warning result-details-icon result-details-icon-warning" aria-hidden="true"></span></td> <td><strong>Warning</strong></td> <td>There is some critical information that you should be aware of</td></tr>
+            <tr><td><span class="oi oi-arrow-thick-right result-details-icon result-details-icon-requests" aria-hidden="true"></span></td> <td><strong>Outgoing HTTP(S)</strong></td> <td>This test contains outgoing HTTP(S) requests</td></tr>
+            <tr><td><span class="oi oi-arrow-thick-left result-details-icon result-details-icon-requests" aria-hidden="true"></span></td> <td><strong>Incoming HTTP(S)</strong></td> <td>This test contains incoming HTTP(S) requests</td></tr>
+          </tbody>
+        </table>
+        <p>For more information, see the <a href='https://github.com/onc-healthit/inferno#inferno' target="_blank">Inferno README</a> and the <a href='https://github.com/onc-healthit/inferno/wiki' target='_blank'>Inferno wiki</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,12 +1,64 @@
 # frozen_string_literal: true
 
 require_relative '../../../../test/test_helper'
-class ONCSMARTDiscoveryTest < MiniTest::Test
+
+describe Inferno::Sequence::OncSMARTDiscoverySequence do
+  before do
+    @sequence_class = Inferno::Sequence::OncSMARTDiscoverySequence
+    @client = FHIR::Client.new('http://www.example.com/fhir')
+    @instance = Inferno::Models::TestingInstance.new
+  end
+
+  describe 'required capabilities test' do
+    before do
+      @test = @sequence_class[:required_capabilities]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'skips if no well-known configuration was found' do
+      @sequence.instance_variable_set(:@well_known_configuration, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No well-known SMART configuration found.', exception.message
+    end
+
+    it 'fails if the capabilities are not an array' do
+      @sequence.instance_variable_set(:@well_known_configuration, 'capabilities': 'abc')
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'The well-known capabilities are not an array', exception.message
+    end
+
+    it 'fails if a required capability is missing' do
+      @sequence_class::REQUIRED_SMART_CAPABILITIES.each do |capability|
+        capabilities = @sequence_class::REQUIRED_SMART_CAPABILITIES.dup
+        capabilities.delete(capability)
+
+        @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal "The following required capabilities are missing: #{capability}", exception.message
+      end
+    end
+
+    it 'succeeds if all required capabilities are present' do
+      capabilities = @sequence_class::REQUIRED_SMART_CAPABILITIES
+      @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
+
+      @sequence.run_test(@test)
+    end
+  end
+end
+
+class OncSMARTDiscoveryTest < MiniTest::Test
   def setup
     instance = get_test_instance
     client = get_client(instance)
 
-    @sequence = Inferno::Sequence::ONCSMARTDiscoverySequence.new(instance, client)
+    @sequence = Inferno::Sequence::OncSMARTDiscoverySequence.new(instance, client)
   end
 
   def full_sequence_stubs

@@ -1,0 +1,88 @@
+{
+  "resourceType": "CapabilityStatement",
+  "status": "active",
+  "date": "2019-08-29 01:06:12",
+  "publisher": "Not provided",
+  "kind": "instance",
+  "software": {
+      "name": "SMART Sample Bulk FHIR Server",
+      "version": "1.0"
+  },
+  "implementation": {
+      "description": "SMART Sample Bulk FHIR Server"
+  },
+  "instantiates": [
+    "http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data"
+  ],  
+  "fhirVersion": "4.0.1",
+  "acceptUnknown": "extensions",
+  "format": [
+      "application/fhir+json"
+  ],
+  "rest": [
+      {
+          "mode": "server",
+          "security": {
+              "extension": [
+                  {
+                      "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
+                      "extension": [
+                          {
+                              "url": "token",
+                              "valueUri": "https://bulk-data.smarthealthit.org/auth/token"
+                          },
+                          {
+                              "url": "register",
+                              "valueUri": "https://bulk-data.smarthealthit.org/auth/register"
+                          }
+                      ]
+                  }
+              ],
+              "service": [
+                  {
+                      "coding": [
+                          {
+                              "system": "http://hl7.org/fhir/restful-security-service",
+                              "code": "SMART-on-FHIR",
+                              "display": "SMART-on-FHIR"
+                          }
+                      ],
+                      "text": "OAuth2 using SMART-on-FHIR profile (see http://docs.smarthealthit.org)"
+                  }
+              ]
+          },
+          "resource": [
+              {
+                  "type": "Group",
+                  "profile": {
+                      "reference": "http://hl7.org/fhir/Profile/Group"
+                  },
+                  "interaction": [
+                      {
+                          "code": "read"
+                      }
+                  ],
+                  "searchParam": [],
+                  "operation": [
+                      {
+                          "name": "export",
+                          "definition": "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export"
+                      }
+                  ]
+              },
+              {
+                  "type": "OperationDefinition",
+                  "profile": {
+                      "reference": "http://hl7.org/fhir/Profile/OperationDefinition"
+                  },
+                  "interaction": [
+                      {
+                          "code": "read"
+                      }
+                  ],
+                  "searchParam": []
+              }
+          ]
+      }
+  ]
+}

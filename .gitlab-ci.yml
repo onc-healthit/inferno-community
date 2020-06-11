@@ -1,0 +1,24 @@
+test:
+  stage: test
+  script:
+    - bundle exec rake test
+
+rubocop:
+  stage: test
+  script:
+    - bundle exec rubocop
+
+before_script:
+  - ruby -v                                        # Print out ruby version for debugging
+  - gem install bundler --no-document              # Make sure bundler is up to date
+  - bundle config set path 'vendor/ruby'
+  - bundle install -j $(nproc)                     # Install dependencies into ./vendor/ruby
+
+variables:
+  GIT_SSL_NO_VERIFY: "true"
+
+# Cache gems in between builds
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - vendor/ruby

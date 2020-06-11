@@ -47,18 +47,25 @@ module Inferno
         class_name:,
         sequence_name:,
         delayed_sequence:,
-        status_param:
+        status_param:,
+        token_param:
       )
 
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
 
         resource_var_name = resource_type.underscore
+        supported_search_params_string =
+          search_params.keys
+            .take(search_params.length - 1)
+            .map { |value| "'#{value}'" }
+            .join(', ')
 
         test = template.result_with_hash(
           test_key: test_key,
           resource_type: resource_type,
           resource_var_name: resource_var_name,
           search_params: search_params,
+          supported_search_params_string: supported_search_params_string,
           search_param_string: search_params_to_string(search_params),
           sequence_name: sequence_name,
           is_first_search: is_first_search,
@@ -71,7 +78,9 @@ module Inferno
           fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', '),
           fixed_value_search_path: fixed_value_search_param&.dig(:path),
           delayed_sequence: delayed_sequence,
-          status_param: status_param
+          status_param: status_param,
+          token_param: token_param,
+          token_with_system_search_string: search_params_to_string(search_params, token_param)
         )
         tests[class_name] << test
       end
@@ -135,10 +144,10 @@ module Inferno
         end
       end
 
-      def search_params_to_string(search_params)
+      def search_params_to_string(search_params, token_param = nil)
         search_params.map do |param, value|
           if dynamic_search_param? value
-            dynamic_search_param_string(param, value)
+            dynamic_search_param_string(param, value, param == token_param)
           elsif value.start_with? '@'
             "'#{param}': #{value}"
           elsif value == 'patient'
@@ -149,12 +158,12 @@ module Inferno
         end.join(",\n")
       end
 
-      def dynamic_search_param_string(param, value)
+      def dynamic_search_param_string(param, value, include_system)
         param_info = dynamic_search_param(value)
         path = param_info[:resource_path]
         variable_name = param_info[:variable_name]
         variable_name.gsub!('[patient]', '[@sequence.patient_ids.first]')
-        "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
+        "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}')#{', true' if include_system})"
       end
 
       def dynamic_search_param?(param_value)

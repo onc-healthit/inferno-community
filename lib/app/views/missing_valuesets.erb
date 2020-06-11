@@ -1,0 +1,21 @@
+<% if @missing_validators&.present? %>
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+        <div class="col-12" style="color: #063d75; text-align: center;">
+          <div class="alert alert-danger" role="alert">
+            <% if @missing_validators.count > 5 %>
+              Inferno is missing files needed to validate codes in FHIR Resources. 
+            <% else %>
+              Inferno is missing validator files for the following ValueSets:<br/>
+              <% @missing_validators.each do |vs| %>
+                <%= vs %> <br/>
+              <% end %>
+            <% end %>
+            To see how to load these files, please review <a href="https://github.com/onc-healthit/inferno-program#terminology-support">the Inferno README</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

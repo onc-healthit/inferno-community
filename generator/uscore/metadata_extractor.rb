@@ -24,6 +24,7 @@ module Inferno
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
         fix_metadata_errors(metadata)
+        add_mandatory_and_must_support_search_exclusions(metadata)
         add_special_cases(metadata)
       end
 
@@ -75,13 +76,19 @@ module Inferno
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
+          profile_name: profile_json['title'],
           title: profile_title,
           interactions: [],
           operations: [],
           searches: [],
           search_param_descriptions: {},
-          element_descriptions: {},
-          must_supports: [],
+          references: [],
+          must_supports: {
+            extensions: [],
+            slices: [],
+            elements: []
+          },
+          mandatory_elements: [],
           tests: []
         }
       end
@@ -107,8 +114,10 @@ module Inferno
             profile_definition = @resource_by_path[base_path]
             add_required_codeable_concepts(profile_definition, new_sequence)
             add_must_support_elements(profile_definition, new_sequence)
+            add_mandatory_elements(profile_definition, new_sequence)
+            add_terminology_bindings(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
-            add_element_definitions(profile_definition, new_sequence)
+            add_references(profile_definition, new_sequence)
 
             metadata[:sequences] << new_sequence
           end
@@ -194,25 +203,91 @@ module Inferno
         end
       end
 
+      def add_terminology_bindings(profile_definition, sequence)
+        profile_elements = profile_definition['snapshot']['element']
+        elements_with_bindings = profile_elements
+          .select { |e| e['binding'].present? }
+          .reject do |e|
+            case e['type'].first['code']
+            when 'Quantity'
+              quantity_code = profile_elements.find { |el| el['path'] == e['path'] + '.code' }
+              quantity_system = profile_elements.find { |el| el['path'] == e['path'] + '.system' }
+              (quantity_code.present? && quantity_code['fixedCode']) || (quantity_system.present? && quantity_system['fixedUri'])
+            when 'code'
+              e['fixedCode'].present?
+            end
+          end
+
+        sequence[:bindings] = elements_with_bindings.map do |e|
+          {
+            type: e['type'].first['code'],
+            strength: e.dig('binding', 'strength'),
+            system: e.dig('binding', 'valueSet')&.split('|')&.first,
+            path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')
+          }
+        end
+        extensions = profile_elements.select { |e| e['type'].present? && e['type'].first['code'] == 'Extension' }
+        extensions.each { |extension| add_terminology_bindings_from_extension(extension, sequence) }
+      end
+
+      def add_terminology_bindings_from_extension(extension, sequence)
+        profile = extension['type'].first['profile']
+        return unless profile.present?
+
+        extension_def = @resource_by_path[get_base_path(profile.first)]
+        return unless extension_def.present?
+
+        extension_url = profile.first
+        extension_elements = extension_def['snapshot']['element']
+        binding_els = extension_elements.select { |e| e['binding'].present? && !(e['id'].include? 'Extension.extension') }
+        sequence[:bindings] += binding_els.map do |e|
+          {
+            type: e['type'].first['code'],
+            strength: e.dig('binding', 'strength'),
+            system: e.dig('binding', 'valueSet')&.split('|')&.first,
+            path: e['path'].gsub('[x]', '').gsub('Extension.', ''),
+            extensions: [extension_url]
+          }
+        end
+
+        extensions_of_extension = extension_elements.select { |e| e['path'] == 'Extension.extension' }
+        extensions_of_extension.each do |extension_squared|
+          url_el = extension_elements.find { |e| e['id'] == extension_squared['id'] + '.url' }
+          next unless url_el.present?
+
+          extension_squared_url = url_el['fixedUri']
+          binding_els = extension_elements.select { |e| (e['id'].include? extension_squared['id']) && e['binding'].present? }
+          sequence[:bindings] += binding_els.map do |e|
+            {
+              type: e['type'].first['code'],
+              strength: e.dig('binding', 'strength'),
+              system: e.dig('binding', 'valueSet')&.split('|')&.first,
+              path: e['path'].gsub('[x]', '').gsub('Extension.extension.', ''),
+              extensions: [extension_url, extension_squared_url]
+            }
+          end
+        end
+      end
+
       def add_must_support_elements(profile_definition, sequence)
         profile_elements = profile_definition['snapshot']['element']
         profile_elements.select { |el| el['mustSupport'] }.each do |element|
           # not including components in vital-sign profiles because they don't make sense outside of BP
           next if profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns' && element['path'].include?('component')
+          next if profile_definition['name'] == 'observation-bp' && element['path'].include?('Observation.value[x]')
+          next if profile_definition['name'].include?('Pediatric') && element['path'] == 'Observation.dataAbsentReason'
 
           if element['path'].end_with? 'extension'
-            sequence[:must_supports] <<
+            sequence[:must_supports][:extensions] <<
               {
-                type: 'extension',
                 id: element['id'],
-                path: element['path'],
                 url: element['type'].first['profile'].first
               }
             next
           elsif element['sliceName'].present?
             array_el = profile_elements.find { |el| el['id'] == element['path'] }
             discriminators = array_el['slicing']['discriminator']
-            must_support_element = { type: 'slice', name: element['id'], path: element['path'] }
+            must_support_element = { name: element['id'], path: element['path'].gsub(sequence[:resource] + '.', '') }
             if discriminators.first['type'] == 'pattern'
               discriminator_path = discriminators.first['path']
               discriminator_path = '' if discriminator_path == '$this'
@@ -254,11 +329,11 @@ module Inferno
                 }
               end
             end
-            sequence[:must_supports] << must_support_element
+            sequence[:must_supports][:slices] << must_support_element
             next
           end
-          path = element['path']
-          must_support_element = { type: 'element', path: path }
+          path = element['path'].gsub(sequence[:resource] + '.', '')
+          must_support_element = { path: path }
           if element['fixedUri'].present?
             must_support_element[:fixed_value] = element['fixedUri']
           elsif element['patternCodeableConcept'].present?
@@ -270,9 +345,16 @@ module Inferno
             must_support_element[:fixed_value] = element['patternIdentifier']['system']
             must_support_element[:path] += '.system'
           end
-          sequence[:must_supports].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
-          sequence[:must_supports] << must_support_element
+          sequence[:must_supports][:elements].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
+          sequence[:must_supports][:elements] << must_support_element
         end
+      end
+
+      def add_mandatory_elements(profile_definition, sequence)
+        profile_elements = profile_definition['snapshot']['element']
+        sequence[:mandatory_elements] = profile_elements
+          .select { |el| el['min'].positive? }
+          .map { |el| el['path'] }
       end
 
       def add_search_param_descriptions(profile_definition, sequence)
@@ -369,18 +451,13 @@ module Inferno
         param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten if use_valid_codes
       end
 
-      def add_element_definitions(profile_definition, sequence)
-        profile_definition['snapshot']['element'].each do |element|
-          next if element['type'].nil? # base profile
-
-          path = element['id']
-          if path.include? '[x]'
-            element['type'].each do |type|
-              sequence[:element_descriptions][path.gsub('[x]', type['code']).downcase.to_sym] = { type: type['code'], contains_multiple: element['max'] == '*' }
-            end
-          else
-            sequence[:element_descriptions][path.downcase.to_sym] = { type: element['type'].first['code'], contains_multiple: element['max'] == '*' }
-          end
+      def add_references(profile_definition, sequence)
+        references = profile_definition['snapshot']['element'].select { |el| el['type'].present? && el['type'].first['code'] == 'Reference' }
+        sequence[:references] = references.map do |ref_def|
+          {
+            path: ref_def['path'],
+            profiles: ref_def['type'].first['targetProfile']
+          }
         end
       end
 
@@ -398,6 +475,41 @@ module Inferno
           sequence[:search_param_descriptions].each do |_param, description|
             param_comparators = description[:comparators]
             param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
+          end
+        end
+      end
+
+      def add_mandatory_and_must_support_search_exclusions(metadata)
+        # must be performed after we fix the metadata
+        metadata[:sequences].each do |sequence|
+          sequence[:searches].each do |search|
+            search[:names_not_must_support_or_mandatory] = search[:names].reject do |name|
+              path = sequence[:search_param_descriptions][name.to_sym][:path]
+              any_must_support_elements = sequence[:must_supports][:elements].any? do |element|
+                full_must_support_path = "#{sequence[:resource]}.#{element[:path]}"
+
+                # allow for non-choice, choice types, and _id
+                name == '_id' || full_must_support_path == path || full_must_support_path == "#{path}[x]"
+              end
+
+              any_must_support_slices = sequence[:must_supports][:slices].any? do |slice|
+                # only handle type slices because that is all we need for now
+                if slice[:discriminator] && slice[:discriminator][:type] == 'type'
+                  full_must_support_path = "#{sequence[:resource]}.#{slice[:path].sub('[x]', slice[:discriminator][:code])}"
+                  full_must_support_path == path
+                else
+                  false
+                end
+              end
+
+              any_mandatory_elements = sequence[:mandatory_elements].any? do |element|
+                element == path
+              end
+
+              any_must_support_elements || any_must_support_slices || any_mandatory_elements
+            end
+
+            search[:must_support_or_mandatory] = search[:names_not_must_support_or_mandatory].empty?
           end
         end
       end

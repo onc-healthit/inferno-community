@@ -1,15 +1,65 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_condition_definitions'
 
 module Inferno
   module Sequence
     class USCore310ConditionSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Condition Tests'
 
-      description 'Verify that Condition resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core Condition Profile.'
+
+      details %(
+        # Background
+
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for Condition queries.  These queries must contain resources conforming to US Core Condition Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
+
+        # Testing Methodology
+
+
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+
+          * patient
+
+
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for Condition resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the [US Core Condition Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition).
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
 
       test_id_prefix 'USCC'
 
@@ -20,24 +70,54 @@ module Inferno
         case property
 
         when 'category'
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'category on resource does not match category requested'
+          values_found = resolve_path(resource, 'category')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
+          assert match_found, "category in Condition/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'clinical-status'
-          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
+          values_found = resolve_path(resource, 'clinicalStatus')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
+          assert match_found, "clinical-status in Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          values_found = resolve_path(resource, 'subject.reference')
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
+          assert match_found, "patient in Condition/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'onset-date'
-          value_found = resolve_element_from_path(resource, 'onsetDateTime') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'onset-date on resource does not match onset-date requested'
+          values_found = resolve_path(resource, 'onsetDateTime')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "onset-date in Condition/#{resource.id} (#{values_found}) does not match onset-date requested (#{value})"
 
         when 'code'
-          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'code on resource does not match code requested'
+          values_found = resolve_path(resource, 'code')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
+          assert match_found, "code in Condition/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         end
       end
@@ -51,12 +131,12 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('Condition'),
+          assert @instance.server_capabilities&.search_documented?('Condition'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].each do |status_value|
@@ -75,57 +155,27 @@ module Inferno
         reply
       end
 
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
-
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
 
       @resources_found = false
 
-      test :unauthorized_search do
-        metadata do
-          id '01'
-          name 'Server rejects Condition search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:Condition, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient
-          }
-
-          reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
-          assert_response_unauthorized reply
-        end
-
-        @client.set_bearer_token(@instance.token)
-      end
-
       test :search_by_patient do
         metadata do
-          id '02'
-          name 'Server returns expected results from Condition search by patient'
+          id '01'
+          name 'Server returns valid results for Condition search by patient.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by patient on the Condition resource
-
+            A server SHALL support searching by patient on the Condition resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Condition', ['patient'])
         @condition_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -150,8 +200,15 @@ module Inferno
           @resources_found = @condition.present?
 
           save_resource_references(versioned_resource_class('Condition'), @condition_ary[patient])
-          save_delayed_sequence_references(@condition_ary[patient])
-          validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+          save_delayed_sequence_references(@condition_ary[patient], USCore310ConditionSequenceDefinitions::DELAYED_REFERENCES)
+          validate_reply_entries(@condition_ary[patient], search_params)
+
+          search_params = search_params.merge('patient': "Patient/#{patient}")
+          reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert search_with_type.length == @condition_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
         skip_if_not_found(resource_type: 'Condition', delayed: false)
@@ -159,75 +216,32 @@ module Inferno
 
       test :search_by_patient_category do
         metadata do
-          id '03'
-          name 'Server returns expected results from Condition search by patient+category'
+          id '02'
+          name 'Server returns valid results for Condition search by patient+category.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+category on the Condition resource
+            A server SHOULD support searching by patient+category on the Condition resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Condition', ['patient', 'category'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'category'))
+            'category': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'category') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
-          resolved_one = true
+          next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
-        end
-
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
-      end
-
-      test :search_by_patient_onset_date do
-        metadata do
-          id '04'
-          name 'Server returns expected results from Condition search by patient+onset-date'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+onset-date on the Condition resource
-
-              including support for these onset-date comparators: gt, lt, le, ge
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Condition', delayed: false)
-
-        could_not_resolve_all = []
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'onset-date': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'onsetDateTime'))
-          }
-
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -236,85 +250,86 @@ module Inferno
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
 
-          ['gt', 'lt', 'le', 'ge'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, search_params[:'onset-date'])
-            comparator_search_params = search_params.merge('onset-date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-          end
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Condition'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, token_with_system_search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_clinical_status do
         metadata do
-          id '05'
-          name 'Server returns expected results from Condition search by patient+clinical-status'
+          id '03'
+          name 'Server returns valid results for Condition search by patient+clinical-status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+clinical-status on the Condition resource
+            A server SHOULD support searching by patient+clinical-status on the Condition resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Condition', ['patient', 'clinical-status'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'clinical-status': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'clinicalStatus'))
+            'clinical-status': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'clinicalStatus') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'clinicalStatus'), true)
+          token_with_system_search_params = search_params.merge('clinical-status': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Condition'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, token_with_system_search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, clinical-status) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_code do
         metadata do
-          id '06'
-          name 'Server returns expected results from Condition search by patient+code'
+          id '04'
+          name 'Server returns valid results for Condition search by patient+code.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+code on the Condition resource
+            A server SHOULD support searching by patient+code on the Condition resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Condition', ['patient', 'code'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'code'))
+            'code': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -322,14 +337,19 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'code'), true)
+          token_with_system_search_params = search_params.merge('code': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Condition'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, token_with_system_search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
       end
 
       test :read_interaction do
         metadata do
-          id '07'
+          id '05'
           name 'Server returns correct Condition resource from Condition read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -346,7 +366,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '08'
+          id '06'
           name 'Server returns correct Condition resource from Condition vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -364,7 +384,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '09'
+          id '07'
           name 'Server returns correct Condition resource from Condition history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -382,14 +402,22 @@ module Inferno
 
       test 'Server returns Provenance resources from Condition search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '10'
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
+
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
+
+            This test will perform a search for patient + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('Condition', 'Provenance:target')
         skip_if_not_found(resource_type: 'Condition', delayed: false)
+
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
@@ -405,21 +433,24 @@ module Inferno
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             .select { |resource| resource.resourceType == 'Provenance' }
-          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310ConditionSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
         metadata do
-          id '11'
-          name 'Condition resources returned conform to US Core R4 profiles'
+          id '09'
+          name 'Condition resources returned from previous search conform to the US Core Condition Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test verifies resources returned from the first search conform to the [US Core Condition Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
             This test also checks that the following CodeableConcepts with
             required ValueSet bindings include a code rather than just text:
@@ -442,45 +473,74 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = USCore310ConditionSequenceDefinitions::BINDINGS
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+            binding_def_new = binding_def
+            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
+            if invalid_bindings.present?
+              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @condition_ary&.values&.flatten)
+              binding_def_new = binding_def.except(:system)
+            end
+          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
+        end
+        warning do
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
+        end
       end
 
       test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
-          id '12'
+          id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Condition resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the Condition resources found previously for the following must support elements:
 
-            Condition.clinicalStatus
-
-            Condition.verificationStatus
-
-            Condition.category
-
-            Condition.code
-
-            Condition.subject
-
+            * clinicalStatus
+            * verificationStatus
+            * category
+            * code
+            * subject
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'Condition', delayed: false)
+        must_supports = USCore310ConditionSequenceDefinitions::MUST_SUPPORTS
 
-        must_support_elements = [
-          { path: 'Condition.clinicalStatus' },
-          { path: 'Condition.verificationStatus' },
-          { path: 'Condition.category' },
-          { path: 'Condition.code' },
-          { path: 'Condition.subject' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Condition.', '')
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @condition_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end
@@ -491,12 +551,15 @@ module Inferno
         @instance.save!
       end
 
-      test 'Every reference within Condition resource is valid and can be read.' do
+      test 'Every reference within Condition resources can be read.' do
         metadata do
-          id '13'
+          id '11'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end
