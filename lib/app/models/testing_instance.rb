@@ -58,7 +58,13 @@ module Inferno
 
       property :must_support_confirmed, String, default: ''
 
+      property :patient_ids, String
       property :group_id, String
+
+      property :data_absent_code_found, Boolean
+      property :data_absent_extension_found, Boolean
+
+      property :device_codes, String
 
       # Bulk Data Parameters
       property :bulk_url, String
@@ -72,11 +78,49 @@ module Inferno
       property :bulk_since_param, String
       property :bulk_jwks_url_auth, String
       property :bulk_jwks_auth, String
-      property :bulk_public_key, String
-      property :bulk_private_key, String
+      property :bulk_encryption_method, String, default: 'ES384'
+      property :bulk_data_jwks, String
       property :bulk_access_token, String
       property :bulk_lines_to_validate, String
       property :bulk_status_output, String
+      property :bulk_patient_ids_in_group, String
+      property :bulk_stop_after_must_support, String, default: 'true'
+      property :bulk_scope, String
+      property :disable_bulk_data_require_access_token_test, Boolean, default: false
+
+      property :measurereport_id, String
+      property :location_id, String
+      property :measure_id, String
+
+      # ----- mCODE Variables ----- #
+      property :mcode_cancer_disease_status_id, String
+      property :mcode_cancer_genetic_variant_id, String
+      property :mcode_cancer_genomics_report_id, String
+      property :mcode_cancer_patient_id, String
+      property :mcode_cancer_related_medication_statement_id, String
+      property :mcode_cancer_related_radiation_procedure_id, String
+      property :mcode_cancer_related_surgical_procedure_id, String
+      property :mcode_comorbid_condition_id, String
+      property :mcode_ecog_performance_status_id, String
+      property :mcode_genetic_specimen_id, String
+      property :mcode_genomic_region_studied_id, String
+      property :mcode_karnofsky_performance_status_id, String
+      property :mcode_primary_cancer_condition_id, String
+      property :mcode_secondary_cancer_condition_id, String
+      property :mcode_tnm_clinical_distant_metastases_category_id, String
+      property :mcode_tnm_clinical_primary_tumor_category_id, String
+      property :mcode_tnm_clinical_regional_nodes_category_id, String
+      property :mcode_tnm_clinical_stage_group_id, String
+      property :mcode_tnm_pathological_distant_metastases_category_id, String
+      property :mcode_tnm_pathological_primary_tumor_category_id, String
+      property :mcode_tnm_pathological_regional_nodes_category_id, String
+      property :mcode_tnm_pathological_stage_group_id, String
+      property :mcode_tumor_marker_id, String
+      # ----- End of mCODE Variables ----- #
+
+      # These are used by BDT
+      property :bulk_public_key, String
+      property :bulk_private_key, String
 
       has n, :sequence_results
       has n, :resource_references
@@ -113,7 +157,7 @@ module Inferno
             group: group,
             result_details: result_details,
             result: group_result(result_details),
-            missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? }
+            missing_variables: group.lock_variables_without_defaults.select { |var| send(var.to_sym).nil? }
           }
         end
 
@@ -177,6 +221,14 @@ module Inferno
 
         resource_references.destroy
 
+        # For patient id list, don't clear it out but rather add it to the list of known
+        # patients to pull from.
+        self.patient_ids = if patient_ids.blank?
+                             patient_id
+                           else
+                             patient_ids.split(',').append(patient_id).uniq.join(',')
+                           end
+
         ResourceReference.create(
           resource_type: 'Patient',
           resource_id: patient_id,
@@ -221,19 +273,26 @@ module Inferno
         methods_supported && operations_supported
       end
 
-      def save_resource_reference(type, id, profile = nil)
-        resource_references
-          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
-          .each(&:destroy)
+      def save_resource_reference_without_reloading(type, id, profile = nil)
+        ResourceReference
+          .all(resource_type: type, resource_id: id, testing_instance_id: self.id)
+          .destroy
 
-        new_reference = ResourceReference.new(
+        ResourceReference.create!(
           resource_type: type,
           resource_id: id,
-          profile: profile
+          profile: profile,
+          testing_instance: self
         )
-        resource_references << new_reference
+      end
 
-        save!
+      def save_resource_references(klass, resources, profile = nil)
+        resources
+          .select { |resource| resource.is_a? klass }
+          .each do |resource|
+            save_resource_reference_without_reloading(klass.name.demodulize, resource.id, profile)
+          end
+
         # Ensure the instance resource references are accurate
         reload
       end
@@ -241,11 +300,9 @@ module Inferno
       def save_resource_ids_in_bundle(klass, reply, profile = nil)
         return if reply&.resource&.entry&.blank?
 
-        reply.resource.entry
-          .select { |entry| entry.resource.class == klass }
-          .each do |entry|
-          save_resource_reference(klass.name.demodulize, entry.resource.id, profile)
-        end
+        resources = reply.resource.entry.map(&:resource)
+
+        save_resource_references(klass, resources, profile)
       end
 
       def versioned_conformance_class
@@ -262,13 +319,41 @@ module Inferno
         token_retrieved_at + token_expires_in.seconds
       end
 
+      def bulk_private_key_set
+        return unless bulk_data_jwks.present?
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('sign') } }.to_json
+      end
+
+      def bulk_public_key_set
+        return unless bulk_data_jwks.present?
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('verify') } }.to_json
+      end
+
+      def bulk_selected_public_key
+        return unless bulk_data_jwks.present?
+
+        JSON.parse(bulk_public_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
+        end
+      end
+
+      def bulk_selected_private_key
+        return unless bulk_data_jwks.present?
+
+        JSON.parse(bulk_private_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
+        end
+      end
+
       private
 
       def group_result(results)
-        return :skip if results[:skip].positive?
         return :fail if results[:fail].positive?
         return :fail if results[:cancel].positive?
         return :error if results[:error].positive?
+        return :skip if results[:skip].positive?
         return :not_run if results[:total].zero?
 
         :pass

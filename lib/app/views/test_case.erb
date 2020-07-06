@@ -11,7 +11,8 @@
   data-test-case-title="<%= test_case.title %>"
   data-result="<%=sequence_results[test_case.id].try(:result)%>"
   data-show-uris="<%= test_case.sequence.show_uris? %>"
-  <% test_case.parameters.reject{|key| ['description', 'title', 'sequence'].include?(key.to_s)}.each do |key, value| %>
+  data-show-bulk-registration-info="<%= test_case.sequence.show_bulk_registration_info? %>"
+  <% test_case.parameters.reject{|key| ['description', 'title', 'sequence', 'variable_defaults'].include?(key.to_s)}.each do |key, value| %>
     <%# Note: TODO: Use this data to hard code values to a given test case.   Not yet needed %>
     data-parameter-<%=key.to_s%>="<%=value%>"
   <% end %>

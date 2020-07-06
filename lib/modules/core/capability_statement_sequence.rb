@@ -65,9 +65,7 @@ module Inferno
 
         assert_tls_1_2 @instance.url
 
-        warning do
-          assert_deny_previous_tls @instance.url
-        end
+        assert_deny_previous_tls @instance.url
       end
 
       test 'FHIR server supports the conformance interaction' do
@@ -127,6 +125,10 @@ module Inferno
         rescue StandardError
           assert false, 'Capability Statement could not be parsed.'
         end
+
+        issues = Inferno::RESOURCE_VALIDATOR.validate(@conformance, versioned_resource_class)
+        errors = issues[:errors]
+        assert errors.blank?, "Invalid #{versioned_conformance_class.name.demodulize}: #{errors.join(', ')}"
       end
 
       test 'FHIR version of the server matches the FHIR version expected by tests' do

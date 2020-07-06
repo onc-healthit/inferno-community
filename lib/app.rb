@@ -13,6 +13,7 @@ require 'pry-byebug'
 require 'dm-core'
 require 'dm-migrations'
 require 'jwt'
+require 'json/jwt'
 require 'kramdown'
 
 require 'rack'
@@ -24,11 +25,14 @@ require_relative 'app/models/module'
 require_relative 'version'
 require_relative 'app/models'
 require_relative 'app/utils/terminology'
+require '/Users/rscalfani/Documents/code/inferno/inferno-saner/generator/mcode/mcode_generator'
 
 module Inferno
   class App
     attr_reader :app
     def initialize
+      # generator = Inferno::Generator::McodeGenerator.new("mcode", "/mcode")
+      # generator.run
       @app = Rack::Builder.app do
         Endpoint.subclasses.each do |endpoint|
           map(endpoint.prefix) { run(endpoint.new) }
