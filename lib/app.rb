@@ -31,8 +31,6 @@ module Inferno
   class App
     attr_reader :app
     def initialize
-      # generator = Inferno::Generator::McodeGenerator.new("mcode", "/mcode")
-      # generator.run
       @app = Rack::Builder.app do
         Endpoint.subclasses.each do |endpoint|
           map(endpoint.prefix) { run(endpoint.new) }
