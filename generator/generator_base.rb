@@ -50,7 +50,6 @@ module Inferno
       end
 
       def resource_path(resource)
-        binding.pry unless resource.respond_to? 'id'
         "#{resource.class.name.demodulize}/#{resource.id}"
       end
 

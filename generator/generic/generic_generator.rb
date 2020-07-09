@@ -16,7 +16,7 @@ module Inferno
         generate_module(profile_metadata)
       end
 
-      def read_profile_structure_definitions        
+      def read_profile_structure_definitions
         # I couldn't find a way to distinguish profiles in the IG besides this. Unsure if there will be non-profile structure definitions
         profiles_structure_defs = resources_by_type['StructureDefinition'].reject { |definition| definition['type'] == 'Extension' }
         profiles_structure_defs.map do |structure_def|
@@ -26,14 +26,16 @@ module Inferno
 
       def extract_metadata(structure_definition)
         resource_type = structure_definition['type']
+        sequence_name = structure_definition['name']
+          .split('-')
+          .map(&:capitalize)
+          .join
         {
-          class_name: structure_definition['name']
-            .split('-')
-            .map(&:capitalize)
-            .join + "_Sequence",
+          class_name: sequence_name + 'Sequence',
+          file_name: sequence_name + '_sequence',
           resource_type: structure_definition['type'],
           title: structure_definition['title'] || structure_definition['name'],
-          test_id_prefix: structure_definition['name'].chars.select { |c| c.upcase == c && c != ' ' }.join, # this needs to be made more generic (what if they don't have capitals)
+          test_id_prefix: structure_definition['name'].chars.select { |c| c.upcase == c && c != ' ' }.join, # this needs to be made more generics
           requirements: [":#{resource_type.downcase}_id"],
           url: structure_definition['url'],
           tests: []
@@ -49,9 +51,8 @@ module Inferno
       end
 
       def generate_sequence(metadata)
-        binding.pry if metadata[:class_name].nil?
         puts "Generating #{metadata[:title]}\n"
-        file_name = sequence_out_path + '/' + metadata[:class_name].downcase + '.rb'
+        file_name = sequence_out_path + '/' + metadata[:file_name].downcase + '.rb'
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
         output =   template.result_with_hash(metadata)
         FileUtils.mkdir_p(sequence_out_path + '/') unless File.directory?(sequence_out_path + '/')

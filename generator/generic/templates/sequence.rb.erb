@@ -21,7 +21,7 @@ module Inferno
         metadata do
           id '<%=format('%02d', idx + 1)%>'<% if test[:key].present? %>
           name '<%= test[:tests_that] %>'<% end %>
-          link '<%=test[:link]%>'<%if test[:optional]%>
+          link '<%=url%>'<%if test[:optional]%>
           optional<%end%>
           description %(
             <%=test[:description]%>
