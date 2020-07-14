@@ -14,7 +14,7 @@ module Inferno
           optional: interaction[:expectation] != 'SHALL'
         }
         create_test[:test_code] = %(
-            #{sequence[:resource].downcase}_example = File.read(File.expand_path('./resources/saner/saner-#{sequence[:resource].downcase}-example.json'))
+            #{sequence[:resource].downcase}_example = File.read(File.expand_path('./resources/mcode/mcode-#{sequence[:resource].downcase}-example.json'))
             resource = FHIR.from_contents(#{sequence[:resource].downcase}_example)
             @resource_created_response = validate_create_reply(resource, FHIR::#{sequence[:resource]})
           )
