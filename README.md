@@ -7,9 +7,9 @@ Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://t
 
 # Inferno for mCODE
 
-## The Situational Awareness for Novel Epidemic Response Implementation Guide Testing
+## The Minimal Common Oncology Data Elements (mCODE) Implementation Guide Testing
 
-**Inferno mCODE Edition** performs API conformance testing for the [Sminimal Common Oncology Data Elements (mCODE) Release 1 - US Realm | STU1 Implementation Guide](http://hl7.org/fhir/us/mcode/index.html).
+**Inferno mCODE Edition** performs API conformance testing for the [Minimal Common Oncology Data Elements (mCODE) Release 1 - US Realm | STU1 Implementation Guide](http://hl7.org/fhir/us/mcode/index.html).
 
 **Inferno mCODE Edition** is a pre-configured and customized version of the
 open source [Inferno](https://github.com/onc-healthit/inferno) FHIR

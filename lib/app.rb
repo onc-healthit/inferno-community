@@ -25,13 +25,15 @@ require_relative 'app/models/module'
 require_relative 'version'
 require_relative 'app/models'
 require_relative 'app/utils/terminology'
-require '/Users/rscalfani/Documents/code/inferno/inferno-saner/generator/mcode/mcode_generator'
+require '/Users/rscalfani/Documents/code/inferno/inferno-mcode/generator/mcode/mcode_generator'
 
 module Inferno
   class App
     attr_reader :app
     def initialize
       @app = Rack::Builder.app do
+        generator = Inferno::Generator::McodeGenerator.new("mcode", "/mcode")
+        generator.run
         Endpoint.subclasses.each do |endpoint|
           map(endpoint.prefix) { run(endpoint.new) }
         end
