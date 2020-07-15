@@ -23,11 +23,7 @@ module Inferno
       end
 
       def sequence_name
-        @sequnce_name ||=
-          profile['name']
-            .split('-')
-            .map(&:capitalize)
-            .join
+        @sequnce_name ||= initial_sequence_name
       end
 
       def class_name
@@ -61,6 +57,14 @@ module Inferno
 
       def get_binding
         binding
+      end
+
+      private
+
+      def initial_sequence_name
+        return profile['name'] unless profile['name'].include?('-')
+
+        profile['name'].split('-').map(&:capitalize).join
       end
     end
   end
