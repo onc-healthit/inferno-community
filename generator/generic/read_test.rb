@@ -9,7 +9,7 @@ module Inferno
         read_test = TestMetadata.new(
           title: "Server returns correct #{metadata.resource_type} resource from the #{metadata.resource_type} read interaction",
           key: :resource_read,
-          description: "This test will attempt to Reference to #{metadata.resource_type} can be resolved and read."
+          description: "This test will verify that #{metadata.resource_type} resources can be read from the server."
         )
         read_test.code = %(
             resource_id = @instance.#{metadata.resource_type.underscore}_id

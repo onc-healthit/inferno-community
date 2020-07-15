@@ -36,7 +36,7 @@ module Inferno
         puts "Generating #{metadata.title}\n"
         file_name = File.join(sequence_out_path, metadata.file_name + '.rb')
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
-        output =   template.result(metadata.get_binding)
+        output =   template.result_with_hash(metadata: metadata)
         FileUtils.mkdir_p(sequence_out_path + '/') unless File.directory?(sequence_out_path + '/')
         File.write(file_name, output)
       end

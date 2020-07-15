@@ -23,7 +23,7 @@ module Inferno
       end
 
       def sequence_name
-        @sequnce_name ||= initial_sequence_name
+        @sequence_name ||= initial_sequence_name
       end
 
       def class_name
@@ -53,10 +53,6 @@ module Inferno
 
       def add_test(test)
         @tests << test
-      end
-
-      def get_binding
-        binding
       end
 
       private

@@ -2,34 +2,34 @@
 
 module Inferno
   module Sequence
-    class <%=class_name%> < SequenceBase
-      title '<%=title%> Tests'
-      description 'Verify support for the server capabilities required by the <%=title%> profile.'
+    class <%= metadata.class_name %> < SequenceBase
+      title '<%= metadata.title %> Tests'
+      description 'Verify support for the server capabilities required by the <%= metadata.title %> profile.'
       details %(
       )
-      test_id_prefix '<%=test_id_prefix%>'
-      requires <%=requirements.join(', ')%>
+      test_id_prefix '<%= metadata.test_id_prefix %>'
+      requires <%= metadata.requirements.join(', ') %>
 
       @resource_found = nil
 
-      <% tests.each_with_index do |test, idx|%>
+      <% metadata.tests.each_with_index do |test, idx|%>
 <% if test.key.present? %>
       test :<%= test.key %> do
 <% else %>
       test '<%= test.title %>' do
 <% end %>
         metadata do
-          id '<%=format('%02d', idx + 1)%>'<% if test.key.present? %>
+          id '<%= format('%02d', idx + 1) %>'<% if test.key.present? %>
           name '<%= test.title %>'<% end %>
-          link '<%=url%>'<%if test.optional%>
-          optional<%end%>
+          link '<%= metadata.url %>'<% if test.optional %>
+          optional<% end %>
           description %(
-            <%=test.description%>
+            <%= test.description %>
           )
           versions :r4
         end
-<%=test.code%>
-      end<% end%>
+<%= test.code %>
+      end<% end %>
     end
   end
 end
