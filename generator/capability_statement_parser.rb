@@ -89,7 +89,7 @@ module Inferno
               resource,
               supported_profile,
               metadata[:capability_statement]
-              )
+            )
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)
             add_interactions(resource, new_sequence)
