@@ -84,12 +84,12 @@ module Inferno
         metadata[:sequences] = []
 
         resources.each do |resource|
-
           resource['supportedProfile']&.each do |supported_profile|
             new_sequence = build_new_sequence(
               resource,
               supported_profile,
-              metadata[:capability_statement])
+              metadata[:capability_statement]
+              )
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)
             add_interactions(resource, new_sequence)

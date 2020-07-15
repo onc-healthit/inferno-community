@@ -20,7 +20,7 @@ module Inferno
       def generate
         generate_sequences('mCODERequirements')
         generate_module(extract_metadata('mCODERequirements'))
-        puts "done"
+        puts 'done'
       end
 
       def generate_sequences(capability_statement)
@@ -59,9 +59,10 @@ module Inferno
             interaction[:code] = 'history' if interaction[:code] == 'history-instance'
             create_create_test(sequence, interaction) if interaction[:code] == 'create'
             create_update_test(sequence, interaction) if interaction[:code] == 'update'
-            create_read_test(sequence) if interaction[:code] = 'read'
+            create_read_test(sequence) if interaction[:code] == 'read'
           end
-          create_profile_validation_test(sequence) #if metadata[:capability_statement].include? 'Pull'
+          create_profile_validation_test(sequence)
+          #if metadata[:capability_statement].include? 'Pull'
           # # create_must_support_test(sequence)
           # # create_multiple_or_test(sequence) unless sequence[:delayed_sequence]
           # create_references_resolved_test(sequence)
