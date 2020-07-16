@@ -13,7 +13,8 @@ module Inferno
 
       test_id_prefix 'USCDR'
 
-      requires :token, :patient_ids
+      requires :token
+      new_requires :patient_ids
       conformance_supports :DocumentReference
 
       def validate_resource_item(resource, property, value)
@@ -88,7 +89,7 @@ module Inferno
       )
 
       def patient_ids
-        @instance.patient_ids.split(',').map(&:strip)
+        @instance.get_requirement_value('patient_ids').split(',').map(&:strip)
       end
 
       @resources_found = false

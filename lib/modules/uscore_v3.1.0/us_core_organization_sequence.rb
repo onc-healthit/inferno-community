@@ -14,6 +14,7 @@ module Inferno
       test_id_prefix 'USCO'
 
       requires :token
+      new_requires
       conformance_supports :Organization
       delayed_sequence
 
@@ -42,7 +43,7 @@ module Inferno
       )
 
       def patient_ids
-        @instance.patient_ids.split(',').map(&:strip)
+        @instance.get_requirement_value('patient_ids').split(',').map(&:strip)
       end
 
       @resources_found = false

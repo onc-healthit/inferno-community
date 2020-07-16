@@ -58,13 +58,10 @@ module Inferno
 
       property :must_support_confirmed, String, default: ''
 
-      property :patient_ids, String
       property :group_id, String
 
       property :data_absent_code_found, Boolean
       property :data_absent_extension_found, Boolean
-
-      property :device_codes, String
 
       # Bulk Data Parameters
       property :bulk_url, String
@@ -86,6 +83,7 @@ module Inferno
 
       has n, :sequence_results
       has n, :resource_references
+      has n, :sequence_requirements
       has 1, :server_capabilities
 
       def latest_results
@@ -182,14 +180,15 @@ module Inferno
         return if patient_id.to_s == self.patient_id.to_s
 
         resource_references.destroy
+        patient_ids = get_requirement_value('patient_ids')
 
         # For patient id list, don't clear it out but rather add it to the list of known
         # patients to pull from.
-        self.patient_ids = if patient_ids.blank?
-                             patient_id
-                           else
-                             patient_ids.split(',').append(patient_id).uniq.join(',')
-                           end
+        if patient_ids.blank?
+          set_requirement_value('patient_ids', patient_id)
+        else
+          set_requirement_value('patient_ids', patient_ids.split(',').append(patient_id).uniq.join(','))
+        end
 
         ResourceReference.create(
           resource_type: 'Patient',
@@ -281,6 +280,29 @@ module Inferno
         token_retrieved_at + token_expires_in.seconds
       end
 
+      def add_sequence_requirement(requirement)
+        new_requirement = SequenceRequirement.new(
+          name: requirement,
+          value: '',
+          label: requirement
+        )
+        sequence_requirements.push(new_requirement)
+      end
+
+      def get_requirement_value(requirement_name)
+        requirement = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
+        return unless requirement.present?
+
+        requirement.value
+      end
+
+      def set_requirement_value(requirement_name, value)
+        requirement = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
+        return unless requirement.present?
+
+        requirement.value = value
+        save!
+      end
       private
 
       def group_result(results)

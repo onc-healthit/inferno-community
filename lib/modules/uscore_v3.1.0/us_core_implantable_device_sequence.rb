@@ -13,7 +13,8 @@ module Inferno
 
       test_id_prefix 'USCID'
 
-      requires :token, :patient_ids, :device_codes
+      requires :token
+      new_requires :patient_ids, :device_codes
       conformance_supports :Device
 
       def validate_resource_item(resource, property, value)
@@ -35,7 +36,7 @@ module Inferno
       )
 
       def patient_ids
-        @instance.patient_ids.split(',').map(&:strip)
+        @instance.get_requirement_value('patient_ids').split(',').map(&:strip)
       end
 
       @resources_found = false
