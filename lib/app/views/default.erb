@@ -209,8 +209,8 @@
 
         <%= erb(:prerequisite_field,{},{prerequisite: :token,
               label: 'Bearer Token',
-              instance: instance
-              value: instance.token
+              instance: instance,
+              value: instance.token,
               })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
