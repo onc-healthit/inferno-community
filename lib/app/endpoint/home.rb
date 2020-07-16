@@ -37,6 +37,10 @@ module Inferno
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module.name)
 
+          sequence_requirements = @instance.module.sequences.flat_map { |x| x.new_requires }.uniq
+          sequence_requirements.each do |requirement|
+            @instance.add_sequence_requirement(requirement)
+          end
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
           unless params['preset'].blank?
