@@ -39,7 +39,7 @@ badge_text: mCODE EDITION
 
 # Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
 resource_validator: external
-external_resource_validator_url: http://validator_service:4567
+external_resource_validator_url: http://localhost:8081
 
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
@@ -112,7 +112,7 @@ presets:
     mcode_karnofsky_performance_status_id: 16807
     mcode_primary_cancer_condition_id: 16755
     mcode_secondary_cancer_condition_id: 16808
-    mcode_tnm_clinical_distant_metastases_category_id: 16814
+    mcode_tnm_clinical_distant_metastases_category_id: 16813
     mcode_tnm_clinical_primary_tumor_category_id: 16814
     mcode_tnm_clinical_regional_nodes_category_id: 16815
     mcode_tnm_clinical_stage_group_id: 16820

@@ -11,6 +11,8 @@ services:
         target: "/var/www/inferno/resources/terminology/validators"
   validator_service:
     image: infernocommunity/fhir-validator-wrapper
+    volumes:
+      - ./resources:/home/igs/package
     environment:
       DISABLE_TX: 'true'
   nginx_server:
