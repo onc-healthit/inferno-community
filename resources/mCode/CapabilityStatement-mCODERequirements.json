@@ -12,12 +12,29 @@
   "implementationGuide": [
     "http://hl7.org/fhir/us/mcode/ImplementationGuide/hl7.fhir.us.mcode"
   ],
-  "description": "These are the requirements of an mCODE Server",
+  "description": "These are the read requirements of an mCODE Server",
   "rest": [
     {
       "mode": "server",
-      "documentation": "mCODE Server RESTful API Requirements",
+      "documentation": "mCODE Server RESTful API Read Requirements",
       "resource": [
+        {
+          "type": "Condition",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-condition-parent"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
         {
           "type": "Observation",
           "supportedProfile": [
@@ -124,6 +141,23 @@
           "type": "Procedure",
           "supportedProfile": [
             "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-stage-parent"
           ],
           "interaction": [
             {
