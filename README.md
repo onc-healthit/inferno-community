@@ -207,6 +207,11 @@ from which sequences will be pulled.
 bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 ```
 
+To generate test sequences from a capability statement JSON, use the following command:
+```sh
+bundle exec rake "inferno:generate[mcode]"
+```
+
 ### Caveats
 * For `DynamicRegistration` users must provide instructions similar to that
   provided in `example_script.json` to automate the webdriver.
