@@ -42,4 +42,29 @@ describe Inferno::HL7Validator do
       assert_equal 1, result[:information].size
     end
   end
+
+  describe 'Loading an IG with NPM ID' do
+    it 'Should result in a list of profiles' do
+      stub_request(:put, "#{@validator_url}/igs/hl7.fhir.us.qicore")
+        .to_return(status: 200, body: load_fixture('load_ig_by_id_response'))
+      result = @validator.load_ig_by_id('hl7.fhir.us.qicore')
+
+      assert result.is_a? Array
+      assert_includes result, 'http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient'
+      assert_includes result, 'http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-medicationrequest'
+    end
+  end
+
+  describe 'Loading an IG with gzipped package' do
+    it 'Should result in a list of profiles' do
+      stub_request(:post, "#{@validator_url}/igs")
+        .with(headers: { 'Content-Encoding' => 'gzip' })
+        .to_return(status: 200, body: load_fixture('load_ig_by_tgz_response'))
+      result = @validator.load_ig_by_tgz(load_binary_fixture('hl7.fhir.au.base.tgz'))
+
+      assert result.is_a? Array
+      assert_includes result, 'http://hl7.org.au/fhir/StructureDefinition/au-address'
+      assert_includes result, 'http://hl7.org.au/fhir/StructureDefinition/au-practitioner'
+    end
+  end
 end

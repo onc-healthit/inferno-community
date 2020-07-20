@@ -56,6 +56,11 @@ def load_fixture_with_extension(file_name)
   File.read(File.join(fixture_path, file_name))
 end
 
+def load_binary_fixture(file_name)
+  fixture_path = find_fixture_directory
+  File.open(File.join(fixture_path, file_name), 'rb', &:read)
+end
+
 def valid_uri?(uri)
   !(uri =~ /\A#{URI.regexp(['http', 'https'])}\z/).nil?
 end
