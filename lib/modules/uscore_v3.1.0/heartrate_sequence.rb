@@ -81,7 +81,7 @@ module Inferno
       )
 
       def patient_ids
-        @instance.get_requirement_value('patient_ids').split(',').map(&:strip)
+        @instance.patient_ids.split(',').map(&:strip)
       end
 
       @resources_found = false
