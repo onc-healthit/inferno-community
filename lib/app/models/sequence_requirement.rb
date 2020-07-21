@@ -8,6 +8,7 @@ module Inferno
       property :name, String
       property :value, String
       property :label, String
+      property :description, String
 
       belongs_to :testing_instance
     end

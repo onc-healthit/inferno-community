@@ -172,6 +172,7 @@
         <% instance.sequence_requirements.each do |requirement| %>
           <%= erb(:prerequisite_field,{},{prerequisite: requirement.name.to_sym,
               label: requirement.label,
+              description: requirement.description,
               instance: instance,
               value: requirement.value}); %>
         <% end %>

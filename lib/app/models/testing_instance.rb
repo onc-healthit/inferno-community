@@ -280,13 +280,16 @@ module Inferno
         token_retrieved_at + token_expires_in.seconds
       end
 
-      def add_sequence_requirement(requirement)
-        new_requirement = SequenceRequirement.new(
-          name: requirement,
-          value: '',
-          label: requirement
-        )
-        sequence_requirements.push(new_requirement)
+      def add_sequence_requirements(requirements)
+        requirements.each do |requirement, texts|
+          new_requirement = SequenceRequirement.new(
+            name: requirement,
+            value: '',
+            label: texts[:label],
+            description: texts[:description]
+          )
+          sequence_requirements.push(new_requirement)
+        end
       end
 
       def get_requirement_value(requirement_name)

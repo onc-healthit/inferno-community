@@ -256,6 +256,27 @@ module Inferno
 
       def self.new_requires(*requires)
         @@new_requires[sequence_name] = requires unless requires.empty?
+
+        instance_class = Inferno::Models::TestingInstance
+        requires.each do |requirement_name|
+          requirement_setter_name = "#{requirement_name}=".to_sym
+          next if instance_class.method_defined?(requirement_name) && instance_class.method_defined?(requirement_setter_name)
+
+          instance_class.define_method requirement_name do
+            requirement_found = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
+            return unless requirement_found.present?
+
+            requirement_found.value
+          end
+
+          instance_class.define_method requirement_setter_name do
+            requirement_found = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
+            return unless requirement_found.present?
+
+            requirement_found.value = value
+            save!
+          end
+        end
         @@new_requires[sequence_name] || []
       end
 
