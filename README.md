@@ -136,6 +136,13 @@ available in perpetuity.
 Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and
 Edge.  Internet Explorer is not supported at this time.
 
+## Generating mCODE Test Sequences from a Capability Statement
+
+To generate test sequences from a capability statement JSON, put the capability statement in a folder with the mCODE Resources. Then use the following command:
+```sh
+bundle exec rake "inferno:generate[mcode]"
+```
+
 ## Unit Tests
 
 Inferno contains a robust set of self-tests to ensure that the test clients
@@ -205,11 +212,6 @@ expected to provide a url for the FHIR Server to be tested and the module name
 from which sequences will be pulled.
 ```sh
 bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
-```
-
-To generate test sequences from a capability statement JSON, use the following command:
-```sh
-bundle exec rake "inferno:generate[mcode]"
 ```
 
 ### Caveats
