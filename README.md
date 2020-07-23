@@ -138,7 +138,7 @@ Edge.  Internet Explorer is not supported at this time.
 
 ## Generating mCODE Test Sequences from a Capability Statement
 
-To generate test sequences from a capability statement JSON, put the capability statement in a folder with the mCODE Resources. Then use the following command:
+To generate the inferno test sequences run the following command:
 ```sh
 bundle exec rake "inferno:generate[mcode]"
 ```
