@@ -41,8 +41,12 @@ module Inferno
         File.write(file_name, output)
       end
 
+      def module_file_path
+        "#{module_yml_out_path}/#{@path}_module.yml"
+      end
+
       def generate_module
-        file_name = "#{module_yml_out_path}/#{@path}_module.yml"
+        file_name = module_file_path
 
         module_info = {
           title: @path,
