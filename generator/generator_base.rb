@@ -29,6 +29,8 @@ module Inferno
             # There were problems with round-tripping certain SearchParameters though
             new_resource_json = JSON.parse(File.read(resource))
             new_resource = FHIR.from_contents(File.read(resource))
+            next unless new_resource.present?
+
             resource_by_path[resource_path(new_resource)] = new_resource_json
             type = new_resource.class.name.demodulize
             type = 'CapabilityStatement' if type == 'Conformance'

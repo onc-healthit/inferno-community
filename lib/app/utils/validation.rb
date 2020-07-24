@@ -29,8 +29,12 @@ module Inferno
       json = File.read(definition)
       version = VERSION_MAP[JSON.parse(json)['fhirVersion']]
       resource = get_resource(json, version)
+      next unless resource.respond_to? 'url'
+
       DEFINITIONS[resource.url] = resource
       if resource.resourceType == 'StructureDefinition'
+        next unless resource.snapshot.present?
+
         profiled_type = resource.snapshot.element.first.path # will this always be the first?
         RESOURCES[version][profiled_type] ||= []
         RESOURCES[version][profiled_type] << resource

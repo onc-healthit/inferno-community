@@ -1,0 +1,13 @@
+name: <%= title.underscore %>
+title: <%= title %>
+description : <%= description %>
+fhir_version: r4
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests:
+      - name: <%= title %> Profiles
+        run_all: true
+        sequences:<% sequences.each do |sequence| %>
+        - <%= sequence.class_name %><% end %>
