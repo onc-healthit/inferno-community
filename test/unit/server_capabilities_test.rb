@@ -16,15 +16,36 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'read' },
                 { code: 'vread' },
                 { code: 'history-instance' },
-                { code: 'search-type' }
-              ]
+                { code: 'search-type', documentation: 'DOCUMENTATION' }
+              ],
+              searchParam: [
+                {
+                  name: '_id',
+                  type: 'token'
+                },
+                {
+                  name: 'birthdate',
+                  type: 'date'
+                }
+              ],
+              searchRevInclude: [
+                'Provenance:target',
+                'Condition:subject'
+              ],
+              searchInclude: ['*']
             },
             {
               type: 'Condition',
               profile: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
               interaction: [
                 { code: 'delete' },
-                { code: 'update' }
+                { code: 'update' },
+                { code: 'search-type' }
+              ],
+              searchRevInclude: ['*'],
+              searchInclude: [
+                'Practitioner:asserter',
+                'Patient:subject'
               ]
             },
             {
@@ -84,7 +105,7 @@ class ServerCapabilitiesTest < MiniTest::Test
       },
       {
         resource_type: 'Condition',
-        interactions: ['delete', 'update'],
+        interactions: ['delete', 'search', 'update'],
         operations: []
       },
       {
@@ -137,5 +158,47 @@ class ServerCapabilitiesTest < MiniTest::Test
     ]
 
     assert_equal(expected_profiles, @capabilities.supported_profiles)
+  end
+
+  def test_search_documented
+    assert @capabilities.search_documented?('Patient')
+    refute @capabilities.search_documented?('Condition')
+    refute @capabilities.search_documented?('Observation')
+  end
+
+  def test_supported_search_params
+    assert_equal ['_id', 'birthdate'], @capabilities.supported_search_params('Patient')
+    assert_equal [], @capabilities.supported_search_params('Condition')
+    assert_equal [], @capabilities.supported_search_params('Location')
+  end
+
+  def test_supported_revincludes
+    assert_equal ['Provenance:target', 'Condition:subject'], @capabilities.supported_revincludes('Patient')
+    assert_equal ['*'], @capabilities.supported_revincludes('Condition')
+    assert_equal [], @capabilities.supported_revincludes('Observation')
+    assert_equal [], @capabilities.supported_revincludes('Location')
+  end
+
+  def test_revinclude_supported
+    assert @capabilities.revinclude_supported?('Patient', 'Provenance:target')
+    assert @capabilities.revinclude_supported?('Patient', 'Condition:subject')
+    assert @capabilities.revinclude_supported?('Condition', 'Provenance:target')
+    refute @capabilities.revinclude_supported?('Observation', 'Provenance:target')
+    refute @capabilities.revinclude_supported?('Location', 'Provenance:target')
+  end
+
+  def test_supported_includes
+    assert_equal ['*'], @capabilities.supported_includes('Patient')
+    assert_equal ['Practitioner:asserter', 'Patient:subject'], @capabilities.supported_includes('Condition')
+    assert_equal [], @capabilities.supported_includes('Observation')
+    assert_equal [], @capabilities.supported_includes('Location')
+  end
+
+  def test_include_supported
+    assert @capabilities.include_supported?('Condition', 'Practitioner:asserter')
+    assert @capabilities.include_supported?('Condition', 'Patient:subject')
+    assert @capabilities.include_supported?('Patient', 'Practitioner:asserter')
+    refute @capabilities.include_supported?('Observation', 'Provenance:target')
+    refute @capabilities.include_supported?('Location', 'Provenance:target')
   end
 end

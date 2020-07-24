@@ -58,6 +58,8 @@
   </div>
 </div>
 
+ <%= erb(:missing_valuesets, {}, {}) %>
+
 <div class="container guided">
   <div class="main main-details" role='region'>
 
@@ -134,7 +136,7 @@
                         <span class="oi oi-x" title="Cancel" aria-hidden="true"></span>
                       </div>
                     <% when 'error' %>
-                      <div class="group-score group-score-error" data-toggle="tooltip" title="Test Test System Error">
+                      <div class="group-score group-score-error" data-toggle="tooltip" title="Test System Error">
                         !
                       </div>
                     <% when 'wait' %>
@@ -386,6 +388,12 @@
               value: instance.patient_id,
               })%>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_ids,
+              label: 'Patient IDs',
+              instance: instance,
+              value: instance.patient_ids,
+              })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,
@@ -397,6 +405,19 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
+              label: 'Implantable Device Type Code',
+              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
+              instance: instance,
+              value: instance.device_codes,
+        })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
+                                        label: 'Group ID',
+                                        instance: instance,
+                                        value: instance.group_id,
+        })%>                 
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',

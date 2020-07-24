@@ -21,6 +21,7 @@ describe Inferno::HL7Validator do
 
       assert_empty result[:errors]
       assert_empty result[:warnings]
+      assert_empty result[:information]
     end
   end
 
@@ -37,7 +38,8 @@ describe Inferno::HL7Validator do
       result = @validator.validate(patient, FHIR)
 
       assert_equal 2, result[:errors].size
-      assert_equal 2, result[:warnings].size
+      assert_equal 1, result[:warnings].size
+      assert_equal 1, result[:information].size
     end
   end
 end

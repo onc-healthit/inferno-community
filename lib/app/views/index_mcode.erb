@@ -1,0 +1,60 @@
+<!--<div class="container-fluid onc-index-page" role="main" style="background-color: #ffc62f;padding: 3px;"></div>-->
+<div class="container-fluid onc-index-page" role="main" style="background-color: #fff; padding: 50px 0 10px;">
+  
+  <%= erb(:missing_valuesets, {}, {}) %>
+
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+
+        <div class="col-12" style="color: #063d75; text-align: center;">
+        <img src="/images/icon_logo.png" style='width: 125px; display:block; margin-left: auto; margin-right: auto;'>
+        <div style="    font-weight: bolder;
+        margin: 12px;
+        display: inline-block;
+        font-size: 36px;
+        /* font-style: normal; */
+        font-family: 'Roboto Condensed';">
+        INFERNO MCODE EDITION
+        </div>
+        <div style="display: inline-block; font-size: 26px;">
+        Test conformance to the Minimal Common Oncology Data Elements (mCODE) Implementation Guide.
+        </div>
+        <!--<div style="display: inline-block; font-size: 26px; margin-top: 50px;">
+        <button class="btn btn-dark" type="button">Start Testing</button>
+        </div>-->
+        <form method="POST" action="<%=base_path%>/" style="margin:  0 auto;margin-top: 40px;width: 800px;" class="form-inline">
+        <input type="hidden" name="client_endpoint_key" value="static" />
+        <%= erb(:module_options,{},modules: modules) %>
+
+  <div class="form-group mx-sm-3 mb-2">
+    <label for="fhir_server" class="sr-only">FHIR Server</label>
+    <input type="url" required class="form-control form-control-lg"  style="width: 600px" id="fhir_server" name="fhir_server" placeholder="Enter a FHIR Endpoint" aria-label="Start Testing">
+  </div>
+  <button type="submit" class="btn btn-lg btn-secondary mb-2">START TESTING</button>
+
+  <% if presets.present? %>
+          <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
+          <div class="form-group" style="margin-left: 250px;">
+            <label for="preset-select" class="preset-label">
+              Or test Inferno against
+            </label>
+            <select class="custom-select custom-select-lg" name="preset" style="padding-left: 5px;margin: 0 0;border: 0;text-decoration: underline;" id="preset-select">
+              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">a public sandbox</option>
+              <% presets.each do |preset| %>
+                <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
+              <% end %>
+              <input type="hidden" name="preset" id="preset" value="" />
+            </select>
+            <a id="instructions-link" class="instructions-link" href="" target="_blank" style="display:none">Instructions</a>
+          </div>
+        </div>
+        <% end %>
+
+      </fieldset>
+    </form>
+    </div>
+      </div>
+    </div>
+  </div>
+</div>

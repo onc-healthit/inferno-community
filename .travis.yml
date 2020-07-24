@@ -4,15 +4,10 @@ services:
   - docker
 before_install:
   - docker-compose build
-before_script:
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
 script:
   - bundle exec rake
   # For unknown reasons, the test-reporter fails when using docker if run in an
   # after_script section
-  - ./cc-test-reporter after-build -t simplecov --exit-code $TRAVIS_TEST_RESULT
   - docker-compose run ruby_server bundle exec rake
   - bundle exec rubocop
 notifications:

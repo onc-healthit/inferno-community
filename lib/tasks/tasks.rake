@@ -222,72 +222,249 @@ namespace :inferno do |_argv|
   task :tests_to_xls, [:module, :test_set, :filename] do |_task, args|
     require 'rubyXL'
     require 'rubyXL/convenience_methods'
-    args.with_defaults(module: 'onc_r4', test_set: 'test_procedure')
+    args.with_defaults(module: 'onc_certification', test_set: 'test_procedure')
     args.with_defaults(filename: "#{args.module}_testlist.xlsx")
 
     workbook = RubyXL::Workbook.new
     worksheet = workbook.worksheets[0]
 
-    ['Version', VERSION, '', 'Generated', Time.now.to_s].each_with_index do |value, index|
-      worksheet.add_cell(0, index, value)
-    end
-    worksheet.change_row_italics(0, true)
-    worksheet.add_cell(1, 0, '')
+    # ['Version', VERSION, '', 'Generated', Time.now.to_s].each_with_index do |value, index|
+    #   worksheet.add_cell(0, index, value)
+    # end
+    # worksheet.change_row_italics(0, true)
+    # worksheet.add_cell(1, 0, '')
 
-    ['Group',
-     'Group Overview',
-     '',
-     'Test Case Name',
-     'Test Case Description',
-     'Test Case Details',
-     '',
-     'Test ID',
-     'Test Name',
-     'Test Link',
-     'Required?',
-     'Test Detail',
-     '',
-     'Test Procedure Reference'].each_with_index do |row_name, index|
-      worksheet.add_cell(2, index, row_name)
+    columns = [
+      ['Inferno Test', 14, ->(_group, test_case, test) { "#{test_case.prefix}#{test.id}" }],
+      ['Rule No', 14, ->(_group, _test_case, _test) { '' }],
+      ['Test Step', 14, ->(_group, _test_case, _test) { '' }],
+      ['Rule Section', 14, ->(_group, _test_case, _test) { '' }],
+      ['Test Case Name', 20, ->(_group, test_case, _test) { test_case.title }],
+      ['Test Name', 50, ->(_group, _test_case, test) { test.name }],
+      ['Test Case Description', 45, ->(_group, test_case, _test) { test_case.description }],
+      ['Required?', 9, ->(_group, test_case, test) { (!test_case.sequence.optional? && !test.optional?).to_s }],
+      ['Elaborated Testable Requirements', 14, ->(_group, _test_case, _test) { '' }],
+      ['Comments', 14, ->(_group, _test_case, _test) { '' }],
+      ['Rule Language', 14, ->(_group, _test_case, _test) { '' }],
+      ['Preamble Language', 14, ->(_group, _test_case, _test) { '' }],
+      ['Test Link', 85, ->(_group, _test_case, test) { test.link }],
+      ['Group', 30, ->(group, _test_case, _test) { group.name }],
+      ['', 100, ->(_group, _test_case, _test) { '' }],
+      ['Group Overview', 30, ->(group, _test_case, _test) { group.overview }],
+      ['', 3, ->(_group, _test_case, _test) { '' }],
+      ['Test Case Details', 30, ->(_group, test_case, _test) { unindent_markdown(test_case.sequence.details) }],
+      ['Test Detail', 60, ->(group, _test_case, _test) { group.name }],
+      ['Test Procedure Reference', 30, ->(_group, _test_case, test) { test.ref || ' ' }]
+    ]
+
+    columns.each_with_index do |row_name, index|
+      cell = worksheet.add_cell(0, index, row_name.first)
+      cell.change_text_wrap(true)
     end
 
-    worksheet.change_row_bold(2, true)
+    worksheet.change_row_bold(0, true)
+    worksheet.change_row_fill(0, 'BBBBBB')
+    worksheet.change_row_height(0, 40)
+
     test_module = Inferno::Module.get(args.module)
     test_set = test_module.test_sets[args.test_set.to_sym]
-    row = 3
+    row = 1
 
     test_set.groups.each do |group|
+      cell = worksheet.add_cell(row, 0, group.name)
+      cell.change_text_wrap(true)
+      worksheet.merge_cells(row, 0, row, columns.length)
+      worksheet.change_row_fill(row, 'EEEEEE')
+      worksheet.change_row_height(row, 25)
+      worksheet.change_row_vertical_alignment(row, 'distributed')
+      row += 1
       group.test_cases.each do |test_case|
-        test_case.sequence.tests(test_module).each do |test|
-          [group.name,
-           group.overview,
-           '',
-           test_case.title,
-           test_case.description,
-           unindent_markdown(test_case.sequence.details),
-           '',
-           "#{test_case.prefix}#{test.id}",
-           test.name,
-           test.link,
-           (!test_case.sequence.optional? && !test.optional?).to_s,
-           unindent_markdown(test.description),
-           '',
-           test.ref || ' '].each_with_index do |value, index|
-            worksheet.add_cell(row, index, value)
+        test_case.sequence.tests.each do |test|
+          next if test_case.sequence.optional? || test.optional?
+
+          this_row = columns.map do |col|
+            col[2].call(group, test_case, test)
           end
+
+          this_row.each_with_index do |value, index|
+            cell = worksheet.add_cell(row, index, value)
+            cell.change_text_wrap(true)
+          end
+          worksheet.change_row_height(row, 30)
+          worksheet.change_row_vertical_alignment(row, 'top')
+          worksheet.change_row_font_color(row, '666666') unless !test_case.sequence.optional? && !test.optional?
           row += 1
         end
       end
     end
 
-    [30, 30, 3, 30, 90, 30, 3, 14, 100, 85, 9, 60, 3, 30].each_with_index do |width, index|
-      worksheet.change_column_width(index, width)
+    columns.each_with_index do |col, index|
+      worksheet.change_column_width(index, col[1])
     end
 
     Inferno.logger.info "Writing to #{args.filename}"
     workbook.write(args.filename)
   end
 
+  desc 'Generate a visual matrix of test procedure coverage'
+  task :generate_matrix, [:module, :test_set, :filename] do |_task, args|
+    require 'rubyXL'
+    require 'rubyXL/convenience_methods'
+    args.with_defaults(module: 'onc_program', test_set: 'test_procedure')
+    args.with_defaults(filename: "#{args.module}_matrix.xlsx")
+
+    workbook = RubyXL::Workbook.new
+    worksheet = workbook.worksheets[0]
+
+    # columns.each_with_index do |row_name, index|
+    #   cell = worksheet.add_cell(0, index, row_name.first)
+    #   cell.change_text_wrap(true)
+    # end
+
+    # worksheet.change_row_bold(0, true)
+    # worksheet.change_row_fill(0, 'BBBBBB')
+    # worksheet.change_row_height(0, 40)
+
+    test_module = Inferno::Module.get(args.module)
+    test_set = test_module.test_sets[args.test_set.to_sym]
+    col = 2
+    cell = worksheet.add_cell(0, 1, "Inferno Program Tests (v#{Inferno::VERSION})")
+    worksheet.change_row_height(0, 20)
+    worksheet.change_row_vertical_alignment(0, 'distributed')
+    tests = []
+    column_map = {}
+    worksheet.change_column_width(1, 25)
+    worksheet.change_row_height(1, 20)
+    worksheet.change_row_horizontal_alignment(1, 'center')
+    worksheet.change_row_vertical_alignment(1, 'distributed')
+    column_borders = []
+
+    test_set.groups.each do |group|
+      cell = worksheet.add_cell(1, col, group.name)
+      worksheet.merge_cells(1, col, 1, col + group.test_cases.length - 1)
+      cell.change_text_wrap(true)
+      worksheet.change_column_border(col, :left, 'medium')
+      worksheet.change_column_border_color(col, :left, '000000')
+      column_borders << col
+      # worksheet.change_row_fill(row, 'EEEEEE')
+      # worksheet.change_row_height(row, 25)
+      # row += 1
+      group.test_cases.each do |test_case|
+        worksheet.change_column_width(col, 4.2)
+
+        test_case_id = test_case.sequence.tests.first.id.split('-').first
+        test_case_id = "#{test_case.prefix}#{test_case_id}" unless test_case.prefix.nil?
+        cell = worksheet.add_cell(2, col, test_case_id)
+        cell.change_text_rotation(90)
+        cell.change_border_color(:bottom, '000000')
+        cell.change_border(:bottom, 'medium')
+        worksheet.change_column_border(col, :right, 'thin')
+        worksheet.change_column_border_color(col, :right, '666666')
+        test_case.sequence.tests.each do |test|
+          tests << { test_case: test_case, test: test }
+          full_test_id = "#{test_case.prefix}#{test.id}"
+          column_map[full_test_id] = col
+
+          # next if test_case.sequence.optional? || test.optional?
+
+          # this_row = columns.map do |col|
+          #   col[2].call(group, test_case, test)
+          # end
+
+          # this_row.each_with_index do |value, index|
+          #   cell = worksheet.add_cell(row, index, value)
+          #   cell.change_text_wrap(true)
+          # end
+          # worksheet.change_row_height(row, 30)
+          # worksheet.change_row_vertical_alignment(row, 'top')
+          # worksheet.change_row_font_color(row, '666666') unless !test_case.sequence.optional? && !test.optional?
+        end
+        col += 1
+      end
+    end
+
+    total_width = col - 1
+    worksheet.merge_cells(0, 1, 0, total_width)
+    worksheet.change_row_horizontal_alignment(0, 'center')
+
+    cell = worksheet.add_cell(2, total_width + 2, 'Supported?')
+    row = 3
+
+    test_module.test_procedure.sections.each do |section|
+      section.steps.each do |step|
+        cell = worksheet.add_cell(row, 1, "#{step.id.upcase} ")
+        worksheet.change_row_height(row, 13)
+        worksheet.change_row_vertical_alignment(row, 'distributed')
+
+        (2..total_width).each do |column|
+          cell = worksheet.add_cell(row, column, '')
+        end
+
+        step.inferno_tests.each do |test|
+          column = column_map[test]
+          if column.nil?
+            puts "No such test found: #{test}"
+            next
+          end
+
+          cell = worksheet.add_cell(row, column, '')
+          cell.change_fill('3C63FF')
+        end
+
+        cell = worksheet.add_cell(row, total_width + 2, step.inferno_supported.upcase)
+
+        row += 1
+      end
+    end
+    worksheet.change_column_horizontal_alignment(1, 'right')
+    worksheet.change_row_horizontal_alignment(0, 'center')
+
+    column_borders.each do |column|
+      worksheet.change_column_border(column, :left, 'medium')
+      worksheet.change_column_border_color(column, :left, '000000')
+    end
+    worksheet.change_column_border_color(total_width, :right, '000000')
+    worksheet.change_column_border(total_width, :right, 'medium')
+    worksheet.change_column_width(total_width + 1, 3)
+
+    # worksheet.change_row_border(row-1, :bottom, 'medium')
+    # worksheet.change_row_border_color(row-1, :bottom, '000000')
+
+    # test_set.groups.each do |group|
+    #   cell = worksheet.add_cell(row, 0, group.name)
+    #   cell.change_text_wrap(true)
+    #   worksheet.merge_cells(row, 0, row, columns.length)
+    #   worksheet.change_row_fill(row, 'EEEEEE')
+    #   worksheet.change_row_height(row, 25)
+    #   worksheet.change_row_vertical_alignment(row, 'distributed')
+    #   row += 1
+    #   group.test_cases.each do |test_case|
+    #     test_case.sequence.tests.each do |test|
+    #       next if test_case.sequence.optional? || test.optional?
+
+    #       this_row = columns.map do |col|
+    #         col[2].call(group, test_case, test)
+    #       end
+
+    #       this_row.each_with_index do |value, index|
+    #         cell = worksheet.add_cell(row, index, value)
+    #         cell.change_text_wrap(true)
+    #       end
+    #       worksheet.change_row_height(row, 30)
+    #       worksheet.change_row_vertical_alignment(row, 'top')
+    #       worksheet.change_row_font_color(row, '666666') unless !test_case.sequence.optional? && !test.optional?
+    #       row += 1
+    #     end
+    #   end
+    # end
+
+    # columns.each_with_index do |col, index|
+    #   worksheet.change_column_width(index, col[1])
+    # end
+
+    Inferno.logger.info "Writing to #{args.filename}"
+    workbook.write(args.filename)
+  end
   desc 'Generate automated run script'
   task :generate_script, [:server, :module] do |_task, args|
     sequences = []
@@ -477,10 +654,13 @@ namespace :inferno do |_argv|
 end
 
 namespace :terminology do |_argv|
+  TEMP_DIR = 'tmp/terminology'
   desc 'download and execute UMLS terminology data'
   task :download_umls, [:username, :password] do |_t, args|
     # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
-    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2018AB/umls-2018AB-full.zip'
+    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip'
+
+    FileUtils.mkdir_p(TEMP_DIR)
 
     puts 'Getting Login Page'
     response = RestClient.get default_target_file
@@ -513,7 +693,7 @@ namespace :terminology do |_argv|
     size = 0
     percent = 0
     current_percent = 0
-    File.open('umls.zip', 'w') do |f|
+    File.open(File.join(TEMP_DIR, 'umls.zip'), 'w') do |f|
       block = proc do |response|
         puts response.header['content-type']
         if response.header['content-type'] == 'application/zip'
@@ -542,8 +722,8 @@ namespace :terminology do |_argv|
 
   desc 'unzip umls zip'
   task :unzip_umls, [:umls_zip] do |_t, args|
-    args.with_defaults(umls_zip: 'umls.zip')
-    destination = 'resources/terminology/umls'
+    args.with_defaults(umls_zip: File.join(TEMP_DIR, 'umls.zip'))
+    destination = File.join(TEMP_DIR, 'umls')
     # https://stackoverflow.com/questions/19754883/how-to-unzip-a-zip-file-containing-folders-and-files-in-rails-while-keeping-the
     Zip::File.open(args.umls_zip) do |zip_file|
       # Handle entries one by one
@@ -571,7 +751,7 @@ namespace :terminology do |_argv|
   task :run_umls, [:my_config] do |_t, args|
     # More information on batch running UMLS
     # https://www.nlm.nih.gov/research/umls/implementation_resources/community/mmsys/BatchMetaMorphoSys.html
-    args.with_defaults(my_config: 'all-active-exportconfig.prop')
+    args.with_defaults(my_config: 'inferno.prop')
     jre_version = if !(/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM).nil?
                     'windows64'
                   elsif !(/darwin/ =~ RUBY_PLATFORM).nil?
@@ -580,13 +760,17 @@ namespace :terminology do |_argv|
                     'linux'
                   end
     puts "#{jre_version} system detected"
-    config_file = Dir.pwd + "/resources/terminology/#{args.my_config}"
-    output_dir = Dir.pwd + '/resources/terminology/umls_subset'
+    config_file = File.join(Dir.pwd, 'resources', 'terminology', args.my_config)
+    output_dir = File.join(Dir.pwd, TEMP_DIR, 'umls_subset')
     FileUtils.mkdir(output_dir)
     puts "Using #{config_file}"
-    Dir.chdir(Dir['resources/terminology/umls/20*'][0]) do
+    Dir.chdir(Dir[File.join(Dir.pwd, TEMP_DIR, '/umls/20*')][0]) do
+      puts Dir.pwd
       Dir['lib/*.jar'].each do |jar|
         File.chmod(0o555, jar)
+      end
+      Dir["jre/#{jre_version}/bin/*"].each do |file|
+        File.chmod(0o555, file)
       end
       puts 'Running MetamorphoSys (this may take a while)...'
       output = system("./jre/#{jre_version}/bin/java " \
@@ -599,36 +783,31 @@ namespace :terminology do |_argv|
                           "-Dmmsys.config.uri=#{config_file} " \
                           '-Xms300M -Xmx8G ' \
                           'org.java.plugin.boot.Boot')
-      p output
+      unless output
+        puts 'MetamorphoSys run failed'
+        # The cwd at this point is 2 directories above where umls_subset is, so we have to navigate up to it
+        FileUtils.remove_dir(File.join(Dir.pwd, '..', '..', 'umls_subset')) if File.directory?(File.join(Dir.pwd, '..', '..', 'umls_subset'))
+        exit 1
+      end
     end
     puts 'done'
   end
 
-  desc 'cleanup umls'
-  task :cleanup_umls, [] do |_t, _args|
-    puts 'removing umls.zip...'
-    File.delete('umls.zip') if File.exist?('umls.zip')
-    puts 'removing unzipped umls...'
-    FileUtils.remove_dir('resources/terminology/umls') if File.directory?('resources/terminology/umls')
-    puts 'removing umls subset...'
-    FileUtils.remove_dir('resources/terminology/umls_subset') if File.directory?('resources/terminology/umls_subset')
-    puts 'removing umls.db'
-    File.delete('umls.db') if File.exist?('umls.db')
-    puts 'removing MRCONSO.pipe'
-    File.delete('MRCONSO.pipe') if File.exist?('MRCONSO.pipe')
-    puts 'removing MRREL.pipe'
-    File.delete('MRREL.pipe') if File.exist?('MRREL.pipe')
+  desc 'cleanup terminology files'
+  task :cleanup, [] do |_t, _args|
+    puts "removing terminology files in #{TEMP_DIR}"
+    FileUtils.remove_dir TEMP_DIR
   end
 
   desc 'post-process UMLS terminology file'
   task :process_umls, [] do |_t, _args|
     require 'find'
     require 'csv'
-    puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources/terminology').find { |f| /MRCONSO.RRF$/ =~f }
+    puts 'Looking for `./tmp/terminology/MRCONSO.RRF`...'
+    input_file = Find.find(TEMP_DIR).find { |f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
-      output_filename = 'resources/terminology/terminology_umls.txt'
+      output_filename = File.join(TEMP_DIR, 'terminology_umls.txt')
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
       excluded = 0
@@ -704,17 +883,17 @@ namespace :terminology do |_argv|
     puts '  -> https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html'
     puts 'Install the metathesaurus with the following data sources:'
     puts '  CVX|CVX;ICD10CM|ICD10CM;ICD10PCS|ICD10PCS;ICD9CM|ICD9CM;LNC|LNC;MTHICD9|ICD9CM;RXNORM|RXNORM;SNOMEDCT_US|SNOMEDCT;CPT;HCPCS'
-    puts 'After installation, copy `{install path}/META/MRCONSO.RRF` into your `./resources/terminology` folder, and rerun this task.'
+    puts 'After installation, copy `{install path}/META/MRCONSO.RRF` into your `./tmp/terminology` folder, and rerun this task.'
   end
 
   desc 'post-process UMLS terminology file for translations'
   task :process_umls_translations, [] do |_t, _args|
     require 'find'
-    puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources/terminology').find { |f| /MRCONSO.RRF$/ =~f }
+    puts 'Looking for `./tmp/terminology/MRCONSO.RRF`...'
+    input_file = Find.find(File.join(TEMP_DIR, 'terminology')).find { |f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
-      output_filename = 'resources/terminology/translations_umls.txt'
+      output_filename = File.join(TEMP_DIR, 'translations_umls.txt')
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
       excluded_systems = Hash.new(0)
@@ -785,11 +964,66 @@ namespace :terminology do |_argv|
 
   desc 'Create ValueSet Validators'
   task :create_vs_validators, [:database, :type] do |_t, args|
-    args.with_defaults(database: 'umls.db', type: 'bloom')
+    args.with_defaults(database: File.join(TEMP_DIR, 'umls.db'), type: 'bloom')
     validator_type = args.type.to_sym
     Inferno::Terminology.register_umls_db args.database
-    Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.create_validators(validator_type)
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    Inferno::Terminology.create_validators(type: validator_type)
+  end
+
+  desc 'Create only non-UMLS validators'
+  task :create_non_umls_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
+    args.with_defaults(type: 'bloom',
+                       module: :all,
+                       minimum_binding_strength: 'example')
+    validator_type = args.type.to_sym
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    Inferno::Terminology.create_validators(type: validator_type,
+                                           selected_module: args.module,
+                                           minimum_binding_strength: args.minimum_binding_strength,
+                                           include_umls: false)
+  end
+
+  desc 'Create ValueSet Validators for a given module'
+  task :create_module_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
+    args.with_defaults(module: 'all', minimum_binding_strength: 'example')
+    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    Inferno::Terminology.create_validators(type: :bloom,
+                                           selected_module: args.module,
+                                           minimum_binding_strength: args.minimum_binding_strength)
+  end
+
+  desc 'Number of codes in ValueSet'
+  task :codes_in_valueset, [:vs] do |_t, args|
+    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    vs = Inferno::Terminology.known_valuesets[args.vs]
+    puts vs&.valueset&.count
+  end
+
+  desc 'Expand and Save ValueSet to a file'
+  task :expand_valueset_to_file, [:vs, :filename, :type] do |_t, args|
+    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    vs = Inferno::Terminology.known_valuesets[args.vs]
+    if args.type == 'json'
+      File.open("#{args.filename}.json", 'wb') { |f| f << vs.expansion_as_fhir_valueset.to_json }
+    else
+      Inferno::Terminology.save_to_file(vs.valueset, args.filename, args.type.to_sym)
+    end
+  end
+
+  desc 'Download FHIR Package'
+  task :download_package, [:package, :location] do |_t, args|
+    Inferno::FHIRPackageManager.get_package(args.package, args.location)
+  end
+
+  desc 'Download Terminology from FHIR Package'
+  task :download_program_terminology do |_t, _args|
+    Inferno::Terminology.load_fhir_r4
+    Inferno::Terminology.load_fhir_expansions
+    Inferno::Terminology.load_us_core
   end
 end
 

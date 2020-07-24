@@ -34,7 +34,7 @@ describe Inferno::Assertions do
         @inferno_asserter.assert_valid_json('abc')
       end
 
-      assert_equal(exception.message, 'Invalid JSON')
+      assert_equal(exception.message, 'Invalid JSON. ')
     end
 
     it 'does not raise an exception if JSON is valid' do

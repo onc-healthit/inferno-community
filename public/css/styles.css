@@ -85,7 +85,7 @@ body {
   padding-left: 15px;
 }
 .inferno-branding img {
-  height: 70px;
+  height: 60px;
 }
 .row-no-padding > [class*="col-"] {
   padding-left: 0 !important;
@@ -106,6 +106,10 @@ body {
 #header-module-name .badge{
   font-size: 0.75rem;
   background-color: #999;
+}
+
+.banner-warning {
+  margin-top: 10px;
 }
 
 .server-actions {
@@ -287,6 +291,13 @@ body {
   color: #666;
 }
 
+.prerequisite-group-box {
+  margin: -12px 0 30px 0;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
 .prerequisite-group {
   margin: -12px 0 30px 0;
   padding: 20px;
@@ -462,6 +473,7 @@ body {
 }
 
 .group-nav-score {
+  font-size: 12px;
   /* font-size: 1rem; */
     color: white;
     /* width: 20px;
@@ -712,7 +724,7 @@ body {
   margin: 0;
 }
 
-.test-list li {
+.test-list-item {
   list-style: none;
   font-size: .9em;
   padding: 10px 15px;
@@ -800,25 +812,43 @@ body {
   color: #FF9500;
 }
 
+.result-details-icon-info {
+  color: #000000;
+}
+
 .result-details-icon-requests {
   color: #336699;
 }
 
 .result-details-message {
   margin-left: 19px;
-
 }
 
 .result-details h1{
   font-size: 1.5em;
 }
- .result-details h2 {
+
+.result-details h2 {
   font-size: 1.3em;
 }
- .result-details h3, .result-details h4, .result-details h5 {
+
+.result-details h3, .result-details h4, .result-details h5 {
   font-size: 1.1em;
 }
- .more-information {
+
+.result-details-message p {
+  margin-bottom: 0.25em;
+}
+
+.result-details-message ul {
+  padding-left: 1em;
+}
+
+.result-details-optional-fail {
+  margin-top: 0.5em;
+}
+
+.more-information {
   padding: 10px;
 }
 
@@ -995,8 +1025,9 @@ body {
 }
 
 .guided .group-nav-label {
+  font-size: 11px;
   position: relative;
-  left: 4px;
+  left: 8px;
   z-index: 10; /* must be above the psuedoelement */
   display: inline-block;
 }
@@ -1004,6 +1035,8 @@ body {
 .guided .group-nav li a {
   border-radius: 0;
   color: #53585e;
+  padding-top: 8px;
+  padding-top: 8px;
 }
 
 .guided .group-nav li a::after{
@@ -1280,4 +1313,28 @@ body {
     left: 0;
     width: 11in;
   }
+}
+
+.onc-index-page .nav-pills .nav-link, .nav-pills {
+  margin: 0 60px 0 0;
+  font-size: 22px;
+  text-align: center;
+}
+
+.onc-index-page .nav-pills .nav-link.active, .onc-index-page .nav-pills {
+  border-radius: 0;
+}
+.onc-index-page .nav-pills .nav-link.active, .onc-index-page .nav-pills a{
+  padding: 14px 0;
+}
+.onc-index-page .nav-pills .nav-link.active, .onc-index-page .nav-pills .show>.nav-link{
+  background-color: inherit;
+  border-bottom: 4px solid #f76200;  
+  color: black;
+
+}
+
+.onc-index-page .btn-secondary {
+  background-color: #f88b30;
+  border-color: #f87e30;
 }

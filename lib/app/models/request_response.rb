@@ -23,6 +23,9 @@ module Inferno
         request = req.request
         response = req.response
 
+        escaped_body = response[:body].dup # In case body is frozen from string literal
+        unescape_unicode(escaped_body)
+
         new(
           direction: direction || req&.direction,
           request_method: request[:method],
@@ -31,10 +34,16 @@ module Inferno
           request_payload: request[:payload],
           response_code: response[:code],
           response_headers: response[:headers].to_json,
-          response_body: response[:body],
+          response_body: escaped_body,
           instance_id: instance_id,
           timestamp: response[:timestamp]
         )
+      end
+
+      # This is needed to escape HTML when the html tags are unicode escape sequences
+      # https://stackoverflow.com/questions/7015778/is-this-the-best-way-to-unescape-unicode-escape-sequences-in-ruby
+      def self.unescape_unicode(body)
+        body.gsub!(/\\u(\h{4})/) { |_m| [Regexp.last_match(1)].pack('H*').unpack('n*').pack('U*') }
       end
     end
   end
