@@ -13,8 +13,6 @@ services:
     image: infernocommunity/fhir-validator-wrapper
     volumes:
       - ./resources:/home/igs/package
-    environment:
-      DISABLE_TX: 'true'
   nginx_server:
     image: nginx
     volumes:
