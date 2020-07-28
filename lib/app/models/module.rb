@@ -76,10 +76,5 @@ module Inferno
     def self.available_modules
       @modules
     end
-
-    Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_module.yml')).each do |file|
-      this_module = YAML.load_file(file).deep_symbolize_keys
-      new(this_module)
-    end
   end
 end
