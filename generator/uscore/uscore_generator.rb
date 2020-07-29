@@ -889,7 +889,7 @@ module Inferno
         "search_params[:#{param_key}]"
       end
 
-      def get_first_search(search_parameters, sequence)
+      defc(search_parameters, sequence)
         save_resource_references_arguments = [
           "versioned_resource_class('#{sequence[:resource]}')",
           "@#{sequence[:resource].underscore}_ary#{'[patient]' unless sequence[:delayed_sequence]}",
