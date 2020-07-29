@@ -1,0 +1,21 @@
+id: mcode
+canonical: http://example.org/fhir/mcode
+version: 1.0.0
+name: mCODECapabilitiyStatement
+title: mCODE Capabilitiy Statement
+status: active
+publisher: Robi Scalfani
+contact:
+  - name: Robi Scalfani
+    telecom:
+      - system: email
+        value: rscalfani@mitre.org
+description: An mCODE Capabilitiy Statement
+license: CC0-1.0
+fhirVersion: 4.0.1
+dependencies:
+  hl7.fhir.us.mcode: 1.0.0
+parameters:
+  show-inherited-invariants: false
+copyrightYear: 2020+
+releaseLabel: CI Build

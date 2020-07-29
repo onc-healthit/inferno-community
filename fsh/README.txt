@@ -1,0 +1,1 @@
+This directory within Inferno-mCODE contains the fsh capability statement files which can be generated into JSONs with the command `sushi .`

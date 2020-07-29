@@ -1,0 +1,449 @@
+{
+  "resourceType": "CapabilityStatement",
+  "id": "mCODERequirements",
+  "name": "mCODEServerRequirements",
+  "status": "draft",
+  "date": "2020-06-01",
+  "kind": "requirements",
+  "fhirVersion": "4.0.1",
+  "format": [
+    "json"
+  ],
+  "implementationGuide": [
+    "http://hl7.org/fhir/us/mcode/ImplementationGuide/hl7.fhir.us.mcode"
+  ],
+  "description": "These are the read and search requirements of an mCODE Server",
+  "rest": [
+    {
+      "mode": "server",
+      "documentation": "mCODE Server RESTful API Read Requirements",
+      "resource": [
+        {
+          "type": "Condition",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-condition-parent"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-disease-status"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-genetic-variant"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "DiagnosticReport",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-genomics-report"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Patient",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-patient"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "MedicationStatement",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-medication-statement"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Procedure",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-radiation-procedure"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Procedure",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-stage-parent"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Condition",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-comorbid-condition"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-ecog-performance-status"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Specimen",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-genetic-specimen"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-genomic-region-studied"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-karnofsky-performance-status"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Condition",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Condition",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-secondary-cancer-condition"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-clinical-distant-metastases-category"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-clinical-primary-tumor-category"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-clinical-regional-nodes-category"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-clinical-stage-group"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-distant-metastases-category"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-primary-tumor-category"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-regional-nodes-category"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-stage-group"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Observation",
+          "supportedProfile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker"
+          ],
+          "interaction": [
+            {
+              "code": "read",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation",
+                  "valueCode": "SHALL"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

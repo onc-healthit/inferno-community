@@ -1,0 +1,65 @@
+{
+  "resourceType": "ImplementationGuide",
+  "id": "mcode",
+  "url": "http://example.org/fhir/mcode/ImplementationGuide/mcode",
+  "version": "1.0.0",
+  "name": "mCODECapabilitiyStatement",
+  "title": "mCODE Capabilitiy Statement",
+  "status": "active",
+  "contact": [
+    {
+      "name": "Robi Scalfani",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "rscalfani@mitre.org"
+        }
+      ]
+    }
+  ],
+  "description": "An mCODE Capabilitiy Statement",
+  "packageId": "mcode",
+  "license": "CC0-1.0",
+  "fhirVersion": [
+    "4.0.1"
+  ],
+  "dependsOn": [
+    {
+      "uri": "http://hl7.org/fhir/us/mcode/ImplementationGuide/hl7.fhir.us.mcode",
+      "packageId": "hl7.fhir.us.mcode",
+      "id": "hl7_fhir_us_mcode",
+      "version": "1.0.0"
+    }
+  ],
+  "definition": {
+    "resource": [
+      {
+        "reference": {
+          "reference": "CapabilityStatement/mCODERequirements"
+        },
+        "name": "mCODE Server requirements",
+        "exampleBoolean": false
+      }
+    ],
+    "page": {
+      "nameUrl": "toc.html",
+      "title": "Table of Contents",
+      "generation": "html",
+      "page": []
+    },
+    "parameter": [
+      {
+        "code": "copyrightyear",
+        "value": "2020+"
+      },
+      {
+        "code": "releaselabel",
+        "value": "CI Build"
+      },
+      {
+        "code": "show-inherited-invariants",
+        "value": "false"
+      }
+    ]
+  }
+}
