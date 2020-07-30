@@ -23,6 +23,7 @@ if create_assertion_report?
 end
 
 require_relative '../lib/app'
+Inferno::StartupTasks.load_all_modules
 
 def find_fixture_directory(test_directory = nil)
   test_directory ||=
