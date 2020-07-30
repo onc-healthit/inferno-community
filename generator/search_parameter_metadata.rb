@@ -6,6 +6,7 @@ module Inferno
       attr_reader :search_parameter_json
       attr_writer :url,
                   :code,
+                  :type,
                   :expression,
                   :multiple_or,
                   :multiple_or_expectation,
@@ -25,6 +26,10 @@ module Inferno
 
       def code
         @code ||= @search_parameter_json['code']
+      end
+
+      def type
+        @type ||= @search_parameter_json['type']
       end
 
       def expression
@@ -67,7 +72,7 @@ module Inferno
         @modifiers ||= @search_parameter_json['modifier'].each_with_index.map do |modifier, index|
           expectation_extension = @search_parameter_json['_modifier'] # unsure if this is us core specific
           expectation = expectation_extension[index]['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode'] unless expectation_extension.nil?
-          { comparator: modifier, expectation: expectation }
+          { modifier: modifier, expectation: expectation }
         end
       end
     end

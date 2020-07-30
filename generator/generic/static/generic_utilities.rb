@@ -2,7 +2,6 @@
 
 module Inferno
   module GenericUtilities
-
     def resolve_path(elements, path)
       elements = Array.wrap(elements)
       return elements if path.blank?
@@ -12,6 +11,10 @@ module Inferno
       elements.flat_map do |element|
         resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
       end.compact
+    end
+
+    def find_search_parameter_value_from_resource(resource, path)
+      get_value_for_search_param(resolve_element_from_path(resource, path) { |el| get_value_for_search_param(el).present? })
     end
 
     def get_value_for_search_param(element, include_system = false)
