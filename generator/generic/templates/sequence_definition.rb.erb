@@ -2,11 +2,8 @@
 
 module Inferno
   module USCore310ProfileDefinitions
-    class <%= metadata.class_name %>Definitions
-      <%=must_support_constants%>
-      <%=delayed_references_constant%>
-
-      <%=bindings_constants%>
+    class <%= class_name %>
+      SEARCH_PARAMETERS = <%= search_parameters %>.freeze
     end
   end
 end
