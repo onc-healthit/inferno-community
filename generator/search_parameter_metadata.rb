@@ -1,8 +1,11 @@
 # frozen_string_literal: true
+require_relative './generic_generator_utilities'
 
 module Inferno
   module Generator
     class SearchParameterMetadata
+      include Inferno::Generator::GenericGeneratorUtilties
+
       attr_reader :search_parameter_json
       attr_writer :url,
                   :code,
@@ -15,7 +18,6 @@ module Inferno
                   :modifiers,
                   :comparators
 
-      EXPECTATION_URL = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation'
       def initialize(search_parameter_json)
         @search_parameter_json = search_parameter_json
       end
