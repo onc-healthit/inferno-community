@@ -19,6 +19,7 @@ module Inferno
     attr_accessor :test_sets
     attr_accessor :title
     attr_accessor :sequence_requirements
+    attr_accessor :resource_path
 
     def initialize(params)
       @name = params[:name]
@@ -30,6 +31,7 @@ module Inferno
       @tags = params[:tags]&.map do |tag|
         Tag.new(tag[:name], tag[:description], tag[:url])
       end || []
+      @resource_path = params[:resource_path]
       @test_sets = {}.tap do |test_sets|
         params[:test_sets].each do |test_set_key, test_set|
           self.default_test_set ||= test_set_key.to_s

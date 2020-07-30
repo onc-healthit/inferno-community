@@ -96,6 +96,7 @@ module Inferno
         module_info = {
           title: @path,
           sequences: sequence_metadata,
+          resource_path: @path,
           description: ''
         }
         template = ERB.new(File.read(File.join(__dir__, 'templates/module.yml.erb')))
