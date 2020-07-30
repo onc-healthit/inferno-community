@@ -16,7 +16,7 @@ module Inferno
 
       @resource_found = nil
 
-      <%=metadata.create_search_validation%>
+      <%=metadata.create_search_validation(metadata)%>
 
       <% metadata.tests.each_with_index do |test, idx|%>
 <% if test.key.present? %>

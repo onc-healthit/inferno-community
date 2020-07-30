@@ -6,6 +6,8 @@ require_relative '../search_parameter_metadata'
 require_relative './read_test'
 require_relative './profile_validation_test'
 require_relative './search_test'
+require_relative './interaction_test'
+require_relative '../generic_generator_utilities'
 
 module Inferno
   module Generator
@@ -13,6 +15,8 @@ module Inferno
       include ReadTest
       include ProfileValidationTest
       include SearchTest
+      include InteractionTest
+      include Inferno::Generator::GenericGeneratorUtilties
 
       def resource_profiles
         resources_by_type['StructureDefinition'].reject { |definition| definition['type'] == 'Extension' }
@@ -37,6 +41,7 @@ module Inferno
           create_read_test(metadata)
           create_profile_validation_test(metadata)
           create_search_tests(metadata)
+          create_interaction_tests(metadata)
           generate_sequence(metadata)
         end
       end
@@ -79,28 +84,6 @@ module Inferno
           class_name: metadata.class_name + 'Definition',
           search_parameters: structure_to_string(search_parameters)
         }
-      end
-
-      def structure_to_string(struct)
-        if struct.is_a? Hash
-          %({
-            #{struct.map { |k, v| "#{k}: #{structure_to_string(v)}" }.join(",\n")}
-          })
-        elsif struct.is_a? Array
-          if struct.empty?
-            '[]'
-          else
-            %([
-              #{struct.map { |el| structure_to_string(el) }.join(",\n")}
-            ])
-          end
-        elsif struct.is_a? String
-          "'#{struct}'"
-        elsif [true, false].include? struct
-          struct.to_s
-        else
-          "''"
-        end
       end
 
       def module_file_path
