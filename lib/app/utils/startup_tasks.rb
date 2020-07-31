@@ -45,12 +45,18 @@ module Inferno
       end
 
       def load_ig_in_validator(module_metadata)
-        Inferno.logger.info "Creating ig package for #{module_metadata[:resource_path]}"
+        module_name = module_metadata[:title].presence || module_metadata[:name]
+        unless package_json_present? module_metadata[:resource_path]
+          Inferno.logger.info "Skipping validator upload for '#{module_name}'--no package.json file."
+          return
+        end
+
+        Inferno.logger.info "Creating ig package for '#{module_name}'"
         Tempfile.open([module_metadata[:resource_path], '.tar.gz']) do |file|
           create_ig_zip(file, module_metadata)
 
           begin
-            Inferno.logger.info "Posting IG for #{module_metadata[:title].presence || module_metadata[:name]} to validator"
+            Inferno.logger.info "Posting IG for '#{module_name}' to validator"
             RestClient.post("#{validator_url}/igs", File.read(file.path))
           rescue StandardError => e
             Inferno.logger.error 'Unable to post IG to validator'
@@ -60,10 +66,9 @@ module Inferno
       end
 
       def create_ig_zip(file, module_metadata)
-        resource_path = File.join(__dir__, '..', '..', '..', 'resources', module_metadata[:resource_path])
         Zlib::GzipWriter.wrap(file) do |gzip|
           Gem::Package::TarWriter.new(gzip) do |tar|
-            Dir.glob(File.join(resource_path, '**', '*')).each do |full_file_path|
+            ig_files(module_metadata[:resource_path]).each do |full_file_path|
               next if File.directory?(full_file_path)
 
               content = File.read(full_file_path)
@@ -83,6 +88,15 @@ module Inferno
             .last
             .delete_prefix("package#{File::SEPARATOR}")
         File.join('package', relative_path)
+      end
+
+      def package_json_present?(resource_path)
+        ig_files(resource_path).any? { |filename| filename.end_with? 'package.json' }
+      end
+
+      def ig_files(path)
+        resource_path = File.join(__dir__, '..', '..', '..', 'resources', path)
+        Dir.glob(File.join(resource_path, '**', '*'))
       end
     end
   end
