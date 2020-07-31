@@ -306,7 +306,7 @@ module Inferno
               assert_bundle_response(reply)
               #{resource_variable} += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
                 .select { |resource| resource.resourceType == '#{resource_name}'}
-              #{resource_variable}.each { |reference| @instance.save_resource_reference('#{resource_name}', reference.id) }
+              save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
         )
 
         revinclude_test[:test_code] += %(

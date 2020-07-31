@@ -225,7 +225,7 @@ module Inferno
         assert_bundle_response(reply)
         provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           .select { |resource| resource.resourceType == 'Provenance' }
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end

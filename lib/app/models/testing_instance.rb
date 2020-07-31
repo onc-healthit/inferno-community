@@ -235,29 +235,28 @@ module Inferno
         methods_supported && operations_supported
       end
 
-      def save_resource_reference(type, id, profile = nil)
-        resource_references
-          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
-          .each(&:destroy)
+      def save_resource_reference_without_reloading(type, id, profile = nil)
+        ResourceReference
+          .all(resource_type: type, resource_id: id, testing_instance_id: self.id)
+          .destroy
 
-        new_reference = ResourceReference.new(
+        ResourceReference.create!(
           resource_type: type,
           resource_id: id,
-          profile: profile
+          profile: profile,
+          testing_instance: self
         )
-        resource_references << new_reference
-
-        save!
-        # Ensure the instance resource references are accurate
-        reload
       end
 
       def save_resource_references(klass, resources, profile = nil)
         resources
           .select { |resource| resource.is_a? klass }
           .each do |resource|
-            save_resource_reference(klass.name.demodulize, resource.id, profile)
+            save_resource_reference_without_reloading(klass.name.demodulize, resource.id, profile)
           end
+
+        # Ensure the instance resource references are accurate
+        reload
       end
 
       def save_resource_ids_in_bundle(klass, reply, profile = nil)
