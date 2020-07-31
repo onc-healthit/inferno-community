@@ -133,7 +133,7 @@ module Inferno
           id '02'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server's token endpoint URL, using content-type <code>application/x-www-form-urlencoded</code>.
+            After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server's token endpoint URL, using content-type `application/x-www-form-urlencoded`.
           )
           versions :r4
         end
@@ -145,7 +145,7 @@ module Inferno
           id '03'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The server should reply with 400 Bad Request if the grant_type parameter is not sent by the client.
+            The server should reply with 400 Bad Request if the `grant_type parameter` is not sent by the client.
           )
           versions :r4
         end
@@ -157,7 +157,7 @@ module Inferno
           id '04'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The server should reply with 400 Bad Request if the grant_type parameter is not <code>client_credentials</code>.
+            The server should reply with 400 Bad Request if the `grant_type parameter` is not `client_credentials`.
           )
           versions :r4
         end
@@ -169,7 +169,7 @@ module Inferno
           id '05'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The server should reply with 400 Bad Request if the client_assertion_type parameter is not sent by the client.
+            The server should reply with 400 Bad Request if the `client_assertion_type` parameter is not sent by the client.
           )
           versions :r4
         end
@@ -181,7 +181,7 @@ module Inferno
           id '06'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The server should reply with 400 Bad Request if the client_assertion_type parameter is not equal to <code>urn:ietf:params:oauth:client-assertion-type:jwt-bearer</code>
+            The server should reply with 400 Bad Request if the `client_assertion_type` parameter is not equal to `urn:ietf:params:oauth:client-assertion-type:jwt-bearer`.
           )
           versions :r4
         end
@@ -205,7 +205,7 @@ module Inferno
           id '08'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The <code>aud</code> claim of the authentication JWT must be the authorization server's "token URL" (the same URL to which this authentication JWT will be posted)
+            The `aud` claim of the authentication JWT must be the authorization server's "token URL" (the same URL to which this authentication JWT will be posted).
           )
           versions :r4
         end
@@ -217,7 +217,7 @@ module Inferno
           id '09'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The <code>iss</code> claim of the authentication JWT must equal the registered <code>client_id</code>
+            The `iss` claim of the authentication JWT must equal the registered `client_id`
           )
           versions :r4
         end
@@ -277,7 +277,7 @@ module Inferno
           id '14'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that scopes like <code>system/Patient.*</code> are supported
+            Verifies that scopes like `system/Patient.*` are supported
           )
           versions :r4
         end
@@ -289,7 +289,7 @@ module Inferno
           id '15'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that scopes like <code>system/Patient.unknownAction</code> are rejected
+            Verifies that scopes like `system/Patient.unknownAction` are rejected
           )
           versions :r4
         end
@@ -301,7 +301,7 @@ module Inferno
           id '16'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that scopes like <code>system/*.read</code> are supported
+            Verifies that scopes like `system/*.read` are supported
           )
           versions :r4
         end
@@ -313,7 +313,7 @@ module Inferno
           id '17'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that scopes like <code>system/UnknownResource.read</code> are rejected
+            Verifies that scopes like `system/UnknownResource.read` are rejected
           )
           versions :r4
         end
@@ -325,7 +325,7 @@ module Inferno
           id '18'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            When present, the <code>jky</code> authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using <code>test-bad-jku</code> as <code>jky</code> header value and expects that to produce an error.
+            When present, the `jky` authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using `test-bad-jku` as `jky` header value and expects that to produce an error.
           )
           versions :r4
         end

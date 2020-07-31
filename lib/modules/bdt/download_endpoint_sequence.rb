@@ -25,7 +25,7 @@ module Inferno
           id '01'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            If the <code>requiresAccessToken</code> field in the Complete Status body is set to true, the request MUST include a valid access token.
+            If the `requiresAccessToken` field in the Complete Status body is set to true, the request MUST include a valid access token.
           )
           versions :r4
         end
@@ -37,7 +37,7 @@ module Inferno
           id '02'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that files can be downloaded without authorization if the <code>requiresAccessToken</code> field in the complete status body is not set to true
+            Verifies that files can be downloaded without authorization if the `requiresAccessToken` field in the complete status body is not set to true
           )
           versions :r4
         end
@@ -61,7 +61,11 @@ module Inferno
           id '04'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Runs a set of assertions to verify that:<ul><li>The server returns HTTP status of <b>200 OK</b></li><li>The server returns a <code>Content-Type</code> header that matches the file format being delivered. For files in ndjson format, MUST be <code>application/fhir+ndjson</code></li><li>The response body is valid FHIR <b>ndjson</b> (unless other format is requested)</li><li>An <code>Accept</code> header might be sent (optional, defaults to <code>application/fhir+ndjson</code>)</li></ul>
+            Runs a set of assertions to verify that:
+- The server returns HTTP status of **200 OK**.
+- The server returns a `Content-Type` header that matches the file format being delivered. For files in ndjson format, MUST be `application/fhir+ndjson`.
+- The response body is valid FHIR **ndjson** (unless other format is requested).
+- An `Accept` header might be sent (optional, defaults to `application/fhir+ndjson`).
           )
           versions :r4
         end

@@ -25,7 +25,7 @@ module Inferno
           id '01'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The Accept header specifies the format of the optional OperationOutcome response to the kick-off request. Currently, only <code>application/fhir+json</code> is supported.
+            The Accept header specifies the format of the optional OperationOutcome response to the kick-off request. Currently, only `application/fhir+json` is supported.
           )
           versions :r4
         end
@@ -37,7 +37,7 @@ module Inferno
           id '02'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The <b>Prefer</b> request header is required and specifies whether the response is immediate or asynchronous. The header MUST be set to <b>respond-async</b>. <a href="https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#headers" target="_blank">Red More</a>
+            The **Prefer** request header is required and specifies whether the response is immediate or asynchronous. The header MUST be set to **respond-async**. [Red More](https://github.com/smart-on-fhir/fhir-bulk-data-docs/blob/master/export.md#headers).
           )
           versions :r4
         end
@@ -49,7 +49,7 @@ module Inferno
           id '03.0'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that the server accepts <code>application/fhir+ndjson</code> as <b>_outputFormat</b> parameter
+            Verifies that the server accepts `application/fhir+ndjson` as **_outputFormat** parameter
           )
           versions :r4
         end
@@ -61,7 +61,7 @@ module Inferno
           id '03.1'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that the server accepts <code>application/ndjson</code> as <b>_outputFormat</b> parameter
+            Verifies that the server accepts `application/ndjson` as **_outputFormat** parameter
           )
           versions :r4
         end
@@ -73,7 +73,7 @@ module Inferno
           id '03.2'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that the server accepts <code>ndjson</code> as <b>_outputFormat</b> parameter
+            Verifies that the server accepts `ndjson` as **_outputFormat** parameter
           )
           versions :r4
         end
@@ -85,7 +85,7 @@ module Inferno
           id '04.0'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This tests if the server rejects <code>_outputFormat=application/xml</code> parameter, even though <code>application/xml</code> is valid mime type.
+            This tests if the server rejects `_outputFormat=application/xml` parameter, even though `application/xml` is valid mime type.
           )
           versions :r4
         end
@@ -97,7 +97,7 @@ module Inferno
           id '04.1'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This tests if the server rejects <code>_outputFormat=text/html</code> parameter, even though <code>text/html</code> is valid mime type.
+            This tests if the server rejects `_outputFormat=text/html` parameter, even though `text/html` is valid mime type.
           )
           versions :r4
         end
@@ -109,7 +109,7 @@ module Inferno
           id '04.2'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This tests if the server rejects <code>_outputFormat=x-custom</code> parameter, even though <code>x-custom</code> is valid mime type.
+            This tests if the server rejects `_outputFormat=x-custom` parameter, even though `x-custom` is valid mime type.
           )
           versions :r4
         end
@@ -121,7 +121,7 @@ module Inferno
           id '05'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The server should reject exports if the <code>_since</code> parameter is not a valid date
+            The server should reject exports if the `_since` parameter is not a valid date
           )
           versions :r4
         end
@@ -133,7 +133,7 @@ module Inferno
           id '06'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The server should reject exports if the <code>_since</code> parameter is a date in the future
+            The server should reject exports if the `_since` parameter is a date in the future
           )
           versions :r4
         end
@@ -145,7 +145,7 @@ module Inferno
           id '07'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that the request is rejected if the <code>_type</code> contains invalid resource type
+            Verifies that the request is rejected if the `_type` contains invalid resource type
           )
           versions :r4
         end
@@ -157,7 +157,7 @@ module Inferno
           id '08'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            The <code>_typeFilter</code> parameter is optional so the servers should not reject it, even if they don't support it
+            The `_typeFilter` parameter is optional so the servers should not reject it, even if they don't support it
           )
           versions :r4
         end
@@ -169,7 +169,7 @@ module Inferno
           id '09'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            Verifies that the server starts an export if called with valid parameters. The status code must be <code>202 Accepted</code> and a <code>Content-Location</code> header must be returned. The response body should be either empty, or a JSON OperationOutcome.
+            Verifies that the server starts an export if called with valid parameters. The status code must be `202 Accepted` and a `Content-Location` header must be returned. The response body should be either empty, or a JSON OperationOutcome.
           )
           versions :r4
         end
