@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative './generic_generator_utilities'
 
 module Inferno

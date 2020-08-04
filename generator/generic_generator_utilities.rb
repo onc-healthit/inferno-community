@@ -3,7 +3,6 @@
 module Inferno
   module Generator
     module GenericGeneratorUtilties
-
       EXPECTATION_URL = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-expectation'
 
       def structure_to_string(struct)
@@ -38,11 +37,13 @@ module Inferno
             .drop(1)
             .join('.')
           path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
+          parameter_code = parameter_metadata.code
+          resource_type = sequence_metadata.resource_type
           search_validators += %(
               when '#{parameter_metadata.code}'
               values_found = resolve_path(resource, '#{path}')
               #{search_param_match_found_code(type, parameter_metadata.code)}
-              assert match_found, "#{parameter_metadata.code} in #{sequence_metadata.resource_type}/\#{resource.id} (\#{values_found}) does not match #{parameter_metadata.code} requested (\#{value})"
+              assert match_found, "#{parameter_code} in #{resource_type}/\#{resource.id} (\#{values_found}) does not match #{parameter_code} requested (\#{value})"
             )
         end
 
