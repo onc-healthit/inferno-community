@@ -7,7 +7,10 @@ module Inferno
     module InteractionTest
       def create_interaction_tests(metadata)
         metadata.interactions.each do |interaction|
-          next if ['read', 'search-type'].include? interaction[:code]
+          next if ['read', 'search-type'].include? interaction[:code] # already have tests for
+          next if ['create', 'update', 'patch', 'delete', 'history-type'].include? interaction[:code] # not currently supported
+
+          interaction[:code] = 'history' if interaction[:code] == 'history-instance' # how the history interaction is called already
 
           interaction_test = TestMetadata.new(
             title: "Server supports the  #{metadata.resource_type} #{interaction[:code]} interaction",
