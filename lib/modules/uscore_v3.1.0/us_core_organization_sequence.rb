@@ -14,7 +14,6 @@ module Inferno
       test_id_prefix 'USCO'
 
       requires :token
-      new_requires
       conformance_supports :Organization
       delayed_sequence
 

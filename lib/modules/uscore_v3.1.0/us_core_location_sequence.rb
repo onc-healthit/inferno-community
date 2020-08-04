@@ -14,7 +14,6 @@ module Inferno
       test_id_prefix 'USCL'
 
       requires :token
-      new_requires
       conformance_supports :Location
       delayed_sequence
 

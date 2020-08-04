@@ -14,7 +14,6 @@ module Inferno
       test_id_prefix 'USCM'
 
       requires :token
-      new_requires
       conformance_supports :Medication
       delayed_sequence
 

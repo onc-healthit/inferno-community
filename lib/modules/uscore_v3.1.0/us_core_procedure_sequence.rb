@@ -13,8 +13,7 @@ module Inferno
 
       test_id_prefix 'USCPROC'
 
-      requires :token
-      new_requires :patient_ids
+      requires :token, :patient_ids
       conformance_supports :Procedure
 
       def validate_resource_item(resource, property, value)

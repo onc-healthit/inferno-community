@@ -281,6 +281,8 @@ module Inferno
       end
 
       def add_sequence_requirements(requirements)
+        return unless requirements.present?
+
         requirements.each do |requirement, texts|
           new_requirement = SequenceRequirement.new(
             name: requirement,

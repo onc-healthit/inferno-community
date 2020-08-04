@@ -62,7 +62,7 @@ module Inferno
     end
 
     def variable_required_by(variable)
-      sequences.select { |sequence| (sequence.requires.include? variable) || (sequence.new_requires.include? variable) }
+      sequences.select { |sequence| sequence.requires.include? variable }
     end
 
     def variable_defined_by(variable)

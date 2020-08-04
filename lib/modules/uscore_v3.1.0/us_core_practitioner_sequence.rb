@@ -14,7 +14,6 @@ module Inferno
       test_id_prefix 'USCPR'
 
       requires :token
-      new_requires
       conformance_supports :Practitioner
       delayed_sequence
 
