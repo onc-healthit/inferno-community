@@ -30,7 +30,7 @@ module Inferno
       def create_search_validation(sequence_metadata)
         search_validators = ''
         sequence_metadata.search_parameter_metadata&.each do |parameter_metadata|
-          type = parameter_metadata.type
+          type = sequence_metadata.element_type_by_path(parameter_metadata.expression) || parameter_metadata.type
           path = parameter_metadata.expression
             .gsub(/(?<!\w)class(?!\w)/, 'local_class')
             .split('.')

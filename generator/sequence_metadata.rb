@@ -123,6 +123,13 @@ module Inferno
         @tests << test
       end
 
+      def element_type_by_path(path)
+        profile_element = profile['snapshot']['element'].select { |el| el['id'] == path }.first
+        return nil if profile_element.nil?
+
+        profile_element['type'].first['code']
+      end
+
       private
 
       def initial_sequence_name
