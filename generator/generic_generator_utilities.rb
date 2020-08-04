@@ -119,7 +119,7 @@ module Inferno
         case type
         when 'CodeableConcept'
           '.coding.code'
-        when 'Reference'
+        when 'Reference', 'reference'
           '.reference'
         when 'Period'
           '.start'
