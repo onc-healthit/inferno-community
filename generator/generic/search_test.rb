@@ -28,13 +28,13 @@ module Inferno
             as_type = path.scan(/.as\((.*?)\)/).flatten.first
             path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
 
-            "#{parameter.gsub('-', '_')}_val = find_search_parameter_value_from_resource(@resource_found, '#{path}')"
+            "#{search_param_value_name(parameter)} = find_search_parameter_value_from_resource(@resource_found, '#{path}')"
           end
           search_test.code = %(
             skip 'No resource found from Read test' unless @resource_found.present?
             #{search_parameter_assignments.join("\n")}
             search_parameters = {
-              #{search[:parameters].map { |parameter| "'#{parameter}': #{parameter.gsub('-', '_')}_val" }.join(",\n")}
+              #{search[:parameters].map { |parameter| "'#{parameter}': #{search_param_value_name(parameter)}" }.join(",\n")}
             }
 
             reply = get_resource_by_params(versioned_resource_class('#{metadata.resource_type}'), search_parameters)
@@ -42,6 +42,11 @@ module Inferno
           )
           metadata.add_test(search_test)
         end
+      end
+
+      def search_param_value_name(parameter)
+        parameter.gsub!(/^[\W_]+|[\W_]+$"/, '') # remove non-character elements from beginning and end of name
+        "#{parameter.gsub('-', '_')}_val"
       end
 
       def capitalize_first_letter(str)
