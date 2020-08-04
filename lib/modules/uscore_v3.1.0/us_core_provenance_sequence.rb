@@ -14,7 +14,6 @@ module Inferno
       test_id_prefix 'USCPROV'
 
       requires :token
-      new_requires
       conformance_supports :Provenance
       delayed_sequence
 

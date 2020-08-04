@@ -13,8 +13,7 @@ module Inferno
 
       test_id_prefix 'USCSSO'
 
-      requires :token
-      new_requires :patient_ids
+      requires :token, :patient_ids
       conformance_supports :Observation
 
       def validate_resource_item(resource, property, value)

@@ -13,8 +13,7 @@ module Inferno
 
       test_id_prefix 'USCE'
 
-      requires :token
-      new_requires :patient_ids
+      requires :token, :patient_ids
       conformance_supports :Encounter
 
       def validate_resource_item(resource, property, value)

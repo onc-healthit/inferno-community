@@ -13,8 +13,7 @@ module Inferno
 
       test_id_prefix 'USCID'
 
-      requires :token
-      new_requires :patient_ids, :device_codes
+      requires :token, :patient_ids, :device_codes
       conformance_supports :Device
 
       def validate_resource_item(resource, property, value)
