@@ -279,15 +279,14 @@ module Inferno
         return unless requirements.present?
 
         requirements.each do |requirement, texts|
-          new_requirement = SequenceRequirement.new(
+          SequenceRequirement.create(
             name: requirement,
             value: '',
             label: texts[:label],
-            description: texts[:description]
+            description: texts[:description],
+            testing_instance: self
           )
-          sequence_requirements.push(new_requirement)
         end
-        save!
       end
 
       def get_requirement_value(requirement_name)
