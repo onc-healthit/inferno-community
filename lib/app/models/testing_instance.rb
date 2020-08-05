@@ -182,7 +182,7 @@ module Inferno
         resource_references.destroy
 
         unless patient_ids.nil?
-          self.patient_ids = self.patient_ids.split(',').append(patient_id).uniq.join(',')
+          self.patient_ids = patient_ids.split(',').append(patient_id).uniq.join(',')
         end
 
         ResourceReference.create(
@@ -291,24 +291,22 @@ module Inferno
       end
 
       def get_requirement_value(requirement_name)
-        requirement = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
-        if requirement.present?
-          return requirement.value
-        else
-          # add requirement if not included from module file
-          new_requirement = SequenceRequirement.new(
-            name: requirement_name.to_s,
-            value: '',
-            label: requirement_name.to_s
-          )
-          sequence_requirements.push(new_requirement)
-          save!
-          return ''
-        end
+        requirement = sequence_requirements.find { |req| req.name == requirement_name.to_s }
+        return requirement.value if requirement.present?
+
+        # add requirement if not included from module file
+        new_requirement = SequenceRequirement.new(
+          name: requirement_name.to_s,
+          value: '',
+          label: requirement_name.to_s
+        )
+        sequence_requirements.push(new_requirement)
+        save!
+        ''
       end
 
       def set_requirement_value(requirement_name, value)
-        requirement = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
+        requirement = sequence_requirements.find { |req| req.name == requirement_name.to_s }
         if requirement.present?
           requirement.value = value
         else
@@ -322,6 +320,7 @@ module Inferno
         end
         save!
       end
+
       private
 
       def group_result(results)
