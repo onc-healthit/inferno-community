@@ -90,6 +90,7 @@ module Inferno
 
       def searches_from_capability_statement(capabilities)
         return [] unless capabilities.present?
+
         searches = []
         basic_searches = capabilities['searchParam']
         basic_searches&.each do |search_param|
@@ -107,17 +108,16 @@ module Inferno
       def search_combinations_from_capability_statement(capabilities)
         search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
         capabilities['extension']
-            &.select { |ext| ext['url'] == search_combo_url }
-            &.map do |combo|
+          &.select { |ext| ext['url'] == search_combo_url }
+          &.map do |combo|
           expectation = combo['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
           combo_params = combo['extension']
-                             .reject { |ext| ext['url'] == EXPECTATION_URL }
-                             .map { |ext| ext['valueString'] }
-          new_search = {
-              parameters: combo_params,
-              expectation: expectation
+            .reject { |ext| ext['url'] == EXPECTATION_URL }
+            .map { |ext| ext['valueString'] }
+          {
+            parameters: combo_params,
+            expectation: expectation
           }
-          new_search
         end
       end
 
