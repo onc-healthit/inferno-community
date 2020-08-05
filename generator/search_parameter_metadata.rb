@@ -46,7 +46,9 @@ module Inferno
 
       # expectation if multiple or is allowed - unsure if this is generic or just us core specific
       def multiple_or_expectation
-        @multiple_or_expectation ||= @search_parameter_json['_multipleOr']['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
+        @multiple_or_expectation ||= @search_parameter_json.dig('_multipleOr', 'extension')
+                                         &.find { |ext| ext['url'] == EXPECTATION_URL }
+                                         &.dig('valueCode')
       end
 
       # whether multiple and is allowed
@@ -56,7 +58,9 @@ module Inferno
 
       # expectation if multiple and is allowed - unsure if this is generic or just us core specific
       def multiple_and_expectation
-        @multiple_and_expectation ||= @search_parameter_json['_multipleAnd']['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
+        @multiple_and_expectation ||= @search_parameter_json.dig('_multipleAnd', 'extension')
+                                          &.find { |ext| ext['url'] == EXPECTATION_URL }
+                                          &.dig('valueCode')
       end
 
       def comparators
