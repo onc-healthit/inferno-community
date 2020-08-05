@@ -180,14 +180,9 @@ module Inferno
         return if patient_id.to_s == self.patient_id.to_s
 
         resource_references.destroy
-        patient_ids = get_requirement_value('patient_ids')
 
-        # For patient id list, don't clear it out but rather add it to the list of known
-        # patients to pull from.
-        if patient_ids.blank?
-          set_requirement_value('patient_ids', patient_id)
-        else
-          set_requirement_value('patient_ids', patient_ids.split(',').append(patient_id).uniq.join(','))
+        unless patient_ids.nil?
+          self.patient_ids = self.patient_ids.split(',').append(patient_id).uniq.join(',')
         end
 
         ResourceReference.create(
@@ -292,20 +287,39 @@ module Inferno
           )
           sequence_requirements.push(new_requirement)
         end
+        save!
       end
 
       def get_requirement_value(requirement_name)
         requirement = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
-        return unless requirement.present?
-
-        requirement.value
+        if requirement.present?
+          return requirement.value
+        else
+          # add requirement if not included from module file
+          new_requirement = SequenceRequirement.new(
+            name: requirement_name.to_s,
+            value: '',
+            label: requirement_name.to_s
+          )
+          sequence_requirements.push(new_requirement)
+          save!
+          return ''
+        end
       end
 
       def set_requirement_value(requirement_name, value)
         requirement = sequence_requirements.find { |requirement| requirement.name == requirement_name.to_s }
-        return unless requirement.present?
-
-        requirement.value = value
+        if requirement.present?
+          requirement.value = value
+        else
+          # add requirement if not included from module file
+          new_requirement = SequenceRequirement.new(
+            name: requirement_name.to_s,
+            value: value,
+            label: requirement_name.to_s
+          )
+          sequence_requirements.push(new_requirement)
+        end
         save!
       end
       private
