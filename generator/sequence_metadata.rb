@@ -70,10 +70,10 @@ module Inferno
       end
 
       def interactions
-        @interactions ||= interactions_from_capability_statement(capabilities)
+        @interactions ||= interactions_from_capability_statement
       end
 
-      def interactions_from_capability_statement(capabilities)
+      def interactions_from_capability_statement
         return [] unless capabilities.present?
 
         capabilities['interaction'].map do |interaction|
@@ -85,10 +85,10 @@ module Inferno
       end
 
       def searches
-        @searches ||= searches_from_capability_statement(capabilities)
+        @searches ||= searches_from_capability_statement
       end
 
-      def searches_from_capability_statement(capabilities)
+      def searches_from_capability_statement
         return [] unless capabilities.present?
 
         searches = []
@@ -100,12 +100,12 @@ module Inferno
           }
           searches << new_search
         end
-        search_combinations = search_combinations_from_capability_statement(capabilities)
+        search_combinations = search_combinations_from_capability_statement
         searches.append(search_combinations) unless search_combinations.nil?
         searches
       end
 
-      def search_combinations_from_capability_statement(capabilities)
+      def search_combinations_from_capability_statement
         search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
         capabilities['extension']
           &.select { |ext| ext['url'] == search_combo_url }
