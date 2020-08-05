@@ -72,7 +72,7 @@ module Inferno
               next if File.directory?(full_file_path)
 
               content = File.read(full_file_path)
-              tar_file_path = relative_path_for(full_file_path)
+              tar_file_path = relative_path_for(full_file_path, module_metadata[:resource_path])
               tar.add_file_simple(tar_file_path, 0o0644, content.bytesize) do |io|
                 io.write(content)
               end
@@ -81,10 +81,10 @@ module Inferno
         end
       end
 
-      def relative_path_for(full_file_path)
+      def relative_path_for(full_file_path, resource_folder)
         relative_path =
           full_file_path
-            .split(File.join('resources', 'ig', ''))
+            .split(File.join('resources', resource_folder, ''))
             .last
             .delete_prefix("package#{File::SEPARATOR}")
         File.join('package', relative_path)
