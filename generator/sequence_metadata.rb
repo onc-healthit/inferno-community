@@ -91,16 +91,12 @@ module Inferno
       def basic_searches_from_capability_statement
         return [] unless capabilities.present?
 
-        searches = []
-        basic_searches = capabilities['searchParam']
-        basic_searches&.each do |search_param|
-          new_search = {
+        capabilities['searchParam']&.map do |search_param|
+          {
             parameters: [search_param['name']],
-            expectation: search_param['extension'].find { |ext| ext['url'] == EXPECTATION_URL } ['valueCode']
+            expectation: search_param['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
           }
-          searches << new_search
-        end
-        searches
+        end || []
       end
 
       def search_combinations_from_capability_statement
