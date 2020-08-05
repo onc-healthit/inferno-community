@@ -39,8 +39,8 @@ module Inferno
       def generate_sequences
         sequence_metadata.each do |metadata|
           create_read_test(metadata)
-          create_profile_validation_test(metadata)
           create_search_tests(metadata)
+          create_profile_validation_test(metadata)
           create_interaction_tests(metadata)
           generate_sequence(metadata)
         end
