@@ -5,7 +5,8 @@ module Inferno
     class SequenceRequirement
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
-      property :name, String
+      property :name, String, unique_index: :name_by_instance
+      property :testing_instance_id, String, unique_index: :name_by_instance
       property :value, String
       property :label, String
       property :description, String
