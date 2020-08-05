@@ -58,7 +58,8 @@ module Inferno
       end
 
       def generate_sequence_definitions(metadata)
-        file_name = sequence_out_path + '/profile_definitions/' + metadata.file_name + '_definitions.rb'
+        output_directory = File.join(sequence_out_path, 'profile_definitions')
+        file_name = File.join(output_directory, metadata.file_name + '_definitions.rb')
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence_definition.rb.erb')))
         output = template.result_with_hash(sequence_definition_hash(metadata))
         FileUtils.mkdir_p(sequence_out_path + '/profile_definitions/') unless File.directory?(sequence_out_path + '/profile_definitions/')
