@@ -278,46 +278,49 @@ module Inferno
       def add_sequence_requirements(requirements)
         return unless requirements.present?
 
+        return unless sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id).nil?
+
         requirements.each do |requirement, texts|
           SequenceRequirement.create(
             name: requirement,
             value: '',
             label: texts[:label],
             description: texts[:description],
-            testing_instance: self
+            testing_instance: self,
+            testing_instance_id: id
           )
         end
       end
 
       def get_requirement_value(requirement_name)
-        requirement = sequence_requirements.find { |req| req.name == requirement_name.to_s }
-        return requirement.value if requirement.present?
-
-        # add requirement if not included from module file
-        new_requirement = SequenceRequirement.new(
-          name: requirement_name.to_s,
-          value: '',
-          label: requirement_name.to_s
-        )
-        sequence_requirements.push(new_requirement)
-        save!
-        ''
+        # Using first because we are enforcing that the name, testing_instance_id pair is unique
+        requirement = sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id)
+        unless requirement&.present?
+          requirement = SequenceRequirement.create(
+            name: requirement_name,
+            value: '',
+            label: requirement_name,
+            testing_instance: self,
+            testing_instance_id: id
+          )
+        end
+        requirement.value
       end
 
       def set_requirement_value(requirement_name, value)
-        requirement = sequence_requirements.find { |req| req.name == requirement_name.to_s }
-        if requirement.present?
+        # Using first because we are enforcing that the name, testing_instance_id pair is unique
+        requirement = sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id)
+        if requirement&.present?
           requirement.value = value
         else
-          # add requirement if not included from module file
-          new_requirement = SequenceRequirement.new(
-            name: requirement_name.to_s,
+          SequenceRequirement.create(
+            name: requirement_name,
             value: value,
-            label: requirement_name.to_s
+            label: requirement_name,
+            testing_instance: self,
+            testing_instance_id: id
           )
-          sequence_requirements.push(new_requirement)
         end
-        save!
       end
 
       private
