@@ -85,10 +85,10 @@ module Inferno
       end
 
       def searches
-        @searches ||= searches_from_capability_statement
+        @searches ||= basic_searches_from_capability_statement + search_combinations_from_capability_statement
       end
 
-      def searches_from_capability_statement
+      def basic_searches_from_capability_statement
         return [] unless capabilities.present?
 
         searches = []
@@ -100,8 +100,6 @@ module Inferno
           }
           searches << new_search
         end
-        search_combinations = search_combinations_from_capability_statement
-        searches.append(search_combinations) unless search_combinations.nil?
         searches
       end
 
