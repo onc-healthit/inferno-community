@@ -116,7 +116,7 @@ module Inferno
             parameters: combo_params,
             expectation: expectation
           }
-        end
+        end || []
       end
 
       def add_test(test)

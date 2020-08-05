@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-require_relative './generic_utilities'
-
 module Inferno
   module Sequence
     class <%= metadata.class_name %> < SequenceBase
-      include Inferno::GenericUtilities
+      include Inferno::SequenceUtilities
 
       title '<%= metadata.title %> Tests'
       description 'Verify support for the server capabilities required by the <%= metadata.title %> profile.'
