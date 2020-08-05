@@ -90,9 +90,6 @@ module Inferno
 
       def searches_from_capability_statement(capabilities)
         return [] unless capabilities.present?
-
-        search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
-
         searches = []
         basic_searches = capabilities['searchParam']
         basic_searches&.each do |search_param|
@@ -102,21 +99,26 @@ module Inferno
           }
           searches << new_search
         end
+        search_combinations = search_combinations_from_capability_statement(capabilities)
+        searches.append(search_combinations) unless search_combinations.nil?
+        searches
+      end
 
+      def search_combinations_from_capability_statement(capabilities)
+        search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
         capabilities['extension']
-          .select { |ext| ext['url'] == search_combo_url }
-          .each do |combo|
-            expectation = combo['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
-            combo_params = combo['extension']
-              .reject { |ext| ext['url'] == EXPECTATION_URL }
-              .map { |ext| ext['valueString'] }
-            new_search = {
+            &.select { |ext| ext['url'] == search_combo_url }
+            &.map do |combo|
+          expectation = combo['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
+          combo_params = combo['extension']
+                             .reject { |ext| ext['url'] == EXPECTATION_URL }
+                             .map { |ext| ext['valueString'] }
+          new_search = {
               parameters: combo_params,
               expectation: expectation
-            }
-            searches << new_search
-          end
-        searches
+          }
+          new_search
+        end
       end
 
       def add_test(test)
