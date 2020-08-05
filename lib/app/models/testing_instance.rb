@@ -278,9 +278,9 @@ module Inferno
       def add_sequence_requirements(requirements)
         return unless requirements.present?
 
-        return unless sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id).nil?
-
         requirements.each do |requirement, texts|
+          next unless sequence_requirements.first(name: requirement.to_s, testing_instance_id: id).nil?
+
           SequenceRequirement.create(
             name: requirement,
             value: '',
@@ -312,6 +312,7 @@ module Inferno
         requirement = sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id)
         if requirement&.present?
           requirement.value = value
+          requirement.save!
         else
           SequenceRequirement.create(
             name: requirement_name,
