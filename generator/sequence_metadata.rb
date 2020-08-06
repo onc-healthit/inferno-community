@@ -22,9 +22,10 @@ module Inferno
                   :must_supports,
                   :interactions
 
-      def initialize(profile, all_search_parameter_metadata, capability_statement = nil)
+      def initialize(profile, path, all_search_parameter_metadata, capability_statement = nil)
         @profile = profile
         @tests = []
+        @path = path
         @search_parameter_metadata = []
         return unless capability_statement.present?
 
@@ -134,9 +135,12 @@ module Inferno
       private
 
       def initial_sequence_name
-        return profile['name'] unless profile['name'].include?('-')
-
-        profile['name'].split('-').map(&:capitalize).join
+        delimiters = ['-', '_']
+        (@path + '-' + profile['name'])
+          .gsub('.', '')
+          .split(Regexp.union(delimiters))
+          .map(&:capitalize)
+          .join
       end
     end
   end

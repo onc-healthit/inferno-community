@@ -23,7 +23,7 @@ module Inferno
       end
 
       def sequence_metadata
-        @sequence_metadata ||= resource_profiles.map { |profile| SequenceMetadata.new(profile, search_parameter_metadata, capability_statement) }
+        @sequence_metadata ||= resource_profiles.map { |profile| SequenceMetadata.new(profile, @path, search_parameter_metadata, capability_statement) }
       end
 
       def search_parameter_metadata
