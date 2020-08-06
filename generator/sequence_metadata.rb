@@ -25,11 +25,14 @@ module Inferno
       def initialize(profile, all_search_parameter_metadata, capability_statement = nil)
         @profile = profile
         @tests = []
+        @search_parameter_metadata = []
         return unless capability_statement.present?
 
         @capabilities = capability_statement['rest']
           .find { |rest| rest['mode'] == 'server' }['resource']
           .find { |resource| resource['type'] == profile['type'] }
+
+        return unless capabilities.present?
 
         @search_parameter_metadata = capabilities['searchParam']&.map do |param|
           all_search_parameter_metadata.find { |param_metadata| param_metadata.url == param['definition'] }
@@ -100,6 +103,8 @@ module Inferno
       end
 
       def search_combinations_from_capability_statement
+        return [] unless capabilities.present?
+
         search_combo_url = 'http://hl7.org/fhir/StructureDefinition/capabilitystatement-search-parameter-combination'
         capabilities['extension']
           &.select { |ext| ext['url'] == search_combo_url }
