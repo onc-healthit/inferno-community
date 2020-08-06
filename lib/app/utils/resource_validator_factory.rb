@@ -7,6 +7,8 @@ module Inferno
   class App
     module ResourceValidatorFactory
       def self.new_validator(selected_validator, external_validator_url)
+        return Inferno::FHIRModelsValidator.new if ENV['RACK_ENV'] == 'test'
+
         case selected_validator
         when 'internal'
           Inferno::FHIRModelsValidator.new

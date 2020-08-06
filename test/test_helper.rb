@@ -5,7 +5,8 @@ SimpleCov.start do
   add_filter '/test/'
 end
 
-ENV['RACK_ENV'] = 'test'
+ENV['APP_ENV'] = ENV['RACK_ENV'] = 'test'
+
 require 'minitest/autorun'
 require 'webmock/minitest'
 require 'rack/test'
@@ -23,6 +24,7 @@ if create_assertion_report?
 end
 
 require_relative '../lib/app'
+Inferno::App::Endpoint.settings.resource_validator = 'internal'
 Inferno::StartupTasks.load_all_modules
 
 def find_fixture_directory(test_directory = nil)
