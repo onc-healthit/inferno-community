@@ -279,13 +279,12 @@ module Inferno
         return unless requirement&.dig(:name)
 
         attributes = { name: requirement[:name],
-                       testing_instance_id: id,
                        testing_instance: self,
                        label: requirement[:name],
                        value: '' }
           .merge(requirement)
 
-        condition_attributes = [:name, :testing_instance_id, :testing_instance]
+        condition_attributes = [:name, :testing_instance]
 
         # Get the conditions that determine whether the record already exists
         conditions = attributes.select { |key, _value| condition_attributes.include?(key) }
@@ -302,11 +301,11 @@ module Inferno
       end
 
       def get_requirement_value(requirement_name)
-        get_sequence_requirement(name: requirement_name.to_s, testing_instance_id: id).value
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).value
       end
 
       def set_requirement_value(requirement_name, value)
-        get_sequence_requirement(name: requirement_name.to_s, testing_instance_id: id).update(value: value)
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).update(value: value)
         self.patient_id = value if requirement_name == 'patient_id'
       end
 
