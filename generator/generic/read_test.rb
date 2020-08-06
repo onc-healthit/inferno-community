@@ -14,7 +14,7 @@ module Inferno
         read_test.code = %(
             resource_id = @instance.#{metadata.resource_type.underscore}_id
             @resource_found = validate_read_reply(FHIR::#{metadata.resource_type}.new(id: resource_id), FHIR::#{metadata.resource_type})
-            save_resource_references(versioned_resource_class('#{metadata.resource_type}'), [@resource_found])
+            save_resource_references(versioned_resource_class('#{metadata.resource_type}'), [@resource_found], '#{metadata.url}')
         )
         metadata.add_test(read_test)
       end
