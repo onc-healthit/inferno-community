@@ -275,53 +275,38 @@ module Inferno
         token_retrieved_at + token_expires_in.seconds
       end
 
+      def get_sequence_requirement(requirement)
+        return unless requirement&.dig(:name)
+
+        attributes = { name: requirement[:name],
+                       testing_instance_id: id,
+                       testing_instance: self,
+                       label: requirement[:name],
+                       value: '' }
+          .merge(requirement)
+
+        condition_attributes = [:name, :testing_instance_id, :testing_instance]
+
+        # Get the conditions that determine whether the record already exists
+        conditions = attributes.select { |key, _value| condition_attributes.include?(key) }
+
+        SequenceRequirement.first_or_create(conditions, attributes)
+      end
+
       def add_sequence_requirements(requirements)
         return unless requirements.present?
 
         requirements.each do |requirement, texts|
-          next unless sequence_requirements.first(name: requirement.to_s, testing_instance_id: id).nil?
-
-          SequenceRequirement.create(
-            name: requirement,
-            value: '',
-            label: texts[:label],
-            description: texts[:description],
-            testing_instance: self,
-            testing_instance_id: id
-          )
+          get_sequence_requirement(name: requirement.to_s, label: texts[:label], description: texts[:description])
         end
       end
 
       def get_requirement_value(requirement_name)
-        # Using first because we are enforcing that the name, testing_instance_id pair is unique
-        requirement = sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id)
-        unless requirement&.present?
-          requirement = SequenceRequirement.create(
-            name: requirement_name,
-            value: '',
-            label: requirement_name,
-            testing_instance: self,
-            testing_instance_id: id
-          )
-        end
-        requirement.value
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance_id: id).value
       end
 
       def set_requirement_value(requirement_name, value)
-        # Using first because we are enforcing that the name, testing_instance_id pair is unique
-        requirement = sequence_requirements.first(name: requirement_name.to_s, testing_instance_id: id)
-        if requirement&.present?
-          requirement.value = value
-          requirement.save!
-        else
-          SequenceRequirement.create(
-            name: requirement_name,
-            value: value,
-            label: requirement_name,
-            testing_instance: self,
-            testing_instance_id: id
-          )
-        end
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance_id: id).update(value: value)
         self.patient_id = value if requirement_name == 'patient_id'
       end
 
