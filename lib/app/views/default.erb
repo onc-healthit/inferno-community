@@ -170,6 +170,7 @@
           </div>
         </div>
         <% instance.sequence_requirements.each do |requirement| %>
+        <% next if requirement.name == 'patient_id' %>
           <%= erb(:prerequisite_field,{},{prerequisite: requirement.name.to_sym,
               label: requirement.label,
               description: requirement.description,
