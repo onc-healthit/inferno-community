@@ -322,6 +322,7 @@ module Inferno
             testing_instance_id: id
           )
         end
+        self.patient_id = value if requirement_name == 'patient_id'
       end
 
       private
