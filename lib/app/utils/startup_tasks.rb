@@ -96,7 +96,7 @@ module Inferno
 
       def ig_files(path)
         resource_path = File.join(__dir__, '..', '..', '..', 'resources', path)
-        Dir.glob(File.join(resource_path, '**', '*'))
+        Dir.glob(File.join(resource_path, '**', '*')) + Dir.glob(File.join(resource_path, '**', '.*'))
       end
     end
   end
