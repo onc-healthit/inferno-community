@@ -82,7 +82,7 @@ module Inferno
         end
         search_parameters ||= []
         {
-          module_name: metadata.path.capitalize + 'Definitions',
+          module_name: metadata.path.capitalize + 'ProfileDefinitions',
           class_name: metadata.class_name + 'Definition',
           search_parameters: structure_to_string(search_parameters)
         }
