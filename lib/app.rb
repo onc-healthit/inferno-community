@@ -25,6 +25,7 @@ require_relative 'version'
 require_relative 'app/models'
 require_relative 'app/utils/terminology'
 require_relative 'app/utils/startup_tasks'
+require_relative 'app/utils/config_manager'
 
 module Inferno
   class App

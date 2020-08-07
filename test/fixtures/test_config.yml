@@ -1,0 +1,71 @@
+# Name of app
+app_name: Inferno
+
+# Base path of application
+# There are a few exceptions, such as "/" and "/landing".
+base_path: "inferno"
+
+# Useful during development to purge the database on each reload
+purge_database_on_reload: false
+
+# Disable peer SSL verification for environments that use SSL inspection
+disable_verify_peer: false
+
+# When running in a docker container, we have to listen to other than just 'localhost' which is the default
+bind: '0.0.0.0'
+
+# Omit TLS tests
+disable_tls_tests: false
+
+# Default scopes
+default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
+
+# Log Level: unkown, fatal, error, warn, info, debug
+log_level: info
+
+# Log to file
+log_to_file: false
+
+# Logging enabled?
+logging_enabled: true
+
+# Automatically Run Conformance Sequence on new server create
+autorun_capability: false
+
+# Include extra tests: true or false
+include_extras: true
+
+badge_text: Community
+
+# Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
+resource_validator: internal
+external_resource_validator_url: http://validator_service:4567
+
+# module options: one or more must be set.  The first option in the list will be checked by default
+modules:
+  - onc
+  - smart
+  - bdt
+  - argonaut
+  - uscore_v3.1.0
+
+# preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
+presets:
+  site_healthit_gov:
+    name: SITE DSTU2 FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    inferno_uri: https://inferno.healthit.gov
+    client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
+    confidential_client: true
+    client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
+  site_test_healthit_gov:
+    name: SITE DSTU2 FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    inferno_uri: https://infernotest.healthit.gov
+    client_id: TrToU5piE-dJ1g6PBG1elFV4r9KLmH
+    confidential_client: true
+    client_secret: ckFqb1ZhbmFMQS13WDE0c1dTLWxSdGRLSE8yUXpWNS1vSnd6azNrMmU3Y0JPdDRja3U=
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
