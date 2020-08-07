@@ -278,18 +278,12 @@ module Inferno
       def get_sequence_requirement(requirement)
         return unless requirement&.dig(:name)
 
-        attributes = { name: requirement[:name],
-                       testing_instance: self,
+        attributes = { testing_instance: self,
                        label: requirement[:name],
                        value: '' }
           .merge(requirement)
 
-        condition_attributes = [:name, :testing_instance]
-
-        # Get the conditions that determine whether the record already exists
-        conditions = attributes.select { |key, _value| condition_attributes.include?(key) }
-
-        SequenceRequirement.first_or_create(conditions, attributes)
+        SequenceRequirement.first_or_create({ name: requirement[:name], testing_instance: self }, attributes)
       end
 
       def add_sequence_requirements(requirements)
