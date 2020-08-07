@@ -111,14 +111,16 @@ module Inferno
         capabilities['extension']
           &.select { |ext| ext['url'] == search_combo_url }
           &.map do |combo|
-          expectation = combo['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
-          combo_params = combo['extension']
-            .reject { |ext| ext['url'] == EXPECTATION_URL }
-            .map { |ext| ext['valueString'] }
-          {
-            parameters: combo_params,
-            expectation: expectation
-          }
+            # rubocop:disable Layout/IndentationWidth, Layout/CommentIndentation:
+            expectation = combo['extension'].find { |ext| ext['url'] == EXPECTATION_URL }['valueCode']
+            combo_params = combo['extension']
+              .reject { |ext| ext['url'] == EXPECTATION_URL }
+              .map { |ext| ext['valueString'] }
+            {
+              parameters: combo_params,
+              expectation: expectation
+            }
+            # rubocop:enable Layout/IndentationWidth, Layout/CommentIndentation:
         end || []
       end
 
