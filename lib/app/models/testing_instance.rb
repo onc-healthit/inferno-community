@@ -289,8 +289,8 @@ module Inferno
       def add_sequence_requirements(requirements)
         return unless requirements.present?
 
-        requirements.each do |requirement, texts|
-          get_sequence_requirement(name: requirement.to_s, label: texts[:label], description: texts[:description])
+        requirements.each do |requirement, req_desciption|
+          get_sequence_requirement(name: requirement.to_s, label: req_desciption[:label], description: req_desciption[:description])
         end
       end
 
@@ -300,7 +300,6 @@ module Inferno
 
       def set_requirement_value(requirement_name, value)
         get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).update(value: value)
-        self.patient_id = value if requirement_name == 'patient_id'
       end
 
       private

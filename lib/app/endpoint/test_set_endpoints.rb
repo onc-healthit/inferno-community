@@ -121,7 +121,7 @@ module Inferno
 
             # Save params
             params[:required_fields].split(',').each do |field|
-              instance.set_requirement_value(field, params[field])
+              instance.send("#{field}=", params[field]) if instance.respond_to? field
             end
 
             instance.save!
