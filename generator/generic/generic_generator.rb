@@ -89,7 +89,7 @@ module Inferno
       end
 
       def module_name
-        delimiters = ['-', '_','.']
+        delimiters = ['-', '_', '.']
         @path.split(Regexp.union(delimiters))
           .map(&:capitalize)
           .join
