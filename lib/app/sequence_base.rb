@@ -250,6 +250,20 @@ module Inferno
 
       def self.requires(*requires)
         @@requires[sequence_name] = requires unless requires.empty?
+
+        instance_class = Inferno::Models::TestingInstance
+        requires.each do |requirement_name|
+          requirement_setter_name = "#{requirement_name}=".to_sym
+          next if instance_class.method_defined?(requirement_name) && instance_class.method_defined?(requirement_setter_name)
+
+          instance_class.define_method requirement_name do
+            get_requirement_value(requirement_name)
+          end
+
+          instance_class.define_method requirement_setter_name do |value|
+            set_requirement_value(requirement_name, value)
+          end
+        end
         @@requires[sequence_name] || []
       end
 

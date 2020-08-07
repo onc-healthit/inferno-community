@@ -19,6 +19,7 @@ module Inferno
     attr_accessor :test_sets
     attr_accessor :title
     attr_accessor :resource_path
+    attr_accessor :sequence_requirements
 
     def initialize(params)
       @name = params[:name]
@@ -35,6 +36,13 @@ module Inferno
         params[:test_sets].each do |test_set_key, test_set|
           self.default_test_set ||= test_set_key.to_s
           test_sets[test_set_key] = TestSet.new(test_set_key, test_set)
+        end
+      end
+      if params[:sequence_requirements].present?
+        @sequence_requirements = {}.tap do |requirements|
+          params[:sequence_requirements].each do |requirement_key, texts|
+            requirements[requirement_key.to_sym] = texts
+          end
         end
       end
 

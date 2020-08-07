@@ -37,6 +37,7 @@ module Inferno
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module.name)
 
+          @instance.add_sequence_requirements(@instance.module.sequence_requirements)
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
           unless params['preset'].blank?

@@ -58,13 +58,10 @@ module Inferno
 
       property :must_support_confirmed, String, default: ''
 
-      property :patient_ids, String
       property :group_id, String
 
       property :data_absent_code_found, Boolean
       property :data_absent_extension_found, Boolean
-
-      property :device_codes, String
 
       # Bulk Data Parameters
       property :bulk_url, String
@@ -86,6 +83,7 @@ module Inferno
 
       has n, :sequence_results
       has n, :resource_references
+      has n, :sequence_requirements
       has 1, :server_capabilities
 
       def latest_results
@@ -183,13 +181,9 @@ module Inferno
 
         resource_references.destroy
 
-        # For patient id list, don't clear it out but rather add it to the list of known
-        # patients to pull from.
-        self.patient_ids = if patient_ids.blank?
-                             patient_id
-                           else
-                             patient_ids.split(',').append(patient_id).uniq.join(',')
-                           end
+        unless patient_ids.nil?
+          self.patient_ids = patient_ids.split(',').append(patient_id).uniq.join(',')
+        end
 
         ResourceReference.create(
           resource_type: 'Patient',
@@ -279,6 +273,33 @@ module Inferno
 
       def token_expiration_time
         token_retrieved_at + token_expires_in.seconds
+      end
+
+      def get_sequence_requirement(requirement)
+        return unless requirement&.dig(:name)
+
+        attributes = { testing_instance: self,
+                       label: requirement[:name],
+                       value: '' }
+          .merge(requirement)
+
+        SequenceRequirement.first_or_create({ name: requirement[:name], testing_instance: self }, attributes)
+      end
+
+      def add_sequence_requirements(requirements)
+        return unless requirements.present?
+
+        requirements.each do |requirement, req_desciption|
+          get_sequence_requirement(name: requirement.to_s, label: req_desciption[:label], description: req_desciption[:description])
+        end
+      end
+
+      def get_requirement_value(requirement_name)
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).value
+      end
+
+      def set_requirement_value(requirement_name, value)
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).update(value: value)
       end
 
       private

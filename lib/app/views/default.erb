@@ -169,6 +169,14 @@
             <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
           </div>
         </div>
+        <% instance.sequence_requirements.each do |requirement| %>
+        <% next if requirement.name == 'patient_id' %>
+          <%= erb(:prerequisite_field,{},{prerequisite: requirement.name.to_sym,
+              label: requirement.label,
+              description: requirement.description,
+              instance: instance,
+              value: requirement.value}); %>
+        <% end %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
               label: 'Client Secret',
@@ -213,12 +221,6 @@
               value: instance.patient_id,
               })%>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :patient_ids,
-              label: 'Patient IDs',
-              instance: instance,
-              value: instance.patient_ids,
-              })%>
-
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,
@@ -230,13 +232,6 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
-              label: 'Implantable Device Type Code',
-              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
-              instance: instance,
-              value: instance.device_codes,
-        })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',
