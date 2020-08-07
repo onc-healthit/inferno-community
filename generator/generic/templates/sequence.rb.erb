@@ -3,6 +3,8 @@
 module Inferno
   module Sequence
     class <%= metadata.class_name %> < SequenceBase
+      include Inferno::SequenceUtilities
+
       title '<%= metadata.title %> Tests'
       description 'Verify support for the server capabilities required by the <%= metadata.title %> profile.'
       details %(
@@ -11,6 +13,8 @@ module Inferno
       requires <%= metadata.requirements.join(', ') %>
 
       @resource_found = nil
+
+      <%=metadata.create_search_validation(metadata)%>
 
       <% metadata.tests.each_with_index do |test, idx|%>
 <% if test.key.present? %>

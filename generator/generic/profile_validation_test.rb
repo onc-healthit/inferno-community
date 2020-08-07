@@ -13,7 +13,7 @@ module Inferno
         )
         profile_validation_test.code = %(
             skip 'No resource found from Read test' unless @resource_found.present?
-            test_resource_against_profile('#{metadata.resource_type}', @resource_found, '#{metadata.url}')
+            test_resources_against_profile('#{metadata.resource_type}','#{metadata.url}')
         )
         metadata.add_test(profile_validation_test)
       end

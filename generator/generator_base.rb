@@ -27,7 +27,14 @@ module Inferno
 
             # We should consider using the native Ruby models instead of JSON
             # There were problems with round-tripping certain SearchParameters though
-            new_resource_json = JSON.parse(File.read(resource))
+
+            begin
+              new_resource_json = JSON.parse(File.read(resource))
+            rescue JSON::ParserError
+              Inferno.logger.debug("Failed to parse JSON: #{resource}")
+              next
+            end
+
             new_resource = FHIR.from_contents(File.read(resource))
             next unless new_resource.present?
 
