@@ -10,7 +10,8 @@ module Inferno
       attr_reader :profile,
                   :tests,
                   :capabilities,
-                  :search_parameter_metadata
+                  :search_parameter_metadata,
+                  :path
       attr_writer :class_name,
                   :file_name,
                   :requirements,
