@@ -11,7 +11,7 @@ module Inferno
                   :tests,
                   :capabilities,
                   :search_parameter_metadata,
-                  :path
+                  :module_name
       attr_writer :class_name,
                   :file_name,
                   :requirements,
@@ -23,10 +23,10 @@ module Inferno
                   :must_supports,
                   :interactions
 
-      def initialize(profile, path, all_search_parameter_metadata, capability_statement = nil)
+      def initialize(profile, module_name, all_search_parameter_metadata, capability_statement = nil)
         @profile = profile
         @tests = []
-        @path = path
+        @module_name = module_name
         @search_parameter_metadata = []
         return unless capability_statement.present?
 
@@ -138,9 +138,8 @@ module Inferno
       private
 
       def initial_sequence_name
-        delimiters = ['-', '_']
-        (@path + '-' + profile['name'])
-          .gsub('.', '')
+        delimiters = ['-', '_', '.']
+        (@module_name + '.' + profile['name'])
           .split(Regexp.union(delimiters))
           .map(&:capitalize)
           .join

@@ -30,7 +30,8 @@ module Inferno
 
             begin
               new_resource_json = JSON.parse(File.read(resource))
-            rescue JSON::ParserError # failed to parse json
+            rescue JSON::ParserError
+              Inferno.logger.debug("Failed to parse JSON: #{resource}")
               next
             end
 

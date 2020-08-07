@@ -23,7 +23,7 @@ module Inferno
       end
 
       def sequence_metadata
-        @sequence_metadata ||= resource_profiles.map { |profile| SequenceMetadata.new(profile, @path, search_parameter_metadata, capability_statement) }
+        @sequence_metadata ||= resource_profiles.map { |profile| SequenceMetadata.new(profile, module_name, search_parameter_metadata, capability_statement) }
       end
 
       def search_parameter_metadata
@@ -82,10 +82,17 @@ module Inferno
         end
         search_parameters ||= []
         {
-          module_name: metadata.path.capitalize + 'ProfileDefinitions',
+          module_name: module_name + 'ProfileDefinitions',
           class_name: metadata.class_name + 'Definition',
           search_parameters: structure_to_string(search_parameters)
         }
+      end
+
+      def module_name
+        delimiters = ['-', '_','.']
+        @path.split(Regexp.union(delimiters))
+          .map(&:capitalize)
+          .join
       end
 
       def module_file_path
