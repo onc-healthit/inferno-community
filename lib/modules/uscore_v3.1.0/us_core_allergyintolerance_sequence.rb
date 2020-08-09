@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310AllergyintoleranceSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'AllergyIntolerance Tests'
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the US Core Implementation Guide'
 
       test_id_prefix 'USCAI'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :AllergyIntolerance
 
       def validate_resource_item(resource, property, value)
@@ -26,9 +30,46 @@ module Inferno
         end
       end
 
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities.search_documented?('AllergyIntolerance'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                 search interaction for this resource is not documented in the
+                 CapabilityStatement. If this response was due to the server
+                 requiring a status parameter, the server must document this
+                 requirement in its CapabilityStatement.)
+        end
+
+        ['active', 'inactive', 'resolved'].each do |status_value|
+          params_with_status = search_param.merge('clinical-status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'AllergyIntolerance' }
+          next if entries.blank?
+
+          search_param.merge!('clinical-status': status_value)
+          break
+        end
+
+        reply
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
+
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
 
       @resources_found = false
 
@@ -48,13 +89,16 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          assert_response_unauthorized reply
+        end
+
         @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
       end
 
       test :search_by_patient do
@@ -70,25 +114,35 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        @allergy_intolerance_ary = {}
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        @allergy_intolerance = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
-          .resource
-        @allergy_intolerance_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('AllergyIntolerance'), reply)
-        save_delayed_sequence_references(@allergy_intolerance_ary)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'AllergyIntolerance' }
+
+          next unless any_resources
+
+          @allergy_intolerance_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+          @allergy_intolerance = @allergy_intolerance_ary[patient]
+            .find { |resource| resource.resourceType == 'AllergyIntolerance' }
+          @resources_found = @allergy_intolerance.present?
+
+          save_resource_references(versioned_resource_class('AllergyIntolerance'), @allergy_intolerance_ary[patient])
+          save_delayed_sequence_references(@allergy_intolerance_ary[patient])
+          validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        end
+
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
       end
 
       test :search_by_patient_clinical_status do
@@ -105,17 +159,29 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary, 'clinicalStatus'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+
+          validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :read_interaction do
@@ -130,9 +196,9 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:read])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
-        validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
+        validate_read_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -148,7 +214,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:vread])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validate_vread_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
       end
@@ -166,7 +232,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:history])
-        skip 'No AllergyIntolerance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validate_history_reply(@allergy_intolerance, versioned_resource_class('AllergyIntolerance'))
       end
@@ -180,35 +246,59 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
+        provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
+          save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        end
+
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'AllergyIntolerance resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '08'
+          name 'AllergyIntolerance resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           description %(
 
             This test checks if the resources returned from prior searches conform to the US Core profiles.
             This includes checking for missing data elements and valueset verification.
 
+            This test also checks that the following CodeableConcepts with
+            required ValueSet bindings include a code rather than just text:
+            'clinicalStatus' and 'verificationStatus'
+
           )
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('AllergyIntolerance')
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
+        test_resources_against_profile('AllergyIntolerance') do |resource|
+          ['clinicalStatus', 'verificationStatus'].flat_map do |path|
+            concepts = resolve_path(resource, path)
+            next if concepts.blank?
+
+            code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+
+            unless code_present # rubocop:disable Style/IfUnlessModifier
+              "The CodeableConcept at '#{path}' is bound to a required ValueSet but does not contain any codes."
+            end
+          end.compact
+        end
       end
 
       test 'All must support elements are provided in the AllergyIntolerance resources returned.' do
@@ -232,25 +322,26 @@ module Inferno
           versions :r4
         end
 
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         must_support_elements = [
-          'AllergyIntolerance.clinicalStatus',
-          'AllergyIntolerance.verificationStatus',
-          'AllergyIntolerance.code',
-          'AllergyIntolerance.patient'
+          { path: 'AllergyIntolerance.clinicalStatus' },
+          { path: 'AllergyIntolerance.verificationStatus' },
+          { path: 'AllergyIntolerance.code' },
+          { path: 'AllergyIntolerance.patient' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('AllergyIntolerance.', '')
-          @allergy_intolerance_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('AllergyIntolerance.', '')
+          @allergy_intolerance_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@allergy_intolerance_ary&.length} provided AllergyIntolerance resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@allergy_intolerance_ary&.values&.flatten&.length} provided AllergyIntolerance resource(s)"
         @instance.save!
       end
 
@@ -265,9 +356,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:AllergyIntolerance, [:search, :read])
-        skip 'No AllergyIntolerance resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
-        validate_reference_resolutions(@allergy_intolerance)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @allergy_intolerance_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

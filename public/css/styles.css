@@ -712,7 +712,7 @@ body {
   margin: 0;
 }
 
-.test-list li {
+.test-list-item {
   list-style: none;
   font-size: .9em;
   padding: 10px 15px;
@@ -800,25 +800,43 @@ body {
   color: #FF9500;
 }
 
+.result-details-icon-info {
+  color: #000000;
+}
+
 .result-details-icon-requests {
   color: #336699;
 }
 
 .result-details-message {
   margin-left: 19px;
-
 }
 
 .result-details h1{
   font-size: 1.5em;
 }
- .result-details h2 {
+
+.result-details h2 {
   font-size: 1.3em;
 }
- .result-details h3, .result-details h4, .result-details h5 {
+
+.result-details h3, .result-details h4, .result-details h5 {
   font-size: 1.1em;
 }
- .more-information {
+
+.result-details-message p {
+  margin-bottom: 0.25em;
+}
+
+.result-details-message ul {
+  padding-left: 1em;
+}
+
+.result-details-optional-fail {
+  margin-top: 0.5em;
+}
+
+.more-information {
   padding: 10px;
 }
 

@@ -60,6 +60,9 @@ module Inferno
 
       property :group_id, String
 
+      property :data_absent_code_found, Boolean
+      property :data_absent_extension_found, Boolean
+
       # Bulk Data Parameters
       property :bulk_url, String
       property :bulk_token_endpoint, String
@@ -80,6 +83,7 @@ module Inferno
 
       has n, :sequence_results
       has n, :resource_references
+      has n, :sequence_requirements
       has 1, :server_capabilities
 
       def latest_results
@@ -177,6 +181,10 @@ module Inferno
 
         resource_references.destroy
 
+        unless patient_ids.nil?
+          self.patient_ids = patient_ids.split(',').append(patient_id).uniq.join(',')
+        end
+
         ResourceReference.create(
           resource_type: 'Patient',
           resource_id: patient_id,
@@ -221,19 +229,26 @@ module Inferno
         methods_supported && operations_supported
       end
 
-      def save_resource_reference(type, id, profile = nil)
-        resource_references
-          .select { |ref| (ref.resource_type == type) && (ref.resource_id == id) }
-          .each(&:destroy)
+      def save_resource_reference_without_reloading(type, id, profile = nil)
+        ResourceReference
+          .all(resource_type: type, resource_id: id, testing_instance_id: self.id)
+          .destroy
 
-        new_reference = ResourceReference.new(
+        ResourceReference.create!(
           resource_type: type,
           resource_id: id,
-          profile: profile
+          profile: profile,
+          testing_instance: self
         )
-        resource_references << new_reference
+      end
 
-        save!
+      def save_resource_references(klass, resources, profile = nil)
+        resources
+          .select { |resource| resource.is_a? klass }
+          .each do |resource|
+            save_resource_reference_without_reloading(klass.name.demodulize, resource.id, profile)
+          end
+
         # Ensure the instance resource references are accurate
         reload
       end
@@ -241,11 +256,9 @@ module Inferno
       def save_resource_ids_in_bundle(klass, reply, profile = nil)
         return if reply&.resource&.entry&.blank?
 
-        reply.resource.entry
-          .select { |entry| entry.resource.class == klass }
-          .each do |entry|
-          save_resource_reference(klass.name.demodulize, entry.resource.id, profile)
-        end
+        resources = reply.resource.entry.map(&:resource)
+
+        save_resource_references(klass, resources, profile)
       end
 
       def versioned_conformance_class
@@ -260,6 +273,33 @@ module Inferno
 
       def token_expiration_time
         token_retrieved_at + token_expires_in.seconds
+      end
+
+      def get_sequence_requirement(requirement)
+        return unless requirement&.dig(:name)
+
+        attributes = { testing_instance: self,
+                       label: requirement[:name],
+                       value: '' }
+          .merge(requirement)
+
+        SequenceRequirement.first_or_create({ name: requirement[:name], testing_instance: self }, attributes)
+      end
+
+      def add_sequence_requirements(requirements)
+        return unless requirements.present?
+
+        requirements.each do |requirement, req_desciption|
+          get_sequence_requirement(name: requirement.to_s, label: req_desciption[:label], description: req_desciption[:description])
+        end
+      end
+
+      def get_requirement_value(requirement_name)
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).value
+      end
+
+      def set_requirement_value(requirement_name, value)
+        get_sequence_requirement(name: requirement_name.to_s, testing_instance: self).update(value: value)
       end
 
       private

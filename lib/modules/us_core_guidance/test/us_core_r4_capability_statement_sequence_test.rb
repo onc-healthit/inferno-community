@@ -10,7 +10,6 @@ describe Inferno::Sequence::UsCoreR4CapabilityStatementSequence do
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
   end
 
-  # TODO: check assertion error messages
   describe 'JSON support test' do
     before do
       @test = @sequence_class[:json_support]

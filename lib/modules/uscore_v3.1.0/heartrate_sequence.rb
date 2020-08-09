@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310HeartrateSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Observation Heart Rate Tests'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 
       test_id_prefix 'USCOHR'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :Observation
 
       def validate_resource_item(resource, property, value)
@@ -38,9 +42,46 @@ module Inferno
         end
       end
 
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities.search_documented?('Observation'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                 search interaction for this resource is not documented in the
+                 CapabilityStatement. If this response was due to the server
+                 requiring a status parameter, the server must document this
+                 requirement in its CapabilityStatement.)
+        end
+
+        ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].each do |status_value|
+          params_with_status = search_param.merge('status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('Observation'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'Observation' }
+          next if entries.blank?
+
+          search_param.merge!('status': status_value)
+          break
+        end
+
+        reply
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
+
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
 
       @resources_found = false
 
@@ -60,14 +101,17 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'code': '8867-4'
-        }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'code': '8867-4'
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+          assert_response_unauthorized reply
+        end
+
         @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
       end
 
       test :search_by_patient_code do
@@ -83,29 +127,37 @@ module Inferno
           versions :r4
         end
 
-        @observation_ary = []
+        @observation_ary = {}
+        @resources_found = false
 
         code_val = ['8867-4']
-        code_val.each do |val|
-          search_params = { 'patient': @instance.patient_id, 'code': val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+        patient_ids.each do |patient|
+          @observation_ary[patient] = []
+          code_val.each do |val|
+            search_params = { 'patient': patient, 'code': val }
+            reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          @resources_found = true
-          @observation = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'Observation' }
-            .resource
-          @observation_ary += fetch_all_bundled_resources(reply.resource)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
 
-          save_resource_ids_in_bundle(versioned_resource_class('Observation'), reply, Inferno::ValidationUtil::US_CORE_R4_URIS[:heart_rate])
-          save_delayed_sequence_references(@observation_ary)
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-          break
+            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
+
+            @resources_found = true
+            @observation = reply.resource.entry
+              .find { |entry| entry&.resource&.resourceType == 'Observation' }
+              .resource
+            @observation_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+            save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:heart_rate])
+            save_delayed_sequence_references(@observation_ary[patient])
+            validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+            break
+          end
         end
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
       end
 
       test :search_by_patient_category_date do
@@ -122,25 +174,39 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category')),
+            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective'))
+          }
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'category': search_params[:category], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:date])
+            comparator_search_params = search_params.merge('date': comparator_val)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+          end
         end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_category do
@@ -156,17 +222,31 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_code_date do
@@ -184,25 +264,39 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code')),
-          'date': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'effective'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code')),
+            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective'))
+          }
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:date])
-          comparator_search_params = { 'patient': search_params[:patient], 'code': search_params[:code], 'date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:date])
+            comparator_search_params = search_params.merge('date': comparator_val)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+          end
         end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_category_status do
@@ -219,18 +313,30 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'category')),
-          'status': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category')),
+            'status': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'status'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :read_interaction do
@@ -245,9 +351,9 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:read])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        validate_read_reply(@observation, versioned_resource_class('Observation'))
+        validate_read_reply(@observation, versioned_resource_class('Observation'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -263,7 +369,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:vread])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validate_vread_reply(@observation, versioned_resource_class('Observation'))
       end
@@ -281,7 +387,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:history])
-        skip 'No Observation resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
@@ -295,25 +401,43 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'code': get_value_for_search_param(resolve_element_from_path(@observation_ary, 'code'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
+          save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Observation resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '11'
+          name 'Observation resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/StructureDefinition/heartrate'
           description %(
 
@@ -324,7 +448,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:heart_rate])
       end
 
@@ -341,8 +465,6 @@ module Inferno
 
             Observation.category
 
-            Observation.category
-
             Observation.category.coding
 
             Observation.category.coding.system
@@ -353,102 +475,95 @@ module Inferno
 
             Observation.subject
 
-            Observation.effectiveDateTime
+            Observation.effective[x]
 
-            Observation.effectivePeriod
+            Observation.value[x]
 
-            Observation.valueQuantity
+            Observation.value[x].value
 
-            Observation.valueQuantity
+            Observation.value[x].unit
 
-            Observation.valueQuantity.value
+            Observation.value[x].system
 
-            Observation.valueQuantity.unit
-
-            Observation.valueQuantity.system
-
-            Observation.valueQuantity.code
+            Observation.value[x].code
 
             Observation.dataAbsentReason
 
-            Observation.component
+            Observation.category:VSCat
 
-            Observation.component.code
-
-            Observation.component.valueQuantity
-
-            Observation.component.valueCodeableConcept
-
-            Observation.component.valueString
-
-            Observation.component.valueBoolean
-
-            Observation.component.valueInteger
-
-            Observation.component.valueRange
-
-            Observation.component.valueRatio
-
-            Observation.component.valueSampledData
-
-            Observation.component.valueTime
-
-            Observation.component.valueDateTime
-
-            Observation.component.valuePeriod
-
-            Observation.component.dataAbsentReason
+            Observation.value[x]:valueQuantity
 
           )
           versions :r4
         end
 
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        must_support_elements = [
-          'Observation.status',
-          'Observation.category',
-          'Observation.category',
-          'Observation.category.coding',
-          'Observation.category.coding.system',
-          'Observation.category.coding.code',
-          'Observation.code',
-          'Observation.subject',
-          'Observation.effectiveDateTime',
-          'Observation.effectivePeriod',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity',
-          'Observation.valueQuantity.value',
-          'Observation.valueQuantity.unit',
-          'Observation.valueQuantity.system',
-          'Observation.valueQuantity.code',
-          'Observation.dataAbsentReason',
-          'Observation.component',
-          'Observation.component.code',
-          'Observation.component.valueQuantity',
-          'Observation.component.valueCodeableConcept',
-          'Observation.component.valueString',
-          'Observation.component.valueBoolean',
-          'Observation.component.valueInteger',
-          'Observation.component.valueRange',
-          'Observation.component.valueRatio',
-          'Observation.component.valueSampledData',
-          'Observation.component.valueTime',
-          'Observation.component.valueDateTime',
-          'Observation.component.valuePeriod',
-          'Observation.component.dataAbsentReason'
+        must_support_slices = [
+          {
+            name: 'Observation.category:VSCat',
+            path: 'Observation.category',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'coding.code',
+                  value: 'vital-signs'
+                },
+                {
+                  path: 'coding.system',
+                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'Observation.value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Observation.', '')
-          @observation_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Observation.', '')
+          @observation_ary&.values&.flatten&.any? do |resource|
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
 
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.length} provided Observation resource(s)"
+        must_support_elements = [
+          { path: 'Observation.status' },
+          { path: 'Observation.category' },
+          { path: 'Observation.category.coding' },
+          { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
+          { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
+          { path: 'Observation.code' },
+          { path: 'Observation.subject' },
+          { path: 'Observation.effective' },
+          { path: 'Observation.value' },
+          { path: 'Observation.value.value' },
+          { path: 'Observation.value.unit' },
+          { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
+          { path: 'Observation.value.code', fixed_value: '/min' },
+          { path: 'Observation.dataAbsentReason' }
+        ]
 
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Observation.', '')
+          @observation_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"
         @instance.save!
       end
 
@@ -463,9 +578,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Observation, [:search, :read])
-        skip 'No Observation resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        validate_reference_resolutions(@observation)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @observation_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

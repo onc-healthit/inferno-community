@@ -29,7 +29,17 @@ module Inferno
           generate_sequence(sequence)
           unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
         end
+        copy_static_files
         generate_module(metadata)
+      end
+
+      def copy_static_files
+        Dir.glob(File.join(__dir__, 'static', '*')).each do |static_file|
+          FileUtils.cp(static_file, sequence_out_path)
+        end
+        Dir.glob(File.join(__dir__, 'static_test', '*')).each do |static_file|
+          FileUtils.cp(static_file, File.join(sequence_out_path, 'test').to_s)
+        end
       end
 
       def generate_search_validators(metadata)
@@ -59,6 +69,10 @@ module Inferno
           sequence[:searches]
             .select { |search_param| search_param[:expectation] == 'SHOULD' }
             .each { |search_param| create_search_test(sequence, search_param) }
+
+          sequence[:search_param_descriptions]
+            .select { |_, description| description[:chain].present? }
+            .each { |search_param, _| create_chained_search_test(sequence, search_param) }
 
           # make tests for each SHALL and SHOULD interaction
           sequence[:interactions]
@@ -129,7 +143,8 @@ module Inferno
               @#{sequence[:resource].underscore}_ary = #{sequence[:resource].underscore}_references.map do |reference|
                 validate_read_reply(
                   FHIR::#{sequence[:resource]}.new(id: reference.resource_id),
-                  FHIR::#{sequence[:resource]}
+                  FHIR::#{sequence[:resource]},
+                  check_for_data_absent_reasons
                 )
               end
               @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary.first
@@ -159,16 +174,27 @@ module Inferno
         search_parameters = first_search[:names]
         search_params = get_search_params(search_parameters, sequence, true)
         unit_test_params = get_search_param_hash(search_parameters, sequence, true)
+        reply_code = %(
+          #{search_params}
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+          assert_response_unauthorized reply
+        )
+        unless sequence[:delayed_sequence]
+          reply_code = %(
+            patient_ids.each do |patient|
+              #{reply_code}
+            end
+          )
+        end
 
         authorization_test[:test_code] = %(
-              skip_if_known_not_supported(:#{sequence[:resource]}, [:search])
+          skip_if_known_not_supported(:#{sequence[:resource]}, [:search])
 
-              @client.set_no_auth
-              omit 'Do not test if no bearer token set' if @instance.token.blank?
-              #{search_params}
-              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-              @client.set_bearer_token(@instance.token)
-              assert_response_unauthorized reply)
+          @client.set_no_auth
+          omit 'Do not test if no bearer token set' if @instance.token.blank?
+          #{reply_code}
+          @client.set_bearer_token(@instance.token)
+        )
 
         sequence[:tests] << authorization_test
 
@@ -205,21 +231,39 @@ module Inferno
           index: sequence[:tests].length + 1,
           optional: true,
           link: 'https://www.hl7.org/fhir/search.html#include',
-          description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}"
+          description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}",
+          test_code: ''
         }
         first_search = find_first_search(sequence)
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
-        include_test[:test_code] = search_params
+        resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
+        if resolve_param_from_resource && !sequence[:delayed_sequence]
+          include_test[:test_code] += %(
+            could_not_resolve_all = []
+            resolved_one = false
+            medication_results = false
+            patient_ids.each do |patient|
+          )
+        end
+        include_test[:test_code] += search_params
         sequence[:include_params].each do |include|
           resource_name = include.split(':').last.capitalize
           resource_variable = "#{resource_name.underscore}_results" # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
+          operator = sequence[:delayed_sequence] ? '=' : '||='
           include_test[:test_code] += %(
-                search_params['_include'] = '#{include}'
-                reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-                assert_response_ok(reply)
-                assert_bundle_response(reply)
-                #{resource_variable} = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
-                assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'
+            search_params['_include'] = '#{include}'
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            #{resource_variable} #{operator} reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == '#{resource_name}' }
+            #{"assert #{resource_variable}, 'No #{resource_name} resources were returned from this search'" if sequence[:delayed_sequence]}
+          )
+        end
+        if resolve_param_from_resource && !sequence[:delayed_sequence]
+          include_test[:test_code] += %(
+            end
+            #{skip_if_could_not_resolve}
+            assert medication_results, 'No Medication resources were returned from this search'
           )
         end
         sequence[:tests] << include_test
@@ -233,24 +277,121 @@ module Inferno
           tests_that: "Server returns Provenance resources from #{sequence[:resource]} search by #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
-          description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}"
+          description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}",
+          test_code: skip_if_not_found_code(sequence)
         }
         search_params = get_search_params(first_search[:names], sequence)
-        revinclude_test[:test_code] = search_params
-        sequence[:revincludes].each do |revinclude|
-          resource_name = revinclude.split(':').first
-          resource_variable = "#{resource_name.underscore}_results"
+        resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
+        if resolve_param_from_resource && !sequence[:delayed_sequence]
           revinclude_test[:test_code] += %(
-                search_params['_revinclude'] = '#{revinclude}'
-                reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-                assert_response_ok(reply)
-                assert_bundle_response(reply)
-                #{resource_variable} = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == '#{resource_name}'}
-                skip 'No #{resource_name} resources were returned from this search' unless #{resource_variable}.present?
-                #{resource_variable}.each { |reference| @instance.save_resource_reference('#{resource_name}', reference.id) }
+
+            could_not_resolve_all = []
+            resolved_one = false
           )
         end
+
+        revinclude = sequence[:revincludes].first
+        resource_name = revinclude.split(':').first
+        resource_variable = "#{resource_name.underscore}_results"
+        revinclude_test[:test_code] += %(
+          #{resource_variable} = []
+          #{'patient_ids.each do |patient|' unless sequence[:delayed_sequence]}
+          #{search_params}
+        )
+        revinclude_test[:test_code] += %(
+              search_params['_revinclude'] = '#{revinclude}'
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, first_search[:names])}
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
+              #{resource_variable} += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+                .select { |resource| resource.resourceType == '#{resource_name}'}
+              save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
+        )
+
+        revinclude_test[:test_code] += %(
+          #{'end' unless sequence[:delayed_sequence]}
+          #{skip_if_could_not_resolve if resolve_param_from_resource && !sequence[:delayed_sequence]}
+          skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
+        )
         sequence[:tests] << revinclude_test
+      end
+
+      def sequence_has_status_search?(sequence)
+        status_search? sequence[:search_param_descriptions].keys
+      end
+
+      def status_search?(params)
+        params.any? { |param| param.to_s.include? 'status' }
+      end
+
+      def status_search_code(sequence, current_search)
+        if sequence_has_status_search?(sequence) && !status_search?(current_search)
+          %(
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          )
+        else
+          ''
+        end
+      end
+
+      def status_param_strings(sequence)
+        search_param, param_metadata = sequence[:search_param_descriptions]
+          .find { |key, _| key.to_s.include? 'status' }
+
+        status_value_string =
+          if param_metadata[:multiple_or] == 'SHALL'
+            "'#{param_metadata[:values].to_a.join(',')}'"
+          else
+            param_metadata[:values]
+              .map { |value| "'#{value}'" }
+              .join(', ')
+          end
+
+        {
+          param: "'#{search_param}'",
+          value: status_value_string
+        }
+      end
+
+      def perform_search_with_status_code(sequence)
+        status_param = status_param_strings(sequence)
+
+        %(
+          def perform_search_with_status(reply, search_param)
+            begin
+              parsed_reply = JSON.parse(reply.body)
+              assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+            rescue JSON::ParserError
+              assert false, 'Server returned a status of 400 without an OperationOutcome.'
+            end
+
+
+            warning do
+              assert @instance.server_capabilities.search_documented?('#{sequence[:resource]}'),
+                %(Server returned a status of 400 with an OperationOutcome, but the
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
+            end
+
+            [#{status_param[:value]}].each do |status_value|
+              params_with_status = search_param.merge(#{status_param[:param]}: status_value)
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), params_with_status)
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
+
+              entries = reply.resource.entry.select { |entry| entry.resource.resourceType== '#{sequence[:resource]}' }
+              next if entries.blank?
+
+              search_param.merge!(#{status_param[:param]}: status_value)
+              break
+            end
+
+            reply
+          end
+        )
       end
 
       def create_search_test(sequence, search_param)
@@ -271,22 +412,51 @@ module Inferno
               including support for these #{param} comparators: #{comparators.keys.join(', ')})
         end
 
+        if sequence[:resource] == 'MedicationRequest'
+          search_test[:description] += %(
+            If any MedicationRequest resources use external references to
+            Medications, the search will be repeated with
+            _include=MedicationRequest:medication.
+          )
+        end
+
         is_first_search = search_param == find_first_search(sequence)
+
+        comparator_search_code = get_comparator_searches(search_param[:names], sequence)
 
         search_test[:test_code] =
           if is_first_search
+            # rcs question: are comparators ever be in the first search?
             get_first_search(search_param[:names], sequence)
           else
-            %(
-              #{skip_if_not_found(sequence)}
-              #{get_search_params(search_param[:names], sequence)}
+            search_params = get_search_params(search_param[:names], sequence)
+            resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
+            resolved_one_str = %(
+              could_not_resolve_all = []
+              resolved_one = false
+            )
+            reply_code = %(
+              #{search_params}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, search_param[:names])}
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              assert_response_ok(reply)
+              #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
+              #{comparator_search_code}
+            )
+            unless sequence[:delayed_sequence]
+              reply_code = %(
+                patient_ids.each do |patient|
+                  #{reply_code}
+                end
+              )
+            end
+            %(
+              #{skip_if_not_found_code(sequence)}
+              #{resolved_one_str if resolve_param_from_resource && !sequence[:delayed_sequence]}
+              #{reply_code}
+              #{skip_if_could_not_resolve if resolve_param_from_resource && !sequence[:delayed_sequence]}
             )
           end
-        comparator_search_code = get_comparator_searches(search_param[:names], sequence)
-        search_test[:test_code] += comparator_search_code
         sequence[:tests] << search_test
 
         is_fixed_value_search = fixed_value_search?(search_param[:names], sequence)
@@ -298,12 +468,84 @@ module Inferno
           search_params: get_search_param_hash(search_param[:names], sequence),
           is_first_search: is_first_search,
           is_fixed_value_search: is_fixed_value_search,
+          is_status_search: status_search?(search_param[:names]),
           has_comparator_tests: comparator_search_code.present?,
+          has_status_searches: sequence_has_status_search?(sequence),
           fixed_value_search_param: fixed_value_search_param,
           class_name: sequence[:class_name],
           sequence_name: sequence[:name],
-          delayed_sequence: sequence[:delayed_sequence]
+          delayed_sequence: sequence[:delayed_sequence],
+          status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
         )
+      end
+
+      def create_chained_search_test(sequence, search_param)
+        # NOTE: This test is currently hard-coded because chained searches are
+        # only required for PractitionerRole
+        raise StandardError, 'Chained search tests only supported for PractitionerRole' if sequence[:resource] != 'PractitionerRole'
+
+        chained_param_string = sequence[:search_param_descriptions][search_param][:chain]
+          .map { |param| "#{search_param}.#{param[:chain]}" }
+          .join(' and ')
+        search_test = {
+          tests_that: "Server returns expected results from #{sequence[:resource]} chained search by #{chained_param_string}",
+          key: :"chained_search_by_#{search_param}",
+          index: sequence[:tests].length + 1,
+          link: 'https://www.hl7.org/fhir/us/core/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters',
+          optional: false,
+          description: %(
+            A server SHALL support searching the #{sequence[:resource]} resource
+            with the chained parameters #{chained_param_string}
+          )
+        }
+
+        search_test[:test_code] = %(
+          #{skip_if_not_found_code(sequence)}
+
+          practitioner_role = @practitioner_role_ary.find { |role| role.practitioner&.reference.present? }
+          skip_if practitioner_role.blank?, 'No PractitionerRoles containing a Practitioner reference were found'
+
+          begin
+            practitioner = practitioner_role.practitioner.read
+          rescue ClientException => e
+            assert false, "Unable to resolve Practitioner reference: \#{e}"
+          end
+
+          assert practitioner.resourceType == 'Practitioner', "Expected FHIR Practitioner but found: \#{practitioner.resourceType}"
+
+          name = practitioner.name&.first&.family
+          skip_if name.blank?, 'Practitioner has no family name'
+
+          name_search_response = @client.search(FHIR::PractitionerRole, search: { parameters: { 'practitioner.name': name }})
+          assert_response_ok(name_search_response)
+          assert_bundle_response(name_search_response)
+
+          name_bundle_entries = fetch_all_bundled_resources(name_search_response, check_for_data_absent_reasons)
+
+          practitioner_role_found = name_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
+          assert practitioner_role_found, "PractitionerRole with id \#{practitioner_role.id} not found in search results for practitioner.name = \#{name}"
+
+          identifier = practitioner.identifier.first
+          skip_if identifier.blank?, 'Practitioner has no identifier'
+          identifier_string = "\#{identifier.system}|\#{identifier.value}"
+
+          identifier_search_response = @client.search(
+            FHIR::PractitionerRole,
+            search: { parameters: { 'practitioner.identifier': identifier_string } }
+          )
+          assert_response_ok(identifier_search_response)
+          assert_bundle_response(identifier_search_response)
+
+          identifier_bundle_entries = fetch_all_bundled_resources(identifier_search_response, check_for_data_absent_reasons)
+
+          practitioner_role_found = identifier_bundle_entries.any? { |entry| entry.id == practitioner_role.id }
+          assert practitioner_role_found, "PractitionerRole with id \#{practitioner_role.id} not found in search results for practitioner.identifier = \#{identifier_string}"
+        )
+
+        sequence[:tests] << search_test
+        # NOTE: unit test has an intermittent failure and is disabled until this
+        # failure can be addressed
+        # unit_test_generator.generate_chained_search_test(class_name: sequence[:class_name])
       end
 
       def create_interaction_test(sequence, interaction)
@@ -319,11 +561,18 @@ module Inferno
           optional: interaction[:expectation] != 'SHALL'
         }
 
+        validate_reply_args = [
+          "@#{sequence[:resource].underscore}",
+          "versioned_resource_class('#{sequence[:resource]}')"
+        ]
+        validate_reply_args << 'check_for_data_absent_reasons' if interaction[:code] == 'read'
+        validate_reply_args_string = validate_reply_args.join(', ')
+
         interaction_test[:test_code] = %(
               skip_if_known_not_supported(:#{sequence[:resource]}, [:#{interaction[:code]}])
-              skip 'No #{sequence[:resource]} resources could be found for this patient. Please use patients with more information.' unless @resources_found
+              #{skip_if_not_found_code(sequence)}
 
-              validate_#{interaction[:code]}_reply(@#{sequence[:resource].underscore}, versioned_resource_class('#{sequence[:resource]}')))
+              validate_#{interaction[:code]}_reply(#{validate_reply_args_string}))
 
         sequence[:tests] << interaction_test
 
@@ -349,8 +598,8 @@ module Inferno
           )
         }
 
-        must_support_elements = sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }
-        must_support_elements.each do |element|
+        sequence[:must_supports] = sequence[:must_supports].uniq
+        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
           test[:description] += %(
             #{element[:path]}
           )
@@ -360,6 +609,7 @@ module Inferno
           element[:path] = element[:path].gsub('.class', '.local_class')
         end
 
+        sequence[:must_supports].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
         must_support_extensions = sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }
         must_support_extensions.each do |extension|
           test[:description] += %(
@@ -368,8 +618,9 @@ module Inferno
         end
 
         test[:test_code] += %(
-          #{skip_if_not_found(sequence)}
+          #{skip_if_not_found_code(sequence)}
         )
+        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
         if must_support_extensions.present?
           extensions_list = must_support_extensions.map { |extension| "'#{extension[:id]}': '#{extension[:url]}'" }
@@ -379,27 +630,63 @@ module Inferno
               #{extensions_list.join(",\n          ")}
             }
             missing_must_support_extensions = must_support_extensions.reject do |_id, url|
-              @#{sequence[:resource].underscore}_ary&.any? do |resource|
+              #{resource_array}&.any? do |resource|
                 resource.extension.any? { |extension| extension.url == url }
+              end
+            end
+      )
+        end
+
+        must_support_slices = sequence[:must_supports].select { |must_support| must_support[:type] == 'slice' }
+        must_support_slices.each do |slice|
+          test[:description] += %(
+            #{slice[:name]}
+          )
+        end
+        slices_list = must_support_slices.map do |slice_def|
+          %({
+              name: '#{slice_def[:name]}',
+              path: '#{slice_def[:path]}',
+              discriminator: #{structure_to_string(slice_def[:discriminator])}
+            })
+        end
+
+        if must_support_slices.present?
+          test[:test_code] += %(
+            must_support_slices = [
+              #{slices_list.join(",\n")}
+            ]
+            missing_slices = must_support_slices.reject do |slice|
+              truncated_path = slice[:path].gsub('#{sequence[:resource]}.', '')
+              @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
+                slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+                slice_found.present?
               end
             end
           )
         end
+        elements_list = []
+        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+          element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
+          element_list_parts = ["path: '#{element[:path]}'"]
+          element_list_parts << ["fixed_value: '#{element[:fixed_value]}'"] if element[:fixed_value].present?
+          elements_list << "{ #{element_list_parts.join(', ')} }"
+        end
 
-        if must_support_elements.present?
-          elements_list = must_support_elements.map { |element| "'#{element[:path]}'" }
-
+        if elements_list.present?
           test[:test_code] += %(
             must_support_elements = [
-              #{elements_list.join(",\n          ")}
+              #{elements_list.join(",\n")}
             ]
 
-            missing_must_support_elements = must_support_elements.reject do |path|
-              truncated_path = path.gsub('#{sequence[:resource]}.', '')
-              @#{sequence[:resource].underscore}_ary&.any? do |resource|
-                resolve_element_from_path(resource, truncated_path).present?
+            missing_must_support_elements = must_support_elements.reject do |element|
+              truncated_path = element[:path].gsub('#{sequence[:resource]}.', '')
+              #{resource_array}&.any? do |resource|
+                value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+                value_found.present?
               end
             end
+            missing_must_support_elements.map! { |must_support| "\#{must_support[:path]}\#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
           )
 
           if must_support_extensions.present?
@@ -407,11 +694,15 @@ module Inferno
               missing_must_support_elements += missing_must_support_extensions.keys
             )
           end
+          if must_support_slices.present?
+            test[:test_code] += %(
+              missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+            )
+          end
 
           test[:test_code] += %(
             skip_if missing_must_support_elements.present?,
-              "Could not find \#{missing_must_support_elements.join(', ')} in the \#{@#{sequence[:resource].underscore}_ary&.length} provided #{sequence[:resource]} resource(s)"
-          )
+              "Could not find \#{missing_must_support_elements.join(', ')} in the \#{#{resource_array}&.length} provided #{sequence[:resource]} resource(s)")
         end
 
         test[:test_code] += %(
@@ -420,9 +711,27 @@ module Inferno
         sequence[:tests] << test
       end
 
+      def structure_to_string(struct)
+        if struct.is_a? Hash
+          %({
+            #{struct.map { |k, v| "#{k}: #{structure_to_string(v)}" }.join(",\n")}
+          })
+        elsif struct.is_a? Array
+          %([
+            #{struct.map { |el| structure_to_string(el) }.join(",\n")}
+          ])
+        elsif struct.is_a? String
+          "'#{struct}'"
+        else
+          "''"
+        end
+      end
+
       def create_resource_profile_test(sequence)
+        test_key = :validate_resources
         test = {
           tests_that: "#{sequence[:resource]} resources returned conform to US Core R4 profiles",
+          key: test_key,
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
           description: %(
@@ -430,11 +739,46 @@ module Inferno
             This includes checking for missing data elements and valueset verification.
           )
         }
+        profile_uri = validation_profile_uri(sequence)
         test[:test_code] = %(
-              #{skip_if_not_found(sequence)}
-              test_resources_against_profile('#{sequence[:resource]}'#{', ' + validation_profile_uri(sequence) if validation_profile_uri(sequence)}))
+          #{skip_if_not_found_code(sequence)}
+          test_resources_against_profile('#{sequence[:resource]}'#{', ' + profile_uri if profile_uri}))
+
+        if sequence[:required_concepts].present?
+          concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
+          test[:description] += %(
+            This test also checks that the following CodeableConcepts with
+            required ValueSet bindings include a code rather than just text:
+            #{concept_string}
+          )
+
+          test[:test_code] += %( do |resource|
+              #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
+                concepts = resolve_path(resource, path)
+                next if concepts.blank?
+
+                code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+
+                unless code_present # rubocop:disable Style/IfUnlessModifier
+                  "The CodeableConcept at '\#{path}' is bound to a required ValueSet but does not contain any codes."
+                end
+              end.compact
+            end
+          )
+        end
 
         sequence[:tests] << test
+
+        if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
+          unit_test_generator.generate_resource_validation_test(
+            test_key: test_key,
+            resource_type: sequence[:resource],
+            class_name: sequence[:class_name],
+            sequence_name: sequence[:name],
+            required_concepts: sequence[:required_concepts],
+            profile_uri: profile_uri
+          )
+        end
       end
 
       def create_multiple_or_test(sequence)
@@ -452,15 +796,33 @@ module Inferno
           next if multiple_or_search.blank?
 
           second_val_var = "second_#{param}_val"
-          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }"
+          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }" # rubocop:disable Metrics/LineLength
+          search_params = get_search_params(multiple_or_search[:names], sequence)
+          resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
+          if resolve_param_from_resource
+            test[:test_code] += %(
+              could_not_resolve_all = []
+              resolved_one = false
+            )
+          end
           test[:test_code] += %(
-            #{get_search_params(multiple_or_search[:names], sequence)}
-            #{second_val_var} = #{resolve_el_str}
-            skip 'Cannot find second value for #{param} to perform a multipleOr search' if #{second_val_var}.nil?
-            #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
-            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-            assert_response_ok(reply)
+            found_second_val = false
+            patient_ids.each do |patient|
+              #{search_params}
+              #{second_val_var} = #{resolve_el_str}
+              next if #{second_val_var}.nil?
+              found_second_val = true
+              #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              assert_response_ok(reply)
+              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              missing_values = #{param_value_name(param)}.split(',').reject do |val|
+                resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
+              end
+              assert missing_values.blank?, "Could not find \#{missing_values.join(',')} values from #{param} in any of the resources returned"
+            end
+            skip 'Cannot find second value for #{param} to perform a multipleOr search' unless found_second_val
           )
         end
         sequence[:tests] << test if test[:test_code].present?
@@ -480,19 +842,25 @@ module Inferno
           description: 'This test checks if references found in resources from prior searches can be resolved.'
         }
 
+        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         test[:test_code] = %(
               skip_if_known_not_supported(:#{sequence[:resource]}, [:search, :read])
-              #{skip_if_not_found(sequence)}
+              #{skip_if_not_found_code(sequence)}
 
-              validate_reference_resolutions(@#{sequence[:resource].underscore}))
+              validated_resources = Set.new
+              max_resolutions = 50
+
+              #{resource_array}&.each do |resource|
+                validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+              end)
         sequence[:tests] << test
       end
 
-      def resolve_element_path(search_param_description, resolve_block = '')
+      def resolve_element_path(search_param_description, delayed_sequence)
         element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
         path_parts = element_path.split('.')
-        resource_val = "@#{path_parts.shift.underscore}_ary"
-        "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}') #{resolve_block}"
+        resource_val = delayed_sequence ? "@#{path_parts.shift.underscore}_ary" : "@#{path_parts.shift.underscore}_ary[patient]"
+        "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
       end
 
       def get_value_path_by_type(type)
@@ -522,16 +890,16 @@ module Inferno
       end
 
       def get_first_search(search_parameters, sequence)
-        save_resource_ids_in_bundle_arguments = [
+        save_resource_references_arguments = [
           "versioned_resource_class('#{sequence[:resource]}')",
-          'reply',
+          "@#{sequence[:resource].underscore}_ary#{'[patient]' unless sequence[:delayed_sequence]}",
           validation_profile_uri(sequence)
         ].compact.join(', ')
 
         if fixed_value_search?(search_parameters, sequence)
-          get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+          get_first_search_with_fixed_values(sequence, search_parameters, save_resource_references_arguments)
         else
-          get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+          get_first_search_by_patient(sequence, search_parameters, save_resource_references_arguments)
         end
       end
 
@@ -541,25 +909,68 @@ module Inferno
           !search_param_constants(search_parameters, sequence)
       end
 
-      def get_first_search_by_patient(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
-        %(
-          #{get_search_params(search_parameters, sequence)}
-          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+      def get_first_search_by_patient(sequence, search_parameters, save_resource_references_arguments)
+        if sequence[:delayed_sequence]
+          %(
+            #{get_search_params(search_parameters, sequence)}
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            #{status_search_code(sequence, search_parameters)}
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
 
-          @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+            @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+            #{skip_if_not_found_code(sequence)}
+            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary
+              .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
-          #{skip_if_not_found(sequence)}
+            save_resource_references(#{save_resource_references_arguments})
+            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
+            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+          )
+        else
+          first_search = %(
+            @#{sequence[:resource].underscore}_ary = {}
+            patient_ids.each do |patient|
+              #{get_search_params(search_parameters, sequence)}
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, search_parameters)}
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
 
-          @#{sequence[:resource].underscore} = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-            .resource
-          @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply.resource)
-          save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-          save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
-          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-        )
+              any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+
+              next unless any_resources
+
+              @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          )
+
+          if sequence[:resource] == 'Device'
+            first_search += %(.select do |resource|
+                  device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
+                  device_codes.blank? || resource&.type&.coding&.any? do |coding|
+                    device_codes.include?(coding.code)
+                  end
+                end
+              if  @#{sequence[:resource].underscore}_ary[patient].blank? && reply&.resource&.entry&.present?
+                @skip_if_not_found_message = "No Devices of the specified type (\#{@instance&.device_codes}) were found"
+              end
+            )
+          end
+
+          first_search + %(
+              @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary[patient]
+                .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
+              @resources_found = @#{sequence[:resource].underscore}.present?
+
+              save_resource_references(#{save_resource_references_arguments})
+              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
+              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            end
+
+            #{skip_if_not_found_code(sequence)}
+          )
+        end
       end
 
       def fixed_value_search_param(search_parameters, sequence)
@@ -581,36 +992,42 @@ module Inferno
         }
       end
 
-      def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_ids_in_bundle_arguments)
+      def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_references_arguments)
         # assume only patient + one other parameter
         search_param = fixed_value_search_param(search_parameters, sequence)
         find_two_values = get_multiple_or_params(sequence).include? search_param[:name]
         values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
-          @#{sequence[:resource].underscore}_ary = []
+          @#{sequence[:resource].underscore}_ary = {}
+          @resources_found = false
           #{'values_found = 0' if find_two_values}
           #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
-          #{values_variable_name}.each do |val|
-            search_params = { 'patient': @instance.patient_id, '#{search_param[:name]}': val }
-            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-            assert_response_ok(reply)
-            assert_bundle_response(reply)
+          patient_ids.each do |patient|
+            @#{sequence[:resource].underscore}_ary[patient] = []
+            #{values_variable_name}.each do |val|
+              search_params = { 'patient': patient, '#{search_param[:name]}': val }
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              #{status_search_code(sequence, search_parameters)}
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
 
-            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+              next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
-            @resources_found = true
-            @#{sequence[:resource].underscore} = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-              .resource
-            @#{sequence[:resource].underscore}_ary += fetch_all_bundled_resources(reply.resource)
-            #{'values_found += 1' if find_two_values}
+              @resources_found = true
+              @#{sequence[:resource].underscore} = reply.resource.entry
+                .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
+                .resource
+              @#{sequence[:resource].underscore}_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              #{'values_found += 1' if find_two_values}
 
-            save_resource_ids_in_bundle(#{save_resource_ids_in_bundle_arguments})
-            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
-            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-            break#{' if values_found == 2' if find_two_values}
+              save_resource_references(#{save_resource_references_arguments})
+              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
+              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
+              break#{' if values_found == 2' if find_two_values}
+            end
           end
-          #{skip_if_not_found(sequence)})
+          #{skip_if_not_found_code(sequence)})
       end
 
       def get_search_params(search_parameters, sequence, grab_first_value = false)
@@ -622,16 +1039,27 @@ module Inferno
         )
 
         if search_param_string.include? 'get_value_for_search_param'
-          search_param_value_check =
-            %(search_params.each { |param, value| skip "Could not resolve \#{param} in given resource" if value.nil? }\n)
-          return [search_param_string, search_param_value_check].join('')
+          search_param_value_check = if sequence[:delayed_sequence]
+                                       "search_params.each { |param, value| skip \"Could not resolve \#{param} in any resource.\" if value.nil? }"
+                                     else %(
+                                        if search_params.any? { |_param, value| value.nil? }
+                                          could_not_resolve_all = search_params.keys
+                                          next
+                                        end
+                                        resolved_one = true
+                                      )
+                                     end
+          search_param_string = %(
+            #{search_param_string}
+            #{search_param_value_check}
+            )
         end
 
         search_param_string
       end
 
       def search_param_to_string(param, value)
-        value_string = "'#{value}'" unless value.start_with?('@', 'get_value_for_search_param')
+        value_string = "'#{value}'" unless value.start_with?('@', 'get_value_for_search_param', 'patient')
         "'#{param}': #{value_string || value}"
       end
 
@@ -642,21 +1070,17 @@ module Inferno
         search_parameters.each_with_object({}) do |param, params|
           params[param] =
             if param == 'patient'
-              '@instance.patient_id'
+              'patient'
             elsif grab_first_value && !sequence[:delayed_sequence]
               sequence[:search_param_descriptions][param.to_sym][:values].first
             else
-              "get_value_for_search_param(#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym])})"
+              "get_value_for_search_param(#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])})"
             end
         end
       end
 
       def get_comparator_searches(search_params, sequence)
         search_code = ''
-        search_assignments = search_params.map do |param|
-          "'#{param}': #{param_value_name(param)}"
-        end
-        search_assignments_str = "{ #{search_assignments.join(', ')} }"
         param_comparators = find_comparators(search_params, sequence)
         param_comparators.each do |param, comparators|
           param_val_name = param_value_name(param)
@@ -667,7 +1091,7 @@ module Inferno
             search_code += %(\n
               [#{comparators.keys.map { |comparator| "'#{comparator}'" }.join(', ')}].each do |comparator|
                 comparator_val = date_comparator_value(comparator, #{param_val_name})
-                comparator_search_params = #{search_assignments_str.gsub(param_val_name, 'comparator_val')}
+                comparator_search_params = search_params.merge('#{param}': comparator_val)
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
               end)
@@ -684,13 +1108,16 @@ module Inferno
         end
       end
 
-      def skip_if_not_found(sequence)
-        use_other_patient = ' Please use patients with more information.'
-        "skip 'No #{sequence[:resource]} resources appear to be available.#{use_other_patient unless sequence[:delayed_sequence]}' unless @resources_found"
+      def skip_if_not_found_code(sequence)
+        "skip_if_not_found(resource_type: '#{sequence[:resource]}', delayed: #{sequence[:delayed_sequence]})"
+      end
+
+      def skip_if_could_not_resolve
+        %(skip "Could not resolve all parameters (\#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one)
       end
 
       def search_param_constants(search_parameters, sequence)
-        return { '_id': '@instance.patient_id' } if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
+        return { '_id': 'patient' } if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
       end
 
       def create_search_validation(sequence)
@@ -753,19 +1180,45 @@ module Inferno
           end
         end
 
-        validate_function = ''
-
-        unless search_validators.empty?
-          validate_function = %(
-            def validate_resource_item(resource, property, value)
-              case property
-      #{search_validators}
+        validate_functions =
+          if search_validators.empty?
+            ''
+          else
+            %(
+              def validate_resource_item(resource, property, value)
+                case property
+        #{search_validators}
+                end
               end
-            end
-      )
-        end
+            )
+          end
 
-        validate_function
+        validate_functions += test_medication_inclusion_code if sequence[:resource] == 'MedicationRequest'
+        validate_functions += perform_search_with_status_code(sequence) if sequence_has_status_search?(sequence)
+
+        validate_functions
+      end
+
+      def test_medication_inclusion_code
+        %(
+          def test_medication_inclusion(medication_requests, search_params)
+            requests_with_external_references =
+              medication_requests
+                .select { |request| request&.medicationReference&.present? }
+                .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+
+            return if requests_with_external_references.blank?
+
+            search_params.merge!(_include: 'MedicationRequest:medication')
+            response = get_resource_by_params(FHIR::MedicationRequest, search_params)
+            assert_response_ok(response)
+            assert_bundle_response(response)
+            requests_with_medications = fetch_all_bundled_resources(response, check_for_data_absent_reasons)
+
+            medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
+            assert medications.present?, 'No Medications were included in the search results'
+          end
+        )
       end
 
       def generate_module(module_info)

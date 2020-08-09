@@ -9,11 +9,11 @@ describe Inferno::Sequence::USCore310CareteamSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310CareteamSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = 'example'
-    @instance.patient_id = @patient_id
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     set_resource_support(@instance, 'CareTeam')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         'status': 'proposed'
       }
     end
@@ -74,20 +74,20 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
       @care_team = FHIR.from_contents(load_fixture(:us_core_careteam))
-      @care_team_ary = [@care_team]
+      @care_team_ary = { @sequence.patient_ids.first => @care_team }
       @sequence.instance_variable_set(:'@care_team', @care_team)
       @sequence.instance_variable_set(:'@care_team_ary', @care_team_ary)
 
       @query = {
-        'patient': @instance.patient_id,
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary, 'status'))
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
     it 'fails if a non-success response code is received' do
       ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'status': value
         }
         stub_request(:get, "#{@base_url}/CareTeam")
@@ -103,7 +103,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     it 'fails if a Bundle is not received' do
       ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'status': value
         }
         stub_request(:get, "#{@base_url}/CareTeam")
@@ -119,7 +119,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     it 'skips if an empty Bundle is received' do
       ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'status': value
         }
         stub_request(:get, "#{@base_url}/CareTeam")
@@ -135,7 +135,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
       ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'status': value
         }
         stub_request(:get, "#{@base_url}/CareTeam")
@@ -151,12 +151,12 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'status': value
         }
         body =
           if @sequence.resolve_element_from_path(@care_team, 'status') == value
-            wrap_resources_in_bundle(@care_team_ary).to_json
+            wrap_resources_in_bundle(@care_team_ary.values.flatten).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -195,7 +195,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence.instance_variable_set(:'@resources_found', false)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No CareTeam resources could be found for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No CareTeam resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'fails if a non-success response code is received' do
@@ -244,6 +244,24 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected resource to be of type CareTeam.', exception.message
+    end
+
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'CareTeam',
+        resource_id: @care_team_id,
+        testing_instance: @instance
+      )
+
+      care_team = FHIR::CareTeam.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/CareTeam/#{@care_team_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: care_team.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@care_team_id}", exception.message
     end
 
     it 'succeeds when a CareTeam resource is read successfully' do

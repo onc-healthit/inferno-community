@@ -1,21 +1,29 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class <%=class_name%> < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title '<%=title%> Tests'
 
       description 'Verify that <%=resource%> resources on the FHIR server follow the US Core Implementation Guide'
 
       test_id_prefix '<%=test_id_prefix%>'
 
-      requires :token<%=", :patient_id" unless delayed_sequence%>
+      requires :token<%=", :patient_ids" unless delayed_sequence%><%=', :device_codes' if resource == 'Device'  %>
       conformance_supports :<%=resource%><%="
       delayed_sequence" if delayed_sequence%>
 <%=search_validator%>
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
+
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
 
       @resources_found = false<% tests.each do |test|%>
 

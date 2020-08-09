@@ -465,7 +465,8 @@ namespace :inferno do |_argv|
   end
 
   desc 'Generate Tests'
-  task :generate, [:generator, :path] do |_t, args|
+  task :generate, [:generator, :path, :add_to_config] do |_t, args|
+    args.with_defaults(add_to_config: 'true')
     require_relative("../../generator/#{args.generator}/#{args.generator}_generator")
     generator_class = Inferno::Generator::Base.subclasses.first do |c|
       c.name.demodulize.downcase.start_with?(args.generator)
@@ -473,6 +474,12 @@ namespace :inferno do |_argv|
 
     generator = generator_class.new(args.path, args.extras)
     generator.run
+    if args.add_to_config == 'true'
+      ConfigManager.new('config.yml').tap do |cm|
+        cm.add_modules(args.path)
+        cm.write_to_file('config.yml')
+      end
+    end
   end
 end
 
@@ -480,7 +487,7 @@ namespace :terminology do |_argv|
   desc 'download and execute UMLS terminology data'
   task :download_umls, [:username, :password] do |_t, args|
     # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
-    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2018AB/umls-2018AB-full.zip'
+    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip'
 
     puts 'Getting Login Page'
     response = RestClient.get default_target_file

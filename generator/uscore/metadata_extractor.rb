@@ -105,6 +105,7 @@ module Inferno
 
             base_path = get_base_path(supported_profile)
             profile_definition = @resource_by_path[base_path]
+            add_required_codeable_concepts(profile_definition, new_sequence)
             add_must_support_elements(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
             add_element_definitions(profile_definition, new_sequence)
@@ -177,8 +178,28 @@ module Inferno
         sequence[:revincludes] = resource['searchRevInclude'] || []
       end
 
+      def add_required_codeable_concepts(profile_definition, sequence)
+        required_concepts = profile_definition['snapshot']['element']
+          .select { |element| element['type']&.any? { |type| type['code'] == 'CodeableConcept' } }
+          .select { |e| e.dig('binding', 'strength') == 'required' }
+
+        # The base FHIR vital signs profile has a required binding that isn't
+        # relevant for any of its child profiles
+        return if sequence[:resource] == 'Observation'
+
+        sequence[:required_concepts] = required_concepts.map do |concept|
+          concept['path']
+            .gsub("#{sequence[:resource]}.", '')
+            .gsub('[x]', 'CodeableConcept')
+        end
+      end
+
       def add_must_support_elements(profile_definition, sequence)
-        profile_definition['snapshot']['element'].select { |el| el['mustSupport'] }.each do |element|
+        profile_elements = profile_definition['snapshot']['element']
+        profile_elements.select { |el| el['mustSupport'] }.each do |element|
+          # not including components in vital-sign profiles because they don't make sense outside of BP
+          next if profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns' && element['path'].include?('component')
+
           if element['path'].end_with? 'extension'
             sequence[:must_supports] <<
               {
@@ -188,25 +209,69 @@ module Inferno
                 url: element['type'].first['profile'].first
               }
             next
-          end
-
-          path = element['path']
-          if path.include? '[x]'
-            choice_el = profile_definition['snapshot']['element'].find { |el| el['id'] == (path.split('[x]').first + '[x]') }
-            choice_el['type'].each do |type|
-              sequence[:must_supports] <<
-                {
-                  type: 'element',
-                  path: path.gsub('[x]', capitalize_first_letter(type['code']))
+          elsif element['sliceName'].present?
+            array_el = profile_elements.find { |el| el['id'] == element['path'] }
+            discriminators = array_el['slicing']['discriminator']
+            must_support_element = { type: 'slice', name: element['id'], path: element['path'] }
+            if discriminators.first['type'] == 'pattern'
+              discriminator_path = discriminators.first['path']
+              discriminator_path = '' if discriminator_path == '$this'
+              pattern_element = discriminator_path.present? ? profile_elements.find { |el| el['id'] == element['id'] + '.' + discriminator_path } : element
+              if pattern_element['patternCodeableConcept'].present?
+                must_support_element[:discriminator] = {
+                  type: 'patternCodeableConcept',
+                  path: discriminator_path,
+                  code: pattern_element['patternCodeableConcept']['coding'].first['code'],
+                  system: pattern_element['patternCodeableConcept']['coding'].first['system']
                 }
-            end
-          else
-            sequence[:must_supports] <<
-              {
-                type: 'element',
-                path: path
+              elsif pattern_element['patternIdentifier'].present?
+                must_support_element[:discriminator] = {
+                  type: 'patternIdentifier',
+                  path: discriminator_path,
+                  system: pattern_element['patternIdentifier']['system']
+                }
+              end
+            elsif discriminators.first['type'] == 'type'
+              type_path = discriminators.first['path']
+              type_path = '' if type_path == '$this'
+              type_element = type_path.present? ? profile_element.find { |el| el['id'] == element['id'] + '.' + type_path } : element
+              type_code = type_element['type'].first['code']
+              must_support_element[:discriminator] = {
+                type: 'type',
+                code: capitalize_first_letter(type_code)
               }
+            elsif discriminators.first['type'] == 'value'
+              must_support_element[:discriminator] = {
+                type: 'value',
+                values: []
+              }
+              discriminators.each do |discriminator|
+                fixed_el = profile_elements.find { |el| el['id'].starts_with?(element['id']) && el['path'] == element['path'] + '.' + discriminator['path'] }
+                fixed_value = fixed_el['fixedUri'] || fixed_el['fixedCode']
+                must_support_element[:discriminator][:values] << {
+                  path: discriminator['path'],
+                  value: fixed_value
+                }
+              end
+            end
+            sequence[:must_supports] << must_support_element
+            next
           end
+          path = element['path']
+          must_support_element = { type: 'element', path: path }
+          if element['fixedUri'].present?
+            must_support_element[:fixed_value] = element['fixedUri']
+          elsif element['patternCodeableConcept'].present?
+            must_support_element[:fixed_value] = element['patternCodeableConcept']['coding'].first['code']
+            must_support_element[:path] += '.coding.code'
+          elsif element['fixedCode'].present?
+            must_support_element[:fixed_value] = element['fixedCode']
+          elsif element['patternIdentifier'].present?
+            must_support_element[:fixed_value] = element['patternIdentifier']['system']
+            must_support_element[:path] += '.system'
+          end
+          sequence[:must_supports].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
+          sequence[:must_supports] << must_support_element
         end
       end
 
@@ -226,9 +291,16 @@ module Inferno
           if !profile_element.nil?
             param_metadata[:type] = profile_element['type'].first['code']
             param_metadata[:contains_multiple] = (profile_element['max'] == '*')
-            add_valid_codes(profile_definition, profile_element, FHIR.const_get(sequence[:resource])::METADATA[param.to_s], param_metadata)
+            search_path = param_metadata[:path].gsub("#{sequence[:resource]}.", '')
+            add_valid_codes(
+              profile_definition,
+              profile_element,
+              FHIR.const_get(sequence[:resource])::METADATA[search_path],
+              param_metadata
+            )
           else
-            # search is a variable type eg.) Condition.onsetDateTime - element in profile def is Condition.onset[x]
+            # search is a variable type, eg. Condition.onsetDateTime - element
+            # in profile def is Condition.onset[x]
             param_metadata[:type] = search_param_definition['type']
             param_metadata[:contains_multiple] = false
           end
@@ -238,8 +310,19 @@ module Inferno
             expectation = expectation_extension[index]['extension'].first['valueCode'] unless expectation_extension.nil?
             param_metadata[:comparators][comparator.to_sym] = expectation
           end
+
           multiple_or_expectation = search_param_definition['_multipleOr']['extension'].first['valueCode']
           param_metadata[:multiple_or] = multiple_or_expectation
+
+          if search_param_definition['chain'].present?
+            expectations =
+              search_param_definition['_chain']
+                .map { |expectation| expectation['extension'].first['valueCode'] }
+            param_metadata[:chain] =
+              search_param_definition['chain'].zip(expectations)
+                .map { |chain, expectation| { chain: chain, expectation: expectation } }
+          end
+
           sequence[:search_param_descriptions][param] = param_metadata
         end
       end

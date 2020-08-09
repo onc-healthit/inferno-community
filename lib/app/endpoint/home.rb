@@ -37,6 +37,7 @@ module Inferno
                                                            base_url: request.base_url,
                                                            selected_module: inferno_module.name)
 
+          @instance.add_sequence_requirements(@instance.module.sequence_requirements)
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
           unless params['preset'].blank?
@@ -101,6 +102,7 @@ module Inferno
         get '/:id/test_request/:test_request_id/?' do
           request_response = Inferno::Models::RequestResponse.get(params[:test_request_id])
           halt 404 if request_response.instance_id != params[:id]
+
           erb :request_details, { layout: false }, rr: request_response
         end
       end

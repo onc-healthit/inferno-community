@@ -9,11 +9,11 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310ImplantableDeviceSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = 'example'
-    @instance.patient_id = @patient_id
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     set_resource_support(@instance, 'Device')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -73,12 +73,12 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @test = @sequence_class[:search_by_patient]
       @sequence = @sequence_class.new(@instance, @client)
       @device = FHIR.from_contents(load_fixture(:us_core_implantable_device))
-      @device_ary = [@device]
+      @device_ary = { @sequence.patient_ids.first => @device }
       @sequence.instance_variable_set(:'@device', @device)
       @sequence.instance_variable_set(:'@device_ary', @device_ary)
 
       @query = {
-        'patient': @instance.patient_id
+        'patient': @sequence.patient_ids.first
       }
     end
 
@@ -125,7 +125,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Device")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
     end
@@ -136,15 +136,15 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @test = @sequence_class[:search_by_patient_type]
       @sequence = @sequence_class.new(@instance, @client)
       @device = FHIR.from_contents(load_fixture(:us_core_implantable_device))
-      @device_ary = [@device]
+      @device_ary = { @sequence.patient_ids.first => @device }
       @sequence.instance_variable_set(:'@device', @device)
       @sequence.instance_variable_set(:'@device_ary', @device_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
-        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary, 'type'))
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary[@sequence.patient_ids.first], 'type'))
       }
     end
 
@@ -157,11 +157,11 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@device_ary', [FHIR::Device.new])
+      @sequence.instance_variable_set(:'@device_ary', @sequence.patient_ids.first => FHIR::Device.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+      assert_match(/Could not resolve .* in any resource\./, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -197,7 +197,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Device")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
     end
@@ -229,7 +229,7 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       @sequence.instance_variable_set(:'@resources_found', false)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No Device resources could be found for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No Device resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'fails if a non-success response code is received' do
@@ -278,6 +278,24 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected resource to be of type Device.', exception.message
+    end
+
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'Device',
+        resource_id: @device_id,
+        testing_instance: @instance
+      )
+
+      device = FHIR::Device.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/Device/#{@device_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: device.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@device_id}", exception.message
     end
 
     it 'succeeds when a Device resource is read successfully' do

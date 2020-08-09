@@ -5,7 +5,8 @@ SimpleCov.start do
   add_filter '/test/'
 end
 
-ENV['RACK_ENV'] = 'test'
+ENV['APP_ENV'] = ENV['RACK_ENV'] = 'test'
+
 require 'minitest/autorun'
 require 'webmock/minitest'
 require 'rack/test'
@@ -23,6 +24,8 @@ if create_assertion_report?
 end
 
 require_relative '../lib/app'
+Inferno::App::Endpoint.settings.resource_validator = 'internal'
+Inferno::StartupTasks.load_all_modules
 
 def find_fixture_directory(test_directory = nil)
   test_directory ||=
@@ -61,10 +64,12 @@ def valid_uri?(uri)
 end
 
 def wrap_resources_in_bundle(resources, type: 'searchset')
-  bundle = FHIR::DSTU2::Bundle.new('id': 'foo', 'type': type)
   resources = [resources].flatten.compact
+  # get the Bundle class from the same version of FHIR models
+  bundle_class = resources.first.class.parent::Bundle
+  bundle = bundle_class.new('id': 'foo', 'type': type)
   resources.each do |resource|
-    bundle.entry << FHIR::DSTU2::Bundle::Entry.new
+    bundle.entry << bundle_class::Entry.new
     bundle.entry.last.resource = resource
   end
   bundle

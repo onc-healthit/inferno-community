@@ -12,6 +12,14 @@ module Inferno
         class_name = sequence[:class_name]
         return if tests[class_name].blank?
 
+        if sequence[:resource] == 'MedicationRequest'
+          tests[class_name] << ERB.new(
+            File.read(
+              File.join(__dir__, 'templates', 'unit_tests', 'medication_inclusion_unit_test.rb.erb')
+            )
+          ).result
+        end
+
         unit_tests = template.result_with_hash(
           class_name: class_name,
           tests: tests[class_name],
@@ -32,11 +40,14 @@ module Inferno
         search_params:,
         is_first_search:,
         is_fixed_value_search:,
+        is_status_search:,
         has_comparator_tests:,
+        has_status_searches:,
         fixed_value_search_param:,
         class_name:,
         sequence_name:,
-        delayed_sequence:
+        delayed_sequence:,
+        status_param:
       )
 
         template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'search_unit_test.rb.erb')))
@@ -52,12 +63,15 @@ module Inferno
           sequence_name: sequence_name,
           is_first_search: is_first_search,
           is_fixed_value_search: is_fixed_value_search,
+          is_status_search: is_status_search,
           has_comparator_tests: has_comparator_tests,
           has_dynamic_search_params: dynamic_search_params(search_params).present?,
+          has_status_searches: has_status_searches,
           fixed_value_search_param: fixed_value_search_param&.dig(:name),
           fixed_value_search_string: fixed_value_search_param&.dig(:values)&.map { |value| "'#{value}'" }&.join(', '),
           fixed_value_search_path: fixed_value_search_param&.dig(:path),
-          delayed_sequence: delayed_sequence
+          delayed_sequence: delayed_sequence,
+          status_param: status_param
         )
         tests[class_name] << test
       end
@@ -91,9 +105,31 @@ module Inferno
         tests[class_name] << test
       end
 
+      def generate_chained_search_test(class_name:)
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'chained_search_unit_test.rb.erb')))
+
+        tests[class_name] << template.result
+      end
+
+      def generate_resource_validation_test(test_key:, resource_type:, class_name:, sequence_name:, required_concepts:, profile_uri:)
+        template = ERB.new(File.read(File.join(__dir__, 'templates', 'unit_tests', 'resource_validation_unit_test.rb.erb')))
+        resource_var_name = resource_type.underscore
+
+        test = template.result_with_hash(
+          test_key: test_key,
+          resource_type: resource_type,
+          resource_var_name: resource_var_name,
+          concept_paths: path_array_string(required_concepts),
+          sequence_name: sequence_name,
+          profile_uri: profile_uri
+        )
+
+        tests[class_name] << test
+      end
+
       def no_resources_found_message(interaction_test, resource_type)
         if interaction_test
-          "No #{resource_type} resources could be found for this patient. Please use patients with more information."
+          "No #{resource_type} resources appear to be available. Please use patients with more information."
         else
           "No #{resource_type} references found from the prior searches"
         end
@@ -105,6 +141,8 @@ module Inferno
             dynamic_search_param_string(param, value)
           elsif value.start_with? '@'
             "'#{param}': #{value}"
+          elsif value == 'patient'
+            "'#{param}': @sequence.patient_ids.first"
           else
             "'#{param}': '#{value}'"
           end
@@ -115,6 +153,7 @@ module Inferno
         param_info = dynamic_search_param(value)
         path = param_info[:resource_path]
         variable_name = param_info[:variable_name]
+        variable_name.gsub!('[patient]', '[@sequence.patient_ids.first]')
         "'#{param}': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(#{variable_name}, '#{path}'))"
       end
 
@@ -132,11 +171,15 @@ module Inferno
       #   get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
       # this method extracts the variable name '@careplan_ary' and the path 'category'
       def dynamic_search_param(param_value)
-        match = param_value.match(/(@\w+).*'([\w\.]+)'/)
+        match = param_value.match(/(@[^,]+).*'([\w\.]+)'/)
         {
           variable_name: match[1],
           resource_path: match[2]
         }
+      end
+
+      def path_array_string(paths)
+        paths.map { |path| "'#{path}'" }.join ', '
       end
     end
   end

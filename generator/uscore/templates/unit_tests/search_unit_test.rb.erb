@@ -3,7 +3,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
     @test = @sequence_class[:<%= test_key %>]
     @sequence = @sequence_class.new(@instance, @client)
     @<%= resource_var_name %> = FHIR.from_contents(load_fixture(:<%= sequence_name %>))
-    @<%= resource_var_name %>_ary = [@<%= resource_var_name %>]
+    @<%= resource_var_name %>_ary = <% unless delayed_sequence %>{ @sequence.patient_ids.first => @<%= resource_var_name %> }<% else %> [ @<%= resource_var_name %> ] <% end %>
     @sequence.instance_variable_set(:'@<%= resource_var_name %>', @<%= resource_var_name %>)
     @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', @<%= resource_var_name %>_ary)
 <% unless is_first_search %>
@@ -25,11 +25,11 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 
   <% if has_dynamic_search_params %>
   it 'skips if a value for one of the search parameters cannot be found' do
-    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', [FHIR::<%= resource_type %>.new])
+    @sequence.instance_variable_set(:'@<%= resource_var_name %>_ary', <% unless delayed_sequence %>@sequence.patient_ids.first => FHIR::<%= resource_type %>.new <% else %> [FHIR::<%= resource_type %>.new] <% end %>)
 
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-    assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+    assert_match(/Could not resolve .* in any resource\./, exception.message)
   end
   <% end %>
 <% end %>
@@ -38,7 +38,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 <% if is_first_search && is_fixed_value_search %>
     [<%= fixed_value_search_string %>].each do |value|
       query_params = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         '<%= fixed_value_search_param %>': value
       }
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -60,7 +60,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 <% if is_first_search && is_fixed_value_search %>
     [<%= fixed_value_search_string %>].each do |value|
       query_params = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         '<%= fixed_value_search_param %>': value
       }
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -83,7 +83,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% if is_fixed_value_search %>
     [<%= fixed_value_search_string %>].each do |value|
       query_params = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         '<%= fixed_value_search_param %>': value
       }
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -106,7 +106,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
 <% if is_first_search && is_fixed_value_search %>
     [<%= fixed_value_search_string %>].each do |value|
       query_params = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         '<%= fixed_value_search_param %>': value
       }
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
@@ -129,12 +129,12 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% if is_first_search && is_fixed_value_search %>
     [<%= fixed_value_search_string %>].each do |value|
       query_params = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         '<%= fixed_value_search_param %>': value
       }
       body =
         if @sequence.resolve_element_from_path(@<%= resource_var_name %>, '<%= fixed_value_search_path %>') == value
-          wrap_resources_in_bundle(@<%= resource_var_name %>_ary).to_json
+          wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json
         else
           FHIR::Bundle.new.to_json
         end
@@ -145,10 +145,145 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   <% else %>
     stub_request(:get, "#{@base_url}/<%= resource_type %>")
       .with(query: @query, headers: @auth_header)
-      .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary).to_json)
+      .to_return(status: 200, body: wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json)
   <% end %>
 
     @sequence.run_test(@test)
+  end
+<% end %>
+<% if has_status_searches && !is_status_search %>
+  describe 'with servers that require status' do
+    it 'fails if a 400 is received without an OperationOutcome' do
+  <% if is_first_search && is_fixed_value_search %>
+      [<%= fixed_value_search_string %>].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          '<%= fixed_value_search_param %>': value
+        }
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 400)
+      end
+  <% else %>
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 400)
+  <% end %>
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Server returned a status of 400 without an OperationOutcome.', exception.message
+    end
+
+    it 'warns if the search is not documented in the CapabilityStatement' do
+  <% if is_first_search && is_fixed_value_search %>
+      [<%= fixed_value_search_string %>].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          '<%= fixed_value_search_param %>': value
+        }
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+      end
+  <% else %>
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+  <% end %>
+
+      assert_raises(WebMock::NetConnectNotAllowedError) { @sequence.run_test(@test) }
+
+      warnings = @sequence.instance_variable_get(:@test_warnings)
+
+      assert warnings.present?, 'Test did not generate any warnings.'
+      assert warnings.any? { |warning| warning.match(/search interaction for this resource is not documented/) },
+        'Test did not generate the expected warning.'
+    end
+
+    it 'fails if searching with status is not successful' do
+  <% if is_first_search && is_fixed_value_search %>
+      [<%= fixed_value_search_string %>].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          '<%= fixed_value_search_param %>': value
+        }
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+          .to_return(status: 500)
+      end
+  <% else %>
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+        .to_return(status: 500)
+  <% end %>
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 500. ', exception.message
+    end
+
+    it 'fails if searching with status does not return a Bundle' do
+  <% if is_first_search && is_fixed_value_search %>
+      [<%= fixed_value_search_string %>].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          '<%= fixed_value_search_param %>': value
+        }
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+          .to_return(status: 200, body: FHIR::<%= resource_type %>.new.to_json)
+      end
+  <% else %>
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+        .to_return(status: 200, body: FHIR::<%= resource_type %>.new.to_json)
+  <% end %>
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: <%= resource_type %>', exception.message
+    end
+
+  <% unless has_comparator_tests %>
+    it 'succeeds if searching with status returns valid resources' do
+    <% if is_first_search && is_fixed_value_search %>
+      [<%= fixed_value_search_string %>].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          '<%= fixed_value_search_param %>': value
+        }
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        stub_request(:get, "#{@base_url}/<%= resource_type %>")
+          .with(query: query_params.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
+      end
+    <% else %>
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+      stub_request(:get, "#{@base_url}/<%= resource_type %>")
+        .with(query: @query.merge(<%= status_param[:param] %>: [<%= status_param[:value] %>].first), headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json)
+    <% end %>
+
+      @sequence.run_test(@test)
+    end
+  <% end %>
   end
 <% end %>
 end

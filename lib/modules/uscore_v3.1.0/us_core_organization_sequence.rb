@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310OrganizationSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Organization Tests'
 
       description 'Verify that Organization resources on the FHIR server follow the US Core Implementation Guide'
@@ -37,6 +41,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
@@ -58,7 +66,8 @@ module Inferno
         @organization_ary = organization_references.map do |reference|
           validate_read_reply(
             FHIR::Organization.new(id: reference.resource_id),
-            FHIR::Organization
+            FHIR::Organization,
+            check_for_data_absent_reasons
           )
         end
         @organization = @organization_ary.first
@@ -84,11 +93,13 @@ module Inferno
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
-        @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test :search_by_name do
@@ -107,21 +118,21 @@ module Inferno
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
+        @organization_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        @organization = @organization_ary
+          .find { |resource| resource.resourceType == 'Organization' }
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
-
-        @organization = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Organization' }
-          .resource
-        @organization_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Organization'), reply)
+        save_resource_references(versioned_resource_class('Organization'), @organization_ary)
         save_delayed_sequence_references(@organization_ary)
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
@@ -139,16 +150,17 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         search_params = {
           'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+
         validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :vread_interaction do
@@ -164,7 +176,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Organization, [:vread])
-        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         validate_vread_reply(@organization, versioned_resource_class('Organization'))
       end
@@ -182,7 +194,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Organization, [:history])
-        skip 'No Organization resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         validate_history_reply(@organization, versioned_resource_class('Organization'))
       end
@@ -196,24 +208,31 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
+        provenance_results = []
 
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          .select { |resource| resource.resourceType == 'Provenance' }
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Organization resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '08'
+          name 'Organization resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
 
@@ -224,7 +243,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
         test_resources_against_profile('Organization')
       end
 
@@ -242,10 +261,6 @@ module Inferno
             Organization.identifier.system
 
             Organization.identifier.value
-
-            Organization.identifier
-
-            Organization.identifier
 
             Organization.active
 
@@ -265,39 +280,72 @@ module Inferno
 
             Organization.address.country
 
+            Organization.identifier:NPI
+
+            Organization.identifier:CLIA
+
           )
           versions :r4
         end
 
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
-        must_support_elements = [
-          'Organization.identifier',
-          'Organization.identifier.system',
-          'Organization.identifier.value',
-          'Organization.identifier',
-          'Organization.identifier',
-          'Organization.active',
-          'Organization.name',
-          'Organization.telecom',
-          'Organization.address',
-          'Organization.address.line',
-          'Organization.address.city',
-          'Organization.address.state',
-          'Organization.address.postalCode',
-          'Organization.address.country'
+        must_support_slices = [
+          {
+            name: 'Organization.identifier:NPI',
+            path: 'Organization.identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          },
+          {
+            name: 'Organization.identifier:CLIA',
+            path: 'Organization.identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'urn:oid:2.16.840.1.113883.4.7'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Organization.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Organization.', '')
           @organization_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
 
+        must_support_elements = [
+          { path: 'Organization.identifier' },
+          { path: 'Organization.identifier.system' },
+          { path: 'Organization.identifier.value' },
+          { path: 'Organization.active' },
+          { path: 'Organization.name' },
+          { path: 'Organization.telecom' },
+          { path: 'Organization.address' },
+          { path: 'Organization.address.line' },
+          { path: 'Organization.address.city' },
+          { path: 'Organization.address.state' },
+          { path: 'Organization.address.postalCode' },
+          { path: 'Organization.address.country' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Organization.', '')
+          @organization_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@organization_ary&.length} provided Organization resource(s)"
-
         @instance.save!
       end
 
@@ -312,9 +360,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Organization, [:search, :read])
-        skip 'No Organization resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Organization', delayed: true)
 
-        validate_reference_resolutions(@organization)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @organization_ary&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

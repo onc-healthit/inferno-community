@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310CareteamSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'CareTeam Tests'
 
       description 'Verify that CareTeam resources on the FHIR server follow the US Core Implementation Guide'
 
       test_id_prefix 'USCCT'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :CareTeam
 
       def validate_resource_item(resource, property, value)
@@ -26,9 +30,46 @@ module Inferno
         end
       end
 
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities.search_documented?('CareTeam'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                 search interaction for this resource is not documented in the
+                 CapabilityStatement. If this response was due to the server
+                 requiring a status parameter, the server must document this
+                 requirement in its CapabilityStatement.)
+        end
+
+        ['proposed,active,suspended,inactive,entered-in-error'].each do |status_value|
+          params_with_status = search_param.merge('status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'CareTeam' }
+          next if entries.blank?
+
+          search_param.merge!('status': status_value)
+          break
+        end
+
+        reply
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
+
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
 
       @resources_found = false
 
@@ -48,14 +89,17 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': 'proposed'
-        }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'status': 'proposed'
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+          assert_response_unauthorized reply
+        end
+
         @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
       end
 
       test :search_by_patient_status do
@@ -71,30 +115,36 @@ module Inferno
           versions :r4
         end
 
-        @care_team_ary = []
+        @care_team_ary = {}
+        @resources_found = false
         values_found = 0
         status_val = ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error']
-        status_val.each do |val|
-          search_params = { 'patient': @instance.patient_id, 'status': val }
-          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
+        patient_ids.each do |patient|
+          @care_team_ary[patient] = []
+          status_val.each do |val|
+            search_params = { 'patient': patient, 'status': val }
+            reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
 
-          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
 
-          @resources_found = true
-          @care_team = reply.resource.entry
-            .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
-            .resource
-          @care_team_ary += fetch_all_bundled_resources(reply.resource)
-          values_found += 1
+            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
 
-          save_resource_ids_in_bundle(versioned_resource_class('CareTeam'), reply)
-          save_delayed_sequence_references(@care_team_ary)
-          validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-          break if values_found == 2
+            @resources_found = true
+            @care_team = reply.resource.entry
+              .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
+              .resource
+            @care_team_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            values_found += 1
+
+            save_resource_references(versioned_resource_class('CareTeam'), @care_team_ary[patient])
+            save_delayed_sequence_references(@care_team_ary[patient])
+            validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+
+            break if values_found == 2
+          end
         end
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
       end
 
       test :read_interaction do
@@ -109,9 +159,9 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:read])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
-        validate_read_reply(@care_team, versioned_resource_class('CareTeam'))
+        validate_read_reply(@care_team, versioned_resource_class('CareTeam'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -127,7 +177,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:vread])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         validate_vread_reply(@care_team, versioned_resource_class('CareTeam'))
       end
@@ -145,7 +195,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:history])
-        skip 'No CareTeam resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         validate_history_reply(@care_team, versioned_resource_class('CareTeam'))
       end
@@ -159,25 +209,41 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
+          save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        end
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'CareTeam resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '07'
+          name 'CareTeam resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
@@ -188,7 +254,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
         test_resources_against_profile('CareTeam')
       end
 
@@ -215,26 +281,27 @@ module Inferno
           versions :r4
         end
 
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
         must_support_elements = [
-          'CareTeam.status',
-          'CareTeam.subject',
-          'CareTeam.participant',
-          'CareTeam.participant.role',
-          'CareTeam.participant.member'
+          { path: 'CareTeam.status' },
+          { path: 'CareTeam.subject' },
+          { path: 'CareTeam.participant' },
+          { path: 'CareTeam.participant.role' },
+          { path: 'CareTeam.participant.member' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('CareTeam.', '')
-          @care_team_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('CareTeam.', '')
+          @care_team_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_team_ary&.length} provided CareTeam resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_team_ary&.values&.flatten&.length} provided CareTeam resource(s)"
         @instance.save!
       end
 
@@ -248,18 +315,37 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        second_status_val = resolve_element_from_path(@care_team_ary, 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
-        skip 'Cannot find second value for status to perform a multipleOr search' if second_status_val.nil?
-        search_params[:status] += ',' + get_value_for_search_param(second_status_val)
-        reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-        validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-        assert_response_ok(reply)
+        found_second_val = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+          next if second_status_val.nil?
+
+          found_second_val = true
+          search_params[:status] += ',' + get_value_for_search_param(second_status_val)
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+          validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+          assert_response_ok(reply)
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          missing_values = search_params[:status].split(',').reject do |val|
+            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+          end
+          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
+        end
+        skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
 
       test 'Every reference within CareTeam resource is valid and can be read.' do
@@ -273,9 +359,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:CareTeam, [:search, :read])
-        skip 'No CareTeam resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
-        validate_reference_resolutions(@care_team)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @care_team_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

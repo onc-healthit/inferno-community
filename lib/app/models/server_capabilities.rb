@@ -49,6 +49,16 @@ module Inferno
         smart_extensions.map(&:valueCode)
       end
 
+      def search_documented?(resource_type)
+        statement&.rest&.any? do |rest|
+          rest&.resource
+            &.select { |resource| resource&.type == resource_type }
+            &.flat_map(&:interaction)
+            &.select { |interaction| interaction&.code == 'search-type' }
+            &.any? { |interaction| interaction&.documentation&.present? }
+        end
+      end
+
       private
 
       def statement

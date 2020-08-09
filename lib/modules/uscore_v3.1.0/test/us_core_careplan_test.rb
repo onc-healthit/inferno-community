@@ -9,11 +9,11 @@ describe Inferno::Sequence::USCore310CareplanSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310CareplanSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = 'example'
-    @instance.patient_id = @patient_id
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     set_resource_support(@instance, 'CarePlan')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
@@ -24,7 +24,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence = @sequence_class.new(@instance, @client)
 
       @query = {
-        'patient': @instance.patient_id,
+        'patient': @sequence.patient_ids.first,
         'category': 'assess-plan'
       }
     end
@@ -74,20 +74,20 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @query = {
-        'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'))
       }
     end
 
     it 'fails if a non-success response code is received' do
       ['assess-plan'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'category': value
         }
         stub_request(:get, "#{@base_url}/CarePlan")
@@ -103,7 +103,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'fails if a Bundle is not received' do
       ['assess-plan'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'category': value
         }
         stub_request(:get, "#{@base_url}/CarePlan")
@@ -119,7 +119,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'skips if an empty Bundle is received' do
       ['assess-plan'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'category': value
         }
         stub_request(:get, "#{@base_url}/CarePlan")
@@ -135,7 +135,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
       ['assess-plan'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'category': value
         }
         stub_request(:get, "#{@base_url}/CarePlan")
@@ -151,12 +151,12 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       ['assess-plan'].each do |value|
         query_params = {
-          'patient': @instance.patient_id,
+          'patient': @sequence.patient_ids.first,
           'category': value
         }
         body =
           if @sequence.resolve_element_from_path(@care_plan, 'category.coding.code') == value
-            wrap_resources_in_bundle(@care_plan_ary).to_json
+            wrap_resources_in_bundle(@care_plan_ary.values.flatten).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -167,6 +167,99 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
       @sequence.run_test(@test)
     end
+
+    describe 'with servers that require status' do
+      it 'fails if a 400 is received without an OperationOutcome' do
+        ['assess-plan'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'category': value
+          }
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400)
+        end
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'Server returned a status of 400 without an OperationOutcome.', exception.message
+      end
+
+      it 'warns if the search is not documented in the CapabilityStatement' do
+        ['assess-plan'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'category': value
+          }
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        end
+
+        assert_raises(WebMock::NetConnectNotAllowedError) { @sequence.run_test(@test) }
+
+        warnings = @sequence.instance_variable_get(:@test_warnings)
+
+        assert warnings.present?, 'Test did not generate any warnings.'
+        assert warnings.any? { |warning| warning.match(/search interaction for this resource is not documented/) },
+               'Test did not generate the expected warning.'
+      end
+
+      it 'fails if searching with status is not successful' do
+        ['assess-plan'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'category': value
+          }
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params.merge('status': ['draft,active,on-hold,revoked,completed,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 500)
+        end
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'Bad response code: expected 200, 201, but found 500. ', exception.message
+      end
+
+      it 'fails if searching with status does not return a Bundle' do
+        ['assess-plan'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'category': value
+          }
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params.merge('status': ['draft,active,on-hold,revoked,completed,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: FHIR::CarePlan.new.to_json)
+        end
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'Expected FHIR Bundle but found: CarePlan', exception.message
+      end
+
+      it 'succeeds if searching with status returns valid resources' do
+        ['assess-plan'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'category': value
+          }
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/CarePlan")
+            .with(query: query_params.merge('status': ['draft,active,on-hold,revoked,completed,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: wrap_resources_in_bundle([@care_plan]).to_json)
+        end
+
+        @sequence.run_test(@test)
+      end
+    end
   end
 
   describe 'CarePlan search by patient+category+date test' do
@@ -174,16 +267,16 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
       }
     end
 
@@ -196,11 +289,11 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', [FHIR::CarePlan.new])
+      @sequence.instance_variable_set(:'@care_plan_ary', @sequence.patient_ids.first => FHIR::CarePlan.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+      assert_match(/Could not resolve .* in any resource\./, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -232,6 +325,58 @@ describe Inferno::Sequence::USCore310CareplanSequence do
 
       assert_match(/Invalid \w+:/, exception.message)
     end
+
+    describe 'with servers that require status' do
+      it 'fails if a 400 is received without an OperationOutcome' do
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query, headers: @auth_header)
+          .to_return(status: 400)
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'Server returned a status of 400 without an OperationOutcome.', exception.message
+      end
+
+      it 'warns if the search is not documented in the CapabilityStatement' do
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+
+        assert_raises(WebMock::NetConnectNotAllowedError) { @sequence.run_test(@test) }
+
+        warnings = @sequence.instance_variable_get(:@test_warnings)
+
+        assert warnings.present?, 'Test did not generate any warnings.'
+        assert warnings.any? { |warning| warning.match(/search interaction for this resource is not documented/) },
+               'Test did not generate the expected warning.'
+      end
+
+      it 'fails if searching with status is not successful' do
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query.merge('status': ['draft,active,on-hold,revoked,completed,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 500)
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'Bad response code: expected 200, 201, but found 500. ', exception.message
+      end
+
+      it 'fails if searching with status does not return a Bundle' do
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query, headers: @auth_header)
+          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query.merge('status': ['draft,active,on-hold,revoked,completed,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: FHIR::CarePlan.new.to_json)
+
+        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+        assert_equal 'Expected FHIR Bundle but found: CarePlan', exception.message
+      end
+    end
   end
 
   describe 'CarePlan search by patient+category+status+date test' do
@@ -239,17 +384,17 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category_status_date]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'period'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
       }
     end
 
@@ -262,11 +407,11 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', [FHIR::CarePlan.new])
+      @sequence.instance_variable_set(:'@care_plan_ary', @sequence.patient_ids.first => FHIR::CarePlan.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+      assert_match(/Could not resolve .* in any resource\./, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -305,16 +450,16 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @test = @sequence_class[:search_by_patient_category_status]
       @sequence = @sequence_class.new(@instance, @client)
       @care_plan = FHIR.from_contents(load_fixture(:us_core_careplan))
-      @care_plan_ary = [@care_plan]
+      @care_plan_ary = { @sequence.patient_ids.first => @care_plan }
       @sequence.instance_variable_set(:'@care_plan', @care_plan)
       @sequence.instance_variable_set(:'@care_plan_ary', @care_plan_ary)
 
       @sequence.instance_variable_set(:'@resources_found', true)
 
       @query = {
-        'patient': @instance.patient_id,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'category')),
-        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary, 'status'))
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
@@ -327,11 +472,11 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     end
 
     it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@care_plan_ary', [FHIR::CarePlan.new])
+      @sequence.instance_variable_set(:'@care_plan_ary', @sequence.patient_ids.first => FHIR::CarePlan.new)
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+      assert_match(/Could not resolve .* in any resource\./, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -367,7 +512,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/CarePlan")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@care_plan_ary).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@care_plan_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
     end
@@ -399,7 +544,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @sequence.instance_variable_set(:'@resources_found', false)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No CarePlan resources could be found for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No CarePlan resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'fails if a non-success response code is received' do
@@ -448,6 +593,24 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected resource to be of type CarePlan.', exception.message
+    end
+
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'CarePlan',
+        resource_id: @care_plan_id,
+        testing_instance: @instance
+      )
+
+      care_plan = FHIR::CarePlan.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/CarePlan/#{@care_plan_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: care_plan.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@care_plan_id}", exception.message
     end
 
     it 'succeeds when a CarePlan resource is read successfully' do

@@ -9,11 +9,11 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310PractitionerroleSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = 'example'
-    @instance.patient_id = @patient_id
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     set_resource_support(@instance, 'PractitionerRole')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
@@ -90,6 +90,24 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected resource to be of type PractitionerRole.', exception.message
+    end
+
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'PractitionerRole',
+        resource_id: @practitioner_role_id,
+        testing_instance: @instance
+      )
+
+      practitioner_role = FHIR::PractitionerRole.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/PractitionerRole/#{@practitioner_role_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: practitioner_role.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@practitioner_role_id}", exception.message
     end
 
     it 'succeeds when a PractitionerRole resource is read successfully' do
@@ -255,7 +273,7 @@ describe Inferno::Sequence::USCore310PractitionerroleSequence do
 
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_match(/Could not resolve [\w-]+ in given resource/, exception.message)
+      assert_match(/Could not resolve .* in any resource\./, exception.message)
     end
 
     it 'fails if a non-success response code is received' do

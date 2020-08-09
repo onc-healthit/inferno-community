@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310MedicationSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Medication Tests'
 
       description 'Verify that Medication resources on the FHIR server follow the US Core Implementation Guide'
@@ -16,6 +20,10 @@ module Inferno
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
+
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
 
       @resources_found = false
 
@@ -38,7 +46,8 @@ module Inferno
         @medication_ary = medication_references.map do |reference|
           validate_read_reply(
             FHIR::Medication.new(id: reference.resource_id),
-            FHIR::Medication
+            FHIR::Medication,
+            check_for_data_absent_reasons
           )
         end
         @medication = @medication_ary.first
@@ -58,7 +67,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Medication, [:vread])
-        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         validate_vread_reply(@medication, versioned_resource_class('Medication'))
       end
@@ -76,14 +85,15 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Medication, [:history])
-        skip 'No Medication resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         validate_history_reply(@medication, versioned_resource_class('Medication'))
       end
 
-      test 'Medication resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '04'
+          name 'Medication resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
 
@@ -94,7 +104,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
         test_resources_against_profile('Medication')
       end
 
@@ -113,22 +123,23 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
         must_support_elements = [
-          'Medication.code'
+          { path: 'Medication.code' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Medication.', '')
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Medication.', '')
           @medication_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@medication_ary&.length} provided Medication resource(s)"
-
         @instance.save!
       end
 
@@ -143,9 +154,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Medication, [:search, :read])
-        skip 'No Medication resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Medication', delayed: true)
 
-        validate_reference_resolutions(@medication)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @medication_ary&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

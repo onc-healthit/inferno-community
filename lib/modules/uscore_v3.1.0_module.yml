@@ -51,3 +51,10 @@ test_sets:
         - USCore310PractitionerSequence
         - USCore310PractitionerroleSequence
         - USCore310ProvenanceSequence
+        - USCoreR4DataAbsentReasonSequence
+sequence_requirements:
+  patient_ids:
+    label: 'Patient IDs'
+  device_codes:
+    label: 'Implantable Device Type Codes'
+    description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile'

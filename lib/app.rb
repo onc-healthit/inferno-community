@@ -24,11 +24,15 @@ require_relative 'app/models/module'
 require_relative 'version'
 require_relative 'app/models'
 require_relative 'app/utils/terminology'
+require_relative 'app/utils/startup_tasks'
+require_relative 'app/utils/config_manager'
 
 module Inferno
   class App
     attr_reader :app
     def initialize
+      StartupTasks.run
+
       @app = Rack::Builder.app do
         Endpoint.subclasses.each do |endpoint|
           map(endpoint.prefix) { run(endpoint.new) }

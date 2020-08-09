@@ -1,0 +1,13 @@
+{
+    "resourceType": "Parameters",
+    "parameter": [
+        {
+            "name": "coding",
+            "valueCoding":
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "69322001"
+                    }
+        }
+    ]
+}

@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310DocumentreferenceSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'DocumentReference Tests'
 
       description 'Verify that DocumentReference resources on the FHIR server follow the US Core Implementation Guide'
 
       test_id_prefix 'USCDR'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :DocumentReference
 
       def validate_resource_item(resource, property, value)
@@ -46,9 +50,46 @@ module Inferno
         end
       end
 
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities.search_documented?('DocumentReference'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                 search interaction for this resource is not documented in the
+                 CapabilityStatement. If this response was due to the server
+                 requiring a status parameter, the server must document this
+                 requirement in its CapabilityStatement.)
+        end
+
+        ['current,superseded,entered-in-error'].each do |status_value|
+          params_with_status = search_param.merge('status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'DocumentReference' }
+          next if entries.blank?
+
+          search_param.merge!('status': status_value)
+          break
+        end
+
+        reply
+      end
+
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
+
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
 
       @resources_found = false
 
@@ -68,13 +109,16 @@ module Inferno
         @client.set_no_auth
         omit 'Do not test if no bearer token set' if @instance.token.blank?
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+          assert_response_unauthorized reply
+        end
+
         @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
       end
 
       test :search_by_patient do
@@ -90,25 +134,35 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        @document_reference_ary = {}
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
 
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DocumentReference' }
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        @document_reference = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'DocumentReference' }
-          .resource
-        @document_reference_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('DocumentReference'), reply)
-        save_delayed_sequence_references(@document_reference_ary)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DocumentReference' }
+
+          next unless any_resources
+
+          @document_reference_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+          @document_reference = @document_reference_ary[patient]
+            .find { |resource| resource.resourceType == 'DocumentReference' }
+          @resources_found = @document_reference.present?
+
+          save_resource_references(versioned_resource_class('DocumentReference'), @document_reference_ary[patient])
+          save_delayed_sequence_references(@document_reference_ary[patient])
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        end
+
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
       end
 
       test :search_by__id do
@@ -124,16 +178,30 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        search_params = {
-          '_id': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'id'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            '_id': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'id'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_type do
@@ -149,17 +217,31 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'type'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_category_date do
@@ -176,18 +258,32 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'category')),
-          'date': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'date'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category')),
+            'date': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'date'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_category do
@@ -203,17 +299,31 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'category'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_type_period do
@@ -231,25 +341,39 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'type')),
-          'period': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'context.period'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type')),
+            'period': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'context.period'))
+          }
 
-        ['gt', 'lt', 'le', 'ge'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:period])
-          comparator_search_params = { 'patient': search_params[:patient], 'type': search_params[:type], 'period': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:period])
+            comparator_search_params = search_params.merge('period': comparator_val)
+            reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+          end
         end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :search_by_patient_status do
@@ -266,17 +390,29 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'status': get_value_for_search_param(resolve_element_from_path(@document_reference_ary, 'status'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        could_not_resolve_all = []
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'status': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'status'))
+          }
+
+          if search_params.any? { |_param, value| value.nil? }
+            could_not_resolve_all = search_params.keys
+            next
+          end
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+        end
+
+        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
       end
 
       test :read_interaction do
@@ -291,9 +427,9 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DocumentReference, [:read])
-        skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        validate_read_reply(@document_reference, versioned_resource_class('DocumentReference'))
+        validate_read_reply(@document_reference, versioned_resource_class('DocumentReference'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
@@ -309,7 +445,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DocumentReference, [:vread])
-        skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
         validate_vread_reply(@document_reference, versioned_resource_class('DocumentReference'))
       end
@@ -327,7 +463,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DocumentReference, [:history])
-        skip 'No DocumentReference resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
         validate_history_reply(@document_reference, versioned_resource_class('DocumentReference'))
       end
@@ -357,35 +493,59 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
+        provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
+          save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        end
+
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'DocumentReference resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '14'
+          name 'DocumentReference resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
 
             This test checks if the resources returned from prior searches conform to the US Core profiles.
             This includes checking for missing data elements and valueset verification.
 
+            This test also checks that the following CodeableConcepts with
+            required ValueSet bindings include a code rather than just text:
+            'type'
+
           )
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
-        test_resources_against_profile('DocumentReference')
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
+        test_resources_against_profile('DocumentReference') do |resource|
+          ['type'].flat_map do |path|
+            concepts = resolve_path(resource, path)
+            next if concepts.blank?
+
+            code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+
+            unless code_present # rubocop:disable Style/IfUnlessModifier
+              "The CodeableConcept at '#{path}' is bound to a required ValueSet but does not contain any codes."
+            end
+          end.compact
+        end
       end
 
       test 'All must support elements are provided in the DocumentReference resources returned.' do
@@ -435,38 +595,39 @@ module Inferno
           versions :r4
         end
 
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
         must_support_elements = [
-          'DocumentReference.identifier',
-          'DocumentReference.status',
-          'DocumentReference.type',
-          'DocumentReference.category',
-          'DocumentReference.subject',
-          'DocumentReference.date',
-          'DocumentReference.author',
-          'DocumentReference.custodian',
-          'DocumentReference.content',
-          'DocumentReference.content.attachment',
-          'DocumentReference.content.attachment.contentType',
-          'DocumentReference.content.attachment.data',
-          'DocumentReference.content.attachment.url',
-          'DocumentReference.content.format',
-          'DocumentReference.context',
-          'DocumentReference.context.encounter',
-          'DocumentReference.context.period'
+          { path: 'DocumentReference.identifier' },
+          { path: 'DocumentReference.status' },
+          { path: 'DocumentReference.type' },
+          { path: 'DocumentReference.category' },
+          { path: 'DocumentReference.subject' },
+          { path: 'DocumentReference.date' },
+          { path: 'DocumentReference.author' },
+          { path: 'DocumentReference.custodian' },
+          { path: 'DocumentReference.content' },
+          { path: 'DocumentReference.content.attachment' },
+          { path: 'DocumentReference.content.attachment.contentType' },
+          { path: 'DocumentReference.content.attachment.data' },
+          { path: 'DocumentReference.content.attachment.url' },
+          { path: 'DocumentReference.content.format' },
+          { path: 'DocumentReference.context' },
+          { path: 'DocumentReference.context.encounter' },
+          { path: 'DocumentReference.context.period' }
         ]
 
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('DocumentReference.', '')
-          @document_reference_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('DocumentReference.', '')
+          @document_reference_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
           end
         end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
         skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.length} provided DocumentReference resource(s)"
-
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"
         @instance.save!
       end
 
@@ -481,9 +642,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:DocumentReference, [:search, :read])
-        skip 'No DocumentReference resources appear to be available. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        validate_reference_resolutions(@document_reference)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @document_reference_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

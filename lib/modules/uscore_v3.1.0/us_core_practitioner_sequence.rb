@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310PractitionerSequence < SequenceBase
+      include Inferno::DataAbsentReasonChecker
+
       title 'Practitioner Tests'
 
       description 'Verify that Practitioner resources on the FHIR server follow the US Core Implementation Guide'
@@ -38,6 +42,10 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
@@ -59,7 +67,8 @@ module Inferno
         @practitioner_ary = practitioner_references.map do |reference|
           validate_read_reply(
             FHIR::Practitioner.new(id: reference.resource_id),
-            FHIR::Practitioner
+            FHIR::Practitioner,
+            check_for_data_absent_reasons
           )
         end
         @practitioner = @practitioner_ary.first
@@ -85,11 +94,13 @@ module Inferno
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
-        @client.set_bearer_token(@instance.token)
         assert_response_unauthorized reply
+
+        @client.set_bearer_token(@instance.token)
       end
 
       test :search_by_name do
@@ -108,21 +119,21 @@ module Inferno
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Practitioner' }
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
+        @practitioner_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        @practitioner = @practitioner_ary
+          .find { |resource| resource.resourceType == 'Practitioner' }
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
-
-        @practitioner = reply.resource.entry
-          .find { |entry| entry&.resource&.resourceType == 'Practitioner' }
-          .resource
-        @practitioner_ary = fetch_all_bundled_resources(reply.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Practitioner'), reply)
+        save_resource_references(versioned_resource_class('Practitioner'), @practitioner_ary)
         save_delayed_sequence_references(@practitioner_ary)
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
@@ -140,16 +151,17 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         search_params = {
           'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
+
         validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
-        assert_response_ok(reply)
       end
 
       test :vread_interaction do
@@ -165,7 +177,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Practitioner, [:vread])
-        skip 'No Practitioner resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         validate_vread_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
@@ -183,7 +195,7 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Practitioner, [:history])
-        skip 'No Practitioner resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
       end
@@ -197,24 +209,31 @@ module Inferno
           )
           versions :r4
         end
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
+        provenance_results = []
 
         search_params = {
           'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
         }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+
+        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
         search_params['_revinclude'] = 'Provenance:target'
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
+
         assert_response_ok(reply)
         assert_bundle_response(reply)
-        provenance_results = fetch_all_bundled_resources(reply.resource).select { |resource| resource.resourceType == 'Provenance' }
+        provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          .select { |resource| resource.resourceType == 'Provenance' }
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
       end
 
-      test 'Practitioner resources returned conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '08'
+          name 'Practitioner resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
 
@@ -225,7 +244,7 @@ module Inferno
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
         test_resources_against_profile('Practitioner')
       end
 
@@ -244,37 +263,58 @@ module Inferno
 
             Practitioner.identifier.value
 
-            Practitioner.identifier
-
             Practitioner.name
 
             Practitioner.name.family
+
+            Practitioner.identifier:NPI
 
           )
           versions :r4
         end
 
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
-        must_support_elements = [
-          'Practitioner.identifier',
-          'Practitioner.identifier.system',
-          'Practitioner.identifier.value',
-          'Practitioner.identifier',
-          'Practitioner.name',
-          'Practitioner.name.family'
+        must_support_slices = [
+          {
+            name: 'Practitioner.identifier:NPI',
+            path: 'Practitioner.identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          }
         ]
-
-        missing_must_support_elements = must_support_elements.reject do |path|
-          truncated_path = path.gsub('Practitioner.', '')
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Practitioner.', '')
           @practitioner_ary&.any? do |resource|
-            resolve_element_from_path(resource, truncated_path).present?
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
           end
         end
 
+        must_support_elements = [
+          { path: 'Practitioner.identifier' },
+          { path: 'Practitioner.identifier.system' },
+          { path: 'Practitioner.identifier.value' },
+          { path: 'Practitioner.name' },
+          { path: 'Practitioner.name.family' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Practitioner.', '')
+          @practitioner_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_ary&.length} provided Practitioner resource(s)"
-
         @instance.save!
       end
 
@@ -289,9 +329,14 @@ module Inferno
         end
 
         skip_if_known_not_supported(:Practitioner, [:search, :read])
-        skip 'No Practitioner resources appear to be available.' unless @resources_found
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
-        validate_reference_resolutions(@practitioner)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @practitioner_ary&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

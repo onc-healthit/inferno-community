@@ -9,11 +9,11 @@ describe Inferno::Sequence::USCore310ProvenanceSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310ProvenanceSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = 'example'
-    @instance.patient_id = @patient_id
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     set_resource_support(@instance, 'Provenance')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
@@ -90,6 +90,24 @@ describe Inferno::Sequence::USCore310ProvenanceSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected resource to be of type Provenance.', exception.message
+    end
+
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'Provenance',
+        resource_id: @provenance_id,
+        testing_instance: @instance
+      )
+
+      provenance = FHIR::Provenance.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/Provenance/#{@provenance_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: provenance.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@provenance_id}", exception.message
     end
 
     it 'succeeds when a Provenance resource is read successfully' do
