@@ -41,7 +41,7 @@ module Inferno
           path = path.gsub(/.where\((.*)/, '')
           as_type = path.scan(/.as\((.*?)\)/).flatten.first
           path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
-          
+
           path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
           parameter_code = parameter_metadata.code
           resource_type = sequence_metadata.resource_type
