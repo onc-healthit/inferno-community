@@ -36,6 +36,12 @@ module Inferno
             .split('.')
             .drop(1)
             .join('.')
+
+          # handle some fhir path stuff. Remove this once fhir path server is added
+          path = path.gsub(/.where\((.*)/, '')
+          as_type = path.scan(/.as\((.*?)\)/).flatten.first
+          path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
+          
           path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
           parameter_code = parameter_metadata.code
           resource_type = sequence_metadata.resource_type
@@ -113,6 +119,10 @@ module Inferno
               match_found = values_found.any? { |value_in_resource| values.include? value_in_resource })
           end
         end
+      end
+
+      def capitalize_first_letter(str)
+        str.slice(0).capitalize + str.slice(1..-1)
       end
 
       def get_value_path_by_type(type)
