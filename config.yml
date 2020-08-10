@@ -21,7 +21,7 @@ disable_tls_tests: false
 default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
 
 # Log Level: unkown, fatal, error, warn, info, debug
-log_level: info
+log_level: unknown
 
 # Log to file
 log_to_file: false
@@ -43,11 +43,7 @@ external_resource_validator_url: http://validator_service:4567
 
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
-  - onc
   - smart
-  - bdt
-  - argonaut
-  - uscore_v3.1.0
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:
