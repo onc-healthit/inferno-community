@@ -36,7 +36,18 @@ module Inferno
       end
 
       def expression
-        @expression ||= @search_parameter_json['expression']
+        @expression ||= expression_without_fhir_path(@search_parameter_json['expression'])
+      end
+
+      def expression_without_fhir_path(path)
+        # handle some fhir path stuff. Remove this once fhir path server is added
+        as_type = path.scan(/.as\((.*?)\)/).flatten.first
+        path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
+        path.gsub(/.where\((.*)/, '')
+      end
+
+      def capitalize_first_letter(str)
+        str.slice(0).capitalize + str.slice(1..-1)
       end
 
       # whether multiple or is allowed
