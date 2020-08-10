@@ -45,8 +45,8 @@ module Inferno
       end
 
       def search_param_value_name(parameter)
-        parameter.gsub!(/^[\W_]+|[\W_]+$"/, '') # remove non-character elements from beginning and end of name
-        "#{parameter.gsub('-', '_')}_val"
+        tmp_param = parameter.gsub(/^[\W_]+|[\W_]+$"/, '') # remove non-character elements from beginning and end of name
+        "#{tmp_param.gsub('-', '_')}_val"
       end
 
       def capitalize_first_letter(str)
