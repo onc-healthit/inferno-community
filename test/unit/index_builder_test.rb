@@ -43,15 +43,19 @@ describe Inferno::IndexBuilder do
   end
 
   describe 'IndexBuilder.execute' do
-    it 'Can index a directory' do
+    it 'Can index a directory and returns whether an .index.json was created' do
       fixture_path = find_fixture_directory
       folder = File.join(fixture_path, 'sample_ig')
       index_file = File.join(folder, '.index.json')
 
+      # .index.json doesn't exist, so IndexBuilder will create an .index.json
       assert !File.exist?(index_file)
-      @index_builder.execute(folder)
+      assert @index_builder.execute(folder)
 
+      # .index.json now exists, so IndexBuilder will not create an .index.json
       assert File.exist?(index_file)
+      assert !@index_builder.execute(folder)
+
       index = JSON.parse(File.read(index_file))
 
       assert_equal [

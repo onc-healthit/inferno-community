@@ -50,16 +50,18 @@ module Inferno
       index
     end
 
-    # Indexes the folder at the given path <folder> or at <folder>/package.
+    # Indexes the folder at the given path <folder> or at <folder>/package if not already indexed.
     # @param folder [String] the path of the folder to index
-    # @return [nil]
+    # @return [Boolean] whether a new .index.json was created
+    # @raise [StandardError] if the given folder did not contain a package.json or there was an error reading a file
     def execute(folder)
       folder_package = File.join(folder, 'package')
       (folder = folder_package) if Dir.exist?(folder_package)
 
-      raise "Not a proper package? (can't find package.json)" unless File.exist?(File.join(folder, 'package.json'))
-
       Dir.chdir(folder) do
+        raise "Not a proper package? (can't find package.json)" unless File.exist?('package.json')
+        return false if File.exist?('.index.json')
+
         start
         Dir.glob('*.json').select { |f| File.file?(f) }.each do |filename|
           see_file(filename, File.read(filename))
@@ -67,7 +69,7 @@ module Inferno
         File.write('.index.json', build)
       end
 
-      nil
+      true
     end
   end
 end
