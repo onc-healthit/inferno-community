@@ -30,7 +30,7 @@ module Inferno
       end
 
       return true unless json.is_a?(Hash)
-      return true unless (type = json.dig('resourceType'))
+      return true unless (type = json['resourceType'])
 
       file = { filename: filename, resourceType: type.to_s }
       props = json.slice('id', 'url', 'version', 'kind', 'type', 'supplements')
