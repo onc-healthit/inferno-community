@@ -20,7 +20,7 @@ module Inferno
     # @param contents [String] the contents of the file to index
     # @return [Boolean] true, unless there was an error parsing and the filename contained "openapi" (then false)
     def see_file(filename, contents)
-      return unless filename.end_with?('.json')
+      return true unless filename.end_with?('.json')
 
       begin
         json = JSON.parse(contents)
