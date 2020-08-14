@@ -67,6 +67,12 @@ module Inferno
       end
 
       def create_ig_zip(file, module_metadata)
+        # Index root and all subdirectories of IG
+        index_builder = Inferno::IndexBuilder.new
+        ig_files(module_metadata[:resource_path])
+          .select { |full_path| File.directory?(full_path) }
+          .each { |full_folder_path| index_builder.execute(full_folder_path) }
+
         Zlib::GzipWriter.wrap(file) do |gzip|
           Gem::Package::TarWriter.new(gzip) do |tar|
             ig_files(module_metadata[:resource_path]).each do |full_file_path|
@@ -97,7 +103,7 @@ module Inferno
 
       def ig_files(path)
         resource_path = File.join(__dir__, '..', '..', '..', 'resources', path)
-        Dir.glob(File.join(resource_path, '**', '*')) + Dir.glob(File.join(resource_path, '**', '.*'))
+        Dir.glob(File.join(resource_path, '**', '{*,.*}')) << resource_path
       end
     end
   end
