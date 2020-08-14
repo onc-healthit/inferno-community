@@ -45,10 +45,24 @@ module Inferno
         end
       end
 
+      def load_profiles_in_validator(module_metadata)
+        ig_files(module_metadata[:resource_path]).each do |full_file_path|
+          next if File.directory?(full_file_path)
+
+          begin
+            RestClient.post("#{validator_url}/profiles", File.read(full_file_path))
+          rescue StandardError => e
+            Inferno.logger.error "Unable to post profile '#{File.basename(full_file_path)}' to validator"
+            Inferno.logger.error e.full_message
+          end
+        end
+      end
+
       def load_ig_in_validator(module_metadata)
         module_name = module_metadata[:title].presence || module_metadata[:name]
         unless package_json_present? module_metadata[:resource_path]
-          Inferno.logger.info "Skipping validator upload for '#{module_name}'--no package.json file."
+          Inferno.logger.info "Uploading standalone profiles for '#{module_name}'"
+          load_profiles_in_validator(module_metadata)
           return
         end
 
