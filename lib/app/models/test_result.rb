@@ -25,8 +25,9 @@ module Inferno
 
       property :wait_at_endpoint, String
       property :redirect_to_url, String
+      property :expect_redirect_failure, Boolean, default: false
 
-      has n, :request_responses, through: Resource, order: [:timestamp.asc]
+      has n, :request_responses, through: Resource, order: [:request_index.asc]
       has n, :test_warnings
       has n, :information_messages
       belongs_to :sequence_result

@@ -1,15 +1,65 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_careteam_definitions'
 
 module Inferno
   module Sequence
     class USCore310CareteamSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'CareTeam Tests'
 
-      description 'Verify that CareTeam resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core CareTeam Profile.'
+
+      details %(
+        # Background
+
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for CareTeam queries.  These queries must contain resources conforming to US Core CareTeam Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
+
+        # Testing Methodology
+
+
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+
+          * patient + status
+
+
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for CareTeam resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the CareTeam
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
 
       test_id_prefix 'USCCT'
 
@@ -20,12 +70,16 @@ module Inferno
         case property
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          values_found = resolve_path(resource, 'subject.reference')
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
+          assert match_found, "patient in CareTeam/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
-          assert value_found.present?, 'status on resource does not match status requested'
+          values_found = resolve_path(resource, 'status')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "status in CareTeam/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         end
       end
@@ -39,7 +93,7 @@ module Inferno
         end
 
         warning do
-          assert @instance.server_capabilities.search_documented?('CareTeam'),
+          assert @instance.server_capabilities&.search_documented?('CareTeam'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
                  search interaction for this resource is not documented in the
                  CapabilityStatement. If this response was due to the server
@@ -63,58 +117,27 @@ module Inferno
         reply
       end
 
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
-
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
 
       @resources_found = false
 
-      test :unauthorized_search do
-        metadata do
-          id '01'
-          name 'Server rejects CareTeam search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:CareTeam, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'status': 'proposed'
-          }
-
-          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-          assert_response_unauthorized reply
-        end
-
-        @client.set_bearer_token(@instance.token)
-      end
-
       test :search_by_patient_status do
         metadata do
-          id '02'
-          name 'Server returns expected results from CareTeam search by patient+status'
+          id '01'
+          name 'Server returns valid results for CareTeam search by patient+status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by patient+status on the CareTeam resource
-
+            A server SHALL support searching by patient+status on the CareTeam resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
 
+        skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
         @care_team_ary = {}
         @resources_found = false
         values_found = 0
@@ -131,15 +154,22 @@ module Inferno
             next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
 
             @resources_found = true
-            @care_team = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
-              .resource
-            @care_team_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @care_team = resources_returned.first
+            @care_team_ary[patient] += resources_returned
             values_found += 1
 
             save_resource_references(versioned_resource_class('CareTeam'), @care_team_ary[patient])
-            save_delayed_sequence_references(@care_team_ary[patient])
-            validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+            save_delayed_sequence_references(resources_returned, USCore310CareteamSequenceDefinitions::DELAYED_REFERENCES)
+            validate_reply_entries(resources_returned, search_params)
+
+            search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
+            reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params_with_type)
+
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             break if values_found == 2
           end
@@ -149,7 +179,7 @@ module Inferno
 
       test :read_interaction do
         metadata do
-          id '03'
+          id '02'
           name 'Server returns correct CareTeam resource from CareTeam read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -166,7 +196,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns correct CareTeam resource from CareTeam vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -184,7 +214,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '05'
+          id '04'
           name 'Server returns correct CareTeam resource from CareTeam history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -202,29 +232,33 @@ module Inferno
 
       test 'Server returns Provenance resources from CareTeam search by patient + status + _revIncludes: Provenance:target' do
         metadata do
-          id '06'
+          id '05'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
+
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
+
+            This test will perform a search for patient + status + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('CareTeam', 'Provenance:target')
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           search_params['_revinclude'] = 'Provenance:target'
@@ -234,21 +268,24 @@ module Inferno
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             .select { |resource| resource.resourceType == 'Provenance' }
-          save_resource_references(versioned_resource_class('Provenance'), provenance_results)
         end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310CareteamSequenceDefinitions::DELAYED_REFERENCES)
+        skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
       test :validate_resources do
         metadata do
-          id '07'
-          name 'CareTeam resources returned conform to US Core R4 profiles'
+          id '06'
+          name 'CareTeam resources returned from previous search conform to the US Core CareTeam Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test verifies resources returned from the first search conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )
           versions :r4
@@ -260,41 +297,28 @@ module Inferno
 
       test 'All must support elements are provided in the CareTeam resources returned.' do
         metadata do
-          id '08'
+          id '07'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all CareTeam resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the CareTeam resources found previously for the following must support elements:
 
-            CareTeam.status
-
-            CareTeam.subject
-
-            CareTeam.participant
-
-            CareTeam.participant.role
-
-            CareTeam.participant.member
-
+            * status
+            * subject
+            * participant
+            * participant.role
+            * participant.member
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
+        must_supports = USCore310CareteamSequenceDefinitions::MUST_SUPPORTS
 
-        must_support_elements = [
-          { path: 'CareTeam.status' },
-          { path: 'CareTeam.subject' },
-          { path: 'CareTeam.participant' },
-          { path: 'CareTeam.participant.role' },
-          { path: 'CareTeam.participant.member' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('CareTeam.', '')
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @care_team_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end
@@ -305,30 +329,36 @@ module Inferno
         @instance.save!
       end
 
-      test 'The server returns expected results when parameters use composite-or' do
+      test 'The server returns results when parameters use composite-or' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
+
+            This test will check if the server is capable of returning results for composite search parameters.
+            The test will look through the resources returned from the first search to identify two different values
+            to use for the parameter being tested. If no two different values can be found, then the test is skipped.
+            [FHIR Composite Search Guideline](https://www.hl7.org/fhir/search.html#combining)
+
+          Parameters being tested: status
 
           )
           versions :r4
         end
 
-        could_not_resolve_all = []
+        skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
+
         resolved_one = false
 
         found_second_val = false
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
@@ -348,12 +378,15 @@ module Inferno
         skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
 
-      test 'Every reference within CareTeam resource is valid and can be read.' do
+      test 'Every reference within CareTeam resources can be read.' do
         metadata do
-          id '10'
+          id '09'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end
