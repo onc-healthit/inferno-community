@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubygems/package'
+require 'json'
 require_relative './index_builder'
 
 module Inferno
@@ -50,6 +51,9 @@ module Inferno
           next if File.directory?(full_file_path)
 
           begin
+            contents = JSON.parse(File.read(full_file_path))
+            next unless contents['resourceType'] == 'StructureDefinition'
+
             RestClient.post("#{validator_url}/profiles", File.read(full_file_path))
           rescue StandardError => e
             Inferno.logger.error "Unable to post profile '#{File.basename(full_file_path)}' to validator"
