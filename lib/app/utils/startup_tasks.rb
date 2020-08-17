@@ -51,10 +51,10 @@ module Inferno
           next if File.directory?(full_file_path)
 
           begin
-            contents = JSON.parse(File.read(full_file_path))
-            next unless contents['resourceType'] == 'StructureDefinition'
+            contents = File.read(full_file_path)
+            next unless JSON.parse(contents)['resourceType'] == 'StructureDefinition'
 
-            RestClient.post("#{validator_url}/profiles", File.read(full_file_path))
+            RestClient.post("#{validator_url}/profiles", contents)
           rescue StandardError => e
             Inferno.logger.error "Unable to post profile '#{File.basename(full_file_path)}' to validator"
             Inferno.logger.error e.full_message
