@@ -3,7 +3,7 @@
 module Inferno
   module Sequence
     class BDTBase < SequenceBase
-      BDT_URL = 'http://localhost:4500/api/tests'
+      BDT_URL = 'http://bdt_service:4500/api/tests'
 
       def settings
         {
