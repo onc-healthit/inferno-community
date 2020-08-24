@@ -8,7 +8,6 @@ module Inferno
     @index = nil
 
     # Prepares the IndexBuilder to start indexing files
-    # @return [nil]
     def start
       @files = []
       @index = { 'index-version': 1, files: @files }
@@ -18,19 +17,12 @@ module Inferno
     # Indexes the file with the given name and contents.
     # @param filename [String] the name of the file to index
     # @param contents [String] the contents of the file to index
-    # @return [Boolean] true, unless there was an error parsing and the filename contained "openapi" (then false)
     def see_file(filename, contents)
-      return true unless filename.end_with?('.json')
+      return unless filename.end_with?('.json')
 
-      begin
-        json = JSON.parse(contents)
-      rescue JSON::ParserError => e
-        Inferno.logger.error("Error parsing #{filename}: #{e.message}")
-        return !filename.include?('openapi')
-      end
-
-      return true unless json.is_a?(Hash)
-      return true unless (type = json['resourceType'])
+      json = JSON.parse(contents)
+      return unless json.is_a?(Hash)
+      return unless (type = json['resourceType'])
 
       file = { filename: filename, resourceType: type.to_s }
       props = json.slice('id', 'url', 'version', 'kind', 'type', 'supplements')
@@ -38,7 +30,9 @@ module Inferno
         .transform_values { |val| val.is_a?(String) ? val : val.to_json }
       @files << file.merge(props)
 
-      true
+      nil
+    rescue JSON::ParserError
+      Inferno.logger.error("Error parsing #{filename}: Invalid JSON")
     end
 
     # Builds and returns the string representing the contents of an .index.json file.
