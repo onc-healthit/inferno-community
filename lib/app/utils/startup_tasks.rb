@@ -55,6 +55,8 @@ module Inferno
             next unless JSON.parse(contents)['resourceType'] == 'StructureDefinition'
 
             RestClient.post("#{validator_url}/profiles", contents)
+          rescue JSON::ParserError
+            Inferno.logger.error "'#{File.basename(full_file_path)}' was not valid JSON"
           rescue StandardError => e
             Inferno.logger.error "Unable to post profile '#{File.basename(full_file_path)}' to validator"
             Inferno.logger.error e.full_message
