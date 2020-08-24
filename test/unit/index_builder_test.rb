@@ -1,62 +1,69 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'tmpdir'
 require_relative '../test_helper'
 
 describe Inferno::IndexBuilder do
-  before do
-    @index_builder = Inferno::IndexBuilder.new
-  end
+  describe 'An empty directory' do
+    it 'Is indexed only once it has an .index.json' do
+      Dir.mktmpdir do |dir|
+        index_builder = Inferno::IndexBuilder.new(dir)
 
-  describe 'Index produced when no files are indexed' do
-    it 'Contains "index-version" and "files" properties' do
-      @index_builder.start
-      index = JSON.parse(@index_builder.build)
+        assert !index_builder.indexed?
+        File.write(File.join(dir, '.index.json'), '{"index-version": 1, "files": []}')
+        assert index_builder.indexed?
+      end
+    end
 
-      assert_equal 1, index['index-version']
-      assert_equal [], index['files']
+    it 'Will have an index with "index-version" and "files" properties' do
+      Dir.mktmpdir do |dir|
+        index = JSON.parse(Inferno::IndexBuilder.new(dir).build)
+
+        assert_equal 1, index['index-version']
+        assert_equal [], index['files']
+      end
     end
   end
 
-  describe 'IndexBuilder.see_file' do
+  describe 'IndexBuilder for a directory containing multiple file types' do
     it 'Ignores files that do not have .json extension' do
-      @index_builder.start
-      @index_builder.see_file('foo.json', '{"resourceType": "Patient"}')
-      @index_builder.see_file('bar.txt', '{"resourceType": "MedicationRequest"}')
-      index = JSON.parse(@index_builder.build)
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          File.write('foo.json', '{"resourceType": "Patient"}')
+          File.write('bar.txt', '{"resourceType": "MedicationRequest"}')
+        end
 
-      assert_equal [
-        {
-          'filename' => 'foo.json',
-          'resourceType' => 'Patient'
-        }
-      ], index['files']
+        index = JSON.parse(Inferno::IndexBuilder.new(dir).build)
+
+        assert_equal [
+          {
+            'filename' => 'foo.json',
+            'resourceType' => 'Patient'
+          }
+        ], index['files']
+      end
     end
 
-    it 'Ignores files that cannot be parsed (invalid JSON)' do
-      @index_builder.start
-      @index_builder.see_file('invalid.json', '<NotJSON></NotJSON>')
-      index = JSON.parse(@index_builder.build)
+    it 'Ignores files that do not have the "resourceType" property' do
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          File.write('ignored.json', '{}')
+        end
 
-      assert_equal [], index['files']
+        index = JSON.parse(Inferno::IndexBuilder.new(dir).build)
+
+        assert_equal [], index['files']
+      end
     end
   end
 
-  describe 'IndexBuilder.execute' do
-    it 'Can index a directory and returns whether an .index.json was created' do
+  describe 'IndexBuilder.build' do
+    it 'Returns the contents of an .index.json for the directory' do
       fixture_path = find_fixture_directory
       folder = File.join(fixture_path, 'sample_ig')
-      index_file = File.join(folder, '.index.json')
 
-      # .index.json doesn't exist, so IndexBuilder will create an .index.json
-      assert !File.exist?(index_file)
-      assert @index_builder.execute(folder)
-
-      # .index.json now exists, so IndexBuilder will not create an .index.json
-      assert File.exist?(index_file)
-      assert !@index_builder.execute(folder)
-
-      index = JSON.parse(File.read(index_file))
+      index = JSON.parse(Inferno::IndexBuilder.new(folder).build)
 
       assert_equal [
         {
@@ -69,8 +76,6 @@ describe Inferno::IndexBuilder do
           'type' => 'Patient'
         }
       ], index['files']
-
-      File.delete(index_file)
     end
   end
 end
