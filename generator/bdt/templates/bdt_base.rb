@@ -18,7 +18,7 @@ module Inferno
           'sinceParam' => '_since',
           'systemExportEndpoint' => @instance.bulk_system_export_endpoint,
           'patientExportEndpoint' => @instance.bulk_patient_export_endpoint,
-          'groupExportEndpoint' => @instance.bulk_group_export_endpoint,                   
+          'groupExportEndpoint' => @instance.bulk_group_export_endpoint,
           'jwksUrlAuth' => @instance.bulk_jwks_url_auth.present?,
           'jwksUrl' => @instance.bulk_jwks_url_auth,
           'privateKey' => JSON.parse(@instance.bulk_private_key)
