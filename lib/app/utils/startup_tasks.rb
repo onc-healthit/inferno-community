@@ -47,20 +47,16 @@ module Inferno
       end
 
       def load_profiles_in_validator(module_metadata)
-        ig_files(module_metadata[:resource_path]).each do |full_file_path|
-          next if File.directory?(full_file_path)
+        resource_name = module_metadata[:resource_path]
+        resource_file_glob(resource_name, '*.json') do |filename, contents|
+          next unless JSON.parse(contents)['resourceType'] == 'StructureDefinition'
 
-          begin
-            contents = File.read(full_file_path)
-            next unless JSON.parse(contents)['resourceType'] == 'StructureDefinition'
-
-            RestClient.post("#{validator_url}/profiles", contents)
-          rescue JSON::ParserError
-            Inferno.logger.error "'#{File.basename(full_file_path)}' was not valid JSON"
-          rescue StandardError => e
-            Inferno.logger.error "Unable to post profile '#{File.basename(full_file_path)}' to validator"
-            Inferno.logger.error e.full_message
-          end
+          RestClient.post("#{validator_url}/profiles", contents)
+        rescue JSON::ParserError
+          Inferno.logger.error "'#{filename}' was not valid JSON"
+        rescue StandardError => e
+          Inferno.logger.error "Unable to post profile '#{filename}' to validator"
+          Inferno.logger.error e.full_message
         end
       end
 
@@ -97,11 +93,8 @@ module Inferno
               end
             end
             # Add existing package files to tarball
-            ig_files(module_metadata[:resource_path]).each do |full_file_path|
-              next if File.directory?(full_file_path)
-
-              content = File.read(full_file_path)
-              tar_file_path = relative_path_for(full_file_path, module_metadata[:resource_path])
+            ig_files(resource_name) do |rel_path, content|
+              tar_file_path = File.join('package', rel_path)
               tar.add_file_simple(tar_file_path, 0o0644, content.bytesize) do |io|
                 io.write(content)
               end
@@ -110,26 +103,29 @@ module Inferno
         end
       end
 
-      def relative_path_for(full_file_path, resource_folder)
-        relative_path =
-          full_file_path
-            .split(File.join('resources', resource_folder, ''))
-            .last
-            .delete_prefix("package#{File::SEPARATOR}")
-        File.join('package', relative_path)
+      def package_json_present?(resource_name)
+        ig_files(resource_name).include?('package.json')
       end
 
       def resource_path(resource_name)
         File.join(__dir__, '..', '..', '..', 'resources', resource_name)
       end
 
-      def package_json_present?(resource_path)
-        ig_files(resource_path).any? { |filename| filename.end_with? 'package.json' }
+      def resource_file_glob(resource_name, pattern)
+        base = resource_path(resource_name)
+        unless block_given?
+          return Dir.glob(pattern, base: base)
+              .reject { |f| File.directory?(File.join(base, f)) }
+        end
+
+        Dir.glob(pattern, base: base) do |rel_path|
+          full_path = File.join(base, rel_path)
+          yield(rel_path, File.read(full_path)) unless File.directory?(full_path)
+        end
       end
 
-      def ig_files(path)
-        resource_path = File.join(__dir__, '..', '..', '..', 'resources', path)
-        Dir.glob(File.join(resource_path, '**', '{*,.*}')) << resource_path
+      def ig_files(resource_name, &block)
+        resource_file_glob(resource_name, File.join('**', '{*,.*}'), &block)
       end
     end
   end
