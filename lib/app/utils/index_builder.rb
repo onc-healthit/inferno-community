@@ -4,7 +4,6 @@ require 'json'
 
 module Inferno
   class IndexBuilder
-
     # @param folder [String] the path of the package to index
     def initialize(folder)
       raise ArgumentError, "'#{folder}' is not a directory" unless Dir.exist?(folder)
