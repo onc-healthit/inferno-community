@@ -28,12 +28,15 @@ module Inferno
     #
     # @return [String] a string representing the contents of an .index.json file
     def build
-      Dir.chdir(@folder) do
+      return if indexed?
+
+      Dir.chdir(@package_root) do
         Dir.glob('*.json').select { |f| File.file?(f) }.each do |filename|
           add_json_file(filename, File.read(filename))
         end
       end
-      JSON.pretty_generate(@index)
+      contents = JSON.pretty_generate(@index)
+      block_given? ? yield(contents) : File.write(index_path, contents)
     end
 
     private
