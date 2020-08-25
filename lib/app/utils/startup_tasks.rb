@@ -87,14 +87,16 @@ module Inferno
       end
 
       def create_ig_zip(file, module_metadata)
-        # Index root and all subdirectories of IG
-        index_builder = Inferno::IndexBuilder.new
-        ig_files(module_metadata[:resource_path])
-          .select { |full_path| File.directory?(full_path) }
-          .each { |full_folder_path| index_builder.execute(full_folder_path) }
-
+        resource_name = module_metadata[:resource_path]
         Zlib::GzipWriter.wrap(file) do |gzip|
           Gem::Package::TarWriter.new(gzip) do |tar|
+            # Add a generated index file directly to the tarball if it didn't exist
+            Inferno::IndexBuilder.new(resource_path(resource_name)).build do |content|
+              tar.add_file_simple('package/.index.json', 0o0644, content.bytesize) do |io|
+                io.write(content)
+              end
+            end
+            # Add existing package files to tarball
             ig_files(module_metadata[:resource_path]).each do |full_file_path|
               next if File.directory?(full_file_path)
 
@@ -115,6 +117,10 @@ module Inferno
             .last
             .delete_prefix("package#{File::SEPARATOR}")
         File.join('package', relative_path)
+      end
+
+      def resource_path(resource_name)
+        File.join(__dir__, '..', '..', '..', 'resources', resource_name)
       end
 
       def package_json_present?(resource_path)
