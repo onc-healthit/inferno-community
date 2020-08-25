@@ -5,7 +5,7 @@ require 'json'
 module Inferno
   class IndexBuilder
 
-    # @param folder [String] the path of the folder to index
+    # @param folder [String] the path of the package to index
     def initialize(folder)
       raise ArgumentError, "'#{folder}' is not a directory" unless Dir.exist?(folder)
 
@@ -19,14 +19,13 @@ module Inferno
       @index = { 'index-version': 1, files: @files }
     end
 
-    # @return [Boolean] whether or not the given folder has been indexed
+    # @return [Boolean] whether or not the given package has been indexed
     def indexed?
       File.exist?(index_path)
     end
 
-    # Builds and returns the string representing the contents of an .index.json file for the given folder.
-    #
-    # @return [String] a string representing the contents of an .index.json file
+    # Builds the .index.json contents if it doesn't exist, otherwise immediately returns.
+    # Yields the built contents if a block was given, otherwise writes it to .index.json at the root.
     def build
       return if indexed?
 
@@ -37,6 +36,7 @@ module Inferno
       end
       contents = JSON.pretty_generate(@index)
       block_given? ? yield(contents) : File.write(index_path, contents)
+      nil
     end
 
     private
@@ -61,6 +61,7 @@ module Inferno
         .transform_values! { |val| val.is_a?(String) ? val : val.to_json }
       file['filename'] = filename
       @files << file
+      nil
     end
   end
 end
