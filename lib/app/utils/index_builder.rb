@@ -9,14 +9,19 @@ module Inferno
     def initialize(folder)
       raise ArgumentError, "'#{folder}' is not a directory" unless Dir.exist?(folder)
 
-      @folder = folder
+      package_folder = File.join(folder, 'package')
+      (folder = package_folder) if Dir.exist?(package_folder)
+      package_json = File.join(folder, 'package.json')
+      raise ArgumentError, 'Could not find package.json' unless File.exist?(package_json)
+
+      @package_root = folder
       @files = []
       @index = { 'index-version': 1, files: @files }
     end
 
     # @return [Boolean] whether or not the given folder has been indexed
     def indexed?
-      File.exist?(File.join(@folder, '.index.json'))
+      File.exist?(index_path)
     end
 
     # Builds and returns the string representing the contents of an .index.json file for the given folder.
@@ -32,6 +37,11 @@ module Inferno
     end
 
     private
+
+    # @return [String] the path where the .index.json file should be
+    def index_path
+      File.join(@package_root, '.index.json')
+    end
 
     # Adds a JSON file with the given name and contents to the index being built.
     # Ignores files that don't contain a valid "resourceType" property.
