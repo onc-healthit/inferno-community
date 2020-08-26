@@ -9,7 +9,7 @@ module Inferno
       raise ArgumentError, "'#{folder}' is not a directory" unless Dir.exist?(folder)
 
       package_folder = File.join(folder, 'package')
-      (folder = package_folder) if Dir.exist?(package_folder)
+      folder = package_folder if Dir.exist?(package_folder)
       package_json = File.join(folder, 'package.json')
       raise ArgumentError, 'Could not find package.json' unless File.exist?(package_json)
 
