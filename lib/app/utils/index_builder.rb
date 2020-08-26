@@ -25,6 +25,7 @@ module Inferno
 
     # Builds the .index.json contents if it doesn't exist, otherwise immediately returns.
     # Yields the built contents if a block was given, otherwise writes it to .index.json at the root.
+    # @return [String, nil] the contents of the generated index or nil if already indexed
     def build
       return if indexed?
 
@@ -35,7 +36,7 @@ module Inferno
       end
       contents = JSON.pretty_generate(@index)
       block_given? ? yield(contents) : File.write(index_path, contents)
-      nil
+      contents
     end
 
     private
@@ -50,6 +51,7 @@ module Inferno
     #
     # @param filename [String] the name of the file to index
     # @param contents [String] the contents of the file to index
+    # @return [String, nil] the contents of the JSON file or nil if the file was ignored
     def add_json_file(filename, contents)
       file = JSON.parse(contents)
       return unless file.is_a?(Hash)
@@ -60,7 +62,7 @@ module Inferno
         .transform_values! { |val| val.is_a?(String) ? val : val.to_json }
       file['filename'] = filename
       @files << file
-      nil
+      contents
     end
   end
 end
