@@ -4,7 +4,7 @@ require 'yaml'
 module Inferno
   class ConfigManager
     # define methods for which anything may be assigned
-    ['app_name', 'base_path', 'bind', 'default_scopes', 'log_level', 'badge_text', 'resource_validator', 'external_resource_validator_url'].each do |attribute|
+    ['base_path', 'bind', 'default_scopes', 'log_level', 'badge_text', 'resource_validator', 'external_resource_validator_url'].each do |attribute|
       define_method attribute.to_sym do
         config[attribute]
       end
