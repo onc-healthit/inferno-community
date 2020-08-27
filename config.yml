@@ -18,14 +18,14 @@ disable_tls_tests: false
 # Default SMART scopes used when they are not defined by the testing module.
 default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
 
-# Log Level: unkown, fatal, error, warn, info, debug
-log_level: info
+# Logging enabled?
+logging_enabled: true
 
 # Log to file. Logs are written to `logs.log` if true.
 log_to_file: false
 
-# Logging enabled?
-logging_enabled: true
+# Log Level: unkown, fatal, error, warn, info, debug
+log_level: info
 
 # This text appears in a badge next to "Inferno" in the header of each page
 badge_text: Community
