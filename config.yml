@@ -29,9 +29,6 @@ log_to_file: false
 # Logging enabled?
 logging_enabled: true
 
-# Include extra tests: true or false
-include_extras: true
-
 badge_text: Community
 
 # Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
