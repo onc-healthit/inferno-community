@@ -14,7 +14,7 @@ module Inferno
     end
 
     # Define methds which should always assign a boolean value
-    ['purge_database_on_reload', 'disable_verify_peer', 'disable_tls_tests', 'log_to_file', 'logging_enabled', 'autorun_capability', 'include_extras'].each do |attribute|
+    ['purge_database_on_reload', 'disable_verify_peer', 'disable_tls_tests', 'log_to_file', 'logging_enabled', 'include_extras'].each do |attribute|
       define_method attribute.to_sym do
         config[attribute]
       end
