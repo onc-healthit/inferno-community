@@ -21,7 +21,7 @@ module Inferno
 
       test_id_prefix 'USCCN'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :DocumentReference, :DiagnosticReport
 
       details %(

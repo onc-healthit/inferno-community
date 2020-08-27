@@ -23,6 +23,12 @@ test_sets:
         - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4DataAbsentReasonSequence
+sequence_requirements:
+  patient_ids:
+    label: 'Patient IDs'
+  device_codes:
+    label: 'Implantable Device Type Codes'
+    description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile'
 value_sets:<% sequences.each do |sequence| %><% sequence[:bindings].each do |binding| %>
 - value_set_url: <%=binding[:system]%>
   strength: <%=binding[:strength]%>

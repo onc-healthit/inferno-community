@@ -23,7 +23,7 @@ module Inferno
         # Testing Methodology
 
 
-        Because Organization resources are not present o not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        Because Organization resources are not present or do not exist in USCDI, no searches are performed on this test sequence. Instead, references to
         this profile found in other resources are used for testing. If no references can be found this way, then all the tests
         in this sequence are skipped.
 
@@ -115,7 +115,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Organization Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization).
-            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            It verifies the presence of mandatory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
