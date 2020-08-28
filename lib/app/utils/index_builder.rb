@@ -51,7 +51,7 @@ module Inferno
     #
     # @param filename [String] the name of the file to index
     # @param contents [String] the contents of the file to index
-    # @return [String, nil] the contents of the JSON file or nil if the file was ignored
+    # @return [Hash, nil] the hash representation of the added file or nil if the file was ignored
     def add_json_file(filename, contents)
       file = JSON.parse(contents)
       return unless file.is_a?(Hash)
@@ -62,7 +62,7 @@ module Inferno
         .transform_values! { |val| val.is_a?(String) ? val : val.to_json }
       file['filename'] = filename
       @files << file
-      contents
+      file
     end
   end
 end
