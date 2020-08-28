@@ -58,8 +58,8 @@ module Inferno
       return unless file['resourceType'].is_a?(String)
 
       file.slice!('resourceType', 'id', 'url', 'version', 'kind', 'type', 'supplements')
-        .delete_if { |_, val| val.is_a?(Hash) || val.is_a?(Array) }
-        .transform_values! { |val| val.is_a?(String) ? val : val.to_json }
+      file.reject! { |_, val| val.is_a?(Hash) || val.is_a?(Array) }
+      file.transform_values! { |val| val.is_a?(String) ? val : val.to_json }
       file['filename'] = filename
       @files << file
       file
