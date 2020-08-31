@@ -79,9 +79,12 @@ modules:
 # - bulk_private_key: Private key for SMART backend services authorization.
 # - bulk_fastest_resource: A FHIR resource type accessible through the patient
 #   and group level exports that the server can export quickly.
-# - bulk_system_export_endpoint: Url for system export.
-# - bulk_patient_export_endpoint: Url for patient export.
-# - bulk_group_export_endpoint: Url for group export.
+# - bulk_system_export_endpoint: Relative path to system export endpoint from
+#   'bulk_url'.
+# - bulk_patient_export_endpoint: Relative path to patient export endpoint from
+#   'bulk_url'.
+# - bulk_group_export_endpoint: Relative path to group export endpoint from
+#   'bulk_url'.
 presets:
   site_healthit_gov: 
     name: SITE DSTU2 FHIR Sandbox
