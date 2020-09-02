@@ -42,12 +42,8 @@ module Inferno
       def expression_without_fhir_path(path)
         # handle some fhir path stuff. Remove this once fhir path server is added
         as_type = path.scan(/.as\((.*?)\)/).flatten.first
-        path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
+        path = path.gsub(/.as\((.*?)\)/, as_type.upcase_first) if as_type.present?
         path.gsub(/.where\((.*)/, '')
-      end
-
-      def capitalize_first_letter(str)
-        str.slice(0).capitalize + str.slice(1..-1)
       end
 
       # whether multiple or is allowed
