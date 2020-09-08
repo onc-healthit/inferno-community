@@ -33,7 +33,6 @@ module Inferno
           generate_sequence(sequence)
           unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
         end
-        generate_verify_access_module(metadata)
         copy_static_files
         generate_module(metadata)
       end
@@ -1292,45 +1291,6 @@ module Inferno
             @medications.uniq!(&:id)
           end
         )
-      end
-
-      def generate_verify_access_module(module_info)
-        module_info[:access_verify_param_map] = {
-          patient: 'patient',
-          careplan_category: 'assess-plan',
-          careteam_status: 'active',
-          diagnosticreport_category: 'LAB',
-          observation_code: '2708-6',
-          medicationrequest_intent: 'order'
-
-        }
-
-        module_info[:access_verify_status_codes] = {
-          allergyintolerance: { 'clinical-status' => 'active' },
-          careplan: { 'status' => 'active' },
-          careteam: { 'status' => 'active' },
-          condition: { 'clinical-status' => 'active' },
-          diagnosticreport: { 'status' => 'final' },
-          documentreference: { 'status' => 'current' },
-          encounter: { 'status' => 'finished' },
-          goal: { 'status' => 'active' },
-          immunization: { 'status' => 'completed' },
-          medicationrequest: { 'status' => 'active' },
-          observation: { 'status' => 'final' },
-          procedure: { 'status' => 'completed' },
-          smokingstatus: { 'status' => 'final' }
-        }
-
-        ['restricted', 'unrestricted'].each do |restriction|
-          file_name = "#{sequence_out_path}/access_verify_#{restriction}_sequence.rb"
-
-          template = ERB.new(File.read(File.join(__dir__, 'templates/access_verify_sequence.rb.erb')))
-
-          module_info[:access_verify_restriction] = restriction
-          output = template.result_with_hash(module_info)
-          FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
-          File.write(file_name, output)
-        end
       end
 
       def generate_module(module_info)
