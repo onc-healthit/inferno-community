@@ -33,7 +33,6 @@ module Inferno
           generate_sequence(sequence)
           unit_test_generator.generate(sequence, sequence_out_path, metadata[:name])
         end
-        generate_verify_access_module(metadata)
         copy_static_files
         generate_module(metadata)
       end
@@ -1292,34 +1291,6 @@ module Inferno
             @medications.uniq!(&:id)
           end
         )
-      end
-
-      def generate_verify_access_module(module_info)
-        module_info[:access_verify_param_map] = {
-          patient: 'patient',
-          careplan_category: 'assess-plan',
-          careteam_status: 'active',
-          diagnosticreport_category: 'LAB',
-          observation_code: '2708-6',
-          medicationrequest_intent: 'order'
-
-        }
-
-        module_info[:access_verify_status_codes] = {
-          allergyintolerance: { 'clinical-status' => 'active' },
-          careplan: { 'status' => 'active' },
-          careteam: { 'status' => 'active' },
-          condition: { 'clinical-status' => 'active' },
-          diagnosticreport: { 'status' => 'final' },
-          documentreference: { 'status' => 'current' },
-          encounter: { 'status' => 'finished' },
-          goal: { 'status' => 'active' },
-          immunization: { 'status' => 'completed' },
-          medicationrequest: { 'status' => 'active' },
-          observation: { 'status' => 'final' },
-          procedure: { 'status' => 'completed' },
-          smokingstatus: { 'status' => 'final' }
-        }
       end
 
       def generate_module(module_info)
