@@ -18,7 +18,7 @@ module Inferno
 
         The US Core #{title} sequence verifies that the system under test is able to provide correct responses
         for <%= resource %> queries.  These queries must contain resources conforming to <%= profile_name %> as specified
-        in the US Core v3.1.0 Implementation Guide. <% if resource == 'Device' %>If the system under test contains Device
+        in the US Core <%= version %> Implementation Guide. <% if resource == 'Device' %>If the system under test contains Device
         resources that are not implantable, and therefore do not conform to the US Core Implantable Device profile,
         the tester should provide an Implantable Device Code to the test to ensure that only the appropriate device types
         are validated against this profile.<% end %>

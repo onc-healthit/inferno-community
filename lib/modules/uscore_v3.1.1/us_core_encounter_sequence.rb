@@ -18,7 +18,7 @@ module Inferno
 
         The US Core #{title} sequence verifies that the system under test is able to provide correct responses
         for Encounter queries.  These queries must contain resources conforming to US Core Encounter Profile as specified
-        in the US Core v3.1.0 Implementation Guide.
+        in the US Core v3.1.1 Implementation Guide.
 
         # Testing Methodology
 

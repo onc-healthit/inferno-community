@@ -31,6 +31,7 @@ module Inferno
       def add_metadata_from_ig(metadata, implementation_guide)
         metadata[:title] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
         metadata[:description] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
+        metadata[:version] = "v#{implementation_guide['version']}"
       end
 
       def generate_unique_test_id_prefix(title)
@@ -59,7 +60,7 @@ module Inferno
         end
       end
 
-      def build_new_sequence(resource, profile)
+      def build_new_sequence(resource, profile, version)
         base_path = get_base_path(profile)
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
@@ -73,6 +74,7 @@ module Inferno
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,
+          version: version,
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
@@ -101,7 +103,7 @@ module Inferno
           # because it is to check ValueSet expansion
           # We should update this to get that
           resource['supportedProfile']&.each do |supported_profile|
-            new_sequence = build_new_sequence(resource, supported_profile)
+            new_sequence = build_new_sequence(resource, supported_profile, metadata[:version])
 
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)

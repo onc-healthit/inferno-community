@@ -18,7 +18,7 @@ module Inferno
 
         The US Core #{title} sequence verifies that the system under test is able to provide correct responses
         for MedicationRequest queries.  These queries must contain resources conforming to US Core MedicationRequest Profile as specified
-        in the US Core v3.1.0 Implementation Guide.
+        in the US Core v3.1.1 Implementation Guide.
 
         # Testing Methodology
 
@@ -535,7 +535,7 @@ module Inferno
       test :validate_medication_resources do
         metadata do
           id '11'
-          name 'Medication resources returned conform to US Core v3.1.0 profiles'
+          name 'Medication resources returned conform to US Core v3.1.1 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 

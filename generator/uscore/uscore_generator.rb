@@ -743,7 +743,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
+            tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
@@ -1320,8 +1320,6 @@ module Inferno
           procedure: { 'status' => 'completed' },
           smokingstatus: { 'status' => 'final' }
         }
-
-
       end
 
       def generate_module(module_info)
