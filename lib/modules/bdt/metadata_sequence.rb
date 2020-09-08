@@ -14,7 +14,7 @@ module Inferno
       requires :bulk_url, :bulk_token_endpoint, :bulk_client_id, \
                :bulk_system_export_endpoint, :bulk_patient_export_endpoint, :bulk_group_export_endpoint, \
                :bulk_fastest_resource, :bulk_requires_auth, :bulk_since_param, :bulk_jwks_url_auth, :bulk_jwks_url_auth, \
-               :bulk_public_key, :bulk_private_key
+               :bulk_private_key
 
       details %(
         Metadata
@@ -25,9 +25,16 @@ module Inferno
           id '1'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            To declare conformance with this IG, a server <b>should</b> include the following URL in its own <code>CapabilityStatement.instantiates</code>: <a target="_blank" href="https://build.fhir.org/ig/HL7/bulk-data/CapabilityStatement-bulk-data.html">http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data</a>. The <code>CapabilityStatement</code> should contain something like:<pre>"instantiates": [
+            To declare conformance with this IG, a server should include the following URL in its own CapabilityStatement.instantiates:
+
+[http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data](http://www.hl7.org/fhir/bulk-data/CapabilityStatement-bulk-data.html).
+
+The CapabilityStatement should contain something like:
+```json
+"instantiates": [
     "http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data"
-]</pre>
+]
+```
           )
           versions :r4
         end
@@ -39,7 +46,10 @@ module Inferno
           id '2'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            If a server requires SMART on FHIR authorization for access, its metadata <b>must</b> support automated discovery of OAuth2 endpoints by including a “complex” extension (that is, an extension with multiple components inside) on the <code>CapabilityStatement.rest.security</code> element. Any time a client sees this extension, it must be prepared to authorize using SMART’s OAuth2-based protocol.<br/> This test is expecting to find the in CapabilityStatement an entry like:<pre>"rest": [
+            If a server requires SMART on FHIR authorization for access, its metadata **must** support automated discovery of OAuth2 endpoints by including a "complex" extension (that is, an extension with multiple components inside) on the `CapabilityStatement.rest.security` element. Any time a client sees this extension, it must be prepared to authorize using SMART's OAuth2-based protocol.
+This test is expecting to find the in `CapabilityStatement` an entry like:
+```
+"rest": [
   {
     "mode": "server",
     "security": {
@@ -56,7 +66,9 @@ module Inferno
       ]
     }
   }
-]</pre>Having a CapabilityStatement is optional for bulk data servers, unless they are also FHIR servers (which they typically are). However, missing a CapabilityStatement will generate a warning here.
+]
+```
+Having a CapabilityStatement is optional for bulk data servers, unless they are also FHIR servers (which they typically are). However, missing a CapabilityStatement will generate a warning here.
           )
           versions :r4
         end
@@ -68,15 +80,19 @@ module Inferno
           id '3'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This test expects to find in the CapabilityStatement an entry like:<pre>"rest": [
+            This test expects to find in the CapabilityStatement an entry like:
+```
+"rest": [
   {
     "operation": [
       {
-        "name" : "export"
+        "name" : "export",
+        "definition": "..."
       }
     ]
   }
-]</pre>
+]
+```
           )
           versions :r4
         end
@@ -88,15 +104,24 @@ module Inferno
           id '4'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This test expects to find in the CapabilityStatement an entry like:<pre>"rest": [
+            This test expects to find in the CapabilityStatement an entry like:
+```
+"rest": [
   {
-    "operation": [
+    "resource": [
       {
-        "name" : "patient-export"
+        "type": "Patient",
+        "operation": [
+          {
+            "name" : "patient-export",
+            "definition": "..."
+          }
+        ]
       }
     ]
   }
-]</pre>
+]
+```
           )
           versions :r4
         end
@@ -108,15 +133,24 @@ module Inferno
           id '5'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This test expects to find in the CapabilityStatement an entry like:<pre>"rest": [
+            This test expects to find in the CapabilityStatement an entry like:
+```
+"rest": [
   {
-    "operation": [
+    "resource": [
       {
-        "name" : "group-export"
+        "type": "Group",
+        "operation": [
+          {
+            "name" : "group-export",
+            "definition": "..."
+          }
+        ]
       }
     ]
   }
-]</pre>
+]
+```
           )
           versions :r4
         end
@@ -128,7 +162,7 @@ module Inferno
           id '1'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            This test verifies that the server provides a <code>/.well-known/smart-configuration</code> and that a <code>token_endpoint</code> property is declared within that file.
+            This test verifies that the server provides a `/.well-known/smart-configuration` and that a `token_endpoint` property is declared within that file.
           )
           versions :r4
         end
