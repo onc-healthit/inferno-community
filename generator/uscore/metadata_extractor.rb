@@ -469,14 +469,6 @@ module Inferno
         goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
         goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
         goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
-
-        # add the ge comparator - the metadata is missing it for some reason
-        metadata[:sequences].each do |sequence|
-          sequence[:search_param_descriptions].each do |_param, description|
-            param_comparators = description[:comparators]
-            param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
-          end
-        end
       end
 
       def add_mandatory_and_must_support_search_exclusions(metadata)
