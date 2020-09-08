@@ -43,7 +43,7 @@ module Inferno
         # remove non-character elements from beginning and end of name
         param_variable_name = parameter
           .gsub(/^[\W_]+|[\W_]+$"/, '')
-          .gsub('-', '_')
+          .tr('-', '_')
         "#{param_variable_name}_val"
       end
     end
