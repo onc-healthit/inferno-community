@@ -1,6 +1,3 @@
-# Name of app
-app_name: Inferno
-
 # Base path of application
 # There are a few exceptions, such as "/" and "/landing".
 base_path: "inferno"
@@ -28,12 +25,6 @@ log_to_file: false
 
 # Logging enabled?
 logging_enabled: true
-
-# Automatically Run Conformance Sequence on new server create
-autorun_capability: false
-
-# Include extra tests: true or false
-include_extras: true
 
 badge_text: Community
 

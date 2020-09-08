@@ -4,7 +4,7 @@ require 'yaml'
 module Inferno
   class ConfigManager
     # define methods for which anything may be assigned
-    ['app_name', 'base_path', 'bind', 'default_scopes', 'log_level', 'badge_text', 'resource_validator', 'external_resource_validator_url'].each do |attribute|
+    ['base_path', 'bind', 'default_scopes', 'log_level', 'badge_text', 'resource_validator', 'external_resource_validator_url'].each do |attribute|
       define_method attribute.to_sym do
         config[attribute]
       end
@@ -14,7 +14,7 @@ module Inferno
     end
 
     # Define methds which should always assign a boolean value
-    ['purge_database_on_reload', 'disable_verify_peer', 'disable_tls_tests', 'log_to_file', 'logging_enabled', 'autorun_capability', 'include_extras'].each do |attribute|
+    ['purge_database_on_reload', 'disable_verify_peer', 'disable_tls_tests', 'log_to_file', 'logging_enabled'].each do |attribute|
       define_method attribute.to_sym do
         config[attribute]
       end

@@ -1,47 +1,48 @@
-# Name of app
-app_name: Inferno
-
-# Base path of application
+# Base path of application. Inferno will serve pages at HOST/base_path
 # There are a few exceptions, such as "/" and "/landing".
 base_path: "inferno"
 
-# Useful during development to purge the database on each reload
+# Useful during development to purge the database on each reload.
 purge_database_on_reload: false
 
-# Disable peer SSL verification for environments that use SSL inspection
+# Disable peer SSL verification for environments that use SSL inspection.
 disable_verify_peer: false
 
-# When running in a docker container, we have to listen to other than just 'localhost' which is the default
+# When running in a docker container, Inferno must listen to other than just
+# 'localhost' which is the default.
 bind: '0.0.0.0'
 
-# Omit TLS tests
+# Omit TLS tests. Used for local development without TLS.
 disable_tls_tests: false
 
-# Default scopes
+# Default SMART scopes used when they are not defined by the testing module.
 default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
-
-# Log Level: unkown, fatal, error, warn, info, debug
-log_level: info
-
-# Log to file
-log_to_file: false
 
 # Logging enabled?
 logging_enabled: true
 
-# Automatically Run Conformance Sequence on new server create
-autorun_capability: false
+# Log to file. Logs are written to `logs.log` if true.
+log_to_file: false
 
-# Include extra tests: true or false
-include_extras: true
+# Log Level: unkown, fatal, error, warn, info, debug
+log_level: info
 
+# This text appears in a badge next to "Inferno" in the header of each page
 badge_text: Community
 
-# Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
+# Resource validator options:
+# - "internal" uses the ruby validator from the fhir_models gem
+#   https://github.com/fhir-crucible/fhir_models
+# - "external" uses the a web interface for the L7 FHIR validator.
+#   https://github.com/inferno-community/fhir-validator-wrapper
 resource_validator: external
+
+# The url where the external validator can be reached. Ignored when using the
+# internal validator.
 external_resource_validator_url: http://validator_service:4567
 
-# module options: one or more must be set.  The first option in the list will be checked by default
+# The list of testing modules which will be made available. These entries must
+# match the "name" field in the .yml files in lib/modules.
 modules:
   - onc
   - smart
@@ -49,7 +50,41 @@ modules:
   - argonaut
   - uscore_v3.1.0
 
-# preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
+# Optional preset server testing configurations.
+#
+# Universal Settings:
+# - name: REQUIRED. Name to be displayed in the preset selection menu.
+# - uri: REQUIRED. FHIR server base uri.
+# - module: REQUIRED. Name of testing module for this server.
+# - inferno_uri: OPTIONAL When this value is present, the preset will only be
+#   listed when inferno is being served from this uri. This allows separate
+#   SMART credentials to be used depending on where inferno is hosted. Omit this
+#   value to always display this preset.
+#
+# Single Patient API Settings (OPTIONAL):
+# - confidential_client: "true" for confidential clients, "false" for public
+#   clients. Used for SMART tests
+# - client_id: SMART client ID.
+# - client_secret: SMART client secret. Only used for confidential clients.
+# - instructions: Link to instructions for using this server.
+#
+# Multi Patient API Settings (OPTIONAL):
+# - bulk_url: Multi patient FHIR server base url.
+# - bulk_requires_auth: Whether the server requires SMART backend servics
+#   authorization. "true" or "false"
+# - bulk_token_endpoint: Token endpoint for SMART backend services
+#   authorization.
+# - bulk_client_id: Client ID for SMART backend services authorization.
+# - bulk_public_key: Public key for SMART backend services authorization.
+# - bulk_private_key: Private key for SMART backend services authorization.
+# - bulk_fastest_resource: A FHIR resource type accessible through the patient
+#   and group level exports that the server can export quickly.
+# - bulk_system_export_endpoint: Relative path to system export endpoint from
+#   'bulk_url'.
+# - bulk_patient_export_endpoint: Relative path to patient export endpoint from
+#   'bulk_url'.
+# - bulk_group_export_endpoint: Relative path to group export endpoint from
+#   'bulk_url'.
 presets:
   site_healthit_gov: 
     name: SITE DSTU2 FHIR Sandbox
