@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311OrganizationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreProfileDefinitions
 
       title 'Organization Tests'
 

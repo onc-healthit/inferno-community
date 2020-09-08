@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311PediatricBmiForAgeSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreProfileDefinitions
 
       title 'Pediatric BMI for Age Observation Tests'
 

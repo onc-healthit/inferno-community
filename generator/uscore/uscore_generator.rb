@@ -1321,16 +1321,7 @@ module Inferno
           smokingstatus: { 'status' => 'final' }
         }
 
-        ['restricted', 'unrestricted'].each do |restriction|
-          file_name = "#{sequence_out_path}/access_verify_#{restriction}_sequence.rb"
 
-          template = ERB.new(File.read(File.join(__dir__, 'templates/access_verify_sequence.rb.erb')))
-
-          module_info[:access_verify_restriction] = restriction
-          output = template.result_with_hash(module_info)
-          FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
-          File.write(file_name, output)
-        end
       end
 
       def generate_module(module_info)

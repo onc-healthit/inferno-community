@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Inferno
-  module USCore310ProfileDefinitions
+  module USCoreProfileDefinitions
     class USCore311CareplanSequenceDefinitions
       MUST_SUPPORTS = {
         extensions: [],

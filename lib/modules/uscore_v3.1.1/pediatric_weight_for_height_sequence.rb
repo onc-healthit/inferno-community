@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311PediatricWeightForHeightSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreProfileDefinitions
 
       title 'Pediatric Weight for Height Observation Tests'
 

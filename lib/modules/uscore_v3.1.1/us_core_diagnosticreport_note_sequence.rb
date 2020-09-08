@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311DiagnosticreportNoteSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreProfileDefinitions
 
       title 'DiagnosticReport for Report and Note exchange Tests'
 

@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311GoalSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCoreProfileDefinitions
 
       title 'Goal Tests'
 
