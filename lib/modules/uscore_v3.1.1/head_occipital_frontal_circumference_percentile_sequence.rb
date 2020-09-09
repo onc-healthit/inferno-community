@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311HeadOccipitalFrontalCircumferencePercentileSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCoreProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       title 'Pediatric Head Occipital-frontal Circumference Percentile Tests'
 

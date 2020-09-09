@@ -75,6 +75,7 @@ module Inferno
           name: base_name.tr('-', '_'),
           class_name: class_name,
           version: version,
+          reformatted_version: reformatted_version,
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,

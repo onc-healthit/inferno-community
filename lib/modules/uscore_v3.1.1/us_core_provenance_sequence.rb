@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311ProvenanceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCoreProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       title 'Provenance Tests'
 

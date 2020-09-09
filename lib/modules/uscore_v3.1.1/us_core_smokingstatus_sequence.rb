@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311SmokingstatusSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCoreProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       title 'Smoking Status Observation Tests'
 

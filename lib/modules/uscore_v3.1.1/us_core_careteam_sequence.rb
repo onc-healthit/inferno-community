@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311CareteamSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCoreProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       title 'CareTeam Tests'
 

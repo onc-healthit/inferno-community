@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311PractitionerSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCoreProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       title 'Practitioner Tests'
 

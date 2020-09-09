@@ -7,7 +7,7 @@ module Inferno
   module Sequence
     class USCore311ObservationLabSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::USCoreProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       title 'Laboratory Result Observation Tests'
 

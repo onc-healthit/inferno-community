@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Inferno
-  module USCoreProfileDefinitions
+  module USCore311ProfileDefinitions
     class USCore311PulseOximetrySequenceDefinitions
       MUST_SUPPORTS = {
         extensions: [],
