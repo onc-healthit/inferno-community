@@ -465,6 +465,8 @@ module Inferno
       end
 
       def fix_metadata_errors(metadata)
+        # This should be fixed in v3.1.1 but the code generator removes all Goal.target.dueDate search. 
+        # should be investigate further
         goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
         goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
         goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
