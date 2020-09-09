@@ -23,11 +23,6 @@ module Inferno
               .drop(1)
               .join('.')
 
-            # handle some fhir path stuff. Remove this once fhir path server is added
-            path = path.gsub(/.where\((.*)/, '')
-            as_type = path.scan(/.as\((.*?)\)/).flatten.first
-            path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
-
             "#{search_param_value_name(parameter)} = find_search_parameter_value_from_resource(@resource_found, '#{path}')"
           end
           search_test.code = %(
@@ -45,12 +40,11 @@ module Inferno
       end
 
       def search_param_value_name(parameter)
-        parameter.gsub!(/^[\W_]+|[\W_]+$"/, '') # remove non-character elements from beginning and end of name
-        "#{parameter.gsub('-', '_')}_val"
-      end
-
-      def capitalize_first_letter(str)
-        str.slice(0).capitalize + str.slice(1..-1)
+        # remove non-character elements from beginning and end of name
+        param_variable_name = parameter
+          .gsub(/^[\W_]+|[\W_]+$"/, '')
+          .tr('-', '_')
+        "#{param_variable_name}_val"
       end
     end
   end

@@ -28,12 +28,6 @@ describe Inferno::ConfigManager do
     assert @config_manager.modules.uniq.length == @config_manager.modules.length
   end
 
-  it 'allows users to set an app_name' do
-    assert @config_manager.app_name == 'Inferno'
-    @config_manager.app_name = 'foo'
-    assert @config_manager.app_name = 'foo'
-  end
-
   it 'makes sure that certain values are boolean' do
     assert @config_manager.log_to_file == false
     @config_manager.log_to_file = 'true'

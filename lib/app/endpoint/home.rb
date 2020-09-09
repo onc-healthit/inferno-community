@@ -55,8 +55,7 @@ module Inferno
           cookies[:instance_id_test_set] = "#{@instance.id}/test_sets/#{inferno_module.default_test_set}"
 
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
-              settings.autorun_capability}"
+          redirect "#{base_path}/#{@instance.id}/"
         end
 
         # Returns the static files associated with web app
