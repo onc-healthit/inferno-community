@@ -465,14 +465,14 @@ module Inferno
       end
 
       def fix_metadata_errors(metadata)
+        goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
+        goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
+        goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
+
         if metadata[:version] == 'v3.1.0'
           # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
           procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
-          procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
-          
-          goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
-          goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
-          goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
+          procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'         
 
           # add the missing ge comparator for USCore v3.1.0 - the metadata is missing it for some reason
           # This code segment has no impact for USCore v3.1.1 and forward.
