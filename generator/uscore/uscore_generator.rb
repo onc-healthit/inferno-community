@@ -131,8 +131,8 @@ module Inferno
       end
 
       def find_first_search(sequence)
-        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
-          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory] } ||
+          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' && search_param[:must_support_or_mandatory]}
       end
 
       def generate_sequence(sequence)
@@ -400,6 +400,7 @@ module Inferno
             )
         end
 
+        #binding.pry if ['USCore311SmokingstatusSequence', 'USCore310SmokingstatusSequence'].include? sequence[:class_name]
         is_first_search = search_param == find_first_search(sequence)
 
         search_test[:description] += 'Because this is the first search of the sequence, resources in the response will be used for subsequent tests.' if is_first_search

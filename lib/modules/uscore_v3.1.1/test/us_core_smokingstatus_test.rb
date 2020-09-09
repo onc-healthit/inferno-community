@@ -26,8 +26,6 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
       @sequence.instance_variable_set(:'@observation', @observation)
       @sequence.instance_variable_set(:'@observation_ary', @observation_ary)
 
-      @sequence.instance_variable_set(:'@resources_found', true)
-
       @query = {
         'patient': @sequence.patient_ids.first,
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'))
@@ -51,26 +49,16 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
       assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
-    it 'skips if no Observation resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
-    end
-
-    it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@observation_ary', @sequence.patient_ids.first => FHIR::Observation.new)
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_match(/Could not resolve .* in any resource\./, exception.message)
-    end
-
     it 'fails if a non-success response code is received' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 401)
+      ['72166-2'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 401)
+      end
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -78,19 +66,47 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
     end
 
     it 'fails if a Bundle is not received' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: FHIR::Observation.new.to_json)
+      ['72166-2'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: FHIR::Observation.new.to_json)
+      end
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
     end
 
+    it 'skips if an empty Bundle is received' do
+      ['72166-2'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: FHIR::Bundle.new.to_json)
+      end
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Observation resources appear to be available. Please use patients with more information.', exception.message
+    end
+
     it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+      ['72166-2'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Observation.new(id: '!@#$%')).to_json)
+      end
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -98,9 +114,25 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+      ['72166-2'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        body =
+          if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+            wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: reference_with_type_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
 
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query_with_system, headers: @auth_header)
@@ -111,9 +143,15 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
 
     describe 'with servers that require status' do
       it 'fails if a 400 is received without an OperationOutcome' do
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query, headers: @auth_header)
-          .to_return(status: 400)
+        ['72166-2'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'code': value
+          }
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400)
+        end
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -121,9 +159,15 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
       end
 
       it 'warns if the search is not documented in the CapabilityStatement' do
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query, headers: @auth_header)
-          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        ['72166-2'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'code': value
+          }
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+        end
 
         assert_raises(WebMock::NetConnectNotAllowedError) { @sequence.run_test(@test) }
 
@@ -135,12 +179,18 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
       end
 
       it 'fails if searching with status is not successful' do
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query, headers: @auth_header)
-          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query.merge('status': ['final,entered-in-error'].first), headers: @auth_header)
-          .to_return(status: 500)
+        ['72166-2'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'code': value
+          }
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('status': ['final,entered-in-error'].first), headers: @auth_header)
+            .to_return(status: 500)
+        end
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -148,12 +198,18 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
       end
 
       it 'fails if searching with status does not return a Bundle' do
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query, headers: @auth_header)
-          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query.merge('status': ['final,entered-in-error'].first), headers: @auth_header)
-          .to_return(status: 200, body: FHIR::Observation.new.to_json)
+        ['72166-2'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'code': value
+          }
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('status': ['final,entered-in-error'].first), headers: @auth_header)
+            .to_return(status: 200, body: FHIR::Observation.new.to_json)
+        end
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -161,12 +217,29 @@ describe Inferno::Sequence::USCore311SmokingstatusSequence do
       end
 
       it 'succeeds if searching with status returns valid resources' do
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query, headers: @auth_header)
-          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query.merge('status': ['final,entered-in-error'].first), headers: @auth_header)
-          .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+        ['72166-2'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'code': value
+          }
+
+          body =
+            if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+              wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
+            else
+              FHIR::Bundle.new.to_json
+            end
+
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('status': ['final,entered-in-error'].first), headers: @auth_header)
+            .to_return(status: 200, body: body)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['final,entered-in-error'].first), headers: @auth_header)
+            .to_return(status: 200, body: body)
+        end
 
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: @query_with_system.merge('status': ['final,entered-in-error'].first), headers: @auth_header)

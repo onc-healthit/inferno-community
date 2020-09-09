@@ -169,39 +169,57 @@ module Inferno
 
             A server SHALL support searching by patient+code on the Observation resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
 
         skip_if_known_search_not_supported('Observation', ['patient', 'code'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
+        @observation_ary = {}
+        @resources_found = false
 
-        resolved_one = false
-
+        code_val = ['72166-2']
         patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
-          }
+          @observation_ary[patient] = []
+          code_val.each do |val|
+            search_params = { 'patient': patient, 'code': val }
+            reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-          next if search_params.any? { |_param, value| value.nil? }
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          resolved_one = true
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
 
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+            next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+            @resources_found = true
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @observation = resources_returned.first
+            @observation_ary[patient] += resources_returned
 
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+            save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
+            save_delayed_sequence_references(resources_returned, USCore311SmokingstatusSequenceDefinitions::DELAYED_REFERENCES)
+            validate_reply_entries(resources_returned, search_params)
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
-          token_with_system_search_params = search_params.merge('code': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+            value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
+            token_with_system_search_params = search_params.merge('code': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+
+            search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
+            reply = get_resource_by_params(versioned_resource_class('Observation'), search_params_with_type)
+
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+            break
+          end
         end
-
-        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
       end
 
       test :read_interaction do
@@ -257,7 +275,7 @@ module Inferno
         validate_history_reply(@observation, versioned_resource_class('Observation'))
       end
 
-      test 'Server returns Provenance resources from Observation search by patient + category + date + _revIncludes: Provenance:target' do
+      test 'Server returns Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
         metadata do
           id '05'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
@@ -265,7 +283,7 @@ module Inferno
 
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
 
-            This test will perform a search for patient + category + date + _revIncludes: Provenance:target and will pass
+            This test will perform a search for patient + code + _revIncludes: Provenance:target and will pass
             if a Provenance resource is found in the reponse.
 
           )
@@ -281,8 +299,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -301,7 +318,7 @@ module Inferno
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
         save_delayed_sequence_references(provenance_results, USCore311SmokingstatusSequenceDefinitions::DELAYED_REFERENCES)
-        skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
+        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
