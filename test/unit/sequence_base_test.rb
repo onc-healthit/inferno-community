@@ -27,26 +27,121 @@ class SequenceBaseTest < MiniTest::Test
     @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
   end
 
-  def test_save_delayed_resource_references
-    delayed_resources = ['Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole']
-    some_non_delayed_resources = ['AllergyIntolerance', 'CarePlan', 'Careteam', 'Condition', 'Device', 'Observation', 'Encounter', 'Goal']
-
-    delayed_resources.each do |res|
-      set_resource_reference(@allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(Array.wrap(@allergy_intolerance_resource))
-      assert @instance.resource_references.any? { |ref| ref.resource_type == res }, "#{res} reference should be saved"
+  describe '#validate_reply_entries' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::USCore310AllergyintoleranceSequence.new(@instance, client, true)
+      allergy_intolerance_bundle = FHIR.from_contents(load_fixture(:us_core_r4_allergy_intolerance))
+      @allergy_intolerance_resource = allergy_intolerance_bundle.entry.first.resource
     end
-    some_non_delayed_resources.each do |res|
-      set_resource_reference(@allergy_intolerance_resource, res)
-      @sequence.save_delayed_sequence_references(Array.wrap(@allergy_intolerance_resource))
-      assert @instance.resource_references.none? { |ref| ref.resource_type == res }, "#{res} reference should not be saved"
+
+    it 'passes if results match search params' do
+      search_params = {
+        'patient': '1234',
+        'clinical-status': 'active'
+      }
+      search_params.each do |key, value|
+        @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
+      end
+    end
+
+    it 'fails when results do not match search params' do
+      search_params = {
+        'patient': '1234',
+        'clinical-status': 'inactive'
+      }
+      error = assert_raises(Inferno::AssertionException) do
+        search_params.each do |key, value|
+          @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
+        end
+      end
+      expected_error_msg = "clinical-status in AllergyIntolerance/SMART-AllergyIntolerance-28 (#{@sequence.resolve_path(@allergy_intolerance_resource, 'clinicalStatus')})"\
+        ' does not match clinical-status requested (inactive)'
+      assert error.message == expected_error_msg, "expected: #{expected_error_msg}, actual: #{error.message}"
+    end
+
+    it 'passes when the correct system for clinical-status is searched' do
+      search_params = {
+        'patient': '1234',
+        'clinical-status': 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical|active'
+      }
+      search_params.each do |key, value|
+        @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
+      end
+    end
+
+    it 'fails when the incorrect system is searched' do
+      search_params = {
+        'patient': '1234',
+        'clinical-status': 'http://terminology.hl7.org|active'
+      }
+      assert_raises(Inferno::AssertionException) do
+        search_params.each do |key, value|
+          @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
+        end
+      end
     end
   end
 
-  def set_resource_reference(resource, type)
-    new_reference = FHIR::Reference.new
-    new_reference.reference = "#{type}/1234"
-    resource.recorder = new_reference
+  describe '#date_comparator_value' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
+    end
+
+    it 'returns searches for periods' do
+      period = FHIR::Period.new('start' => '2020-07-01T12:12:12+00:00')
+      assert @sequence.date_comparator_value('gt', period) == 'gt2020-06-30T12:12:12+00:00'
+
+      period = FHIR::Period.new('end' => '2020-07-01T12:12:12+00:00')
+      assert @sequence.date_comparator_value('ge', period) == 'ge2020-06-30T12:12:12+00:00'
+
+      period = FHIR::Period.new('start' => '2020-07-03')
+      assert @sequence.date_comparator_value('le', period) == 'le2020-07-04T00:00:00+00:00'
+
+      period = FHIR::Period.new('start' => '2020-07')
+      assert @sequence.date_comparator_value('lt', period) == 'lt2020-07-02T00:00:00+00:00'
+    end
+
+    it 'returns searches for datetimes' do
+      assert @sequence.date_comparator_value('le', '2020') == 'le2020-01-02T00:00:00+00:00'
+      assert @sequence.date_comparator_value('lt', '2020-04') == 'lt2020-04-02T00:00:00+00:00'
+      assert @sequence.date_comparator_value('gt', '2020-04-01') == 'gt2020-03-31T00:00:00+00:00'
+      assert @sequence.date_comparator_value('ge', '2020-04-01T00:00:00+00:00') == 'ge2020-03-31T00:00:00+00:00'
+    end
+  end
+
+  describe '#save_delayed_sequence_references' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
+      @diagnostic_report_resource = FHIR.from_contents(load_fixture(:us_core_r4_diagnostic_report_note))
+      @delayed_references = Inferno::USCore310ProfileDefinitions::USCore310DiagnosticreportNoteSequenceDefinitions::DELAYED_REFERENCES
+    end
+
+    it 'saves reference to delayed US core resources' do
+      reference = FHIR::Reference.new
+      reference.reference = 'Practitioner/1234'
+      @diagnostic_report_resource.performer = reference
+      @sequence.save_delayed_sequence_references(Array.wrap(@diagnostic_report_resource), @delayed_references)
+      assert @instance.resource_references.any? { |ref| ref.resource_type == 'Practitioner' }, 'Practitioner references should be saved in DiagnosticReport.perfomer'
+
+      reference.reference = 'Organization/1234'
+      @diagnostic_report_resource.performer = reference
+      @sequence.save_delayed_sequence_references(Array.wrap(@diagnostic_report_resource), @delayed_references)
+      assert @instance.resource_references.any? { |ref| ref.resource_type == 'Organization' }, 'Organization references should be saved in DiagnosticReport.perfomer'
+    end
+
+    it 'does not save delayed reference when not us core resource' do
+      reference = FHIR::Reference.new
+      reference.reference = 'Location/1234'
+      @diagnostic_report_resource.performer = reference
+      @sequence.save_delayed_sequence_references(Array.wrap(@diagnostic_report_resource), @delayed_references)
+      assert @instance.resource_references.none? { |ref| ref.resource_type == 'Location' }, 'Location references should be saved in DiagnosticReport.perfomer'
+    end
   end
 
   describe '#get_value_for_search_param' do
@@ -57,14 +152,46 @@ class SequenceBaseTest < MiniTest::Test
     end
 
     it 'returns value from period' do
-      { start: 'now', end: 'later' }.each do |key, value|
-        element = FHIR::Period.new(key => value)
-        expected_value = if key == :start
-                           'gt' + value
-                         else
-                           'lt' + value
-                         end
-        assert @sequence.get_value_for_search_param(element) == expected_value
+      [
+        {
+          element: FHIR::Period.new('start' => '2020'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2020', 'end' => '2020'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2020'),
+          expected: 'lt2021-01-01T23:59:59+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2020-01'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2020-01'),
+          expected: 'lt2020-02-01T23:59:59+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2020-01-01'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2020-01-01'),
+          expected: 'lt2020-01-02T23:59:59+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2015-02-07T13:28:17-05:00'),
+          expected: 'gt2015-02-06T13:28:17-05:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2015-02-07T13:28:17-05:00'),
+          expected: 'lt2015-02-08T13:28:17-05:00'
+        }
+      ].each do |expectation|
+        actual_value = @sequence.get_value_for_search_param(expectation[:element])
+        assert actual_value == expectation[:expected], "Expected: #{expectation[:expected]}, Saw: #{actual_value}"
       end
     end
 

@@ -14,59 +14,7 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
-    set_resource_support(@instance, 'Observation')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
-  end
-
-  describe 'unauthorized search test' do
-    before do
-      @test = @sequence_class[:unauthorized_search]
-      @sequence = @sequence_class.new(@instance, @client)
-
-      @query = {
-        'patient': @sequence.patient_ids.first,
-        'code': '8867-4'
-      }
-    end
-
-    it 'skips if the Observation search interaction is not supported' do
-      @instance.server_capabilities.destroy
-      Inferno::Models::ServerCapabilities.create(
-        testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
-      )
-      @instance.reload
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      skip_message = 'This server does not support Observation search operation(s) according to conformance statement.'
-      assert_equal skip_message, exception.message
-    end
-
-    it 'fails when the token refresh response has a success status' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query)
-        .to_return(status: 200)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Bad response code: expected 401, but found 200', exception.message
-    end
-
-    it 'succeeds when the token refresh response has an error status' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query)
-        .to_return(status: 401)
-
-      @sequence.run_test(@test)
-    end
-
-    it 'is omitted when no token is set' do
-      @instance.token = ''
-
-      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
-
-      assert_equal 'Do not test if no bearer token set', exception.message
-    end
   end
 
   describe 'Observation search by patient+code test' do
@@ -82,6 +30,23 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         'patient': @sequence.patient_ids.first,
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'), true)
+      }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -163,7 +128,15 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: reference_with_type_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
       end
+
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
     end
@@ -255,7 +228,14 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
             .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
         end
+
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: @query_with_system.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
 
         @sequence.run_test(@test)
       end
@@ -278,6 +258,24 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'), true),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
+      }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient', 'category']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Observation resources have been found' do
@@ -394,6 +392,23 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'), true)
+      }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Observation resources have been found' do
@@ -445,6 +460,10 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query_with_system, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
@@ -509,6 +528,10 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
           .with(query: @query.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
 
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: @query_with_system.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -530,6 +553,24 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'), true),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
+      }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient', 'code']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Observation resources have been found' do
@@ -647,6 +688,24 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category')),
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'status'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'), true),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'status'))
+      }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient', 'category']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Observation resources have been found' do
@@ -700,6 +759,10 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
   end
@@ -714,7 +777,6 @@ describe Inferno::Sequence::USCore310HeartrateSequence do
     end
 
     it 'skips if the Observation read interaction is not supported' do
-      @instance.server_capabilities.destroy
       Inferno::Models::ServerCapabilities.create(
         testing_instance_id: @instance.id,
         capabilities: FHIR::CapabilityStatement.new.to_json

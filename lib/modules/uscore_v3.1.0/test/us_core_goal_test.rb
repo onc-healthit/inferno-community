@@ -14,58 +14,7 @@ describe Inferno::Sequence::USCore310GoalSequence do
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
-    set_resource_support(@instance, 'Goal')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
-  end
-
-  describe 'unauthorized search test' do
-    before do
-      @test = @sequence_class[:unauthorized_search]
-      @sequence = @sequence_class.new(@instance, @client)
-
-      @query = {
-        'patient': @sequence.patient_ids.first
-      }
-    end
-
-    it 'skips if the Goal search interaction is not supported' do
-      @instance.server_capabilities.destroy
-      Inferno::Models::ServerCapabilities.create(
-        testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
-      )
-      @instance.reload
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      skip_message = 'This server does not support Goal search operation(s) according to conformance statement.'
-      assert_equal skip_message, exception.message
-    end
-
-    it 'fails when the token refresh response has a success status' do
-      stub_request(:get, "#{@base_url}/Goal")
-        .with(query: @query)
-        .to_return(status: 200)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Bad response code: expected 401, but found 200', exception.message
-    end
-
-    it 'succeeds when the token refresh response has an error status' do
-      stub_request(:get, "#{@base_url}/Goal")
-        .with(query: @query)
-        .to_return(status: 401)
-
-      @sequence.run_test(@test)
-    end
-
-    it 'is omitted when no token is set' do
-      @instance.token = ''
-
-      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
-
-      assert_equal 'Do not test if no bearer token set', exception.message
-    end
   end
 
   describe 'Goal search by patient test' do
@@ -80,6 +29,18 @@ describe Inferno::Sequence::USCore310GoalSequence do
       @query = {
         'patient': @sequence.patient_ids.first
       }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        []
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'fails if a non-success response code is received' do
@@ -125,6 +86,11 @@ describe Inferno::Sequence::USCore310GoalSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Goal")
         .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
+
+      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
+      stub_request(:get, "#{@base_url}/Goal")
+        .with(query: reference_with_type_params, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
@@ -189,6 +155,10 @@ describe Inferno::Sequence::USCore310GoalSequence do
           .with(query: @query.merge('lifecycle-status': ['proposed', 'planned', 'accepted', 'active', 'on-hold', 'completed', 'cancelled', 'entered-in-error', 'rejected'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@goal]).to_json)
 
+        stub_request(:get, "#{@base_url}/Goal")
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'lifecycle-status': ['proposed', 'planned', 'accepted', 'active', 'on-hold', 'completed', 'cancelled', 'entered-in-error', 'rejected'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@goal]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -209,6 +179,18 @@ describe Inferno::Sequence::USCore310GoalSequence do
         'patient': @sequence.patient_ids.first,
         'target-date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@goal_ary[@sequence.patient_ids.first], 'target.dueDate'))
       }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
     it 'skips if no Goal resources have been found' do
@@ -327,6 +309,18 @@ describe Inferno::Sequence::USCore310GoalSequence do
       }
     end
 
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
+    end
+
     it 'skips if no Goal resources have been found' do
       @sequence.instance_variable_set(:'@resources_found', false)
 
@@ -392,7 +386,6 @@ describe Inferno::Sequence::USCore310GoalSequence do
     end
 
     it 'skips if the Goal read interaction is not supported' do
-      @instance.server_capabilities.destroy
       Inferno::Models::ServerCapabilities.create(
         testing_instance_id: @instance.id,
         capabilities: FHIR::CapabilityStatement.new.to_json

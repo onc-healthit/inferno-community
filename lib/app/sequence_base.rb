@@ -11,7 +11,6 @@ require_relative 'utils/web_driver'
 require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
-require_relative 'utils/sequence_utilities'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
 require_relative 'utils/hl7_validator'
@@ -208,6 +207,7 @@ module Inferno
           next unless result.wait?
 
           sequence_result.redirect_to_url = result.redirect_to_url
+          sequence_result.expect_redirect_failure = result.expect_redirect_failure
           sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
@@ -426,6 +426,7 @@ module Inferno
                 e.update_result(result)
               else
                 Inferno.logger.error "Fatal Error: #{e.message}"
+                Inferno.logger.error e.class.name
                 Inferno.logger.error e.backtrace
                 result.error!
                 result.message = "Fatal Error: #{e.message}"
@@ -474,8 +475,8 @@ module Inferno
         raise WaitException, endpoint
       end
 
-      def redirect(url, endpoint)
-        raise RedirectException.new url, endpoint
+      def redirect(url, endpoint, expect_failure = false)
+        raise RedirectException.new url, endpoint, expect_failure
       end
 
       def warning
@@ -525,17 +526,20 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
+        entries = fetch_all_bundled_resources(reply).select { |entry| entry.class == klass }
+        validate_reply_entries(entries, search_params)
         assert entries.present?, 'No resources of this type were returned'
+      end
 
-        entries.each do |entry|
+      def validate_reply_entries(resources, search_params)
+        resources.each do |resource|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
-          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: \n\n* #{resource_validation_errors[:errors].join("\n* ")}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+          assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
-            validate_resource_item(entry.resource, key.to_s, value)
+            validate_resource_item(resource, key.to_s, value)
           end
         end
       end
@@ -631,6 +635,22 @@ module Inferno
         assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
+      def test_resource_collection(resource_type, resources)
+        errors = resources.flat_map do |resource|
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          if p
+            @profiles_encountered << p.url
+            validate_resource(resource_type, resource, p)
+          else
+            warn { assert false, 'No profiles found for this Resource' }
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:errors]
+          end
+        end
+
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
+
       def test_resources_against_profile(resource_type, specified_profile = nil, &block)
         @profiles_encountered ||= Set.new
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
@@ -704,16 +724,17 @@ module Inferno
         assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
-      def save_delayed_sequence_references(resources)
-        delayed_resource_types = @@conformance_supports.select { |sequence, _resources| @@delayed_sequences.include? sequence }.values.flatten
+      def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
-          walk_resource(resource) do |value, meta, _path|
+          walk_resource(resource) do |value, meta, path|
             next if meta['type'] != 'Reference'
 
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+                delayed_sequence_reference = delayed_sequence_references.find { |ref| ref[:path] == path }
+                is_delayed = delayed_sequence_reference.present? && delayed_sequence_reference[:resources].include?(resource_class)
+                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if is_delayed
               rescue NameError
                 next
               end
@@ -779,34 +800,49 @@ module Inferno
         nil
       end
 
-      def get_value_for_search_param(element)
-        case element
-        when FHIR::Period
-          if element.start.present?
-            'gt' + element.start
-          else
-            'lt' + element.end
-          end
-        when FHIR::Reference
-          element.reference
-        when FHIR::CodeableConcept
-          resolve_element_from_path(element, 'coding.code')
-        when FHIR::Identifier
-          element.value
-        when FHIR::Coding
-          element.code
-        when FHIR::HumanName
-          element.family || element.given&.first || element.text
-        when FHIR::Address
-          element.text || element.city || element.state || element.postalCode || element.country
-        else
-          element
-        end
+      def get_value_for_search_param(element, include_system = false)
+        search_value = case element
+                       when FHIR::Period
+                         if element.start.present?
+                           'gt' + (DateTime.xmlschema(element.start) - 1).xmlschema
+                         else
+                           end_datetime = get_fhir_datetime_range(element.end)[:end]
+                           'lt' + (end_datetime + 1).xmlschema
+                         end
+                       when FHIR::Reference
+                         element.reference
+                       when FHIR::CodeableConcept
+                         if include_system
+                           coding_with_code = resolve_element_from_path(element, 'coding') { |coding| coding.code.present? }
+                           coding_with_code.present? ? "#{coding_with_code.system}|#{coding_with_code.code}" : nil
+                         else
+                           resolve_element_from_path(element, 'coding.code')
+                         end
+                       when FHIR::Identifier
+                         if include_system
+                           "#{element.system}|#{element.value}"
+                         else
+                           element.value
+                         end
+                       when FHIR::Coding
+                         if include_system
+                           "#{element.system}|#{element.code}"
+                         else
+                           element.code
+                         end
+                       when FHIR::HumanName
+                         element.family || element.given&.first || element.text
+                       when FHIR::Address
+                         element.text || element.city || element.state || element.postalCode || element.country
+                       else
+                         element
+                       end
+        escaped_value = search_value&.gsub(',', '\\,')
+        escaped_value
       end
 
       def date_comparator_value(comparator, date)
-        date = date.slice(2..-1) if ['gt', 'ge', 'lt', 'le'].include? date[0, 2]
-
+        date = date.start || date.end if date.is_a? FHIR::Period
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema
@@ -857,7 +893,18 @@ module Inferno
             end
             find_slice_by_values(array_el, values_clone)
           when 'type'
-            array_el.is_a? FHIR.const_get(discriminator[:code])
+            case discriminator[:code]
+            when 'Date'
+              begin
+                Date.parse(array_el)
+              rescue ArgumentError
+                false
+              end
+            when 'String'
+              array_el.is_a? String
+            else
+              array_el.is_a? FHIR.const_get(discriminator[:code])
+            end
           end
         end
       end
@@ -879,6 +926,6 @@ module Inferno
       end
     end
 
-    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).each { |file| require file }
+    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }
   end
 end
