@@ -222,15 +222,23 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
             'patient': @sequence.patient_ids.first,
             'category': value
           }
+
+          body =
+            if @sequence.resolve_element_from_path(@diagnostic_report, 'category.coding.code') == value
+              wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json
+            else
+              FHIR::Bundle.new.to_json
+            end
+
           stub_request(:get, "#{@base_url}/DiagnosticReport")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
           stub_request(:get, "#{@base_url}/DiagnosticReport")
             .with(query: query_params.merge('status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
-            .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
+            .to_return(status: 200, body: body)
           stub_request(:get, "#{@base_url}/DiagnosticReport")
             .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
-            .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
+            .to_return(status: 200, body: body)
         end
 
         stub_request(:get, "#{@base_url}/DiagnosticReport")
