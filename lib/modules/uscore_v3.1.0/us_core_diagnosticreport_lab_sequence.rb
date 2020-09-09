@@ -176,7 +176,6 @@ module Inferno
         skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'category'])
         @diagnostic_report_ary = {}
         @resources_found = false
-
         category_val = ['LAB']
         patient_ids.each do |patient|
           @diagnostic_report_ary[patient] = []

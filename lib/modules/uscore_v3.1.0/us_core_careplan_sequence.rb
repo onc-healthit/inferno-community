@@ -158,7 +158,6 @@ module Inferno
         skip_if_known_search_not_supported('CarePlan', ['patient', 'category'])
         @care_plan_ary = {}
         @resources_found = false
-
         category_val = ['assess-plan']
         patient_ids.each do |patient|
           @care_plan_ary[patient] = []

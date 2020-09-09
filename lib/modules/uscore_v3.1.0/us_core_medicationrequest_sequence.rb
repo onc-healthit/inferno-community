@@ -193,7 +193,6 @@ module Inferno
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent'])
         @medication_request_ary = {}
         @resources_found = false
-
         intent_val = ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option']
         patient_ids.each do |patient|
           @medication_request_ary[patient] = []

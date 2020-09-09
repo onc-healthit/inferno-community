@@ -1014,9 +1014,9 @@ module Inferno
           #{skip_if_search_not_supported_code(sequence, search_parameters)}
           @#{sequence[:resource].underscore}_ary = {}
           @resources_found = false
-          #{'values_found = 0' if find_two_values}
           #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           patient_ids.each do |patient|
+            #{'values_found = 0' if find_two_values}
             @#{sequence[:resource].underscore}_ary[patient] = []
             #{values_variable_name}.each do |val|
               search_params = { 'patient': patient, '#{search_param[:name]}': val }

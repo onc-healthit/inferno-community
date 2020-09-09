@@ -177,7 +177,6 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'code'])
         @observation_ary = {}
         @resources_found = false
-
         code_val = ['72166-2']
         patient_ids.each do |patient|
           @observation_ary[patient] = []

@@ -173,7 +173,6 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'category'])
         @observation_ary = {}
         @resources_found = false
-
         category_val = ['laboratory']
         patient_ids.each do |patient|
           @observation_ary[patient] = []

@@ -140,9 +140,9 @@ module Inferno
         skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
         @care_team_ary = {}
         @resources_found = false
-        values_found = 0
         status_val = ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error']
         patient_ids.each do |patient|
+          values_found = 0
           @care_team_ary[patient] = []
           status_val.each do |val|
             search_params = { 'patient': patient, 'status': val }
