@@ -400,7 +400,6 @@ module Inferno
             )
         end
 
-        #binding.pry if ['USCore311SmokingstatusSequence', 'USCore310SmokingstatusSequence'].include? sequence[:class_name]
         is_first_search = search_param == find_first_search(sequence)
 
         search_test[:description] += 'Because this is the first search of the sequence, resources in the response will be used for subsequent tests.' if is_first_search
