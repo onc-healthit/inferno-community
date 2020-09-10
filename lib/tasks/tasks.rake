@@ -290,6 +290,8 @@ namespace :inferno do |_argv|
 
   desc 'Generate automated run script'
   task :generate_script, [:server, :module] do |_task, args|
+    Inferno::StartupTasks.run
+
     sequences = []
     requires = []
     defines = []
@@ -341,6 +343,8 @@ namespace :inferno do |_argv|
 
   desc 'Execute sequences against a FHIR server'
   task :execute, [:server, :module] do |_task, args|
+    Inferno::StartupTasks.run
+
     FHIR.logger.level = Logger::UNKNOWN
     sequences = []
     requires = []
@@ -418,6 +422,8 @@ namespace :inferno do |_argv|
 
   desc 'Execute sequence against a FHIR server'
   task :execute_batch, [:config] do |_task, args|
+    Inferno::StartupTasks.run
+
     file = File.read(args.config)
     config = JSON.parse(file)
 
