@@ -132,7 +132,7 @@ module Inferno
 
       def find_first_search(sequence)
         sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory] } ||
-          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' && search_param[:must_support_or_mandatory]}
+          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' && search_param[:must_support_or_mandatory] }
       end
 
       def generate_sequence(sequence)
