@@ -131,8 +131,8 @@ module Inferno
       end
 
       def find_first_search(sequence)
-        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
-          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory] } ||
+          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' && search_param[:must_support_or_mandatory] }
       end
 
       def generate_sequence(sequence)
@@ -742,7 +742,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
+            tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',

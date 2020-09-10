@@ -10,7 +10,8 @@ describe Inferno::ConfigManager do
   it 'initializes with a default config' do
     config_manager = Inferno::ConfigManager.new('test/fixtures/test_config.yml')
     config = config_manager.config
-    assert config['modules'] = ['onc', 'smart', 'bdt', 'argonaut', 'uscore_v3.1.0']
+    assert config['app_name'] = 'Inferno'
+    assert config['modules'] = ['onc', 'smart', 'bdt', 'argonaut', 'uscore_v3.1.0', 'uscore_v3.1.1']
     assert config['presets']['site_healthit_gov']['name'] = 'SITE DSTU2 FHIR Sandbox'
   end
 

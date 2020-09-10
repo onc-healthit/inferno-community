@@ -239,15 +239,23 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
             'patient': @sequence.patient_ids.first,
             'intent': value
           }
+
+          body =
+            if @sequence.resolve_element_from_path(@medication_request, 'intent') == value
+              wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json
+            else
+              FHIR::Bundle.new.to_json
+            end
+
           stub_request(:get, "#{@base_url}/MedicationRequest")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
           stub_request(:get, "#{@base_url}/MedicationRequest")
             .with(query: query_params.merge('status': ['active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'].first), headers: @auth_header)
-            .to_return(status: 200, body: wrap_resources_in_bundle([@medication_request]).to_json)
+            .to_return(status: 200, body: body)
           stub_request(:get, "#{@base_url}/MedicationRequest")
             .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'].first), headers: @auth_header)
-            .to_return(status: 200, body: wrap_resources_in_bundle([@medication_request]).to_json)
+            .to_return(status: 200, body: body)
         end
 
         @sequence.run_test(@test)

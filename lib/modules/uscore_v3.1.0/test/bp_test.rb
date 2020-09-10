@@ -222,15 +222,23 @@ describe Inferno::Sequence::USCore310BpSequence do
             'patient': @sequence.patient_ids.first,
             'code': value
           }
+
+          body =
+            if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+              wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
+            else
+              FHIR::Bundle.new.to_json
+            end
+
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
-            .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+            .to_return(status: 200, body: body)
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
-            .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+            .to_return(status: 200, body: body)
         end
 
         stub_request(:get, "#{@base_url}/Observation")

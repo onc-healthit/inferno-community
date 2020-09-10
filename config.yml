@@ -44,11 +44,11 @@ external_resource_validator_url: http://validator_service:4567
 # The list of testing modules which will be made available. These entries must
 # match the "name" field in the .yml files in lib/modules.
 modules:
-  - onc
   - smart
   - bdt
   - argonaut
   - uscore_v3.1.0
+  - uscore_v3.1.1
 
 # Optional preset server testing configurations.
 #
@@ -86,7 +86,7 @@ modules:
 # - bulk_group_export_endpoint: Relative path to group export endpoint from
 #   'bulk_url'.
 presets:
-  site_healthit_gov: 
+  site_healthit_gov:
     name: SITE DSTU2 FHIR Sandbox
     uri: https://fhir.sitenv.org/secure/fhir
     module: onc
@@ -135,6 +135,15 @@ presets:
     name: Inferno Reference Server
     uri: https://inferno.healthit.gov/reference-server/r4
     module: uscore_v3.1.0
+    client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
+    confidential_client: true
+    client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
+    patient_ids: "76,185"
+  localhost_311_reference_server:
+    inferno_uri: http://localhost:4567
+    name: Inferno Reference Server (USCore v3.1.1)
+    uri: https://inferno.healthit.gov/reference-server/r4
+    module: uscore_v3.1.1
     client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
     confidential_client: true
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
