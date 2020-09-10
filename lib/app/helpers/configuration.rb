@@ -22,10 +22,6 @@ module Inferno
           VERSION
         end
 
-        def app_name
-          settings.app_name
-        end
-
         def badge_text
           settings.badge_text
         end

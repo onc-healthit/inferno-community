@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'rubygems/package'
+require 'json'
+require_relative './index_builder'
 
 module Inferno
   module StartupTasks
@@ -44,10 +46,25 @@ module Inferno
         end
       end
 
+      def load_profiles_in_validator(module_metadata)
+        resource_name = module_metadata[:resource_path]
+        resource_file_glob(resource_name, '*.json') do |filename, contents|
+          next unless JSON.parse(contents)['resourceType'] == 'StructureDefinition'
+
+          RestClient.post("#{validator_url}/profiles", contents)
+        rescue JSON::ParserError
+          Inferno.logger.error "'#{filename}' was not valid JSON"
+        rescue StandardError => e
+          Inferno.logger.error "Unable to post profile '#{filename}' to validator"
+          Inferno.logger.error e.full_message
+        end
+      end
+
       def load_ig_in_validator(module_metadata)
         module_name = module_metadata[:title].presence || module_metadata[:name]
         unless package_json_present? module_metadata[:resource_path]
-          Inferno.logger.info "Skipping validator upload for '#{module_name}'--no package.json file."
+          Inferno.logger.info "Uploading standalone profiles for '#{module_name}'"
+          load_profiles_in_validator(module_metadata)
           return
         end
 
@@ -66,13 +83,18 @@ module Inferno
       end
 
       def create_ig_zip(file, module_metadata)
+        resource_name = module_metadata[:resource_path]
         Zlib::GzipWriter.wrap(file) do |gzip|
           Gem::Package::TarWriter.new(gzip) do |tar|
-            ig_files(module_metadata[:resource_path]).each do |full_file_path|
-              next if File.directory?(full_file_path)
-
-              content = File.read(full_file_path)
-              tar_file_path = relative_path_for(full_file_path, module_metadata[:resource_path])
+            # Add a generated index file directly to the tarball if it didn't exist
+            Inferno::IndexBuilder.new(resource_path(resource_name)).build do |content|
+              tar.add_file_simple('package/.index.json', 0o0644, content.bytesize) do |io|
+                io.write(content)
+              end
+            end
+            # Add existing package files to tarball
+            ig_files(resource_name) do |rel_path, content|
+              tar_file_path = File.join('package', rel_path)
               tar.add_file_simple(tar_file_path, 0o0644, content.bytesize) do |io|
                 io.write(content)
               end
@@ -81,22 +103,29 @@ module Inferno
         end
       end
 
-      def relative_path_for(full_file_path, resource_folder)
-        relative_path =
-          full_file_path
-            .split(File.join('resources', resource_folder, ''))
-            .last
-            .delete_prefix("package#{File::SEPARATOR}")
-        File.join('package', relative_path)
+      def package_json_present?(resource_name)
+        ig_files(resource_name).include?('package.json')
       end
 
-      def package_json_present?(resource_path)
-        ig_files(resource_path).any? { |filename| filename.end_with? 'package.json' }
+      def resource_path(resource_name)
+        File.join(__dir__, '..', '..', '..', 'resources', resource_name)
       end
 
-      def ig_files(path)
-        resource_path = File.join(__dir__, '..', '..', '..', 'resources', path)
-        Dir.glob(File.join(resource_path, '**', '*')) + Dir.glob(File.join(resource_path, '**', '.*'))
+      def resource_file_glob(resource_name, pattern)
+        base = resource_path(resource_name)
+        unless block_given?
+          return Dir.glob(pattern, base: base)
+              .reject { |f| File.directory?(File.join(base, f)) }
+        end
+
+        Dir.glob(pattern, base: base) do |rel_path|
+          full_path = File.join(base, rel_path)
+          yield(rel_path, File.read(full_path)) unless File.directory?(full_path)
+        end
+      end
+
+      def ig_files(resource_name, &block)
+        resource_file_glob(resource_name, File.join('**', '{*,.*}'), &block)
       end
     end
   end

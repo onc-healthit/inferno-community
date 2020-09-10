@@ -14,7 +14,7 @@ test_sets:
         - ManualRegistrationSequence
         - StandaloneLaunchSequence
         - EHRLaunchSequence
-      - name: US Core v3.1.0 Profiles
+      - name: US Core <%=version%> Profiles
         run_all: true
         sequences:
         - UsCoreR4CapabilityStatementSequence
@@ -29,3 +29,8 @@ sequence_requirements:
   device_codes:
     label: 'Implantable Device Type Codes'
     description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile'
+value_sets:<% sequences.each do |sequence| %><% sequence[:bindings].each do |binding| %>
+- value_set_url: <%=binding[:system]%>
+  strength: <%=binding[:strength]%>
+  profile: <%=sequence[:profile]%><% end %><% end %>
+

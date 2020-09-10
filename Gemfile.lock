@@ -121,7 +121,8 @@ GEM
     json (1.8.6)
     json_pure (1.8.6)
     jwt (2.2.1)
-    kramdown (2.1.0)
+    kramdown (2.3.0)
+      rexml
     method_source (0.9.2)
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
@@ -165,6 +166,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    rexml (3.2.4)
     rubocop (0.74.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)

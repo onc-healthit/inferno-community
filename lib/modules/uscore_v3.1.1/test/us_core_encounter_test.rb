@@ -5,28 +5,26 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::USCore310MedicationSequence do
+describe Inferno::Sequence::USCore311EncounterSequence do
   before do
-    @sequence_class = Inferno::Sequence::USCore310MedicationSequence
+    @sequence_class = Inferno::Sequence::USCore311EncounterSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
-    set_resource_support(@instance, 'Medication')
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'Medication read test' do
+  describe 'Encounter read test' do
     before do
-      @medication_id = '456'
+      @encounter_id = '456'
       @test = @sequence_class[:resource_read]
       @sequence = @sequence_class.new(@instance, @client)
     end
 
-    it 'skips if the Medication read interaction is not supported' do
-      @instance.server_capabilities.destroy
+    it 'skips if the Encounter read interaction is not supported' do
       Inferno::Models::ServerCapabilities.create(
         testing_instance_id: @instance.id,
         capabilities: FHIR::CapabilityStatement.new.to_json
@@ -34,24 +32,24 @@ describe Inferno::Sequence::USCore310MedicationSequence do
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      skip_message = 'This server does not support Medication read operation(s) according to conformance statement.'
+      skip_message = 'This server does not support Encounter read operation(s) according to conformance statement.'
       assert_equal skip_message, exception.message
     end
 
-    it 'skips if no Medication has been found' do
+    it 'skips if no Encounter has been found' do
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No Medication references found from the prior searches', exception.message
+      assert_equal 'No Encounter references found from the prior searches', exception.message
     end
 
     it 'fails if a non-success response code is received' do
       Inferno::Models::ResourceReference.create(
-        resource_type: 'Medication',
-        resource_id: @medication_id,
+        resource_type: 'Encounter',
+        resource_id: @encounter_id,
         testing_instance: @instance
       )
 
-      stub_request(:get, "#{@base_url}/Medication/#{@medication_id}")
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
         .with(query: @query, headers: @auth_header)
         .to_return(status: 401)
 
@@ -62,67 +60,67 @@ describe Inferno::Sequence::USCore310MedicationSequence do
 
     it 'fails if no resource is received' do
       Inferno::Models::ResourceReference.create(
-        resource_type: 'Medication',
-        resource_id: @medication_id,
+        resource_type: 'Encounter',
+        resource_id: @encounter_id,
         testing_instance: @instance
       )
 
-      stub_request(:get, "#{@base_url}/Medication/#{@medication_id}")
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Expected Medication resource to be present.', exception.message
+      assert_equal 'Expected Encounter resource to be present.', exception.message
     end
 
-    it 'fails if the resource returned is not a Medication' do
+    it 'fails if the resource returned is not a Encounter' do
       Inferno::Models::ResourceReference.create(
-        resource_type: 'Medication',
-        resource_id: @medication_id,
+        resource_type: 'Encounter',
+        resource_id: @encounter_id,
         testing_instance: @instance
       )
 
-      stub_request(:get, "#{@base_url}/Medication/#{@medication_id}")
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: FHIR::Patient.new.to_json)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Expected resource to be of type Medication.', exception.message
+      assert_equal 'Expected resource to be of type Encounter.', exception.message
     end
 
     it 'fails if the resource has an incorrect id' do
       Inferno::Models::ResourceReference.create(
-        resource_type: 'Medication',
-        resource_id: @medication_id,
+        resource_type: 'Encounter',
+        resource_id: @encounter_id,
         testing_instance: @instance
       )
 
-      medication = FHIR::Medication.new(
+      encounter = FHIR::Encounter.new(
         id: 'wrong_id'
       )
 
-      stub_request(:get, "#{@base_url}/Medication/#{@medication_id}")
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: medication.to_json)
+        .to_return(status: 200, body: encounter.to_json)
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-      assert_equal "Expected resource to contain id: #{@medication_id}", exception.message
+      assert_equal "Expected resource to contain id: #{@encounter_id}", exception.message
     end
 
-    it 'succeeds when a Medication resource is read successfully' do
-      medication = FHIR::Medication.new(
-        id: @medication_id
+    it 'succeeds when a Encounter resource is read successfully' do
+      encounter = FHIR::Encounter.new(
+        id: @encounter_id
       )
       Inferno::Models::ResourceReference.create(
-        resource_type: 'Medication',
-        resource_id: @medication_id,
+        resource_type: 'Encounter',
+        resource_id: @encounter_id,
         testing_instance: @instance
       )
 
-      stub_request(:get, "#{@base_url}/Medication/#{@medication_id}")
+      stub_request(:get, "#{@base_url}/Encounter/#{@encounter_id}")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: medication.to_json)
+        .to_return(status: 200, body: encounter.to_json)
 
       @sequence.run_test(@test)
     end

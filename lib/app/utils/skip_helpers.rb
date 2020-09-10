@@ -2,12 +2,45 @@
 
 module Inferno
   module SkipHelpers
+    # In the case that the user has not run the any capability statement sequences, we
+    # will allow this to silently pass because we don't know if the server supports it or not.
     def skip_if_known_not_supported(resource, methods = [], operations = [])
-      # In the case that the user has not run the any capability statement sequences, we
-      # will allow this to silently pass because we don't know if the server supports it or not.
       return if @instance.server_capabilities.nil?
 
       skip_if_not_supported(resource, methods, operations)
+    end
+
+    def skip_if_known_search_not_supported(resource, params)
+      return if @instance.server_capabilities.nil?
+
+      skip_if_search_not_supported(resource, params)
+    end
+
+    def skip_if_known_revinclude_not_supported(resource, revinclude)
+      return if @instance.server_capabilities.nil?
+
+      skip_if_revinclude_not_supported(resource, revinclude)
+    end
+
+    def skip_if_known_include_not_supported(resource, include)
+      return if @instance.server_capabilities.nil?
+
+      skip_if_include_not_supported(resource, include)
+    end
+
+    def skip_if_revinclude_not_supported(resource, revinclude)
+      skip_unless @instance.server_capabilities.revinclude_supported?(resource, revinclude),
+                  "The server doesn't support the revinclude '#{revinclude}' for the #{resource} resource"
+    end
+
+    def skip_if_include_not_supported(resource, include)
+      skip_unless @instance.server_capabilities.include_supported?(resource, include),
+                  "The server doesn't support the include '#{include}' for the #{resource} resource"
+    end
+
+    def skip_if_search_not_supported(resource, params)
+      unsupported_search_params = params - @instance.server_capabilities.supported_search_params(resource)
+      skip_unless unsupported_search_params.blank?, "The server doesn't support the search parameters: #{unsupported_search_params.join(', ')}"
     end
 
     def skip_if_not_supported(resource, methods = [], operations = [])

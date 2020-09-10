@@ -16,6 +16,7 @@ module Inferno
 
       property :redirect_to_url, String, length: 500
       property :wait_at_endpoint, String
+      property :expect_redirect_failure, Boolean, default: false
 
       property :required_passed, Integer, default: 0
       property :required_total, Integer, default: 0

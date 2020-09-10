@@ -14,6 +14,7 @@ module Inferno
       property :response_body, Text
       property :direction, String
       property :instance_id, String
+      property :request_index, Serial, unique_index: true
 
       property :timestamp, DateTime, default: proc { DateTime.now }
 
@@ -23,9 +24,7 @@ module Inferno
         request = req.request
         response = req.response
 
-        response_body = response[:body]
-        response_body = '' if response_body.nil?
-        escaped_body = response_body.dup
+        escaped_body = response[:body].dup # In case body is frozen from string literal
         unescape_unicode(escaped_body)
 
         new(
@@ -36,7 +35,7 @@ module Inferno
           request_payload: request[:payload],
           response_code: response[:code],
           response_headers: response[:headers].to_json,
-          response_body: response[:body],
+          response_body: escaped_body,
           instance_id: instance_id,
           timestamp: response[:timestamp]
         )

@@ -19,7 +19,6 @@ module Inferno
       Inferno::DEFAULT_SCOPES = settings.default_scopes
       Inferno::ENVIRONMENT = settings.environment
       Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
-      Inferno::EXTRAS = settings.include_extras
       Inferno::RESOURCE_VALIDATOR = Inferno::App::ResourceValidatorFactory.new_validator(settings.resource_validator, settings.external_resource_validator_url)
 
       if settings.logging_enabled
