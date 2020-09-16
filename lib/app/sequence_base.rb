@@ -900,6 +900,67 @@ module Inferno
           end
         end
       end
+
+      def resources_with_invalid_binding(binding_def, resources)
+        path_source = resources
+        resources.map do |resource|
+          binding_def[:extensions]&.each do |url|
+            path_source = path_source.map { |el| el.extension.select { |extension| extension.url == url } }.flatten
+          end
+          invalid_code_found = resolve_element_from_path(path_source, binding_def[:path]) do |el|
+            case binding_def[:type]
+            when 'CodeableConcept'
+              if el.is_a? FHIR::CodeableConcept
+                # If we're validating a valueset (AKA if we have a 'system' URL)
+                # We want at least one of the codes to be in the valueset
+                if binding_def[:system].present?
+                  el.coding.none? do |coding|
+                    Terminology.validate_code(valueset_url: binding_def[:system],
+                                              code: coding.code,
+                                              system: coding.system)
+                  end
+                # If we're validating a codesystem (AKA if there's no 'system' URL)
+                # We want all of the codes to be in their respective systems
+                else
+                  el.coding.any? do |coding|
+                    !Terminology.validate_code(valueset_url: nil,
+                                               code: coding.code,
+                                               system: coding.system)
+                  end
+                end
+              else
+                false
+              end
+            when 'Quantity', 'Coding'
+              !Terminology.validate_code(valueset_url: binding_def[:system],
+                                         code: el.code,
+                                         system: el.system)
+            when 'code'
+              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
+            else
+              false
+            end
+          end
+
+          { resource: resource, element: invalid_code_found } if invalid_code_found.present?
+        end.compact
+      end
+
+      def invalid_binding_message(invalid_binding, binding_def)
+        code_as_string = invalid_binding[:element]
+        if invalid_binding[:element].is_a? FHIR::CodeableConcept
+          code_as_string = invalid_binding[:element]&.coding&.map do |coding|
+            "#{coding.system}|#{coding.code}"
+          end&.join(' or ')
+        elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
+          code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
+        end
+        binding_entity = binding_def[:system].presence || 'the declared CodeSystem'
+
+        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+        "is not in #{binding_entity}"
+      end
     end
   end
 end
