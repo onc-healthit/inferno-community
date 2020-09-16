@@ -253,6 +253,12 @@ module Inferno
       end
     end
 
+    def self.loaded_code_systems
+      @loaded_code_systems ||= @known_valuesets.flat_map do |_, vs|
+        vs.included_code_systems.uniq
+      end.uniq.compact
+    end
+
     class UnknownValueSetException < StandardError
       def initialize(value_set)
         super("Unknown ValueSet: #{value_set}")

@@ -52,13 +52,11 @@ describe FHIR::Models do
   describe '#initialize' do
     it 'should set source_contents' do
       bundle_resource = FHIR::Bundle.new(
-        {
-          resourceType: 'Bundle', entry:
-          [
-            { resource: { resourceType: 'Patient', id: 'a' } },
-            { resource: { resourceType: 'Patient', id: 'b' } }
-          ]
-        }
+        resourceType: 'Bundle', entry:
+        [
+          { resource: { resourceType: 'Patient', id: 'a' } },
+          { resource: { resourceType: 'Patient', id: 'b' } }
+        ]
       )
 
       bundle_resource.entry.each do |entry|

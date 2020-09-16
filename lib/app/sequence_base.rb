@@ -3,6 +3,7 @@
 require_relative 'utils/assertions'
 require_relative 'utils/skip_helpers'
 require_relative 'ext/fhir_client'
+require_relative 'ext/fhir_models'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
 require_relative 'utils/validation'
