@@ -529,7 +529,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Observation Profile](http://hl7.org/fhir/StructureDefinition/headcircum).
-            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 

@@ -702,7 +702,7 @@ module Inferno
           link: sequence[:profile],
           description: %(
             This test verifies resources returned from the first search conform to the [US Core #{sequence[:resource]} Profile](#{sequence[:profile]}).
-            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
           )
@@ -794,7 +794,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
+            tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
