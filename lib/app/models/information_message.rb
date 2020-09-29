@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
 module Inferno
-  module Models
-    class InformationMessage
-      include DataMapper::Resource
-      property :id, String, key: true, default: proc { SecureRandom.uuid }
-      property :message, String, length: 500
+  class InformationMessage < ApplicationRecord
+    attribute :id, :string, default: -> { SecureRandom.uuid }
 
-      belongs_to :test_result
-    end
+    belongs_to :test_result
   end
 end

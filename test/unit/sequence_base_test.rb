@@ -6,7 +6,7 @@ class SequenceBaseTest < MiniTest::Test
   def setup
     allergy_intolerance_bundle = FHIR.from_contents(load_fixture(:us_core_r4_allergy_intolerance))
     @allergy_intolerance_resource = allergy_intolerance_bundle.entry.first.resource
-    @instance = Inferno::Models::TestingInstance.new(
+    @instance = Inferno::TestingInstance.new(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -29,7 +29,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#validate_reply_entries' do
     before do
-      @instance = Inferno::Models::TestingInstance.create
+      @instance = Inferno::TestingInstance.create!
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::USCore310AllergyintoleranceSequence.new(@instance, client, true)
       allergy_intolerance_bundle = FHIR.from_contents(load_fixture(:us_core_r4_allergy_intolerance))
@@ -86,7 +86,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#date_comparator_value' do
     before do
-      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      @instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.0.0')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
     end
@@ -115,7 +115,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#save_delayed_sequence_references' do
     before do
-      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      @instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.0.0')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
       @diagnostic_report_resource = FHIR.from_contents(load_fixture(:us_core_r4_diagnostic_report_note))
@@ -146,7 +146,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#get_value_for_search_param' do
     before do
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.0.0')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
     end
@@ -214,7 +214,7 @@ class SequenceBaseTest < MiniTest::Test
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))
       @bundle2 = load_fixture(:bundle_2)
 
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.0.0')
       client = FHIR::Client.new('')
       @bundle1.client = client
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
@@ -325,7 +325,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#tests' do
     before do
-      @instance = Inferno::Models::TestingInstance.create
+      @instance = Inferno::TestingInstance.create!
       client = FHIR::Client.new('')
       @sequence = OptionalTestSequence.new(@instance, client)
     end
@@ -344,7 +344,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#test_count' do
     before do
-      @instance = Inferno::Models::TestingInstance.create
+      @instance = Inferno::TestingInstance.create!
       client = FHIR::Client.new('')
       @sequence = OptionalTestSequence.new(@instance, client)
     end
@@ -363,7 +363,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#find_slice_by_values' do
     before do
-      @instance = Inferno::Models::TestingInstance.create
+      @instance = Inferno::TestingInstance.create!
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
     end

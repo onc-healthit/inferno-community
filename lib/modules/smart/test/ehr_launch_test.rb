@@ -12,7 +12,7 @@ class EHRLaunchSequenceTest < MiniTest::Test
   RESPONSE_HEADERS = { 'content-type' => 'application/json' }.freeze
 
   def setup
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',

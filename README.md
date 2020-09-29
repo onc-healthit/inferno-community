@@ -42,6 +42,7 @@ And run the following commands from the terminal:
 git clone https://github.com/onc-healthit/inferno
 cd inferno
 bundle install
+bundle exec rake db:create db:schema:load
 bundle exec rackup
 ```
 
@@ -61,6 +62,26 @@ Deployment on a remote server can be done by using a modified form of the Docker
 
 Please see the file [deployment-configuration.md](https://github.com/onc-healthit/inferno/blob/master/deployment-configuration.md) for details.
 
+#### Upgrading Inferno
+
+If an Inferno update makes changes to the database schema, migrations will have
+to be run when updating. Run migrations with:
+
+```sh
+bundle exec rake db:migrate
+```
+
+The above will migrate the development database. To migrate a production or test
+database, use:
+
+```sh
+RACK_ENV=production bundle exec rake db:migrate
+RACK_ENV=test bundle exec rake db:migrate
+```
+
+If you are using the provided inferno docker image, migrations will be run
+automatically.
+
 ### Reference Implementation
 
 While it is recommended that users install Inferno locally, a reference implementation of Inferno is hosted at https://inferno.healthit.gov
@@ -76,6 +97,7 @@ Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and E
 Inferno contains a robust set of self-tests to ensure that the test clients conform to the specification and performs as intended.  To run these tests, execute the following command:
 
 ```sh
+RACK_ENV=test bundle exec rake db:create db:schema:load
 bundle exec rake test
 ```
 

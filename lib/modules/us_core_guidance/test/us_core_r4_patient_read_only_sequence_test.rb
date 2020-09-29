@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCoreR4PatientReadOnlySequence do
     @sequence_class = Inferno::Sequence::USCoreR4PatientReadOnlySequence
     @client = FHIR::Client.new(@base_url)
     @client.set_bearer_token(@token)
-    @instance = Inferno::Models::TestingInstance.create
+    @instance = Inferno::TestingInstance.create
     @instance.patient_id = @patient_id
   end
 

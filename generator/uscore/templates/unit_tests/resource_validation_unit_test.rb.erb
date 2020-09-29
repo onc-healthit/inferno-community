@@ -5,7 +5,7 @@ describe 'resource validation test' do
     @sequence = @sequence_class.new(@instance, @client)
     @sequence.instance_variable_set(:'@resources_found', true)
 
-    Inferno::Models::ResourceReference.create(
+    Inferno::ResourceReference.create(
       resource_type: '<%= resource_type %>',
       resource_id: @<%= resource_var_name %>.id,
       testing_instance: @instance<% if profile_uri.present? %>,

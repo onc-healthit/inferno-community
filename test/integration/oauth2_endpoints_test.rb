@@ -23,7 +23,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       initiate_login_uri: '/login'
     }
 
-    Inferno::Models::TestingInstance.create(default_params.merge(params))
+    Inferno::TestingInstance.create!(default_params.merge(params))
   end
 
   def create_sequence_result(params = {})
@@ -34,7 +34,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       next_test_cases: ''
     }
 
-    Inferno::Models::SequenceResult.create(default_params.merge(params))
+    Inferno::SequenceResult.create!(default_params.merge(params))
   end
 
   def setup
@@ -48,7 +48,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       wait_at_endpoint: 'launch',
       redirect_to_url: '/redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -85,7 +85,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       wait_at_endpoint: 'launch',
       redirect_to_url: '/redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -115,7 +115,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       wait_at_endpoint: 'launch',
       redirect_to_url: '/redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -143,7 +143,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       result: 'pass'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -164,7 +164,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -201,7 +201,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -230,7 +230,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       result: 'pass'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 

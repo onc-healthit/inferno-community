@@ -19,10 +19,14 @@ COPY config* /var/www/inferno/
 COPY Rakefile /var/www/inferno/
 COPY test /var/www/inferno/test
 COPY lib /var/www/inferno/lib
+COPY db /var/www/inferno/db
+COPY run.sh /var/www/inferno/
+COPY run_tests.sh /var/www/inferno/
 
 ### Set up environment
 
 ENV APP_ENV=production
+ENV RACK_ENV=production
 EXPOSE 4567
 
-CMD ["bundle", "exec", "rackup", "-o", "0.0.0.0"]
+CMD ["./run.sh"]

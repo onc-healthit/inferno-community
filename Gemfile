@@ -7,8 +7,6 @@ gem 'ast'
 gem 'base62-rb'
 gem 'bloomer'
 gem 'colorize'
-gem 'data_mapper'
-gem 'dm-sqlite-adapter'
 gem 'fhir_client'
 gem 'jwt'
 gem 'kramdown'
@@ -27,9 +25,14 @@ gem 'thin'
 gem 'time_difference'
 
 group :test do
+  gem 'database_cleaner-active_record'
   gem 'minitest'
   gem 'rack-test'
   gem 'rubocop', require: false
   gem 'simplecov', require: false
   gem 'webmock'
 end
+
+gem 'activerecord', '~> 5.2'
+
+gem 'standalone_migrations', '~> 6.0'

@@ -25,7 +25,7 @@ class ONCProgramDocumentReferenceTest < MiniTest::Test
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
 
     # Assume we already have a patient
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    @instance.resource_references << Inferno::ResourceReference.new(
       resource_type: 'Patient',
       resource_id: @patient_id
     )

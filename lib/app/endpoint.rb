@@ -39,9 +39,6 @@ module Inferno
             l
           end
 
-        # FIXME: Really don't want a direct dependency to DataMapper here
-        DataMapper.logger = Inferno.logger if Inferno::ENVIRONMENT == :development
-
         FHIR.logger = FHIR::STU3.logger = FHIR::DSTU2.logger = Inferno.logger
 
         Inferno.logger.info "Environment: #{Inferno::ENVIRONMENT}"

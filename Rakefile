@@ -2,6 +2,9 @@
 
 require 'rake/testtask'
 require 'rubocop/rake_task'
+require 'standalone_migrations'
+
+StandaloneMigrations::Tasks.load_tasks
 
 task :default do
   ENV['RACK_ENV'] = 'test'

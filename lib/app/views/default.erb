@@ -221,6 +221,12 @@
               value: instance.patient_id,
               })%>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_ids,
+              label: 'Patient IDs',
+              instance: instance,
+              value: instance.patient_ids,
+              })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,

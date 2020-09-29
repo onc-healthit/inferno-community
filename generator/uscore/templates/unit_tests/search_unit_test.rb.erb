@@ -21,7 +21,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
   end
 
   it 'skips if the search params are not supported' do
-    capabilities = Inferno::Models::ServerCapabilities.new
+    capabilities = Inferno::ServerCapabilities.new
     def capabilities.supported_search_params(_)
       [<%=supported_search_params_string%>]
     end

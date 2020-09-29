@@ -10,7 +10,7 @@ describe Inferno::Sequence::ArgonautPatientReadOnlySequence do
     @sequence_class = Inferno::Sequence::ArgonautPatientReadOnlySequence
     @client = FHIR::Client.new(@base_url)
     @client.set_bearer_token(@token)
-    @instance = Inferno::Models::TestingInstance.create
+    @instance = Inferno::TestingInstance.create
     @instance.patient_id = @patient_id
   end
 
@@ -115,7 +115,7 @@ class ArgonautPatientReadOnlySequenceTest < MiniTest::Test
     @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
     # Assume we already have a patient
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    @instance.resource_references << Inferno::ResourceReference.new(
       resource_type: 'Patient',
       resource_id: @patient_id
     )

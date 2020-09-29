@@ -11,7 +11,7 @@ class TokenIntrospectionSequenceTest < MiniTest::Test
     resource_id = SecureRandom.uuid
     resource_secret = SecureRandom.hex(32)
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',

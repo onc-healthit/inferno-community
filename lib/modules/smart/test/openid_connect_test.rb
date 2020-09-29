@@ -30,7 +30,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
     @sequence_class = Inferno::Sequence::OpenIDConnectSequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       scopes: 'launch patient/*.read openid fhirUser',
       client_id: 'CLIENT_ID',
       id_token: @signed_id_token
@@ -56,7 +56,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -65,7 +65,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
     end
 
     it 'fails if no id token is present' do
-      @instance.update(id_token: nil)
+      @instance.update!(id_token: nil)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -73,7 +73,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
     end
 
     it 'fails if the id token is not a properly constructed jwt' do
-      @instance.update(id_token: 'abc')
+      @instance.update!(id_token: 'abc')
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -97,7 +97,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -160,7 +160,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -223,7 +223,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -322,7 +322,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -427,7 +427,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -475,7 +475,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
       payload = @payload.clone
       payload[:iss] = 'BAD_ISS'
       token = create_signed_token(payload: payload)
-      @instance.update(id_token: token)
+      @instance.update!(id_token: token)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -486,7 +486,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
       payload = @payload.clone
       payload[:aud] = 'BAD_AUD'
       token = create_signed_token(payload: payload)
-      @instance.update(id_token: token)
+      @instance.update!(id_token: token)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -497,7 +497,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
       payload = @payload.clone
       payload[:exp] = @payload[:exp] - 1.day.to_i
       token = create_signed_token(payload: payload)
-      @instance.update(id_token: token)
+      @instance.update!(id_token: token)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -506,7 +506,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
 
     it 'fails if the signature is invalid' do
       token = create_signed_token(payload: @payload, key_pair: OpenSSL::PKey::RSA.new(2048))
-      @instance.update(id_token: token)
+      @instance.update!(id_token: token)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -530,7 +530,7 @@ describe Inferno::Sequence::OpenIDConnectSequence do
         'launch patient/*.read fhirUser'
       ]
       invalid_scopes.each do |scopes|
-        @instance.update(scopes: scopes)
+        @instance.update!(scopes: scopes)
 
         exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
