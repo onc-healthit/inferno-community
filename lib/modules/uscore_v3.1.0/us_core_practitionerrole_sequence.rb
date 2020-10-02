@@ -55,7 +55,7 @@ module Inferno
         case property
 
         when 'specialty'
-          values_found = resolve_path(resource, 'specialty')
+          values_found = resolve_path(resource, 'PractitionerRole.specialty')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -68,7 +68,7 @@ module Inferno
           assert match_found, "specialty in PractitionerRole/#{resource.id} (#{values_found}) does not match specialty requested (#{value})"
 
         when 'practitioner'
-          values_found = resolve_path(resource, 'practitioner.reference')
+          values_found = resolve_path(resource, 'PractitionerRole.practitioner.reference')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "practitioner in PractitionerRole/#{resource.id} (#{values_found}) does not match practitioner requested (#{value})"
@@ -138,15 +138,24 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the PractitionerRole resources found previously for the following must support elements:
 
-            * practitioner
-            * organization
-            * code
-            * specialty
-            * location
-            * telecom
-            * telecom.system
-            * telecom.value
-            * endpoint
+            practitioner
+
+            organization
+
+            code
+
+            specialty
+
+            location
+
+            telecom
+
+            telecom.system
+
+            telecom.value
+
+            endpoint
+
           )
           versions :r4
         end

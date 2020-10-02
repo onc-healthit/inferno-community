@@ -71,31 +71,31 @@ module Inferno
         case property
 
         when 'status'
-          values_found = resolve_path(resource, 'status')
+          values_found = resolve_path(resource, 'MedicationRequest.status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in MedicationRequest/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'intent'
-          values_found = resolve_path(resource, 'intent')
+          values_found = resolve_path(resource, 'MedicationRequest.intent')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "intent in MedicationRequest/#{resource.id} (#{values_found}) does not match intent requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'MedicationRequest.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in MedicationRequest/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'encounter'
-          values_found = resolve_path(resource, 'encounter.reference')
+          values_found = resolve_path(resource, 'MedicationRequest.encounter.reference')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "encounter in MedicationRequest/#{resource.id} (#{values_found}) does not match encounter requested (#{value})"
 
         when 'authoredon'
-          values_found = resolve_path(resource, 'authoredOn')
+          values_found = resolve_path(resource, 'MedicationRequest.authoredOn')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "authoredon in MedicationRequest/#{resource.id} (#{values_found}) does not match authoredon requested (#{value})"
@@ -561,16 +561,26 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the MedicationRequest resources found previously for the following must support elements:
 
-            * status
-            * intent
-            * reported[x]
-            * medication[x]
-            * subject
-            * encounter
-            * authoredOn
-            * requester
-            * dosageInstruction
-            * dosageInstruction.text
+            status
+
+            intent
+
+            reported[x]
+
+            medication[x]
+
+            subject
+
+            encounter
+
+            authoredOn
+
+            requester
+
+            dosageInstruction
+
+            dosageInstruction.text
+
           )
           versions :r4
         end

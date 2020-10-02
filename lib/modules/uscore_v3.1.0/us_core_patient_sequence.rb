@@ -74,36 +74,36 @@ module Inferno
         case property
 
         when '_id'
-          values_found = resolve_path(resource, 'id')
+          values_found = resolve_path(resource, 'Patient.id')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "_id in Patient/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'birthdate'
-          values_found = resolve_path(resource, 'birthDate')
+          values_found = resolve_path(resource, 'Patient.birthDate')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "birthdate in Patient/#{resource.id} (#{values_found}) does not match birthdate requested (#{value})"
 
         when 'family'
-          values_found = resolve_path(resource, 'name.family')
+          values_found = resolve_path(resource, 'Patient.name.family')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "family in Patient/#{resource.id} (#{values_found}) does not match family requested (#{value})"
 
         when 'gender'
-          values_found = resolve_path(resource, 'gender')
+          values_found = resolve_path(resource, 'Patient.gender')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "gender in Patient/#{resource.id} (#{values_found}) does not match gender requested (#{value})"
 
         when 'given'
-          values_found = resolve_path(resource, 'name.given')
+          values_found = resolve_path(resource, 'Patient.name.given')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'identifier')
+          values_found = resolve_path(resource, 'Patient.identifier')
           identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
           identifier_value = value.split('|').last
           match_found = values_found.any? do |identifier|
@@ -112,7 +112,7 @@ module Inferno
           assert match_found, "identifier in Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'name'
-          values_found = resolve_path(resource, 'name')
+          values_found = resolve_path(resource, 'Patient.name')
           value_downcase = value.downcase
           match_found = values_found.any? do |name|
             name&.text&.downcase&.start_with?(value_downcase) ||
@@ -523,26 +523,46 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Patient resources found previously for the following must support elements:
 
-            * identifier
-            * identifier.system
-            * identifier.value
-            * name
-            * name.family
-            * name.given
-            * telecom
-            * telecom.system
-            * telecom.value
-            * telecom.use
-            * gender
-            * birthDate
-            * address
-            * address.line
-            * address.city
-            * address.state
-            * address.postalCode
-            * address.period
-            * communication
-            * communication.language
+            identifier
+
+            identifier.system
+
+            identifier.value
+
+            name
+
+            name.family
+
+            name.given
+
+            telecom
+
+            telecom.system
+
+            telecom.value
+
+            telecom.use
+
+            gender
+
+            birthDate
+
+            address
+
+            address.line
+
+            address.city
+
+            address.state
+
+            address.postalCode
+
+            address.period
+
+            communication
+
+            communication.language
+
             * Patient.extension:race
             * Patient.extension:ethnicity
             * Patient.extension:birthsex

@@ -112,14 +112,22 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Provenance resources found previously for the following must support elements:
 
-            * target
-            * recorded
-            * agent
-            * agent.type
-            * agent.who
-            * agent.onBehalfOf
-            * agent.type.coding.code
-            * agent.type.coding.code
+            target
+
+            recorded
+
+            agent
+
+            agent.type
+
+            agent.who
+
+            agent.onBehalfOf
+
+            agent.type.coding.code
+
+            agent.type.coding.code
+
             * Provenance.agent:ProvenanceAuthor
             * Provenance.agent:ProvenanceTransmitter
           )

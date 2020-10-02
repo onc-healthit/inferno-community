@@ -120,7 +120,7 @@ describe Inferno::Sequence::USCore311ObservationLabSequence do
           'category': value
         }
         body =
-          if @sequence.resolve_element_from_path(@observation, 'category.coding.code') == value
+          if @sequence.resolve_element_from_path(@observation, 'Observation.category.coding.code') == value
             wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
           else
             FHIR::Bundle.new.to_json
@@ -224,7 +224,7 @@ describe Inferno::Sequence::USCore311ObservationLabSequence do
           }
 
           body =
-            if @sequence.resolve_element_from_path(@observation, 'category.coding.code') == value
+            if @sequence.resolve_element_from_path(@observation, 'Observation.category.coding.code') == value
               wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
             else
               FHIR::Bundle.new.to_json

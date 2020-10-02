@@ -120,7 +120,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
           'category': value
         }
         body =
-          if @sequence.resolve_element_from_path(@diagnostic_report, 'category.coding.code') == value
+          if @sequence.resolve_element_from_path(@diagnostic_report, 'DiagnosticReport.category.coding.code') == value
             wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json
           else
             FHIR::Bundle.new.to_json
@@ -224,7 +224,7 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
           }
 
           body =
-            if @sequence.resolve_element_from_path(@diagnostic_report, 'category.coding.code') == value
+            if @sequence.resolve_element_from_path(@diagnostic_report, 'DiagnosticReport.category.coding.code') == value
               wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json
             else
               FHIR::Bundle.new.to_json

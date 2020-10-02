@@ -70,7 +70,7 @@ module Inferno
         case property
 
         when 'category'
-          values_found = resolve_path(resource, 'category')
+          values_found = resolve_path(resource, 'CarePlan.category')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -83,18 +83,18 @@ module Inferno
           assert match_found, "category in CarePlan/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'date'
-          values_found = resolve_path(resource, 'period')
+          values_found = resolve_path(resource, 'CarePlan.period')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "date in CarePlan/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'CarePlan.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in CarePlan/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values_found = resolve_path(resource, 'status')
+          values_found = resolve_path(resource, 'CarePlan.status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in CarePlan/#{resource.id} (#{values_found}) does not match status requested (#{value})"
@@ -376,12 +376,18 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the CarePlan resources found previously for the following must support elements:
 
-            * text
-            * text.status
-            * status
-            * intent
-            * category
-            * subject
+            text
+
+            text.status
+
+            status
+
+            intent
+
+            category
+
+            subject
+
             * CarePlan.category:AssessPlan
           )
           versions :r4

@@ -55,24 +55,24 @@ module Inferno
         case property
 
         when '_id'
-          values_found = resolve_path(resource, 'id')
+          values_found = resolve_path(resource, 'Encounter.id')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "_id in Encounter/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'class'
-          values_found = resolve_path(resource, 'local_class')
+          values_found = resolve_path(resource, 'Encounter.class')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "class in Encounter/#{resource.id} (#{values_found}) does not match class requested (#{value})"
 
         when 'date'
-          values_found = resolve_path(resource, 'period')
+          values_found = resolve_path(resource, 'Encounter.period')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "date in Encounter/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'identifier')
+          values_found = resolve_path(resource, 'Encounter.identifier')
           identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
           identifier_value = value.split('|').last
           match_found = values_found.any? do |identifier|
@@ -81,19 +81,19 @@ module Inferno
           assert match_found, "identifier in Encounter/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'Encounter.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Encounter/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values_found = resolve_path(resource, 'status')
+          values_found = resolve_path(resource, 'Encounter.status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in Encounter/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'type')
+          values_found = resolve_path(resource, 'Encounter.type')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -203,23 +203,40 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Encounter resources found previously for the following must support elements:
 
-            * identifier
-            * identifier.system
-            * identifier.value
-            * status
-            * class
-            * type
-            * subject
-            * participant
-            * participant.type
-            * participant.period
-            * participant.individual
-            * period
-            * reasonCode
-            * hospitalization
-            * hospitalization.dischargeDisposition
-            * location
-            * location.location
+            identifier
+
+            identifier.system
+
+            identifier.value
+
+            status
+
+            class
+
+            type
+
+            subject
+
+            participant
+
+            participant.type
+
+            participant.period
+
+            participant.individual
+
+            period
+
+            reasonCode
+
+            hospitalization
+
+            hospitalization.dischargeDisposition
+
+            location
+
+            location.location
+
           )
           versions :r4
         end

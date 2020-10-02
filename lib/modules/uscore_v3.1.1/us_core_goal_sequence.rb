@@ -70,19 +70,19 @@ module Inferno
         case property
 
         when 'lifecycle-status'
-          values_found = resolve_path(resource, 'lifecycleStatus')
+          values_found = resolve_path(resource, 'Goal.lifecycleStatus')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "lifecycle-status in Goal/#{resource.id} (#{values_found}) does not match lifecycle-status requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'Goal.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Goal/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'target-date'
-          values_found = resolve_path(resource, 'target.dueDate')
+          values_found = resolve_path(resource, 'Goal.target.dueDate')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "target-date in Goal/#{resource.id} (#{values_found}) does not match target-date requested (#{value})"
 
@@ -392,10 +392,14 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Goal resources found previously for the following must support elements:
 
-            * lifecycleStatus
-            * description
-            * subject
-            * target
+            lifecycleStatus
+
+            description
+
+            subject
+
+            target
+
             * Goal.target.due[x]:dueDate
           )
           versions :r4
