@@ -70,7 +70,7 @@ module Inferno
         case property
 
         when 'category'
-          values_found = resolve_path(resource, 'category')
+          values_found = resolve_path(resource, 'Condition.category')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -83,7 +83,7 @@ module Inferno
           assert match_found, "category in Condition/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'clinical-status'
-          values_found = resolve_path(resource, 'clinicalStatus')
+          values_found = resolve_path(resource, 'Condition.clinicalStatus')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -96,18 +96,18 @@ module Inferno
           assert match_found, "clinical-status in Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'Condition.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Condition/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'onset-date'
-          values_found = resolve_path(resource, 'onsetDateTime')
+          values_found = resolve_path(resource, 'Condition.onset.as(dateTime)')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "onset-date in Condition/#{resource.id} (#{values_found}) does not match onset-date requested (#{value})"
 
         when 'code'
-          values_found = resolve_path(resource, 'code')
+          values_found = resolve_path(resource, 'Condition.code')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -484,11 +484,16 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Condition resources found previously for the following must support elements:
 
-            * clinicalStatus
-            * verificationStatus
-            * category
-            * code
-            * subject
+            clinicalStatus
+
+            verificationStatus
+
+            category
+
+            code
+
+            subject
+
           )
           versions :r4
         end

@@ -316,7 +316,7 @@ module Inferno
               type_code = type_element['type'].first['code']
               must_support_element[:discriminator] = {
                 type: 'type',
-                code: capitalize_first_letter(type_code)
+                code: type_code.upcase_first
               }
             elsif discriminators.first['type'] == 'value'
               must_support_element[:discriminator] = {
@@ -364,9 +364,7 @@ module Inferno
         sequence[:search_param_descriptions].each_key do |param|
           search_param_definition = @resource_by_path[search_param_path(sequence[:resource], param.to_s)]
           path = search_param_definition['expression']
-          path = path.gsub(/.where\((.*)/, '')
-          as_type = path.scan(/.as\((.*?)\)/).flatten.first
-          path = path.gsub(/.as\((.*?)\)/, capitalize_first_letter(as_type)) if as_type.present?
+          path = path.gsub(/\.where\(.*\)/, '') # TODO: remove once FHIRPath resolve() function is handled
           profile_element = profile_definition['snapshot']['element'].select { |el| el['id'] == path }.first
           param_metadata = {
             path: path,
@@ -557,10 +555,6 @@ module Inferno
 
         sequence[:searches].delete(search)
         sequence[:searches].unshift(search)
-      end
-
-      def capitalize_first_letter(str)
-        str.slice(0).capitalize + str.slice(1..-1)
       end
     end
   end

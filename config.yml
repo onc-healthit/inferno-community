@@ -49,6 +49,12 @@ modules:
   - argonaut
   - uscore_v3.1.0
   - uscore_v3.1.1
+  
+# FHIRPath evaluator options: must be one of "internal" or "external".
+# external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
+# external.
+fhirpath_evaluator: external
+external_fhirpath_evaluator_url: http://validator_service:4567
 
 # Optional preset server testing configurations.
 #

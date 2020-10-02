@@ -70,13 +70,13 @@ module Inferno
         case property
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'CareTeam.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in CareTeam/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values_found = resolve_path(resource, 'status')
+          values_found = resolve_path(resource, 'CareTeam.status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in CareTeam/#{resource.id} (#{values_found}) does not match status requested (#{value})"
@@ -304,11 +304,16 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the CareTeam resources found previously for the following must support elements:
 
-            * status
-            * subject
-            * participant
-            * participant.role
-            * participant.member
+            status
+
+            subject
+
+            participant
+
+            participant.role
+
+            participant.member
+
           )
           versions :r4
         end

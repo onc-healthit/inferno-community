@@ -70,7 +70,7 @@ module Inferno
         case property
 
         when 'clinical-status'
-          values_found = resolve_path(resource, 'clinicalStatus')
+          values_found = resolve_path(resource, 'AllergyIntolerance.clinicalStatus')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -83,7 +83,7 @@ module Inferno
           assert match_found, "clinical-status in AllergyIntolerance/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'patient.reference')
+          values_found = resolve_path(resource, 'AllergyIntolerance.patient.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in AllergyIntolerance/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
@@ -363,10 +363,14 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the AllergyIntolerance resources found previously for the following must support elements:
 
-            * clinicalStatus
-            * verificationStatus
-            * code
-            * patient
+            clinicalStatus
+
+            verificationStatus
+
+            code
+
+            patient
+
           )
           versions :r4
         end

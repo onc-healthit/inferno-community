@@ -73,13 +73,13 @@ module Inferno
         case property
 
         when 'patient'
-          values_found = resolve_path(resource, 'patient.reference')
+          values_found = resolve_path(resource, 'Device.patient.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Device/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'type')
+          values_found = resolve_path(resource, 'Device.type')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -325,17 +325,28 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Device resources found previously for the following must support elements:
 
-            * udiCarrier
-            * udiCarrier.deviceIdentifier
-            * udiCarrier.carrierAIDC
-            * udiCarrier.carrierHRF
-            * distinctIdentifier
-            * manufactureDate
-            * expirationDate
-            * lotNumber
-            * serialNumber
-            * type
-            * patient
+            udiCarrier
+
+            udiCarrier.deviceIdentifier
+
+            udiCarrier.carrierAIDC
+
+            udiCarrier.carrierHRF
+
+            distinctIdentifier
+
+            manufactureDate
+
+            expirationDate
+
+            lotNumber
+
+            serialNumber
+
+            type
+
+            patient
+
           )
           versions :r4
         end

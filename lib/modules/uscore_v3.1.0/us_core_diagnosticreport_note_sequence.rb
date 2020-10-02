@@ -75,19 +75,19 @@ module Inferno
         case property
 
         when 'status'
-          values_found = resolve_path(resource, 'status')
+          values_found = resolve_path(resource, 'DiagnosticReport.status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in DiagnosticReport/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'subject.reference')
+          values_found = resolve_path(resource, 'DiagnosticReport.subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in DiagnosticReport/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'category'
-          values_found = resolve_path(resource, 'category')
+          values_found = resolve_path(resource, 'DiagnosticReport.category')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -100,7 +100,7 @@ module Inferno
           assert match_found, "category in DiagnosticReport/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'code'
-          values_found = resolve_path(resource, 'code')
+          values_found = resolve_path(resource, 'DiagnosticReport.code')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -113,7 +113,7 @@ module Inferno
           assert match_found, "code in DiagnosticReport/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         when 'date'
-          values_found = resolve_path(resource, 'effective')
+          values_found = resolve_path(resource, 'DiagnosticReport.effective')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "date in DiagnosticReport/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
@@ -575,15 +575,24 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the DiagnosticReport resources found previously for the following must support elements:
 
-            * status
-            * category
-            * code
-            * subject
-            * encounter
-            * effective[x]
-            * issued
-            * performer
-            * presentedForm
+            status
+
+            category
+
+            code
+
+            subject
+
+            encounter
+
+            effective[x]
+
+            issued
+
+            performer
+
+            presentedForm
+
           )
           versions :r4
         end

@@ -55,13 +55,13 @@ module Inferno
         case property
 
         when 'name'
-          values_found = resolve_path(resource, 'name')
+          values_found = resolve_path(resource, 'Location.name')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "name in Location/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'address'
-          values_found = resolve_path(resource, 'address')
+          values_found = resolve_path(resource, 'Location.address')
           match_found = values_found.any? do |address|
             address&.text&.start_with?(value) ||
               address&.city&.start_with?(value) ||
@@ -72,19 +72,19 @@ module Inferno
           assert match_found, "address in Location/#{resource.id} (#{values_found}) does not match address requested (#{value})"
 
         when 'address-city'
-          values_found = resolve_path(resource, 'address.city')
+          values_found = resolve_path(resource, 'Location.address.city')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "address-city in Location/#{resource.id} (#{values_found}) does not match address-city requested (#{value})"
 
         when 'address-state'
-          values_found = resolve_path(resource, 'address.state')
+          values_found = resolve_path(resource, 'Location.address.state')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "address-state in Location/#{resource.id} (#{values_found}) does not match address-state requested (#{value})"
 
         when 'address-postalcode'
-          values_found = resolve_path(resource, 'address.postalCode')
+          values_found = resolve_path(resource, 'Location.address.postalCode')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "address-postalcode in Location/#{resource.id} (#{values_found}) does not match address-postalcode requested (#{value})"
@@ -154,15 +154,24 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Location resources found previously for the following must support elements:
 
-            * status
-            * name
-            * telecom
-            * address
-            * address.line
-            * address.city
-            * address.state
-            * address.postalCode
-            * managingOrganization
+            status
+
+            name
+
+            telecom
+
+            address
+
+            address.line
+
+            address.city
+
+            address.state
+
+            address.postalCode
+
+            managingOrganization
+
           )
           versions :r4
         end
