@@ -3,14 +3,7 @@
 module Inferno
   module SequenceUtilities
     def resolve_path(elements, path)
-      elements = Array.wrap(elements)
-      return elements if path.blank?
-
-      paths = path.split('.')
-
-      elements.flat_map do |element|
-        resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
-      end.compact
+      Inferno::FHIRPATH_EVALUATOR.evaluate(elements, path)
     end
 
     def find_search_parameter_value_from_resource(resource, path)

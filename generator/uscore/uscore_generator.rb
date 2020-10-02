@@ -588,11 +588,8 @@ module Inferno
 
         sequence[:must_supports][:elements].each do |element|
           test[:description] += %(
-            * #{element[:path]})
-          # class is mapped to local_class in fhir_models. Update this after it
-          # has been added to the description so that the description contains
-          # the original path
-          element[:path] = element[:path].gsub(/(?<!\w)class(?!\w)/, 'local_class')
+            #{element[:path]}
+          )
         end
 
         must_support_extensions = sequence[:must_supports][:extensions]
@@ -865,8 +862,7 @@ module Inferno
       end
 
       def resolve_element_path(search_param_description, delayed_sequence)
-        element_path = search_param_description[:path].gsub(/(?<!\w)class(?!\w)/, 'local_class')
-        path_parts = element_path.split('.')
+        path_parts = search_param_description[:path].split('.')
         resource_val = delayed_sequence ? "@#{path_parts.shift.underscore}_ary" : "@#{path_parts.shift.underscore}_ary[patient]"
         "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
       end
@@ -1000,13 +996,7 @@ module Inferno
         name = search_parameters.find { |param| param != 'patient' }
         search_description = sequence[:search_param_descriptions][name.to_sym]
         values = search_description[:values]
-        path =
-          search_description[:path]
-            .split('.')
-            .drop(1)
-            .map { |path_part| path_part == 'class' ? 'local_class' : path_part }
-            .join('.')
-        path += get_value_path_by_type(search_description[:type])
+        path = search_description[:path] + get_value_path_by_type(search_description[:type])
 
         {
           name: name,
@@ -1166,7 +1156,7 @@ module Inferno
       end
 
       def search_param_constants(search_parameters, sequence)
-        return { '_id': 'patient' } if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
+        { '_id': 'patient' } if search_parameters == ['_id'] && sequence[:resource] == 'Patient'
       end
 
       def create_search_validation(sequence)
@@ -1174,10 +1164,6 @@ module Inferno
         sequence[:search_param_descriptions].each do |element, definition|
           type = definition[:type]
           path = definition[:path]
-            .gsub(/(?<!\w)class(?!\w)/, 'local_class')
-            .split('.')
-            .drop(1)
-            .join('.')
           path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
           search_validators += %(
               when '#{element}'

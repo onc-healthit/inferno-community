@@ -16,12 +16,8 @@ module Inferno
 
           search_parameter_assignments = search[:parameters].map do |parameter|
             param_metadata = metadata.search_parameter_metadata.find { |parameter_metadata| parameter_metadata.code == parameter }
-            path = param_metadata
-              .expression
-              .gsub(/(?<!\w)class(?!\w)/, 'local_class')
-              .split('.')
-              .drop(1)
-              .join('.')
+            path = param_metadata.expression
+            path = path.gsub(/\.where\(.*\)/, '') # TODO: remove once FHIRPath resolve() function is handled
 
             "#{search_param_value_name(parameter)} = find_search_parameter_value_from_resource(@resource_found, '#{path}')"
           end
@@ -40,11 +36,8 @@ module Inferno
       end
 
       def search_param_value_name(parameter)
-        # remove non-character elements from beginning and end of name
-        param_variable_name = parameter
-          .gsub(/^[\W_]+|[\W_]+$"/, '')
-          .tr('-', '_')
-        "#{param_variable_name}_val"
+        parameter.gsub!(/^[\W_]+|[\W_]+$"/, '') # remove non-character elements from beginning and end of name
+        "#{parameter.tr('-', '_')}_val"
       end
     end
   end

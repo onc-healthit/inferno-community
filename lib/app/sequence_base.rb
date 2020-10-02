@@ -765,40 +765,12 @@ module Inferno
       end
 
       def resolve_path(elements, path)
-        elements = Array.wrap(elements)
-        return elements if path.blank?
-
-        paths = path.split('.')
-
-        elements.flat_map do |element|
-          resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
-        end.compact
+        Inferno::FHIRPATH_EVALUATOR.evaluate(elements, path)
       end
 
-      def resolve_element_from_path(element, path)
-        el_as_array = Array.wrap(element)
-        if path.empty?
-          return nil if element.nil?
-
-          return el_as_array.find { |el| yield(el) } if block_given?
-
-          return el_as_array.first
-        end
-
-        path_ary = path.split('.')
-        cur_path_part = path_ary.shift.to_sym
-        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? }
-
-        el_as_array.each do |el|
-          el_found = if block_given?
-                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) }
-                     else
-                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
-                     end
-          return el_found unless el_found.blank?
-        end
-
-        nil
+      def resolve_element_from_path(element, path, &block)
+        elements = Inferno::FHIRPATH_EVALUATOR.evaluate(element, path)
+        block_given? ? elements.find(&block) : elements.first
       end
 
       def get_value_for_search_param(element, include_system = false)
