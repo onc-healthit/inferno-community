@@ -173,6 +173,7 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'code'])
         @observation_ary = {}
         @resources_found = false
+        validated_search_param_variants = false
         code_val = ['9843-4']
         patient_ids.each do |patient|
           @observation_ary[patient] = []
@@ -196,6 +197,8 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore310HeadcircumSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
+            next if validated_search_param_variants
+
             value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
             token_with_system_search_params = search_params.merge('code': value_with_system)
             reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
@@ -210,8 +213,7 @@ module Inferno
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
-
-            break
+            validated_search_param_variants = true
           end
         end
         skip_if_not_found(resource_type: 'Observation', delayed: false)

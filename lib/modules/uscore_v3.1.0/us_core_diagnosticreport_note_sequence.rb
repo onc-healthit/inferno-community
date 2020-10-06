@@ -176,6 +176,7 @@ module Inferno
         skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'category'])
         @diagnostic_report_ary = {}
         @resources_found = false
+        validated_search_param_variants = false
         category_val = ['LP29684-5', 'LP29708-2', 'LP7839-6']
         patient_ids.each do |patient|
           @diagnostic_report_ary[patient] = []
@@ -199,6 +200,8 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore310DiagnosticreportNoteSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
+            next if validated_search_param_variants
+
             value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category'), true)
             token_with_system_search_params = search_params.merge('category': value_with_system)
             reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), token_with_system_search_params)
@@ -213,8 +216,7 @@ module Inferno
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
-
-            break
+            validated_search_param_variants = true
           end
         end
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
