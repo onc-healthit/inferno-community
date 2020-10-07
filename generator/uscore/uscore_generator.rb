@@ -1013,7 +1013,7 @@ module Inferno
           #{skip_if_search_not_supported_code(sequence, search_parameters)}
           @#{sequence[:resource].underscore}_ary = {}
           @resources_found = false
-          validated_search_param_variants = false
+          search_query_variants_tested_once = false
           #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           patient_ids.each do |patient|
             @#{sequence[:resource].underscore}_ary[patient] = []
@@ -1035,9 +1035,7 @@ module Inferno
               save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
 
-              #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
-
-              next if validated_search_param_variants
+              next if search_query_variants_tested_once
               #{get_token_system_search_code(search_parameters, sequence)}
 
               search_params_with_type = search_params.merge('patient': "Patient/\#{patient}")
@@ -1047,7 +1045,10 @@ module Inferno
               assert_bundle_response(reply)
               search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
-              validated_search_param_variants = true
+
+              #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
+
+              search_query_variants_tested_once = true
 
             end
           end

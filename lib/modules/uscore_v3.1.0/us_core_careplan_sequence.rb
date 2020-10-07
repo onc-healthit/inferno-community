@@ -158,7 +158,7 @@ module Inferno
         skip_if_known_search_not_supported('CarePlan', ['patient', 'category'])
         @care_plan_ary = {}
         @resources_found = false
-        validated_search_param_variants = false
+        search_query_variants_tested_once = false
         category_val = ['assess-plan']
         patient_ids.each do |patient|
           @care_plan_ary[patient] = []
@@ -182,7 +182,7 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore310CareplanSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
-            next if validated_search_param_variants
+            next if search_query_variants_tested_once
 
             value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'), true)
             token_with_system_search_params = search_params.merge('category': value_with_system)
@@ -198,7 +198,8 @@ module Inferno
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
-            validated_search_param_variants = true
+
+            search_query_variants_tested_once = true
           end
         end
         skip_if_not_found(resource_type: 'CarePlan', delayed: false)
