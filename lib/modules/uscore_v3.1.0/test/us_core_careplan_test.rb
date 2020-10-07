@@ -222,14 +222,12 @@ describe Inferno::Sequence::USCore310CareplanSequence do
             'patient': @sequence.patient_ids.first,
             'category': value
           }
-
           body =
-            if @sequence.resolve_element_from_path(@care_plan, 'CarePlan.category.coding.code') == value
-              wrap_resources_in_bundle(@care_plan_ary.values.flatten).to_json
+            if @sequence.resolve_element_from_path(@care_plan, 'category.coding.code') == value
+              wrap_resources_in_bundle([@care_plan]).to_json
             else
               FHIR::Bundle.new.to_json
             end
-
           stub_request(:get, "#{@base_url}/CarePlan")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)

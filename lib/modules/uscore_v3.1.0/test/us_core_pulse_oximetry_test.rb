@@ -222,14 +222,12 @@ describe Inferno::Sequence::USCore310PulseOximetrySequence do
             'patient': @sequence.patient_ids.first,
             'code': value
           }
-
           body =
-            if @sequence.resolve_element_from_path(@observation, 'Observation.code.coding.code') == value
-              wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
+            if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+              wrap_resources_in_bundle([@observation]).to_json
             else
               FHIR::Bundle.new.to_json
             end
-
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
