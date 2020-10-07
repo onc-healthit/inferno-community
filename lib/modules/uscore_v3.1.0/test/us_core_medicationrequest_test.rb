@@ -239,14 +239,12 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
             'patient': @sequence.patient_ids.first,
             'intent': value
           }
-
           body =
             if @sequence.resolve_element_from_path(@medication_request, 'MedicationRequest.intent') == value
-              wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json
+              wrap_resources_in_bundle([@medication_request]).to_json
             else
               FHIR::Bundle.new.to_json
             end
-
           stub_request(:get, "#{@base_url}/MedicationRequest")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
