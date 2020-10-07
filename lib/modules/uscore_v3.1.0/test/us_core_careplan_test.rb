@@ -223,7 +223,7 @@ describe Inferno::Sequence::USCore310CareplanSequence do
             'category': value
           }
           body =
-            if @sequence.resolve_element_from_path(@care_plan, 'category.coding.code') == value
+            if @sequence.resolve_element_from_path(@care_plan, 'CarePlan.category.coding.code') == value
               wrap_resources_in_bundle([@care_plan]).to_json
             else
               FHIR::Bundle.new.to_json
