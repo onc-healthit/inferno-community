@@ -193,7 +193,7 @@ module Inferno
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent'])
         @medication_request_ary = {}
         @resources_found = false
-        values_found = 0
+        search_query_variants_tested_once = false
         intent_val = ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option']
         patient_ids.each do |patient|
           @medication_request_ary[patient] = []
@@ -212,11 +212,12 @@ module Inferno
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             @medication_request = resources_returned.first
             @medication_request_ary[patient] += resources_returned
-            values_found += 1
 
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(resources_returned, USCore311MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
+
+            next if search_query_variants_tested_once
 
             search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
             reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params_with_type)
@@ -229,7 +230,8 @@ module Inferno
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             test_medication_inclusion(@medication_request_ary[patient], search_params)
-            break if values_found == 2
+
+            search_query_variants_tested_once = true
           end
         end
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
