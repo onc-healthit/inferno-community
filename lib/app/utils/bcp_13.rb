@@ -3,8 +3,6 @@
 module Inferno
   class Terminology
     module BCP13
-      @code_set = nil
-
       def self.code_set
         @code_set ||= parse_code_set
       end

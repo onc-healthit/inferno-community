@@ -41,7 +41,7 @@ module Inferno
 
           next unless entry.full_name.start_with? 'package/'
 
-          file_name = entry.full_name.split('/').last
+          file_name = File.basename(entry.full_name)
           next if desired_types.present? && !file_name.start_with?(*desired_types)
 
           resource = JSON.parse(entry.read) if file_name.end_with? '.json'

@@ -68,17 +68,17 @@ module Inferno
       root_dir = "resources/terminology/validators/#{type}"
       FileUtils.mkdir_p(root_dir)
 
-      get_module_valuesets(selected_module, strengths).each do |k, vs|
-        next if SKIP_SYS.include? k
+      get_module_valuesets(selected_module, strengths).each do |vs_url, vs|
+        next if SKIP_SYS.include? vs_url
         next if !include_umls && !umls_code_systems.disjoint?(Set.new(vs.included_code_systems))
 
-        Inferno.logger.debug "Processing #{k}"
+        Inferno.logger.debug "Processing #{vs_url}"
         filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}"
         begin
           save_to_file(vs.valueset, filename, type)
-          validators << { url: k, file: name_by_type(File.basename(filename), type), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
+          validators << { url: vs_url, file: name_by_type(File.basename(filename), type), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
         rescue ValueSet::UnknownCodeSystemException, ValueSet::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
-          Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
+          Inferno.logger.warn "#{e.message} for ValueSet: #{vs_url}"
           next
         end
       end

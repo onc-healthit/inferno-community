@@ -198,7 +198,6 @@ module Inferno
       #
       # @param [String] filename the file containing the code system JSON
       def self.load_system(filename)
-        # TODO: Generalize this
         cs = FHIR::Json.from_json(File.read(filename))
         cs_set = Set.new
         load_codes = lambda do |concept|

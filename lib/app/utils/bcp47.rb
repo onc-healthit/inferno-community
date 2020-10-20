@@ -20,9 +20,8 @@ module Inferno
       end
 
       def filter_codes(filter = nil)
-        bcp47 = bcp
         cs_set = Set.new
-        bcp47.each do |raw_language|
+        bcp.each do |raw_language|
           language = parse_language(raw_language)
           next if language['Subtag'].nil?
           next if language['Type'] == 'region'
@@ -34,7 +33,6 @@ module Inferno
 
       private
 
-      @bcp = nil
       def bcp
         @bcp ||= load_bcp47
       end

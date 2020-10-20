@@ -14,13 +14,10 @@ module Inferno
 
       def all_codes_in_concept(concepts)
         cs_set = Set.new
-        load_codes = lambda do |concept|
-          concept.each do |concept_code|
-            cs_set.add(system: codesystem_model.url, code: concept_code.code)
-            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
-          end
+        concepts.flatten.each do |concept_code|
+          cs_set.add(system: codesystem_model.url, code: concept_code.code)
+          load_codes.call(concept_code.concept) unless concept_code.concept.empty?
         end
-        load_codes.call(concepts.flatten)
         cs_set
       end
 
@@ -36,16 +33,14 @@ module Inferno
       end
 
       def filter_codes(filter = nil)
-        cs_set = nil
-        if filter.nil?
-          cs_set = all_codes_in_concept(codesystem_model.concept)
-        elsif (filter.op == 'is-a') && (codesystem_model.hierarchyMeaning == 'is-a') && (filter.property == 'concept')
+        return all_codes_in_concept(codesystem_model.concept) if filter.nil?
+
+        if (filter.op == 'is-a') && (codesystem_model.hierarchyMeaning == 'is-a') && (filter.property == 'concept')
           parent_concept = find_concept(filter.value)
-          cs_set = all_codes_in_concept([parent_concept])
+          return all_codes_in_concept([parent_concept])
         else
           throw Inferno::Terminology::ValueSet::FilterOperationException(filter.to_s)
         end
-        cs_set
       end
     end
   end
