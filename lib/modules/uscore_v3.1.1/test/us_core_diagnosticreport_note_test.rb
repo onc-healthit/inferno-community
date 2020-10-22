@@ -222,14 +222,12 @@ describe Inferno::Sequence::USCore311DiagnosticreportNoteSequence do
             'patient': @sequence.patient_ids.first,
             'category': value
           }
-
           body =
             if @sequence.resolve_element_from_path(@diagnostic_report, 'DiagnosticReport.category.coding.code') == value
-              wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json
+              wrap_resources_in_bundle([@diagnostic_report]).to_json
             else
               FHIR::Bundle.new.to_json
             end
-
           stub_request(:get, "#{@base_url}/DiagnosticReport")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)

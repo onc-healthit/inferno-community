@@ -23,7 +23,7 @@ module Inferno
 
       def generate
         metadata = extract_metadata
-        metadata[:sequences].reject! { |sequence| sequence[:resource] == 'Medication' }
+        metadata[:sequences].reject! { |sequence| ['Location', 'Medication', 'PractitionerRole'].include?(sequence[:resource]) }
         # first isolate the profiles that don't have patient searches
         mark_delayed_sequences(metadata)
         find_delayed_references(metadata)
