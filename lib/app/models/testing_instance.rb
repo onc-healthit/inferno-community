@@ -1,14 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'server_capabilities'
 require_relative '../utils/result_statuses'
-require_relative 'sequence_requirement'
 
 module Inferno
   class TestingInstance < ApplicationRecord
-    attribute :id, :string, default: -> { Inferno::SecureRandomBase62.generate(64) }
+    attribute :id, :string, default: -> { SecureRandomBase62.generate(64) }
     attribute :client_name, :string, default: 'Inferno'
-    attribute :client_endpoint_key, :string, default: -> { Inferno::SecureRandomBase62.generate(32) }
+    attribute :client_endpoint_key, :string, default: -> { SecureRandomBase62.generate(32) }
     attribute :created_at, :datetime, default: -> { DateTime.now }
     attribute :must_support_confirmed, :string, default: ''
     attribute :client_id, :string
@@ -86,9 +84,9 @@ module Inferno
 
     def final_result(test_set_id)
       if all_passed?(test_set_id)
-        Inferno::ResultStatuses::PASS
+        ResultStatuses::PASS
       else
-        any_failed?(test_set_id) ? Inferno::ResultStatuses::FAIL : Inferno::ResultStatuses::PENDING
+        any_failed?(test_set_id) ? ResultStatuses::FAIL : ResultStatuses::PENDING
       end
     end
 
@@ -103,7 +101,7 @@ module Inferno
     end
 
     def module
-      @module ||= Inferno::Module.get(selected_module)
+      @module ||= Module.get(selected_module)
     end
 
     def patient_id
@@ -220,7 +218,7 @@ module Inferno
                      value: '' }
         .merge(requirement)
 
-      Inferno::SequenceRequirement
+      SequenceRequirement
         .find_or_create_by(name: requirement[:name], testing_instance: self) do |requirement_instance|
           requirement_instance.assign_attributes(attributes)
           requirement_instance.save!

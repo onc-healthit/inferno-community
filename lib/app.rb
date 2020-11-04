@@ -16,7 +16,6 @@ require 'kramdown'
 
 require 'rack'
 require_relative 'app/utils/logging'
-require_relative 'app/models/application_record'
 require_relative 'app/models'
 require_relative 'app/endpoint'
 require_relative 'app/utils/secure_random_base62'

@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'activerecord', '~> 5.2'
 gem 'addressable'
 gem 'ast'
 gem 'base62-rb'
@@ -21,6 +22,7 @@ gem 'selenium-webdriver'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sqlite3'
+gem 'standalone_migrations', '~> 6.0'
 gem 'thin'
 gem 'time_difference'
 
@@ -32,7 +34,3 @@ group :test do
   gem 'simplecov', require: false
   gem 'webmock'
 end
-
-gem 'activerecord', '~> 5.2'
-
-gem 'standalone_migrations', '~> 6.0'
