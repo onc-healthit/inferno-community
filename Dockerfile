@@ -20,8 +20,7 @@ COPY Rakefile /var/www/inferno/
 COPY test /var/www/inferno/test
 COPY lib /var/www/inferno/lib
 COPY db /var/www/inferno/db
-COPY run.sh /var/www/inferno/
-COPY run_tests.sh /var/www/inferno/
+COPY bin /var/www/inferno/bin
 
 ### Set up environment
 
@@ -29,4 +28,4 @@ ENV APP_ENV=production
 ENV RACK_ENV=production
 EXPOSE 4567
 
-CMD ["./run.sh"]
+CMD ["./bin/run.sh"]

@@ -14,7 +14,7 @@ script:
   # For unknown reasons, the test-reporter fails when using docker if run in an
   # after_script section
   - ./cc-test-reporter after-build -t simplecov --exit-code $TRAVIS_TEST_RESULT
-  - docker-compose run ruby_server ./run_tests.sh 
+  - docker-compose run ruby_server ./bin/run_tests.sh 
   - bundle exec rubocop
 notifications:
   email:
