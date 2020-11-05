@@ -61,8 +61,8 @@ module Inferno
           )
         end
 
-        @instance.save
-        @instance.update(state: SecureRandom.uuid)
+        @instance.save!
+        @instance.update!(state: SecureRandom.uuid)
 
         oauth2_params = {
           'response_type' => 'code',

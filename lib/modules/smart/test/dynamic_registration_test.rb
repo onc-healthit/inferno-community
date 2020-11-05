@@ -14,15 +14,15 @@ class DynamicRegistrationSequenceTest < MiniTest::Test
   DYNAMIC_REGISTRATION_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAAAAAA'
 
   def setup
-    @instance = Inferno::Models::TestingInstance.new(url: 'http://www.example.com',
-                                                     client_name: 'Inferno',
-                                                     base_url: 'http://localhost:4567',
-                                                     client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-                                                     initiate_login_uri: 'http://localhost:4567/launch',
-                                                     redirect_uris: 'http://localhost:4567/redirect',
-                                                     oauth_register_endpoint: 'https://oauth_reg.example.com/register',
-                                                     scopes: 'launch openid patient/*.* profile',
-                                                     selected_module: 'argonaut')
+    @instance = Inferno::TestingInstance.new(url: 'http://www.example.com',
+                                             client_name: 'Inferno',
+                                             base_url: 'http://localhost:4567',
+                                             client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
+                                             initiate_login_uri: 'http://localhost:4567/launch',
+                                             redirect_uris: 'http://localhost:4567/redirect',
+                                             oauth_register_endpoint: 'https://oauth_reg.example.com/register',
+                                             scopes: 'launch openid patient/*.* profile',
+                                             selected_module: 'argonaut')
     @instance.save! # this is for convenience.  we could rewrite to ensure nothing gets saved within tests.
     client = FHIR::Client.new(@instance.url)
     client.use_dstu2

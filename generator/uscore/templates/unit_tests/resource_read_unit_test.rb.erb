@@ -9,9 +9,10 @@ describe '<%= resource_type %> read test' do
   end
 
   it 'skips if the <%= resource_type %> read interaction is not supported' do
-    Inferno::Models::ServerCapabilities.create(
+    Inferno::ServerCapabilities.delete_all
+    Inferno::ServerCapabilities.create(
       testing_instance_id: @instance.id,
-      capabilities: FHIR::CapabilityStatement.new.to_json
+      capabilities: FHIR::CapabilityStatement.new.as_json
     )
     @instance.reload
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -28,7 +29,7 @@ describe '<%= resource_type %> read test' do
   end
 
   it 'fails if a non-success response code is received' do
-    Inferno::Models::ResourceReference.create(
+    Inferno::ResourceReference.create(
       resource_type: '<%= resource_type %>',
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance
@@ -44,7 +45,7 @@ describe '<%= resource_type %> read test' do
   end
 
   it 'fails if no resource is received' do
-    Inferno::Models::ResourceReference.create(
+    Inferno::ResourceReference.create(
       resource_type: '<%= resource_type %>',
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance
@@ -60,7 +61,7 @@ describe '<%= resource_type %> read test' do
   end
 
   it 'fails if the resource returned is not a <%= resource_type %>' do
-    Inferno::Models::ResourceReference.create(
+    Inferno::ResourceReference.create(
       resource_type: '<%= resource_type %>',
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance
@@ -76,7 +77,7 @@ describe '<%= resource_type %> read test' do
   end
 
   it 'fails if the resource has an incorrect id' do
-   Inferno::Models::ResourceReference.create(
+   Inferno::ResourceReference.create(
       resource_type: '<%= resource_type %>',
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance
@@ -97,7 +98,7 @@ describe '<%= resource_type %> read test' do
     <%= resource_var_name %> = FHIR::<%= resource_type %>.new(
       id: @<%= resource_var_name %>_id
     )
-    Inferno::Models::ResourceReference.create(
+    Inferno::ResourceReference.create(
       resource_type: '<%= resource_type %>',
       resource_id: @<%= resource_var_name %>_id,
       testing_instance: @instance

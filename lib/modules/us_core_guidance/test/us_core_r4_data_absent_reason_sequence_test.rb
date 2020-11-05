@@ -5,7 +5,7 @@ require_relative '../../../../test/test_helper'
 describe Inferno::Sequence::USCoreR4DataAbsentReasonSequence do
   before do
     @sequence_class = Inferno::Sequence::USCoreR4DataAbsentReasonSequence
-    @instance = Inferno::Models::TestingInstance.create
+    @instance = Inferno::TestingInstance.create
   end
 
   describe 'data absent reason extension test' do
@@ -19,7 +19,7 @@ describe Inferno::Sequence::USCoreR4DataAbsentReasonSequence do
     end
 
     it 'succeeds if a dar extension has been found' do
-      @instance.update(data_absent_extension_found: true)
+      @instance.update!(data_absent_extension_found: true)
 
       @sequence.run_test(@test)
     end
@@ -36,7 +36,7 @@ describe Inferno::Sequence::USCoreR4DataAbsentReasonSequence do
     end
 
     it 'succeeds if a dar code has been found' do
-      @instance.update(data_absent_code_found: true)
+      @instance.update!(data_absent_code_found: true)
 
       @sequence.run_test(@test)
     end

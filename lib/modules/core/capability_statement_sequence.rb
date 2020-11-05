@@ -120,7 +120,7 @@ module Inferno
         assert_valid_conformance
 
         begin
-          @server_capabilities = Inferno::Models::ServerCapabilities.create(
+          @server_capabilities = Inferno::ServerCapabilities.create(
             testing_instance_id: @instance.id,
             capabilities: @conformance.as_json
           )

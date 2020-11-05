@@ -12,7 +12,7 @@ describe Inferno::DataAbsentReasonChecker do
     attr_reader :instance
 
     def initialize
-      @instance = Inferno::Models::TestingInstance.new
+      @instance = Inferno::TestingInstance.new
     end
   end
 

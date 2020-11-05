@@ -14,9 +14,10 @@ describe 'unauthorized search test' do
   end
 
   it 'skips if the <%= resource_type %> search interaction is not supported' do
-    Inferno::Models::ServerCapabilities.create(
+    Inferno::ServerCapabilities.delete_all
+    Inferno::ServerCapabilities.create(
       testing_instance_id: @instance.id,
-      capabilities: FHIR::CapabilityStatement.new.to_json
+      capabilities: FHIR::CapabilityStatement.new.as_json
     )
     @instance.reload
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }

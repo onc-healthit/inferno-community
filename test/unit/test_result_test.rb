@@ -8,6 +8,6 @@ class TestResultTest < MiniTest::Test
   include Inferno::ResultStatusTests
 
   def setup
-    @result = Inferno::Models::TestResult.new
+    @result = Inferno::TestResult.new
   end
 end

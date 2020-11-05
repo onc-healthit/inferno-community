@@ -20,7 +20,7 @@ module Inferno
       return unless contains_data_absent_extension?(reply.body)
 
       @instance.data_absent_extension_found = true
-      @instance.save
+      @instance.save!
     end
 
     def check_for_data_absent_code(reply)
@@ -29,7 +29,7 @@ module Inferno
       return unless contains_data_absent_code?(reply.body)
 
       @instance.data_absent_code_found = true
-      @instance.save
+      @instance.save!
     end
 
     def contains_data_absent_extension?(body)

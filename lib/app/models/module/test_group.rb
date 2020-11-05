@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'test_case'
+require_relative '../../sequence_base'
 
 module Inferno
   class Module

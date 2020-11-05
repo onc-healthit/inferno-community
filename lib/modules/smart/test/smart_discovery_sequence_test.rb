@@ -5,7 +5,7 @@ require_relative '../../../../test/test_helper'
 describe Inferno::Sequence::SMARTDiscoverySequence do
   before do
     @sequence_class = Inferno::Sequence::SMARTDiscoverySequence
-    @instance = Inferno::Models::TestingInstance.new
+    @instance = Inferno::TestingInstance.new
   end
 
   describe 'required well-known configuration fields' do

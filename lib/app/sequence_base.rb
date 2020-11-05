@@ -60,7 +60,7 @@ module Inferno
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
         @instance = instance
-        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
+        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.blank?
         @client&.monitor_requests
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
@@ -78,8 +78,10 @@ module Inferno
           sequence_result.test_results.last.message = fail_message
         end
 
+        sequence_result.test_results.last.save!
+
         unless request.nil?
-          sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
+          sequence_result.test_results.last.request_responses << RequestResponse.new(
             direction: 'inbound',
             request_method: request.request_method.downcase,
             request_url: request.url,
@@ -101,7 +103,7 @@ module Inferno
 
       def start(test_set_id = nil, test_case_id = nil, &block)
         if sequence_result.nil?
-          self.sequence_result = Models::SequenceResult.new(
+          self.sequence_result = SequenceResult.new(
             name: sequence_name,
             result: ResultStatuses::PASS,
             testing_instance: @instance,
@@ -194,11 +196,11 @@ module Inferno
           end
 
           @client&.requests&.each do |req|
-            result.request_responses << Models::RequestResponse.from_request(req, @instance.id, 'outbound')
+            result.request_responses << RequestResponse.from_request(req, @instance.id, 'outbound')
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Models::RequestResponse.from_request(OpenStruct.new(req), @instance.id)
+            result.request_responses << RequestResponse.from_request(OpenStruct.new(req), @instance.id)
           end
 
           yield result if block_given?
@@ -253,7 +255,8 @@ module Inferno
       def self.requires(*requires)
         @@requires[sequence_name] = requires unless requires.empty?
 
-        instance_class = Inferno::Models::TestingInstance
+        instance_class = Inferno::TestingInstance
+        instance_class.new unless instance_class.connected?
         requires.each do |requirement_name|
           requirement_setter_name = "#{requirement_name}=".to_sym
           next if instance_class.method_defined?(requirement_name) && instance_class.method_defined?(requirement_setter_name)
@@ -407,7 +410,7 @@ module Inferno
         lambda do
           @test_warnings = []
           @information_messages = []
-          Models::TestResult.new(
+          TestResult.new(
             test_id: test.id,
             name: test.name,
             ref: test.ref,
@@ -434,8 +437,8 @@ module Inferno
               end
             end
 
-            result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
-            result.information_messages = @information_messages.map { |m| Models::InformationMessage.new(message: m) }
+            result.test_warnings = @test_warnings.map { |w| TestWarning.new(message: w) }
+            result.information_messages = @information_messages.map { |m| InformationMessage.new(message: m) }
             Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
         end
@@ -614,7 +617,7 @@ module Inferno
       end
 
       def test_resources(resource_type, &block)
-        references = @instance.resource_references.all(resource_type: resource_type)
+        references = @instance.resource_references.where(resource_type: resource_type)
         skip_if(
           references.empty?,
           "Skip profile validation since no #{resource_type} resources found for Patient."
@@ -664,7 +667,7 @@ module Inferno
           "Skip profile validation since profile #{specified_profile} is unknown."
         )
 
-        references = @instance.resource_references.all(profile: specified_profile)
+        references = @instance.resource_references.where(profile: specified_profile)
         resources =
           if references.present?
             references.map(&:resource_id).map do |resource_id|
@@ -672,7 +675,7 @@ module Inferno
             end
           else
             @instance.resource_references
-              .all(resource_type: resource_type)
+              .where(resource_type: resource_type)
               .map { |reference| fetch_resource(resource_type, reference.resource_id) }
               .select { |resource| resource.meta&.profile&.include? specified_profile }
           end
@@ -898,7 +901,5 @@ module Inferno
         end
       end
     end
-
-    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }
   end
 end

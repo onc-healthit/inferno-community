@@ -70,8 +70,8 @@ module FHIR
         }
 
         update_params[:refresh_token] = token_response_body['refresh_token'] if token_response_body['refresh_token'].present?
-        testing_instance.save
-        testing_instance.update(update_params)
+        testing_instance.save!
+        testing_instance.update!(update_params)
 
         set_bearer_token(token_response_body['access_token'])
       rescue StandardError => e

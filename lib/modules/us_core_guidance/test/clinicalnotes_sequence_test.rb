@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     @docref_bundle = FHIR.from_contents(load_fixture(:clinicalnotes_docref_bundle))
     @diagrpt_bundle = FHIR.from_contents(load_fixture(:clinicalnotes_diagrpt_bundle))
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com'
     )
     @instance.patient_id = @patient_id

@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     @sequence_class = Inferno::Sequence::USCore310EncounterSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
@@ -25,9 +25,10 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'skips if the Encounter read interaction is not supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.delete_all
+      Inferno::ServerCapabilities.create(
         testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
+        capabilities: FHIR::CapabilityStatement.new.as_json
       )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -43,7 +44,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'fails if a non-success response code is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Encounter',
         resource_id: @encounter_id,
         testing_instance: @instance
@@ -59,7 +60,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'fails if no resource is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Encounter',
         resource_id: @encounter_id,
         testing_instance: @instance
@@ -75,7 +76,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'fails if the resource returned is not a Encounter' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Encounter',
         resource_id: @encounter_id,
         testing_instance: @instance
@@ -91,7 +92,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
     end
 
     it 'fails if the resource has an incorrect id' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Encounter',
         resource_id: @encounter_id,
         testing_instance: @instance
@@ -112,7 +113,7 @@ describe Inferno::Sequence::USCore310EncounterSequence do
       encounter = FHIR::Encounter.new(
         id: @encounter_id
       )
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Encounter',
         resource_id: @encounter_id,
         testing_instance: @instance

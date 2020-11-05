@@ -3,7 +3,6 @@
 require 'fhir_client'
 require 'pry'
 require 'pry-byebug'
-require 'dm-core'
 require 'csv'
 require 'colorize'
 require 'optparse'
@@ -76,7 +75,7 @@ def execute(instance, sequences)
         end
       end
     end
-    instance.save
+    instance.save!
     sequence_instance = sequence.new(instance, client, false)
     sequence_result = nil
 
@@ -300,7 +299,7 @@ namespace :inferno do |_argv|
 
     output = { server: args[:server], module: args[:module], arguments: {}, sequences: [] }
 
-    instance = Inferno::Models::TestingInstance.new(url: args[:server], selected_module: args[:module])
+    instance = Inferno::TestingInstance.new(url: args[:server], selected_module: args[:module])
     instance.save!
 
     instance.module.sequences.each do |seq|
@@ -350,7 +349,7 @@ namespace :inferno do |_argv|
     requires = []
     defines = []
 
-    instance = Inferno::Models::TestingInstance.new(url: args[:server], selected_module: args[:module])
+    instance = Inferno::TestingInstance.new(url: args[:server], selected_module: args[:module])
     instance.save!
 
     instance.module.sequences.each do |seq|
@@ -415,11 +414,6 @@ namespace :inferno do |_argv|
     exit execute(instance, sequences.map { |s| { 'sequence' => s } })
   end
 
-  desc 'Cleans the database of all models'
-  task :drop_database, [] do |_task|
-    DataMapper.auto_migrate!
-  end
-
   desc 'Execute sequence against a FHIR server'
   task :execute_batch, [:config] do |_task, args|
     Inferno::StartupTasks.run
@@ -427,7 +421,7 @@ namespace :inferno do |_argv|
     file = File.read(args.config)
     config = JSON.parse(file)
 
-    instance = Inferno::Models::TestingInstance.new(
+    instance = Inferno::TestingInstance.new(
       url: config['server'],
       selected_module: config['module'],
       initiate_login_uri: 'http://localhost:4568/launch',
