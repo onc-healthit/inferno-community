@@ -1,0 +1,80 @@
+
+{
+    "resourceType":"Bundle",
+    "id":"45d42e35-8ae7-4fcd-9489-c1a508a5151c",
+    "meta":{
+        "lastUpdated":"2018-05-31T13:13:55.777+00:00"
+    },
+    "type":"searchset",
+    "total":1,
+    "link":[
+        {
+            "relation":"self",
+            "url":"http://api:8080/baseDstu2/Observation?patient=smart-1081332"
+        }
+    ],
+    "entry":[
+        {
+            "fullUrl":"http://api:8080/baseDstu2/Observation/smart-observation-6-smokingstatus",
+            "resource":{
+                "resourceType":"Observation",
+                "id":"smart-observation-6-smokingstatus",
+                "meta":{
+                    "versionId":"2",
+                    "lastUpdated":"2018-02-21T15:00:42.632+00:00",
+                    "security":[
+                        {
+                            "system":"http://smarthealthit.org/security/users",
+                            "code":"Patient/smart-1081332"
+                        },
+                        {
+                            "system":"http://smarthealthit.org/security/categories",
+                            "code":"smoking"
+                        }
+                    ]
+                },
+                "text":{
+                    "status":"generated",
+                    "div":"<div xmlns=\"http://www.w3.org/1999/xhtml\">Tobacco smoking status: Former smoker</div>"
+                },
+                "status":"final",
+                "category":{
+                    "coding":[
+                        {
+                            "system":"http://hl7.org/fhir/observation-category",
+                            "code":"social-history",
+                            "display":"Social History"
+                        }
+                    ],
+                    "text":"Social History"
+                },
+                "code":{
+                    "coding":[
+                        {
+                            "system":"http://loinc.org",
+                            "code":"72166-2",
+                            "display":"Tobacco smoking status"
+                        }
+                    ],
+                    "text":"Tobacco smoking status"
+                },
+                "subject":{
+                    "reference":"Patient/smart-1081332"
+                },
+                "valueCodeableConcept":{
+                    "coding":[
+                        {
+                            "system":"http://snomed.info/sct",
+                            "code":"8517006",
+                            "display":"Former smoker"
+                        }
+                    ],
+                    "text":"Former smoker"
+                }
+            },
+            "search":{
+                "mode":"match"
+            }
+        }
+    ]
+}

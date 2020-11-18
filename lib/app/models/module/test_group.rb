@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'test_case'
+require_relative '../../sequence_base'
 
 module Inferno
   class Module
@@ -39,14 +40,6 @@ module Inferno
             add_test_case(sequence[:sequence], sequence)
           end
         end
-      end
-
-      def lock_variables_without_defaults
-        @lock_variables - default_variables
-      end
-
-      def default_variables
-        @test_cases.flat_map { |test_case| test_case.variable_defaults.keys.map(&:to_s) }
       end
 
       def add_test_case(sequence_name, parameters = {})

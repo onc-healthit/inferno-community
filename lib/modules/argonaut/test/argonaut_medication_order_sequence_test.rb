@@ -27,7 +27,7 @@ class ArgonautMedicationOrderSequenceTest < MiniTest::Test
 
     @medication_reference = load_json_fixture(:medication_reference)
     # Assume we already have a patient
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    @instance.resource_references << Inferno::ResourceReference.new(
       resource_type: 'Patient',
       resource_id: @patient_id
     )

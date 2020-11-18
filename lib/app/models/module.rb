@@ -5,7 +5,6 @@ require 'yaml'
 require_relative 'module/test_group'
 require_relative 'module/test_set'
 require_relative 'module/tag'
-require_relative 'module/test_procedure'
 
 module Inferno
   class Module
@@ -16,11 +15,11 @@ module Inferno
     attr_accessor :fhir_version
     attr_accessor :hide_optional
     attr_accessor :name
-    attr_accessor :test_procedure
     attr_accessor :tags
     attr_accessor :test_sets
     attr_accessor :title
-    attr_accessor :value_sets
+    attr_accessor :resource_path
+    attr_accessor :sequence_requirements
 
     def initialize(params)
       @name = params[:name]
@@ -32,13 +31,20 @@ module Inferno
       @tags = params[:tags]&.map do |tag|
         Tag.new(tag[:name], tag[:description], tag[:url])
       end || []
+      @resource_path = params[:resource_path]
       @test_sets = {}.tap do |test_sets|
         params[:test_sets].each do |test_set_key, test_set|
           self.default_test_set ||= test_set_key.to_s
           test_sets[test_set_key] = TestSet.new(test_set_key, test_set)
         end
       end
-      @value_sets = params[:value_sets]
+      if params[:sequence_requirements].present?
+        @sequence_requirements = {}.tap do |requirements|
+          params[:sequence_requirements].each do |requirement_key, texts|
+            requirements[requirement_key.to_sym] = texts
+          end
+        end
+      end
 
       Module.add(name, self)
     end
@@ -79,17 +85,6 @@ module Inferno
 
     def self.available_modules
       @modules
-    end
-
-    Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_module.yml')).each do |file|
-      this_module = YAML.load_file(file).deep_symbolize_keys
-      new(this_module)
-    end
-
-    Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_procedure.yml')).each do |file|
-      this_procedure = YAML.load_file(file).deep_symbolize_keys
-      referenced_module = @modules[file.split(%r{/|_procedure\.yml}).last]
-      referenced_module.test_procedure = TestProcedure.new(this_procedure, referenced_module)
     end
   end
 end

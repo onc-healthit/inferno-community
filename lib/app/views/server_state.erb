@@ -1,113 +1,32 @@
 <div id="server-state">
-  <div>
-    <h4>Code Systems and Versions used in Inferno</h4>
-    <p>
-      The following code systems are derived from the Unified Medical Language System (UMLS)
-      developed by the National Library of Medicine.
-      <br/><br/>
-      Some material in the UMLS Metathesaurus is from copyrighted sources of the respective copyright holders.
-      Users of the UMLS Metathesaurus are solely responsible for compliance with any copyright, patent or trademark
-      restrictions and are referred to the copyright, patent or trademark notices appearing in the original sources,
-      all of which are hereby incorporated by reference.
-      <br/><br/>
-      Citation: <br/>
-      Bodenreider O. The Unified Medical Language System (UMLS): integrating biomedical terminology.
-      Nucleic Acids Res. 2004 Jan 1;32(Database issue):D267-70. doi: 10.1093/nar/gkh061.
-      PubMed PMID: 14681409; PubMed Central PMCID: PMC308795.
-    </p>
+  <h4>Additional ValueSets and CodeSystems</h4>
+  <p>
+     Inferno is capable of validating ValueSet bindings even if they are not expanded within the core FHIR specification.
+     This typically occurs when Implementation Guides provide additional ValueSets, or if the ValueSet is too large to
+     be expanded and provided in the Core FHIR specification. Additionally, Inferno can check codes belong to a CodeSystem that they state membership to.
+     Below is a list of ValueSets and CodeSystems loaded into this runniing instance of Inferno.  Visit
+    <a href="https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators" target="_blank">our wiki</a> to see how to load additional
+    ValueSets and CodeSystems for validation.
+  <p>
+
+  <% if Inferno::Terminology.loaded_validators.count.zero? %>
+    <p>No additional ValueSets or CodeSystems beyond those provided within the Core FHIR specification are loaded.</p>
+  <% else %>
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Code System Name</th>
-          <th>Code System Version</th>
+          <th>Valueset URL</th>
+          <th>Concept Count</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Unified Medical Language System (UMLS)</td>
-          <td>2019AB</td>
-        </tr>
-        <tr>
-          <td>Current Procedural Terminology (CPT)</td>
-          <td>2019</td>
-        </tr>
-        <tr>
-          <td>Fast Healthcare Interoperability Resources (FHIR)</td>
-          <td>4.0.1</td>
-        </tr>
-        <tr>
-          <td>Healthcare Common Procedure Coding System (HCPCS)</td>
-          <td>2019</td>
-        </tr>
-        <tr>
-          <td>International Classification of Diseases, Tenth Revision, Clinical Modification (ICD-10-CM)</td>
-          <td>2020</td>
-        </tr>
-        <tr>
-          <td>ICD-10 Procedure Coding System (ICD-10-PCS)</td>
-          <td>2020</td>
-        </tr>
-        <tr>
-          <td>International Classification of Diseases, Ninth Revision, Clinical Modification (ICD-9-CM)</td>
-          <td>2014</td>
-        </tr>
-        <tr>
-          <td>Logical Observation Identifiers Names and Codes terminology (LOINC)</td>
-          <td>2.66</td>
-        </tr>
-        <tr>
-          <td>Unified Code for Units of Measure (UCUM)</td>
-          <td>19.03d</td>
-        </tr>
-        <tr>
-          <td>US Core FHIR Implementation Guide</td>
-          <td>3.1.0</td>
-        </tr>
-        <tr>
-          <td>National Uniform Claim Committee - Health Care Provider Taxonomy</td>
-          <td>18.1</td>
-        </tr>
-        <tr>
-          <td>RxNorm Vocabulary</td>
-          <td>META2019AA Full Update 2019_09_03</td>
-        </tr>
-        <tr>
-          <td>Systematized Nomenclature of Medicine-Clinical Terms (SNOMED CT), US Edition</td>
-          <td>September 1, 2019</td>
-        </tr>
+        <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+          <tr>
+            <td><%= url %></td>
+            <td><%= count %></td>
+          </tr>
+        <% end %>
       </tbody>
     </table>
-  </div>
-  <div>
-    <h4>ValueSets and CodeSystems Currently Loaded</h4>
-    <p>
-      Inferno is capable of validating ValueSet bindings even if they are not expanded within the core FHIR specification.
-      This typically occurs when Implementation Guides provide additional ValueSets, or if the ValueSet is too large to
-      be expanded and provided in the Core FHIR specification. Additionally, Inferno can check codes belong to a CodeSystem that they state membership to.
-      Below is a list of ValueSets and CodeSystems loaded into this running instance of Inferno.  Visit
-      <a href="https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators" target="_blank">our wiki</a> to see how to load additional
-      ValueSets and CodeSystems for validation.
-    <p>
-
-    <% if Inferno::Terminology.loaded_validators.count.zero? %>
-      <p>No ValueSets or CodeSystems are loaded.</p>
-    <% else %>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Valueset URL</th>
-            <th>Concept Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% Inferno::Terminology.loaded_validators.sort.each do |url, vs_metadata| %>
-            <tr>
-              <td><%= url %></td>
-              <td><%= vs_metadata[:count] %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-      <% end #if %>
-    </div>
+    <% end #if %>
 </div>

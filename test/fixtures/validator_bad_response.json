@@ -21,7 +21,7 @@
         }
       ],
       "severity": "fatal",
-      "code": "invalid",
+      "code": "code-invalid",
       "details": {
         "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
       },
@@ -45,7 +45,7 @@
         }
       ],
       "severity": "error",
-      "code": "invalid",
+      "code": "code-invalid",
       "details": {
         "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
       },
@@ -69,7 +69,7 @@
         }
       ],
       "severity": "warning",
-      "code": "invalid",
+      "code": "code-invalid",
       "details": {
         "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
       },
@@ -93,7 +93,7 @@
         }
       ],
       "severity": "information",
-      "code": "invalid",
+      "code": "code-invalid",
       "details": {
         "text": "The value provided ('robot') is not in the value set http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1 (http://hl7.org/fhir/ValueSet/administrative-gender, and a code is required from this value set) (error message = Unknown Code http://hl7.org/fhir/administrative-gender#robot in http://hl7.org/fhir/administrative-gender)"
       },

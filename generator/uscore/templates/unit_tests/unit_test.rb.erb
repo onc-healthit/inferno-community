@@ -1,0 +1,24 @@
+# frozen_string_literal: true
+
+# NOTE: This is a generated file. Any changes made to this file will be
+#       overwritten when it is regenerated
+
+require_relative '../../../../test/test_helper'
+
+describe Inferno::Sequence::<%= class_name %> do
+  before do
+    @sequence_class = Inferno::Sequence::<%= class_name %>
+    @base_url = 'http://www.example.com/fhir'
+    @token = 'ABC'
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: '<%= module_name %>')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
+    @auth_header = { 'Authorization' => "Bearer #{@token}" }
+  end
+
+<% tests.each do |test| %>
+  <%= test %>
+<% end %>
+
+end

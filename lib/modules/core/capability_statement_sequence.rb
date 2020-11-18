@@ -65,7 +65,9 @@ module Inferno
 
         assert_tls_1_2 @instance.url
 
-        assert_deny_previous_tls @instance.url
+        warning do
+          assert_deny_previous_tls @instance.url
+        end
       end
 
       test 'FHIR server supports the conformance interaction' do
@@ -118,7 +120,7 @@ module Inferno
         assert_valid_conformance
 
         begin
-          @server_capabilities = Inferno::Models::ServerCapabilities.create(
+          @server_capabilities = Inferno::ServerCapabilities.create(
             testing_instance_id: @instance.id,
             capabilities: @conformance.as_json
           )

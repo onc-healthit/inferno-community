@@ -2,19 +2,15 @@
 
 source 'https://rubygems.org'
 
+gem 'activerecord', '~> 5.2'
 gem 'addressable'
 gem 'ast'
 gem 'base62-rb'
 gem 'bloomer'
 gem 'colorize'
-gem 'data_mapper'
-gem 'dm-sqlite-adapter'
 gem 'fhir_client'
-gem 'http'
-gem 'json-jwt'
 gem 'jwt'
 gem 'kramdown'
-gem 'mime-types'
 gem 'parser'
 gem 'pry'
 gem 'pry-byebug'
@@ -26,10 +22,12 @@ gem 'selenium-webdriver'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sqlite3'
+gem 'standalone_migrations', '~> 6.0'
 gem 'thin'
 gem 'time_difference'
 
 group :test do
+  gem 'database_cleaner-active_record'
   gem 'minitest'
   gem 'rack-test'
   gem 'rubocop', require: false

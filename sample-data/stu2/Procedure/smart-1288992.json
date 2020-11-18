@@ -1,0 +1,102 @@
+
+{
+    "resourceType":"Bundle",
+    "id":"2cd3a61b-f1ba-4ce5-b3d5-7783e8e7b587",
+    "meta":{
+        "lastUpdated":"2018-05-31T15:44:26.646+00:00"
+    },
+    "type":"searchset",
+    "total":2,
+    "link":[
+        {
+            "relation":"self",
+            "url":"http://api:8080/baseDstu2/Procedure?patient=smart-1288992"
+        }
+    ],
+    "entry":[
+        {
+            "fullUrl":"http://api:8080/baseDstu2/Procedure/smart-procedure-24",
+            "resource":{
+                "resourceType":"Procedure",
+                "id":"smart-procedure-24",
+                "meta":{
+                    "versionId":"2",
+                    "lastUpdated":"2018-02-21T15:01:44.340+00:00",
+                    "security":[
+                        {
+                            "system":"http://smarthealthit.org/security/users",
+                            "code":"Patient/smart-1288992"
+                        },
+                        {
+                            "system":"http://smarthealthit.org/security/categories",
+                            "code":"procedures"
+                        }
+                    ]
+                },
+                "text":{
+                    "status":"generated",
+                    "div":"<div xmlns=\"http://www.w3.org/1999/xhtml\">Alcohol rehabilitation</div>"
+                },
+                "subject":{
+                    "reference":"Patient/smart-1288992"
+                },
+                "code":{
+                    "coding":[
+                        {
+                            "system":"http://snomed.info/sct",
+                            "code":"35637008",
+                            "display":"Alcohol rehabilitation"
+                        }
+                    ],
+                    "text":"Alcohol rehabilitation"
+                },
+                "performedDateTime":"2002-05-23"
+            },
+            "search":{
+                "mode":"match"
+            }
+        },
+        {
+            "fullUrl":"http://api:8080/baseDstu2/Procedure/smart-procedure-25",
+            "resource":{
+                "resourceType":"Procedure",
+                "id":"smart-procedure-25",
+                "meta":{
+                    "versionId":"2",
+                    "lastUpdated":"2018-02-21T15:01:44.340+00:00",
+                    "security":[
+                        {
+                            "system":"http://smarthealthit.org/security/users",
+                            "code":"Patient/smart-1288992"
+                        },
+                        {
+                            "system":"http://smarthealthit.org/security/categories",
+                            "code":"procedures"
+                        }
+                    ]
+                },
+                "text":{
+                    "status":"generated",
+                    "div":"<div xmlns=\"http://www.w3.org/1999/xhtml\">Smoking cessation assistance</div>"
+                },
+                "subject":{
+                    "reference":"Patient/smart-1288992"
+                },
+                "code":{
+                    "coding":[
+                        {
+                            "system":"http://snomed.info/sct",
+                            "code":"384742004",
+                            "display":"Smoking cessation assistance"
+                        }
+                    ],
+                    "text":"Smoking cessation assistance"
+                },
+                "performedDateTime":"2000-02-12"
+            },
+            "search":{
+                "mode":"match"
+            }
+        }
+    ]
+}

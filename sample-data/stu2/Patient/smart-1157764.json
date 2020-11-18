@@ -1,0 +1,78 @@
+
+{
+    "resourceType":"Patient",
+    "id":"smart-1157764",
+    "meta":{
+        "versionId":"2",
+        "lastUpdated":"2018-02-21T15:00:49.345+00:00",
+        "security":[
+            {
+                "system":"http://smarthealthit.org/security/users",
+                "code":"Patient/smart-1157764"
+            },
+            {
+                "system":"http://smarthealthit.org/security/categories",
+                "code":"patient"
+            }
+        ]
+    },
+    "text":{
+        "status":"generated",
+        "div":"<div xmlns=\"http://www.w3.org/1999/xhtml\">        <p>Carol Hughes</p>      </div>"
+    },
+    "identifier":[
+        {
+            "use":"usual",
+            "type":{
+                "coding":[
+                    {
+                        "system":"http://hl7.org/fhir/v2/0203",
+                        "code":"MR",
+                        "display":"Medical record number"
+                    }
+                ],
+                "text":"Medical record number"
+            },
+            "system":"http://hospital.smarthealthit.org",
+            "value":"1157764"
+        }
+    ],
+    "active":true,
+    "name":[
+        {
+            "use":"official",
+            "family":[
+                "Hughes"
+            ],
+            "given":[
+                "Carol",
+                "U."
+            ]
+        }
+    ],
+    "telecom":[
+        {
+            "system":"phone",
+            "value":"800-971-5389",
+            "use":"mobile"
+        },
+        {
+            "system":"email",
+            "value":"carol.hughes@example.com"
+        }
+    ],
+    "gender":"female",
+    "birthDate":"1949-11-04",
+    "address":[
+        {
+            "use":"home",
+            "line":[
+                "36 South St"
+            ],
+            "city":"Tulsa",
+            "state":"OK",
+            "postalCode":"74108",
+            "country":"USA"
+        }
+    ]
+}

@@ -1,0 +1,34 @@
+name: <%= name %>
+title: <%= title %>
+description : <%= description %>
+fhir_version: r4
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests:
+      - name: SMART App Launch
+        sequences:
+        - SMARTDiscoverySequence
+        - DynamicRegistrationSequence
+        - ManualRegistrationSequence
+        - StandaloneLaunchSequence
+        - EHRLaunchSequence
+      - name: US Core <%=version%> Profiles
+        run_all: true
+        sequences:
+        - UsCoreR4CapabilityStatementSequence
+        - USCore310PatientSequence<% non_delayed_sequences.each do |sequence| %>
+        - <%=sequence[:class_name]%><% end %>
+        - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
+        - <%=sequence[:class_name]%><% end %>
+        - USCoreR4DataAbsentReasonSequence
+sequence_requirements:
+  device_codes:
+    label: 'Implantable Device Type Codes'
+    description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile'
+value_sets:<% sequences.each do |sequence| %><% sequence[:bindings].each do |binding| %>
+- value_set_url: <%=binding[:system]%>
+  strength: <%=binding[:strength]%>
+  profile: <%=sequence[:profile]%><% end %><% end %>
+

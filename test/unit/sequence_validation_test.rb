@@ -9,30 +9,30 @@ class SequenceValidationTest < MiniTest::Test
     @sequences = Inferno::Sequence::SequenceBase.subclasses
   end
 
-  # def test_metadata
-  #   # additonal requiremetns
-  #   excluded_tests = ['Patient has address', 'Patient has telecom', 'Token expiration']
-  #
-  #   # questionable requirements
-  #   excluded_tests << 'Patient supports $everything operation'
-  #
-  #   test_list = @sequences.flat_map do |sequence|
-  #     sequence.tests.map { |test| test.metadata_hash.merge(sequence: sequence.name) }
-  #   end
-  #
-  #   test_list.reject! { |test| excluded_tests.include?(test[:name]) }
-  #
-  #   incomplete_metadata_tests = test_list.select do |test|
-  #     test[:name].nil? ||
-  #       test[:description].nil? ||
-  #       !valid_uri?(test[:url]) ||
-  #       test[:test_id].nil?
-  #   end
-  #
-  #   empty = incomplete_metadata_tests.empty?
-  #   assert empty, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
-  #     "First: #{!empty && incomplete_metadata_tests.first[:sequence]}: #{!empty && incomplete_metadata_tests.first[:name]}"
-  # end
+  def test_metadata
+    # additonal requiremetns
+    excluded_tests = ['Patient has address', 'Patient has telecom', 'Token expiration']
+
+    # questionable requirements
+    excluded_tests << 'Patient supports $everything operation'
+
+    test_list = @sequences.flat_map do |sequence|
+      sequence.tests.map { |test| test.metadata_hash.merge(sequence: sequence.name) }
+    end
+
+    test_list.reject! { |test| excluded_tests.include?(test[:name]) }
+
+    incomplete_metadata_tests = test_list.select do |test|
+      test[:name].nil? ||
+        test[:description].nil? ||
+        !valid_uri?(test[:url]) ||
+        test[:test_id].nil?
+    end
+
+    empty = incomplete_metadata_tests.empty?
+    assert empty, "Found #{incomplete_metadata_tests.length} tests with incomplete metadata."\
+      "First: #{!empty && incomplete_metadata_tests.first[:sequence]}: #{!empty && incomplete_metadata_tests.first[:name]}"
+  end
 
   def test_ordered_sequences
     instance = get_test_instance

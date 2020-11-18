@@ -57,8 +57,6 @@
   </div>
 </div>
 
- <%= erb(:missing_valuesets, {}, {}) %>
-
 <div class="container">
   <div class="main main-details" role='region'>
 
@@ -171,6 +169,14 @@
             <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
           </div>
         </div>
+        <% instance.sequence_requirements.each do |requirement| %>
+        <% next if requirement.name == 'patient_id' %>
+          <%= erb(:prerequisite_field,{},{prerequisite: requirement.name.to_sym,
+              label: requirement.label,
+              description: requirement.description,
+              instance: instance,
+              value: requirement.value}); %>
+        <% end %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
               label: 'Client Secret',
@@ -232,13 +238,6 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
-              label: 'Implantable Device Type Code',
-              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
-              instance: instance,
-              value: instance.device_codes,
-        })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',
@@ -318,140 +317,6 @@
               instance: instance,
               label: 'Bulk Client ID',
               value: instance.bulk_client_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :measure_id,
-              instance: instance,
-              label: 'Measure ID',
-              value: instance.measure_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :measurereport_id,
-              instance: instance,
-              label: 'Measure Report ID',
-              value: instance.measurereport_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :location_id,
-              instance: instance,
-              label: 'Location ID',
-              value: instance.location_id}); %>
-
-          <% # ----- mCODE Variables ----- # %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_disease_status_id,
-              instance: instance,
-              label: 'mCODE Cancer Disease Status ID',
-              value: instance.mcode_cancer_disease_status_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_genetic_variant_id,
-              instance: instance,
-              label: 'mCODE Cancer Genetic Variant ID',
-              value: instance.mcode_cancer_genetic_variant_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_genomics_report_id,
-              instance: instance,
-              label: 'mCODE Cancer Genomics Report ID',
-              value: instance.mcode_cancer_genomics_report_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_patient_id,
-              instance: instance,
-              label: 'mCODE Cancer Patient ID',
-              value: instance.mcode_cancer_patient_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_related_medication_statement_id,
-              instance: instance,
-              label: 'mCODE Cancer-Related Medication Statement ID',
-              value: instance.mcode_cancer_related_medication_statement_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_related_radiation_procedure_id,
-              instance: instance,
-              label: 'mCODE Cancer-Related Radiation Procedure ID',
-              value: instance.mcode_cancer_related_radiation_procedure_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_cancer_related_surgical_procedure_id,
-              instance: instance,
-              label: 'mCODE Cancer-Related Surgical Procedure ID',
-              value: instance.mcode_cancer_related_surgical_procedure_id}); %>
-
-            <%= erb(:prerequisite_field,{},{prerequisite: :mcode_comorbid_condition_id,
-              instance: instance,
-              label: 'mCODE Comorbid Condition ID',
-              value: instance.mcode_comorbid_condition_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_ecog_performance_status_id,
-              instance: instance,
-              label: 'mCODE ECOG Performance Status ID',
-              value: instance.mcode_ecog_performance_status_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_genetic_specimen_id,
-              instance: instance,
-              label: 'mCODE Cancer Genetic Specimen ID',
-              value: instance.mcode_genetic_specimen_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_genomic_region_studied_id,
-              instance: instance,
-              label: 'mCODE Cancer Genomics Region Studied ID',
-              value: instance.mcode_genomic_region_studied_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_karnofsky_performance_status_id,
-              instance: instance,
-              label: 'mCODE Karnofsky Performance Status ID',
-              value: instance.mcode_karnofsky_performance_status_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_primary_cancer_condition_id,
-              instance: instance,
-              label: 'mCODE Primary Cancer Condition ID',
-              value: instance.mcode_primary_cancer_condition_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_secondary_cancer_condition_id,
-              instance: instance,
-              label: 'mCODE Secondary Cancer Condition ID',
-              value: instance.mcode_secondary_cancer_condition_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_clinical_distant_metastases_category_id,
-              instance: instance,
-              label: 'mCODE TNM Clinical Distance Metastases Category ID',
-              value: instance.mcode_tnm_clinical_distant_metastases_category_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_clinical_primary_tumor_category_id,
-              instance: instance,
-              label: 'mCODE mCODE TNM Clinical Primary Tumor Category ID',
-              value: instance.mcode_tnm_clinical_primary_tumor_category_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_clinical_regional_nodes_category_id,
-              instance: instance,
-              label: 'mCODE mcode TNM Clinical Regional Nodes Category ID',
-              value: instance.mcode_tnm_clinical_regional_nodes_category_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_clinical_stage_group_id,
-              instance: instance,
-              label: 'mCODE TNM Clinical Stage Group ID',
-              value: instance.mcode_tnm_clinical_stage_group_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_pathological_distant_metastases_category_id,
-              instance: instance,
-              label: 'mCODE TNM Pathological Distant Metastases Category ID',
-              value: instance.mcode_tnm_pathological_distant_metastases_category_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_pathological_primary_tumor_category_id,
-              instance: instance,
-              label: 'mCODE TNM Pathological Primary Tumor Category ID',
-              value: instance.mcode_tnm_pathological_primary_tumor_category_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_pathological_regional_nodes_category_id,
-              instance: instance,
-              label: 'mCODE TNM Pathological Regional Nodes Category ID',
-              value: instance.mcode_tnm_pathological_regional_nodes_category_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tnm_pathological_stage_group_id,
-              instance: instance,
-              label: 'mCODE TNM Pathological Stage Group ID',
-              value: instance.mcode_tnm_pathological_stage_group_id}); %>
-
-          <%= erb(:prerequisite_field,{},{prerequisite: :mcode_tumor_marker_id,
-              instance: instance,
-              label: 'mCODE Tumor Marker ID',
-              value: instance.mcode_tumor_marker_id}); %>
-
-          <% # ----- End of mCODE Variables ----- # %>
 
         <%# SPECIAL CASE: Bulk Requires Authorization%>
         <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_requires_auth).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_requires_auth">

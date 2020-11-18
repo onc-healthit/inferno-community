@@ -27,24 +27,21 @@ module Inferno
 
             # We should consider using the native Ruby models instead of JSON
             # There were problems with round-tripping certain SearchParameters though
-            new_resource_json = JSON.parse(File.read(resource))
-            new_resource = FHIR.from_contents(File.read(resource))
-            if new_resource.id == 'searchParams'
-              new_resource.entry.each_with_index do |entry, index|
-                type = 'SearchParameter'
-                search_parameter_resource = entry.resource
-                next if resource_path(search_parameter_resource) == 'SearchParameter/SearchParameter-code'
 
-                search_parameter_json = new_resource_json['entry'][index]['resource']
-                resource_by_path[resource_path(search_parameter_resource)] = search_parameter_json
-                resources_by_type[type].push(search_parameter_json)
-              end
-            else
-              resource_by_path[resource_path(new_resource)] = new_resource_json
-              type = new_resource.class.name.demodulize
-              type = 'CapabilityStatement' if type == 'Conformance'
-              resources_by_type[type].push(new_resource_json)
+            begin
+              new_resource_json = JSON.parse(File.read(resource))
+            rescue JSON::ParserError
+              Inferno.logger.debug("Failed to parse JSON: #{resource}")
+              next
             end
+
+            new_resource = FHIR.from_contents(File.read(resource))
+            next unless new_resource.present?
+
+            resource_by_path[resource_path(new_resource)] = new_resource_json
+            type = new_resource.class.name.demodulize
+            type = 'CapabilityStatement' if type == 'Conformance'
+            resources_by_type[type].push(new_resource_json)
           end
         end
       end
@@ -56,12 +53,6 @@ module Inferno
       def capability_statement(mode = 'server')
         resources_by_type['CapabilityStatement'].find do |capability_statement_resource|
           capability_statement_resource['rest'].any? { |r| r['mode'] == mode }
-        end
-      end
-
-      def capability_statement_by_id(id)
-        resources_by_type['CapabilityStatement'].find do |capability_statement_resource|
-          capability_statement_resource['id'] == id
         end
       end
 

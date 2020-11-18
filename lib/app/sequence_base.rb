@@ -11,6 +11,7 @@ require_relative 'utils/web_driver'
 require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
+require_relative 'utils/sequence_utilities'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
 require_relative 'utils/hl7_validator'
@@ -43,7 +44,6 @@ module Inferno
 
       @@optional = []
       @@show_uris = []
-      @@show_bulk_registration_info = []
       @@delayed_sequences = []
 
       @@test_id_prefixes = {}
@@ -60,7 +60,7 @@ module Inferno
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
         @instance = instance
-        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
+        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.blank?
         @client&.monitor_requests
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
@@ -78,8 +78,10 @@ module Inferno
           sequence_result.test_results.last.message = fail_message
         end
 
+        sequence_result.test_results.last.save!
+
         unless request.nil?
-          sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
+          sequence_result.test_results.last.request_responses << RequestResponse.new(
             direction: 'inbound',
             request_method: request.request_method.downcase,
             request_url: request.url,
@@ -101,7 +103,7 @@ module Inferno
 
       def start(test_set_id = nil, test_case_id = nil, &block)
         if sequence_result.nil?
-          self.sequence_result = Models::SequenceResult.new(
+          self.sequence_result = SequenceResult.new(
             name: sequence_name,
             result: ResultStatuses::PASS,
             testing_instance: @instance,
@@ -194,11 +196,11 @@ module Inferno
           end
 
           @client&.requests&.each do |req|
-            result.request_responses << Models::RequestResponse.from_request(req, @instance.id, 'outbound')
+            result.request_responses << RequestResponse.from_request(req, @instance.id, 'outbound')
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Models::RequestResponse.from_request(OpenStruct.new(req), @instance.id)
+            result.request_responses << RequestResponse.from_request(OpenStruct.new(req), @instance.id)
           end
 
           yield result if block_given?
@@ -208,6 +210,7 @@ module Inferno
           next unless result.wait?
 
           sequence_result.redirect_to_url = result.redirect_to_url
+          sequence_result.expect_redirect_failure = result.expect_redirect_failure
           sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
@@ -251,6 +254,21 @@ module Inferno
 
       def self.requires(*requires)
         @@requires[sequence_name] = requires unless requires.empty?
+
+        instance_class = Inferno::TestingInstance
+        instance_class.new unless instance_class.connected?
+        requires.each do |requirement_name|
+          requirement_setter_name = "#{requirement_name}=".to_sym
+          next if instance_class.method_defined?(requirement_name) && instance_class.method_defined?(requirement_setter_name)
+
+          instance_class.define_method requirement_name do
+            get_requirement_value(requirement_name)
+          end
+
+          instance_class.define_method requirement_setter_name do |value|
+            set_requirement_value(requirement_name, value)
+          end
+        end
         @@requires[sequence_name] || []
       end
 
@@ -350,14 +368,6 @@ module Inferno
         @@show_uris.include?(sequence_name)
       end
 
-      def self.show_bulk_registration_info
-        @@show_bulk_registration_info << sequence_name
-      end
-
-      def self.show_bulk_registration_info?
-        @@show_bulk_registration_info.include?(sequence_name)
-      end
-
       def self.preconditions(description, &block)
         @@preconditions[sequence_name] = {
           block: block,
@@ -400,7 +410,7 @@ module Inferno
         lambda do
           @test_warnings = []
           @information_messages = []
-          Models::TestResult.new(
+          TestResult.new(
             test_id: test.id,
             name: test.name,
             ref: test.ref,
@@ -427,8 +437,8 @@ module Inferno
               end
             end
 
-            result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
-            result.information_messages = @information_messages.map { |m| Models::InformationMessage.new(message: m) }
+            result.test_warnings = @test_warnings.map { |w| TestWarning.new(message: w) }
+            result.information_messages = @information_messages.map { |m| InformationMessage.new(message: m) }
             Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
         end
@@ -469,8 +479,8 @@ module Inferno
         raise WaitException, endpoint
       end
 
-      def redirect(url, endpoint)
-        raise RedirectException.new url, endpoint
+      def redirect(url, endpoint, expect_failure = false)
+        raise RedirectException.new url, endpoint, expect_failure
       end
 
       def warning
@@ -529,9 +539,8 @@ module Inferno
         resources.each do |resource|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-
-          # resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
-          # assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+          assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
             validate_resource_item(resource, key.to_s, value)
@@ -542,46 +551,21 @@ module Inferno
       def validate_read_reply(resource, klass, reply_handler = nil)
         class_name = klass.name.demodulize
         assert !resource.nil?, "No #{class_name} resources available from search."
-        id = if resource.is_a? versioned_resource_class('Reference')
-               resource.reference.split('/').last
-             else
-               resource&.id
-             end
-        assert !id.nil?, "#{class_name} id not returned"
-        read_response = @client.read(klass, id)
-        assert_response_ok read_response
-        reply_handler&.call(read_response)
-        read_resource = read_response.resource
-        assert !read_resource.nil?, "Expected #{class_name} resource to be present."
-        assert read_resource.is_a?(klass), "Expected resource to be of type #{class_name}."
-        assert read_resource.id.present? && read_resource.id == id, "Expected resource to contain id: #{id}"
-        read_response
-      end
-
-      def validate_create_reply(resource, _klass, reply_handler = nil)
-        create_response = @client.create(resource)
-
-        # Check that the create was a success (HTTP status code 201)
-        # https://www.hl7.org/fhir/http.html#summary
-        assert create_response.code == 201, "Bad response code: expected 201, but found #{create_response.code}"
-        assert create_response.response[:headers]['location'], "Expected Location Header, found #{create_response.response[:headers].keys}"
-
-        reply_handler&.call(create_response)
-      end
-
-      def validate_update_reply(resource, _klass, reply_handler = nil)
-        update_response = @client.update(resource, resource.id)
-
-        # Check that the create was a success (HTTP status code 201)
-        # https://www.hl7.org/fhir/http.html#summary
-        assert_response_ok(update_response, "Bad response code: expected 201, but found #{update_response.code}")
-
-        if update_response.code == 200
-          assert update_response.response[:headers]['last-modified'], "Expected last-modified header, found #{update_response.response[:headers].keys}"
-          assert update_response.response[:headers]['etag'], "Expected ETAG Header, found #{update_response.response[:headers].keys}"
+        if resource.is_a? versioned_resource_class('Reference')
+          read_response = resource.read
+          id = resource.reference.split('/').last
+        else
+          id = resource&.id
+          assert !id.nil?, "#{class_name} id not returned"
+          read_response = @client.read(klass, id)
+          assert_response_ok read_response
+          reply_handler&.call(read_response)
+          read_response = read_response.resource
         end
-
-        reply_handler&.call(update_response)
+        assert !read_response.nil?, "Expected #{class_name} resource to be present."
+        assert read_response.is_a?(klass), "Expected resource to be of type #{class_name}."
+        assert read_response.id.present? && read_response.id == id, "Expected resource to contain id: #{id}"
+        read_response
       end
 
       def validate_history_reply(resource, klass)
@@ -619,7 +603,7 @@ module Inferno
         @test_warnings.concat resource_validation_errors[:warnings]
         @information_messages.concat resource_validation_errors[:information]
 
-        errors.map! { |e| "#{resource_type}/#{JSON.parse(resource)['id']}: #{e}" }
+        errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
         @profiles_failed[profile.url].concat(errors) unless errors.empty?
         errors
       end
@@ -633,7 +617,7 @@ module Inferno
       end
 
       def test_resources(resource_type, &block)
-        references = @instance.resource_references.all(resource_type: resource_type)
+        references = @instance.resource_references.where(resource_type: resource_type)
         skip_if(
           references.empty?,
           "Skip profile validation since no #{resource_type} resources found for Patient."
@@ -671,22 +655,6 @@ module Inferno
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def test_resource_against_profile(resource_type, resource, specified_profile)
-        @profiles_encountered ||= Set.new
-        @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
-        return test_resources(resource_type) if specified_profile.blank?
-
-        profile = Inferno::ValidationUtil::DEFINITIONS[specified_profile]
-        skip_if(
-          profile.blank?,
-          "Skip profile validation since profile #{specified_profile} is unknown."
-        )
-
-        error = validate_resource(resource_type, resource, profile)
-
-        assert(error.blank?, error)
-      end
-
       def test_resources_against_profile(resource_type, specified_profile = nil, &block)
         @profiles_encountered ||= Set.new
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
@@ -699,7 +667,7 @@ module Inferno
           "Skip profile validation since profile #{specified_profile} is unknown."
         )
 
-        references = @instance.resource_references.all(profile: specified_profile)
+        references = @instance.resource_references.where(profile: specified_profile)
         resources =
           if references.present?
             references.map(&:resource_id).map do |resource_id|
@@ -707,7 +675,7 @@ module Inferno
             end
           else
             @instance.resource_references
-              .all(resource_type: resource_type)
+              .where(resource_type: resource_type)
               .map { |reference| fetch_resource(resource_type, reference.resource_id) }
               .select { |resource| resource.meta&.profile&.include? specified_profile }
           end
@@ -800,58 +768,44 @@ module Inferno
       end
 
       def resolve_path(elements, path)
-        elements = Array.wrap(elements)
-        return elements if path.blank?
-
-        paths = path.split('.')
-
-        elements.flat_map do |element|
-          resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
-        end.compact
+        Inferno::FHIRPATH_EVALUATOR.evaluate(elements, path)
       end
 
-      def resolve_element_from_path(element, path)
-        el_as_array = Array.wrap(element)
-        if path.empty?
-          return nil if element.nil?
-
-          return el_as_array.find { |el| yield(el) } if block_given?
-
-          return el_as_array.first
-        end
-
-        path_ary = path.split('.')
-        cur_path_part = path_ary.shift.to_sym
-        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? }
-
-        el_as_array.each do |el|
-          el_found = if block_given?
-                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) }
-                     else
-                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
-                     end
-          return el_found unless el_found.blank?
-        end
-
-        nil
+      def resolve_element_from_path(element, path, &block)
+        elements = Inferno::FHIRPATH_EVALUATOR.evaluate(element, path)
+        block_given? ? elements.find(&block) : elements.first
       end
 
-      def get_value_for_search_param(element)
+      def get_value_for_search_param(element, include_system = false)
         search_value = case element
                        when FHIR::Period
                          if element.start.present?
-                           'gt' + element.start
+                           'gt' + (DateTime.xmlschema(element.start) - 1).xmlschema
                          else
-                           'lt' + element.end
+                           end_datetime = get_fhir_datetime_range(element.end)[:end]
+                           'lt' + (end_datetime + 1).xmlschema
                          end
                        when FHIR::Reference
                          element.reference
                        when FHIR::CodeableConcept
-                         resolve_element_from_path(element, 'coding.code')
+                         if include_system
+                           coding_with_code = resolve_element_from_path(element, 'coding') { |coding| coding.code.present? }
+                           coding_with_code.present? ? "#{coding_with_code.system}|#{coding_with_code.code}" : nil
+                         else
+                           resolve_element_from_path(element, 'coding.code')
+                         end
                        when FHIR::Identifier
-                         element.value
+                         if include_system
+                           "#{element.system}|#{element.value}"
+                         else
+                           element.value
+                         end
                        when FHIR::Coding
-                         element.code
+                         if include_system
+                           "#{element.system}|#{element.code}"
+                         else
+                           element.code
+                         end
                        when FHIR::HumanName
                          element.family || element.given&.first || element.text
                        when FHIR::Address
@@ -864,8 +818,7 @@ module Inferno
       end
 
       def date_comparator_value(comparator, date)
-        date = date.slice(2..-1) if ['gt', 'ge', 'lt', 'le'].include? date[0, 2]
-
+        date = date.start || date.end if date.is_a? FHIR::Period
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema
@@ -947,69 +900,6 @@ module Inferno
           end
         end
       end
-
-      def resources_with_invalid_binding(binding_def, resources)
-        path_source = resources
-        resources.map do |resource|
-          binding_def[:extensions]&.each do |url|
-            path_source = path_source.map { |el| el.extension.select { |extension| extension.url == url } }.flatten
-          end
-          invalid_code_found = resolve_element_from_path(path_source, binding_def[:path]) do |el|
-            case binding_def[:type]
-            when 'CodeableConcept'
-              if el.is_a? FHIR::CodeableConcept
-                # If we're validating a valueset (AKA if we have a 'system' URL)
-                # We want at least one of the codes to be in the valueset
-                if binding_def[:system].present?
-                  el.coding.none? do |coding|
-                    Terminology.validate_code(valueset_url: binding_def[:system],
-                                              code: coding.code,
-                                              system: coding.system)
-                  end
-                # If we're validating a codesystem (AKA if there's no 'system' URL)
-                # We want all of the codes to be in their respective systems
-                else
-                  el.coding.any? do |coding|
-                    Terminology.validate_code(valueset_url: nil,
-                                              code: coding.code,
-                                              system: coding.system)
-                  end
-                end
-              else
-                false
-              end
-            when 'Quantity', 'Coding'
-              !Terminology.validate_code(valueset_url: binding_def[:system],
-                                         code: el.code,
-                                         system: el.system)
-            when 'code'
-              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
-            else
-              false
-            end
-          end
-
-          { resource: resource, element: invalid_code_found } if invalid_code_found.present?
-        end.compact
-      end
-
-      def invalid_binding_message(invalid_binding, binding_def)
-        code_as_string = invalid_binding[:element]
-        if invalid_binding[:element].is_a? FHIR::CodeableConcept
-          code_as_string = invalid_binding[:element]&.coding&.map do |coding|
-            "#{coding.system}|#{coding.code}"
-          end&.join(' or ')
-        elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
-          code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
-        end
-        binding_entity = binding_def[:system].presence || 'the declared CodeSystem'
-
-        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
-        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
-        "is not in #{binding_entity}"
-      end
     end
-
-    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }
   end
 end

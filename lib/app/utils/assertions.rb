@@ -83,8 +83,6 @@ module Inferno
       begin
         passed, message, details = tls_tester.verify_ensure_tls_v1_2
         assert passed, message, details
-      rescue AssertionException => e
-        raise e
       rescue SocketError => e
         assert false, "Unable to connect to #{uri}: #{e.message}", tls_socket_error_details(uri)
       rescue StandardError => e
@@ -106,8 +104,6 @@ module Inferno
 
         passed, message, details = tls_tester.verify_deny_tls_v1
         assert passed, message, details
-      rescue AssertionException => e
-        raise e
       rescue SocketError => e
         assert false, "Unable to connect to #{uri}: #{e.message}", tls_socket_error_details(uri)
       rescue StandardError => e

@@ -2,7 +2,6 @@
 
 require_relative 'oauth2_endpoints'
 require_relative 'test_set_endpoints'
-require_relative 'jwks_endpoints'
 
 module Inferno
   class App
@@ -16,7 +15,6 @@ module Inferno
 
         include OAuth2Endpoints
         include TestSetEndpoints
-        include JwksEndpoints
 
         # Return the index page of the application
         get '/?' do
@@ -34,23 +32,16 @@ module Inferno
             halt 404, "Unknown module: #{params[:module]}"
           end
 
-          @instance = Inferno::Models::TestingInstance.new(url: url,
-                                                           name: params['name'],
-                                                           base_url: request.base_url,
-                                                           selected_module: inferno_module.name)
+          @instance = Inferno::TestingInstance.new(url: url,
+                                                   name: params['name'],
+                                                   base_url: request.base_url,
+                                                   selected_module: inferno_module.name)
 
+          @instance.add_sequence_requirements(@instance.module.sequence_requirements)
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
-          # onc specific info
-          @instance.onc_sl_url = url if @instance.respond_to?(:onc_sl_url)
-          @instance.bulk_url = url if @instance.respond_to?(:bulk_url)
-
-          @instance.bulk_data_jwks = settings.bulk_data_jwks.to_json if settings.respond_to? :bulk_data_jwks
-          if settings.respond_to? :disable_bulk_data_require_access_token_test
-            @instance.disable_bulk_data_require_access_token_test = settings.disable_bulk_data_require_access_token_test
-          end
-
           unless params['preset'].blank?
+
             JSON.parse(params['preset']).each do |key, value|
               value = value.tr('\'', '"') if ['bulk_private_key', 'bulk_public_key'].include? key
 
@@ -64,8 +55,7 @@ module Inferno
           cookies[:instance_id_test_set] = "#{@instance.id}/test_sets/#{inferno_module.default_test_set}"
 
           @instance.save!
-          redirect "#{base_path}/#{@instance.id}/#{'?autoRun=CapabilityStatementSequence' if
-              settings.autorun_capability}"
+          redirect "#{base_path}/#{@instance.id}/"
         end
 
         # Returns the static files associated with web app
@@ -75,7 +65,7 @@ module Inferno
 
         # Returns a specific testing instance test page
         get '/:id/?' do
-          instance = Inferno::Models::TestingInstance.get(params[:id])
+          instance = Inferno::TestingInstance.find_by(id: params[:id])
           halt 404 if instance.nil?
 
           redirect "#{base_path}/#{instance.id}/test_sets/#{instance.module.default_test_set}/#{'?error=' + params[:error] unless params[:error].nil?}"
@@ -101,7 +91,7 @@ module Inferno
         # Returns test details for a specific test including any applicable requests and responses.
         #   This route is typically used for retrieving test metadata and results after the test has been run.
         get '/:id/test_result/:test_result_id/?' do
-          @test_result = Inferno::Models::TestResult.get(params[:test_result_id])
+          @test_result = Inferno::TestResult.find_by(id: params[:test_result_id])
           halt 404 if @test_result.sequence_result.testing_instance.id != params[:id]
           erb :test_result_details, layout: false
         end
@@ -109,7 +99,7 @@ module Inferno
         # Returns details for a specific request response
         #   This route is typically used for retrieving test metadata and results after the test has been run.
         get '/:id/test_request/:test_request_id/?' do
-          request_response = Inferno::Models::RequestResponse.get(params[:test_request_id])
+          request_response = Inferno::RequestResponse.find_by(id: params[:test_request_id])
           halt 404 if request_response.instance_id != params[:id]
 
           erb :request_details, { layout: false }, rr: request_response

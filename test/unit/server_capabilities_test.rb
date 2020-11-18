@@ -17,22 +17,7 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'vread' },
                 { code: 'history-instance' },
                 { code: 'search-type', documentation: 'DOCUMENTATION' }
-              ],
-              searchParam: [
-                {
-                  name: '_id',
-                  type: 'token'
-                },
-                {
-                  name: 'birthdate',
-                  type: 'date'
-                }
-              ],
-              searchRevInclude: [
-                'Provenance:target',
-                'Condition:subject'
-              ],
-              searchInclude: ['*']
+              ]
             },
             {
               type: 'Condition',
@@ -41,11 +26,6 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'delete' },
                 { code: 'update' },
                 { code: 'search-type' }
-              ],
-              searchRevInclude: ['*'],
-              searchInclude: [
-                'Practitioner:asserter',
-                'Patient:subject'
               ]
             },
             {
@@ -60,8 +40,8 @@ class ServerCapabilitiesTest < MiniTest::Test
       ]
     }
 
-    @capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    @capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: @capability_statement
     )
 
@@ -84,8 +64,8 @@ class ServerCapabilitiesTest < MiniTest::Test
       ]
     }
 
-    @smart_capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    @smart_capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: @smart_capability_statement
     )
   end
@@ -121,8 +101,8 @@ class ServerCapabilitiesTest < MiniTest::Test
   def test_operation_supported_pass
     conformance = load_json_fixture(:bulk_data_conformance)
 
-    server_capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    server_capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: conformance.as_json
     )
 
@@ -132,8 +112,8 @@ class ServerCapabilitiesTest < MiniTest::Test
   def test_operation_supported_fail_invalid_name
     conformance = load_json_fixture(:bulk_data_conformance)
 
-    server_capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    server_capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: conformance.as_json
     )
 
@@ -164,41 +144,5 @@ class ServerCapabilitiesTest < MiniTest::Test
     assert @capabilities.search_documented?('Patient')
     refute @capabilities.search_documented?('Condition')
     refute @capabilities.search_documented?('Observation')
-  end
-
-  def test_supported_search_params
-    assert_equal ['_id', 'birthdate'], @capabilities.supported_search_params('Patient')
-    assert_equal [], @capabilities.supported_search_params('Condition')
-    assert_equal [], @capabilities.supported_search_params('Location')
-  end
-
-  def test_supported_revincludes
-    assert_equal ['Provenance:target', 'Condition:subject'], @capabilities.supported_revincludes('Patient')
-    assert_equal ['*'], @capabilities.supported_revincludes('Condition')
-    assert_equal [], @capabilities.supported_revincludes('Observation')
-    assert_equal [], @capabilities.supported_revincludes('Location')
-  end
-
-  def test_revinclude_supported
-    assert @capabilities.revinclude_supported?('Patient', 'Provenance:target')
-    assert @capabilities.revinclude_supported?('Patient', 'Condition:subject')
-    assert @capabilities.revinclude_supported?('Condition', 'Provenance:target')
-    refute @capabilities.revinclude_supported?('Observation', 'Provenance:target')
-    refute @capabilities.revinclude_supported?('Location', 'Provenance:target')
-  end
-
-  def test_supported_includes
-    assert_equal ['*'], @capabilities.supported_includes('Patient')
-    assert_equal ['Practitioner:asserter', 'Patient:subject'], @capabilities.supported_includes('Condition')
-    assert_equal [], @capabilities.supported_includes('Observation')
-    assert_equal [], @capabilities.supported_includes('Location')
-  end
-
-  def test_include_supported
-    assert @capabilities.include_supported?('Condition', 'Practitioner:asserter')
-    assert @capabilities.include_supported?('Condition', 'Patient:subject')
-    assert @capabilities.include_supported?('Patient', 'Practitioner:asserter')
-    refute @capabilities.include_supported?('Observation', 'Provenance:target')
-    refute @capabilities.include_supported?('Location', 'Provenance:target')
   end
 end

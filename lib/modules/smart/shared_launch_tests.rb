@@ -29,13 +29,13 @@ module Inferno
         assert_valid_json(token_response.body)
         @token_response_body = JSON.parse(token_response.body)
 
-        @instance.save
+        @instance.save!
         if @token_response_body.key?('id_token') # rubocop:disable Style/IfUnlessModifier
-          @instance.update(id_token: @token_response_body['id_token'])
+          @instance.update!(id_token: @token_response_body['id_token'])
         end
 
         if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
-          @instance.update(refresh_token: @token_response_body['refresh_token'])
+          @instance.update!(refresh_token: @token_response_body['refresh_token'])
         end
 
         assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
@@ -45,14 +45,14 @@ module Inferno
           warning { assert expires_in.is_a?(Numeric), "`expires_in` field is not a number: #{expires_in.inspect}" }
         end
 
-        @instance.update(
+        @instance.update!(
           token: @token_response_body['access_token'],
           token_retrieved_at: DateTime.now,
           token_expires_in: expires_in.to_i
         )
 
         @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
-        @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
+        @instance.update!(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
 
         required_keys = ['token_type', 'scope']
         if require_expires_in
@@ -89,7 +89,7 @@ module Inferno
 
         received_scopes = @token_response_body['scope'] || @instance.scopes
 
-        @instance.update(received_scopes: received_scopes)
+        @instance.update!(received_scopes: received_scopes)
       end
 
       def validate_token_response_headers(token_response)
@@ -123,8 +123,9 @@ module Inferno
 
             omit_if_tls_disabled
             assert_tls_1_2 @instance.oauth_authorize_endpoint
-
-            assert_deny_previous_tls @instance.oauth_authorize_endpoint
+            warning do
+              assert_deny_previous_tls @instance.oauth_authorize_endpoint
+            end
           end
         end
 
@@ -143,7 +144,9 @@ module Inferno
 
             omit_if_tls_disabled
             assert_tls_1_2 @instance.oauth_token_endpoint
-            assert_deny_previous_tls @instance.oauth_token_endpoint
+            warning do
+              assert_deny_previous_tls @instance.oauth_token_endpoint
+            end
           end
         end
 

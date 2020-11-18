@@ -1,0 +1,1 @@
+{"resourceType":"Medication","id":"T0eKLT7EB2ApMM8HCEURdMAB","product":{"form":{"text":"tablet","coding":[{"system":"urn:oid:1.2.840.114350.1.13.0.1.7.4.698288.310","code":"55","display":"tablet"}]}},"code":{"text":"AMITRIPTYLINE HCL 10 MG PO TABS","coding":[{"system":"http://www.nlm.nih.gov/research/umls/rxnorm","code":"856783","display":"AMITRIPTYLINE HCL 10 MG PO TABS"}]}}

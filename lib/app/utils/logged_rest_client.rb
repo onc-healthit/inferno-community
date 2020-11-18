@@ -58,7 +58,7 @@ module Inferno
       begin
         reply = RestClient.get(url, headers, &block)
       rescue StandardError => e
-        if !e.respond_to?(:response) || e.response.nil?
+        unless e.response
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end
@@ -79,7 +79,7 @@ module Inferno
       begin
         reply = RestClient.post(url, payload, headers, &block)
       rescue StandardError => e
-        if !e.respond_to?(:response) || e.response.nil?
+        unless e.response
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end

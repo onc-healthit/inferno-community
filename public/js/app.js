@@ -67,10 +67,9 @@ $(function(){
         variable_defaults = {},
         requirements = [],
         popupTitle = "",
-        lockedVariables = [],
-        skippedOnly = false,
-        show_uris = false,
-        show_bulk_registration_info = false;
+        lockedVariables = [];
+        skippedOnly = false;
+        show_uris = false;
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
@@ -110,9 +109,6 @@ $(function(){
           if(!show_uris){
             show_uris = $(this).data('showUris');
           }
-          if(!show_bulk_registration_info){
-            show_bulk_registration_info = $(this).data('showBulkRegistrationInfo');
-          }
       }
 
     });
@@ -120,7 +116,6 @@ $(function(){
     // clear out the existing contents
     $('.prerequisite-group').empty();
     $('.show-uris').hide();
-    $('.show-bulk-registration-info').hide();
     $('.enabled-prerequisite-group-title').hide();
     $('.disabled-prerequisite-group-title').hide();
     $('.disabled-prerequisites').hide();
@@ -132,16 +127,6 @@ $(function(){
         $('div[data-prerequisite="client_secret"]').show();
       } else if (e.target.id === 'confidential_client_off_active'){
         $('div[data-prerequisite="client_secret"]').hide();
-      } else if (e.target.id === 'onc_sl_confidential_client_on_active'){
-        $('div[data-prerequisite="onc_sl_client_secret"]').show();
-      } else if (e.target.id === 'onc_sl_confidential_client_off_active'){
-        $('div[data-prerequisite="onc_sl_client_secret"]').hide();
-      } else if (e.target.id === 'check_bulk_jwks_url') {
-        if (e.target.checked) {
-          $('div[data-prerequisite="bulk_jwks_url_auth"]').show();
-        } else {
-          $('div[data-prerequisite="bulk_jwks_url_auth"]').hide();
-        }
       }
     });
 
@@ -186,17 +171,7 @@ $(function(){
         let formInput = $(this).clone();
         formInput.find('[data-toggle="tooltip"]').tooltip()
         if(variable_defaults[prerequisite] !== undefined){
-
-          if(formInput.find('input[type=radio]').length) {
-            formInput.find('input[type=radio]').each(function(_index, checkBox) {
-              $(checkBox)[0].checked =  $(checkBox).val() == variable_defaults[prerequisite].toString()
-            });
-
-          } else {
-            if(formInput.find('input').val() == ''){
-              formInput.find('input').val(variable_defaults[prerequisite]);
-            }
-          }
+          formInput.find('input').val(variable_defaults[prerequisite]);
         }
         if(lockedVariables.includes(prerequisite)){
           formInput.find('input').attr('readonly', 'readonly');
@@ -205,9 +180,6 @@ $(function(){
           $('.disabled-prerequisites').append(formInput);
           $('.disabled-prerequisite-group-title').show();
           $('.disabled-prerequisites').show();
-          formInput.find(':radio').each(function(){
-            $(this).attr('id', $(this)[0].id + '_active');
-          });
         } else {
           formInput.find(':radio').each(function(){
             $(this).attr('id', $(this)[0].id + '_active');
@@ -235,16 +207,10 @@ $(function(){
 
     // Confidential client special case
     
-    if($('#confidential_client_on_active').is(':checked')){
+    if($('#confidential_client_on')[0].checked){
        $('div[data-prerequisite="client_secret"]').show();
     } else {
        $('div[data-prerequisite="client_secret"]').hide();
-    }
-
-    if($('#onc_sl_confidential_client_on_active').is(':checked')){
-       $('div[data-prerequisite="onc_sl_client_secret"]').show();
-    } else {
-       $('div[data-prerequisite="onc_sl_client_secret"]').hide();
     }
     
 
@@ -260,10 +226,6 @@ $(function(){
 
     if(show_uris){
       $('.show-uris').show();
-    }
-
-    if(show_bulk_registration_info){
-      $('.show-bulk-registration-info').show();
     }
   })
 
@@ -332,10 +294,6 @@ $(function(){
     this.select();
   })
 
-  $("textarea[readonly='readonly']").on('click', function(){
-    this.select();
-  })
-
   if(window.location.hash.length > 0){
     let hashParts = window.location.hash.split('#')[1].split('/');
     let testCasePart = hashParts[0];
@@ -347,10 +305,10 @@ $(function(){
 
     if(testCasePart.length > 0){
       testCasePart.split(',').forEach(function(tc){
-        var testCase = $('[data-test-case='+tc+']');
+        var testCase = $('#' + tc);
         var details = $('#' + tc + '-details');
         details.collapse('show')
-        testCase.find('.sequence-expand-button').text('Hide Details')
+        testCase.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
       })
     }
   }

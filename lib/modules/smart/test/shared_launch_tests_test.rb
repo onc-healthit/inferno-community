@@ -19,7 +19,7 @@ describe Inferno::Sequence::SharedLaunchTests do
   before do
     @sequence_class = SharedLaunchTestSequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new
+    @instance = Inferno::TestingInstance.new
   end
 
   describe 'auth_endpoint_tls_test' do
@@ -42,8 +42,6 @@ describe Inferno::Sequence::SharedLaunchTests do
       @instance.oauth_authorize_endpoint = auth_endpoint
 
       stub_request(:get, auth_endpoint)
-        .to_return(status: 200).then
-        .to_raise(StandardError)
 
       @sequence.run_test(@test)
     end
@@ -69,8 +67,6 @@ describe Inferno::Sequence::SharedLaunchTests do
       @instance.oauth_token_endpoint = token_endpoint
 
       stub_request(:get, token_endpoint)
-        .to_return(status: 200).then
-        .to_raise(StandardError)
 
       @sequence.run_test(@test)
     end
@@ -127,9 +123,11 @@ describe Inferno::Sequence::SharedLaunchTests do
     before do
       @test = @sequence_class[:invalid_code]
       @sequence = @sequence_class.new(@instance, @client)
-      @instance.redirect_uris = 'http://www.example.com/redirect'
-      @instance.client_id = 'CLIENT_ID'
-      @instance.oauth_token_endpoint = 'http://www.example.com/token'
+      @instance.update!(
+        redirect_uris: 'http://www.example.com/redirect',
+        client_id: 'CLIENT_ID',
+        oauth_token_endpoint: 'http://www.example.com/token'
+      )
       @token_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
       @token_params = {
         grant_type: 'authorization_code',
@@ -149,7 +147,7 @@ describe Inferno::Sequence::SharedLaunchTests do
     describe 'with public client' do
       before do
         @token_params[:client_id] = @instance.client_id
-        @instance.confidential_client = false
+        @instance.update!(confidential_client: false)
         @sequence.instance_variable_set(:@params, 'code' => 'CODE')
       end
 
@@ -174,8 +172,10 @@ describe Inferno::Sequence::SharedLaunchTests do
 
     describe 'with a confidential client' do
       before do
-        @instance.confidential_client = true
-        @instance.client_secret = 'CLIENT_SECRET'
+        @instance.update!(
+          confidential_client: true,
+          client_secret: 'CLIENT_SECRET'
+        )
         client_credentials = "#{@instance.client_id}:#{@instance.client_secret}"
         @token_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
         @sequence.instance_variable_set(:@params, 'code' => 'CODE')
@@ -206,9 +206,11 @@ describe Inferno::Sequence::SharedLaunchTests do
       @test = @sequence_class[:invalid_client_id]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:@params, 'code' => 'CODE')
-      @instance.redirect_uris = 'http://www.example.com/redirect'
-      @instance.client_id = 'CLIENT_ID'
-      @instance.oauth_token_endpoint = 'http://www.example.com/token'
+      @instance.update!(
+        redirect_uris: 'http://www.example.com/redirect',
+        client_id: 'CLIENT_ID',
+        oauth_token_endpoint: 'http://www.example.com/token'
+      )
       @token_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
       @token_params = {
         grant_type: 'authorization_code',
@@ -228,7 +230,7 @@ describe Inferno::Sequence::SharedLaunchTests do
     describe 'with public client' do
       before do
         @token_params[:client_id] = 'INVALID_CLIENT_ID'
-        @instance.confidential_client = false
+        @instance.update!(confidential_client: false)
       end
 
       it 'fails if a successful response is received' do
@@ -252,8 +254,10 @@ describe Inferno::Sequence::SharedLaunchTests do
 
     describe 'with a confidential client' do
       before do
-        @instance.confidential_client = true
-        @instance.client_secret = 'CLIENT_SECRET'
+        @instance.update!(
+          confidential_client: true,
+          client_secret: 'CLIENT_SECRET'
+        )
         client_credentials = "INVALID_CLIENT_ID:#{@instance.client_secret}"
         @token_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
       end
@@ -283,9 +287,11 @@ describe Inferno::Sequence::SharedLaunchTests do
       @test = @sequence_class[:successful_token_exchange]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:@params, 'code' => 'CODE')
-      @instance.redirect_uris = 'http://www.example.com/redirect'
-      @instance.client_id = 'CLIENT_ID'
-      @instance.oauth_token_endpoint = 'http://www.example.com/token'
+      @instance.update!(
+        redirect_uris: 'http://www.example.com/redirect',
+        client_id: 'CLIENT_ID',
+        oauth_token_endpoint: 'http://www.example.com/token'
+      )
       @token_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
       @token_params = {
         grant_type: 'authorization_code',
@@ -305,7 +311,7 @@ describe Inferno::Sequence::SharedLaunchTests do
     describe 'with public client' do
       before do
         @token_params[:client_id] = @instance.client_id
-        @instance.confidential_client = false
+        @instance.update!(confidential_client: false)
       end
 
       it 'fails if a non-successful response is received' do
@@ -329,8 +335,10 @@ describe Inferno::Sequence::SharedLaunchTests do
 
     describe 'with a confidential client' do
       before do
-        @instance.confidential_client = true
-        @instance.client_secret = 'CLIENT_SECRET'
+        @instance.update!(
+          confidential_client: true,
+          client_secret: 'CLIENT_SECRET'
+        )
         client_credentials = "#{@instance.client_id}:#{@instance.client_secret}"
         @token_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
       end

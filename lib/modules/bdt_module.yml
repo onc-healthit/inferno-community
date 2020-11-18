@@ -1,0 +1,19 @@
+name: bdt
+title: Bulk Data Tests (via BDT)
+description: BDT Integration
+fhir_version: r4
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: Bulk Data Test
+        run_all: true
+        sequences:
+          - BDTAuthSequence
+          - BDTDownloadSequence
+          - BDTPatientSequence
+          - BDTSystemSequence
+          - BDTGroupSequence
+          - BDTCapabilityStatementSequence
+          - BDTStatusSequence

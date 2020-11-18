@@ -41,7 +41,9 @@ module Inferno
 
         omit_if_tls_disabled
         assert_tls_1_2 @instance.oauth_introspection_endpoint
-        assert_deny_previous_tls @instance.oauth_introspection_endpoint
+        warning do
+          assert_deny_previous_tls @instance.oauth_introspection_endpoint
+        end
       end
 
       test 'Token introspection endpoint responds properly to introspection request for access token' do
@@ -127,7 +129,7 @@ module Inferno
 
         expiration = Time.at(@introspection_response_body['exp']).to_datetime
 
-        token_retrieved_at = @instance.token_retrieved_at
+        token_retrieved_at = @instance.token_retrieved_at.to_datetime
         now = DateTime.now
 
         max_token_seconds = 60 * 60 # one hour expiration?

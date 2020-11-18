@@ -1,125 +1,156 @@
-# Name of app
-app_name: Inferno
-
-# Base path of application
+# Base path of application. Inferno will serve pages at HOST/base_path
 # There are a few exceptions, such as "/" and "/landing".
 base_path: "inferno"
 
-# Useful during development to purge the database on each reload
+# Useful during development to purge the database on each reload.
 purge_database_on_reload: false
 
-# Disable peer SSL verification for environments that use SSL inspection
+# Disable peer SSL verification for environments that use SSL inspection.
 disable_verify_peer: false
 
-# When running in a docker container, we have to listen to other than just 'localhost' which is the default
+# When running in a docker container, Inferno must listen to other than just
+# 'localhost' which is the default.
 bind: '0.0.0.0'
 
-# Omit TLS tests
+# Omit TLS tests. Used for local development without TLS.
 disable_tls_tests: false
 
-# Default scopes
-default_scopes: launch user/*.read openid fhirUser offline_access
-
-# Log Level: unkown, fatal, error, warn, info, debug
-log_level: info
-
-# Log to file
-log_to_file: false
+# Default SMART scopes used when they are not defined by the testing module.
+default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
 
 # Logging enabled?
 logging_enabled: true
 
-# Automatically Run Conformance Sequence on new server create
-autorun_capability: false
+# Log to file. Logs are written to `logs.log` if true.
+log_to_file: false
 
-# Include extra tests: true or false
-include_extras: true
+# Log Level: unkown, fatal, error, warn, info, debug
+log_level: info
 
-badge_text: mCODE EDITION
+# This text appears in a badge next to "Inferno" in the header of each page
+badge_text: Community
 
-# Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
+# Resource validator options:
+# - "internal" uses the ruby validator from the fhir_models gem
+#   https://github.com/fhir-crucible/fhir_models
+# - "external" uses the a web interface for the L7 FHIR validator.
+#   https://github.com/inferno-community/fhir-validator-wrapper
 resource_validator: external
+
+# The url where the external validator can be reached. Ignored when using the
+# internal validator.
 external_resource_validator_url: http://validator_service:4567
 
-# module options: one or more must be set.  The first option in the list will be checked by default
+# The list of testing modules which will be made available. These entries must
+# match the "name" field in the .yml files in lib/modules.
 modules:
-  - mcoderequirements_module
-  - mcodevalidation_module
+  - smart
+  - bdt
+  - argonaut
+  - uscore_v3.1.0
+  - uscore_v3.1.1
+  
+# FHIRPath evaluator options: must be one of "internal" or "external".
+# external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
+# external.
+fhirpath_evaluator: external
+external_fhirpath_evaluator_url: http://validator_service:4567
 
-
-disable_bulk_data_require_access_token_test: false
-
-bulk_data_jwks:
-  keys:
-    - kty: EC
-      crv: P-384
-      x: JQKTsV6PT5Szf4QtDA1qrs0EJ1pbimQmM2SKvzOlIAqlph3h1OHmZ2i7MXahIF2C
-      y: bRWWQRJBgDa6CTgwofYrHjVGcO-A7WNEnu4oJA5OUJPPPpczgx1g2NsfinK-D2Rw
-      key_ops:
-        - verify
-      ext: true
-      kid: 4b49a739d1eb115b3225f4cf9beb6d1b
-      alg: ES384
-    - kty: EC
-      crv: P-384
-      d: kDkn55p7gryKk2tj6z2ij7ExUnhi0ngxXosvqa73y7epwgthFqaJwApmiXXU2yhK
-      x: JQKTsV6PT5Szf4QtDA1qrs0EJ1pbimQmM2SKvzOlIAqlph3h1OHmZ2i7MXahIF2C
-      y: bRWWQRJBgDa6CTgwofYrHjVGcO-A7WNEnu4oJA5OUJPPPpczgx1g2NsfinK-D2Rw
-      key_ops:
-        - sign
-      ext: true
-      kid: 4b49a739d1eb115b3225f4cf9beb6d1b
-      alg: ES384
-    - kty: RSA
-      alg: RS384
-      n: vjbIzTqiY8K8zApeNng5ekNNIxJfXAue9BjoMrZ9Qy9m7yIA-tf6muEupEXWhq70tC7vIGLqJJ4O8m7yiH8H2qklX2mCAMg3xG3nbykY2X7JXtW9P8VIdG0sAMt5aZQnUGCgSS3n0qaooGn2LUlTGIR88Qi-4Nrao9_3Ki3UCiICeCiAE224jGCg0OlQU6qj2gEB3o-DWJFlG_dz1y-Mxo5ivaeM0vWuodjDrp-aiabJcSF_dx26sdC9dZdBKXFDq0t19I9S9AyGpGDJwzGRtWHY6LsskNHLvo8Zb5AsJ9eRZKpnh30SYBZI9WHtzU85M9WQqdScR69Vyp-6Uhfbvw
-      e: AQAB
-      key_ops:
-        - verify
-      ext: true
-      kid: b41528b6f37a9500edb8a905a595bdd7
-    - kty: RSA
-      alg: RS384
-      n: vjbIzTqiY8K8zApeNng5ekNNIxJfXAue9BjoMrZ9Qy9m7yIA-tf6muEupEXWhq70tC7vIGLqJJ4O8m7yiH8H2qklX2mCAMg3xG3nbykY2X7JXtW9P8VIdG0sAMt5aZQnUGCgSS3n0qaooGn2LUlTGIR88Qi-4Nrao9_3Ki3UCiICeCiAE224jGCg0OlQU6qj2gEB3o-DWJFlG_dz1y-Mxo5ivaeM0vWuodjDrp-aiabJcSF_dx26sdC9dZdBKXFDq0t19I9S9AyGpGDJwzGRtWHY6LsskNHLvo8Zb5AsJ9eRZKpnh30SYBZI9WHtzU85M9WQqdScR69Vyp-6Uhfbvw
-      e: AQAB
-      d: rriV9GYimi5by7TOW4xNh6_gYBHVRDBsft2OFF8qapdVHt2GNuRDDxc_B6ga6TY2Enh2MLKLTr1dD3W4FIdTCJiMerrorp07FJS7nJEMgWQDxrfgkX4_EqrhW42L5d4vypYnRXEEW6u4gzkx5uFOkdvJBIK7CsIdSaBFYhochnynNgvbKWasi4rl2hayEH8tdf3B7Z6OIH9alspBTaq3j_zJt_KkrpYEzIUb4UgALB5NTWn5YKr0Avk_asOg8YfjViQwO9ASGaWjQeJ2Rx8OEQwBMQHSDMCSWNiWmYOu9PcwSZFc1vLxqzyIM8QrQSJHCCMo_wGYgke_r0CLeONHEQ
-      p: 5hH_QApWGeobRi1n7XbMfJYohB8K3JDPa0MspfplHpJ-17JiGG2sNoBdBcpaPRf9OX48P8VqO0qrSSRAk-I-uO6OO9BHbIukXJILqnY2JmurYzbcYbt5FVbknlHRJojkF6-7sFBazpueUlOnXCw7X7Z_SkfNE4QX5Ejm2Zm5mek
-      q: 06bZz7c7K9s1-aEZsxYnLJ9eTpKlt1tIBDA_LwIh5W3w259pes2kUtimbnkyOf-V2ZIERsFCh5s-S9IOEMvAIa6M5j9GW1ILNT7AcHIUfcyFcH-FF8BU_KJdRP5PXnIXFdYcylvsdoIdchy1AaUIzyiKRCU3HBYI75hez0l_F2c
-      dp: h_sVIXW6hCCRND48EedIX06k7conMkxIu_39ErDXOWWeoMAnKIcR5TijQnviL__QxD1vQMXezuKIMHfDz2RGbClbWdD1lhtG7wvG515tDPJQXxia0wzqOQmdoFF9S8hXAAT26vPjaAAkaEZXQaxG_4Au5elgNWu6b0wDXZN1Vpk
-      dq: GqS0YpuUTU8JGmWXUJ4HTGy7eHSpe8134V8ZdRd1oOYYHe2RX64nc25mdR24nuh3uq3Q7_9AGsYGL5E_yAl-JD9O6WUpvDE1y_wcSYty3Os0GRdUb8r8Z9kgmKDS6Pa_xTXw5eBwgfKbNlQ6zPwzgbB-x1lP-K8lbNPni3ybDR0
-      qi: cqQfoi0sM5Su8ZOhznmdWrDIQB28H6fBKiabgaIKkbWZV4e0nwFvLquHjPOvv4Ao8iEGU5dyhvg0n5BKYPi-4mp6M6OA1sy0NrTr7EsKSYGyu2pBq9rw4oAYTM2LXKg6K-awgUUlkc451IwxHBAe15PWCBM3kvLQeijNid0Vz5I
-      key_ops:
-        - sign
-      ext: true
-      kid: b41528b6f37a9500edb8a905a595bdd7
-
-    
-# preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
+# Optional preset server testing configurations.
+#
+# Universal Settings:
+# - name: REQUIRED. Name to be displayed in the preset selection menu.
+# - uri: REQUIRED. FHIR server base uri.
+# - module: REQUIRED. Name of testing module for this server.
+# - inferno_uri: OPTIONAL When this value is present, the preset will only be
+#   listed when inferno is being served from this uri. This allows separate
+#   SMART credentials to be used depending on where inferno is hosted. Omit this
+#   value to always display this preset.
+#
+# Single Patient API Settings (OPTIONAL):
+# - confidential_client: "true" for confidential clients, "false" for public
+#   clients. Used for SMART tests
+# - client_id: SMART client ID.
+# - client_secret: SMART client secret. Only used for confidential clients.
+# - instructions: Link to instructions for using this server.
+#
+# Multi Patient API Settings (OPTIONAL):
+# - bulk_url: Multi patient FHIR server base url.
+# - bulk_requires_auth: Whether the server requires SMART backend servics
+#   authorization. "true" or "false"
+# - bulk_token_endpoint: Token endpoint for SMART backend services
+#   authorization.
+# - bulk_client_id: Client ID for SMART backend services authorization.
+# - bulk_public_key: Public key for SMART backend services authorization.
+# - bulk_private_key: Private key for SMART backend services authorization.
+# - bulk_fastest_resource: A FHIR resource type accessible through the patient
+#   and group level exports that the server can export quickly.
+# - bulk_system_export_endpoint: Relative path to system export endpoint from
+#   'bulk_url'.
+# - bulk_patient_export_endpoint: Relative path to patient export endpoint from
+#   'bulk_url'.
+# - bulk_group_export_endpoint: Relative path to group export endpoint from
+#   'bulk_url'.
 presets:
-  mcode_preset:
-    name: LogicaHealth
-    uri: https://api.logicahealth.org/infernofirsttest/open
-    mcode_cancer_disease_status_id: 16754
-    mcode_cancer_genetic_variant_id: 16802
-    mcode_cancer_genomics_report_id: 16810
-    mcode_cancer_patient_id: 16752
-    mcode_cancer_related_medication_statement_id: 16803
-    mcode_cancer_related_radiation_procedure_id: 16811
-    mcode_cancer_related_surgical_procedure_id: 16756
-    mcode_comorbid_condition_id: 16804
-    mcode_ecog_performance_status_id: 16812
-    mcode_genetic_specimen_id: 16805
-    mcode_genomic_region_studied_id: 16806
-    mcode_karnofsky_performance_status_id: 16807
-    mcode_primary_cancer_condition_id: 16755
-    mcode_secondary_cancer_condition_id: 16808
-    mcode_tnm_clinical_distant_metastases_category_id: 16813
-    mcode_tnm_clinical_primary_tumor_category_id: 16814
-    mcode_tnm_clinical_regional_nodes_category_id: 16815
-    mcode_tnm_clinical_stage_group_id: 16820
-    mcode_tnm_pathological_distant_metastases_category_id: 16816
-    mcode_tnm_pathological_primary_tumor_category_id: 16817
-    mcode_tnm_pathological_regional_nodes_category_id: 16818
-    mcode_tnm_pathological_stage_group_id: 16819
-    mcode_tumor_marker_id: 16809
-    
+  site_healthit_gov:
+    name: SITE DSTU2 FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    inferno_uri: https://inferno.healthit.gov
+    client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
+    confidential_client: true
+    client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
+  site_test_healthit_gov:
+    name: SITE DSTU2 FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    inferno_uri: https://infernotest.healthit.gov
+    client_id: TrToU5piE-dJ1g6PBG1elFV4r9KLmH
+    confidential_client: true
+    client_secret: ckFqb1ZhbmFMQS13WDE0c1dTLWxSdGRLSE8yUXpWNS1vSnd6azNrMmU3Y0JPdDRja3U=
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
+  site_local:
+    name: SITE DSTU2 FHIR Sandbox
+    uri: https://fhir.sitenv.org/secure/fhir
+    module: onc
+    inferno_uri: http://localhost:4567
+    client_id: Yg0o6sJ8I8CfVVyHz1eA0m8jv6sXwe
+    confidential_client: true
+    client_secret: UDVrTXlna0NvcGRQZ1VhMkZaZzQ0R1FxVGdtTWxFMXVoT3pPd1VRMUN4MFVkV25Gejk=
+    instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
+  standalone_bulk_server_local:
+    name: SMART Bulk Server Tests
+    module: bdt
+    uri: https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwLCJkdXIiOjEwLCJ0bHQiOjE1LCJtIjoxLCJzdHUiOjR9/fhir
+    inferno_uri: http://localhost:4567
+    bulk_url: https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwLCJkdXIiOjEwLCJ0bHQiOjE1LCJtIjoxLCJzdHUiOjR9/fhir
+    bulk_token_endpoint: https://bulk-data.smarthealthit.org/auth/token
+    bulk_requires_auth: true
+    bulk_client_id: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzIjp7ImtleXMiOlt7Imt0eSI6IkVDIiwiY3J2IjoiUC0zODQiLCJ4IjoidFZ6RFdRNXFNMWVrUmtPOWFjVjJPckRXX0p5ZVM2YmFEclhQczl2UE9HT3hhNXo1NUNXdHB3Z19CRHlPWXQ4biIsInkiOiJocFhJQ1pNTmV6RDFvTU5ha09xbEdOaDNXUWdDZEtmUVVwRE5saHhfZEtRbzB5bU1QZVhLeGlzTW1WcVdPay1MIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0Ijp0cnVlLCJraWQiOiJjOTUyOWEwYWFlZmE1ZWE2NTlkNjVjNDkzOWVjYTk3NiIsImFsZyI6IkVTMzg0In0seyJrdHkiOiJFQyIsImNydiI6IlAtMzg0IiwiZCI6Im05Z0pxR2FoOEM4LXZtb3M1LTZicDkwMlRQRkdIdmN0VUl6R2QyMkxQeUU2bzVEMldFVTFtV0VtNzRsRWV5YlAiLCJ4IjoidFZ6RFdRNXFNMWVrUmtPOWFjVjJPckRXX0p5ZVM2YmFEclhQczl2UE9HT3hhNXo1NUNXdHB3Z19CRHlPWXQ4biIsInkiOiJocFhJQ1pNTmV6RDFvTU5ha09xbEdOaDNXUWdDZEtmUVVwRE5saHhfZEtRbzB5bU1QZVhLeGlzTW1WcVdPay1MIiwia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia2lkIjoiYzk1MjlhMGFhZWZhNWVhNjU5ZDY1YzQ5MzllY2E5NzYiLCJhbGciOiJFUzM4NCJ9XX0sImFjY2Vzc1Rva2Vuc0V4cGlyZUluIjoxNSwiaWF0IjoxNTc0MDQ0MjIyfQ.dkqFAJreUXIfBTESdygmiOBhtepzgcDNJWqI2662m4Q
+    bulk_public_key: "{'kty':'EC','crv':'P-384','x':'tVzDWQ5qM1ekRkO9acV2OrDW_JyeS6baDrXPs9vPOGOxa5z55CWtpwg_BDyOYt8n','y':'hpXICZMNezD1oMNakOqlGNh3WQgCdKfQUpDNlhx_dKQo0ymMPeXKxisMmVqWOk-L','key_ops':['verify'],'ext':true,'kid':'c9529a0aaefa5ea659d65c4939eca976','alg':'ES384'}"
+    bulk_private_key: "{'kty':'EC','crv':'P-384','d':'m9gJqGah8C8-vmos5-6bp902TPFGHvctUIzGd22LPyE6o5D2WEU1mWEm74lEeybP','x':'tVzDWQ5qM1ekRkO9acV2OrDW_JyeS6baDrXPs9vPOGOxa5z55CWtpwg_BDyOYt8n','y':'hpXICZMNezD1oMNakOqlGNh3WQgCdKfQUpDNlhx_dKQo0ymMPeXKxisMmVqWOk-L','key_ops':['sign'],'ext':true,'kid':'c9529a0aaefa5ea659d65c4939eca976','alg':'ES384'}"
+    bulk_fastest_resource: Patient
+    bulk_system_export_endpoint: /$export
+    bulk_patient_export_endpoint: /Patient/$export
+    bulk_group_export_endpoint: /Group/5/$export
+    # A UI for this launch configuration can be accessed at:
+    # https://bulk-data.smarthealthit.org/?auth_type=jwks&jwks=eyJrZXlzIjpbeyJrdHkiOiJFQyIsImNydiI6IlAtMzg0IiwieCI6InRWekRXUTVxTTFla1JrTzlhY1YyT3JEV19KeWVTNmJhRHJYUHM5dlBPR094YTV6NTVDV3Rwd2dfQkR5T1l0OG4iLCJ5IjoiaHBYSUNaTU5lekQxb01OYWtPcWxHTmgzV1FnQ2RLZlFVcERObGh4X2RLUW8weW1NUGVYS3hpc01tVnFXT2stTCIsImtleV9vcHMiOlsidmVyaWZ5Il0sImV4dCI6dHJ1ZSwia2lkIjoiYzk1MjlhMGFhZWZhNWVhNjU5ZDY1YzQ5MzllY2E5NzYiLCJhbGciOiJFUzM4NCJ9LHsia3R5IjoiRUMiLCJjcnYiOiJQLTM4NCIsImQiOiJtOWdKcUdhaDhDOC12bW9zNS02YnA5MDJUUEZHSHZjdFVJekdkMjJMUHlFNm81RDJXRVUxbVdFbTc0bEVleWJQIiwieCI6InRWekRXUTVxTTFla1JrTzlhY1YyT3JEV19KeWVTNmJhRHJYUHM5dlBPR094YTV6NTVDV3Rwd2dfQkR5T1l0OG4iLCJ5IjoiaHBYSUNaTU5lekQxb01OYWtPcWxHTmgzV1FnQ2RLZlFVcERObGh4X2RLUW8weW1NUGVYS3hpc01tVnFXT2stTCIsImtleV9vcHMiOlsic2lnbiJdLCJleHQiOnRydWUsImtpZCI6ImM5NTI5YTBhYWVmYTVlYTY1OWQ2NWM0OTM5ZWNhOTc2IiwiYWxnIjoiRVMzODQifV19&page=1000&stu=4
+  localhost_reference_server:
+    inferno_uri: http://localhost:4567
+    name: Inferno Reference Server
+    uri: https://inferno.healthit.gov/reference-server/r4
+    module: uscore_v3.1.0
+    client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
+    confidential_client: true
+    client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
+    patient_ids: "76,185"
+  localhost_311_reference_server:
+    inferno_uri: http://localhost:4567
+    name: Inferno Reference Server (USCore v3.1.1)
+    uri: https://inferno.healthit.gov/reference-server/r4
+    module: uscore_v3.1.1
+    client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
+    confidential_client: true
+    client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
+    patient_ids: "76,185"
