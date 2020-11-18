@@ -93,7 +93,7 @@ GEM
     i18n (1.8.5)
       concurrent-ruby (~> 1.0)
     jaro_winkler (1.5.3)
-    json (1.8.6)
+    json (2.3.1)
     jwt (2.2.1)
     kramdown (2.3.0)
       rexml
