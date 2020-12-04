@@ -1,0 +1,15 @@
+name: mcode
+title: mCODE Tests
+description: mCODE
+fhir_version: r4
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: mCODE Patient Tests
+        sequences:
+          - McodeCancerPatientSequence
+          - McodeCancerPatientListSequence
+          - McodeEverythingSequence
+        run_all: true

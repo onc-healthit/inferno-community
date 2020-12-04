@@ -39,7 +39,7 @@ resource_validator: external
 
 # The url where the external validator can be reached. Ignored when using the
 # internal validator.
-external_resource_validator_url: http://validator_service:4567
+external_resource_validator_url: localhost:3000
 
 # The list of testing modules which will be made available. These entries must
 # match the "name" field in the .yml files in lib/modules.
@@ -49,6 +49,7 @@ modules:
   - argonaut
   - uscore_v3.1.0
   - uscore_v3.1.1
+  - mcode
   
 # FHIRPath evaluator options: must be one of "internal" or "external".
 # external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
