@@ -378,8 +378,8 @@ namespace :inferno do |_argv|
     if requires.include? :client_id
       puts 'Please register the application with the following information (enter to continue)'
       # FIXME
-      puts "Launch URI: http://localhost:4567/#{base_path}/#{instance.id}/#{instance.client_endpoint_key}/launch"
-      puts "Redirect URI: http://localhost:4567/#{base_path}/#{instance.id}/#{instance.client_endpoint_key}/redirect"
+      puts "Launch URI: http://localhost:4567/inferno/#{instance.id}/#{instance.client_endpoint_key}/launch"
+      puts "Redirect URI: http://localhost:4567/inferno/#{instance.id}/#{instance.client_endpoint_key}/redirect"
       STDIN.getc
       print "            \r"
     end
