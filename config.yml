@@ -39,7 +39,7 @@ resource_validator: external
 
 # The url where the external validator can be reached. Ignored when using the
 # internal validator.
-external_resource_validator_url: http://validator_service:4567
+external_resource_validator_url: http://inferno_validator_service_1:4567
 
 # The list of testing modules which will be made available. These entries must
 # match the "name" field in the .yml files in lib/modules.
