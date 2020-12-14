@@ -2,7 +2,7 @@ require_relative '../uscore_v3.1.1/us_core_patient_sequence'
 
 module Inferno
   module Sequence
-    class McodeUscoreExtensionSequence < USCore311PatientSequence
+    class McodeUscorePatientSequence < USCore311PatientSequence
       extends_sequence USCore311PatientSequence
 
       title 'US Core Patient Tests'
