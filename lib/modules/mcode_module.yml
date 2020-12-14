@@ -9,7 +9,8 @@ test_sets:
     tests: 
       - name: mCODE Patient Tests
         sequences:
-          - McodeCancerPatientSequence
+          # - McodeCancerPatientSequence
           - McodeCancerPatientListSequence
           - McodeEverythingSequence
+          - McodeUscorePatientSequence
         run_all: true

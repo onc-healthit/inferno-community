@@ -11,7 +11,7 @@ module Inferno
       )
 
       test_id_prefix 'MCODECP'
-      requires :mcode_cancer_patient_id
+      requires :patient_ids
       conformance_supports :Patient
 
       @resource_found = nil
@@ -27,7 +27,7 @@ module Inferno
           versions :r4
         end
 
-        resource_id = @instance.mcode_cancer_patient_id
+        resource_id = @instance.patient_ids
         read_response = validate_read_reply(FHIR::Patient.new(id: resource_id), FHIR::Patient)
         @resource_found = read_response.resource
         @raw_resource_found = read_response.response[:body]
