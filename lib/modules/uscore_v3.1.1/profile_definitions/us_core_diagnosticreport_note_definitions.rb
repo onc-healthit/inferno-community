@@ -55,34 +55,22 @@ module Inferno
 
       BINDINGS = [
         {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/diagnostic-report-status',
+          path: 'status'
+        },
+        {
           type: 'CodeableConcept',
           strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provider-role',
+          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-diagnosticreport-category',
+          path: 'category'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-diagnosticreport-report-and-note-codes',
           path: 'code'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provider-specialty',
-          path: 'specialty'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/contact-point-system',
-          path: 'telecom.system'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/contact-point-use',
-          path: 'telecom.use'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/days-of-week',
-          path: 'availableTime.daysOfWeek'
         }
       ].freeze
     end

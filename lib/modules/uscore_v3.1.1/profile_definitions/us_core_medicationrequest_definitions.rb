@@ -54,44 +54,26 @@ module Inferno
         {
           type: 'code',
           strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/location-status',
+          system: 'http://hl7.org/fhir/ValueSet/medicationrequest-status',
           path: 'status'
         },
         {
           type: 'code',
           strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/location-mode',
-          path: 'mode'
+          system: 'http://hl7.org/fhir/ValueSet/medicationrequest-intent',
+          path: 'intent'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/request-priority',
+          path: 'priority'
         },
         {
           type: 'CodeableConcept',
           strength: 'extensible',
-          system: 'http://terminology.hl7.org/ValueSet/v3-ServiceDeliveryLocationRoleType',
-          path: 'type'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/address-use',
-          path: 'address.use'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/address-type',
-          path: 'address.type'
-        },
-        {
-          type: 'string',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
-          path: 'address.state'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/days-of-week',
-          path: 'hoursOfOperation.daysOfWeek'
+          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-medication-codes',
+          path: 'medication'
         }
       ].freeze
     end
