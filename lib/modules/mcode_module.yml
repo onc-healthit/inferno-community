@@ -3,6 +3,7 @@ title: mCODE Tests
 description: mCODE
 fhir_version: r4
 default_test_set: developer
+resource_path: mcode
 test_sets:
   developer:
     view: default

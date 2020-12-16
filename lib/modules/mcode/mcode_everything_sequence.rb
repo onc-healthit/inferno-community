@@ -4,8 +4,8 @@ module Inferno
   module Sequence
     class McodeEverythingSequence < SequenceBase
 
-      attr_accessor :additional_headers
       include SearchValidationUtil
+      delegate :versioned_resource_class, to: :@client
 
       title 'mCODE Everything'
 
@@ -35,49 +35,13 @@ module Inferno
         @everything = everything_response.resource
         assert !@everything.nil?, 'Expected valid non-nil Bundle resource on $mcode-everything request'
         assert @everything.is_a?(versioned_resource_class('Bundle')), 'Expected resource to be valid Bundle'
-        # assert @everything.meta.profile = 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle'
-        # profile = {url = 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle'}
-        # profile.validate_resource(everything_response.resource);
-        # profile.url = 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle'
-        # validate_resource('Bundle', @everything, 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle')
-        # validate_mcode_resource('Bundle', @everything)
 
-        # First entry must be a cancer patient.
-        # assert @everything.entry[0]
-        # @everything.entry do |entry|
-
-      end
-
-
-      def validate_mcode_resource(resource_type, resource)
-        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle')
-
-        errors = resource_validation_errors[:errors]
-        errors.concat(yield resource) if block_given?
-
-        @test_warnings.concat resource_validation_errors[:warnings]
-        @information_messages.concat resource_validation_errors[:information]
-
-        errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
-        @profiles_failed['http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle'].concat(errors) unless errors.empty?
-        errors
+        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(@everything, versioned_resource_class, 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-patient-bundle')
+        assert resource_validation_errors[:errors].empty?, "Not a Valid mcode-patient-bundle: Invalid #{@everything.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
       end
 
       def fetch_patient_mcode_record(id = nil, startTime = nil, endTime = nil, method = 'GET', format = nil)
         fetch_record(id, [startTime, endTime], method, versioned_resource_class('Patient'), format)
-      end
-
-      def versioned_resource_class(klass = nil)
-        mod = case @fhir_version
-              when :stu3
-                FHIR::STU3
-              when :dstu2
-                FHIR::DSTU2
-              else
-                FHIR
-              end
-        return mod if klass.nil?
-        mod.const_get(klass)
       end
 
       def fetch_record(id = nil, time = [nil, nil], method = 'GET', klass = versioned_resource_class('Patient'), format = nil)
@@ -211,10 +175,6 @@ module Inferno
         uri.query_values = params unless options[:params] && options[:params].include?('?')
         uri.normalize.to_str
       end
-
-      # def fhir_headers(options = {})
-      #   FHIR::ResourceAddress.fhir_headers(options, additional_headers, @default_format, @use_accept_header, @use_accept_charset)
-      # end
       
     end
   end
