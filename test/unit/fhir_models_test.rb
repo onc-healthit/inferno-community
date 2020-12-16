@@ -3,16 +3,15 @@
 require File.expand_path '../test_helper.rb', __dir__
 
 describe FHIR::Models do
-  describe '#from_contents' do
-    def assert_content_populated(bundle_resource)
-      bundle_resource.entry.each do |entry|
-        assert entry.source_contents.present?, "entry.source_contents not populated for #{entry}"
-        assert_instance_of String, entry.source_contents
-        assert entry.resource.source_contents.present?, "entry.resource.source_contents not populated for #{entry}"
-        assert_instance_of String, entry.resource.source_contents
-      end
+  def assert_content_populated(bundle_resource)
+    bundle_resource.entry.each do |entry|
+      assert entry.source_contents.present?, "entry.source_contents not populated for #{entry}"
+      assert_instance_of String, entry.source_contents
+      assert entry.resource.source_contents.present?, "entry.resource.source_contents not populated for #{entry}"
+      assert_instance_of String, entry.resource.source_contents
     end
-
+  end
+  describe '#from_contents' do
     it 'should set source_contents' do
       bundle_json = File.read('test/fixtures/bundle_1.json')
       bundle_resource = FHIR.from_contents(bundle_json)
