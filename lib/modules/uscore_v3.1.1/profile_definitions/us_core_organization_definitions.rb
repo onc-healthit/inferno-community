@@ -61,45 +61,6 @@ module Inferno
       DELAYED_REFERENCES = [
 
       ].freeze
-
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/identifier-use',
-          path: 'identifier.use'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/identifier-type',
-          path: 'identifier.type'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/address-use',
-          path: 'address.use'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/address-type',
-          path: 'address.type'
-        },
-        {
-          type: 'string',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
-          path: 'address.state'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/contactentity-type',
-          path: 'contact.purpose'
-        }
-      ].freeze
     end
   end
 end

@@ -440,86 +440,9 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '09'
-          name 'Condition resources returned from previous search conform to the US Core Condition Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core Condition Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition).
-            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-            This test also checks that the following CodeableConcepts with
-            required ValueSet bindings include a code rather than just text:
-            'clinicalStatus' and 'verificationStatus'
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Condition', delayed: false)
-        test_resources_against_profile('Condition') do |resource|
-          ['clinicalStatus', 'verificationStatus'].flat_map do |path|
-            concepts = resolve_path(resource, path)
-            next if concepts.blank?
-
-            code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
-
-            unless code_present # rubocop:disable Style/IfUnlessModifier
-              "The CodeableConcept at '#{path}' is bound to a required ValueSet but does not contain any codes."
-            end
-          end.compact
-        end
-
-        bindings = USCore311ConditionSequenceDefinitions::BINDINGS
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
-        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
-        "#{invalid_binding_messages.join('. ')}"
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @condition_ary&.values&.flatten)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-        warning do
-          invalid_binding_messages.each do |error_message|
-            assert false, error_message
-          end
-        end
-      end
-
       test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
-          id '10'
+          id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -558,7 +481,7 @@ module Inferno
 
       test 'Every reference within Condition resources can be read.' do
         metadata do
-          id '11'
+          id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
 
