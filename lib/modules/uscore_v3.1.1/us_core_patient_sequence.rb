@@ -74,36 +74,36 @@ module Inferno
         case property
 
         when '_id'
-          values_found = resolve_path(resource, 'Patient.id')
+          values_found = resolve_path(resource, 'id')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "_id in Patient/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'birthdate'
-          values_found = resolve_path(resource, 'Patient.birthDate')
+          values_found = resolve_path(resource, 'birthDate')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "birthdate in Patient/#{resource.id} (#{values_found}) does not match birthdate requested (#{value})"
 
         when 'family'
-          values_found = resolve_path(resource, 'Patient.name.family')
+          values_found = resolve_path(resource, 'name.family')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "family in Patient/#{resource.id} (#{values_found}) does not match family requested (#{value})"
 
         when 'gender'
-          values_found = resolve_path(resource, 'Patient.gender')
+          values_found = resolve_path(resource, 'gender')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "gender in Patient/#{resource.id} (#{values_found}) does not match gender requested (#{value})"
 
         when 'given'
-          values_found = resolve_path(resource, 'Patient.name.given')
+          values_found = resolve_path(resource, 'name.given')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'Patient.identifier')
+          values_found = resolve_path(resource, 'identifier')
           identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
           identifier_value = value.split('|').last
           match_found = values_found.any? do |identifier|
@@ -112,7 +112,7 @@ module Inferno
           assert match_found, "identifier in Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'name'
-          values_found = resolve_path(resource, 'Patient.name')
+          values_found = resolve_path(resource, 'name')
           value_downcase = value.downcase
           match_found = values_found.any? do |name|
             name&.text&.downcase&.start_with?(value_downcase) ||
@@ -489,7 +489,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311PatientSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -502,7 +502,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Patient Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -564,49 +564,30 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Patient resources found previously for the following must support elements:
 
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            name
-
-            name.family
-
-            name.given
-
-            telecom
-
-            telecom.system
-
-            telecom.value
-
-            telecom.use
-
-            gender
-
-            birthDate
-
-            address
-
-            address.line
-
-            address.city
-
-            address.state
-
-            address.postalCode
-
-            address.period
-
-            communication
-
-            communication.language
-
-            * Patient.extension:race
-            * Patient.extension:ethnicity
             * Patient.extension:birthsex
+            * Patient.extension:ethnicity
+            * Patient.extension:race
+            * address
+            * address.city
+            * address.line
+            * address.period
+            * address.postalCode
+            * address.state
+            * birthDate
+            * communication
+            * communication.language
+            * gender
+            * identifier
+            * identifier.system
+            * identifier.value
+            * name
+            * name.family
+            * name.given
+            * telecom
+            * telecom.system
+            * telecom.use
+            * telecom.value
+
           )
           versions :r4
         end
@@ -622,7 +603,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @patient_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

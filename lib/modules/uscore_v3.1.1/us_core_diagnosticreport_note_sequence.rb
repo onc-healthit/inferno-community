@@ -75,19 +75,19 @@ module Inferno
         case property
 
         when 'status'
-          values_found = resolve_path(resource, 'DiagnosticReport.status')
+          values_found = resolve_path(resource, 'status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in DiagnosticReport/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'DiagnosticReport.subject.reference')
+          values_found = resolve_path(resource, 'subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in DiagnosticReport/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'category'
-          values_found = resolve_path(resource, 'DiagnosticReport.category')
+          values_found = resolve_path(resource, 'category')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -100,7 +100,7 @@ module Inferno
           assert match_found, "category in DiagnosticReport/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'code'
-          values_found = resolve_path(resource, 'DiagnosticReport.code')
+          values_found = resolve_path(resource, 'code')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -113,7 +113,7 @@ module Inferno
           assert match_found, "code in DiagnosticReport/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         when 'date'
-          values_found = resolve_path(resource, 'DiagnosticReport.effective')
+          values_found = resolve_path(resource, 'effective')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "date in DiagnosticReport/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
@@ -543,7 +543,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311DiagnosticreportNoteSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -556,7 +556,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core DiagnosticReport Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -618,23 +618,15 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the DiagnosticReport resources found previously for the following must support elements:
 
-            status
-
-            category
-
-            code
-
-            subject
-
-            encounter
-
-            effective[x]
-
-            issued
-
-            performer
-
-            presentedForm
+            * category
+            * code
+            * effective[x]
+            * encounter
+            * issued
+            * performer
+            * presentedForm
+            * status
+            * subject
 
           )
           versions :r4
@@ -645,7 +637,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

@@ -2,34 +2,13 @@
 
 module Inferno
   module USCore311ProfileDefinitions
-    class USCore311OrganizationSequenceDefinitions
+    class USCore311LocationSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
-        slices: [
-          {
-            name: 'Organization.identifier:NPI',
-            path: 'identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'http://hl7.org/fhir/sid/us-npi'
-            }
-          }
-        ],
+        extensions: [],
+        slices: [],
         elements: [
           {
-            path: 'identifier'
-          },
-          {
-            path: 'identifier.system'
-          },
-          {
-            path: 'identifier.value'
-          },
-          {
-            path: 'active'
+            path: 'status'
           },
           {
             path: 'name'
@@ -53,13 +32,18 @@ module Inferno
             path: 'address.postalCode'
           },
           {
-            path: 'address.country'
+            path: 'managingOrganization'
           }
         ]
       }.freeze
 
       DELAYED_REFERENCES = [
-
+        {
+          path: 'managingOrganization',
+          resources: [
+            'Organization'
+          ]
+        }
       ].freeze
     end
   end

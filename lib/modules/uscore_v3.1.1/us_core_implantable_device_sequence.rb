@@ -73,13 +73,13 @@ module Inferno
         case property
 
         when 'patient'
-          values_found = resolve_path(resource, 'Device.patient.reference')
+          values_found = resolve_path(resource, 'patient.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Device/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'Device.type')
+          values_found = resolve_path(resource, 'type')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -291,7 +291,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311ImplantableDeviceSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -304,7 +304,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Device Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -366,27 +366,16 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Device resources found previously for the following must support elements:
 
-            udiCarrier
-
-            udiCarrier.deviceIdentifier
-
-            udiCarrier.carrierAIDC
-
-            udiCarrier.carrierHRF
-
-            distinctIdentifier
-
-            manufactureDate
-
-            expirationDate
-
-            lotNumber
-
-            serialNumber
-
-            type
-
-            patient
+            * distinctIdentifier
+            * expirationDate
+            * lotNumber
+            * manufactureDate
+            * patient
+            * serialNumber
+            * type
+            * udiCarrier
+            * udiCarrier.carrierAIDC or udiCarrier.carrierHRF
+            * udiCarrier.deviceIdentifier
 
           )
           versions :r4
@@ -397,11 +386,19 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @device_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        carrier_aidc_found = @device_ary&.values&.flatten&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+        carrier_hrf_found = @device_ary&.values&.flatten&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+        missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.values&.flatten&.length} provided Device resource(s)"

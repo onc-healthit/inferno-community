@@ -74,11 +74,11 @@ module Inferno
                             ]
                             FHIR::Parameters.new(parameter: params)
                           end
-          return respond_with_type(return_params, request.accept, 200)
+          respond_with_type(return_params, request.accept, 200)
         else
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: VS_NOT_SUPPORTED_TEXT })
           logger.warn "Need valueset #{valueset_response}"
-          return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
+          respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
       end
 
@@ -126,7 +126,7 @@ module Inferno
         else
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'not-supported', details: { text: CS_NOT_SUPPORTED_TEXT })
           logger.warn "Need code system #{coding['system']}"
-          return respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
+          respond_with_type(FHIR::OperationOutcome.new(issue: issue), request.accept, 400)
         end
       end
 

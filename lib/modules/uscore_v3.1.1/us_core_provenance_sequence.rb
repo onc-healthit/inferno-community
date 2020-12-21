@@ -91,7 +91,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Provenance Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -153,24 +153,17 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Provenance resources found previously for the following must support elements:
 
-            target
-
-            recorded
-
-            agent
-
-            agent.type
-
-            agent.who
-
-            agent.onBehalfOf
-
-            agent.type.coding.code
-
-            agent.type.coding.code
-
             * Provenance.agent:ProvenanceAuthor
             * Provenance.agent:ProvenanceTransmitter
+            * agent
+            * agent.onBehalfOf
+            * agent.type
+            * agent.type.coding.code
+            * agent.type.coding.code
+            * agent.who
+            * recorded
+            * target
+
           )
           versions :r4
         end
@@ -187,7 +180,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @provenance_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

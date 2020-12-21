@@ -4,8 +4,12 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311ImmunizationSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
+        extensions: [
+
+        ],
+        slices: [
+
+        ],
         elements: [
           {
             path: 'status'
@@ -28,27 +32,8 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
 
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/immunization-status',
-          path: 'status'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-vaccines-cvx',
-          path: 'vaccineCode'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/immunization-function',
-          path: 'performer.function'
-        }
       ].freeze
     end
   end

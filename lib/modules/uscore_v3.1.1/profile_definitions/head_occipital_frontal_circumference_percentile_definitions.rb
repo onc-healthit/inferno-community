@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'Observation.category:VSCat',
@@ -80,63 +82,8 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
 
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/observation-status',
-          path: 'status'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
-          path: 'code'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/quantity-comparator',
-          path: 'value.comparator'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
-          path: 'dataAbsentReason'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
-          path: 'interpretation'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
-          path: 'component.code'
-        },
-        {
-          type: 'Quantity',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common',
-          path: 'component.value'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
-          path: 'component.dataAbsentReason'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
-          path: 'component.interpretation'
-        }
       ].freeze
     end
   end
