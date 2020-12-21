@@ -27,8 +27,7 @@
     "coding": [
       {
         "system": "http://loinc.org",
-        "code": "9843-4",
-        "display": "Head Occipital-frontal circumference"
+        "code": "8289-1"
       }
     ],
     "text": "Head Circumference"
@@ -39,8 +38,8 @@
   "effectiveDateTime": "1999-07-02",
   "valueQuantity": {
     "value": 51.2,
-    "unit": "cm",
+    "unit": "%",
     "system": "http://unitsofmeasure.org",
-    "code": "cm"
+    "code": "%"
   }
 }
