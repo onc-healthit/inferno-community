@@ -70,7 +70,7 @@ presets:
     client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
     confidential_client: true
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
-    patient_ids: "85,355"
+    patient_ids: '85,355'
   localhost_311_reference_server:
     inferno_uri: http://localhost:4567
     name: Inferno Reference Server (USCore v3.1.1)
@@ -79,4 +79,4 @@ presets:
     client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
     confidential_client: true
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
-    patient_ids: "85,355"
+    patient_ids: '85,355'
