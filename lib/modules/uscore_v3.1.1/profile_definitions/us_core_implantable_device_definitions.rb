@@ -44,6 +44,39 @@ module Inferno
       DELAYED_REFERENCES = [
 
       ].freeze
+
+      BINDINGS = [
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/udi-entry-type',
+          path: 'udiCarrier.entryType'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/device-status',
+          path: 'status'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/ValueSet/device-status-reason',
+          path: 'statusReason'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/device-nametype',
+          path: 'deviceName.type'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/ValueSet/device-kind',
+          path: 'type'
+        }
+      ].freeze
     end
   end
 end
