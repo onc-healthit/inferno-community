@@ -2,7 +2,7 @@
 
 module Inferno
   module USCore311ProfileDefinitions
-    class USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions
+    class USCore311ResprateSequenceDefinitions
       MUST_SUPPORTS = {
         extensions: [
 
@@ -53,8 +53,7 @@ module Inferno
             fixed_value: 'vital-signs'
           },
           {
-            path: 'code.coding.code',
-            fixed_value: '8289-1'
+            path: 'code'
           },
           {
             path: 'subject'
@@ -77,7 +76,10 @@ module Inferno
           },
           {
             path: 'value.code',
-            fixed_value: '%'
+            fixed_value: '/min'
+          },
+          {
+            path: 'dataAbsentReason'
           }
         ]
       }.freeze
