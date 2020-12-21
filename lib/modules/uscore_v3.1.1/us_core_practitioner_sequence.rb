@@ -55,7 +55,7 @@ module Inferno
         case property
 
         when 'name'
-          values_found = resolve_path(resource, 'Practitioner.name')
+          values_found = resolve_path(resource, 'name')
           value_downcase = value.downcase
           match_found = values_found.any? do |name|
             name&.text&.downcase&.start_with?(value_downcase) ||
@@ -67,7 +67,7 @@ module Inferno
           assert match_found, "name in Practitioner/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'Practitioner.identifier')
+          values_found = resolve_path(resource, 'identifier')
           identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
           identifier_value = value.split('|').last
           match_found = values_found.any? do |identifier|
@@ -119,7 +119,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Practitioner Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -181,17 +181,13 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Practitioner resources found previously for the following must support elements:
 
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            name
-
-            name.family
-
             * Practitioner.identifier:NPI
+            * identifier
+            * identifier.system
+            * identifier.value
+            * name
+            * name.family
+
           )
           versions :r4
         end
@@ -208,7 +204,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @practitioner_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

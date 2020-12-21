@@ -71,31 +71,31 @@ module Inferno
         case property
 
         when 'status'
-          values_found = resolve_path(resource, 'MedicationRequest.status')
+          values_found = resolve_path(resource, 'status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in MedicationRequest/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'intent'
-          values_found = resolve_path(resource, 'MedicationRequest.intent')
+          values_found = resolve_path(resource, 'intent')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "intent in MedicationRequest/#{resource.id} (#{values_found}) does not match intent requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'MedicationRequest.subject.reference')
+          values_found = resolve_path(resource, 'subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in MedicationRequest/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'encounter'
-          values_found = resolve_path(resource, 'MedicationRequest.encounter.reference')
+          values_found = resolve_path(resource, 'encounter.reference')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "encounter in MedicationRequest/#{resource.id} (#{values_found}) does not match encounter requested (#{value})"
 
         when 'authoredon'
-          values_found = resolve_path(resource, 'MedicationRequest.authoredOn')
+          values_found = resolve_path(resource, 'authoredOn')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "authoredon in MedicationRequest/#{resource.id} (#{values_found}) does not match authoredon requested (#{value})"
@@ -509,7 +509,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, intent) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -522,7 +522,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core MedicationRequest Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -605,25 +605,16 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the MedicationRequest resources found previously for the following must support elements:
 
-            status
-
-            intent
-
-            reported[x]
-
-            medication[x]
-
-            subject
-
-            encounter
-
-            authoredOn
-
-            requester
-
-            dosageInstruction
-
-            dosageInstruction.text
+            * authoredOn
+            * dosageInstruction
+            * dosageInstruction.text
+            * encounter
+            * intent
+            * medication[x]
+            * reported[x]
+            * requester
+            * status
+            * subject
 
           )
           versions :r4
@@ -634,7 +625,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @medication_request_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

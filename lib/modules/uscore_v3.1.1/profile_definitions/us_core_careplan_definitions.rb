@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311CareplanSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'CarePlan.category:AssessPlan',
@@ -39,39 +41,8 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
 
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-narrative-status',
-          path: 'text.status'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/request-status',
-          path: 'status'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/care-plan-intent',
-          path: 'intent'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-kind',
-          path: 'activity.detail.kind'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-status',
-          path: 'activity.detail.status'
-        }
       ].freeze
     end
   end

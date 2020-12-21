@@ -4,8 +4,12 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311ConditionSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
+        extensions: [
+
+        ],
+        slices: [
+
+        ],
         elements: [
           {
             path: 'clinicalStatus'
@@ -25,33 +29,8 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
 
-      BINDINGS = [
-        {
-          type: 'CodeableConcept',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/condition-clinical',
-          path: 'clinicalStatus'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/condition-ver-status',
-          path: 'verificationStatus'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-category',
-          path: 'category'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code',
-          path: 'code'
-        }
       ].freeze
     end
   end

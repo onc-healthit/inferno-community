@@ -55,24 +55,24 @@ module Inferno
         case property
 
         when '_id'
-          values_found = resolve_path(resource, 'Encounter.id')
+          values_found = resolve_path(resource, 'id')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "_id in Encounter/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'class'
-          values_found = resolve_path(resource, 'Encounter.class')
+          values_found = resolve_path(resource, 'local_class')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "class in Encounter/#{resource.id} (#{values_found}) does not match class requested (#{value})"
 
         when 'date'
-          values_found = resolve_path(resource, 'Encounter.period')
+          values_found = resolve_path(resource, 'period')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "date in Encounter/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'Encounter.identifier')
+          values_found = resolve_path(resource, 'identifier')
           identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
           identifier_value = value.split('|').last
           match_found = values_found.any? do |identifier|
@@ -81,19 +81,19 @@ module Inferno
           assert match_found, "identifier in Encounter/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'Encounter.subject.reference')
+          values_found = resolve_path(resource, 'subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Encounter/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values_found = resolve_path(resource, 'Encounter.status')
+          values_found = resolve_path(resource, 'status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in Encounter/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'Encounter.type')
+          values_found = resolve_path(resource, 'type')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -182,7 +182,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Encounter Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -244,39 +244,23 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Encounter resources found previously for the following must support elements:
 
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            status
-
-            class
-
-            type
-
-            subject
-
-            participant
-
-            participant.type
-
-            participant.period
-
-            participant.individual
-
-            period
-
-            reasonCode
-
-            hospitalization
-
-            hospitalization.dischargeDisposition
-
-            location
-
-            location.location
+            * class
+            * hospitalization
+            * hospitalization.dischargeDisposition
+            * identifier
+            * identifier.system
+            * identifier.value
+            * location
+            * location.location
+            * participant
+            * participant.individual
+            * participant.period
+            * participant.type
+            * period
+            * reasonCode
+            * status
+            * subject
+            * type
 
           )
           versions :r4
@@ -287,7 +271,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @encounter_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

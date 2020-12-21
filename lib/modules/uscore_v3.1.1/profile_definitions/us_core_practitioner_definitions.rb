@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311PractitionerSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'Practitioner.identifier:NPI',
@@ -35,33 +37,8 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
 
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/identifier-use',
-          path: 'identifier.use'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/identifier-type',
-          path: 'identifier.type'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/name-use',
-          path: 'name.use'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/administrative-gender',
-          path: 'gender'
-        }
       ].freeze
     end
   end
