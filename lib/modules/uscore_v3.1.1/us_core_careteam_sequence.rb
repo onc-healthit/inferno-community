@@ -276,70 +276,9 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '06'
-          name 'CareTeam resources returned from previous search conform to the US Core CareTeam Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
-            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
-        test_resources_against_profile('CareTeam')
-        bindings = USCore311CareteamSequenceDefinitions::BINDINGS
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @care_team_ary&.values&.flatten)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
-        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
-        "#{invalid_binding_messages.join('. ')}"
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @care_team_ary&.values&.flatten)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @care_team_ary&.values&.flatten)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-        warning do
-          invalid_binding_messages.each do |error_message|
-            assert false, error_message
-          end
-        end
-      end
-
       test 'All must support elements are provided in the CareTeam resources returned.' do
         metadata do
-          id '07'
+          id '06'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -378,7 +317,7 @@ module Inferno
 
       test 'The server returns results when parameters use composite-or' do
         metadata do
-          id '08'
+          id '07'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
@@ -427,7 +366,7 @@ module Inferno
 
       test 'Every reference within CareTeam resources can be read.' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

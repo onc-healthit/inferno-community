@@ -35,27 +35,6 @@ module Inferno
       DELAYED_REFERENCES = [
 
       ].freeze
-
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/immunization-status',
-          path: 'status'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-vaccines-cvx',
-          path: 'vaccineCode'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/immunization-function',
-          path: 'performer.function'
-        }
-      ].freeze
     end
   end
 end
