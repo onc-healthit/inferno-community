@@ -4,8 +4,12 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311EncounterSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
+        extensions: [
+
+        ],
+        slices: [
+
+        ],
         elements: [
           {
             path: 'identifier'

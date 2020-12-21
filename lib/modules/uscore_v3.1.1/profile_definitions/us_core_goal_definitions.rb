@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311GoalSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'Goal.target.due[x]:dueDate',
@@ -31,7 +33,9 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
+
+      ].freeze
     end
   end
 end

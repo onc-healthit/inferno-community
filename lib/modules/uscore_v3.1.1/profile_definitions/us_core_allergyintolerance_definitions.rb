@@ -4,8 +4,12 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311AllergyintoleranceSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
+        extensions: [
+
+        ],
+        slices: [
+
+        ],
         elements: [
           {
             path: 'clinicalStatus'
@@ -28,7 +32,9 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
+
+      ].freeze
     end
   end
 end

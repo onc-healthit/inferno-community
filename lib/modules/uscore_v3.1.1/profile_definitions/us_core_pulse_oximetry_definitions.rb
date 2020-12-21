@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311PulseOximetrySequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'Observation.category:VSCat',
@@ -159,10 +161,6 @@ module Inferno
             path: 'component.value.unit'
           },
           {
-            path: 'component.value.system',
-            fixed_value: 'http://unitsofmeasure.org'
-          },
-          {
             path: 'component.value.code',
             fixed_value: '%'
           },
@@ -172,7 +170,9 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
+
+      ].freeze
     end
   end
 end

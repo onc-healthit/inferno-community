@@ -2,53 +2,45 @@
 
 module Inferno
   module USCore311ProfileDefinitions
-    class USCore311MedicationrequestSequenceDefinitions
+    class USCore311LocationSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
-        slices: [
-
-        ],
+        extensions: [],
+        slices: [],
         elements: [
           {
             path: 'status'
           },
           {
-            path: 'intent'
+            path: 'name'
           },
           {
-            path: 'reported'
+            path: 'telecom'
           },
           {
-            path: 'medication'
+            path: 'address'
           },
           {
-            path: 'subject'
+            path: 'address.line'
           },
           {
-            path: 'encounter'
+            path: 'address.city'
           },
           {
-            path: 'authoredOn'
+            path: 'address.state'
           },
           {
-            path: 'requester'
+            path: 'address.postalCode'
           },
           {
-            path: 'dosageInstruction'
-          },
-          {
-            path: 'dosageInstruction.text'
+            path: 'managingOrganization'
           }
         ]
       }.freeze
 
       DELAYED_REFERENCES = [
         {
-          path: 'requester',
+          path: 'managingOrganization',
           resources: [
-            'Practitioner',
             'Organization'
           ]
         }

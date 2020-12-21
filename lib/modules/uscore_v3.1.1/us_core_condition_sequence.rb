@@ -70,7 +70,7 @@ module Inferno
         case property
 
         when 'category'
-          values_found = resolve_path(resource, 'Condition.category')
+          values_found = resolve_path(resource, 'category')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -83,7 +83,7 @@ module Inferno
           assert match_found, "category in Condition/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'clinical-status'
-          values_found = resolve_path(resource, 'Condition.clinicalStatus')
+          values_found = resolve_path(resource, 'clinicalStatus')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -96,18 +96,18 @@ module Inferno
           assert match_found, "clinical-status in Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
-          values_found = resolve_path(resource, 'Condition.subject.reference')
+          values_found = resolve_path(resource, 'subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Condition/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'onset-date'
-          values_found = resolve_path(resource, 'Condition.onset.as(dateTime)')
+          values_found = resolve_path(resource, 'onsetDateTime')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "onset-date in Condition/#{resource.id} (#{values_found}) does not match onset-date requested (#{value})"
 
         when 'code'
-          values_found = resolve_path(resource, 'Condition.code')
+          values_found = resolve_path(resource, 'code')
           coding_system = value.split('|').first.empty? ? nil : value.split('|').first
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
@@ -435,7 +435,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311ConditionSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -448,7 +448,7 @@ module Inferno
           description %(
 
             This test verifies resources returned from the first search conform to the [US Core Condition Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
@@ -473,6 +473,48 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = USCore311ConditionSequenceDefinitions::BINDINGS
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+            binding_def_new = binding_def
+            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
+            if invalid_bindings.present?
+              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @condition_ary&.values&.flatten)
+              binding_def_new = binding_def.except(:system)
+            end
+          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
+        end
+        warning do
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
+        end
       end
 
       test 'All must support elements are provided in the Condition resources returned.' do
@@ -484,15 +526,11 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Condition resources found previously for the following must support elements:
 
-            clinicalStatus
-
-            verificationStatus
-
-            category
-
-            code
-
-            subject
+            * category
+            * clinicalStatus
+            * code
+            * subject
+            * verificationStatus
 
           )
           versions :r4
@@ -503,7 +541,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @condition_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311DiagnosticreportLabSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'DiagnosticReport.category:LaboratorySlice',

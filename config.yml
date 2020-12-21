@@ -1,96 +1,24 @@
-# Base path of application. Inferno will serve pages at HOST/base_path
-# There are a few exceptions, such as "/" and "/landing".
-base_path: "inferno"
-
-# Useful during development to purge the database on each reload.
+---
+base_path: inferno
 purge_database_on_reload: false
-
-# Disable peer SSL verification for environments that use SSL inspection.
 disable_verify_peer: false
-
-# When running in a docker container, Inferno must listen to other than just
-# 'localhost' which is the default.
-bind: '0.0.0.0'
-
-# Omit TLS tests. Used for local development without TLS.
+bind: 0.0.0.0
 disable_tls_tests: false
-
-# Default SMART scopes used when they are not defined by the testing module.
 default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
-
-# Logging enabled?
 logging_enabled: true
-
-# Log to file. Logs are written to `logs.log` if true.
 log_to_file: false
-
-# Log Level: unkown, fatal, error, warn, info, debug
 log_level: info
-
-# This text appears in a badge next to "Inferno" in the header of each page
 badge_text: Community
-
-# Resource validator options:
-# - "internal" uses the ruby validator from the fhir_models gem
-#   https://github.com/fhir-crucible/fhir_models
-# - "external" uses the a web interface for the L7 FHIR validator.
-#   https://github.com/inferno-community/fhir-validator-wrapper
 resource_validator: external
-
-# The url where the external validator can be reached. Ignored when using the
-# internal validator.
-external_resource_validator_url: http://validator_service:4567
-
-# The list of testing modules which will be made available. These entries must
-# match the "name" field in the .yml files in lib/modules.
+external_resource_validator_url: http://localhost:8887
 modules:
-  - smart
-  - bdt
-  - argonaut
-  - uscore_v3.1.0
-  - uscore_v3.1.1
-  
-# FHIRPath evaluator options: must be one of "internal" or "external".
-# external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
-# external.
+- smart
+- bdt
+- argonaut
+- uscore_v3.1.0
+- uscore_v3.1.1
 fhirpath_evaluator: external
 external_fhirpath_evaluator_url: http://validator_service:4567
-
-# Optional preset server testing configurations.
-#
-# Universal Settings:
-# - name: REQUIRED. Name to be displayed in the preset selection menu.
-# - uri: REQUIRED. FHIR server base uri.
-# - module: REQUIRED. Name of testing module for this server.
-# - inferno_uri: OPTIONAL When this value is present, the preset will only be
-#   listed when inferno is being served from this uri. This allows separate
-#   SMART credentials to be used depending on where inferno is hosted. Omit this
-#   value to always display this preset.
-#
-# Single Patient API Settings (OPTIONAL):
-# - confidential_client: "true" for confidential clients, "false" for public
-#   clients. Used for SMART tests
-# - client_id: SMART client ID.
-# - client_secret: SMART client secret. Only used for confidential clients.
-# - instructions: Link to instructions for using this server.
-#
-# Multi Patient API Settings (OPTIONAL):
-# - bulk_url: Multi patient FHIR server base url.
-# - bulk_requires_auth: Whether the server requires SMART backend servics
-#   authorization. "true" or "false"
-# - bulk_token_endpoint: Token endpoint for SMART backend services
-#   authorization.
-# - bulk_client_id: Client ID for SMART backend services authorization.
-# - bulk_public_key: Public key for SMART backend services authorization.
-# - bulk_private_key: Private key for SMART backend services authorization.
-# - bulk_fastest_resource: A FHIR resource type accessible through the patient
-#   and group level exports that the server can export quickly.
-# - bulk_system_export_endpoint: Relative path to system export endpoint from
-#   'bulk_url'.
-# - bulk_patient_export_endpoint: Relative path to patient export endpoint from
-#   'bulk_url'.
-# - bulk_group_export_endpoint: Relative path to group export endpoint from
-#   'bulk_url'.
 presets:
   site_healthit_gov:
     name: SITE DSTU2 FHIR Sandbox
@@ -131,11 +59,9 @@ presets:
     bulk_public_key: "{'kty':'EC','crv':'P-384','x':'tVzDWQ5qM1ekRkO9acV2OrDW_JyeS6baDrXPs9vPOGOxa5z55CWtpwg_BDyOYt8n','y':'hpXICZMNezD1oMNakOqlGNh3WQgCdKfQUpDNlhx_dKQo0ymMPeXKxisMmVqWOk-L','key_ops':['verify'],'ext':true,'kid':'c9529a0aaefa5ea659d65c4939eca976','alg':'ES384'}"
     bulk_private_key: "{'kty':'EC','crv':'P-384','d':'m9gJqGah8C8-vmos5-6bp902TPFGHvctUIzGd22LPyE6o5D2WEU1mWEm74lEeybP','x':'tVzDWQ5qM1ekRkO9acV2OrDW_JyeS6baDrXPs9vPOGOxa5z55CWtpwg_BDyOYt8n','y':'hpXICZMNezD1oMNakOqlGNh3WQgCdKfQUpDNlhx_dKQo0ymMPeXKxisMmVqWOk-L','key_ops':['sign'],'ext':true,'kid':'c9529a0aaefa5ea659d65c4939eca976','alg':'ES384'}"
     bulk_fastest_resource: Patient
-    bulk_system_export_endpoint: /$export
-    bulk_patient_export_endpoint: /Patient/$export
-    bulk_group_export_endpoint: /Group/5/$export
-    # A UI for this launch configuration can be accessed at:
-    # https://bulk-data.smarthealthit.org/?auth_type=jwks&jwks=eyJrZXlzIjpbeyJrdHkiOiJFQyIsImNydiI6IlAtMzg0IiwieCI6InRWekRXUTVxTTFla1JrTzlhY1YyT3JEV19KeWVTNmJhRHJYUHM5dlBPR094YTV6NTVDV3Rwd2dfQkR5T1l0OG4iLCJ5IjoiaHBYSUNaTU5lekQxb01OYWtPcWxHTmgzV1FnQ2RLZlFVcERObGh4X2RLUW8weW1NUGVYS3hpc01tVnFXT2stTCIsImtleV9vcHMiOlsidmVyaWZ5Il0sImV4dCI6dHJ1ZSwia2lkIjoiYzk1MjlhMGFhZWZhNWVhNjU5ZDY1YzQ5MzllY2E5NzYiLCJhbGciOiJFUzM4NCJ9LHsia3R5IjoiRUMiLCJjcnYiOiJQLTM4NCIsImQiOiJtOWdKcUdhaDhDOC12bW9zNS02YnA5MDJUUEZHSHZjdFVJekdkMjJMUHlFNm81RDJXRVUxbVdFbTc0bEVleWJQIiwieCI6InRWekRXUTVxTTFla1JrTzlhY1YyT3JEV19KeWVTNmJhRHJYUHM5dlBPR094YTV6NTVDV3Rwd2dfQkR5T1l0OG4iLCJ5IjoiaHBYSUNaTU5lekQxb01OYWtPcWxHTmgzV1FnQ2RLZlFVcERObGh4X2RLUW8weW1NUGVYS3hpc01tVnFXT2stTCIsImtleV9vcHMiOlsic2lnbiJdLCJleHQiOnRydWUsImtpZCI6ImM5NTI5YTBhYWVmYTVlYTY1OWQ2NWM0OTM5ZWNhOTc2IiwiYWxnIjoiRVMzODQifV19&page=1000&stu=4
+    bulk_system_export_endpoint: "/$export"
+    bulk_patient_export_endpoint: "/Patient/$export"
+    bulk_group_export_endpoint: "/Group/5/$export"
   localhost_reference_server:
     inferno_uri: http://localhost:4567
     name: Inferno Reference Server

@@ -18,7 +18,7 @@ test_sets:
         run_all: true
         sequences:
         - UsCoreR4CapabilityStatementSequence
-        - USCore310PatientSequence
+        - USCore311PatientSequence
         - USCore311AllergyintoleranceSequence
         - USCore311CareplanSequence
         - USCore311CareteamSequence

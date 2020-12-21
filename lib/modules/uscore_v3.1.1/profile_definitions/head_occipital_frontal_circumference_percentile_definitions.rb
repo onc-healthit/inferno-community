@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'Observation.category:VSCat',
@@ -80,7 +82,9 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
+
+      ].freeze
     end
   end
 end

@@ -4,7 +4,9 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311PractitionerSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [
+
+        ],
         slices: [
           {
             name: 'Practitioner.identifier:NPI',
@@ -35,7 +37,9 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [].freeze
+      DELAYED_REFERENCES = [
+
+      ].freeze
     end
   end
 end
