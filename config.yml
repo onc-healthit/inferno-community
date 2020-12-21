@@ -18,7 +18,7 @@ modules:
 - uscore_v3.1.0
 - uscore_v3.1.1
 fhirpath_evaluator: external
-external_fhirpath_evaluator_url: http://validator_service:4567
+external_fhirpath_evaluator_url: http://localhost:8887
 presets:
   site_healthit_gov:
     name: SITE DSTU2 FHIR Sandbox

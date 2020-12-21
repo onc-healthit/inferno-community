@@ -86,6 +86,57 @@ module Inferno
           ]
         }
       ].freeze
+
+      BINDINGS = [
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/document-reference-status',
+          path: 'status'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/composition-status',
+          path: 'docStatus'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-type',
+          path: 'type'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-category',
+          path: 'category'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/document-relationship-type',
+          path: 'relatesTo.code'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/ValueSet/security-labels',
+          path: 'securityLabel'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/mimetypes',
+          path: 'content.attachment.contentType'
+        },
+        {
+          type: 'Coding',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/ValueSet/formatcodes',
+          path: 'content.format'
+        }
+      ].freeze
     end
   end
 end

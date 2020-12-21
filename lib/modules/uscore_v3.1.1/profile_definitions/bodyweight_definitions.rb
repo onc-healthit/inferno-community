@@ -2,7 +2,7 @@
 
 module Inferno
   module USCore311ProfileDefinitions
-    class USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions
+    class USCore311BodyweightSequenceDefinitions
       MUST_SUPPORTS = {
         extensions: [
 
@@ -53,8 +53,7 @@ module Inferno
             fixed_value: 'vital-signs'
           },
           {
-            path: 'code.coding.code',
-            fixed_value: '8289-1'
+            path: 'code'
           },
           {
             path: 'subject'
@@ -76,8 +75,10 @@ module Inferno
             fixed_value: 'http://unitsofmeasure.org'
           },
           {
-            path: 'value.code',
-            fixed_value: '%'
+            path: 'value.code'
+          },
+          {
+            path: 'dataAbsentReason'
           }
         ]
       }.freeze
@@ -104,6 +105,12 @@ module Inferno
           strength: 'required',
           system: 'http://hl7.org/fhir/ValueSet/quantity-comparator',
           path: 'value.comparator'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/ucum-bodyweight',
+          path: 'value.code'
         },
         {
           type: 'CodeableConcept',
