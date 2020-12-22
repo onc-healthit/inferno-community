@@ -4,12 +4,8 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311ImplantableDeviceSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
-        slices: [
-
-        ],
+        extensions: [],
+        slices: [],
         elements: [
           {
             path: 'udiCarrier'
@@ -41,9 +37,7 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [
-
-      ].freeze
+      DELAYED_REFERENCES = [].freeze
     end
   end
 end

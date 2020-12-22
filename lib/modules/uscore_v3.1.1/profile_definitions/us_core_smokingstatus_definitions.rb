@@ -4,9 +4,7 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311SmokingstatusSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
+        extensions: [],
         slices: [
           {
             name: 'Observation.value[x]:valueCodeableConcept',
@@ -33,9 +31,7 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [
-
-      ].freeze
+      DELAYED_REFERENCES = [].freeze
     end
   end
 end

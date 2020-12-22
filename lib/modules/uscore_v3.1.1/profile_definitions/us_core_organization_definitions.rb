@@ -4,9 +4,7 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311OrganizationSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
+        extensions: [],
         slices: [
           {
             name: 'Organization.identifier:NPI',
@@ -58,9 +56,7 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [
-
-      ].freeze
+      DELAYED_REFERENCES = [].freeze
     end
   end
 end
