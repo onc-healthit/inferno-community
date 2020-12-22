@@ -713,15 +713,16 @@ module Inferno
           #{skip_if_not_found_code(sequence)}
           test_resources_against_profile('#{sequence[:resource]}'#{', ' + profile_uri if profile_uri}))
 
-        if sequence[:required_concepts].present?
-          concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
-          test[:description] += %(
+        return unless sequence[:required_concepts].present?
+
+        concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
+        test[:description] += %(
             This test also checks that the following CodeableConcepts with
             required ValueSet bindings include a code rather than just text:
             #{concept_string}
           )
 
-          test[:test_code] += %( do |resource|
+        test[:test_code] += %( do |resource|
               #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
                 concepts = resolve_path(resource, path)
                 next if concepts.blank?
@@ -734,7 +735,6 @@ module Inferno
               end.compact
             end
           )
-        end
       end
 
       def create_multiple_or_test(sequence)
