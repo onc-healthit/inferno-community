@@ -4,9 +4,7 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311ProvenanceSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
+        extensions: [],
         slices: [
           {
             name: 'Provenance.agent:ProvenanceAuthor',

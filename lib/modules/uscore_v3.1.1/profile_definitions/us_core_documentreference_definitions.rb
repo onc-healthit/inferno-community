@@ -4,12 +4,8 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311DocumentreferenceSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
-        slices: [
-
-        ],
+        extensions: [],
+        slices: [],
         elements: [
           {
             path: 'identifier'

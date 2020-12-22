@@ -30,7 +30,7 @@ group :test do
   gem 'database_cleaner-active_record'
   gem 'minitest'
   gem 'rack-test'
-  gem 'rubocop', require: false
+  gem 'rubocop', '~> 0.80.0', require: false
   gem 'simplecov', require: false
   gem 'webmock'
 end
