@@ -5,7 +5,7 @@ require_relative '../../lib/app/models/testing_instance'
 
 describe Inferno::TestingInstance do
   before do
-    @instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.1.1')
   end
 
   describe '#conformance_supported?' do
