@@ -18,9 +18,7 @@ module Inferno
             url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
           }
         ],
-        slices: [
-
-        ],
+        slices: [],
         elements: [
           {
             path: 'identifier'
@@ -85,9 +83,7 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [
-
-      ].freeze
+      DELAYED_REFERENCES = [].freeze
     end
   end
 end

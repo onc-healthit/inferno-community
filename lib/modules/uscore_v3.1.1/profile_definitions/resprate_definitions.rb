@@ -4,9 +4,7 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311ResprateSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [
-
-        ],
+        extensions: [],
         slices: [
           {
             name: 'Observation.category:VSCat',
@@ -84,9 +82,7 @@ module Inferno
         ]
       }.freeze
 
-      DELAYED_REFERENCES = [
-
-      ].freeze
+      DELAYED_REFERENCES = [].freeze
     end
   end
 end
