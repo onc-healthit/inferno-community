@@ -36,7 +36,7 @@ module Inferno
 
       def generate_unique_test_id_prefix(title)
         module_prefix = 'USC'
-        test_id_prefix = module_prefix + title.chars.select { |c| ('A'..'Z').include?(c) }.join
+        test_id_prefix = module_prefix + title.chars.select { |c| ('A'..'Z').cover?(c) }.join
         last_title_word = title.split(test_id_prefix.last).last
         index = 0
 
