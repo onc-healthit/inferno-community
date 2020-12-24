@@ -119,10 +119,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('Encounter'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['planned', 'arrived', 'triaged', 'in-progress', 'onleave', 'finished', 'cancelled', 'entered-in-error', 'unknown'].each do |status_value|
