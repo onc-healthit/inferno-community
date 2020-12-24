@@ -142,10 +142,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('DocumentReference'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['current,superseded,entered-in-error'].each do |status_value|
