@@ -35,7 +35,7 @@ badge_text: Community
 #   https://github.com/fhir-crucible/fhir_models
 # - "external" uses the a web interface for the L7 FHIR validator.
 #   https://github.com/inferno-community/fhir-validator-wrapper
-resource_validator: external
+resource_validator: internal
 
 # The url where the external validator can be reached. Ignored when using the
 # internal validator.
