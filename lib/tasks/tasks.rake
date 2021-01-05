@@ -88,15 +88,15 @@ def execute(instance, sequences)
     sequence_result.test_results.each do |result|
       print ' '
       if result.pass?
-        print "#{checkmark.encode('utf-8')} pass".green
+        print " #{checkmark.encode('utf-8')} pass".green
         print " - #{result.test_id} #{result.name}\n"
       elsif result.skip?
-        print '* skip'.yellow
+        print ' * skip'.yellow
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
       elsif result.fail?
         if result.required
-          print 'X fail'.red
+          print ' X fail'.red
           print " - #{result.test_id} #{result.name}\n"
           puts "    Message: #{result.message}"
           print_requests(result).map do |req|
@@ -104,7 +104,7 @@ def execute(instance, sequences)
           end
           fails = true
         else
-          print 'X fail (optional)'.light_black
+          print ' X fail (optional)'.light_black
           print " - #{result.test_id} #{result.name}\n"
           puts "    Message: #{result.message}"
           print_requests(result).map do |req|
@@ -112,7 +112,7 @@ def execute(instance, sequences)
           end
         end
       elsif result.error?
-        print 'X error'.magenta
+        print ' X error'.magenta
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
         print_requests(result).map do |req|
@@ -120,7 +120,7 @@ def execute(instance, sequences)
         end
         fails = true
       elsif result.omit?
-        print '* omit'.light_black
+        print ' * omit'.light_black
         print " - #{result.test_id} #{result.name}\n"
         puts "    Message: #{result.message}"
       end
@@ -129,20 +129,20 @@ def execute(instance, sequences)
     if sequence_result.pass?
       puts 'pass '.green + checkmark.encode('utf-8').green
     elsif sequence_result.fail?
-      puts 'fail '.red + 'X'.red
+      puts 'fail '.red + ' X'.red
       fails = true
     elsif sequence_result.error?
-      puts 'error '.magenta + 'X'.magenta
+      puts 'error '.magenta + ' X'.magenta
       fails = true
     elsif sequence_result.skip?
-      puts 'skip '.yellow + '*'.yellow
+      puts 'skip '.yellow + ' *'.yellow
     end
     puts "---------------------------------------------\n"
   end
 
   failures_count = sequence_results.count(&:fail?).to_s
   passed_count = sequence_results.count(&:pass?).to_s
-  print ' Result: ' + failures_count.red + ' failed, ' + passed_count.green + ' passed'
+  print 'Overall Result: ' + failures_count.red + ' failed, ' + passed_count.green + ' passed'
   if sequence_results.any?(&:skip?)
     skip_count = sequence_results.count(&:skip?).to_s
     print(', ' + skip_count.yellow + ' skipped')
