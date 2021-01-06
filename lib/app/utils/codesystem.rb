@@ -14,10 +14,13 @@ module Inferno
 
       def all_codes_in_concept(concepts)
         cs_set = Set.new
-        concepts.flatten.each do |concept_code|
-          cs_set.add(system: codesystem_model.url, code: concept_code.code)
-          load_codes.call(concept_code.concept) unless concept_code.concept.empty?
+        load_codes = lambda do |concept|
+          concept.each do |concept_code|
+            cs_set.add(system: codesystem_model.url, code: concept_code.code)
+            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
+          end
         end
+        load_codes.call(concepts.flatten)
         cs_set
       end
 
@@ -39,7 +42,7 @@ module Inferno
           parent_concept = find_concept(filter.value)
           return all_codes_in_concept([parent_concept])
         else
-          throw Inferno::Terminology::ValueSet::FilterOperationException(filter.to_s)
+          raise Inferno::Terminology::ValueSet::FilterOperationException, filter.to_s
         end
       end
     end
