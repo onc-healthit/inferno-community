@@ -20,6 +20,7 @@ module Inferno
     attr_accessor :title
     attr_accessor :resource_path
     attr_accessor :sequence_requirements
+    attr_accessor :value_sets
 
     def initialize(params)
       @name = params[:name]
@@ -45,6 +46,7 @@ module Inferno
           end
         end
       end
+      @value_sets = params[:value_sets]
 
       Module.add(name, self)
     end

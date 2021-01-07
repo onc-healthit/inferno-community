@@ -5,6 +5,7 @@ require 'bloomer'
 require 'bloomer/msgpackable'
 require_relative 'fhir_package_manager'
 require 'fileutils'
+require 'csv'
 
 module Inferno
   class Terminology
