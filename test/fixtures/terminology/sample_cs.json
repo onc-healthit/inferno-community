@@ -1,0 +1,50 @@
+{
+  "resourceType": "CodeSystem",
+  "id": "sample-cs",
+  "meta": {
+    "lastUpdated": "2021-01-05T09:29:23.356+11:00",
+    "profile": [
+      "http://hl7.org/fhir/StructureDefinition/shareablecodesystem"
+    ]
+  },
+  "url": "http://example.com/sample-cs",
+  "version": "0.0.1",
+  "name": "sample-codesystem",
+  "title": "sample-codesystem",
+  "status": "draft",
+  "experimental": true,
+  "date": "2021-01-05T09:29:23.356+11:00",
+  "publisher": "Inferno",
+  "description": "A sample codesystem for testing purposes",
+  "caseSensitive": true,
+  "content": "complete",
+  "hierarchyMeaning": "is-a",
+  "concept": [
+    {
+      "code": "first_code",
+      "display": "The First Code"
+    },
+    {
+      "code": "second_code",
+      "display": "A Second Code"
+    },
+    {
+      "code": "third_code",
+      "display": "The Third Code"
+    },
+    {
+      "code": "nested_code",
+      "display": "A group of codes in the concept array",
+      "concept": [
+        {
+          "code": "first_nested_code",
+          "display": "A nested code"
+        },
+        {
+          "code": "second_nested_code",
+          "display": "Another nested code"
+        }
+      ]
+    }
+  ]
+}
