@@ -11,7 +11,7 @@ module Inferno
       REGISTRY_SERVER_URL = 'https://packages.fhir.org'
       # Get the FHIR Package from the registry.
       #
-      # e.g. get_package('hl7.fhir.us.core#3.1.0')
+      # e.g. get_package('hl7.fhir.us.core#3.1.1')
       #
       # @param [String] package The FHIR Package
       def get_package(package, destination, desired_types = [])

@@ -54,6 +54,7 @@ describe Inferno::HL7Validator do
       stub_request(:get, "#{@validator_url}/version")
         .to_return(status: 200, body: '5.0.11-SNAPSHOT')
 
+        binding.pry
       assert_equal '5.0.11-SNAPSHOT', @validator.version
     end
 
