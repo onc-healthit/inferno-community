@@ -47,7 +47,7 @@ external_resource_validator_url: http://validator_service:4567
 modules:
   - smart
   - bdt
-  - argonaut
+  - ips
   - uscore_v3.1.1
   
 # FHIRPath evaluator options: must be one of "internal" or "external".
