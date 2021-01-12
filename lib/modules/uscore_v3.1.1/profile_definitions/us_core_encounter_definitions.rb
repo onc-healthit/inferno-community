@@ -69,6 +69,63 @@ module Inferno
           ]
         }
       ].freeze
+
+      BINDINGS = [
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/identifier-use',
+          path: 'identifier.use'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/ValueSet/identifier-type',
+          path: 'identifier.type'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/encounter-status',
+          path: 'status'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/encounter-status',
+          path: 'statusHistory.status'
+        },
+        {
+          type: 'Coding',
+          strength: 'extensible',
+          system: 'http://terminology.hl7.org/ValueSet/v3-ActEncounterCode',
+          path: 'local_class'
+        },
+        {
+          type: 'Coding',
+          strength: 'extensible',
+          system: 'http://terminology.hl7.org/ValueSet/v3-ActEncounterCode',
+          path: 'classHistory.local_class'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-encounter-type',
+          path: 'type'
+        },
+        {
+          type: 'CodeableConcept',
+          strength: 'extensible',
+          system: 'http://hl7.org/fhir/ValueSet/encounter-participant-type',
+          path: 'participant.type'
+        },
+        {
+          type: 'code',
+          strength: 'required',
+          system: 'http://hl7.org/fhir/ValueSet/encounter-location-status',
+          path: 'location.status'
+        }
+      ].freeze
     end
   end
 end
